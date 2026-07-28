@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 sw=2 et tw=78: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +7,7 @@
 #include "mozilla/dom/ScriptLoader.h"
 #include "mozilla/dom/LinkStyle.h"
 #include "nsNameSpaceManager.h"
+#include "nsNetUtil.h"
 
 using mozilla::dom::LinkStyle;
 
@@ -53,7 +52,9 @@ void nsHtml5DocumentBuilder::UpdateStyleSheet(nsIContent* aElement) {
   if (updateOrError.isOk() && updateOrError.unwrap().ShouldBlock() &&
       !mRunsToCompletion) {
     ++mPendingSheetCount;
-    mScriptLoader->AddParserBlockingScriptExecutionBlocker();
+    if (mScriptLoader) {
+      mScriptLoader->AddParserBlockingScriptExecutionBlocker();
+    }
   }
 }
 
@@ -78,15 +79,9 @@ void nsHtml5DocumentBuilder::SetDocumentMode(nsHtml5DocumentMode m) {
 
   if (errMsgId && !mDocument->IsLoadedAsData()) {
     nsCOMPtr<nsIURI> docURI = mDocument->GetDocumentURI();
-    bool isData = false;
-    docURI->SchemeIs("data", &isData);
-    bool isHttp = false;
-    docURI->SchemeIs("http", &isHttp);
-    bool isHttps = false;
-    docURI->SchemeIs("https", &isHttps);
-
     nsCOMPtr<nsIPrincipal> principal = mDocument->GetPrincipal();
-    if (principal->GetIsNullPrincipal() && !isData && !isHttp && !isHttps) {
+    if (principal->GetIsNullPrincipal() && !docURI->SchemeIs("data") &&
+        !mozilla::net::SchemeIsHttpOrHttps(docURI)) {
       // Don't normally warn for null principals. It may well be internal
       // documents for which the warning is not applicable.
       return;
@@ -94,7 +89,7 @@ void nsHtml5DocumentBuilder::SetDocumentMode(nsHtml5DocumentMode m) {
 
     nsContentUtils::ReportToConsole(
         nsIScriptError::warningFlag, "HTML_PARSER__DOCTYPE"_ns, mDocument,
-        nsContentUtils::eHTMLPARSER_PROPERTIES, errMsgId);
+        PropertiesFile::HTMLPARSER_PROPERTIES, errMsgId);
   }
 }
 

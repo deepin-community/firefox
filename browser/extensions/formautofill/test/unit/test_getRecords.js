@@ -85,7 +85,12 @@ add_task(async function test_getRecords() {
       sinon.stub(collection, "getAll");
       collection.getAll.returns(Promise.resolve(expectedResult));
     }
-    await FormAutofillParent.getRecords({ collectionName });
+    const fap = new FormAutofillParent();
+    sinon.stub(fap, "browsingContext").get(() => {
+      return {};
+    });
+
+    await fap.getRecords({ collectionName });
     if (collection) {
       Assert.equal(collection.getAll.called, true);
       collection.getAll.restore();
@@ -161,7 +166,11 @@ add_task(async function test_getRecords_addresses() {
 
   for (let testCase of testCases) {
     info("Starting testcase: " + testCase.description);
-    let result = await FormAutofillParent.getRecords(testCase.filter);
+    const fap = new FormAutofillParent();
+    sinon.stub(fap, "browsingContext").get(() => {
+      return {};
+    });
+    let result = await fap.getRecords(testCase.filter);
     Assert.deepEqual(result, testCase.expectedResult);
   }
 });
@@ -245,14 +254,17 @@ add_task(async function test_getRecords_creditCards() {
   for (let testCase of testCases) {
     info("Starting testcase: " + testCase.description);
     if (testCase.mpEnabled) {
-      let tokendb = Cc["@mozilla.org/security/pk11tokendb;1"].createInstance(
-        Ci.nsIPK11TokenDB
+      let token = Cc["@mozilla.org/security/internalkeytoken;1"].createInstance(
+        Ci.nsIPKCS11Token
       );
-      let token = tokendb.getInternalKeyToken();
       token.reset();
       token.initPassword("password");
     }
-    let result = await FormAutofillParent.getRecords(testCase.filter);
+    const fap = new FormAutofillParent();
+    sinon.stub(fap, "browsingContext").get(() => {
+      return {};
+    });
+    let result = await fap.getRecords(testCase.filter);
     Assert.deepEqual(result, testCase.expectedResult);
   }
 });

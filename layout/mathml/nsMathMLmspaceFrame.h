@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsMathMLmspaceFrame_h___
-#define nsMathMLmspaceFrame_h___
+#ifndef nsMathMLmspaceFrame_h_
+#define nsMathMLmspaceFrame_h_
 
-#include "mozilla/Attributes.h"
+#include "nsCSSValue.h"
 #include "nsMathMLContainerFrame.h"
 
 namespace mozilla {
@@ -29,33 +27,38 @@ class nsMathMLmspaceFrame final : public nsMathMLContainerFrame {
   TransmitAutomaticData() override {
     // The REC defines the following elements to be space-like:
     // * an mtext, mspace, maligngroup, or malignmark element;
-    mPresentationData.flags |= NS_MATHML_SPACE_LIKE;
+    mPresentationData.flags += MathMLPresentationFlag::SpaceLike;
     return NS_OK;
   }
-
-  virtual void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
-                      const ReflowInput& aReflowInput,
-                      nsReflowStatus& aStatus) override;
 
  protected:
   explicit nsMathMLmspaceFrame(ComputedStyle* aStyle,
                                nsPresContext* aPresContext)
-      : nsMathMLContainerFrame(aStyle, aPresContext, kClassID),
-        mWidth(0),
-        mHeight(0),
-        mDepth(0) {}
+      : nsMathMLContainerFrame(aStyle, aPresContext, kClassID) {}
   virtual ~nsMathMLmspaceFrame();
 
-  virtual nsresult MeasureForWidth(DrawTarget* aDrawTarget,
-                                   ReflowOutput& aDesiredSize) override;
-
  private:
-  nscoord mWidth;
-  nscoord mHeight;
-  nscoord mDepth;
+  struct Attribute {
+    nsCSSValue mValue;
+    enum class ParsingState : uint8_t {
+      Valid,
+      Invalid,
+      Dirty,
+    };
+    ParsingState mState = ParsingState::Dirty;
+  };
+  Attribute mWidth;
+  Attribute mHeight;
+  Attribute mDepth;
 
-  // helper method to initialize our member data
-  void ProcessAttributes(nsPresContext* aPresContext);
+  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                            AttrModType aModType) final;
+  nscoord CalculateAttributeValue(
+      nsAtom* aAtom, Attribute& aAttribute, float aFontSizeInflation,
+      mozilla::dom::MathMLElement::ParseFlags aFlags =
+          mozilla::dom::MathMLElement::ParseFlags());
+  void Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
+             ReflowOutput& aDesiredSize) final;
 };
 
-#endif /* nsMathMLmspaceFrame_h___ */
+#endif /* nsMathMLmspaceFrame_h_ */

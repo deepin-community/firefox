@@ -8,11 +8,13 @@ ChromeUtils.defineESModuleGetters(lazy, {
   error: "chrome://remote/content/shared/webdriver/Errors.sys.mjs",
   EventDispatcher:
     "chrome://remote/content/marionette/actors/MarionetteEventsParent.sys.mjs",
+  getTimeoutMultiplier: "chrome://remote/content/shared/AppInfo.sys.mjs",
   Log: "chrome://remote/content/shared/Log.sys.mjs",
+  MarionettePrefs: "chrome://remote/content/marionette/prefs.sys.mjs",
   PageLoadStrategy:
     "chrome://remote/content/shared/webdriver/Capabilities.sys.mjs",
   ProgressListener: "chrome://remote/content/shared/Navigate.sys.mjs",
-  TimedPromise: "chrome://remote/content/marionette/sync.sys.mjs",
+  TimedPromise: "chrome://remote/content/shared/Sync.sys.mjs",
   truncate: "chrome://remote/content/shared/Format.sys.mjs",
 });
 
@@ -20,8 +22,7 @@ ChromeUtils.defineLazyGetter(lazy, "logger", () =>
   lazy.Log.get(lazy.Log.TYPES.MARIONETTE)
 );
 
-// Timeouts used to check if a new navigation has been initiated.
-const TIMEOUT_BEFOREUNLOAD_EVENT = 200;
+// Timeout used to wait for the page to be unloaded.
 const TIMEOUT_UNLOAD_EVENT = 5000;
 
 /** @namespace */
@@ -45,7 +46,7 @@ export const navigate = {};
  *     True if the page load has been finished.
  */
 function checkReadyState(pageLoadStrategy, eventData = {}) {
-  const { documentURI, readyState } = eventData;
+  const { documentURI, readyState, isUncommittedInitialDocument } = eventData;
 
   const result = { error: null, finished: false };
 
@@ -76,7 +77,9 @@ function checkReadyState(pageLoadStrategy, eventData = {}) {
       break;
 
     case "complete":
-      result.finished = true;
+      if (!isUncommittedInitialDocument) {
+        result.finished = true;
+      }
       break;
   }
 
@@ -158,12 +161,14 @@ navigate.isLoadEventExpected = function (current, options = {}) {
  * @param {string} url
  *     URL to navigate to.
  */
-navigate.navigateTo = async function (browsingContext, url) {
+navigate.navigateTo = function (browsingContext, url) {
   const opts = {
     loadFlags: Ci.nsIWebNavigation.LOAD_FLAGS_IS_LINK,
-    triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
     // Fake user activation.
     hasValidUserGestureActivation: true,
+    // Prevent HTTPS-First upgrades.
+    schemelessInput: Ci.nsILoadInfo.SchemelessInputTypeSchemeful,
+    triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
   };
   browsingContext.fixupAndLoadURIString(url, opts);
 };
@@ -174,9 +179,17 @@ navigate.navigateTo = async function (browsingContext, url) {
  * @param {CanonicalBrowsingContext} browsingContext
  *     Browsing context to refresh.
  */
-navigate.refresh = async function (browsingContext) {
+navigate.refresh = function (browsingContext) {
+  const { sessionHistory } = browsingContext;
   const flags = Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE;
-  browsingContext.reload(flags);
+
+  // Bug 2026546: As workaround use sessionHistory if available to avoid issues
+  // with frames.
+  if (sessionHistory?.count && sessionHistory?.index >= 0) {
+    sessionHistory.reload(flags);
+  } else {
+    browsingContext.reload(flags);
+  }
 };
 
 /**
@@ -228,6 +241,7 @@ navigate.waitForNavigationCompleted = async function waitForNavigationCompleted(
       if (listener.isStarted) {
         listener.stop();
       }
+      listener.destroy();
     });
 
     await callback();
@@ -282,8 +296,9 @@ navigate.waitForNavigationCompleted = async function waitForNavigationCompleted(
     // For the command "Element Click" we want to detect a potential navigation
     // as early as possible. The `beforeunload` event is an indication for that
     // but could still cause the navigation to get aborted by the user. As such
-    // wait a bit longer for the `unload` event to happen, which usually will
-    // occur pretty soon after `beforeunload`.
+    // wait a bit longer for the `unload` event to happen (only when the page
+    // load strategy is `none`), which usually will occur pretty soon after
+    // `beforeunload`.
     //
     // Note that with WebDriver BiDi enabled the `beforeunload` prompts might
     // not get implicitly accepted, so lets keep the timer around until we know
@@ -337,7 +352,8 @@ navigate.waitForNavigationCompleted = async function waitForNavigationCompleted(
       case "pageshow": {
         // Don't require an unload event when a top-level browsing context
         // change occurred.
-        if (!seenUnload && !browsingContextChanged) {
+        // The initial about:blank load has no previous page to unload.
+        if (!seenUnload && !browsingContextChanged && !data.isInitialDocument) {
           return;
         }
         const result = checkReadyState(pageLoadStrategy, data);
@@ -393,38 +409,47 @@ navigate.waitForNavigationCompleted = async function waitForNavigationCompleted(
 
   lazy.EventDispatcher.on("page-load", onNavigation);
 
-  return new lazy.TimedPromise(
-    async (resolve, reject) => {
-      rejectNavigation = reject;
-      resolveNavigation = resolve;
+  const waitForCompleted = async (resolve, reject) => {
+    rejectNavigation = reject;
+    resolveNavigation = resolve;
 
-      try {
-        await callback();
+    try {
+      await callback();
 
-        // Certain commands like clickElement can cause a navigation. Setup a timer
-        // to check if a "beforeunload" event has been emitted within the given
-        // time frame. If not resolve the Promise.
-        if (!requireBeforeUnload) {
-          unloadTimer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-          unloadTimer.initWithCallback(
-            onTimer,
-            TIMEOUT_BEFOREUNLOAD_EVENT,
-            Ci.nsITimer.TYPE_ONE_SHOT
-          );
-        }
-      } catch (e) {
-        // Executing the callback above could destroy the actor pair before the
-        // command returns. Such an error has to be ignored.
-        if (e.name !== "AbortError") {
-          checkDone({ finished: true, error: e });
-        }
+      // Certain commands like clickElement can cause a navigation. Setup a timer
+      // to check if a "beforeunload" event has been emitted within the given
+      // time frame. If not resolve the Promise.
+      if (
+        !requireBeforeUnload &&
+        lazy.MarionettePrefs.navigateAfterClickEnabled
+      ) {
+        unloadTimer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
+        unloadTimer.initWithCallback(
+          onTimer,
+          lazy.MarionettePrefs.navigateAfterClickTimeout *
+            lazy.getTimeoutMultiplier(),
+          Ci.nsITimer.TYPE_ONE_SHOT
+        );
       }
-    },
-    {
-      errorMessage: "Navigation timed out",
-      timeout: driver.currentSession.timeouts.pageLoad,
+    } catch (e) {
+      // Executing the callback above could destroy the actor pair before the
+      // command returns. Such an error has to be ignored.
+      if (e.name !== "AbortError") {
+        checkDone({ finished: true, error: e });
+      }
     }
-  ).finally(() => {
+  };
+
+  const pageLoadTimeout = driver.currentSession.timeouts.pageLoad;
+  const promise =
+    pageLoadTimeout === null
+      ? new Promise(waitForCompleted)
+      : new lazy.TimedPromise(waitForCompleted, {
+          errorMessage: "Navigation timed out",
+          timeout: pageLoadTimeout,
+        });
+
+  return promise.finally(() => {
     // Clean-up all registered listeners and timers
     Services.obs.removeObserver(
       onBrowsingContextDiscarded,

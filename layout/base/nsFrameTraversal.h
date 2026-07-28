@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,13 +6,20 @@
 #define NSFRAMETRAVERSAL_H
 
 #include <cstdint>
+
 #include "mozilla/Attributes.h"
 
 class nsIFrame;
 class nsPresContext;
 
+namespace mozilla::dom {
+class Element;
+}  // namespace mozilla::dom
+
 class MOZ_STACK_CLASS nsFrameIterator final {
  public:
+  using Element = mozilla::dom::Element;
+
   void First();
   void Next();
   nsIFrame* CurrentItem();
@@ -42,7 +47,7 @@ class MOZ_STACK_CLASS nsFrameIterator final {
   };
   nsFrameIterator(nsPresContext* aPresContext, nsIFrame* aStart, Type aType,
                   bool aVisual, bool aLockInScrollView, bool aFollowOOFs,
-                  bool aSkipPopupChecks, nsIFrame* aLimiter = nullptr);
+                  bool aSkipPopupChecks, const Element* aLimiter = nullptr);
   ~nsFrameIterator() = default;
 
  protected:
@@ -72,7 +77,11 @@ class MOZ_STACK_CLASS nsFrameIterator final {
    placeholders.
    */
 
-  nsIFrame* GetParentFrame(nsIFrame* aFrame);
+  nsIFrame* GetParentFrameInLimiter(nsIFrame* aFrame) {
+    return GetParentFrame(aFrame, mLimiter);
+  }
+  nsIFrame* GetParentFrame(nsIFrame* aFrame, const Element* aAncestorLimiter);
+
   // like GetParentFrame but returns null once a popup frame is reached
   nsIFrame* GetParentFrameNotPopup(nsIFrame* aFrame);
 
@@ -115,7 +124,7 @@ class MOZ_STACK_CLASS nsFrameIterator final {
   nsIFrame* const mStart;
   nsIFrame* mCurrent;
   nsIFrame* mLast;  // the last one that was in current;
-  nsIFrame* mLimiter;
+  const Element* const mLimiter;
   int8_t mOffEdge;  // 0= no -1 to far prev, 1 to far next;
 };
 

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -40,9 +39,15 @@ interface nsIWebAuthnRegisterArgs : nsISupports {
     // WebAuthn AuthenticationExtensionsClientInputs. That's not feasible here.
     // So we define a getter for each supported extension input and use the
     // return code to signal presence.
+    [must_use] readonly attribute AUTF8String credentialProtectionPolicy;
+    [must_use] readonly attribute boolean enforceCredentialProtectionPolicy;
     [must_use] readonly attribute boolean credProps;
     [must_use] readonly attribute boolean hmacCreateSecret;
     [must_use] readonly attribute boolean minPinLength;
+    [must_use] readonly attribute boolean prf;
+    [must_use] readonly attribute Array<octet> prfEvalFirst;
+    [must_use] readonly attribute Array<octet> prfEvalSecond;
+    [must_use] readonly attribute boolean largeBlobSupportRequired;
 
     // Options.
     readonly attribute AString residentKey;
@@ -58,6 +63,12 @@ interface nsIWebAuthnRegisterArgs : nsISupports {
     // We might overwrite the provided value with "none" if the user declines the
     // consent popup.
     [must_use] readonly attribute AString attestationConveyancePreference;
+
+    readonly attribute Array<AString> hints;
+
+    readonly attribute AString json;
+
+    readonly attribute boolean privateBrowsing;
 };
 
 [uuid(2e621cf4-a277-11ed-ae00-bf41a54ef553)]
@@ -85,6 +96,15 @@ interface nsIWebAuthnSignArgs : nsISupports {
     // return code to signal presence.
     [must_use] readonly attribute boolean hmacCreateSecret;
     [must_use] readonly attribute AString appId;
+    [must_use] readonly attribute boolean prf;
+    [must_use] readonly attribute Array<octet> prfEvalFirst;
+    [must_use] readonly attribute Array<octet> prfEvalSecond;
+    [must_use] readonly attribute Array<Array<octet> > prfEvalByCredentialCredentialId;
+    [must_use] readonly attribute Array<Array<octet> > prfEvalByCredentialEvalFirst;
+    [must_use] readonly attribute Array<boolean> prfEvalByCredentialEvalSecondMaybe;
+    [must_use] readonly attribute Array<Array<octet> > prfEvalByCredentialEvalSecond;
+    [must_use] readonly attribute boolean largeBlobRead;
+    [must_use] readonly attribute Array<octet> largeBlobWrite;
 
     // Options
     [must_use] readonly attribute AString userVerification;
@@ -94,5 +114,11 @@ interface nsIWebAuthnSignArgs : nsISupports {
     // cancel transactions.
     readonly attribute unsigned long timeoutMS;
 
+    readonly attribute Array<AString> hints;
+
+    readonly attribute AString json;
+
     readonly attribute boolean conditionallyMediated;
+
+    readonly attribute boolean privateBrowsing;
 };

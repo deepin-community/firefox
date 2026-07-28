@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -20,7 +18,6 @@
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StaticPrefs_intl.h"
 #include "mozilla/TextEvents.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/BrowserParent.h"
 #include "nsContentUtils.h"
 #include "nsIContent.h"
@@ -135,7 +132,7 @@ void TextComposition::OnCharacterDataChanged(
 
   // If this is caused by a splitting text node, the composition string
   // may be split out to the new right node.  In the case,
-  // CompositionTransaction::DoTransaction handles it with warking the
+  // CompositionTransaction::DoTransaction handles it with walking the
   // following text nodes.  Therefore, we should NOT shrink the composing
   // range for avoind breaking the fix of bug 1310912.  Although the handling
   // looks buggy so that we need to move the handling into here later.
@@ -169,18 +166,28 @@ void TextComposition::OnCharacterDataChanged(
   // If removed range starts in the composition string, we need only adjust
   // the length to make composition range contain the replace string.
   if (aInfo.mChangeStart >= mCompositionStartOffsetInTextNode) {
+    if (!mCompositionLengthInTextNode) {
+      // However, don't extend composition range if there is no composition
+      // string.
+      return;
+    }
     MOZ_ASSERT(aInfo.LengthOfRemovedText() <= mCompositionLengthInTextNode);
     mCompositionLengthInTextNode -= aInfo.LengthOfRemovedText();
     mCompositionLengthInTextNode += aInfo.mReplaceLength;
     return;
   }
 
-  // If preceding characers of the composition string is also removed,  new
+  // If preceding characters of the composition string is also removed, new
   // composition start will be there and new composition ends at current
   // position.
   const uint32_t removedLengthInCompositionString =
       aInfo.mChangeEnd - mCompositionStartOffsetInTextNode;
   mCompositionStartOffsetInTextNode = aInfo.mChangeStart;
+  if (!mCompositionLengthInTextNode) {
+    // However, don't extend composition range if there is no composition
+    // string.
+    return;
+  }
   mCompositionLengthInTextNode -= removedLengthInCompositionString;
   mCompositionLengthInTextNode += aInfo.mReplaceLength;
 }
@@ -268,8 +275,8 @@ void TextComposition::OnCompositionEventDiscarded(
              "Shouldn't be called with untrusted event");
 
   if (mBrowserParent) {
-    Unused << mBrowserParent->SendCompositionEvent(*aCompositionEvent,
-                                                   mCompositionId);
+    (void)mBrowserParent->SendCompositionEvent(*aCompositionEvent,
+                                               mCompositionId);
   }
 
   // XXX If composition events are discarded, should we dispatch them with
@@ -367,8 +374,8 @@ void TextComposition::DispatchCompositionEvent(
   // If the content is a container of BrowserParent, composition should be in
   // the remote process.
   if (mBrowserParent) {
-    Unused << mBrowserParent->SendCompositionEvent(*aCompositionEvent,
-                                                   mCompositionId);
+    (void)mBrowserParent->SendCompositionEvent(*aCompositionEvent,
+                                               mCompositionId);
     aCompositionEvent->StopPropagation();
     if (aCompositionEvent->CausesDOMTextEvent()) {
       mLastData = aCompositionEvent->mData;
@@ -531,7 +538,7 @@ void TextComposition::HandleSelectionEvent(
   // If the content is a container of BrowserParent, composition should be in
   // the remote process.
   if (aBrowserParent) {
-    Unused << aBrowserParent->SendSelectionEvent(*aSelectionEvent);
+    (void)aBrowserParent->SendSelectionEvent(*aSelectionEvent);
     aSelectionEvent->StopPropagation();
     return;
   }
@@ -664,7 +671,7 @@ void TextComposition::MaybeNotifyIMEOfCompositionEventHandled(
 void TextComposition::DispatchCompositionEventRunnable(
     EventMessage aEventMessage, const nsAString& aData,
     bool aIsSynthesizingCommit) {
-  nsContentUtils::AddScriptRunner(new CompositionEventDispatcher(
+  nsContentUtils::AddScriptRunner(MakeAndAddRef<CompositionEventDispatcher>(
       this, mNode, aEventMessage, aData, aIsSynthesizingCommit));
 }
 

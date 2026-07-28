@@ -6,7 +6,7 @@
 
 const {
   Component,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const {
   connect,
@@ -26,7 +26,7 @@ loader.lazyRequireGetter(
   "resource://devtools/client/shared/vendor/react-prop-types.js"
 );
 
-const l10n = require("resource://devtools/client/webconsole/utils/l10n.js");
+const l10n = require("resource://devtools/shared/webconsole/l10n.js");
 
 /**
  * Show the results of evaluating the current terminal text, if possible.

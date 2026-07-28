@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sw=2 ts=2 sts=2 et */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -45,32 +43,56 @@ export class FirefoxProfileMigrator extends MigratorBase {
     return "chrome://branding/content/icon128.png";
   }
 
-  _getAllProfiles() {
+  /**
+   * Return a map of all migratable Firefox profiles.
+   *
+   * Subclasses can override this to provide profiles from different sources
+   * (e.g. selectable profiles instead of toolkit profiles).
+   *
+   * @returns {Promise<Map<string, object>>} A map keyed by absolute profile path, where
+   *   each value is an object with the following properties:
+   *   - {string} id - The absolute profile path (same as the key).
+   *   - {string} name - The display name of the profile.
+   *   - {nsIFile} rootDir - The root directory of the profile.
+   */
+  async getAllProfiles() {
     let allProfiles = new Map();
     let profileService = Cc[
       "@mozilla.org/toolkit/profile-service;1"
     ].getService(Ci.nsIToolkitProfileService);
     for (let profile of profileService.profiles) {
       let rootDir = profile.rootDir;
+      let path = rootDir.path;
 
       if (
         rootDir.exists() &&
         rootDir.isReadable() &&
         !rootDir.equals(MigrationUtils.profileStartup.directory)
       ) {
-        allProfiles.set(profile.name, rootDir);
+        allProfiles.set(path, {
+          id: path,
+          name: profile.name,
+          rootDir,
+        });
       }
     }
     return allProfiles;
   }
 
-  getSourceProfiles() {
+  async getSourceProfiles() {
     let sorter = (a, b) => {
-      return a.id.toLocaleLowerCase().localeCompare(b.id.toLocaleLowerCase());
+      return a.name
+        .toLocaleLowerCase()
+        .localeCompare(b.name.toLocaleLowerCase());
     };
 
-    return [...this._getAllProfiles().keys()]
-      .map(x => ({ id: x, name: x }))
+    let profiles = await this.getAllProfiles();
+
+    return [...profiles.values()]
+      .map(p => ({
+        id: p.id,
+        name: p.name,
+      }))
       .sort(sorter);
   }
 
@@ -84,12 +106,24 @@ export class FirefoxProfileMigrator extends MigratorBase {
     return file.exists() ? file : null;
   }
 
-  getResources(aProfile) {
-    let sourceProfileDir = aProfile
-      ? this._getAllProfiles().get(aProfile.id)
-      : Cc["@mozilla.org/toolkit/profile-service;1"].getService(
-          Ci.nsIToolkitProfileService
-        ).defaultProfile.rootDir;
+  /**
+   * Gets the source profile directory for an object representing a profile.
+   *
+   * @param {object} aProfile An object containing an "id".
+   *   The id must be an absolute path string to the source profile directory.
+   * @returns {nsIFile} The directory of the source profile
+   */
+  async getSourceProfileDir(aProfile) {
+    let sourceProfileDir = Cc["@mozilla.org/file/local;1"].createInstance(
+      Ci.nsIFile
+    );
+    sourceProfileDir.initWithPath(aProfile.id);
+
+    return sourceProfileDir;
+  }
+
+  async getResources(aProfile) {
+    let sourceProfileDir = await this.getSourceProfileDir(aProfile);
     if (
       !sourceProfileDir ||
       !sourceProfileDir.exists() ||
@@ -107,7 +141,7 @@ export class FirefoxProfileMigrator extends MigratorBase {
       return null;
     }
 
-    return this._getResourcesInternal(sourceProfileDir, currentProfileDir);
+    return this.getResourcesInternal(sourceProfileDir, currentProfileDir);
   }
 
   getLastUsedDate() {
@@ -117,7 +151,17 @@ export class FirefoxProfileMigrator extends MigratorBase {
     return Promise.resolve(new Date(0));
   }
 
-  _getResourcesInternal(sourceProfileDir, currentProfileDir) {
+  /**
+   * An internal function specific to FirefoxProfileMigrator that gets the
+   * resources from the sourceProfileDir and copies the resources into
+   * currentProfileDir when the migration resources are invoked.
+   *
+   * @param {nsIFile} sourceProfileDir The profile we are migrating from
+   * @param {nsIFile} currentProfileDir The profile we are migrating into
+   * @returns {Array<object>} An array of "migration resources" objects for the
+   * sourceProfileDir to migrate into the currentProfileDir
+   */
+  getResourcesInternal(sourceProfileDir, currentProfileDir) {
     let getFileResource = (aMigrationType, aFileNames) => {
       let files = [];
       for (let fileName of aFileNames) {
@@ -163,6 +207,27 @@ export class FirefoxProfileMigrator extends MigratorBase {
       Services.prefs.savePrefFile(newPrefsFile);
     }
 
+    function configureHomepage(resetSession) {
+      // We just refreshed the profile, so don't show the profile reset prompt
+      // on the homepage.
+      Services.prefs.setBoolPref("browser.disableResetPrompt", true);
+      if (resetSession) {
+        // We're resetting the user's session, not creating a new one. Set the
+        // homepage_override prefs so that the browser doesn't override our
+        // session with an unwanted homepage.
+        let buildID = Services.appinfo.platformBuildID;
+        let mstone = Services.appinfo.platformVersion;
+        Services.prefs.setCharPref(
+          "browser.startup.homepage_override.mstone",
+          mstone
+        );
+        Services.prefs.setCharPref(
+          "browser.startup.homepage_override.buildID",
+          buildID
+        );
+      }
+    }
+
     let types = MigrationUtils.resourceTypes;
     let places = getFileResource(types.HISTORY, [
       "places.sqlite",
@@ -190,13 +255,18 @@ export class FirefoxProfileMigrator extends MigratorBase {
     ]);
     let dictionary = getFileResource(types.OTHERDATA, ["persdict.dat"]);
 
+    // Determine if we want to restore the previous session or start a new one
+    const NEW_SESSION = "0";
+    const RESTORE_SESSION = "1";
+    let resetSession = Services.env.get("MOZ_RESET_PROFILE_SESSION");
+    Services.env.set("MOZ_RESET_PROFILE_SESSION", "");
+
     let session;
-    if (Services.env.get("MOZ_RESET_PROFILE_MIGRATE_SESSION")) {
-      // We only want to restore the previous firefox session if the profile refresh was
-      // triggered by user. The MOZ_RESET_PROFILE_MIGRATE_SESSION would be set when a user-triggered
-      // profile refresh happened in nsAppRunner.cpp. Hence, we detect the MOZ_RESET_PROFILE_MIGRATE_SESSION
-      // to see if session data migration is required.
-      Services.env.set("MOZ_RESET_PROFILE_MIGRATE_SESSION", "");
+    if (resetSession === RESTORE_SESSION) {
+      // We only want to restore the previous firefox session if the profile
+      // refresh was triggered by the user, such as through about:support. In
+      // these cases, MOZ_RESET_PROFILE_SESSION is set to restore, signaling
+      // that session data migration is required.
       let sessionCheckpoints = this._getFileObject(
         sourceProfileDir,
         "sessionCheckpoints.json"
@@ -221,23 +291,12 @@ export class FirefoxProfileMigrator extends MigratorBase {
             );
             migrationPromise.then(
               function () {
-                let buildID = Services.appinfo.platformBuildID;
-                let mstone = Services.appinfo.platformVersion;
                 // Force the browser to one-off resume the session that we give it:
                 Services.prefs.setBoolPref(
                   "browser.sessionstore.resume_session_once",
                   true
                 );
-                // Reset the homepage_override prefs so that the browser doesn't override our
-                // session with the "what's new" page:
-                Services.prefs.setCharPref(
-                  "browser.startup.homepage_override.mstone",
-                  mstone
-                );
-                Services.prefs.setCharPref(
-                  "browser.startup.homepage_override.buildID",
-                  buildID
-                );
+                configureHomepage(true);
                 savePrefs();
                 aCallback(true);
               },
@@ -248,6 +307,12 @@ export class FirefoxProfileMigrator extends MigratorBase {
           },
         };
       }
+    } else if (resetSession === NEW_SESSION) {
+      // If this is first startup and the profile refresh was triggered via the
+      // command line, such as through the stub installer, we do not restore the
+      // previous session.
+      configureHomepage();
+      savePrefs();
     }
 
     // Sync/FxA related data

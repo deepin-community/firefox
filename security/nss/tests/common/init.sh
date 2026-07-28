@@ -260,8 +260,9 @@ if [ -z "${INIT_SOURCED}" -o "${INIT_SOURCED}" != "TRUE" ]; then
     gtest_parse_report_helper()
     {
       # Check XML reports for normal test runs and failures.
-      local successes=$(gtest_parse_report_xpath "//testcase[@status='run'][count(*)=0]" "$@" )
-      local failures=$(gtest_parse_report_xpath "//failure/.." "$@" )
+      local successes failures
+      successes=$(gtest_parse_report_xpath "//testcase[@status='run'][count(*)=0]" "$@" )
+      failures=$(gtest_parse_report_xpath "//failure/.." "$@" )
 
       # Print all tests that succeeded.
       while read result name; do
@@ -341,6 +342,10 @@ if [ -z "${INIT_SOURCED}" -o "${INIT_SOURCED}" != "TRUE" ]; then
       policy="$1"
       outdir="$2"
       OUTFILE="${outdir}/pkcs11.txt"
+      if [ -z "${ROOTCERTSFILE}" ]; then
+        ROOTCERTSFILE=`ls -1 ${DIST}/${OBJDIR}/lib/*nssckbi.* | head -1`
+        ROOTCERTSFILE=`native_path "${ROOTCERTSFILE}"`
+      fi
       cat > "$OUTFILE" << ++EOF++
 library=
 name=NSS Internal PKCS #11 Module
@@ -349,7 +354,7 @@ NSS=Flags=internal,critical trustOrder=75 cipherOrder=100 slotParams=(1={slotFla
 ++EOF++
       echo "config=${policy}" >> "$OUTFILE"
       echo "" >> "$OUTFILE"
-      echo "library=${DIST}/${OBJDIR}/lib/libnssckbi.so" >> "$OUTFILE"
+      echo "library=${ROOTCERTSFILE}" >> "$OUTFILE"
       cat >> "$OUTFILE" << ++EOF++
 name=RootCerts
 NSS=trustOrder=100
@@ -363,6 +368,60 @@ NSS=trustOrder=100
     ignore_blank_lines()
     {
       LC_ALL=C egrep -v '^[[:space:]]*(#|$)' "$1"
+    }
+
+    using_sql()
+    {
+        dbtype=$(nssdefaults --dbtype)
+        if [ ${dbtype##*: } = "sql" ]; then
+            return 0; # success case for bash
+        fi
+        return 1; # fail case for bash
+    }
+
+    # safe_kill terminates a background server process and waits for it to exit.
+    #
+    # Usage: safe_kill <pid> <job_pid>
+    #   pid     - the process ID to terminate (written by the server to its PID
+    #             file; used by taskkill on Windows, kill on Unix)
+    #   job_pid - the bash job PID ($!) used for wait on Windows, where the
+    #             shell may assign a different PID than the native process
+    #
+    # On Windows, bash's built-in kill triggers MSYS2 signal emulation, which
+    # can intermittently propagate SIGTERM back to the shell or return the
+    # killed process's exit code, causing spurious exit code 143 failures.
+    # taskkill terminates the process directly via the Windows API instead.
+    safe_kill() {
+        local pid=$1
+        local job_pid=$2
+
+        if [ "${OS_ARCH}" = "WINNT" ]; then
+            echo "taskkill /F /PID ${pid}"
+            MSYS2_ARG_CONV_EXCL="*" taskkill /F /PID ${pid} || true
+            wait ${job_pid} || true
+        else
+            echo "${KILL} -USR1 ${pid}"
+            ${KILL} -USR1 ${pid} || true
+            local ret=0; wait ${pid} || ret=$?
+            [ $ret -eq 0 ]
+        fi
+    }
+
+    # native_path converts a path to the native Windows format (with forward
+    # slashes) for tools like certutil that are native Windows binaries and
+    # cannot open MSYS/Cygwin Unix-style paths.
+    native_path() {
+        if [ "${OS_ARCH}" = "WINNT" ]; then
+            if [ $# -eq 0 ]; then
+                pwd -W
+            else
+                cygpath -m "$1"
+            fi
+        elif [ $# -eq 0 ]; then
+            pwd
+        else
+            echo "$1"
+        fi
     }
 
 #directory name init
@@ -390,6 +449,7 @@ NSS=trustOrder=100
     if [ -z "${OBJDIR}" -o -z "${OS_ARCH}" -o -z "${DLL_PREFIX}" -o -z "${DLL_SUFFIX}" ]; then
         MAKE=gmake
         $MAKE -v >/dev/null 2>&1 || MAKE=make
+        $MAKE -v >/dev/null 2>&1 || MAKE=mozmake
         $MAKE -v >/dev/null 2>&1 || { echo "You are missing make."; exit 5; }
         MAKE="$MAKE --no-print-directory"
     fi
@@ -410,38 +470,20 @@ NSS=trustOrder=100
     if [ "${DLL_SUFFIX}" = "" ]; then
         DLL_SUFFIX=`(cd $COMMON; $MAKE dll_suffix)`
     fi
-    OS_NAME=`uname -s | sed -e "s/-[0-9]*\.[0-9]*//" | sed -e "s/-WOW64//"`
+    OS_NAME=`uname -s | sed -e "s/-[0-9.-]*//" | sed -e "s/-WOW64//"`
 
     BINDIR="${DIST}/${OBJDIR}/bin"
 
-    # Pathnames constructed from ${TESTDIR} are passed to NSS tools
-    # such as certutil, which don't understand Cygwin pathnames.
-    # So we need to convert ${TESTDIR} to a Windows pathname (with
-    # regular slashes).
-    if [ "${OS_ARCH}" = "WINNT" -a "$OS_NAME" = "CYGWIN_NT" ]; then
-        TESTDIR=`cygpath -m ${TESTDIR}`
-        QADIR=`cygpath -m ${QADIR}`
-    fi
-
-    # Same problem with MSYS/Mingw, except we need to start over with pwd -W
-    if [ "${OS_ARCH}" = "WINNT" -a "$OS_NAME" = "MINGW32_NT" ]; then
-                mingw_mozilla_root=`(cd ../../..; pwd -W)`
-                MINGW_MOZILLA_ROOT=${MINGW_MOZILLA_ROOT-$mingw_mozilla_root}
-                TESTDIR=${MINGW_TESTDIR-${MINGW_MOZILLA_ROOT}/tests_results/security}
-    fi
-
-    # Same problem with MSYS/Mingw, except we need to start over with pwd -W
-    if [ "${OS_ARCH}" = "WINNT" -a "$OS_NAME" = "MINGW32_NT" ]; then
-                mingw_mozilla_root=`(cd ../../..; pwd -W)`
-                MINGW_MOZILLA_ROOT=${MINGW_MOZILLA_ROOT-$mingw_mozilla_root}
-                TESTDIR=${MINGW_TESTDIR-${MINGW_MOZILLA_ROOT}/tests_results/security}
+    if [ "${OS_ARCH}" = "WINNT" ]; then
+        TESTDIR=$(native_path "${TESTDIR}")
+        QADIR=$(native_path "${QADIR}")
     fi
     echo testdir is $TESTDIR
 
 #in case of backward comp. tests the calling scripts set the
 #PATH and LD_LIBRARY_PATH and do not want them to be changed
     if [ -z "${DON_T_SET_PATHS}" -o "${DON_T_SET_PATHS}" != "TRUE" ] ; then
-        if [ "${OS_ARCH}" = "WINNT" -a "$OS_NAME"  != "CYGWIN_NT" -a "$OS_NAME" != "MINGW32_NT" ]; then
+        if [ "${OS_ARCH}" = "WINNT" -a "$OS_NAME"  != "CYGWIN_NT" -a "$OS_NAME" != "MINGW32_NT" -a "$OS_NAME" != "MSYS_NT" ]; then
             PATH=.\;${DIST}/${OBJDIR}/bin\;${DIST}/${OBJDIR}/lib\;$PATH
             PATH=`perl ../path_uniq -d ';' "$PATH"`
         elif [ "${OS_ARCH}" = "Android" ]; then

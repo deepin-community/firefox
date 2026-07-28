@@ -29,12 +29,15 @@ class CookiesPreference(context: Context, attrs: AttributeSet?) : ListPreference
         updateSummary()
     }
 
+    /**
+     * Updates the summary text of the preference based on the current cookie settings.
+     */
     fun updateSummary() {
         val settings = context.settings
 
         val cookieOptionIndex =
             context.resources.getStringArray(R.array.cookies_options_entry_values)
-                .asList().indexOf(settings.shouldBlockCookiesValue())
+                .asList().indexOf(settings.shouldBlockCookiesValue)
         this.summary =
             context.resources.getStringArray(R.array.cookies_options_entries)[cookieOptionIndex]
     }

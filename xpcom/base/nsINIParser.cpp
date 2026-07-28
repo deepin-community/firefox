@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,17 +7,15 @@
 #include "nsError.h"
 #include "nsIFile.h"
 #include "nsINIParser.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/Try.h"
 #include "mozilla/URLPreloader.h"
 
 using namespace mozilla;
 
-nsresult nsINIParser::Init(nsIFile* aFile) {
-  nsCString result;
-  MOZ_TRY_VAR(result, URLPreloader::ReadFile(aFile));
+nsresult nsINIParser::Init(nsIFile* aFile, bool* aContainedErrors) {
+  nsCString result = MOZ_TRY(URLPreloader::ReadFile(aFile));
 
-  return InitFromString(result);
+  return InitFromString(result, aContainedErrors);
 }
 
 static const char kNL[] = "\r\n";
@@ -27,9 +23,14 @@ static const char kEquals[] = "=";
 static const char kWhitespace[] = " \t";
 static const char kRBracket[] = "]";
 
-nsresult nsINIParser::InitFromString(const nsCString& aStr) {
+nsresult nsINIParser::InitFromString(const nsCString& aStr,
+                                     bool* aContainedErrors) {
   nsCString fileContents;
   char* buffer;
+
+  if (aContainedErrors) {
+    *aContainedErrors = false;
+  }
 
   if (StringHead(aStr, 3) == "\xEF\xBB\xBF") {
     // Someone set us up the Utf-8 BOM
@@ -75,6 +76,9 @@ nsresult nsINIParser::InitFromString(const nsCString& aStr) {
         // here and stop, but we won't... keep going, looking for
         // a well-formed [section] to continue working with
         currSection = nullptr;
+        if (aContainedErrors) {
+          *aContainedErrors = true;
+        }
       }
 
       continue;
@@ -83,16 +87,27 @@ nsresult nsINIParser::InitFromString(const nsCString& aStr) {
     if (!currSection) {
       // If we haven't found a section header (or we found a malformed
       // section header), don't bother parsing this line.
+
+      if (aContainedErrors) {
+        *aContainedErrors = true;
+      }
+
       continue;
     }
 
     char* key = token;
     char* e = NS_strtok(kEquals, &token);
     if (!e || !token) {
+      if (aContainedErrors) {
+        *aContainedErrors = true;
+      }
+
       continue;
     }
 
-    SetString(currSection, key, token);
+    if (NS_FAILED(SetString(currSection, key, token)) && aContainedErrors) {
+      *aContainedErrors = true;
+    }
   }
 
   return NS_OK;
@@ -168,17 +183,19 @@ nsresult nsINIParser::GetString(const char* aSection, const char* aKey,
   return NS_ERROR_FAILURE;
 }
 
-nsresult nsINIParser::GetSections(INISectionCallback aCB, void* aClosure) {
+nsresult nsINIParser::GetSections(
+    std::function<bool(const char*)>&& aCallback) {
   for (const auto& key : mSections.Keys()) {
-    if (!aCB(key, aClosure)) {
+    if (!aCallback(key)) {
       break;
     }
   }
   return NS_OK;
 }
 
-nsresult nsINIParser::GetStrings(const char* aSection, INIStringCallback aCB,
-                                 void* aClosure) {
+nsresult nsINIParser::GetStrings(
+    const char* aSection,
+    std::function<bool(const char*, const char*)>&& aCallback) {
   if (!IsValidSection(aSection)) {
     return NS_ERROR_INVALID_ARG;
   }
@@ -186,7 +203,7 @@ nsresult nsINIParser::GetStrings(const char* aSection, INIStringCallback aCB,
   INIValue* val;
 
   for (mSections.Get(aSection, &val); val; val = val->next.get()) {
-    if (!aCB(val->key, val->value, aClosure)) {
+    if (!aCallback(val->key, val->value)) {
       return NS_OK;
     }
   }

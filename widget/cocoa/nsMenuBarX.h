@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "mozilla/UniquePtr.h"
 #include "mozilla/WeakPtr.h"
 
 #include "nsISupports.h"
@@ -32,39 +30,30 @@ class Element;
 
 // ApplicationMenuDelegate is used to receive Cocoa notifications.
 @interface ApplicationMenuDelegate : NSObject <NSMenuDelegate> {
-  nsMenuBarX* mApplicationMenu;  // weak ref
+  nsMenuBarX* mApplicationMenu;       // weak ref
+  NSMenuItem* mSetAsDefaultMenuItem;  // weak ref
 }
 - (id)initWithApplicationMenu:(nsMenuBarX*)aApplicationMenu;
+- (NSMenuItem*)setAsDefaultMenuItem;
+- (void)setSetAsDefaultMenuItem:(NSMenuItem*)menuItem;
 @end
 
-// Objective-C class used to allow us to intervene with keyboard event handling.
-// We allow mouse actions to work normally.
-@interface GeckoNSMenu : NSMenu {
-}
-- (BOOL)performSuperKeyEquivalent:(NSEvent*)aEvent;
-@end
-
-// Objective-C class used as action target for menu items
-@interface NativeMenuItemTarget : NSObject {
-}
-- (IBAction)menuItemHit:(id)aSender;
-@end
-
-// Objective-C class used for menu items on the Services menu to allow Gecko
-// to override their standard behavior in order to stop key equivalents from
-// firing in certain instances.
-@interface GeckoServicesNSMenuItem : NSMenuItem {
+// Objective-C class used for menu items to allow Gecko to override their
+// standard behavior in order to stop key equivalents from firing in certain
+// instances.
+@interface GeckoNSMenuItem : NSMenuItem {
 }
 - (id)target;
 - (SEL)action;
 - (void)_doNothing:(id)aSender;
 @end
 
-// Objective-C class used as the Services menu so that Gecko can override the
-// standard behavior of the Services menu in order to stop key equivalents
-// from firing in certain instances.
-@interface GeckoServicesNSMenu : NSMenu {
+// Objective-C class used to allow us to intervene with keyboard event handling,
+// particularly to stop key equivalents from firing in certain instances. We
+// allow mouse actions to work normally.
+@interface GeckoNSMenu : NSMenu {
 }
+- (BOOL)performSuperKeyEquivalent:(NSEvent*)aEvent;
 - (void)addItem:(NSMenuItem*)aNewItem;
 - (NSMenuItem*)addItemWithTitle:(NSString*)aString
                          action:(SEL)aSelector
@@ -75,6 +64,12 @@ class Element;
                      keyEquivalent:(NSString*)aKeyEquiv
                            atIndex:(NSInteger)aIndex;
 - (void)_overrideClassOfMenuItem:(NSMenuItem*)aMenuItem;
+@end
+
+// Objective-C class used as action target for menu items.
+@interface NativeMenuItemTarget : NSObject {
+}
+- (IBAction)menuItemHit:(id)aSender;
 @end
 
 // Once instantiated, this object lives until its DOM node or its parent window
@@ -95,6 +90,7 @@ class nsMenuBarX : public nsMenuParentX,
   // We save them here for use in command handling.
   RefPtr<nsIContent> mAboutItemContent;
   RefPtr<nsIContent> mPrefItemContent;
+  RefPtr<nsIContent> mSetAsDefaultItemContent;
   RefPtr<nsIContent> mAccountItemContent;
   RefPtr<nsIContent> mQuitItemContent;
 
@@ -111,6 +107,8 @@ class nsMenuBarX : public nsMenuParentX,
   nsMenuX* GetXULHelpMenu();
   void SetSystemHelpMenu();
   nsresult Paint();
+  void PaintAsync();
+  void PaintAsyncIfNeeded();
   void ForceUpdateNativeMenuAt(const nsAString& aIndexString);
   void ForceNativeMenuReload();  // used for testing
   static void ResetNativeApplicationMenu();
@@ -122,6 +120,7 @@ class nsMenuBarX : public nsMenuParentX,
   // nsMenuParentX
   void MenuChildChangedVisibility(const MenuChild& aChild,
                                   bool aIsVisible) override;
+  size_t NestingDepth() override { return 0; }
 
  protected:
   virtual ~nsMenuBarX();

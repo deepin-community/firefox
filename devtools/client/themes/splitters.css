@@ -8,6 +8,18 @@
 /* Splitters */
 
 :root {
+  --devtools-splitter-color: #e0e0e2 /* --grey-25 */;
+  /* Use :where() so we don't get a higher specificity for this rule */
+  &:where([devtoolstheme="dark"]) {
+    --devtools-splitter-color: #38383d /* --grey-70 */;
+  }
+
+  /* We can't use (forced-colors: active) as forced-colors doesn't apply as is,
+     but @media (forced-colors) should be enough to detect HCM */
+  @media (forced-colors) {
+    --devtools-splitter-color: CanvasText;
+  }
+
   /* Draggable splitter element size */
   --devtools-splitter-element-size: 1px;
   --devtools-emphasized-splitter-element-size: 2px;
@@ -18,29 +30,20 @@
 
   --devtools-splitter-top-width: 2px;
   --devtools-splitter-bottom-width: 2px;
-  --devtools-horizontal-splitter-min-height: calc(var(--devtools-splitter-top-width) +
-                                                  var(--devtools-splitter-bottom-width) +
-                                                  var(--devtools-splitter-element-size));
-  --devtools-emphasized-horizontal-splitter-min-height: calc(var(--devtools-splitter-top-width) +
-                                                             var(--devtools-splitter-bottom-width) +
-                                                             var(--devtools-emphasized-splitter-element-size));
+  --devtools-horizontal-splitter-min-height: calc(
+    var(--devtools-splitter-top-width) + var(--devtools-splitter-bottom-width) + var(--devtools-splitter-element-size)
+  );
+  --devtools-emphasized-horizontal-splitter-min-height: calc(
+    var(--devtools-splitter-top-width) + var(--devtools-splitter-bottom-width) + var(--devtools-emphasized-splitter-element-size)
+  );
 
   /* Small draggable area on inline-start to avoid overlaps on scrollbars.*/
   --devtools-splitter-inline-start-width: 1px;
   --devtools-splitter-inline-end-width: 4px;
 
-  --devtools-vertical-splitter-min-width: calc(var(--devtools-splitter-inline-start-width) +
-                                               var(--devtools-splitter-inline-end-width) +
-                                               var(--devtools-splitter-element-size));
-}
-
-#appcontent[devtoolstheme="light"] {
-  /* These variables are used in browser.xhtml but inside the toolbox they are overridden by --theme-splitter-color */
-  --devtools-splitter-color: #e0e0e2;
-}
-
-#appcontent[devtoolstheme="dark"] {
-  --devtools-splitter-color: #38383d;
+  --devtools-vertical-splitter-min-width: calc(
+    var(--devtools-splitter-inline-start-width) + var(--devtools-splitter-inline-end-width) + var(--devtools-splitter-element-size)
+  );
 }
 
 splitter.devtools-horizontal-splitter,
@@ -57,6 +60,11 @@ splitter.devtools-horizontal-splitter,
   box-sizing: border-box;
 
   z-index: var(--browser-stack-z-index-devtools-splitter, 1);
+
+  /* opt-out of forced colors because the transparent borders are turned into
+     opaque ones in High Contrast Mode. --devtools-splitter-color has specific value
+     in High Contrast Mode so we should be fine */
+  forced-color-adjust: none;
 }
 
 splitter.devtools-horizontal-splitter {
@@ -93,9 +101,4 @@ splitter.devtools-horizontal-splitter {
   margin-inline-end: calc(-1 * var(--devtools-splitter-inline-end-width));
 
   cursor: ew-resize;
-}
-
-.devtools-horizontal-splitter.disabled,
-.devtools-side-splitter.disabled {
-  pointer-events: none;
 }

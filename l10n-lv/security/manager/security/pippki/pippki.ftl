@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Apskatīt
 download-cert-view-text = Apskatīt CA sertifikātu
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = Izdots: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Saglabāts: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Atcerēties šo izvēli
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Sertifikāta rezerves kopijas parole (vēlreiz):
 set-password-reminder = Svarīgi: Ja aizmirsīsiet šo paroli, nevarēsiet atjaunot šo rezerves kopiju. Lūdzu saglabājiet to drošā vietā.
-
-## Protected authentication alert
-

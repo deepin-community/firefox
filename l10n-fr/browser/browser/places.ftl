@@ -98,7 +98,7 @@ places-delete-page =
            *[other] Supprimer les pages
         }
     .accesskey = S
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Marque-pages gérés
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -266,3 +266,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = Le système de marque-pages et d’historique ne sera pas opérationnel car l’un des fichiers de { -brand-short-name } est en cours d’utilisation par une autre application. Certains logiciels de sécurité peuvent causer ce problème.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Partager le dossier
+    .badge = Nouveau

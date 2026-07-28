@@ -1,12 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebSocketLog.h"
 #include "BaseWebSocketChannel.h"
+#include "mozilla/dom/Document.h"
 #include "MainThreadUtils.h"
+#include "nsContentUtils.h"
+#include "nsIClassifiedChannel.h"
 #include "nsILoadGroup.h"
 #include "nsINode.h"
 #include "nsIInterfaceRequestor.h"
@@ -219,12 +220,23 @@ BaseWebSocketChannel::InitLoadInfoNative(
     nsIPrincipal* aTriggeringPrincipal,
     nsICookieJarSettings* aCookieJarSettings, uint32_t aSecurityFlags,
     nsContentPolicyType aContentPolicyType, uint32_t aSandboxFlags) {
-  mLoadInfo = new LoadInfo(
+  mLoadInfo = MOZ_TRY(LoadInfo::Create(
       aLoadingPrincipal, aTriggeringPrincipal, aLoadingNode, aSecurityFlags,
       aContentPolicyType, Maybe<mozilla::dom::ClientInfo>(),
-      Maybe<mozilla::dom::ServiceWorkerDescriptor>(), aSandboxFlags);
+      Maybe<mozilla::dom::ServiceWorkerDescriptor>(), aSandboxFlags));
   if (aCookieJarSettings) {
     mLoadInfo->SetCookieJarSettings(aCookieJarSettings);
+  }
+
+  if (aLoadingNode) {
+    RefPtr<dom::Document> doc = aLoadingNode->OwnerDoc();
+    if (doc) {
+      ClassificationFlags flags = doc->GetScriptTrackingFlags();
+      mLoadInfo->SetTriggeringFirstPartyClassificationFlags(
+          flags.firstPartyFlags);
+      mLoadInfo->SetTriggeringThirdPartyClassificationFlags(
+          flags.thirdPartyFlags);
+    }
   }
   return NS_OK;
 }

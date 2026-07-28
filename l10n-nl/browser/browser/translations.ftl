@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Brontaal wijzigen
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Sorry, we ondersteunen nog geen vertalingen vanuit het { $language }.
+translations-panel-error-unsupported-hint-unknown-2 = Sorry, we ondersteunen nog geen vertalingen vanuit deze taal.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = Talen voor offline vertaling downloaden.
 translations-manage-all-language = Alle talen
 translations-manage-download-button = Downloaden
 translations-manage-delete-button = Verwijderen
-translations-manage-intro = Stel uw voorkeuren voor taal en websitevertaling in en beheer geïnstalleerde talen voor offline vertaling.
-translations-manage-install-description = Talen voor offline vertaling installeren
-translations-manage-language-install-button =
-    .label = Installeren
-translations-manage-language-install-all-button =
-    .label = Alle installeren
-    .accesskey = i
 translations-manage-intro-2 = Stel uw voorkeuren voor taal en websitevertaling in en beheer gedownloade talen voor offline vertaling.
 translations-manage-download-description = Talen voor offline vertaling downloaden
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Alle verwijderen
     .accesskey = w
-translations-manage-error-install = Er is een probleem opgetreden bij het installeren van de taalbestanden. Probeer het opnieuw.
 translations-manage-error-download = Er is een probleem opgetreden bij het downloaden van de taalbestanden. Probeer het opnieuw.
 translations-manage-error-delete = Er is een probleem opgetreden bij het verwijderen van de taalbestanden. Probeer het opnieuw.
 translations-manage-error-remove = Er is een probleem opgetreden bij het verwijderen van de taalbestanden. Probeer het opnieuw.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Er is een probleem opgetreden bij het vertalen. Probeer het opnieuw.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Sorry, we ondersteunen nog geen vertalingen vanuit het { $language }.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Sorry, we ondersteunen nog geen vertalingen vanuit deze taal.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Налог
+    .tooltiptext = Налог
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -122,8 +128,11 @@ main-context-menu-open-link =
     .label = Отвори везу
     .accesskey = т
 main-context-menu-open-link-new-tab =
-    .label = Отвори везу на новој картици
+    .label = Отвори везу у новом језичку
     .accesskey = О
+main-context-menu-open-link-split-view =
+    .label = Отвори везу у подељеном приказу
+    .accesskey = п
 main-context-menu-open-link-container-tab =
     .label = Отвори везу у новом контејнеру
     .accesskey = т
@@ -135,7 +144,7 @@ main-context-menu-open-link-new-private-window =
     .accesskey = о
 main-context-menu-bookmark-link-2 =
     .label = Обележи везу…
-    .accesskey = B
+    .accesskey = л
 main-context-menu-save-link =
     .label = Сачувај везу као…
     .accesskey = С
@@ -143,12 +152,10 @@ main-context-menu-save-link-to-pocket =
     .label = Сачувај везу у { -pocket-brand-name(case: "loc") }
     .accesskey = а
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
-    .label = Копирај имејл-адресу
+    .label = Копирај е-адресу
     .accesskey = К
 main-context-menu-copy-phone =
     .label = Копирај број телефона
@@ -156,10 +163,14 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Копирај везу
     .accesskey = К
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Копирај везу без праћења са странице
+main-context-menu-preview-link =
+    .label = Преглед везе
+    .accesskey = г
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Копирај чисту везу
     .accesskey = у
 
 ## Media (video/audio) controls
@@ -210,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Сакриј контроле
     .accesskey = к
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Режим целог екрана
@@ -227,10 +238,10 @@ main-context-menu-image-reload =
     .label = Поново учитај слику
     .accesskey = П
 main-context-menu-image-view-new-tab =
-    .label = Отвори слику на новој картици
+    .label = Отвори слику у новом језичку
     .accesskey = т
 main-context-menu-video-view-new-tab =
-    .label = Отвори видео на новој картици
+    .label = Отвори видео у новом језичку
     .accesskey = т
 main-context-menu-image-copy =
     .label = Копирај слику
@@ -248,7 +259,7 @@ main-context-menu-image-save-as =
     .label = Сачувај слику као…
     .accesskey = С
 main-context-menu-image-email =
-    .label = Пошаљи слику имејлом…
+    .label = Пошаљи слику е-поштом
     .accesskey = ш
 main-context-menu-image-set-image-as-background =
     .label = Постави као позадину радне површине…
@@ -262,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Прикажи опис
     .accesskey = о
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Претражи слику са{ $engine }
+    .accesskey = е
 main-context-menu-video-save-as =
     .label = Сачувај видео као…
     .accesskey = С
@@ -272,11 +288,29 @@ main-context-menu-video-take-snapshot =
     .label = Направи снимак екрана…
     .accesskey = с
 main-context-menu-video-email =
-    .label = Пошаљи видео имејлом…
+    .label = Пошаљи видео е-поштом…
     .accesskey = ш
 main-context-menu-audio-email =
-    .label = Пошаљи звук имејлом…
+    .label = Пошаљи звук е-поштом…
     .accesskey = ш
+main-context-menu-send-to-device-2 =
+    .label = Пошаљи на уређај
+    .accesskey = у
+main-context-menu-send-to-mobile-2 =
+    .label = Пошаљи на мобилни
+    .accesskey = н
+main-context-menu-send-to-mobile-sign-in = Пријави се за слање језичака
+main-context-menu-send-to-mobile-enable-sync2 = Омогућите усклађивање да бисте послали језичак
+main-context-menu-send-to-mobile-connect-phone2 = Повежите свој телефон
+main-context-menu-send-to-mobile-device-missing2 = Не видите свој уређај?
+main-context-menu-send-to-mobile-sign-in-from-link = Пријавите се да бисте послали везу
+main-context-menu-send-to-mobile-sign-in-from-page = Пријавите се да бисте послали страницу
+main-context-menu-send-to-mobile-enable-sync3 = Укључите усклађивање за слање језичака
+main-context-menu-send-to-mobile-enable-sync-from-link = Укључите усклађивање за слање везе
+main-context-menu-send-to-mobile-enable-sync-from-page = Укључите усклађивање за слање странице
+main-context-menu-send-to-mobile-connect-phone3 = Повежите уређај за слање језичака
+main-context-menu-send-to-mobile-connect-phone-from-link = Повежите уређај за слање везе
+main-context-menu-send-to-mobile-connect-phone-from-page = Повежите уређај за слање странице
 main-context-menu-save-to-pocket =
     .label = Сачувај страницу у { -pocket-brand-name(case: "loc") }
     .accesskey = ч
@@ -284,13 +318,12 @@ main-context-menu-send-to-device =
     .label = Пошаљи страницу на уређај
     .accesskey = ш
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Користи сачувано корисничко име
     .accesskey = К
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Користи сачувану лозинку
     .accesskey = К
@@ -306,12 +339,21 @@ main-context-menu-suggest-strong-password =
 main-context-menu-manage-logins2 =
     .label = Управљај лозинкама
     .accesskey = У
+main-context-menu-manage-passwords =
+    .label = Управљај лозинкама
+    .accesskey = У
 main-context-menu-keyword =
     .label = Додај кључну реч за ову претрагу…
+    .accesskey = Д
+main-context-menu-add-engine =
+    .label = Додај претраживач
     .accesskey = Д
 main-context-menu-link-send-to-device =
     .label = Пошаљи везу на уређај
     .accesskey = ш
+main-context-menu-link-send-to-mobile =
+    .label = Пошаљи везу на мобилни
+    .accesskey = н
 main-context-menu-frame =
     .label = Оквир
     .accesskey = к
@@ -319,7 +361,7 @@ main-context-menu-frame-show-this =
     .label = Прикажи само овај оквир
     .accesskey = р
 main-context-menu-frame-open-tab =
-    .label = Отвори оквир на новој картици
+    .label = Отвори оквир у новом језичку
     .accesskey = т
 main-context-menu-frame-open-window =
     .label = Отвори оквир у новом прозору
@@ -379,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Откриј лозинку
     .accesskey = р
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Ново
+main-context-menu-pdfjs-copy-page =
+    .label = Умножи страницу
+main-context-menu-pdfjs-cut-page =
+    .label = Исеци страницу
+main-context-menu-pdfjs-delete-page =
+    .label = Обриши страницу
+main-context-menu-pdfjs-save-page =
+    .label = Сачувај изабрано као…

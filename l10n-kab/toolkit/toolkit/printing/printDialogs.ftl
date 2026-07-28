@@ -29,7 +29,7 @@ shrink-to-fit =
     .label = Serwes ɣer teɣzi n usebter
     .accesskey = W
 options-group-label =
-    .value = Iγewwaṛen
+    .value = Iɣewwaṛen
 print-bg =
     .label = Siggez agilal n usebter (initen d tugniwin)
     .accesskey = g
@@ -103,7 +103,6 @@ print-window =
     .title = Asiggez
 print-complete =
     .value = Asiggez ur ifuk ara.
-
 # Variables
 # $percent (integer) - Number of printed percentage
 print-percent =

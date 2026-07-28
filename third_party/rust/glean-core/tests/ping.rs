@@ -16,14 +16,13 @@ use glean_core::Lifetime;
 fn write_ping_to_disk() {
     let (mut glean, _temp) = new_glean(None);
 
-    let ping = PingType::new("metrics", true, false, true, true, true, vec![], vec![]);
-    glean.register_ping_type(&ping);
+    let ping = new_test_ping(&mut glean, "store1");
 
     // We need to store a metric as an empty ping is not stored.
     let counter = CounterMetric::new(CommonMetricData {
         name: "counter".into(),
         category: "local".into(),
-        send_in_pings: vec!["metrics".into()],
+        send_in_pings: vec!["store1".into()],
         ..Default::default()
     });
     counter.add_sync(&glean, 1);
@@ -37,14 +36,13 @@ fn write_ping_to_disk() {
 fn disabling_upload_clears_pending_pings() {
     let (mut glean, _t) = new_glean(None);
 
-    let ping = PingType::new("metrics", true, false, true, true, true, vec![], vec![]);
-    glean.register_ping_type(&ping);
+    let ping = new_test_ping(&mut glean, "store1");
 
     // We need to store a metric as an empty ping is not stored.
     let counter = CounterMetric::new(CommonMetricData {
         name: "counter".into(),
         category: "local".into(),
-        send_in_pings: vec!["metrics".into()],
+        send_in_pings: vec!["store1".into()],
         ..Default::default()
     });
 
@@ -106,18 +104,11 @@ fn deletion_request_only_when_toggled_from_on_to_off() {
 fn empty_pings_with_flag_are_sent() {
     let (mut glean, _t) = new_glean(None);
 
-    let ping1 = PingType::new("custom-ping1", true, true, true, true, true, vec![], vec![]);
+    let ping1 = PingBuilder::new("custom-ping1")
+        .with_send_if_empty(true)
+        .build();
     glean.register_ping_type(&ping1);
-    let ping2 = PingType::new(
-        "custom-ping2",
-        true,
-        false,
-        true,
-        true,
-        true,
-        vec![],
-        vec![],
-    );
+    let ping2 = PingBuilder::new("custom-ping2").build();
     glean.register_ping_type(&ping2);
 
     // No data is stored in either of the custom pings
@@ -151,11 +142,11 @@ fn test_pings_submitted_metric() {
         None,
     );
 
-    let metrics_ping = PingType::new("metrics", true, false, true, true, true, vec![], vec![]);
-    glean.register_ping_type(&metrics_ping);
+    let metrics_ping = new_test_ping(&mut glean, "metrics");
+    let baseline_ping = new_test_ping(&mut glean, "baseline");
 
-    let baseline_ping = PingType::new("baseline", true, false, true, true, true, vec![], vec![]);
-    glean.register_ping_type(&baseline_ping);
+    let custom_ping = PingBuilder::new("custom").with_send_if_empty(true).build();
+    glean.register_ping_type(&custom_ping);
 
     // We need to store a metric as an empty ping is not stored.
     let counter = CounterMetric::new(CommonMetricData {
@@ -167,6 +158,8 @@ fn test_pings_submitted_metric() {
     counter.add_sync(&glean, 1);
 
     assert!(metrics_ping.submit_sync(&glean, None));
+    // A custom ping is just never recorded.
+    assert!(custom_ping.submit_sync(&glean, None));
 
     // Check recording in the metrics ping
     assert_eq!(
@@ -176,6 +169,10 @@ fn test_pings_submitted_metric() {
     assert_eq!(
         None,
         pings_submitted.get("baseline").get_value(&glean, "metrics")
+    );
+    assert_eq!(
+        None,
+        pings_submitted.get("custom").get_value(&glean, "metrics")
     );
 
     // Check recording in the baseline ping
@@ -189,6 +186,10 @@ fn test_pings_submitted_metric() {
             .get("baseline")
             .get_value(&glean, "baseline")
     );
+    assert_eq!(
+        None,
+        pings_submitted.get("custom").get_value(&glean, "baseline")
+    );
 
     // Trigger 2 baseline pings.
     // This should record a count of 2 baseline pings in the metrics ping, but
@@ -196,6 +197,8 @@ fn test_pings_submitted_metric() {
     // baseline ping recorded in the baseline ping itsef.
     assert!(baseline_ping.submit_sync(&glean, None));
     assert!(baseline_ping.submit_sync(&glean, None));
+    // A custom ping is just never recorded.
+    assert!(custom_ping.submit_sync(&glean, None));
 
     // Check recording in the metrics ping
     assert_eq!(
@@ -210,6 +213,12 @@ fn test_pings_submitted_metric() {
             .get("baseline")
             .get_value(&glean, Some("metrics"))
     );
+    assert_eq!(
+        None,
+        pings_submitted
+            .get("custom")
+            .get_value(&glean, Some("metrics"))
+    );
 
     // Check recording in the baseline ping
     assert_eq!(
@@ -224,14 +233,19 @@ fn test_pings_submitted_metric() {
             .get("baseline")
             .get_value(&glean, Some("baseline"))
     );
+    assert_eq!(
+        None,
+        pings_submitted
+            .get("custom")
+            .get_value(&glean, Some("baseline"))
+    );
 }
 
 #[test]
 fn events_ping_with_metric_but_no_events_is_not_sent() {
     let (mut glean, _t) = new_glean(None);
 
-    let events_ping = PingType::new("events", true, true, true, true, true, vec![], vec![]);
-    glean.register_ping_type(&events_ping);
+    let events_ping = new_test_ping(&mut glean, "events");
     let counter = CounterMetric::new(CommonMetricData {
         name: "counter".into(),
         category: "local".into(),
@@ -264,19 +278,15 @@ fn events_ping_with_metric_but_no_events_is_not_sent() {
 fn test_scheduled_pings_are_sent() {
     let (mut glean, _t) = new_glean(None);
 
-    let piggyback_ping = PingType::new("piggyback", true, true, true, true, true, vec![], vec![]);
+    let piggyback_ping = PingBuilder::new("piggyback")
+        .with_send_if_empty(true)
+        .build();
     glean.register_ping_type(&piggyback_ping);
 
-    let trigger_ping = PingType::new(
-        "trigger",
-        true,
-        true,
-        true,
-        true,
-        true,
-        vec!["piggyback".into()],
-        vec![],
-    );
+    let trigger_ping = PingBuilder::new("trigger")
+        .with_send_if_empty(true)
+        .with_schedules_pings(vec!["piggyback".into()])
+        .build();
     glean.register_ping_type(&trigger_ping);
 
     assert!(trigger_ping.submit_sync(&glean, None));
@@ -284,10 +294,11 @@ fn test_scheduled_pings_are_sent() {
 }
 
 #[test]
+#[ignore] // This metric is disabled by default now, so we can skip this test. See Bug 1928161
 fn database_write_timings_get_recorded() {
     let (mut glean, _t) = new_glean(None);
 
-    let metrics_ping = PingType::new("metrics", true, false, true, true, true, vec![], vec![]);
+    let metrics_ping = new_test_ping(&mut glean, "metrics");
     glean.register_ping_type(&metrics_ping);
 
     // We need to store a metric to record something.

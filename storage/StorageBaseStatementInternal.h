@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=2 sts=2 expandtab
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -21,12 +19,8 @@ class mozIStoragePendingStatement;
 namespace mozilla {
 namespace storage {
 
-#define STORAGEBASESTATEMENTINTERNAL_IID             \
-  {                                                  \
-    0xd18856c9, 0xbf07, 0x4ae2, {                    \
-      0x94, 0x5b, 0x1a, 0xdd, 0x49, 0x19, 0x55, 0x2a \
-    }                                                \
-  }
+#define STORAGEBASESTATEMENTINTERNAL_IID \
+  {0xd18856c9, 0xbf07, 0x4ae2, {0x94, 0x5b, 0x1a, 0xdd, 0x49, 0x19, 0x55, 0x2a}}
 
 class Connection;
 class StatementData;
@@ -45,7 +39,7 @@ class AsyncStatementFinalizer;
  */
 class StorageBaseStatementInternal : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(STORAGEBASESTATEMENTINTERNAL_IID)
+  NS_INLINE_DECL_STATIC_IID(STORAGEBASESTATEMENTINTERNAL_IID)
 
   /**
    * @return the connection that this statement belongs to.
@@ -146,9 +140,6 @@ class StorageBaseStatementInternal : public nsISupports {
   // Needs access to internalAsyncFinalize
   friend class AsyncStatementFinalizer;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(StorageBaseStatementInternal,
-                              STORAGEBASESTATEMENTINTERNAL_IID)
 
 #define NS_DECL_STORAGEBASESTATEMENTINTERNAL                           \
   virtual Connection* getOwner();                                      \
@@ -288,8 +279,24 @@ NS_DEFINE_STATIC_IID_ACCESSOR(StorageBaseStatementInternal,
   BIND_GEN_IMPL(                                                               \
       _class, _optionalGuard, AdoptedBlob,                                     \
       (const nsACString& aWhere, uint8_t* aValue, uint32_t aValueSize),        \
-      (uint32_t aWhere, uint8_t * aValue, uint32_t aValueSize),                \
-      (aWhere, aValue, aValueSize))
+      (uint32_t aWhere, uint8_t* aValue, uint32_t aValueSize),                 \
+      (aWhere, aValue, aValueSize))                                            \
+  BIND_GEN_IMPL(_class, _optionalGuard, ArrayOfIntegers,                       \
+                (const nsACString& aWhere, const nsTArray<int64_t>& aValue),   \
+                (uint32_t aWhere, const nsTArray<int64_t>& aValue),            \
+                (aWhere, aValue))                                              \
+  BIND_GEN_IMPL(_class, _optionalGuard, ArrayOfDoubles,                        \
+                (const nsACString& aWhere, const nsTArray<double>& aValue),    \
+                (uint32_t aWhere, const nsTArray<double>& aValue),             \
+                (aWhere, aValue))                                              \
+  BIND_GEN_IMPL(_class, _optionalGuard, ArrayOfStrings,                        \
+                (const nsACString& aWhere, const nsTArray<nsString>& aValue),  \
+                (uint32_t aWhere, const nsTArray<nsString>& aValue),           \
+                (aWhere, aValue))                                              \
+  BIND_GEN_IMPL(_class, _optionalGuard, ArrayOfUTF8Strings,                    \
+                (const nsACString& aWhere, const nsTArray<nsCString>& aValue), \
+                (uint32_t aWhere, const nsTArray<nsCString>& aValue),          \
+                (aWhere, aValue))
 
 }  // namespace storage
 }  // namespace mozilla

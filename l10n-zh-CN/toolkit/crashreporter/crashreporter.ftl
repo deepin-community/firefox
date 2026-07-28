@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } 遇到问题并崩溃�
 crashreporter-plea = 您可以向我们发送崩溃报告，以协助我们诊断并修正该问题。
 crashreporter-information = 此应用程序会在发生崩溃后运行并向 { -vendor-short-name } 报告相应问题，无法被直接运行。
 crashreporter-error = { -brand-short-name } 碰到一个问题而崩溃了，且崩溃报告器无法提交相应的崩溃报告。
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = 详细信息：{ $details }
+crashreporter-error-details-header = 详细信息：
 crashreporter-no-run-message = 此应用程序在崩溃后运行并向程序发行商报告相应问题。无法被直接运行。
 crashreporter-button-details = 详细信息…
 crashreporter-loading-details = 正在加载…
 crashreporter-view-report-title = 报告内容
 crashreporter-comment-prompt = 附上说明（说明公开可见）
 crashreporter-report-info = 此报告同时包含了应用程序崩溃时状态的技术信息。
-crashreporter-send-report = 告知 { -vendor-short-name } 有关此次崩溃的情况，以便修复此问题。
-crashreporter-include-url = 附上我当时所浏览页面的地址。
+crashreporter-checkbox-test-hardware = 检查我的设备是否存在硬件和配置问题。
+crashreporter-checkbox-send-report = 告知 { -vendor-short-name } 有关此次崩溃的情况，以便修复此问题。
+crashreporter-checkbox-include-url = 附上我当时所浏览页面的地址。
 crashreporter-submit-status = 您的崩溃报告将在您退出或重启浏览器时提交。
+crashreporter-submit-waiting-hardware-tests = 正在检查硬件和配置问题…
 crashreporter-submit-in-progress = 正在提交您的报告…
 crashreporter-submit-success = 报告提交成功！
 crashreporter-submit-failure = 提交报告时出错。
@@ -34,7 +35,6 @@ crashreporter-crash-details = 您可到 { $url } 查看此次崩溃的详细信�
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = 运行 minidump-analyzer 失败
 # $path (String) - the file path
 crashreporter-error-opening-file = 打开文件失败（{ $path }）
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = 缺少主目录
 # $to (String) - the destination path
 crashreporter-error-moving-path = 将 { $from } 移动到 { $to } 时失败
 crashreporter-error-version-eol = 版本生命周期已结束，不再接受崩溃报告。
+crashreporter-error-failed-to-generate-minidump = 应用程序未能生成崩溃信息。

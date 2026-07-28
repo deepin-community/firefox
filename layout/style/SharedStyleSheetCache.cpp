@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,12 +5,12 @@
 #include "SharedStyleSheetCache.h"
 
 #include "mozilla/MemoryReporting.h"
+#include "mozilla/ServoBindings.h"
 #include "mozilla/StoragePrincipalHelper.h"
 #include "mozilla/StyleSheet.h"
 #include "mozilla/css/SheetLoadData.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/Document.h"
-#include "mozilla/ServoBindings.h"
 #include "nsContentUtils.h"
 #include "nsXULPrototypeCache.h"
 
@@ -22,13 +20,17 @@ extern mozilla::LazyLogModule sCssLoaderLog;
 
 namespace mozilla {
 
-NS_IMPL_ISUPPORTS(SharedStyleSheetCache, nsIMemoryReporter)
+NS_IMPL_ISUPPORTS(SharedStyleSheetCache, nsIMemoryReporter, nsIObserver)
 
 MOZ_DEFINE_MALLOC_SIZE_OF(SharedStyleSheetCacheMallocSizeOf)
 
 SharedStyleSheetCache::SharedStyleSheetCache() = default;
 
-void SharedStyleSheetCache::Init() { RegisterWeakMemoryReporter(this); }
+void SharedStyleSheetCache::Init() {
+  RegisterWeakMemoryReporter(this);
+  auto ClearCache = [](const char*, void*) { Clear(); };
+  Preferences::RegisterPrefixCallback(ClearCache, "layout.css.");
+}
 
 SharedStyleSheetCache::~SharedStyleSheetCache() {
   UnregisterWeakMemoryReporter(this);
@@ -110,9 +112,14 @@ void SharedStyleSheetCache::LoadCompletedInternal(
 
   // Go through and deal with the whole linked list.
   auto* data = &aData;
+  auto* networkMetadata = aData.GetNetworkMetadata();
   do {
     MOZ_RELEASE_ASSERT(!data->mSheetCompleteCalled);
     data->mSheetCompleteCalled = true;
+
+    if (!data->mNetworkMetadata) {
+      data->mNetworkMetadata = networkMetadata;
+    }
 
     if (!data->mSheetAlreadyComplete) {
       // If mSheetAlreadyComplete, then the sheet could well be modified between
@@ -187,6 +194,23 @@ void SharedStyleSheetCache::LoadCompletedInternal(
   }
 }
 
+size_t SharedStyleSheetCache::SizeOfIncludingThis(
+    MallocSizeOf aMallocSizeOf) const {
+  size_t n = aMallocSizeOf(this);
+  n += Base::SizeOfExcludingThis(aMallocSizeOf);
+  n += mInlineSheets.ShallowSizeOfExcludingThis(aMallocSizeOf);
+  for (const auto& sheetMap : mInlineSheets) {
+    for (const auto& entry : sheetMap.GetData()) {
+      n += entry.GetKey().SizeOfExcludingThisIfUnshared(aMallocSizeOf);
+      n += entry.GetData().ShallowSizeOfExcludingThis(aMallocSizeOf);
+      for (const auto& candidate : entry.GetData()) {
+        n += candidate.mSheet->SizeOfIncludingThis(aMallocSizeOf);
+      }
+    }
+  }
+  return n;
+}
+
 NS_IMETHODIMP
 SharedStyleSheetCache::CollectReports(nsIHandleReportCallback* aHandleReport,
                                       nsISupports* aData, bool aAnonymize) {
@@ -199,21 +223,46 @@ SharedStyleSheetCache::CollectReports(nsIHandleReportCallback* aHandleReport,
   return NS_OK;
 }
 
-void SharedStyleSheetCache::Clear(nsIPrincipal* aForPrincipal,
-                                  const nsACString* aBaseDomain) {
+void SharedStyleSheetCache::ClearInProcess(
+    const Maybe<bool>& aChrome, const Maybe<nsCOMPtr<nsIPrincipal>>& aPrincipal,
+    const Maybe<nsCString>& aSchemelessSite,
+    const Maybe<OriginAttributesPattern>& aPattern,
+    const Maybe<nsCString>& aURL) {
+  Base::ClearInProcess(aChrome, aPrincipal, aSchemelessSite, aPattern, aURL);
+  if (!aChrome && !aPrincipal && !aSchemelessSite && !aURL) {
+    mInlineSheets.Clear();
+  }
+  if (aURL) {
+    // Inline sheets don't have a URL.
+    return;
+  }
+
+  for (auto iter = mInlineSheets.Iter(); !iter.Done(); iter.Next()) {
+    if (SharedSubResourceCacheUtils::ShouldClearEntry(
+            nullptr, iter.Key(), aChrome, aPrincipal, aSchemelessSite, aPattern,
+            aURL)) {
+      iter.Remove();
+    }
+  }
+}
+
+void SharedStyleSheetCache::Clear(
+    const Maybe<bool>& aChrome, const Maybe<nsCOMPtr<nsIPrincipal>>& aPrincipal,
+    const Maybe<nsCString>& aSchemelessSite,
+    const Maybe<OriginAttributesPattern>& aPattern,
+    const Maybe<nsCString>& aURL) {
   using ContentParent = dom::ContentParent;
 
   if (XRE_IsParentProcess()) {
-    auto forPrincipal = aForPrincipal ? Some(RefPtr(aForPrincipal)) : Nothing();
-    auto baseDomain = aBaseDomain ? Some(nsCString(*aBaseDomain)) : Nothing();
-
     for (auto* cp : ContentParent::AllProcesses(ContentParent::eLive)) {
-      Unused << cp->SendClearStyleSheetCache(forPrincipal, baseDomain);
+      (void)cp->SendClearStyleSheetCache(aChrome, aPrincipal, aSchemelessSite,
+                                         aPattern, aURL);
     }
   }
 
   if (sSingleton) {
-    sSingleton->ClearInProcess(aForPrincipal, aBaseDomain);
+    sSingleton->ClearInProcess(aChrome, aPrincipal, aSchemelessSite, aPattern,
+                               aURL);
   }
 }
 

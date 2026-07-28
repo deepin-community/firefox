@@ -9,7 +9,7 @@ async function openTabMenuFor(tab) {
   EventUtils.synthesizeMouseAtCenter(
     tab,
     { type: "contextmenu" },
-    tab.ownerGlobal
+    tab.documentGlobal
   );
   await tabMenuShown;
 
@@ -58,7 +58,10 @@ function openTabInContainer(gBrowser, tab, reopenMenu, id) {
 
 add_task(async function testReopen() {
   await SpecialPowers.pushPrefEnv({
-    set: [[PREF_PRIVACY_USER_CONTEXT_ENABLED, true]],
+    set: [
+      ["test.wait300msAfterTabSwitch", true],
+      [PREF_PRIVACY_USER_CONTEXT_ENABLED, true],
+    ],
   });
 
   let tab1 = await addTab("http://mochi.test:8888/1");

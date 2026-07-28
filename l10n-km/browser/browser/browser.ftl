@@ -2,9 +2,28 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+browser-main-window-mac-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — ការរុករកឯកជន
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — ការរុករកឯកជន
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -39,7 +58,7 @@ urlbar-geolocation-notification-anchor =
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = គ្រប់គ្រង​ការ​ចែករំលែក​វីនដូ ឬ​អេក្រង់​របស់​អ្នក​ជាមួយ​ទំព័រ​បណ្ដាញ
 urlbar-indexed-db-notification-anchor =
-    .tooltiptext = បើក​ផ្ទាំង​សារ​ទំហំ​ផ្ទុក​គ្មាន​អ៊ីនធឺណិត
+    .tooltiptext = បើក​ផ្ទាំង​សារ​ទំហំ​ផ្ទុក​អហ្វឡាញ
 urlbar-password-notification-anchor =
     .tooltiptext = បើក​ផ្ទាំង​សារ​រក្សាទុក​ពាក្យ​សម្ងាត់
 urlbar-plugins-notification-anchor =
@@ -52,6 +71,7 @@ urlbar-persistent-storage-notification-anchor =
     .tooltiptext = ផ្ទុក​ទិន្នន័យ​នៅ​ក្នុង​កន្លែង​ផ្ទុក​អចិន្ត្រៃយ៍
 urlbar-addons-notification-anchor =
     .tooltiptext = បើក​ផ្ទាំង​សារ​ដំឡើង​កម្មវិធី​ផ្នែក​បន្ថែម
+urlbar-search-tips-confirm = យល់​ហើយ ទទួលបាន
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -62,6 +82,8 @@ urlbar-search-tips-onboard = វាយតិចជាងនេះ រកច្�
 
 ## Local search mode indicator labels in the urlbar
 
+urlbar-search-mode-bookmarks = ចំណាំ
+urlbar-search-mode-history = ប្រវត្តិ
 
 ##
 
@@ -94,8 +116,11 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = ចំណាំ​ទំព័រ​នេះ ({ $shortcut })
 
-## Page Action Context Menu
+## Searchbar context menu
 
+clear-search-history =
+    .label = សម្អាត​ប្រវត្តិ​ស្វែងរក
+    .accesskey = ស
 
 ## Auto-hide Context Menu
 
@@ -128,14 +153,33 @@ search-one-offs-add-engine-menu =
 ##    restrict their searches to certain sources (e.g., "*" to search only
 ##    bookmarks).
 
+search-one-offs-bookmarks =
+    .tooltiptext = ចំណាំ ({ $restrict })
+search-one-offs-history =
+    .tooltiptext = ប្រវត្តិ ({ $restrict })
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
+# Opens the bookmarks library window
+quickactions-bookmarks2 = គ្រប់គ្រងចំណាំ
+quickactions-cmd-bookmarks = ចំណាំ
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = សម្អាតប្រវត្តិថ្មីៗ
+quickactions-cmd-clearrecenthistory = សម្អាតប្រវត្តិថ្មីៗ, ប្រវត្តិ
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = សម្អាត​ប្រវត្តិ
+quickactions-cmd-clearhistory = សម្អាត​ប្រវត្តិ
+# Opens about:translations
+quickactions-translate = បកប្រែ
+quickactions-cmd-translate = បកប្រែ
+quickactions-cmd-themes = រចនាប័ទ្ម
 
 ## Bookmark Panel
 
+bookmarks-add-bookmark = បន្ថែម​ចំណាំ
+bookmarks-edit-bookmark = កែសម្រួល​ចំណាំ
 bookmark-panel-cancel =
     .label = បោះបង់
     .accesskey = C
@@ -195,34 +239,33 @@ browser-window-minimize-button =
 browser-window-close-button =
     .tooltiptext = បិទ
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
 ## Bookmarks toolbar items
 
+browser-import-button2 =
+    .label = នាំចូល​ចំណាំ…
+    .tooltiptext = នាំចូលចំណាំពីកម្មវិធីរុករកផ្សេងទៀតទៅ { -brand-short-name }។
 
 ## WebRTC Pop-up notifications
 
 popup-all-windows-shared = បង្អួច​ទាំងអស់​​ដែល​អាច​មើល​ឃើញ​នៅ​លើ​អេក្រង់​របស់​អ្នក​នឹង​ត្រូវ​បាន​ចែករំលែក។
-
-## WebRTC window or screen share tab switch warning
-
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
 urlbar-search-mode-indicator-close =
     .aria-label = បិទ
+# This placeholder is used when not in search mode and the user's default search
+# engine is unknown.
 urlbar-placeholder =
     .placeholder = ស្វែងរក ឬ​បញ្ចូល​អាសយដ្ឋាន
+# This placeholder is used when searching bookmarks.
+urlbar-placeholder-search-mode-other-bookmarks =
+    .placeholder = បញ្ចូលពាក្យស្វែងរក
+    .aria-label = ស្វែងរកចំណាំ
+# This placeholder is used when searching history.
+urlbar-placeholder-search-mode-other-history =
+    .placeholder = បញ្ចូលពាក្យស្វែងរក
+    .aria-label = ស្វែងរកប្រវត្តិ
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
@@ -232,13 +275,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = ផ្នែក​បន្ថែម៖
+urlbar-go-button2 =
+    .title = ទៅកាន់​អាសយដ្ឋាន​ក្នុង​របារ​ទីតាំង
 urlbar-go-button =
     .tooltiptext = ទៅកាន់​អាសយដ្ឋាន​ក្នុង​របារ​ទីតាំង
 urlbar-page-action-button =
     .tooltiptext = ទំព័រ​សកម្មភាព
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # The "with" format was chosen because the search engine name can end with
 # "Search", and we would like to avoid strings like "Search MSN Search".
@@ -248,13 +294,28 @@ urlbar-result-action-search-w-engine = ស្វែងរក​ជាមួយ {
 urlbar-result-action-switch-tab = ប្ដូរ​ទៅ​ផ្ទាំង
 urlbar-result-action-visit = មើល
 
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = កុំទាន់
+
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = ចំណាំ
+urlbar-searchmode-history =
+    .label = ប្រវត្តិ
+urlbar-searchmode-bookmarks2 = ចំណាំ
+urlbar-searchmode-history2 = ប្រវត្តិ
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
 
-
-## Labels shown above groups of urlbar results
-
+urlbar-result-action-search-bookmarks = ស្វែងរក​ចំណាំ
+urlbar-result-action-search-history = ស្វែងរក​ប្រវត្តិ
+urlbar-result-action-search-tabs = ស្វែងរកផ្ទាំង
 
 ## Reader View toolbar buttons
 
@@ -264,11 +325,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = បិទ​ទិដ្ឋភាព​អ្នក​អាន​
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -288,6 +344,9 @@ pointerlock-warning-no-domain = ឯកសារនេះ​មាន​សិទ
 
 ## Bookmarks panels, menus and toolbar
 
+bookmarks-manage-bookmarks =
+    .label = គ្រប់គ្រងចំណាំ
+bookmarks-recent-bookmarks-panel-subheader = ចំណាំថ្មីៗ
 bookmarks-toolbar-chevron =
     .tooltiptext = បង្ហាញ​ចំណាំ​​ថែមទៀត
 bookmarks-sidebar-content =
@@ -315,6 +374,12 @@ bookmarks-tools-toolbar-visibility-menuitem =
             [true] លាក់របារឧបករណ៍ចំណាំ
            *[other] មើល​របារ​ឧបករណ៍​ចំណាំ
         }
+bookmarks-tools-toolbar-visibility-panel =
+    .label =
+        { $isVisible ->
+            [true] លាក់របារឧបករណ៍ចំណាំ
+           *[other] បង្ហាញរបារឧបករណ៍ចំណាំ
+        }
 bookmarks-tools-menu-button-visibility =
     .label =
         { $isVisible ->
@@ -328,25 +393,31 @@ bookmarks-search =
     .label = ស្វែងរក​ចំណាំ
 bookmarks-tools =
     .label = ​ឧបករណ៍​ចំណាំ
+bookmarks-subview-edit-bookmark =
+    .label = កែសម្រួល​ចំណាំ​នេះ…
+# The aria-label is a spoken label that should not include the word "toolbar" or
+# such, because screen readers already know that this container is a toolbar.
+# This avoids double-speaking.
+bookmarks-toolbar =
+    .toolbarname = របារឧបករណ៍ចំណាំ
+    .accesskey = B
+    .aria-label = ចំណាំ
 bookmarks-toolbar-menu =
     .label = របារ​ឧបករណ៍​ចំណាំ
 bookmarks-toolbar-placeholder =
     .title = ធាតុ​របារ​ឧបករណ៍​​ចំណាំ
 bookmarks-toolbar-placeholder-button =
     .label = ធាតុ​របារ​ឧបករណ៍​​ចំណាំ
+# "Bookmark" is a verb, as in "Add current tab to bookmarks".
+bookmarks-subview-bookmark-tab =
+    .label = ចំណាំផ្ទាំងបច្ចុប្បន្ន…
 
 ## Library Panel items
 
 library-bookmarks-menu =
     .label = ចំណាំ
 
-## Pocket toolbar button
-
-
-## Repair text encoding toolbar button
-
-
-## Customize Toolbar Buttons
+##
 
 toolbar-overflow-customize-button =
     .label = ប្តូរ​របារ​ឧបករណ៍​តាម​បំណង...
@@ -354,6 +425,9 @@ toolbar-overflow-customize-button =
 toolbar-button-email-link =
     .label = តំណ​អ៊ីមែល
     .tooltiptext = អ៊ីមែល​ភ្ជាប់​ទៅ​ទំព័រ​នេះ
+toolbar-button-logins =
+    .label = ពាក្យ​សម្ងាត់
+    .tooltiptext = មើល និងគ្រប់គ្រងពាក្យសម្ងាត់របស់អ្នកដែលបានរក្សាទុក
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -379,6 +453,12 @@ eme-notifications-drm-content-playing = វីដេអូ និង​អូឌ
 
 ## Password save/update panel
 
+panel-save-update-username = អត្ថនាម
+panel-save-update-password = ពាក្យ​សម្ងាត់
+panel-save-update-username-2 =
+    .label = អត្ថនាម
+panel-save-update-password-2 =
+    .label = ពាក្យ​សម្ងាត់
 
 ##
 
@@ -400,10 +480,6 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = កុំ​បង្ហាញ​សារ​នេះ ​ពេល​ដែល​បង្អួច​លេចឡើង​ត្រូវ​បាន​ទប់ស្កាត់
     .accesskey = D
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -438,9 +514,6 @@ tabs-toolbar-list-all-tabs =
     .label = រាយបញ្ជី​​ផ្ទាំង​ទាំងអស់
     .tooltiptext = រាយបញ្ជី​​ផ្ទាំង​ទាំងអស់
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } ផ្ញើ​ទិន្នន័យ​មួយ​ចំនួន​ដោយ​ស្វ័យប្រវត្តិ​ទៅកាន់ { -vendor-short-name } ដូច្នេះ​យើង​អាច​ធ្វើឲ្យ​បទពិសោធន៍​របស់​អ្នក​ប្រសើរ​ឡើង។
@@ -448,19 +521,11 @@ data-reporting-notification-button =
     .label = ជ្រើស​អ្វី​ដែល​ខ្ញុំ​ចែករំលែក
     .accesskey = C
 
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
 ## Private browsing reset button
 
+reset-pbm-panel-cancel-button =
+    .label = បោះបង់
+    .accesskey = C
 
 ## Autorefresh blocker
 
@@ -469,9 +534,6 @@ refresh-blocked-redirect-label = { -brand-short-name } បាន​រារា�
 refresh-blocked-allow =
     .label = អនុញ្ញាត
     .accesskey = A
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 
@@ -498,3 +560,14 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = បង្ហាញ '{ $popupURI }'
+
+## The urlbar trust icon & panel
+
+trustpanel-clear-cookies-subview-button-cancel = បោះបង់
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = មិនមានសុវត្ថិភាព

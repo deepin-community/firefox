@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -26,7 +25,6 @@
 #include "common/readstrings.h"
 #include "common/updatererrors.h"
 #include "common/updatedefines.h"
-#include "mozilla/ArrayUtils.h"
 
 #ifndef MAXPATHLEN
 #  ifdef PATH_MAX
@@ -89,7 +87,7 @@ int NS_main(int argc, NS_tchar** argv) {
   *(++slash) = '\0';
   // Test success when the ini file exists with both Title and Info in the
   // Strings section and the values for Title and Info.
-  NS_tsnprintf(inifile, ArrayLength(inifile), NS_T("%sTestAUSReadStrings1.ini"),
+  NS_tsnprintf(inifile, std::size(inifile), NS_T("%sTestAUSReadStrings1.ini"),
                argv[0]);
   retval = ReadStrings(inifile, &testStrings);
   if (retval == OK) {
@@ -121,7 +119,7 @@ int NS_main(int argc, NS_tchar** argv) {
 
   // Test failure when the ini file exists without Title and with Info in the
   // Strings section.
-  NS_tsnprintf(inifile, ArrayLength(inifile), NS_T("%sTestAUSReadStrings2.ini"),
+  NS_tsnprintf(inifile, std::size(inifile), NS_T("%sTestAUSReadStrings2.ini"),
                argv[0]);
   retval = ReadStrings(inifile, &testStrings);
   if (retval != PARSE_ERROR) {
@@ -131,7 +129,7 @@ int NS_main(int argc, NS_tchar** argv) {
 
   // Test failure when the ini file exists with Title and without Info in the
   // Strings section.
-  NS_tsnprintf(inifile, ArrayLength(inifile), NS_T("%sTestAUSReadStrings3.ini"),
+  NS_tsnprintf(inifile, std::size(inifile), NS_T("%sTestAUSReadStrings3.ini"),
                argv[0]);
   retval = ReadStrings(inifile, &testStrings);
   if (retval != PARSE_ERROR) {
@@ -140,7 +138,7 @@ int NS_main(int argc, NS_tchar** argv) {
   }
 
   // Test failure when the ini file doesn't exist
-  NS_tsnprintf(inifile, ArrayLength(inifile),
+  NS_tsnprintf(inifile, std::size(inifile),
                NS_T("%sTestAUSReadStringsBogus.ini"), argv[0]);
   retval = ReadStrings(inifile, &testStrings);
   if (retval != READ_ERROR) {
@@ -149,7 +147,7 @@ int NS_main(int argc, NS_tchar** argv) {
   }
 
   // Test reading a non-default section name
-  NS_tsnprintf(inifile, ArrayLength(inifile), NS_T("%sTestAUSReadStrings3.ini"),
+  NS_tsnprintf(inifile, std::size(inifile), NS_T("%sTestAUSReadStrings3.ini"),
                argv[0]);
   retval =
       ReadStrings(inifile, "Title\0", 1, &testStrings.title, "BogusSection2");
@@ -164,7 +162,7 @@ int NS_main(int argc, NS_tchar** argv) {
   }
 
   // Test reading an exceedingly long string
-  NS_tsnprintf(inifile, ArrayLength(inifile), NS_T("%sTestAUSReadStrings4.ini"),
+  NS_tsnprintf(inifile, std::size(inifile), NS_T("%sTestAUSReadStrings4.ini"),
                argv[0]);
   retval = ReadStrings(inifile, "LongValue\0", 1, &testStrings.title);
   const char* expectedValue =

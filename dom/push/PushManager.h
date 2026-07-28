@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -26,17 +24,16 @@
 #ifndef mozilla_dom_PushManager_h
 #define mozilla_dom_PushManager_h
 
-#include "nsWrapperCache.h"
-
 #include "mozilla/AlreadyAddRefed.h"
+#include "mozilla/RefPtr.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/TypedArray.h"
-
 #include "nsCOMPtr.h"
-#include "mozilla/RefPtr.h"
+#include "nsWrapperCache.h"
 
 class nsIGlobalObject;
 class nsIPrincipal;
+class nsIPushSubscription;
 
 namespace mozilla {
 class ErrorResult;
@@ -48,6 +45,12 @@ class Promise;
 class PushManagerImpl;
 struct PushSubscriptionOptionsInit;
 class WorkerPrivate;
+
+nsresult GetSubscriptionParams(nsIPushSubscription* aSubscription,
+                               nsAString& aEndpoint,
+                               nsTArray<uint8_t>& aRawP256dhKey,
+                               nsTArray<uint8_t>& aAuthSecret,
+                               nsTArray<uint8_t>& aAppServerKey);
 
 class PushManager final : public nsISupports, public nsWrapperCache {
  public:
@@ -81,6 +84,12 @@ class PushManager final : public nsISupports, public nsWrapperCache {
 
   already_AddRefed<Promise> PerformSubscriptionActionFromWorker(
       SubscriptionAction aAction, const PushSubscriptionOptionsInit& aOptions,
+      ErrorResult& aRv);
+
+  // Web IDL members:
+
+  static void GetSupportedContentEncodings(
+      GlobalObject& aGlobal, JS::MutableHandle<JSObject*> aEncodings,
       ErrorResult& aRv);
 
   already_AddRefed<Promise> Subscribe(

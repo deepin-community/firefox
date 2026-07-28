@@ -1,5 +1,3 @@
-/* -*-  Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*-
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,12 +11,8 @@
 
 #define JSDEBUGGER_CONTRACTID "@mozilla.org/jsdebugger;1"
 
-#define JSDEBUGGER_CID                               \
-  {                                                  \
-    0x0365cbd5, 0xd46e, 0x4e94, {                    \
-      0xa3, 0x9f, 0x83, 0xb6, 0x3c, 0xd1, 0xa9, 0x63 \
-    }                                                \
-  }
+#define JSDEBUGGER_CID \
+  {0x0365cbd5, 0xd46e, 0x4e94, {0xa3, 0x9f, 0x83, 0xb6, 0x3c, 0xd1, 0xa9, 0x63}}
 
 namespace mozilla::jsdebugger {
 

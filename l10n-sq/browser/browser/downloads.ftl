@@ -135,7 +135,7 @@ downloads-cmd-choose-open-panel =
 # Displayed when hovering a blocked download, indicates that it's possible to
 # show more information for user to take the next action.
 downloads-show-more-information =
-    .value = Shfaq më tepër të dhëna
+    .value = Shfaq më tepër hollësi
 # Displayed when hovering a complete download, indicates that it's possible to
 # open the file using an app available in the system.
 downloads-open-file =
@@ -182,6 +182,18 @@ downloads-history =
 # that we are showing the details of a single download.
 downloads-details =
     .title = Hollësi Shkarkimi
+
+## These strings are displayed in the private browsing view of the downloads panel
+
+downloads-private-browsing-details =
+    .title = Kartelat rrinë në pajisjen tuaj
+downloads-private-browsing-message = Cilido që përdor këtë pajisje mund të shohë shkarkimet, edhe kur mbyllni krejt dritaret private.
+downloads-private-browsing-delete-button =
+    .label = Fshiji automatikisht kartelat
+    .accesskey = F
+downloads-private-browsing-accept-button =
+    .label = E mora vesh
+    .accesskey = v
 
 ## Displayed when a site attempts to automatically download many files.
 ## Variables:

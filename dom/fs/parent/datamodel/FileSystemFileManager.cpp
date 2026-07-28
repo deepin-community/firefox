@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,10 +8,8 @@
 #include "FileSystemHashSource.h"
 #include "FileSystemParentTypes.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/NotNull.h"
 #include "mozilla/Result.h"
 #include "mozilla/ResultVariant.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/quota/QuotaManager.h"
 #include "mozilla/dom/quota/ResultExtensions.h"
 #include "nsCOMPtr.h"
@@ -170,13 +166,9 @@ nsresult EnsureFileSystemDirectory(
   quota::QuotaManager* quotaManager = quota::QuotaManager::Get();
   MOZ_ASSERT(quotaManager);
 
-  QM_TRY(MOZ_TO_RESULT(
-      quotaManager->EnsureTemporaryStorageIsInitializedInternal()));
-
   QM_TRY_INSPECT(
       const auto& fileSystemDirectory,
-      quotaManager->EnsureTemporaryOriginIsInitializedInternal(aOriginMetadata)
-          .map([](const auto& aPair) { return aPair.first; }));
+      quotaManager->GetOrCreateTemporaryOriginDirectory(aOriginMetadata));
 
   QM_TRY(QM_TO_RESULT(fileSystemDirectory->AppendRelativePath(
       NS_LITERAL_STRING_FROM_CSTRING(FILESYSTEM_DIRECTORY_NAME))));

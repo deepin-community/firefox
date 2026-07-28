@@ -31,10 +31,10 @@ internal object TabGroupReducer {
                 state.assertTabExists(action.tabId)
 
                 if (!state.groupExists(action.partition, action.group)) {
-                    state.addTabGroup(action.partition, TabGroup(action.group, tabIds = listOf(action.tabId)))
+                    state.addTabGroup(action.partition, TabGroup(action.group, tabIds = setOf(action.tabId)))
                 } else {
                     state.updateTabGroup(action.partition, action.group) {
-                        it.copy(tabIds = (it.tabIds + action.tabId).distinct())
+                        it.copy(tabIds = it.tabIds + action.tabId)
                     }
                 }
             }
@@ -43,10 +43,10 @@ internal object TabGroupReducer {
                 action.tabIds.forEach { state.assertTabExists(it) }
 
                 if (!state.groupExists(action.partition, action.group)) {
-                    state.addTabGroup(action.partition, TabGroup(action.group, tabIds = action.tabIds.distinct()))
+                    state.addTabGroup(action.partition, TabGroup(action.group, tabIds = action.tabIds))
                 } else {
                     state.updateTabGroup(action.partition, action.group) {
-                        it.copy(tabIds = (it.tabIds + action.tabIds).distinct())
+                        it.copy(tabIds = it.tabIds + action.tabIds)
                     }
                 }
             }
@@ -72,8 +72,8 @@ internal object TabGroupReducer {
 private fun BrowserState.addTabGroup(partitionId: String, group: TabGroup): BrowserState {
     val partition = tabPartitions[partitionId]
     val updatedPartition = if (partition != null) {
-        if (partition.getGroupById(group.id) != null) {
-            throw IllegalArgumentException("Tab group with same ID already exists")
+        require(partition.getGroupById(group.id) == null) {
+            "Tab group with same ID already exists"
         }
         partition.copy(tabGroups = partition.tabGroups + group)
     } else {

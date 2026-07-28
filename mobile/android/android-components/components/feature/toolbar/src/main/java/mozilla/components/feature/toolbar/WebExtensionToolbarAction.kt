@@ -4,17 +4,18 @@
 
 package mozilla.components.feature.toolbar
 
-import android.graphics.drawable.BitmapDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.graphics.drawable.toDrawable
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.components.concept.engine.webextension.WebExtensionBrowserAction
 import mozilla.components.concept.toolbar.Toolbar
 import mozilla.components.support.base.android.Padding
@@ -32,6 +33,7 @@ import mozilla.components.ui.icons.R as iconsR
 open class WebExtensionToolbarAction(
     internal var action: WebExtensionBrowserAction,
     internal val padding: Padding? = null,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
     internal val iconJobDispatcher: CoroutineDispatcher,
     internal val listener: () -> Unit,
 ) : Toolbar.Action {
@@ -71,16 +73,17 @@ open class WebExtensionToolbarAction(
             try {
                 val icon = action.loadIcon?.invoke(imageView.measuredHeight)
                 icon?.let {
-                    MainScope().launch {
-                        imageView.setImageDrawable(BitmapDrawable(view.context.resources, it))
+                    withContext(mainDispatcher) {
+                        imageView.setImageDrawable(it.toDrawable(view.context.resources))
                     }
                 }
             } catch (throwable: Throwable) {
-                MainScope().launch {
+                withContext(mainDispatcher) {
                     imageView.setImageResource(
-                        iconsR.drawable.mozac_ic_web_extension_default_icon,
+                        iconsR.drawable.mozac_ic_extension_fill_24,
                     )
                 }
+
                 Log.log(
                     Log.Priority.ERROR,
                     "mozac-webextensions",

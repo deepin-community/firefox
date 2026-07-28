@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,7 +10,6 @@
 #include "base/platform_thread.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/Mutex.h"
-#include "mozilla/Types.h"
 #include "mozilla/UniquePtr.h"
 #include "nsTArray.h"
 
@@ -36,7 +33,7 @@ class SandboxReporter final : public PlatformThread::Delegate {
 
   // Used in GeckoChildProcessHost to connect the child process's
   // client to this report collector.
-  void GetClientFileDescriptorMapping(int* aSrcFd, int* aDstFd) const;
+  int GetClientFileDescriptor() const;
 
   // A snapshot of the report ring buffer; element 0 of `mReports` is
   // the `mOffset`th report to be received, and so on.

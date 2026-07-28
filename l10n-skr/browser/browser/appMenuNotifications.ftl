@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = ویندا کرو
     .secondarybuttonaccesskey = m
 appmenu-update-restart-message2 = { -brand-shorter-name } دا نواں نکور ورشن حاصل کرو۔ ٹیب کھولو تے ونڈوز آپݨے آپ بحال تھی ویسے۔
+appmenu-theme-installed =
+    .secondarybuttonlabel = کیتا اݨ کیتا
+    .secondarybuttonaccesskey = U
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } نواں نکور ورشن آپݨے آپ اپڈیٹ کرݨ توں قاصر ہے
     .buttonlabel = { -brand-shorter-name } اپڈیٹ کرو
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = ہݨ کائنا
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = ہک نواں { -brand-shorter-name } اپ ڈیٹ دستیاب ہے، پر اینکوں انسٹال نہیں کیتا ونڄ سڳدا کیوں جو { -brand-shorter-name } دی ہک ٻئی کاپی چلدی پئی ہے۔ اپ ڈیٹ جاری رکھݨ کیتے اینکوں بند کرو، یا ول وی اپ ڈیٹ کرݨ دا انتخاب کرو (جے تائیں تساں اینکوں دوبارہ شروع نہیں کریندے ٻئی کاپی صحیح طریقے نال کم نہیں کر سڳدی)۔
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = ٹھیک ہے
     .buttonaccesskey = o
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = اپلیکیشن مینیو دے ذریع�
 appmenu-addon-post-install-incognito-checkbox =
     .label = پرائیویٹ ونڈوز وِچ ایں توسیع کوں چلݨ دی موکل ݙیو
     .accesskey = A
-
 appmenu-new-tab-controlled-changes =
     .label = تہاݙا نواں ٹیب تبدیل تھی ڳئے
     .buttonlabel = تبدیلیاں جاری رکھو

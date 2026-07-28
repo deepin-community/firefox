@@ -4,7 +4,6 @@
 
 page-title = معلومات مواجهة الأعطال
 page-subtitle = تحتوي هذه الصفحة معلومات تقنية قد تكون مفيدة عندما تحاول حل مشكلة ما. إن كنت تبحث عن إجابات لأسئلة شائعة تخص { -brand-short-name }، تحقق من <a data-l10n-name="support-link">موقع الدعم</a>.
-
 crashes-title = بلاغات الانهيار
 crashes-id = معرّف البلاغ
 crashes-send-date = أُرسلَ
@@ -16,6 +15,14 @@ support-addons-type = النوع
 support-addons-enabled = مفعّلة
 support-addons-version = النسخة
 support-addons-id = المعرّف
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = المكان
+legacy-user-stylesheets-title = أنماط المستخدم القديمة
+legacy-user-stylesheets-enabled = نشط
+legacy-user-stylesheets-stylesheet-types = أوراق الأنماط
+legacy-user-stylesheets-no-stylesheets-found = لم يُعثر على أي أوراق الأنماط
 security-software-title = برمجيات الحماية
 security-software-type = النوع
 security-software-name = الاسم
@@ -39,7 +46,7 @@ app-basics-update-channel = قناة التحديث
 # as in "Folder for updates". "Update" is a noun, not a verb.
 app-basics-update-dir =
     { PLATFORM() ->
-        [linux] دليل التحديثات
+        [linux] مجلد التحديثات
        *[other] مجلد التحديثات
     }
 app-basics-update-history = تأريخ التحديث
@@ -55,10 +62,16 @@ app-basics-enabled-plugins = الملحقات المفعّلة
 app-basics-build-config = إعدادات البناء
 app-basics-user-agent = عميل المستخدم
 app-basics-os = نظام التشغيل
+app-basics-os-theme = سمة نظام التشغيل
+# Rosetta is Apple's translation process to run apps containing x86_64
+# instructions on Apple Silicon. This should remain in English.
+app-basics-rosetta = Rosetta Translated
 app-basics-memory-use = استخدام الذاكرة
 app-basics-performance = الأداء
 app-basics-service-workers = عمّال الخدمة المسجلين
+app-basics-third-party = وحدات الطرف الثالث
 app-basics-profiles = ملفات الإعدادات
+app-basics-launcher-process-status = عملية المُطلق
 app-basics-multi-process-support = نوافذ متعددة السيرورات
 app-basics-fission-support = النوافذ المنشطرة
 app-basics-remote-processes-count = العمليات البعيدة
@@ -67,7 +80,13 @@ app-basics-location-service-key-google = مفتاح خدمة التموضع من
 app-basics-safebrowsing-key-google = مفتاح التصفّح الآمن من جوجل
 app-basics-key-mozilla = مفتاح خدمة التموضع من Mozilla
 app-basics-safe-mode = الوضع الآمن
-
+app-basics-memory-size = حجم الذاكرة (RAM)
+app-basics-disk-available = مساحة القرص المتاحة
+app-basics-pointing-devices = أجهزة التأشير
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = ‏{ $value } ‏{ $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] أظهِر في فايندر
@@ -97,11 +116,21 @@ graphics-gpu2-title = معالج الرسوميات #2
 graphics-decision-log-title = سجل القرارات
 graphics-crash-guards-title = خصائص حامي التحطم المعطَّلة
 graphics-workarounds-title = الحلول الالتفافية
+graphics-device-pixel-ratios = نسب البكسل لأجهزة ويندوز
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = ميفاق النوافذ
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = بيئة سطح المكتب
 place-database-title = قاعدة بيانات الأماكن
+place-database-stats = الإحصائيات
+place-database-stats-show = أظهر الإحصائيات
+place-database-stats-hide = أخفِ الإحصائيات
+place-database-stats-entity = كيان
+place-database-stats-count = العدد
+place-database-stats-size-kib = الحجم (ك.بايت)
+place-database-stats-size-perc = الحجم (%)
+place-database-stats-efficiency-perc = الكفاءة (%)
+place-database-stats-sequentiality-perc = نسبة التتابع (%)
 place-database-integrity = التكامل
 place-database-verify-integrity = تحقّق من التكامل
 a11y-title = الإتاحة
@@ -121,9 +150,11 @@ sandbox-sys-call-tid = معرف الخيط
 sandbox-sys-call-proc-type = نوع السيرورة
 sandbox-sys-call-number = نداء النظام
 sandbox-sys-call-args = المعطيات
-
+troubleshoot-mode-title = تشخيص المشاكل
 clear-startup-cache-title = جرّب مسح خبيئة البدء
 clear-startup-cache-label = امسح خبيئة البدء…
+startup-cache-dialog-title2 = أعِد تشغيل { -brand-short-name } لمسح ذاكرة التخزين المؤقت عند بدء التشغيل؟
+startup-cache-dialog-body2 = هذا لن يغير إعداداتك ولن يزيل الامتدادات.
 restart-button-label = أعِد التشغيل
 
 ## Media titles
@@ -145,6 +176,15 @@ media-device-rate = المعدل
 media-device-latency = الكمون
 
 ## Codec support table
+
+media-codec-support-sw-decoding = فك ترميز البرمجيات
+media-codec-support-hw-decoding = فك ترميز العتاد
+media-codec-support-sw-encoding = ترميز البرمجيات
+media-codec-support-hw-encoding = ترميز العتاد
+media-codec-support-codec-name = اسم الترميز (Codec)
+media-codec-support-supported = مدعوم
+media-codec-support-unsupported = غير مدعومة
+media-codec-support-lack-of-extension = ثبِّت الامتدادة
 
 ##
 
@@ -168,6 +208,7 @@ intl-regional-prefs = التفضيلات الإقليمية
 ## See also https://firefox-source-docs.mozilla.org/remote/
 
 remote-debugging-title = التنقيح عن بُعد (بروتوكول كروميوم)
+remote-debugging-accepting-connections = قبول الاتصالات
 
 ##
 
@@ -182,7 +223,6 @@ report-crash-for-days =
         [many] بلاغات انهيار آخر { $days } يومًا
        *[other] بلاغات انهيار آخر { $days } يوم
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -194,7 +234,6 @@ crashes-time-minutes =
         [many] منذ { $minutes } دقيقة
        *[other] منذ { $minutes } دقيقة
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -206,7 +245,6 @@ crashes-time-hours =
         [many] منذ { $hours } ساعة
        *[other] منذ { $hours } ساعة
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -218,7 +256,6 @@ crashes-time-days =
         [many] منذ { $days } يومًا
        *[other] منذ { $days } يوم
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -230,7 +267,6 @@ pending-reports =
         [many] كل بلاغات الانهيار (تشمل { $reports } بلاغ انهيار معلّق في الفترة الزمنية المحددة)
        *[other] كل بلاغات الانهيار (تشمل { $reports } بلاغ انهيار معلّق في الفترة الزمنية المحددة)
     }
-
 raw-data-copied = نُسخت البيانات الخام إلى الحافظة
 text-copied = نُسخ النص إلى الحافظة
 
@@ -243,16 +279,15 @@ blocked-mismatched-version = معطلة بسبب عدم تطابق إصدارة 
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = معطّلة بسبب إصدارة مشغل البطاقة الرسومية. جرّب تحديث مشغل البطاقة الرسومية لديك إلى النسخة { $driverVersion } أو أحدث.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = معاملات ClearType
-
 compositing = التراكب
 hardware-h264 = فك ترميز H264 باستخدام العتاد
 main-thread-no-omtc = الخيط الأساسي، لا OMTC
 yes = نعم
 no = لا
+unknown = مجهول
 
 ## The following strings indicate if an API key has been found.
 ## In some development versions, it's expected for some API keys that they are
@@ -260,7 +295,6 @@ no = لا
 
 found = موجود
 missing = مفقود
-
 gpu-description = الوصف
 gpu-vendor-id = معرّف المنتِج
 gpu-device-id = معرّف الجهاز
@@ -280,18 +314,14 @@ webgl2-renderer = مصيّر مشغّل WebGL 2
 webgl2-version = إصدارة مشغّل WebGL 2
 webgl2-driver-extensions = امتدادات مشغّل WebGL 2
 webgl2-extensions = امتدادات WebGL 2
-
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = على قائمة الحجب بسبب المشاكل المعروفة: <a data-l10n-name="bug-link">علة { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = على قائمة الحجب؛ رمز العطل { $failureCode }
-
 d3d11layers-crash-guard = مركّب D3D11
 glcontext-crash-guard = أوپن‌جي‌إل
-
 reset-on-next-restart = صفّر عند التشغيل التالي
 gpu-process-kill-button = أنهِ سيرورة وحدة معالجة الرسوميات
 gpu-device-reset-button = أطلِق عملية إعادة الجهاز إلى حالته المبدئية
@@ -300,14 +330,15 @@ content-uses-tiling = يستخدم البلاطات (المحتوى)
 off-main-thread-paint-enabled = الرسم خارج الخيط الرئيسي مفعل
 off-main-thread-paint-worker-count = عدد عمال الرسم خارج الخيط الرئيسي
 target-frame-rate = معدّل الإطارات الهدف
-
 min-lib-versions = أقل إصدارة مقبولة
 loaded-lib-versions = الإصدارة المستخدمة
-
-has-seccomp-bpf = ‏Seccomp-BPF (ترشيح استدعاءات النظام)
+has-seccomp-bpf = ‏Seccomp-BPF (تصفية استدعاءات النظام)
 has-seccomp-tsync = مزامنة Seccomp للخيوط
 has-user-namespaces = نطاقات أسماء المستخدمين
 has-privileged-user-namespaces = نطاقات أسماء المستخدمين للسيرورات ذات الامتياز
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — هذه الميزة غير مسموح بها في نظامك. قد يؤدي ذلك إلى تقييد ميزات الأمان الخاصة بـ { -brand-short-name }.
 can-sandbox-content = عزل سيرورة المحتوى
 can-sandbox-media = عزل ملحقات الوسائط
 content-sandbox-level = مستوى عزل سيرورة المحتوى
@@ -315,12 +346,11 @@ effective-content-sandbox-level = مستوى عزل سيرورة المحتوى 
 sandbox-proc-type-content = محتوى
 sandbox-proc-type-file = محتوى الملف
 sandbox-proc-type-media-plugin = ملحقة وسائط
-
+startup-cache-ignore-disk-cache = تجاهل ذاكرة التخزين المؤقت للقرص
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 # Variables
 # $fissionWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
@@ -329,7 +359,6 @@ fission-status-experiment-treatment = فعّلتها ميزة تجريبية
 fission-status-enabled-by-env = فعّلتها البيئة
 fission-status-enabled-by-default = مفعّلة مبدئيًا
 fission-status-enabled-by-user-pref = فعّلها المستخدم
-
 async-pan-zoom = التقريب غير المتزامن
 apz-none = لا شيء
 wheel-enabled = إدخال البكرة مُفعّل
@@ -352,6 +381,24 @@ policies-error = خطأ
 
 ## Printing section
 
+support-printing-clear-settings-button = امسح إعدادات الطباعة المحفوظة
+support-printing-modified-settings = إعدادات الطباعة المعدّلة
+support-printing-prefs-name = الاسم
+support-printing-prefs-value = القيمة
+
+## Remote Settings sections
+
+support-remote-settings-title = الإعدادات عن بُعد
+support-remote-settings-status = الحالة
+support-remote-settings-status-ok = حسنًا
+# Status when synchronization is not working.
+support-remote-settings-status-broken = لا يعمل
+support-remote-settings-last-check = آخر تحقق
 
 ## Normandy sections
 
+support-remote-experiments-name = الاسم
+
+## Pointing devices
+
+pointing-device-touchscreen = شاشة اللمس

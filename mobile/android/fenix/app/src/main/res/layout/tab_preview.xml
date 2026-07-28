@@ -11,39 +11,21 @@
         android:layout_height="match_parent"
         android:background="?layer2" />
 
-    <LinearLayout
-        android:id="@+id/fakeToolbar"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/composableTopToolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/browser_toolbar_height"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:elevation="5dp"
+        android:foregroundGravity="top"
+        android:visibility="gone" />
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/composableBottomToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?bottomBarBackground"
         android:elevation="5dp"
         android:foregroundGravity="bottom"
-        android:orientation="horizontal">
-
-        <View
-            android:id="@+id/toolbar_wrapper"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="0dp"
-            android:layout_weight="1"
-            android:background="@drawable/home_search_background" />
-
-        <mozilla.components.ui.tabcounter.TabCounter
-            android:id="@+id/tab_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center" />
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/menuButton"
-            android:layout_width="36dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center"
-            android:scaleType="center"
-            app:srcCompat="@drawable/ic_menu"
-            app:tint="?attr/textPrimary" />
-    </LinearLayout>
+        android:visibility="gone" />
 </merge>

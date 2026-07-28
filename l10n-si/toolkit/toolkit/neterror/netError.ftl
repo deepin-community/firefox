@@ -7,7 +7,7 @@
 
 neterror-page-title = පිටුව පූරණය නොවේ
 certerror-page-title = අවවාදයයි: ආරක්‍ෂණ අවදානමක් ඉදිරියෙන්
-certerror-sts-page-title = සම්බන්‍ධ නොවිණි: ආරක්‍ෂණ ගැටලුවක් විය හැකිය
+certerror-sts-page-title = සම්බන්‍ධ නොවුණි: ආරක්‍ෂණ ගැටලුවක් විය හැකිය
 neterror-blocked-by-policy-page-title = අවහිර කළ පිටුව
 neterror-captive-portal-page-title = ජාලයට පිවිසෙන්න
 neterror-dns-not-found-title = සේවාදායකය හමු නොවුණි
@@ -39,7 +39,7 @@ neterror-error-reporting-automatic = { -vendor-short-name } මගින් අ�
 
 neterror-generic-error = යම් හේතුවක් මත { -brand-short-name } මෙම පිටුව පූරණය නොකරයි.
 neterror-load-error-try-again = අඩවිය තාවකාලිකව නොතිබේ හෝ ඉතා කාර්ය බහුලයි. මොහොතකින් නැවත බලන්න.
-neterror-load-error-connection = කිසිදු පිටුවක් පූරණය නොවේ නම්, පරිගණකයේ ජාල සම්බන්ධතාවය පරීක්‍ෂා කරන්න.
+neterror-load-error-connection = කිසිදු පිටුවක් පූරණය නොවේ නම්, පරිගණකයේ ජාල සම්බන්ධතාව පරීක්‍ෂා කරන්න.
 neterror-load-error-firewall = පරිගණකය හෝ ජාලය ගිනිපවුරකින් හෝ ප්‍රතියුක්තයකින් ආරක්‍ෂා කර ඇත්නම්, { -brand-short-name } සඳහා වියමන වෙත ප්‍රවේශ වීමට අවසර තිබේදැයි බලන්න
 neterror-captive-portal = අන්තර්ජාලයට ප්‍රවේශ වීමට පෙර මෙම ජාලයට පිවිසීමට වුවමනාය.
 # Variables:
@@ -47,8 +47,8 @@ neterror-captive-portal = අන්තර්ජාලයට ප්‍රවේ�
 neterror-dns-not-found-with-suggestion = ඔබ අදහස් කළේ <a data-l10n-name="website">{ $hostAndPath }</a> වෙත යාමටද?
 neterror-dns-not-found-hint-header = <strong>ඔබ නිවැරදි ලිපිනය ඇතුල් කළේ නම්:</strong>
 neterror-dns-not-found-hint-try-again = පසුව උත්සාහ කරන්න
-neterror-dns-not-found-hint-check-network = ජාලයේ සම්බන්ධතාවය පරීක්‍ෂා කරන්න
-neterror-dns-not-found-hint-firewall = { -brand-short-name } සඳහා වියමන වෙත ප්‍රවේශ වීමට අවසර තිබේදැයි බලන්න (උදා. ඔබ සම්බන්ධිත නමුත් ගිනිපවුරක් පිටුපස නම්)
+neterror-dns-not-found-hint-check-network = ජාලයේ සම්බන්ධතාව පරීක්‍ෂා කරන්න
+neterror-dns-not-found-hint-firewall = { -brand-short-name } සඳහා වියමන වෙත ප්‍රවේශ වීමට අවසර තිබේදැයි බලන්න (උදා. ඔබ සම්බන්ධ නමුත් ගිනිපවුරක් පිටුපස නම්)
 
 ## TRR-only specific messages
 ## Variables:
@@ -58,8 +58,9 @@ neterror-dns-not-found-hint-firewall = { -brand-short-name } සඳහා වි
 neterror-dns-not-found-trr-only-reason = මෙම අඩවියේ ලිපිනයට අපගේ විශ්වාසදායක ව.නා.ප. පිළිවිසඳුව හරහා { -brand-short-name } මගින් ඔබගේ ඉල්ලීම රැකීමට නොහැකිය. හේතුව:
 neterror-dns-not-found-trr-third-party-warning2 = ඔබගේ පෙරනිමි ව.නා.ප. පිළිවිසඳුව සමඟ ඉදිරියට යාමට හැකිය. කෙසේ වෙතත්, තෙවන පාර්ශ්වයකට ඔබ ගොඩවදින අඩවි මොනවාදැයි බැලීමට හැකිය.
 neterror-dns-not-found-trr-only-could-not-connect = { -brand-short-name } මගින් { $trrDomain } වෙත සම්බන්ධ වීමට නොහැකි විය.
-neterror-dns-not-found-trr-only-timeout = { $trrDomain } වෙත සම්බන්ධතාවයට අපේක්‍ෂිත කාලයට වඩා ගත විය.
+neterror-dns-not-found-trr-only-timeout = { $trrDomain } වෙත සම්බන්ධතාවට අපේක්‍ෂිත කාලයට වඩා ගත විය.
 neterror-dns-not-found-trr-offline = ඔබ අන්තර්ජාලයට සම්බන්ධ වී නැත.
+neterror-dns-not-found-bad-trr-url = ඒ.ස.නි. වැරදිය
 neterror-dns-not-found-trr-unknown-problem = අනපේක්‍ෂිත ගැටලුවකි.
 
 ## Native fallback specific messages
@@ -91,14 +92,14 @@ neterror-nss-failure-contact-website = දේශීය සේවාවක් න
 certerror-intro = { -brand-short-name } ආරක්‍ෂණ තර්ජනයක් හඳුනාගත් බැවින් <b>{ $hostname }</b> වෙත නොයන ලදි. මෙම අඩවියට ඔබ ගොඩවදින්නේ නම්, ප්‍රහාරකයින්ට ඔබගේ මුරපද, වි-තැපැල්, හෝ ණයපත් විස්තර වැනි තොරතුරු සොරකම් කිරීමට හැකිය.
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
-certerror-sts-intro = { -brand-short-name } ආරක්‍ෂණ තර්ජනයක් හඳුනාගෙන ඇත. මෙම අඩවියට ආරක්‍ෂිත සම්බන්ධතාවයක් අවශ්‍ය නිසා <b>{ $hostname }</b> වෙත ගියේ නැත.
+certerror-sts-intro = { -brand-short-name } ආරක්‍ෂණ තර්ජනයක් හඳුනාගෙන ඇත. මෙම අඩවියට ආරක්‍ෂිත සම්බන්‍ධතාවක් වුවමනා නිසා <b>{ $hostname }</b> වෙත ගියේ නැත.
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-expired-cert-intro = { -brand-short-name } සඳහා ගැටලුවක් අනාවරණය වූ නිසා <b>{ $hostname }</b> වෙත නොයන ලදි. වියමන අඩවිය වැරදි ලෙස වින්‍යාස කර තිබේ හෝ ඔබගේ පරිගණකයෙහි ඔරලෝසුව වැරදි වේලාවකට සකසා ඇත.
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 # $mitm (String) - The name of the software intercepting communications between you and the website (or “man in the middle”)
-certerror-mitm = <b>{ $hostname }</b> බොහෝ දුරට ආරක්‍ෂිත අඩවියකි, නමුත් ආරක්‍ෂිත සම්බන්ධතාවයක් පිහිටුවීමට නොහැකිය. මෙම ගැටලුව <b>{ $mitm }</b> නිසා මතු වේ, එය ඔබගේ පරිගණකයේ හෝ ඔබගේ ජාලයේ තිබෙන මෘදුකාංගයකි.
+certerror-mitm = <b>{ $hostname }</b> බොහෝ දුරට ආරක්‍ෂිත අඩවියකි, නමුත් ආරක්‍ෂිත සම්බන්‍ධතාවක් පිහිටුවීමට නොහැකිය. මෙම ගැටලුව <b>{ $mitm }</b> නිසා මතු වේ, එය ඔබගේ පරිගණකයේ හෝ ඔබගේ ජාලයේ තිබෙන මෘදුකාංගයකි.
 neterror-corrupted-content-intro = දත්ත සම්ප්‍රේෂණ දෝෂයක් අනාවරණය වූ නිසා ඔබ දැකීමට උත්සාහ කරන පිටුව පෙන්වීමට නොහැකිය.
 neterror-corrupted-content-contact-website = දේශීය සේවාවක් නම් මෙම ගැටලුව පිළිබඳව අඩවියෙහි හිමිකරුවන්ට දන්වන්න.
 # Do not translate "SSL_ERROR_UNSUPPORTED_VERSION".
@@ -111,7 +112,7 @@ neterror-inadequate-security-code = දෝෂයේ කේතය: NS_ERROR_NET_I
 neterror-clock-skew-error = ඔබගේ පරිගණකය { DATETIME($now, dateStyle: "medium") } යැයි නිගමනය කිරීම මත { -brand-short-name } ආරක්‍ෂිතව සම්බන්ධ නොවේ. <b>{ $hostname }</b> වෙත ගොඩවැදීමට ඔබගේ පද්ධතියේ සැකසුම් හරහා වත්මන් දිනය, වේලාව සහ වේලා කලාපයට පරිගණක ඔරලෝසුව යාවත්කාල කර, පසුව <b>{ $hostname }</b> නැවුම් කරන්න.
 neterror-network-protocol-error-intro = ජාල කෙටුම්පතෙහි දෝෂයක් අනාවරණය වූ නිසා ඔබ දැකීමට උත්සාහ කරන පිටුව පෙන්වීමට නොහැකිය.
 neterror-network-protocol-error-contact-website = දේශීය සේවාවක් නම් මෙම ගැටලුව පිළිබඳව අඩවියෙහි හිමිකරුවන්ට දන්වන්න.
-certerror-expired-cert-second-para = { -brand-short-name } ආරක්‍ෂිතව සම්බන්ධ වීම වළක්වන්නේ පෙනෙන හැටියට අඩවියෙහි සහතිකය කල් ඉකුත් වී තිබෙන නිසා විය හැකිය. මෙම අඩවියට ඔබ ගොඩවදින්නේ නම්, ප්‍රහාරකයින්ට ඔබගේ මුරපද, වි-තැපැල්, හෝ ණයපත් විස්තර වැනි තොරතුරු සොරකම් කිරීමට හැකිය.
+certerror-expired-cert-second-para = පෙනෙන අන්දමට { -brand-short-name } ආරක්‍ෂිතව සම්බන්ධ වීම වළක්වන්නේ අඩවියෙහි සහතිකය කල් ඉකුත් වී තිබෙන නිසා විය හැකිය. මෙම අඩවියට ඔබ ගොඩවදින්නේ නම් ප්‍රහාරකයින්ට ඔබගේ මුරපද, වි-තැපැල් හෝ ණයපත් විස්තර වැනි තොරතුරු සොරකම් කිරීමට හැකිය.
 certerror-what-can-you-do-about-it-title = ඔබට ඒ ගැන කුමක් කළ හැකිද?
 certerror-unknown-issuer-what-can-you-do-about-it-website = මෙය බොහෝ දුරට වියමන අඩවියෙහි ගැටලුවක් වන බැවින් ඔබට එය විසඳීමට නොහැකිය.
 certerror-unknown-issuer-what-can-you-do-about-it-contact-admin = ඔබ සංස්ථානික ජාලයක සිටියි නම් හෝ ප්‍රති-වෛරස මෘදුකාංග භාවිතා කරන්නේ නම්, සහායක් ලබා ගැනීමට හැකිදැයි බලන්න. දේශීය සේවාවක් නම් අඩවියෙහි පරිපාලකයාට දැනුම් දීමට හැකිය.
@@ -123,3 +124,8 @@ certerror-mitm-what-can-you-do-about-it-attack = <b>{ $mitm }</b> පිළි�
 # Variables:
 # $mitm (String) - The name of the software intercepting communications between you and the website (or “man in the middle”)
 certerror-mitm-what-can-you-do-about-it-attack-sts = <b>{ $mitm }</b> පිළිබඳව ඔබට හුරුපුරුදු නැතිනම්, මෙය ප්‍රහාරයක් විය හැකිය. මෙම අඩවියට යාම සඳහා ඔබට කළ හැකි දෙයක් නැත.
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-denied-port-access = මෙම ලිපිනය වියමන පිරික්සීමට සාමාන්‍යයෙන් භාවිතා නොකරන තොටක් භාවිතා කරයි. ඔබගේ ආරක්‍ෂාව සඳහා { -brand-short-name } එම ඉල්ලීම අවලංගු කරන ලදි.

@@ -1,16 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/TrustedTypePolicy.h"
 
+#include <utility>
+
 #include "mozilla/dom/DOMString.h"
 #include "mozilla/dom/TrustedTypePolicyFactory.h"
 #include "mozilla/dom/TrustedTypesBinding.h"
-
-#include <utility>
 
 namespace mozilla::dom {
 
@@ -70,7 +68,7 @@ already_AddRefed<T> TrustedTypePolicy::CreateTrustedType(
     policyValue = EmptyString();
   }
 
-  RefPtr<T> trustedObject = MakeRefPtr<T>(std::move(policyValue));
+  RefPtr<T> trustedObject = new T(std::move(policyValue));
 
   // TODO: add special handling for `TrustedScript` when default policy support
   // is added.
@@ -81,7 +79,7 @@ already_AddRefed<T> TrustedTypePolicy::CreateTrustedType(
 template <typename CallbackObject>
 void TrustedTypePolicy::DetermineTrustedPolicyValue(
     const RefPtr<CallbackObject>& aCallbackObject, const nsAString& aValue,
-    const Sequence<JS::Value>& aArguments, bool aThrowIfMissing,
+    const nsTArray<JS::Value>& aArguments, bool aThrowIfMissing,
     ErrorResult& aErrorResult, nsAString& aResult) const {
   if (!aCallbackObject) {
     aResult.SetIsVoid(true);

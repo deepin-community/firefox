@@ -67,13 +67,24 @@ about-private-browsing-pin-promo-title = ללא עוגיות או היסטורי
 # in your language: `See fewer cookie requests`.
 about-private-browsing-cookie-banners-promo-header = כרזות עוגיות, שחררו אותי!
 about-private-browsing-cookie-banners-promo-button = צמצום כרזות עוגיות
+about-private-browsing-cookie-banners-promo-message = אפשר לתת ל־{ -brand-short-name } לענות אוטומטית לחלונות קופצים בנוגע לעוגיות כדי שיהיה אפשר לחזור לגלישה נטולת הסחות דעת. { -brand-short-name } ידחה את כל הבקשות במידת האפשר.
 # Simplified version of the headline if the original text doesn't work
 # in your language: `{ -brand-short-name } will show fewer cookie requests`
 about-private-browsing-cookie-banners-promo-heading = ‏{ -brand-short-name } מטפל בכרזות העוגיות עבורך
 about-private-browsing-cookie-banners-promo-body = אנו מסרבים כעת למגוון כרזות עוגיות אוטומטית כדי לצמצם את המעקב אחריך ולאפשר לך לשוב לגלישה נטולת הסחות דעת.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = לא להשאיר עקבות במכשיר זה
 about-private-browsing-felt-privacy-v1-info-body = ‏{ -brand-short-name } מוחק את העוגיות, ההיסטוריה ונתוני האתר שלך כאשר כל החלונות הפרטיים שלך נסגרים.
 about-private-browsing-felt-privacy-v1-info-link = מי יכול לראות את הפעילות שלי?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = סגירת כל החלונות הפרטיים שלך מוחקת את העוגיות, ההיסטוריה ונתוני האתר שלך.
+about-private-browsing-nova-info-link = מי יכול עדיין לראות את הפעילות שלי?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = היסטוריית הגלישה שלך תימחק
+about-private-browsing-nova-info-subheader = אנחנו נמחק כל חיפוש והתחברות לאתרים כשחלון זה ייסגר. ההגנות המובנות של { -brand-short-name } מופעלות גם כאן, כמו חסימת רכיבי מעקב.

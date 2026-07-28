@@ -1,4 +1,5 @@
-use std::num::NonZeroU32;
+use alloc::{vec, vec::Vec};
+use core::num::NonZeroU32;
 
 use crate::{
     front::glsl::{
@@ -12,7 +13,7 @@ use crate::{
     ArraySize, BinaryOperator, Handle, Literal, Type, TypeInner, UnaryOperator,
 };
 
-impl<'source> ParsingContext<'source> {
+impl ParsingContext<'_> {
     pub fn parse_primary(
         &mut self,
         frontend: &mut Frontend,
@@ -38,7 +39,13 @@ impl<'source> ParsingContext<'source> {
             TokenValue::FloatConstant(float) => {
                 if float.width != 32 {
                     frontend.errors.push(Error {
-                        kind: ErrorKind::SemanticError("Unsupported floating-point value (expected single-precision floating-point number)".into()),
+                        kind: ErrorKind::SemanticError(
+                            concat!(
+                                "Unsupported floating-point value ",
+                                "(expected single-precision floating-point number)"
+                            )
+                            .into(),
+                        ),
                         meta: token.meta,
                     });
                 }
@@ -510,14 +517,33 @@ impl<'source> ParsingContext<'source> {
         ctx: &mut Context,
         stmt: &mut StmtContext,
     ) -> Result<Handle<HirExpr>> {
+        let mut exprs = Vec::new();
         let mut expr = self.parse_assignment(frontend, ctx, stmt)?;
+        exprs.push(expr);
 
         while let TokenValue::Comma = self.expect_peek(frontend)?.value {
             self.bump(frontend)?;
             expr = self.parse_assignment(frontend, ctx, stmt)?;
+            exprs.push(expr);
         }
 
-        Ok(expr)
+        if exprs.len() == 1 {
+            Ok(expr)
+        } else {
+            let mut meta = stmt.hir_exprs[exprs[0]].meta;
+            for &e in &exprs[1..] {
+                meta.subsume(stmt.hir_exprs[e].meta);
+            }
+            expr = stmt.hir_exprs.append(
+                HirExpr {
+                    kind: HirExprKind::Sequence { exprs },
+                    meta,
+                },
+                Default::default(),
+            );
+
+            Ok(expr)
+        }
     }
 }
 

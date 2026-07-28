@@ -6,7 +6,7 @@
 // This code is based on Rust implementation at
 // https://github.com/the8472/weyland-p5000
 
-// Version 1.1
+// Version 1.2
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,8 +26,31 @@
 #include <cassert>
 #include <pthread.h>
 #include <sched.h>
+#include <fstream>
+#include <ctime>
 
 #include "wayland-proxy.h"
+
+constexpr const char* stateFlags[] = {
+  "WP:E ",
+  "WP:D ",
+  "WP:RF ",
+  "WP:RT ",
+  "WP:CA ",
+  "WP:CR ",
+  "WP:AT ",
+  "WP:ACT ",
+  "WP:CPCA ",
+  "WP:CPCF ",
+  "WP:CPSF ",
+};
+
+CompositorUnavailableHandler WaylandProxy::sCompositorUnavailableHandler =
+    nullptr;
+CompositorSilentDisconnectHandler
+    WaylandProxy::sCompositorSilentDisconnectHandler = nullptr;
+std::atomic<bool> WaylandProxy::sCompositorGone = false;
+std::atomic<unsigned> WaylandProxy::sProxyStateFlags = 0;
 
 // The maximum number of fds libwayland can recvmsg at once
 #define MAX_LIBWAY_FDS 28
@@ -92,6 +115,15 @@ class ProxiedConnection {
   // Process this connection (send/receive data).
   // Returns false if connection is broken and should be removed.
   bool Process();
+  bool ProcessFailure();
+
+  // Read and discard all pending data from the application socket.
+  //
+  // Returns false when the application socket has closed or errored, meaning
+  // the connection should be removed.
+  bool DrainApplicationSocket();
+
+  void PrintConnectionInfo();
 
   ~ProxiedConnection();
 
@@ -101,9 +133,11 @@ class ProxiedConnection {
 
   bool TransferOrQueue(
       int aSourceSocket, int aSourcePollFlags, int aDestSocket,
-      std::vector<std::unique_ptr<WaylandMessage>>* aMessageQueue);
+      std::vector<std::unique_ptr<WaylandMessage>>* aMessageQueue,
+      int& aStatSent, int& aStatReceived);
   bool FlushQueue(int aDestSocket, int aDestPollFlags,
-                  std::vector<std::unique_ptr<WaylandMessage>>& aMessageQueue);
+                  std::vector<std::unique_ptr<WaylandMessage>>& aMessageQueue,
+                  int& aStatSent);
 
   // Where we should connect.
   // Weak pointer to parent WaylandProxy class.
@@ -112,12 +146,9 @@ class ProxiedConnection {
   // We don't have connected compositor yet. Try to connect
   bool mCompositorConnected = false;
 
-  // Don't cycle endlessly over compositor connection
-  int mFailedCompositorConnections = 0;
-  static constexpr int sMaxFailedCompositorConnections = 100;
-
-  // We're disconnected from app or compositor. We will close this connection.
-  bool mFailed = false;
+  // We're disconnected from app or compositor. We will close such connection.
+  bool mApplicationFailed = false;
+  bool mCompositorFailed = false;
 
   int mCompositorSocket = -1;
   int mCompositorFlags = 0;
@@ -128,6 +159,21 @@ class ProxiedConnection {
   // Stored proxied data
   std::vector<std::unique_ptr<WaylandMessage>> mToCompositorQueue;
   std::vector<std::unique_ptr<WaylandMessage>> mToApplicationQueue;
+
+  int mStatRecvFromCompositor = 0;
+  int mStatSentToCompositor = 0;
+  int mStatSentToCompositorLater = 0;
+
+  int mStatRecvFromClient = 0;
+  int mStatSentToClient = 0;
+  int mStatSentToClientLater = 0;
+
+
+  // Wait one sec before we disconnect client
+  // from compositor. It gives client time to
+  // process potential error messages from compositor.
+  constexpr static const double sFailureTimeout = CLOCKS_PER_SEC;
+  clock_t mFailureTime = 0;
 };
 
 WaylandMessage::~WaylandMessage() {
@@ -162,7 +208,9 @@ void WaylandMessage::Read(int aSocket) {
     switch (errno) {
       case EAGAIN:
       case EINTR:
-        // Neither loaded nor failed, we'll try again later
+        // Neither loaded nor failed, we'll try again later.
+        // Clear mData so Loaded() correctly returns false.
+        mData.clear();
         Print("WaylandMessage::Read() failed %s\n", strerror(errno));
         return;
       default:
@@ -279,7 +327,7 @@ bool ProxiedConnection::Init(int aApplicationSocket, char* aWaylandDisplay) {
   mWaylandDisplay = aWaylandDisplay;
   mApplicationSocket = aApplicationSocket;
   mCompositorSocket =
-      socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+      socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (mCompositorSocket == -1) {
     Error("WaylandProxy: ProxiedConnection::Init() socket()");
   }
@@ -289,11 +337,15 @@ bool ProxiedConnection::Init(int aApplicationSocket, char* aWaylandDisplay) {
 }
 
 struct pollfd* ProxiedConnection::AddToPollFd(struct pollfd* aPfds) {
-  // Listen application's requests
+  // Only poll for incoming data to drain when compositor is gone.
+  // LoadPollFd() mirrors this early return so both functions advance
+  // the pointer by the same amount.
   aPfds->fd = mApplicationSocket;
   aPfds->events = POLLIN;
-
-  // We're connected and we have data for appplication from compositor.
+  if (WaylandProxy::IsCompositorGone()) {
+    return aPfds + 1;
+  }
+  // We're connected and we have data for application from compositor.
   // Add POLLOUT to request write to app socket.
   if (mCompositorConnected && !mToApplicationQueue.empty()) {
     aPfds->events |= POLLOUT;
@@ -320,6 +372,9 @@ struct pollfd* ProxiedConnection::LoadPollFd(struct pollfd* aPfds) {
   }
   mApplicationFlags = aPfds->revents;
   aPfds++;
+  if (WaylandProxy::IsCompositorGone()) {
+    return aPfds;
+  }
   mCompositorFlags = aPfds->revents;
   aPfds++;
   return aPfds;
@@ -334,27 +389,13 @@ bool ProxiedConnection::ConnectToCompositor() {
       connect(mCompositorSocket, (const struct sockaddr*)&addr,
               sizeof(struct sockaddr_un)) != -1;
   if (!mCompositorConnected) {
-    switch (errno) {
-      case EAGAIN:
-      case EALREADY:
-      case ECONNREFUSED:
-      case EINPROGRESS:
-      case EINTR:
-      case EISCONN:
-      case ETIMEDOUT:
-        mFailedCompositorConnections++;
-        if (mFailedCompositorConnections > sMaxFailedCompositorConnections) {
-          Error("ConnectToCompositor() connect() failed repeatedly");
-          return false;
-        }
-        // We can recover from these errors and try again
-        Warning("ConnectToCompositor() try again");
-        return true;
-      default:
-        Error("ConnectToCompositor() connect()");
-        return false;
-    }
+    Error("ConnectToCompositor() connect()");
+    WaylandProxy::AddState(WAYLAND_PROXY_COMPOSITOR_SOCKET_FAILED);
+    return false;
   }
+
+  Print("ConnectToCompositor() Connected to compositor\n");
+  WaylandProxy::AddState(WAYLAND_PROXY_COMPOSITOR_ATTACHED);
   return true;
 }
 
@@ -363,17 +404,18 @@ bool ProxiedConnection::ConnectToCompositor() {
 // Return
 bool ProxiedConnection::TransferOrQueue(
     int aSourceSocket, int aSourcePollFlags, int aDestSocket,
-    std::vector<std::unique_ptr<WaylandMessage>>* aMessageQueue) {
+    std::vector<std::unique_ptr<WaylandMessage>>* aMessageQueue,
+    int& aStatSent, int& aStatReceived) {
   // Don't read if we don't have any data ready
   if (!(aSourcePollFlags & POLLIN)) {
     return true;
   }
 
-  while (1) {
+  while (true) {
     int availableData = 0;
     if (ioctl(aSourceSocket, FIONREAD, &availableData) < 0) {
       // Broken connection, we're finished here
-      Warning("ProxiedConnection::TransferOrQueue() broken source socket %s\n");
+      Warning("ProxiedConnection::TransferOrQueue() broken source socket\n");
       return false;
     }
     if (availableData == 0) {
@@ -389,20 +431,25 @@ bool ProxiedConnection::TransferOrQueue(
       // Let's try again
       return true;
     }
-    if (!message->Write(aDestSocket)) {
-      if (message->Failed()) {
-        // Failed to write and we can't recover
-        return false;
-      }
-      aMessageQueue->push_back(std::move(message));
+    aStatReceived++;
+
+    if (message->Write(aDestSocket)) {
+      aStatSent++;
+      continue;
     }
+    if (message->Failed()) {
+      // Failed to write and we can't recover
+      return false;
+    }
+    aMessageQueue->push_back(std::move(message));
   }
 }
 
 // Try to flush all data to aMessageQueue.
 bool ProxiedConnection::FlushQueue(
     int aDestSocket, int aDestPollFlags,
-    std::vector<std::unique_ptr<WaylandMessage>>& aMessageQueue) {
+    std::vector<std::unique_ptr<WaylandMessage>>& aMessageQueue,
+    int& aStatSent) {
   // Can't write to destination yet
   if (!(aDestPollFlags & POLLOUT) || aMessageQueue.empty()) {
     return true;
@@ -412,12 +459,13 @@ bool ProxiedConnection::FlushQueue(
   for (message = aMessageQueue.begin(); message != aMessageQueue.end();) {
     if (!(*message)->Write(aDestSocket)) {
       // Failed to write the message, remove whole connection
-      // as it's broken.
+      // if it's broken.
       if ((*message)->Failed()) {
         return false;
       }
       break;
     }
+    aStatSent++;
     message++;
   }
 
@@ -429,49 +477,181 @@ bool ProxiedConnection::FlushQueue(
   return true;
 }
 
+void ProxiedConnection::PrintConnectionInfo() {
+  constexpr char animation[] = {'-','\\','|','/'};
+  static unsigned int animationState = 0;
+  animationState = (animationState + 1) % sizeof(animation);
+
+  static bool isCharDevice = []() {
+    struct stat st;
+    if (fstat(STDERR_FILENO, &st)) {
+      return false;
+    }
+    return (S_ISCHR(st.st_mode));
+  }();
+
+  fprintf(stderr,"%s[%p][%c] compositor [%d] -> [%d] delay [%d] pending [%d] | application [%d] -> [%d] delayed [%d] pending [%d]%c",
+  isCharDevice ? "\r" : "",
+  this,
+  animation[animationState],
+  mStatRecvFromCompositor,
+  mStatSentToClient,
+  mStatSentToClientLater,
+  mStatRecvFromCompositor - mStatSentToClient - mStatSentToClientLater,
+  mStatRecvFromClient,
+  mStatSentToCompositor,
+  mStatSentToCompositorLater,
+  mStatRecvFromClient - mStatSentToCompositor - mStatSentToCompositorLater,
+  isCharDevice ? ' ' : '\n');
+}
+
 bool ProxiedConnection::Process() {
-  if (mFailed) {
+  if (mApplicationFailed) {
+    return false;
+  }
+  if (mCompositorFailed) {
+    // The compositor closed its side of the connection. Keep flushing any data
+    // still queued for the application (e.g. a wl_display.error the compositor
+    // sent just before closing) so GTK can dispatch it via WlLogHandler before
+    // graceful quit is initiated. The compositor socket is dead so skip all
+    // reads and writes in that direction.
+    FlushQueue(mApplicationSocket, mApplicationFlags, mToApplicationQueue,
+               mStatSentToClientLater);
     return false;
   }
 
+  // If we hit any error (instead of compositor waiting to connect),
+  // we keep the code running and flush pending messages where it's possible.
+
   // Check if appplication is still listening
   if (mApplicationFlags & (POLLHUP | POLLERR)) {
-    return false;
+    Print("ProxiedConnection::Process(): Client socket is not listening\n");
+    WaylandProxy::AddState(WAYLAND_PROXY_APP_CONNECTION_FAILED);
+    mApplicationFailed = true;
   }
 
   // Check if compositor is still listening
   if (mCompositorConnected) {
     if (mCompositorFlags & (POLLHUP | POLLERR)) {
-      return false;
+      Print("ProxiedConnection::Process(): Compositor socket is not listening\n");
+      WaylandProxy::AddState(WAYLAND_PROXY_COMPOSITOR_CONNECTION_FAILED);
+      mCompositorFailed = true;
     }
   } else {
     // Try to reconnect to compositor.
     if (!ConnectToCompositor()) {
-      Print("Failed to connect to compositor\n");
-      return false;
-    }
-    // We're not connected yet but ConnectToCompositor() didn't return
-    // fatal error. Try again later.
-    if (!mCompositorConnected) {
+      Error("ProxiedConnection::Process(): Failed to connect to compositor\n");
+      WaylandProxy::AddState(WAYLAND_PROXY_COMPOSITOR_CONNECTION_FAILED);
+      mCompositorFailed = true;
+    } else if (!mCompositorConnected) {
+      // We're not connected yet but ConnectToCompositor() didn't return
+      // fatal error. Try again later.
       return true;
     }
   }
 
-  mFailed =
-      !TransferOrQueue(mCompositorSocket, mCompositorFlags, mApplicationSocket,
-                       &mToApplicationQueue) ||
-      !TransferOrQueue(mApplicationSocket, mApplicationFlags, mCompositorSocket,
-                       &mToCompositorQueue) ||
-      !FlushQueue(mCompositorSocket, mCompositorFlags, mToCompositorQueue) ||
-      !FlushQueue(mApplicationSocket, mApplicationFlags, mToApplicationQueue);
+  if (!TransferOrQueue(mCompositorSocket, mCompositorFlags, mApplicationSocket,
+                       &mToApplicationQueue, mStatRecvFromCompositor,
+                       mStatSentToClient)) {
+    Error("ProxiedConnection::Process(): Failed to read data from compositor!");
+      WaylandProxy::AddState(WAYLAND_PROXY_COMPOSITOR_CONNECTION_FAILED);
+    mCompositorFailed = true;
+  }
+  if (!TransferOrQueue(mApplicationSocket, mApplicationFlags, mCompositorSocket,
+                       &mToCompositorQueue, mStatRecvFromClient,
+                       mStatSentToCompositor)) {
+    Error("ProxiedConnection::Process(): Failed to read data from client!");
+    WaylandProxy::AddState(WAYLAND_PROXY_APP_CONNECTION_FAILED);
+    mApplicationFailed = true;
+  }
+  if (!FlushQueue(mCompositorSocket, mCompositorFlags, mToCompositorQueue,
+                  mStatSentToCompositorLater)) {
+    Error("ProxiedConnection::Process(): Failed to flush queue to compositor!");
+    WaylandProxy::AddState(WAYLAND_PROXY_COMPOSITOR_CONNECTION_FAILED);
+    mCompositorFailed = true;
+  }
+  if (!FlushQueue(mApplicationSocket, mApplicationFlags, mToApplicationQueue,
+                  mStatSentToClientLater)) {
+    Error("ProxiedConnection::Process(): Failed to flush queue to client!");
+    WaylandProxy::AddState(WAYLAND_PROXY_APP_CONNECTION_FAILED);
+    mApplicationFailed = true;
+  }
 
-  return !mFailed;
+  if (sPrintInfo) {
+    PrintConnectionInfo();
+  }
+
+  if (mCompositorFailed) {
+    mFailureTime = clock();
+  }
+  return !mApplicationFailed && !mCompositorFailed;
+}
+
+// Handle the aftermath of a connection failure: schedule a graceful quit if
+// the compositor is gone, or log and discard the failure if the compositor is
+// still alive.
+//
+// Waits out sFailureTimeout first to give Process() time to flush any pending
+// wl_display.error from mToApplicationQueue to GTK before acting. Once the
+// timeout expires, uses stat() on the compositor display path to distinguish:
+//   - Socket file gone: compositor crashed or session ended (both unlink the
+//     socket, so the two cases are indistinguishable). Calls
+//     CompositorUnavailable() to schedule a graceful quit.
+//   - Socket file still present: compositor is alive but closed this
+//     connection for an unknown reason — possibly after sending
+//     wl_display.error (in which case WlLogHandler will crash Firefox), but
+//     possibly silently (e.g. a still-attached object warning). In either
+//     case we log the failure and remove the connection; no telemetry or
+//     crash is generated here.
+//
+// Returns false while still within the grace period (caller should retry),
+// true once the failure has been handled (caller should remove the connection).
+bool ProxiedConnection::ProcessFailure() {
+  if (mCompositorFailed) {
+    double time = (double)(clock() - mFailureTime);
+    if (time < sFailureTimeout) {
+      return false;
+    }
+
+    struct stat buffer;
+    if (stat(mWaylandDisplay, &buffer) < 0) {
+      Print(
+          "ProxiedConnection(): compositor unavailable, scheduling graceful "
+          "quit.\n");
+      WaylandProxy::CompositorUnavailable();
+    } else {
+      Print("ProxiedConnection(): compositor fails to read/write events!\n");
+      WaylandProxy::CompositorSilentDisconnect(mFailureTime);
+    }
+  } else if (mApplicationFailed) {
+    Print("ProxiedConnection(): application fails to read/write events!\n");
+  }
+
+  return true;
+}
+
+bool ProxiedConnection::DrainApplicationSocket() {
+  if (mApplicationFlags & (POLLHUP | POLLERR)) {
+    return false;  // application disconnected
+  }
+  if (!(mApplicationFlags & POLLIN)) {
+    return true;
+  }
+  while (true) {
+    WaylandMessage msg(mApplicationSocket);
+    if (!msg.Loaded()) {
+      // EAGAIN: no more data for now, keep the connection alive.
+      // Fatal error: socket is gone, signal removal.
+      return !msg.Failed();
+    }
+    // msg goes out of scope here; its destructor closes any received fds
+  }
 }
 
 bool WaylandProxy::CheckWaylandDisplay(const char* aWaylandDisplay) {
-  struct sockaddr_un addr = {};
+  struct sockaddr_un addr = {0};
   addr.sun_family = AF_UNIX;
-  strcpy(addr.sun_path, aWaylandDisplay);
+  strncpy(addr.sun_path, aWaylandDisplay, sizeof(addr.sun_path) - 1);
 
   int sc = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
   if (sc == -1) {
@@ -492,6 +672,8 @@ bool WaylandProxy::CheckWaylandDisplay(const char* aWaylandDisplay) {
       case EISCONN:
       case ETIMEDOUT:
         // We can recover from these errors and try again
+        Info("CheckWaylandDisplay(): Wayland display %s non-fatal error %s\n",
+             mWaylandDisplay, strerror(errno));
         ret = true;
         break;
       default:
@@ -525,7 +707,7 @@ bool WaylandProxy::SetupWaylandDisplays() {
 
   // WAYLAND_DISPLAY can be absolute path
   if (waylandDisplay[0] == '/') {
-    if (strlen(mWaylandDisplay) >= sMaxDisplayNameLen) {
+    if (strlen(waylandDisplay) >= sMaxDisplayNameLen) {
       ErrorPlain("WaylandProxy::SetupWaylandDisplays() WAYLAND_DISPLAY is too large.\n");
       return false;
     }
@@ -625,6 +807,7 @@ bool WaylandProxy::IsChildAppTerminated() {
   }
   if (ret == mApplicationPID) {
     // Child application is terminated, so quit too.
+    WaylandProxy::AddState(WAYLAND_PROXY_APP_TERMINATED);
     return true;
   }
   bool terminate = (errno == ECHILD);
@@ -633,7 +816,10 @@ bool WaylandProxy::IsChildAppTerminated() {
 }
 
 bool WaylandProxy::PollConnections() {
-  int nfds_max = mConnections.size() * 2 + 1;
+  // When compositor is gone each connection only contributes one fd
+  // (application socket); compositor sockets are omitted from the poll set.
+  int fds_per_connection = sCompositorGone ? 1 : 2;
+  int nfds_max = mConnections.size() * fds_per_connection + 1;
 
   struct pollfd pollfds[nfds_max];
   struct pollfd* addedPollfd = pollfds;
@@ -645,8 +831,11 @@ bool WaylandProxy::PollConnections() {
 
   // If all connections are attached to compositor, add another one
   // for new potential connection from application.
-  bool addNewConnection = mConnections.empty() ||
-                          mConnections.back()->IsConnected();
+  // Don't accept new connections when compositor is gone — they would have
+  // no compositor to connect to.
+  bool addNewConnection = !sCompositorGone &&
+                          (mConnections.empty() ||
+                           mConnections.back()->IsConnected());
   if (addNewConnection) {
     addedPollfd->fd = mProxyServerSocket;
     addedPollfd->events = POLLIN;
@@ -667,11 +856,12 @@ bool WaylandProxy::PollConnections() {
         case EINTR:
         case EAGAIN:
           if (IsChildAppTerminated()) {
+            Info("PollConnections(): ChildAppTerminated\n");
             return false;
           }
           continue;
         default:
-          Error("Run: poll() error");
+          Error("PollConnections(): poll() error");
           return false;
       }
     }
@@ -703,6 +893,7 @@ bool WaylandProxy::PollConnections() {
     } else {
       auto connection = std::make_unique<ProxiedConnection>();
       if (connection->Init(applicationSocket, mWaylandDisplay)) {
+        WaylandProxy::AddState(WAYLAND_PROXY_CONNECTION_ADDED);
         mConnections.push_back(std::move(connection));
       }
     }
@@ -712,15 +903,45 @@ bool WaylandProxy::PollConnections() {
 }
 
 bool WaylandProxy::ProcessConnections() {
+  // Compositor is gone: drain application sockets (discarding data) to prevent
+  // socket buffer backpressure while Firefox shuts down. Do not forward
+  // anything and keep all sockets open so GTK never sees a broken pipe.
+  if (sCompositorGone) {
+    for (auto connection = mConnections.begin();
+         connection != mConnections.end();) {
+      if (!(*connection)->DrainApplicationSocket()) {
+        // Application has disconnected. Remove the connection so the proxy
+        // thread exits once all clients have shut down.
+        WaylandProxy::AddState(WAYLAND_PROXY_CONNECTION_REMOVED);
+        connection = mConnections.erase(connection);
+      } else {
+        connection++;
+      }
+    }
+    // Exit the proxy loop once all clients have disconnected.
+    return !mConnections.empty();
+  }
+
   std::vector<std::unique_ptr<ProxiedConnection>>::iterator connection;
   for (connection = mConnections.begin(); connection != mConnections.end();) {
     if (!(*connection)->Process()) {
-      Info("remove connection\n");
-      connection = mConnections.erase(connection);
-      if (mConnections.empty()) {
-        // We removed last connection - quit.
-        Info("removed last connection, quit\n");
-        return false;
+      WaylandProxy::AddState(WAYLAND_PROXY_CONNECTION_REMOVED);
+      if ((*connection)->ProcessFailure()) {
+        // ProcessFailure() may have called CompositorUnavailable() and set
+        // sCompositorGone. If so, stop here and keep remaining sockets open.
+        if (sCompositorGone) {
+          return true;
+        }
+        connection = mConnections.erase(connection);
+        if (mConnections.empty()) {
+          // We removed last connection - quit.
+          Info("removed last connection, quit\n");
+          return false;
+        }
+      } else {
+        // ProcessFailure() returned false: still within the failure grace
+        // period. Advance past this connection and revisit it next cycle.
+        connection++;
       }
     } else {
       connection++;
@@ -730,8 +951,21 @@ bool WaylandProxy::ProcessConnections() {
 }
 
 void WaylandProxy::Run() {
-  while (!IsChildAppTerminated() && PollConnections() && ProcessConnections())
-    ;
+  while (1) {
+    if (IsChildAppTerminated()) {
+      Info("quit - ChildAppTerminated\n");
+      break;
+    }
+    if (!PollConnections()) {
+      Info("quit - no connection\n");
+      break;
+    }
+    if (!ProcessConnections()) {
+      Info("quit - failed to process connections\n");
+      break;
+    }
+  }
+  WaylandProxy::AddState(WAYLAND_PROXY_TERMINATED);
 }
 
 WaylandProxy::~WaylandProxy() {
@@ -801,7 +1035,7 @@ bool WaylandProxy::RunThread() {
 
   sched_param param;
   if (pthread_attr_getschedparam(&attr, &param) == 0) {
-    param.sched_priority = sched_get_priority_min(SCHED_RR);
+    param.sched_priority = sched_get_priority_min(SCHED_FIFO);
     pthread_attr_setschedparam(&attr, &param);
   }
 
@@ -812,6 +1046,7 @@ bool WaylandProxy::RunThread() {
     ErrorPlain("WaylandProxy::RunThread(): pthread_create() failed\n");
     // If we failed to run proxy thread, set WAYLAND_DISPLAY back.
     RestoreWaylandDisplay();
+    WaylandProxy::AddState(WAYLAND_PROXY_RUN_FAILED);
   }
 
   pthread_attr_destroy(&attr);
@@ -847,4 +1082,42 @@ void WaylandProxy::ErrorPlain(const char* aFormat, ...) {
   va_start(args, aFormat);
   vfprintf(stderr, aFormat, args);
   va_end(args);
+}
+
+void WaylandProxy::SetCompositorUnavailableHandler(
+    CompositorUnavailableHandler aHandler) {
+  sCompositorUnavailableHandler = aHandler;
+}
+
+void WaylandProxy::CompositorUnavailable() {
+  sCompositorGone = true;
+  if (sCompositorUnavailableHandler) {
+    sCompositorUnavailableHandler();
+  }
+}
+
+void WaylandProxy::SetCompositorSilentDisconnectHandler(
+    CompositorSilentDisconnectHandler aHandler) {
+  sCompositorSilentDisconnectHandler = aHandler;
+}
+
+void WaylandProxy::CompositorSilentDisconnect(clock_t aFailureTime) {
+  if (sCompositorSilentDisconnectHandler) {
+    sCompositorSilentDisconnectHandler(aFailureTime);
+  }
+}
+
+void WaylandProxy::AddState(unsigned aState) {
+  sProxyStateFlags.fetch_or(aState, std::memory_order_relaxed);
+}
+
+const char* WaylandProxy::GetState() {
+  std::string stateString;
+  unsigned state = sProxyStateFlags.load(std::memory_order_relaxed);
+  for (unsigned i = 0, flag = 1; i < sizeof(stateFlags); i++, flag <<= 1) {
+    if (state & flag) {
+      stateString.append(stateFlags[i]);
+    }
+  }
+  return strdup(stateString.c_str());
 }

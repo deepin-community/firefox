@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Gnove schede
     .accesskey = G
@@ -28,10 +32,16 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Siere lis schedis a çampe
     .accesskey = ç
+close-tabs-to-the-start-vertical =
+    .label = Siere lis schedis parsore
+    .accesskey = S
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Siere lis schedis a diestre
+    .accesskey = i
+close-tabs-to-the-end-vertical =
+    .label = Siere lis schedis sot
     .accesskey = i
 close-other-tabs =
     .label = Siere altris schedis
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Sposte intun gnûf barcon
     .accesskey = b
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Sposte in { $profileName }
 tab-context-close-multiple-tabs =
     .label = Siere multiplis schedis
     .accesskey = M
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Condivît
     .accesskey = C
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Gnove schede a diestre
+    .accesskey = d
+tab-context-new-tab-open-vertical =
+    .label = Gnove schede sot
+    .accesskey = t
+tab-context-new-group =
+    .label = Gnûf grup
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -106,6 +130,15 @@ tab-context-move-tabs =
            *[other] Sposte schedis
         }
     .accesskey = h
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Mande a dispositîf
+            [one] Mande a dispositîf
+           *[other] Mande { $tabCount } schedis a dispositîf
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -113,3 +146,11 @@ tab-context-send-tabs-to-device =
            *[other] Mande { $tabCount } schedis al dispositîf
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Discjame schede
+            [one] Discjame schede
+           *[other] Discjame { $tabCount } schedis
+        }
+    .accesskey = D

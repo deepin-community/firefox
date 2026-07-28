@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,19 +10,18 @@
 #include "mozilla/Casting.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Services.h"
+#include "mozilla/StaticPrefs_security.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/dom/Promise.h"
 #include "nsCOMPtr.h"
 #include "nsIInterfaceRequestor.h"
 #include "nsIInterfaceRequestorUtils.h"
 #include "nsIObserverService.h"
-#include "nsITokenPasswordDialogs.h"
 #include "nsNSSComponent.h"
 #include "nsNSSHelper.h"
 #include "nsNetCID.h"
-#include "nsPK11TokenDB.h"
 #include "pk11func.h"
-#include "pk11sdr.h"  // For PK11SDR_Encrypt, PK11SDR_Decrypt
+#include "pk11sdr.h"
 
 static mozilla::LazyLogModule gSDRLog("sdrlog");
 
@@ -76,7 +74,7 @@ void BackgroundSdrDecryptStrings(const nsTArray<nsCString>& encryptedStrings,
 
     if (NS_FAILED(rv)) {
       if (rv == NS_ERROR_NOT_AVAILABLE) {
-        // Master Password entry was canceled. Don't keep prompting again.
+        // Password entry was canceled. Don't keep prompting again.
         break;
       }
 
@@ -108,23 +106,18 @@ void BackgroundSdrDecryptStrings(const nsTArray<nsCString>& encryptedStrings,
   NS_DispatchToMainThread(runnable.forget());
 }
 
-nsresult SecretDecoderRing::Encrypt(const nsACString& data,
+nsresult SecretDecoderRing::Encrypt(CK_MECHANISM_TYPE type,
+                                    const nsACString& data,
                                     /*out*/ nsACString& result) {
   UniquePK11SlotInfo slot(PK11_GetInternalKeySlot());
   if (!slot) {
-    return NS_ERROR_NOT_AVAILABLE;
-  }
-
-  /* Make sure token is initialized. */
-  nsCOMPtr<nsIInterfaceRequestor> ctx = new PipUIContext();
-  nsresult rv = setPassword(slot.get(), ctx);
-  if (NS_FAILED(rv)) {
-    return rv;
+    return NS_ERROR_FAILURE;
   }
 
   /* Force authentication */
+  nsCOMPtr<nsIInterfaceRequestor> ctx = new PipUIContext();
   if (PK11_Authenticate(slot.get(), true, ctx) != SECSuccess) {
-    return NS_ERROR_FAILURE;
+    return NS_ERROR_NOT_AVAILABLE;
   }
 
   /* Use default key id */
@@ -135,7 +128,8 @@ nsresult SecretDecoderRing::Encrypt(const nsACString& data,
   request.data = BitwiseCast<unsigned char*, const char*>(data.BeginReading());
   request.len = data.Length();
   ScopedAutoSECItem reply;
-  if (PK11SDR_Encrypt(&keyid, &request, &reply, ctx) != SECSuccess) {
+  if (PK11SDR_EncryptWithMechanism(slot.get(), &keyid, type, &request, &reply,
+                                   ctx) != SECSuccess) {
     return NS_ERROR_FAILURE;
   }
 
@@ -148,7 +142,7 @@ nsresult SecretDecoderRing::Decrypt(const nsACString& data,
   /* Find token with SDR key */
   UniquePK11SlotInfo slot(PK11_GetInternalKeySlot());
   if (!slot) {
-    return NS_ERROR_NOT_AVAILABLE;
+    return NS_ERROR_FAILURE;
   }
 
   /* Force authentication */
@@ -172,8 +166,19 @@ nsresult SecretDecoderRing::Decrypt(const nsACString& data,
 NS_IMETHODIMP
 SecretDecoderRing::EncryptString(const nsACString& text,
                                  /*out*/ nsACString& encryptedBase64Text) {
+  CK_MECHANISM_TYPE type;
+  nsCString prefix;
+  switch (StaticPrefs::security_sdr_mechanism()) {
+    case 0:
+      type = CKM_DES3_CBC;
+      break;
+    case 1:
+    default:
+      type = CKM_AES_CBC;
+      break;
+  }
   nsAutoCString encryptedText;
-  nsresult rv = Encrypt(text, encryptedText);
+  nsresult rv = Encrypt(type, text, encryptedText);
   if (NS_FAILED(rv)) {
     return rv;
   }
@@ -282,30 +287,6 @@ SecretDecoderRing::AsyncDecryptStrings(
 
   promise.forget(aPromise);
   return NS_OK;
-}
-
-NS_IMETHODIMP
-SecretDecoderRing::ChangePassword() {
-  UniquePK11SlotInfo slot(PK11_GetInternalKeySlot());
-  if (!slot) {
-    return NS_ERROR_NOT_AVAILABLE;
-  }
-
-  // nsPK11Token::nsPK11Token takes its own reference to slot, so we pass a
-  // non-owning pointer here.
-  nsCOMPtr<nsIPK11Token> token = new nsPK11Token(slot.get());
-
-  nsCOMPtr<nsITokenPasswordDialogs> dialogs;
-  nsresult rv = getNSSDialogs(getter_AddRefs(dialogs),
-                              NS_GET_IID(nsITokenPasswordDialogs),
-                              NS_TOKENPASSWORDSDIALOG_CONTRACTID);
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-
-  nsCOMPtr<nsIInterfaceRequestor> ctx = new PipUIContext();
-  bool canceled;  // Ignored
-  return dialogs->SetPassword(ctx, token, &canceled);
 }
 
 NS_IMETHODIMP

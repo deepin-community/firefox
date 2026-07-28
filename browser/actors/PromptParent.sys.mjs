@@ -1,4 +1,3 @@
-/* vim: set ts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +14,7 @@ ChromeUtils.defineLazyGetter(lazy, "gTabBrowserLocalization", function () {
 });
 
 /**
- * @typedef {Object} Dialog
+ * @typedef {object} Dialog
  */
 
 /**
@@ -93,6 +92,25 @@ export class PromptParent extends JSWindowActorParent {
     );
   }
 
+  // Note that this will return false for the sidebar <browser> element
+  // itself.
+  isEmbeddedInSidebar(browser) {
+    if (
+      browser?.documentGlobal?.browsingContext.embedderElement?.id != "sidebar"
+    ) {
+      return false;
+    }
+    // Extensions in the sidebar have more layers of nesting, and this causes
+    // window leaks in tests. We would like to fix this at some point (bug 1513656)
+    if (
+      browser.getAttribute("messagemanagergroup") == "webext-browsers" ||
+      browser.getAttribute("messagemanagergroup") == "chatbot-browser"
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   receiveMessage(message) {
     switch (message.name) {
       case "Prompt:Open":
@@ -111,13 +129,11 @@ export class PromptParent extends JSWindowActorParent {
    * for a BrowsingContext, and puts the associated browser in the modal state
    * until the prompt is closed.
    *
-   * @param {Object} args
+   * @param {object} args
    *        The arguments passed up from the BrowsingContext to be passed
    *        directly to the modal prompt.
-   * @return {Promise}
-   *         Resolves when the modal prompt is dismissed.
-   * @resolves {Object}
-   *           The arguments returned from the modal prompt.
+   * @return {Promise<object>}
+   *         Resolves with the arguments returned from the modal prompt.
    */
   async openPromptWithTabDialogBox(args) {
     const COMMON_DIALOG = "chrome://global/content/commonDialog.xhtml";
@@ -128,8 +144,9 @@ export class PromptParent extends JSWindowActorParent {
 
     let browser = browsingContext.embedderElement;
 
-    if (this.isAboutAddonsOptionsPage(browsingContext)) {
-      browser = browser.ownerGlobal.browsingContext.embedderElement;
+    let isEmbeddedInSidebar = this.isEmbeddedInSidebar(browser);
+    if (isEmbeddedInSidebar || this.isAboutAddonsOptionsPage(browsingContext)) {
+      browser = browser.documentGlobal.browsingContext.embedderElement;
     }
 
     let promptRequiresBrowser =
@@ -141,13 +158,21 @@ export class PromptParent extends JSWindowActorParent {
       throw new Error(`Cannot ${modal_type}-prompt without a browser!`);
     }
 
+    const closingEventDetails =
+      args.modalType === Services.prompt.MODAL_TYPE_CONTENT
+        ? {
+            owningBrowsingContext: this.browsingContext,
+            promptType: args.inPermitUnload ? "beforeunload" : args.promptType,
+          }
+        : null;
+
     let win;
 
     // If we are a chrome actor we can use the associated chrome win.
     if (!browsingContext.isContent && browsingContext.window) {
       win = browsingContext.window;
     } else {
-      win = browser?.ownerGlobal;
+      win = browser?.documentGlobal;
     }
 
     // There's a requirement for prompts to be blocked if a window is
@@ -158,26 +183,13 @@ export class PromptParent extends JSWindowActorParent {
       throw new Error("Cannot open a prompt in a hidden window");
     }
 
-    let swappedBrowser;
-    let cancelEventController = new AbortController();
-    let cancelEventSignal = cancelEventController.signal;
     try {
-      if (browser) {
-        browser.enterModalState();
-        // If this tab gets moved to a new window, we will need
-        // to leave the modal state on the new browser, so
-        // keep track of the new browser.
-        browser.addEventListener(
-          "EndSwapDocShells",
-          event => {
-            swappedBrowser = event.detail;
-          },
-          { signal: cancelEventSignal }
-        );
+      if (browsingContext.embedderElement) {
+        browsingContext.embedderElement.enterModalState();
         lazy.PromptUtils.fireDialogEvent(
           win,
           "DOMWillOpenModalDialog",
-          browser,
+          browsingContext.embedderElement,
           this.getOpenEventDetail(args)
         );
       }
@@ -237,9 +249,14 @@ export class PromptParent extends JSWindowActorParent {
               modalType: args.modalType,
               allowFocusCheckbox: args.allowFocusCheckbox,
               hideContent: args.isTopLevelCrossDomainAuth,
+              // If we are in the sidebar, use the inner browser to detect when navigation is done
+              webProgress: isEmbeddedInSidebar
+                ? browsingContext?.webProgress
+                : undefined,
             },
             bag
           );
+          dialog.promptID = promptID;
           this.registerDialog(dialog, promptID);
           await closedPromise;
         } finally {
@@ -274,35 +291,24 @@ export class PromptParent extends JSWindowActorParent {
 
       lazy.PromptUtils.propBagToObject(bag, args);
     } finally {
-      cancelEventController.abort();
-      // If this tab has been moved to a new window, make sure
-      // to leave the modal state on the new browser.
-      let currentBrowser = swappedBrowser ?? browser;
-      if (currentBrowser) {
-        currentBrowser.maybeLeaveModalState();
+      if (browsingContext.embedderElement) {
+        browsingContext.embedderElement.maybeLeaveModalState();
         lazy.PromptUtils.fireDialogEvent(
           win,
           "DOMModalDialogClosed",
-          currentBrowser,
-          this.getClosingEventDetail(args)
+          browsingContext.embedderElement,
+          closingEventDetails
+            ? {
+                ...closingEventDetails,
+                areLeaving: args.ok,
+                // If a prompt was not accepted, do not return the prompt value.
+                value: args.ok ? args.value : null,
+              }
+            : null
         );
       }
     }
     return args;
-  }
-
-  getClosingEventDetail(args) {
-    let details =
-      args.modalType === Services.prompt.MODAL_TYPE_CONTENT
-        ? {
-            areLeaving: args.ok,
-            promptType: args.inPermitUnload ? "beforeunload" : args.promptType,
-            // If a prompt was not accepted, do not return the prompt value.
-            value: args.ok ? args.value : null,
-          }
-        : null;
-
-    return details;
   }
 
   getOpenEventDetail(args) {
@@ -324,7 +330,7 @@ export class PromptParent extends JSWindowActorParent {
    *
    * @param {TabDialogBox}  dialogBox
    *        The dialog to show the tab-switch checkbox for.
-   * @param {Object}  args
+   * @param {object}  args
    *        The `args` object to set tab switching permission info on.
    */
   addTabSwitchCheckboxToArgs(dialogBox, args) {

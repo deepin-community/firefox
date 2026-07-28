@@ -3,19 +3,24 @@
 # WASI issue: https://github.com/WebAssembly/wasi-sdk/issues/180
 
 diff --git a/intl/icu/source/common/putilimp.h b/intl/icu/source/common/putilimp.h
-index 5b95a68..7097232 100644
 --- a/intl/icu/source/common/putilimp.h
 +++ b/intl/icu/source/common/putilimp.h
-@@ -103,6 +103,8 @@ typedef size_t uintptr_t;
+@@ -105,10 +105,12 @@ typedef size_t uintptr_t;
  #endif
  #elif U_PLATFORM == U_PF_OS400
+    /* not defined */
+ #elif U_PLATFORM == U_PF_HAIKU
     /* not defined */
 +#elif defined(__wasi__)
 +   /* not defined */
  #else
  #   define U_TZSET tzset
  #endif
-@@ -128,6 +130,8 @@ typedef size_t uintptr_t;
+ 
+ #if defined(U_TIMEZONE) || defined(U_HAVE_TIMEZONE)
+@@ -130,10 +132,12 @@ typedef size_t uintptr_t;
+    /* not defined */
+ #elif U_PLATFORM == U_PF_OS400
     /* not defined */
  #elif U_PLATFORM == U_PF_IPHONE
     /* not defined */
@@ -24,20 +29,27 @@ index 5b95a68..7097232 100644
  #else
  #   define U_TIMEZONE timezone
  #endif
-@@ -141,6 +145,8 @@ typedef size_t uintptr_t;
+ 
+ #if defined(U_TZNAME) || defined(U_HAVE_TZNAME)
+@@ -145,10 +149,12 @@ typedef size_t uintptr_t;
  #endif
  #elif U_PLATFORM == U_PF_OS400
     /* not defined */
+ #elif U_PLATFORM == U_PF_HAIKU
+     /* not defined, (well it is but a loop back to icu) */
 +#elif defined(__wasi__)
 +   /* not defined */
  #else
  #   define U_TZNAME tzname
  #endif
+ 
+ #ifdef U_HAVE_MMAP
 diff --git a/intl/icu/source/common/umapfile.h b/intl/icu/source/common/umapfile.h
-index 92bd567..4ed1112 100644
 --- a/intl/icu/source/common/umapfile.h
 +++ b/intl/icu/source/common/umapfile.h
-@@ -41,6 +41,8 @@ U_CFUNC void  uprv_unmapFile(UDataMemory *pData);
+@@ -38,10 +38,12 @@ U_CFUNC void  uprv_unmapFile(UDataMemory
+ #define MAP_POSIX       2
+ #define MAP_STDIO       3
  
  #if UCONFIG_NO_FILE_IO
  #   define MAP_IMPLEMENTATION MAP_NONE
@@ -46,11 +58,14 @@ index 92bd567..4ed1112 100644
  #elif U_PLATFORM_USES_ONLY_WIN32_API
  #   define MAP_IMPLEMENTATION MAP_WIN32
  #elif U_HAVE_MMAP || U_PLATFORM == U_PF_OS390
+ #   define MAP_IMPLEMENTATION MAP_POSIX
+ #else /* unknown platform, no memory map implementation: use stdio.h and uprv_malloc() instead */
 diff --git a/intl/icu/source/common/umutex.cpp b/intl/icu/source/common/umutex.cpp
-index ccbee99..6c3452c 100644
 --- a/intl/icu/source/common/umutex.cpp
 +++ b/intl/icu/source/common/umutex.cpp
-@@ -43,6 +43,7 @@ U_NAMESPACE_BEGIN
+@@ -41,10 +41,11 @@ U_NAMESPACE_BEGIN
+  *
+  *  ICU Mutex wrappers.
   *
   *************************************************************************************************/
  
@@ -58,7 +73,11 @@ index ccbee99..6c3452c 100644
  namespace {
  std::mutex *initMutex;
  std::condition_variable *initCondition;
-@@ -55,9 +56,11 @@ std::once_flag initFlag;
+ 
+ // The ICU global mutex.
+@@ -53,32 +54,38 @@ UMutex globalMutex;
+ 
+ std::once_flag initFlag;
  std::once_flag *pInitFlag = &initFlag;
  
  }  // Anonymous namespace
@@ -70,7 +89,8 @@ index ccbee99..6c3452c 100644
      initMutex->~mutex();
      initCondition->~condition_variable();
      UMutex::cleanup();
-@@ -66,17 +69,21 @@ static UBool U_CALLCONV umtx_cleanup() {
+ 
+     // Reset the once_flag, by destructing it and creating a fresh one in its place.
      // Do not use this trick anywhere else in ICU; use umtx_initOnce, not std::call_once().
      pInitFlag->~once_flag();
      pInitFlag = new(&initFlag) std::once_flag();
@@ -92,7 +112,11 @@ index ccbee99..6c3452c 100644
  std::mutex *UMutex::getMutex() {
      std::mutex *retPtr = fMutex.load(std::memory_order_acquire);
      if (retPtr == nullptr) {
-@@ -93,14 +100,17 @@ std::mutex *UMutex::getMutex() {
+         std::call_once(*pInitFlag, umtx_init);
+         std::lock_guard<std::mutex> guard(*initMutex);
+@@ -91,41 +98,48 @@ std::mutex *UMutex::getMutex() {
+         }
+     }
      U_ASSERT(retPtr != nullptr);
      return retPtr;
  }
@@ -110,7 +134,9 @@ index ccbee99..6c3452c 100644
          next = m->fListLink;
          m->fListLink = nullptr;
      }
-@@ -110,20 +120,24 @@ void UMutex::cleanup() {
+     gListHead = nullptr;
+ }
+ 
  
  U_CAPI void  U_EXPORT2
  umtx_lock(UMutex *mutex) {
@@ -135,7 +161,11 @@ index ccbee99..6c3452c 100644
  }
  
  
-@@ -143,18 +157,22 @@ umtx_unlock(UMutex* mutex)
+ /*************************************************************************************************
+  *
+@@ -141,22 +155,26 @@ umtx_unlock(UMutex* mutex)
+ //   that knows the C++ types involved. This function returns true if
+ //   the caller needs to call the Init function.
  //
  U_COMMON_API UBool U_EXPORT2
  umtx_initImplPreInit(UInitOnce &uio) {
@@ -158,7 +188,11 @@ index ccbee99..6c3452c 100644
          return false;
      }
  }
-@@ -168,11 +186,13 @@ umtx_initImplPreInit(UInitOnce &uio) {
+ 
+ 
+@@ -166,15 +184,17 @@ umtx_initImplPreInit(UInitOnce &uio) {
+ //   Some threads may be racing to test the fState variable outside of the mutex,
+ //   requiring the use of store/release when changing its value.
  
  U_COMMON_API void U_EXPORT2
  umtx_initImplPostInit(UInitOnce &uio) {
@@ -172,11 +206,14 @@ index ccbee99..6c3452c 100644
  }
  
  U_NAMESPACE_END
+ 
+ /*************************************************************************************************
 diff --git a/intl/icu/source/common/umutex.h b/intl/icu/source/common/umutex.h
-index 8d76b3f..c1a58db 100644
 --- a/intl/icu/source/common/umutex.h
 +++ b/intl/icu/source/common/umutex.h
-@@ -20,9 +20,12 @@
+@@ -18,13 +18,16 @@
+ */
+ 
  #ifndef UMUTEX_H
  #define UMUTEX_H
  
@@ -189,40 +226,30 @@ index 8d76b3f..c1a58db 100644
  #include <type_traits>
  
  #include "unicode/utypes.h"
-@@ -37,6 +40,8 @@
- #error U_USER_ATOMICS and U_USER_MUTEX_H are not supported
- #endif
- 
-+#ifndef __wasi__
-+
- // Export an explicit template instantiation of std::atomic<int32_t>. 
- // When building DLLs for Windows this is required as it is used as a data member of the exported SharedObject class.
- // See digitlst.h, pluralaffix.h, datefmt.h, and others for similar examples.
-@@ -61,6 +66,7 @@ template struct std::atomic<std::mutex *>;
- #endif
- #endif
- 
-+#endif
- 
- U_NAMESPACE_BEGIN
- 
-@@ -70,6 +76,8 @@ U_NAMESPACE_BEGIN
+ #include "unicode/uclean.h"
+ #include "unicode/uobject.h"
+@@ -43,10 +46,12 @@ U_NAMESPACE_BEGIN
+  *
+  *   Low Level Atomic Operations, ICU wrappers for.
   *
   ****************************************************************************/
  
 +#ifndef __wasi__
 +
  typedef std::atomic<int32_t> u_atomic_int32_t;
- #define ATOMIC_INT32_T_INITIALIZER(val) ATOMIC_VAR_INIT(val)
  
-@@ -89,6 +97,28 @@ inline int32_t umtx_atomic_dec(u_atomic_int32_t *var) {
+ inline int32_t umtx_loadAcquire(u_atomic_int32_t &var) {
+     return var.load(std::memory_order_acquire);
+ }
+@@ -61,10 +66,31 @@ inline int32_t umtx_atomic_inc(u_atomic_
+ 
+ inline int32_t umtx_atomic_dec(u_atomic_int32_t *var) {
      return var->fetch_sub(1) - 1;
  }
  
 +#else
 +
 +typedef int32_t u_atomic_int32_t;
-+#define ATOMIC_INT32_T_INITIALIZER(val) val
 +
 +inline int32_t umtx_loadAcquire(u_atomic_int32_t &var) {
 +    return var;
@@ -244,24 +271,28 @@ index 8d76b3f..c1a58db 100644
  
  /*************************************************************************************************
   *
-@@ -231,17 +261,25 @@ class U_COMMON_API UMutex {
+  *  UInitOnce Definitions.
+  *
+@@ -211,21 +237,29 @@ public:
+     U_COMMON_API UMutex& operator=(const UMutex& other) = delete;
+     U_COMMON_API void* operator new(size_t) = delete;
  
      // requirements for C++ BasicLockable, allows UMutex to work with std::lock_guard
-     void lock() {
+     U_COMMON_API void lock() {
 +#ifndef __wasi__
          std::mutex *m = fMutex.load(std::memory_order_acquire);
          if (m == nullptr) { m = getMutex(); }
          m->lock();
 +#endif
-+    }
-+    void unlock() {
+     }
+-    U_COMMON_API void unlock() { fMutex.load(std::memory_order_relaxed)->unlock(); }
++    U_COMMON_API void unlock() {
 +#ifndef __wasi__
 +        fMutex.load(std::memory_order_relaxed)->unlock();
 +#endif
-     }
--    void unlock() { fMutex.load(std::memory_order_relaxed)->unlock(); }
++    }
  
-     static void cleanup();
+     U_COMMON_API static void cleanup();
  
  private:
 +#ifndef __wasi__
@@ -271,7 +302,11 @@ index 8d76b3f..c1a58db 100644
  
      /** All initialized UMutexes are kept in a linked list, so that they can be found,
       * and the underlying std::mutex destructed, by u_cleanup().
-@@ -253,7 +291,9 @@ class U_COMMON_API UMutex {
+      */
+     UMutex *fListLink { nullptr };
+@@ -233,11 +267,13 @@ private:
+ 
+     /** Out-of-line function to lazily initialize a UMutex on first use.
       * Initial fast check is inline, in lock().  The returned value may never
       * be nullptr.
       */
@@ -281,6 +316,8 @@ index 8d76b3f..c1a58db 100644
  };
  
  
+ /* Lock a mutex.
+  * @param mutex The given mutex to be locked.  Pass NULL to specify
 diff --git a/intl/icu/source/common/unifiedcache.cpp b/intl/icu/source/common/unifiedcache.cpp
 --- a/intl/icu/source/common/unifiedcache.cpp
 +++ b/intl/icu/source/common/unifiedcache.cpp
@@ -290,9 +327,8 @@ diff --git a/intl/icu/source/common/unifiedcache.cpp b/intl/icu/source/common/un
  #include "unifiedcache.h"
  
  #include <algorithm>      // For std::max()
--#include <mutex>
 +#ifndef __wasi__
-+ #include <mutex>
+ #include <mutex>
 +#endif
  
  #include "uassert.h"
@@ -309,7 +345,7 @@ diff --git a/intl/icu/source/common/unifiedcache.cpp b/intl/icu/source/common/un
  static const int32_t MAX_EVICT_ITERATIONS = 10;
  static const int32_t DEFAULT_MAX_UNUSED = 1000;
  static const int32_t DEFAULT_PERCENTAGE_OF_IN_USE = 100;
-@@ -32,14 +36,16 @@ static const int32_t DEFAULT_PERCENTAGE_OF_IN_USE = 100;
+@@ -32,14 +36,16 @@ static const int32_t DEFAULT_PERCENTAGE_
  U_CDECL_BEGIN
  static UBool U_CALLCONV unifiedcache_cleanup() {
      gCacheInitOnce.reset();
@@ -477,10 +513,11 @@ diff --git a/intl/icu/source/common/unifiedcache.cpp b/intl/icu/source/common/un
          const UHashElement *element,
          const SharedObject *&value,
 diff --git a/intl/icu/source/i18n/decContext.h b/intl/icu/source/i18n/decContext.h
-index 59ab65e..20f3526 100644
 --- a/intl/icu/source/i18n/decContext.h
 +++ b/intl/icu/source/i18n/decContext.h
-@@ -61,7 +61,9 @@
+@@ -59,11 +59,13 @@
+ 
+   #if !defined(int32_t)
  /* #include <stdint.h>   */         /* C99 standard integers           */
    #endif
    #include <stdio.h>               /* for printf, etc.                */
@@ -490,11 +527,14 @@ index 59ab65e..20f3526 100644
  
    /* Extended flags setting -- set this to 0 to use only IEEE flags   */
    #if !defined(DECEXTFLAG)
+   #define DECEXTFLAG 1             /* 1=enable extended flags         */
+   #endif
 diff --git a/intl/icu/source/i18n/decimfmt.cpp b/intl/icu/source/i18n/decimfmt.cpp
-index daa1129..c8f1eda 100644
 --- a/intl/icu/source/i18n/decimfmt.cpp
 +++ b/intl/icu/source/i18n/decimfmt.cpp
-@@ -480,8 +480,13 @@ DecimalFormat& DecimalFormat::operator=(const DecimalFormat& rhs) {
+@@ -478,12 +478,17 @@ DecimalFormat& DecimalFormat::operator=(
+ }
+ 
  DecimalFormat::~DecimalFormat() {
      if (fields == nullptr) { return; }
  
@@ -508,7 +548,11 @@ index daa1129..c8f1eda 100644
      delete fields;
  }
  
-@@ -1626,8 +1631,13 @@ void DecimalFormat::touch(UErrorCode& status) {
+ DecimalFormat* DecimalFormat::clone() const {
+     // can only clone valid objects.
+@@ -1635,12 +1640,17 @@ void DecimalFormat::touch(UErrorCode& st
+     
+     // Do this after fields->exportedProperties are set up
      setupFastFormat();
  
      // Delete the parsers if they were made previously
@@ -522,7 +566,11 @@ index daa1129..c8f1eda 100644
  
      // In order for the getters to work, we need to populate some fields in NumberFormat.
      NumberFormat::setCurrency(fields->exportedProperties.currency.get(status).getISOCurrency(), status);
-@@ -1662,7 +1672,11 @@ const numparse::impl::NumberParserImpl* DecimalFormat::getParser(UErrorCode& sta
+     NumberFormat::setMaximumIntegerDigits(fields->exportedProperties.maximumIntegerDigits);
+     NumberFormat::setMinimumIntegerDigits(fields->exportedProperties.minimumIntegerDigits);
+@@ -1671,11 +1681,15 @@ const numparse::impl::NumberParserImpl* 
+     if (U_FAILURE(status)) {
+         return nullptr;
      }
  
      // First try to get the pre-computed parser
@@ -534,7 +582,11 @@ index daa1129..c8f1eda 100644
      if (ptr != nullptr) {
          return ptr;
      }
-@@ -1681,6 +1695,7 @@ const numparse::impl::NumberParserImpl* DecimalFormat::getParser(UErrorCode& sta
+ 
+     // Try computing the parser on our own
+@@ -1690,25 +1704,34 @@ const numparse::impl::NumberParserImpl* 
+ 
+     // Note: ptr starts as nullptr; during compare_exchange,
      // it is set to what is actually stored in the atomic
      // if another thread beat us to computing the parser object.
      auto* nonConstThis = const_cast<DecimalFormat*>(this);
@@ -542,7 +594,8 @@ index daa1129..c8f1eda 100644
      if (!nonConstThis->fields->atomicParser.compare_exchange_strong(ptr, temp)) {
          // Another thread beat us to computing the parser
          delete temp;
-@@ -1689,13 +1704,21 @@ const numparse::impl::NumberParserImpl* DecimalFormat::getParser(UErrorCode& sta
+         return ptr;
+     } else {
          // Our copy of the parser got stored in the atomic
          return temp;
      }
@@ -564,7 +617,11 @@ index daa1129..c8f1eda 100644
      if (ptr != nullptr) {
          return ptr;
      }
-@@ -1710,6 +1733,7 @@ const numparse::impl::NumberParserImpl* DecimalFormat::getCurrencyParser(UErrorC
+ 
+     // Try computing the parser on our own
+@@ -1719,18 +1742,23 @@ const numparse::impl::NumberParserImpl* 
+     }
+ 
      // Note: ptr starts as nullptr; during compare_exchange, it is set to what is actually stored in the
      // atomic if another thread beat us to computing the parser object.
      auto* nonConstThis = const_cast<DecimalFormat*>(this);
@@ -572,7 +629,8 @@ index daa1129..c8f1eda 100644
      if (!nonConstThis->fields->atomicCurrencyParser.compare_exchange_strong(ptr, temp)) {
          // Another thread beat us to computing the parser
          delete temp;
-@@ -1718,6 +1742,10 @@ const numparse::impl::NumberParserImpl* DecimalFormat::getCurrencyParser(UErrorC
+         return ptr;
+     } else {
          // Our copy of the parser got stored in the atomic
          return temp;
      }
@@ -583,11 +641,14 @@ index daa1129..c8f1eda 100644
  }
  
  void
+ DecimalFormat::fieldPositionHelper(
+         const UFormattedNumberData& formatted,
 diff --git a/intl/icu/source/i18n/number_mapper.h b/intl/icu/source/i18n/number_mapper.h
-index 9ecd776..d094289 100644
 --- a/intl/icu/source/i18n/number_mapper.h
 +++ b/intl/icu/source/i18n/number_mapper.h
-@@ -7,7 +7,6 @@
+@@ -5,18 +5,21 @@
+ 
+ #if !UCONFIG_NO_FORMATTING
  #ifndef __NUMBER_MAPPER_H__
  #define __NUMBER_MAPPER_H__
  
@@ -595,7 +656,7 @@ index 9ecd776..d094289 100644
  #include "number_types.h"
  #include "unicode/currpinf.h"
  #include "standardplural.h"
-@@ -15,6 +14,10 @@
+ #include "number_patternstring.h"
  #include "number_currencysymbols.h"
  #include "numparse_impl.h"
  
@@ -604,9 +665,13 @@ index 9ecd776..d094289 100644
 +#endif
 +
  U_NAMESPACE_BEGIN
- namespace number {
- namespace impl {
-@@ -193,10 +196,18 @@ struct DecimalFormatFields : public UMemory {
+ namespace number::impl {
+ 
+ class AutoAffixPatternProvider;
+ class CurrencyPluralInfoAffixProvider;
+@@ -194,14 +197,22 @@ struct DecimalFormatFields : public UMem
+     * #format} method uses the formatter directly without needing to synchronize.
+     */
      LocalizedNumberFormatter formatter;
  
      /** The lazy-computed parser for .parse() */
@@ -625,10 +690,12 @@ index 9ecd776..d094289 100644
  
      /** Small object ownership warehouse for the formatter and parser */
      DecimalFormatWarehouse warehouse;
+ 
+     /** The effective properties as exported from the formatter object. Used by some getters. */
 diff --git a/intl/icu/source/i18n/numrange_fluent.cpp b/intl/icu/source/i18n/numrange_fluent.cpp
 --- a/intl/icu/source/i18n/numrange_fluent.cpp
 +++ b/intl/icu/source/i18n/numrange_fluent.cpp
-@@ -238,33 +238,53 @@ LocalizedNumberRangeFormatter::LocalizedNumberRangeFormatter(LocalizedNumberRang
+@@ -246,33 +246,53 @@ LocalizedNumberRangeFormatter::Localized
  
  LocalizedNumberRangeFormatter::LocalizedNumberRangeFormatter(NFS<LNF>&& src) noexcept
          : NFS<LNF>(std::move(src)) {
@@ -682,7 +749,7 @@ diff --git a/intl/icu/source/i18n/numrange_fluent.cpp b/intl/icu/source/i18n/num
  LocalizedNumberRangeFormatter::LocalizedNumberRangeFormatter(const RangeMacroProps& macros, const Locale& locale) {
      fMacros = macros;
      fMacros.locale = locale;
-@@ -344,11 +364,15 @@ LocalizedNumberRangeFormatter::getFormatter(UErrorCode& status) const {
+@@ -363,11 +383,15 @@ LocalizedNumberRangeFormatter::getFormat
      if (U_FAILURE(status)) {
          return nullptr;
      }
@@ -698,24 +765,23 @@ diff --git a/intl/icu/source/i18n/numrange_fluent.cpp b/intl/icu/source/i18n/num
      }
  
      // Try computing the formatter on our own
-@@ -364,18 +388,23 @@ LocalizedNumberRangeFormatter::getFormatter(UErrorCode& status) const {
+@@ -378,17 +402,22 @@ LocalizedNumberRangeFormatter::getFormat
  
      // Note: ptr starts as nullptr; during compare_exchange,
      // it is set to what is actually stored in the atomic
      // if another thread beat us to computing the formatter object.
      auto* nonConstThis = const_cast<LocalizedNumberRangeFormatter*>(this);
 +#ifndef __wasi__
-     if (!nonConstThis->fAtomicFormatter.compare_exchange_strong(ptr, temp)) {
+     if (!nonConstThis->fAtomicFormatter.compare_exchange_strong(ptr, temp.getAlias())) {
          // Another thread beat us to computing the formatter
-         delete temp;
          return ptr;
      } else {
          // Our copy of the formatter got stored in the atomic
-         return temp;
+         return temp.orphan();
      }
 +#else
-+    nonConstThis->fAtomicFormatter = temp;
-+    return temp;
++    nonConstThis->fAtomicFormatter = temp.getAlias();
++    return temp.orphan();
 +#endif
  
  }
@@ -723,10 +789,11 @@ diff --git a/intl/icu/source/i18n/numrange_fluent.cpp b/intl/icu/source/i18n/num
  
  #endif /* #if !UCONFIG_NO_FORMATTING */
 diff --git a/intl/icu/source/i18n/unicode/numberrangeformatter.h b/intl/icu/source/i18n/unicode/numberrangeformatter.h
-index b9a4600..0ba2fa0 100644
 --- a/intl/icu/source/i18n/unicode/numberrangeformatter.h
 +++ b/intl/icu/source/i18n/unicode/numberrangeformatter.h
-@@ -10,7 +10,6 @@
+@@ -8,18 +8,21 @@
+ 
+ #if U_SHOW_CPLUSPLUS_API
  
  #if !UCONFIG_NO_FORMATTING
  
@@ -734,7 +801,7 @@ index b9a4600..0ba2fa0 100644
  #include "unicode/appendable.h"
  #include "unicode/fieldpos.h"
  #include "unicode/formattedvalue.h"
-@@ -18,6 +17,10 @@
+ #include "unicode/fpositer.h"
  #include "unicode/numberformatter.h"
  #include "unicode/unumberrangeformatter.h"
  
@@ -745,18 +812,12 @@ index b9a4600..0ba2fa0 100644
  /**
   * \file
   * \brief C++ API: Library for localized formatting of number, currency, and unit ranges.
-@@ -77,7 +80,9 @@ struct UFormattedNumberRangeImpl;
- } // namespace icu::number
- U_NAMESPACE_END
- 
-+#ifndef __wasi__
- template struct U_I18N_API std::atomic< U_NAMESPACE_QUALIFIER number::impl::NumberRangeFormatterImpl*>;
-+#endif
- 
- U_NAMESPACE_BEGIN
- namespace number {  // icu::number
-@@ -546,7 +551,11 @@ class U_I18N_API LocalizedNumberRangeFormatter
-     ~LocalizedNumberRangeFormatter();
+  *
+  * The main entrypoint to the formatting of ranges of numbers, including currencies and other units of measurement.
+@@ -559,11 +562,15 @@ class U_I18N_API_CLASS LocalizedNumberRa
+      * @stable ICU 63
+      */
+     U_I18N_API ~LocalizedNumberRangeFormatter();
  
    private:
 +#ifndef __wasi__
@@ -767,3 +828,5 @@ index b9a4600..0ba2fa0 100644
  
      const impl::NumberRangeFormatterImpl* getFormatter(UErrorCode& stauts) const;
  
+     explicit LocalizedNumberRangeFormatter(
+         const NumberRangeFormatterSettings<LocalizedNumberRangeFormatter>& other);

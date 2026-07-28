@@ -7,8 +7,8 @@ const { AboutWelcomeParent } = ChromeUtils.importESModule(
 const { AboutWelcomeTelemetry } = ChromeUtils.importESModule(
   "resource:///modules/aboutwelcome/AboutWelcomeTelemetry.sys.mjs"
 );
-const { AWScreenUtils } = ChromeUtils.importESModule(
-  "resource:///modules/aboutwelcome/AWScreenUtils.sys.mjs"
+const { ASRouterScreenUtils } = ChromeUtils.importESModule(
+  "resource:///modules/asrouter/ASRouterScreenUtils.sys.mjs"
 );
 const { InternalTestingProfileMigrator } = ChromeUtils.importESModule(
   "resource:///modules/InternalTestingProfileMigrator.sys.mjs"
@@ -16,7 +16,7 @@ const { InternalTestingProfileMigrator } = ChromeUtils.importESModule(
 
 async function clickVisibleButton(browser, selector) {
   // eslint-disable-next-line no-shadow
-  await ContentTask.spawn(browser, { selector }, async ({ selector }) => {
+  await SpecialPowers.spawn(browser, [{ selector }], async ({ selector }) => {
     function getVisibleElement() {
       for (const el of content.document.querySelectorAll(selector)) {
         if (el.offsetParent !== null) {
@@ -253,6 +253,11 @@ add_task(async function test_aboutwelcome_addonspicker() {
     //Unexpected selectors:
     ["button[data-l10n-id='btn-1-install']"]
   );
+
+  // Mark the first entry as having been interacted with.
+  SpecialPowers.spawn(browser, [], () => {
+    content.document.notifyUserGestureActivation();
+  });
 
   // Navigate to the next screen to test state on forward/back navigation
   await clickVisibleButton(browser, "button[value='secondary_button']");

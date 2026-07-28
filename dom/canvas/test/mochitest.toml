@@ -41,6 +41,7 @@ support-files = [
 # The video used in those tests crash the Android emulator's VP9 decoder.
 prefs = [
   "media.android-media-codec.enabled=false",
+  "media.ffvpx-hw.enabled=false",
 ]
 
 ["test_2d.clearRect.image.offscreen.html"]
@@ -191,7 +192,10 @@ prefs = [
 
 ["test_accelerated_canvas_context_loss.html"]
 subsuite = "gpu"
-skip-if = ["verify || (os == 'win' && debug)"]
+skip-if = [
+  "os == 'win' && debug",
+  "verify",
+]
 
 ["test_bitmaprenderer.html"]
 
@@ -216,6 +220,9 @@ subsuite = "gpu"
 subsuite = "gpu"
 
 ["test_canvas_focusring.html"]
+skip-if = [
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11' && debug",
+]
 
 ["test_canvas_font_setter.html"]
 
@@ -230,7 +237,7 @@ support-files = ["captureStream_common.js"]
 support-files = ["captureStream_common.js"]
 skip-if = [
   "os == 'android'", # Bug 1752351
-  "os == 'win'", # Bug 1777094
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64'", # Bug 2019625
 ]
 
 ["test_drawImageIncomplete.html"]
@@ -254,6 +261,8 @@ support-files = [
 ]
 
 ["test_filter.html"]
+
+["test_filter_opacity_a8.html"]
 
 ["test_filter_tainted.html"]
 
@@ -285,55 +294,84 @@ tags = "imagebitmap"
 ["test_offscreencanvas_basic_webgl.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
 
 ["test_offscreencanvas_dynamic_fallback.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
 
 ["test_offscreencanvas_font.html"]
 
 ["test_offscreencanvas_many.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
 
 ["test_offscreencanvas_neuter.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
 
 ["test_offscreencanvas_serviceworker.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
 
 ["test_offscreencanvas_sharedworker.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
 
 ["test_offscreencanvas_sizechange.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
 
 ["test_offscreencanvas_subworker.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
 
 ["test_offscreencanvas_toblob.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
-skip-if = ["true"]
+skip-if = [
+  "true",
+]
+
+["test_offscreencanvas_todataurl_stride.html"]
+skip-if = [
+  "os == 'android'", # test depends on things android doesn't have
+]
 
 ["test_offscreencanvas_toimagebitmap.html"]
 subsuite = "gpu"
 tags = "offscreencanvas"
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1795521
-skip-if = ["os == 'android' && debug"]
+skip-if = [
+  "os == 'android' && debug",
+]
+
+["test_offscreencanvas_transfer_readback.html"]
+tags = "offscreencanvas"
+skip-if = ["os == 'android'"]
 
 ["test_strokeText_throw.html"]
 

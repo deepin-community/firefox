@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _SIPCC_SDP_H_
-#define _SIPCC_SDP_H_
+#ifndef SIPCCSDP_H_
+#define SIPCCSDP_H_
 
 #include "sdp_os_defs.h"
 #include "ccsdp.h"
@@ -421,6 +421,8 @@ typedef enum {
     SDP_MAX_PLAYBACK_RATE,
     SDP_APT,
     SDP_RTX_TIME,
+    SDP_LEVEL_IDX,
+    SDP_TIER,
     SDP_MAX_FMTP_PARAM,
     SDP_FMTP_PARAM_UNKNOWN
 } sdp_fmtp_codec_param_e;
@@ -735,6 +737,14 @@ typedef struct sdp_fmtp {
 
     /* RFC 5109 Section 4.2 for specifying redundant encodings */
     uint8_t              redundant_encodings[SDP_FMTP_MAX_REDUNDANT_ENCODINGS];
+
+    /* av1 */
+    uint8_t              av1_profile;
+    tinybool             av1_has_profile;
+    uint8_t              av1_level_idx;
+    tinybool             av1_has_level_idx;
+    uint8_t              av1_tier;
+    tinybool             av1_has_tier;
 
     /* RFC 2833 Section 3.9 (4733) for specifying support DTMF tones:
        The list of values consists of comma-separated elements, which
@@ -1832,4 +1842,4 @@ sdp_attr_get_extmap_id(sdp_t *sdp_p, uint16_t level, uint16_t inst);
 sdp_result_e
 sdp_attr_set_extmap(sdp_t *sdp_p, uint16_t level, uint16_t id, const char* uri, uint16_t inst);
 
-#endif /* _SDP_H_ */
+#endif /* SDP_H_ */

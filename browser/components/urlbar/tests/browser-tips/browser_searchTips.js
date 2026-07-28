@@ -13,9 +13,9 @@
 ChromeUtils.defineESModuleGetters(this, {
   AppMenuNotifications: "resource://gre/modules/AppMenuNotifications.sys.mjs",
   HttpServer: "resource://testing-common/httpd.sys.mjs",
-  UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
+  UrlbarPrefs: "moz-src:///browser/components/urlbar/UrlbarPrefs.sys.mjs",
   UrlbarProviderSearchTips:
-    "resource:///modules/UrlbarProviderSearchTips.sys.mjs",
+    "moz-src:///browser/components/urlbar/UrlbarProviderSearchTips.sys.mjs",
 });
 
 // These should match the same consts in UrlbarProviderSearchTips.sys.mjs.
@@ -48,6 +48,7 @@ add_setup(async function () {
       // Set following prefs so tips are actually shown.
       ["browser.laterrun.bookkeeping.profileCreationTime", 0],
       ["browser.laterrun.bookkeeping.updateAppliedTime", 0],
+      ["browser.urlbar.scotchBonnet.enableOverride", false],
     ],
   });
 
@@ -64,7 +65,7 @@ add_setup(async function () {
     activeUpdateFile.remove(false);
   } catch (e) {}
 
-  let defaultEngine = await Services.search.getDefault();
+  let defaultEngine = await SearchService.getDefault();
   let defaultEngineName = defaultEngine.name;
   Assert.equal(defaultEngineName, "Google", "Default engine should be Google.");
 

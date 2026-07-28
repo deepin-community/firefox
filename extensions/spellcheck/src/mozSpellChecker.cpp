@@ -1,4 +1,3 @@
-/* vim: set ts=2 sts=2 sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -28,7 +27,7 @@ using mozilla::dom::ContentChild;
 static mozilla::LazyLogModule sSpellChecker("SpellChecker");
 
 NS_IMPL_CYCLE_COLLECTION(mozSpellChecker, mTextServicesDocument,
-                         mPersonalDictionary)
+                         mPersonalDictionary, mConverter)
 
 mozSpellChecker::mozSpellChecker() : mEngine(nullptr) {}
 
@@ -42,7 +41,7 @@ mozSpellChecker::~mozSpellChecker() {
 
   if (mEngine) {
     MOZ_ASSERT(XRE_IsContentProcess());
-    RemoteSpellcheckEngineChild::Send__delete__(mEngine);
+    mEngine->Destroy();
     MOZ_ASSERT(!mEngine);
   }
 }
@@ -343,21 +342,6 @@ nsresult mozSpellChecker::RemoveWordFromPersonalDictionary(
   }
   res = mPersonalDictionary->RemoveWord(aWord);
   return res;
-}
-
-nsresult mozSpellChecker::GetPersonalDictionary(nsTArray<nsString>* aWordList) {
-  if (!aWordList || !mPersonalDictionary) return NS_ERROR_NULL_POINTER;
-
-  nsCOMPtr<nsIStringEnumerator> words;
-  mPersonalDictionary->GetWordList(getter_AddRefs(words));
-
-  bool hasMore;
-  nsAutoString word;
-  while (NS_SUCCEEDED(words->HasMore(&hasMore)) && hasMore) {
-    words->GetNext(word);
-    aWordList->AppendElement(word);
-  }
-  return NS_OK;
 }
 
 nsresult mozSpellChecker::GetDictionaryList(

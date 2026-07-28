@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,7 +31,6 @@ class XULButtonAccessible : public AccessibleWrap {
   // LocalAccessible
   virtual mozilla::a11y::role NativeRole() const override;
   virtual uint64_t NativeState() const override;
-  virtual bool AttributeChangesState(nsAtom* aAttribute) override;
 
   // ActionAccessible
   virtual bool HasPrimaryAction() const override;
@@ -47,6 +45,13 @@ class XULButtonAccessible : public AccessibleWrap {
 
  protected:
   virtual ~XULButtonAccessible();
+
+  // LocalAccessible
+  virtual bool AttributeChangesState(nsAtom* aAttribute) override;
+  virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                                   AttrModType aModType,
+                                   const nsAttrValue* aOldValue,
+                                   uint64_t aOldState) override;
 
   // XULButtonAccessible
   bool ContainsMenu() const;

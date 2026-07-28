@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -31,12 +29,6 @@
 #include "vm/JSObject-inl.h"
 #include "vm/Realm-inl.h"
 #include "vm/Shape-inl.h"
-
-#ifdef ENABLE_RECORD_TUPLE
-// Defined in vm/RecordTupleShared.{h,cpp}. We cannot include that file
-// because it causes circular dependencies.
-extern bool js::IsExtendedPrimitive(const JSObject& obj);
-#endif
 
 namespace js {
 
@@ -112,7 +104,7 @@ inline void NativeObject::copyDenseElements(uint32_t dstStart, const Value* src,
   if (count == 0) {
     return;
   }
-  if (zone()->needsIncrementalBarrier()) {
+  if (zone()->needsMarkingBarrier()) {
     uint32_t numShifted = getElementsHeader()->numShiftedElements();
     for (uint32_t i = 0; i < count; ++i) {
       elements_[dstStart + i].set(this, HeapSlot::Element,
@@ -168,7 +160,7 @@ inline void NativeObject::initDenseElements(const Value* src, uint32_t count) {
   elementsRangePostWriteBarrier(0, count);
 }
 
-inline void NativeObject::initDenseElements(JSLinearString** src,
+inline void NativeObject::initDenseElements(IteratorProperty* src,
                                             uint32_t count) {
   MOZ_ASSERT(getDenseInitializedLength() == 0);
   MOZ_ASSERT(count <= getDenseCapacity());
@@ -178,7 +170,7 @@ inline void NativeObject::initDenseElements(JSLinearString** src,
   setDenseInitializedLength(count);
   Value* elementsBase = reinterpret_cast<Value*>(elements_);
   for (size_t i = 0; i < count; i++) {
-    elementsBase[i].setString(src[i]);
+    elementsBase[i].setString(src[i].asString());
   }
 
   elementsRangePostWriteBarrier(0, count);
@@ -233,18 +225,29 @@ inline bool NativeObject::initDenseElementsFromRange(JSContext* cx, Iter begin,
 
   HeapSlot* sp = elements_;
   size_t slot = 0;
-  for (; begin != end; sp++, begin++) {
+  for (; begin != end; sp++, begin++, slot++) {
     Value v = *begin;
 #ifdef DEBUG
     checkStoredValue(v);
 #endif
-    sp->init(this, HeapSlot::Element, slot++, v);
+    sp->unbarrieredInit(v);
   }
+  elementsRangePostWriteBarrier(0, count);
   MOZ_ASSERT(slot == count);
 
   getElementsHeader()->initializedLength = count;
-  as<ArrayObject>().setLength(count);
+  as<ArrayObject>().setLengthToInitializedLength();
   return true;
+}
+
+bool NativeObject::canMoveElementsHeader() const {
+#ifdef JS_GC_CONCURRENT_MARKING
+  // We can't move the elements header when concurrent marking may be marking
+  // the elements on another thread.
+  return !zone()->needsMarkingBarrier(JS::shadow::Zone::Concurrent);
+#else
+  return true;
+#endif
 }
 
 inline bool NativeObject::tryShiftDenseElements(uint32_t count) {
@@ -253,7 +256,7 @@ inline bool NativeObject::tryShiftDenseElements(uint32_t count) {
   ObjectElements* header = getElementsHeader();
   if (header->initializedLength == count ||
       count > ObjectElements::MaxShiftedElements ||
-      header->hasNonwritableArrayLength()) {
+      header->hasNonwritableArrayLength() || !canMoveElementsHeader()) {
     return false;
   }
 
@@ -267,6 +270,7 @@ inline void NativeObject::shiftDenseElementsUnchecked(uint32_t count) {
   ObjectElements* header = getElementsHeader();
   MOZ_ASSERT(count > 0);
   MOZ_ASSERT(count < header->initializedLength);
+  MOZ_ASSERT(canMoveElementsHeader());
 
   if (MOZ_UNLIKELY(header->numShiftedElements() + count >
                    ObjectElements::MaxShiftedElements)) {
@@ -300,7 +304,7 @@ inline void NativeObject::moveDenseElements(uint32_t dstStart,
    * write barrier is invoked here on B, despite the fact that it exists in
    * the array before and after the move.
    */
-  if (zone()->needsIncrementalBarrier()) {
+  if (zone()->needsMarkingBarrier()) {
     uint32_t numShifted = getElementsHeader()->numShiftedElements();
     if (dstStart < srcStart) {
       HeapSlot* dst = elements_ + dstStart;
@@ -323,7 +327,7 @@ inline void NativeObject::moveDenseElements(uint32_t dstStart,
 }
 
 inline void NativeObject::reverseDenseElementsNoPreBarrier(uint32_t length) {
-  MOZ_ASSERT(!zone()->needsIncrementalBarrier());
+  MOZ_ASSERT(!zone()->needsMarkingBarrier());
 
   MOZ_ASSERT(isExtensible());
 
@@ -463,7 +467,7 @@ inline DenseElementResult NativeObject::setOrExtendDenseElements(
   }
 
   if (is<ArrayObject>() && start + count >= as<ArrayObject>().length()) {
-    as<ArrayObject>().setLength(start + count);
+    as<ArrayObject>().setLengthToInitializedLength();
   }
 
   copyDenseElements(start, vp, count);
@@ -584,6 +588,21 @@ MOZ_ALWAYS_INLINE bool NativeObject::setShapeAndAddNewSlots(
   return true;
 }
 
+MOZ_ALWAYS_INLINE bool NativeObject::canDoSetPropertyFastpath() const {
+  if (is<TypedArrayObject>()) {
+    return false;
+  }
+
+  const JSClass* clasp = getClass();
+  if (clasp->getAddProperty() || clasp->getResolve() ||
+      clasp->getOpsDefineProperty() || clasp->getOpsLookupProperty() ||
+      clasp->getOpsSetProperty() || hasUnpreservedWrapper()) {
+    return false;
+  }
+
+  return true;
+}
+
 MOZ_ALWAYS_INLINE bool NativeObject::setShapeAndAddNewSlot(
     JSContext* cx, SharedShape* newShape, uint32_t slot) {
   MOZ_ASSERT(!inDictionaryMode());
@@ -615,11 +634,8 @@ MOZ_ALWAYS_INLINE bool NativeObject::setShapeAndAddNewSlot(
 inline js::gc::AllocKind NativeObject::allocKindForTenure() const {
   using namespace js::gc;
   AllocKind kind = GetGCObjectFixedSlotsKind(numFixedSlots());
-  MOZ_ASSERT(!IsBackgroundFinalized(kind));
-  if (!CanChangeToBackgroundAllocKind(kind, getClass())) {
-    return kind;
-  }
-  return ForegroundToBackgroundAllocKind(kind);
+  MOZ_ASSERT(!IsFinalizedKind(kind));
+  return GetFinalizedAllocKindForClass(kind, getClass());
 }
 
 inline js::GlobalObject& NativeObject::global() const { return nonCCWGlobal(); }
@@ -721,9 +737,6 @@ static MOZ_ALWAYS_INLINE bool NativeLookupOwnPropertyInline(
   // violate this guidance are the ModuleEnvironmentObject.
   MOZ_ASSERT_IF(obj->getOpsLookupProperty(),
                 obj->template is<ModuleEnvironmentObject>());
-#ifdef ENABLE_RECORD_TUPLE
-  MOZ_ASSERT(!js::IsExtendedPrimitive(*obj));
-#endif
 
   // Check for a native dense element.
   if (id.isInt()) {
@@ -888,10 +901,10 @@ inline bool IsPackedArray(JSObject* obj) {
   return true;
 }
 
-// Like AddDataProperty but optimized for plain objects. Plain objects don't
-// have an addProperty hook.
-MOZ_ALWAYS_INLINE bool AddDataPropertyToPlainObject(
-    JSContext* cx, Handle<PlainObject*> obj, HandleId id, HandleValue v,
+// Like AddDataProperty but eliding checks for add property hooks and
+// wrapper preservation.
+MOZ_ALWAYS_INLINE bool AddDataPropertyToNativeObjectNoHooks(
+    JSContext* cx, Handle<NativeObject*> obj, HandleId id, HandleValue v,
     uint32_t* resultSlot = nullptr) {
   MOZ_ASSERT(!id.isInt());
 
@@ -906,7 +919,7 @@ MOZ_ALWAYS_INLINE bool AddDataPropertyToPlainObject(
 
   obj->initSlot(*resultSlot, v);
 
-  MOZ_ASSERT(!obj->getClass()->getAddProperty());
+  MOZ_ASSERT(obj->canDoSetPropertyFastpath());
   return true;
 }
 

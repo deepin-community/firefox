@@ -1,54 +1,50 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsMixedContentBlocker.h"
 
-#include "nsContentPolicyUtils.h"
-#include "nsCSPContext.h"
-#include "nsThreadUtils.h"
-#include "nsINode.h"
-#include "nsCOMPtr.h"
-#include "nsDocShell.h"
-#include "nsIWebProgressListener.h"
-#include "nsContentUtils.h"
-#include "mozilla/dom/BrowsingContext.h"
-#include "mozilla/dom/WindowContext.h"
-#include "mozilla/dom/Document.h"
-#include "nsIChannel.h"
-#include "nsIParentChannel.h"
-#include "mozilla/Preferences.h"
-#include "nsIScriptObjectPrincipal.h"
-#include "nsIProtocolHandler.h"
-#include "nsCharSeparatedTokenizer.h"
-#include "nsISecureBrowserUI.h"
-#include "nsIWebNavigation.h"
-#include "nsLoadGroup.h"
-#include "nsIScriptError.h"
-#include "nsIURI.h"
-#include "nsIChannelEventSink.h"
-#include "nsNetUtil.h"
-#include "nsAsyncRedirectVerifyHelper.h"
-#include "mozilla/LoadInfo.h"
-#include "nsISiteSecurityService.h"
-#include "prnetdb.h"
-#include "nsQueryObject.h"
-
 #include "mozilla/BasePrincipal.h"
+#include "mozilla/LoadInfo.h"
 #include "mozilla/Logging.h"
+#include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StaticPrefs_fission.h"
 #include "mozilla/StaticPrefs_security.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/ContentChild.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/WindowContext.h"
+#include "mozilla/dom/nsHTTPSOnlyUtils.h"
+#include "mozilla/glean/DomSecurityMetrics.h"
 #include "mozilla/ipc/URIUtils.h"
 #include "mozilla/net/DNS.h"
-#include "mozilla/net/DocumentLoadListener.h"
 #include "mozilla/net/DocumentChannel.h"
-
-#include "mozilla/dom/nsHTTPSOnlyUtils.h"
+#include "mozilla/net/DocumentLoadListener.h"
+#include "nsAsyncRedirectVerifyHelper.h"
+#include "nsCOMPtr.h"
+#include "nsCSPContext.h"
+#include "nsCharSeparatedTokenizer.h"
+#include "nsContentPolicyUtils.h"
+#include "nsContentUtils.h"
+#include "nsDocShell.h"
+#include "nsIChannel.h"
+#include "nsIChannelEventSink.h"
+#include "nsINode.h"
+#include "nsIParentChannel.h"
+#include "nsIProtocolHandler.h"
+#include "nsIScriptError.h"
+#include "nsIScriptObjectPrincipal.h"
+#include "nsISecureBrowserUI.h"
+#include "nsISiteSecurityService.h"
+#include "nsIURI.h"
+#include "nsIWebNavigation.h"
+#include "nsIWebProgressListener.h"
+#include "nsLoadGroup.h"
+#include "nsNetUtil.h"
+#include "nsQueryObject.h"
+#include "nsThreadUtils.h"
+#include "prnetdb.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -111,7 +107,7 @@ static void LogMixedContentMessage(
   AutoTArray<nsString, 1> params;
   CopyUTF8toUTF16(aContentLocation->GetSpecOrDefault(),
                   *params.AppendElement());
-  nsContentUtils::FormatLocalizedString(nsContentUtils::eSECURITY_PROPERTIES,
+  nsContentUtils::FormatLocalizedString(PropertiesFile::SECURITY_PROPERTIES,
                                         messageLookupKey.get(), params,
                                         localizedMsg);
 
@@ -366,29 +362,16 @@ bool nsMixedContentBlocker::IsPotentiallyTrustworthyOrigin(nsIURI* aURI) {
 }
 
 /* static */
-bool nsMixedContentBlocker::IsUpgradableContentType(nsContentPolicyType aType,
-                                                    bool aConsiderPrefs) {
+bool nsMixedContentBlocker::IsUpgradableContentType(nsContentPolicyType aType) {
   MOZ_ASSERT(NS_IsMainThread());
-
-  if (aConsiderPrefs &&
-      !StaticPrefs::security_mixed_content_upgrade_display_content()) {
-    return false;
-  }
 
   switch (aType) {
     case nsIContentPolicy::TYPE_INTERNAL_IMAGE:
     case nsIContentPolicy::TYPE_INTERNAL_IMAGE_PRELOAD:
-      return !aConsiderPrefs ||
-             StaticPrefs::
-                 security_mixed_content_upgrade_display_content_image();
+    case nsIContentPolicy::TYPE_INTERNAL_IMAGE_FAVICON:
     case nsIContentPolicy::TYPE_INTERNAL_AUDIO:
-      return !aConsiderPrefs ||
-             StaticPrefs::
-                 security_mixed_content_upgrade_display_content_audio();
     case nsIContentPolicy::TYPE_INTERNAL_VIDEO:
-      return !aConsiderPrefs ||
-             StaticPrefs::
-                 security_mixed_content_upgrade_display_content_video();
+      return true;
     default:
       return false;
   }
@@ -492,13 +475,6 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
   // Mixed content web fonts are relatively uncommon, and we can can fall back
   // to built-in fonts with minimal disruption in almost all cases.
   //
-  // TYPE_OBJECT_SUBREQUEST could actually be either active content (e.g. a
-  // script that a plugin will execute) or display content (e.g. Flash video
-  // content).  Until we have a way to determine active vs passive content
-  // from plugin requests (bug 836352), we will treat this as passive content.
-  // This is to prevent false positives from causing users to become
-  // desensitized to the mixed content blocker.
-  //
   // TYPE_CSP_REPORT: High-risk because they directly leak information about
   // the content of the page, and because blocking them does not have any
   // negative effect on the page loading.
@@ -580,13 +556,6 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
     case ExtContentPolicy::TYPE_MEDIA:
       classification = eMixedDisplay;
       break;
-    case ExtContentPolicy::TYPE_OBJECT_SUBREQUEST:
-      if (StaticPrefs::security_mixed_content_block_object_subrequest()) {
-        classification = eMixedScript;
-      } else {
-        classification = eMixedDisplay;
-      }
-      break;
 
     // Active content (or content with a low value/risk-of-blocking ratio)
     // that has been explicitly evaluated; listed here for documentation
@@ -610,6 +579,8 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
     case ExtContentPolicy::TYPE_SPECULATIVE:
     case ExtContentPolicy::TYPE_WEB_TRANSPORT:
     case ExtContentPolicy::TYPE_WEB_IDENTITY:
+    case ExtContentPolicy::TYPE_JSON:
+    case ExtContentPolicy::TYPE_TEXT:
       break;
 
     case ExtContentPolicy::TYPE_INVALID:
@@ -765,6 +736,16 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
     *aDecision = ACCEPT;
     return NS_OK;
   }
+
+  // #2 Carve-out: For now maintain the carve-out for Notification icon images
+  // that previously happened via the code above.
+  // TODO(Bug 2008728) - Remove this exception.
+  if (internalContentType ==
+      nsIContentPolicy::TYPE_INTERNAL_IMAGE_NOTIFICATION) {
+    *aDecision = ACCEPT;
+    return NS_OK;
+  }
+
   // Otherwise, we must have a window
   NS_ENSURE_TRUE(requestingWindow, NS_OK);
 
@@ -779,7 +760,8 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
   // be upgraded to https before fetching any data from the netwerk.
   if (isHttpScheme) {
     bool isUpgradableContentType =
-        IsUpgradableContentType(internalContentType, /* aConsiderPrefs */ true);
+        StaticPrefs::security_mixed_content_upgrade_display_content() &&
+        IsUpgradableContentType(internalContentType);
     if (isUpgradableContentType) {
       *aDecision = ACCEPT;
       return NS_OK;
@@ -822,7 +804,6 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
   // Content
   WindowContext* topWC = requestingWindow->TopWindowContext();
   bool rootHasSecureConnection = topWC->GetIsSecure();
-  bool allowMixedContent = topWC->GetAllowMixedContent();
 
   // When navigating an iframe, the iframe may be https but its parents may not
   // be. Check the parents to see if any of them are https. If none of the
@@ -878,25 +859,11 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
     }
   }
 
-  // set hasMixedContentObjectSubrequest on this object if necessary
-  if (contentType == ExtContentPolicyType::TYPE_OBJECT_SUBREQUEST &&
-      aReportError) {
-    if (!StaticPrefs::security_mixed_content_block_object_subrequest()) {
-      nsAutoCString messageLookUpKey(
-          "LoadingMixedDisplayObjectSubrequestDeprecation");
-
-      LogMixedContentMessage(classification, aContentLocation, topWC->Id(),
-                             eUserOverride, requestingLocation,
-                             messageLookUpKey);
-    }
-  }
-
   uint32_t newState = 0;
   // If the content is display content, and the pref says display content should
   // be blocked, block it.
   if (classification == eMixedDisplay) {
-    if (!StaticPrefs::security_mixed_content_block_display_content() ||
-        allowMixedContent) {
+    if (!StaticPrefs::security_mixed_content_block_display_content()) {
       *aDecision = nsIContentPolicy::ACCEPT;
       // User has overriden the pref and the root is not https;
       // mixed display content was allowed on an https subframe.
@@ -914,8 +881,7 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
     MOZ_ASSERT(classification == eMixedScript);
     // If the content is active content, and the pref says active content should
     // be blocked, block it unless the user has choosen to override the pref
-    if (!StaticPrefs::security_mixed_content_block_active_content() ||
-        allowMixedContent) {
+    if (!StaticPrefs::security_mixed_content_block_active_content()) {
       *aDecision = nsIContentPolicy::ACCEPT;
       // User has already overriden the pref and the root is not https;
       // mixed active content was allowed on an https subframe.
@@ -1047,19 +1013,19 @@ void nsMixedContentBlocker::AccumulateMixedContentHSTS(
   //
   if (!aActive) {
     if (!hsts) {
-      Telemetry::Accumulate(Telemetry::MIXED_CONTENT_HSTS,
-                            MCB_HSTS_PASSIVE_NO_HSTS);
+      glean::mixed_content::hsts.AccumulateSingleSample(
+          MCB_HSTS_PASSIVE_NO_HSTS);
     } else {
-      Telemetry::Accumulate(Telemetry::MIXED_CONTENT_HSTS,
-                            MCB_HSTS_PASSIVE_WITH_HSTS);
+      glean::mixed_content::hsts.AccumulateSingleSample(
+          MCB_HSTS_PASSIVE_WITH_HSTS);
     }
   } else {
     if (!hsts) {
-      Telemetry::Accumulate(Telemetry::MIXED_CONTENT_HSTS,
-                            MCB_HSTS_ACTIVE_NO_HSTS);
+      glean::mixed_content::hsts.AccumulateSingleSample(
+          MCB_HSTS_ACTIVE_NO_HSTS);
     } else {
-      Telemetry::Accumulate(Telemetry::MIXED_CONTENT_HSTS,
-                            MCB_HSTS_ACTIVE_WITH_HSTS);
+      glean::mixed_content::hsts.AccumulateSingleSample(
+          MCB_HSTS_ACTIVE_WITH_HSTS);
     }
   }
 }

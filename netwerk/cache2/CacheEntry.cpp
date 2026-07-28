@@ -22,7 +22,6 @@
 #include "nsIInputStream.h"
 #include "nsIOutputStream.h"
 #include "nsISeekableStream.h"
-#include "nsISizeOf.h"
 #include "nsIURI.h"
 #include "nsNetCID.h"
 #include "nsProxyRelease.h"
@@ -82,12 +81,13 @@ CacheEntryHandle::~CacheEntryHandle() {
 
 CacheEntry::Callback::Callback(CacheEntry* aEntry,
                                nsICacheEntryOpenCallback* aCallback,
-                               bool aReadOnly, bool aCheckOnAnyThread,
-                               bool aSecret)
+                               bool aReadOnly, bool aReadAlways,
+                               bool aCheckOnAnyThread, bool aSecret)
     : mEntry(aEntry),
       mCallback(aCallback),
       mTarget(GetCurrentSerialEventTarget()),
       mReadOnly(aReadOnly),
+      mReadAlways(aReadAlways),
       mRevalidating(false),
       mCheckOnAnyThread(aCheckOnAnyThread),
       mRecheckAfterWrite(false),
@@ -107,6 +107,7 @@ CacheEntry::Callback::Callback(CacheEntry* aEntry,
                                bool aDoomWhenFoundInPinStatus)
     : mEntry(aEntry),
       mReadOnly(false),
+      mReadAlways(false),
       mRevalidating(false),
       mCheckOnAnyThread(true),
       mRecheckAfterWrite(false),
@@ -124,6 +125,7 @@ CacheEntry::Callback::Callback(CacheEntry::Callback const& aThat)
       mCallback(aThat.mCallback),
       mTarget(aThat.mTarget),
       mReadOnly(aThat.mReadOnly),
+      mReadAlways(aThat.mReadAlways),
       mRevalidating(aThat.mRevalidating),
       mCheckOnAnyThread(aThat.mCheckOnAnyThread),
       mRecheckAfterWrite(aThat.mRecheckAfterWrite),
@@ -217,6 +219,7 @@ CacheEntry::CacheEntry(const nsACString& aStorageID, const nsACString& aURI,
       mPreventCallbacks(false),
       mHasData(false),
       mPinningKnown(false),
+      mBypassWriterLock(false),
       mCacheEntryId(GetNextId()) {
   LOG(("CacheEntry::CacheEntry [this=%p]", this));
 
@@ -227,6 +230,13 @@ CacheEntry::CacheEntry(const nsACString& aStorageID, const nsACString& aURI,
 }
 
 CacheEntry::~CacheEntry() { LOG(("CacheEntry::~CacheEntry [this=%p]", this)); }
+
+#ifdef NS_FREE_PERMANENT_DATA
+void CacheEntry::ClearCallbacks() {
+  mozilla::MutexAutoLock lock(mLock);
+  mCallbacks.Clear();
+}
+#endif
 
 char const* CacheEntry::StateString(uint32_t aState) {
   switch (aState) {
@@ -266,6 +276,12 @@ nsresult CacheEntry::HashingKey(const nsACString& aStorageID,
   return HashingKey(aStorageID, aEnhanceID, spec, aResult);
 }
 
+// The hash key (which is also the filename) is:
+// A[~B]:C
+// Where A is the storage ID ([O<oa>,][a,][p,]), B is the optional 'id',
+// and C is the URI  'oa' are the OriginAttributes in suffix form
+// (i.e. |^key=value&key2=value2|)
+
 // static
 nsresult CacheEntry::HashingKey(const nsACString& aStorageID,
                                 const nsACString& aEnhanceID,
@@ -289,9 +305,16 @@ nsresult CacheEntry::HashingKey(const nsACString& aStorageID,
   return NS_OK;
 }
 
+nsresult CacheEntry::SetDictionary(DictionaryCacheEntry* aDict) {
+  mDict = aDict;
+  mFile->SetDictionary(aDict);
+  return NS_OK;
+}
+
 void CacheEntry::AsyncOpen(nsICacheEntryOpenCallback* aCallback,
                            uint32_t aFlags) {
   bool readonly = aFlags & nsICacheStorage::OPEN_READONLY;
+  bool readalways = aFlags & nsICacheStorage::OPEN_ALWAYS;
   bool bypassIfBusy = aFlags & nsICacheStorage::OPEN_BYPASS_IF_BUSY;
   bool truncate = aFlags & nsICacheStorage::OPEN_TRUNCATE;
   bool priority = aFlags & nsICacheStorage::OPEN_PRIORITY;
@@ -313,7 +336,7 @@ void CacheEntry::AsyncOpen(nsICacheEntryOpenCallback* aCallback,
   }
 #endif
 
-  Callback callback(this, aCallback, readonly, multithread, secret);
+  Callback callback(this, aCallback, readonly, readalways, multithread, secret);
 
   if (!Open(callback, truncate, priority, bypassIfBusy)) {
     // We get here when the callback wants to bypass cache when it's busy.
@@ -345,7 +368,7 @@ bool CacheEntry::Open(Callback& aCallback, bool aTruncate, bool aPriority,
   return true;
 }
 
-bool CacheEntry::Load(bool aTruncate, bool aPriority) {
+bool CacheEntry::Load(bool aTruncate, bool aPriority) MOZ_REQUIRES(mLock) {
   LOG(("CacheEntry::Load [this=%p, trunc=%d]", this, aTruncate));
 
   mLock.AssertCurrentThreadOwns();
@@ -514,13 +537,14 @@ NS_IMETHODIMP CacheEntry::OnFileDoomed(nsresult aResult) {
 }
 
 already_AddRefed<CacheEntryHandle> CacheEntry::ReopenTruncated(
-    bool aMemoryOnly, nsICacheEntryOpenCallback* aCallback) {
+    bool aMemoryOnly, nsICacheEntryOpenCallback* aCallback)
+    MOZ_REQUIRES(mLock) {
   LOG(("CacheEntry::ReopenTruncated [this=%p]", this));
 
   mLock.AssertCurrentThreadOwns();
 
   // Hold callbacks invocation, AddStorageEntry would invoke from doom
-  // prematurly
+  // prematurely
   mPreventCallbacks = true;
 
   RefPtr<CacheEntryHandle> handle;
@@ -618,7 +642,7 @@ void CacheEntry::InvokeCallbacks() {
   LOG(("CacheEntry::InvokeCallbacks END [this=%p]", this));
 }
 
-bool CacheEntry::InvokeCallbacks(bool aReadOnly) {
+bool CacheEntry::InvokeCallbacks(bool aReadOnly) MOZ_REQUIRES(mLock) {
   mLock.AssertCurrentThreadOwns();
 
   RefPtr<CacheEntryHandle> recreatedHandle;
@@ -630,9 +654,16 @@ bool CacheEntry::InvokeCallbacks(bool aReadOnly) {
       return false;
     }
 
-    if (!mIsDoomed && (mState == WRITING || mState == REVALIDATING)) {
-      LOG(("  entry is being written/revalidated"));
-      return false;
+    if (mCallbacks[i].mReadAlways && mState == REVALIDATING) {
+      LOG(("Loading revalidating cache entry for %s", mURI.get()));
+    }
+    if (!mIsDoomed && (mState == WRITING || (!mCallbacks[i].mReadAlways &&
+                                             mState == REVALIDATING))) {
+      if (!mBypassWriterLock) {
+        LOG(("  entry is being written/revalidated"));
+        return false;
+      }
+      LOG(("  entry is being written/revalidated but bypassing writer lock"));
     }
 
     bool recreate;
@@ -673,10 +704,10 @@ bool CacheEntry::InvokeCallbacks(bool aReadOnly) {
 
     if (NS_SUCCEEDED(rv) && !InvokeCallback(callback)) {
       // Callback didn't fire, put it back and go to another one in line.
-      // Only reason InvokeCallback returns false is that onCacheEntryCheck
-      // returns RECHECK_AFTER_WRITE_FINISHED.  If we would stop the loop, other
-      // readers or potential writers would be unnecessarily kept from being
-      // invoked.
+      // InvokeCallback returns false if onCacheEntryCheck returns
+      // RECHECK_AFTER_WRITE_FINISHED or if the state changed while
+      // unlocked.  If we would stop the loop, other readers or potential
+      // writers would be unnecessarily kept from being invoked.
       size_t pos = std::min(mCallbacks.Length(), static_cast<size_t>(i));
       mCallbacks.InsertElementAt(pos, callback);
       ++i;
@@ -693,7 +724,7 @@ bool CacheEntry::InvokeCallbacks(bool aReadOnly) {
   return true;
 }
 
-bool CacheEntry::InvokeCallback(Callback& aCallback) {
+bool CacheEntry::InvokeCallback(Callback& aCallback) MOZ_REQUIRES(mLock) {
   mLock.AssertCurrentThreadOwns();
   LOG(("CacheEntry::InvokeCallback [this=%p, state=%s, cb=%p]", this,
        StateString(mState), aCallback.mCallback.get()));
@@ -703,13 +734,20 @@ bool CacheEntry::InvokeCallback(Callback& aCallback) {
     // When we are here, the entry must be loaded from disk
     MOZ_ASSERT(mState > LOADING);
 
-    if (mState == WRITING || mState == REVALIDATING) {
-      // Prevent invoking other callbacks since one of them is now writing
-      // or revalidating this entry.  No consumers should get this entry
-      // until metadata are filled with values downloaded from the server
-      // or the entry revalidated and output stream has been opened.
-      LOG(("  entry is being written/revalidated, callback bypassed"));
-      return false;
+    if (aCallback.mReadAlways && mState == REVALIDATING) {
+      LOG(("Loading revalidating cache entry for %s", mURI.get()));
+    }
+    if (mState == WRITING ||
+        (!aCallback.mReadAlways && mState == REVALIDATING)) {
+      if (!mBypassWriterLock) {
+        // Prevent invoking other callbacks since one of them is now writing
+        // or revalidating this entry.  No consumers should get this entry
+        // until metadata are filled with values downloaded from the server
+        // or the entry revalidated and output stream has been opened.
+        LOG(("  entry is being written/revalidated, callback bypassed"));
+        return false;
+      }
+      LOG(("  entry is being written/revalidated but bypassing writer lock"));
     }
 
     // mRecheckAfterWrite flag already set means the callback has already passed
@@ -737,8 +775,6 @@ bool CacheEntry::InvokeCallback(Callback& aCallback) {
         // Metadata present, validate the entry
         uint32_t checkResult;
         {
-          // mayhemer: TODO check and solve any potential races of concurent
-          // OnCacheEntryCheck
           mozilla::MutexAutoUnlock unlock(mLock);
 
           RefPtr<CacheEntryHandle> handle = NewHandle();
@@ -749,6 +785,12 @@ bool CacheEntry::InvokeCallback(Callback& aCallback) {
                static_cast<uint32_t>(rv), static_cast<uint32_t>(checkResult)));
 
           if (NS_FAILED(rv)) checkResult = ENTRY_NOT_WANTED;
+        }
+
+        if (mState != READY) {
+          LOG(("  state changed during OnCacheEntryCheck, was READY now %s",
+               StateString(mState)));
+          return false;
         }
 
         aCallback.mRevalidating = checkResult == ENTRY_NEEDS_REVALIDATION;
@@ -770,9 +812,6 @@ bool CacheEntry::InvokeCallback(Callback& aCallback) {
 
           case ENTRY_NEEDS_REVALIDATION:
             LOG(("  will be holding callbacks until entry is revalidated"));
-            // State is READY now and from that state entry cannot transit to
-            // any other state then REVALIDATING for which cocurrency is not an
-            // issue.  Potentially no need to lock here.
             mState = REVALIDATING;
             break;
 
@@ -857,7 +896,7 @@ void CacheEntry::InvokeAvailableCallback(Callback const& aCallback) {
     return;
   }
 
-  if (state == READY) {
+  if (state == READY || (state == REVALIDATING && aCallback.mReadAlways)) {
     LOG(("  ready/has-meta, notifying OCEA with entry and NS_OK"));
 
     if (!aCallback.mSecret) {
@@ -969,6 +1008,12 @@ void CacheEntry::OnHandleClosed(CacheEntryHandle const* aHandle) {
 
   mWriter = nullptr;
 
+  // Reset bypass flag when writer is cleared
+  if (mBypassWriterLock) {
+    mBypassWriterLock = false;
+    LOG(("  reset bypass writer lock flag due to writer cleared"));
+  }
+
   if (mState == WRITING) {
     LOG(("  reverting to state EMPTY - write failed"));
     mState = EMPTY;
@@ -1008,6 +1053,17 @@ bool CacheEntry::IsReferenced() const {
   // Increasing this counter from 0 to non-null and this check both happen only
   // under the service lock.
   return mHandlesCount > 0;
+}
+
+void CacheEntry::SetBypassWriterLock(bool aBypass) {
+  mozilla::MutexAutoLock lock(mLock);
+  LOG(("CacheEntry::SetBypassWriterLock [this=%p, bypass=%d]", this, aBypass));
+  mBypassWriterLock = aBypass;
+
+  if (aBypass) {
+    // Invoke callbacks that were blocked by writer state
+    InvokeCallbacks();
+  }
 }
 
 bool CacheEntry::IsFileDoomed() {
@@ -1080,6 +1136,12 @@ nsresult CacheEntry::GetOnStartTime(uint64_t* aTime) {
 nsresult CacheEntry::GetOnStopTime(uint64_t* aTime) {
   NS_ENSURE_SUCCESS(mFileStatus, NS_ERROR_NOT_AVAILABLE);
   return mFile->GetOnStopTime(aTime);
+}
+
+nsresult CacheEntry::GetReadyOrRevalidating(bool* aReady) {
+  mozilla::MutexAutoLock lock(mLock);
+  *aReady = (mState == READY || mState == REVALIDATING);
+  return NS_OK;
 }
 
 nsresult CacheEntry::SetNetworkTimes(uint64_t aOnStartTime,
@@ -1196,7 +1258,7 @@ nsresult CacheEntry::OpenInputStreamInternal(int64_t offset,
                                            getter_AddRefs(stream));
     if (NS_FAILED(rv)) {
       // Failure of this method may be legal when the alternative data requested
-      // is not avaialble or of a different type.  Console error logs are
+      // is not available or of a different type.  Console error logs are
       // ensured by CacheFile::OpenAlternativeInputStream.
       return rv;
     }
@@ -1444,6 +1506,11 @@ nsresult CacheEntry::SetMetaDataElement(const char* aKey, const char* aValue) {
   return mFile->SetElement(aKey, aValue);
 }
 
+nsresult CacheEntry::GetIsEmpty(bool* aEmpty) {
+  *aEmpty = GetMetadataMemoryConsumption() == 0;
+  return NS_OK;
+}
+
 nsresult CacheEntry::VisitMetaData(nsICacheEntryMetaDataVisitor* aVisitor) {
   NS_ENSURE_SUCCESS(mFileStatus, NS_ERROR_NOT_AVAILABLE);
 
@@ -1458,7 +1525,15 @@ nsresult CacheEntry::MetaDataReady() {
 
   MOZ_ASSERT(mState > EMPTY);
 
-  if (mState == WRITING) mState = READY;
+  if (mState == WRITING) {
+    mState = READY;
+
+    // Reset bypass flag when transitioning to READY state
+    if (mBypassWriterLock) {
+      mBypassWriterLock = false;
+      LOG(("  reset bypass writer lock flag due to state transition to READY"));
+    }
+  }
 
   InvokeCallbacks();
 
@@ -1477,6 +1552,12 @@ nsresult CacheEntry::SetValid() {
 
     mState = READY;
     mHasData = true;
+
+    // Reset bypass flag when transitioning to READY state
+    if (mBypassWriterLock) {
+      mBypassWriterLock = false;
+      LOG(("  reset bypass writer lock flag due to state transition to READY"));
+    }
 
     InvokeCallbacks();
 
@@ -1713,6 +1794,15 @@ void CacheEntry::DoomAlreadyRemoved() {
 
   mIsDoomed = true;
 
+  // Remove from DictionaryCache immediately, to ensure the removal is
+  // synchronous
+  LOG(("DoomAlreadyRemoved [entry=%p removed]", this));
+  if (mEnhanceID.EqualsLiteral("dict:")) {
+    DictionaryCache::RemoveOriginFor(mURI);
+  } else {
+    DictionaryCache::RemoveDictionaryOMT(mURI);
+  }
+
   // Pretend pinning is know.  This entry is now doomed for good, so don't
   // bother with defering doom because of unknown pinning state any more.
   mPinningKnown = true;
@@ -1781,7 +1871,8 @@ void CacheEntry::RemoveForcedValidity() {
   CacheStorageService::Self()->RemoveEntryForceValid(mStorageID, entryKey);
 }
 
-void CacheEntry::BackgroundOp(uint32_t aOperations, bool aForceAsync) {
+void CacheEntry::BackgroundOp(uint32_t aOperations, bool aForceAsync)
+    MOZ_REQUIRES(mLock) {
   mLock.AssertCurrentThreadOwns();
 
   if (!CacheStorageService::IsOnManagementThread() || aForceAsync) {
@@ -1920,7 +2011,7 @@ size_t CacheEntry::SizeOfExcludingThis(mozilla::MallocSizeOf mallocSizeOf) {
   // mWriter is one of many handles we create, but (intentionally) not keep
   // any reference to, so those unfortunately cannot be reported.  Handles are
   // small, though.
-  // mSecurityInfo doesn't impl nsISizeOf.
+  // mSecurityInfo doesn't implement memory reporting.
 
   return n;
 }

@@ -9,6 +9,8 @@ import mozilla.components.concept.engine.prompt.PromptRequest.Authentication
 import mozilla.components.concept.engine.prompt.PromptRequest.Color
 import mozilla.components.concept.engine.prompt.PromptRequest.Confirm
 import mozilla.components.concept.engine.prompt.PromptRequest.File
+import mozilla.components.concept.engine.prompt.PromptRequest.Folder
+import mozilla.components.concept.engine.prompt.PromptRequest.FolderUploadPrompt
 import mozilla.components.concept.engine.prompt.PromptRequest.MenuChoice
 import mozilla.components.concept.engine.prompt.PromptRequest.MultipleChoice
 import mozilla.components.concept.engine.prompt.PromptRequest.Popup
@@ -27,11 +29,11 @@ import mozilla.components.concept.storage.LoginEntry
 import mozilla.components.support.test.mock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Date
+import kotlin.test.assertNotNull
 
 class PromptRequestTest {
 
@@ -138,6 +140,22 @@ class PromptRequestTest {
         filePickerRequest.onSingleFileSelected(mock(), mock())
         filePickerRequest.onMultipleFilesSelected(mock(), emptyArray())
         filePickerRequest.onDismiss()
+    }
+
+    @Test
+    fun `Folder`() {
+        var onSelectedWasCalled = false
+        var onDismissWasCalled = false
+
+        val folderPickerRequest = Folder(
+            { _, _ -> onSelectedWasCalled = true },
+            { onDismissWasCalled = true },
+        )
+
+        folderPickerRequest.onSelected(mock(), mock())
+        folderPickerRequest.onDismiss()
+        assertTrue(onSelectedWasCalled)
+        assertTrue(onDismissWasCalled)
     }
 
     @Test
@@ -270,6 +288,28 @@ class PromptRequestTest {
 
         repostRequest.onConfirm()
         repostRequest.onDismiss()
+
+        assertTrue(onAcceptWasCalled)
+        assertTrue(onDismissWasCalled)
+    }
+
+    @Test
+    fun `FolderUploadPrompt`() {
+        var onAcceptWasCalled = false
+        var onDismissWasCalled = false
+
+        val confirmRequest = FolderUploadPrompt(
+            folderName = "",
+            onConfirm = {
+                onAcceptWasCalled = true
+            },
+            onDismiss = {
+                onDismissWasCalled = true
+            },
+        )
+
+        confirmRequest.onConfirm()
+        confirmRequest.onDismiss()
 
         assertTrue(onAcceptWasCalled)
         assertTrue(onDismissWasCalled)

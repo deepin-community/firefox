@@ -17,6 +17,7 @@ ChromeUtils.defineLazyGetter(lazy, "logger", () => lazy.Log.get());
 
 export class Module {
   #messageHandler;
+  #moduleName;
 
   /**
    * Create a new module instance.
@@ -47,11 +48,12 @@ export class Module {
    *     form [module name].[event name].
    * @param {object} data
    *     The event's data.
-   * @param {ContextInfo=} contextInfo
-   *     The event's context info, see MessageHandler:emitEvent. Optional.
+   * @param {Array<ContextInfo>=} relatedContexts
+   *     The related contexts info for the event, see MessageHandler:emitEvent.
+   *     Optional.
    */
-  emitEvent(name, data, contextInfo) {
-    this.messageHandler.emitEvent(name, data, contextInfo);
+  emitEvent(name, data, relatedContexts) {
+    this.messageHandler.emitEvent(name, data, relatedContexts);
   }
 
   /**
@@ -113,7 +115,15 @@ export class Module {
    * Instance shortcut for supportsMethod to avoid reaching the constructor for
    * consumers which directly deal with an instance.
    */
-  supportsMethod(methodName) {
+  supportsMethod(methodName, fromContentProcess) {
+    if (
+      fromContentProcess &&
+      !this.constructor.supportsCommandFromContent(methodName)
+    ) {
+      throw new lazy.error.UnsupportedOperationError(
+        `Command ${this.moduleName}.${methodName} can not be called from a windowglobal module`
+      );
+    }
     return this.constructor.supportsMethod(methodName);
   }
 
@@ -121,8 +131,16 @@ export class Module {
     return this.#messageHandler;
   }
 
+  static get supportedCommandsFromContent() {
+    return [];
+  }
+
   static get supportedEvents() {
     return [];
+  }
+
+  static supportsCommandFromContent(methodName) {
+    return this.supportedCommandsFromContent.includes(methodName);
   }
 
   static supportsEvent(event) {
@@ -131,5 +149,13 @@ export class Module {
 
   static supportsMethod(methodName) {
     return typeof this.prototype[methodName] === "function";
+  }
+
+  get moduleName() {
+    return this.#moduleName;
+  }
+
+  set moduleName(name) {
+    this.#moduleName = name;
   }
 }

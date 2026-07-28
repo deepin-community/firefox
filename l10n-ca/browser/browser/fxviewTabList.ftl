@@ -15,6 +15,10 @@ fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
 fxviewtabrow-tabs-list-tab =
     .title = Obre { $targetURI } en una pestanya nova
 # Variables:
+#   $tabTitle (string) - Title of tab being closed
+fxviewtabrow-close-tab-button =
+    .title = Tanca { $tabTitle }
+# Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 fxviewtabrow-dismiss-tab-button =
     .title = Tanca { $tabTitle }
@@ -49,8 +53,14 @@ fxviewtabrow-move-tab-end = Mou al final
     .accesskey = f
 fxviewtabrow-move-tab-window = Mou a una finestra nova
     .accesskey = n
+fxviewtabrow-send-to-device = Envia al dispositiu
+    .accesskey = E
+fxviewtabrow-send-to-mobile = Envia al mòbil
+    .accesskey = E
 fxviewtabrow-send-tab = Envia la pestanya al dispositiu
     .accesskey = E
+fxviewtabrow-pin-tab = Fixa la pestanya
+    .accesskey = F
 fxviewtabrow-unpin-tab = No fixis la pestanya
     .accesskey = f
 fxviewtabrow-mute-tab = Silencia la pestanya
@@ -62,9 +72,18 @@ fxviewtabrow-unmute-tab = No silenciïs la pestanya
 fxviewtabrow-options-menu-button =
     .title = Opcions per a { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Silencia la pestanya
 fxviewtabrow-unmute-tab-button-no-context =
     .title = No silenciïs la pestanya
+fxviewtabrow-send-to-mobile-connect-device = Connecteu un dispositiu per a enviar pestanyes
+fxviewtabrow-send-to-mobile-device-missing2 = No veieu el vostre dispositiu?
+fxviewtabrow-send-to-mobile-not-verified = El compte no s'ha verificat
+fxviewtabrow-send-to-mobile-verify-account = Verifiqueu el compte
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Inicieu la sessió per a enviar pestanyes
+fxviewtabrow-send-to-mobile-turn-on-sync = Activeu la sincronització per a enviar pestanyes

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -95,6 +93,9 @@ class Localization : public nsIObserver,
   static already_AddRefed<Localization> Create(
       const nsTArray<nsCString>& aResourceIds, bool aIsSync);
   static already_AddRefed<Localization> Create(
+      const nsTArray<nsCString>& aResourceIds, bool aIsSync,
+      const nsTArray<nsCString>& aLocales);
+  static already_AddRefed<Localization> Create(
       const nsTArray<ffi::GeckoResourceId>& aResourceIds, bool aIsSync);
 
   JSObject* WrapObject(JSContext* aCx,
@@ -142,6 +143,8 @@ class Localization : public nsIObserver,
 
  protected:
   Localization(const nsTArray<nsCString>& aResIds, bool aIsSync);
+  Localization(const nsTArray<nsCString>& aResIds, bool aIsSync,
+               const nsTArray<nsCString>& aLocales);
   Localization(const nsTArray<ffi::GeckoResourceId>& aResIds, bool aIsSync);
   Localization(nsIGlobalObject* aGlobal, bool aIsSync);
 
@@ -150,6 +153,9 @@ class Localization : public nsIObserver,
 
   Localization(nsIGlobalObject* aGlobal, bool aIsSync,
                const ffi::LocalizationRc* aRaw);
+
+  Localization(nsIGlobalObject* aGlobal, bool aIsSync,
+               const nsTArray<nsCString>& aLocales);
 
   virtual ~Localization();
 

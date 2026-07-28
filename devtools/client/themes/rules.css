@@ -4,11 +4,10 @@
 
 /* CSS Variables specific to this panel that aren't defined by the themes */
 :root {
-  --rule-highlight-background-color: var(--theme-highlight-yellow);
-  --rule-highlight-propertyname: var(--blue-60);
-  --rule-highlight-propertyvalue: var(--magenta-70);
-  --rule-highlight-unmatched-unused-color: var(--grey-55);
-  --rule-header-background-color: var(--theme-toolbar-background);
+  --rule-highlight-propertyname: light-dark(var(--blue-60), var(--theme-highlight-blue));
+  --rule-highlight-propertyvalue: light-dark(var(--magenta-70), var(--theme-highlight-red));
+  --rule-highlight-unmatched-unused-color: light-dark(var(--grey-55), var(--grey-40));
+  --rule-header-background-color: light-dark(var(--theme-toolbar-background), #222225);
   --rule-computed-margin-inline-start: 35px;
   --rule-enableproperty-size: 12px;
   --rule-enableproperty-margin-inline-start: 3px;
@@ -20,14 +19,12 @@
     --rule-enableproperty-margin-inline-start: 0px;
     --rule-enableproperty-margin-inline-end: 10px;
   }
-}
 
-:root.theme-dark {
-  --rule-highlight-background-color: #521C76;
-  --rule-highlight-propertyname: var(--theme-highlight-blue);
-  --rule-highlight-propertyvalue: var(--theme-highlight-red);
-  --rule-highlight-unmatched-unused-color: var(--grey-40);
-  --rule-header-background-color: #222225;
+  &[forced-colors-active] {
+    --rule-highlight-propertyname: var(--theme-contrast-color);
+    --rule-highlight-propertyvalue: var(--theme-contrast-color);
+    --rule-highlight-unmatched-unused-color: var(--theme-contrast-color);
+  }
 }
 
 /* Rule View Tabpanel */
@@ -94,12 +91,25 @@
 
 /* Pseudo Class toggle panel */
 
-#pseudo-class-panel {
+#pseudo-class-panel:not([hidden]) {
+  display: grid;
+}
+
+.pseudo-classes {
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, max-content));
 }
 
-#pseudo-class-panel:not([hidden]) {
-  display: grid;
+#pseudo-classes-element-specific-heading {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: normal;
+  margin-block: 8px 0;
+  user-select: none;
+}
+
+#pseudo-classes-element-specific label:has(input:disabled) {
+  display: none;
 }
 
 /* Class toggle panel */
@@ -201,16 +211,18 @@
 
 .ruleview-computedlist,
 [hidden]:is(
+  .ruleview-header,
   .ruleview-expandable-container,
   .ruleview-overridden-items,
   .ruleview-overridden-rule-filter,
   .ruleview-warning,
-  .ruleview-unused-warning,
+  .ruleview-inactive-css-warning,
   .ruleview-compatibility-warning,
   .ruleview-used,
   .ruleview-invalid-at-computed-value-time-warning,
+
 ),
-.ruleview-overridden .ruleview-grid {
+.ruleview-overridden .inspector-grid {
   display: none;
 }
 
@@ -296,23 +308,32 @@
   /* Reset padding set on ruleview-header since we're going to put it on the button instead */
   padding: 0;
 
-   &:hover {
-    background-color: var(--theme-accordion-header-hover);
-  }
-
   & button[aria-expanded] {
     display: flex;
+    align-items: center;
     /* Space between arrow and label */
     gap: 2px;
     width: 100%;
     padding: var(--ruleview-header-padding);
+
+    background-color: var(--theme-accordion-header-background);
+    color: var(--theme-accordion-header-color);
+
     /* Reset button-specific styles */
-    background-color: transparent;
     border: none;
     text-align: start;
     /* Apply same font-size as set on ruleview-header */
     font-size: 1em;
     outline-offset: -2px;
+
+    &:hover {
+      background-color: var(--theme-accordion-header-hover-background);
+      color: var(--theme-accordion-header-hover-color);
+
+      :root[forced-colors-active] & .theme-twisty {
+        color: currentColor;
+      }
+    }
 
     &[aria-expanded="true"] .theme-twisty {
       rotate: 90deg;
@@ -337,47 +358,54 @@
 
 /**
  * Display rules that don't match the current selected element and uneditable
- * user agent styles differently
+ * user agent styles differently.
+ * Use :where() to get a 0-specificity rule so the background-color can be overridden
+ * if needed (e.g. when highlighted by `.theme-bg-contrast`)
  */
-.ruleview-rule.unmatched,
-.ruleview-rule.uneditable,
-.ruleview-rule[unmatched=true],
-.ruleview-rule[uneditable=true] {
+/* prettier-ignore */
+:where(
+  .ruleview-rule.unmatched,
+  .ruleview-rule[unmatched="true"],
+  .ruleview-rule[uneditable="true"]
+) {
   background: var(--theme-tab-toolbar-background);
 }
 
-.ruleview-rule.unmatched,
-.ruleview-rule[unmatched=true] {
-  opacity: 0.5;
+:root[forced-colors-active] .ruleview-rule:is(.unmatched, [unmatched="true"]) {
+  /* Set an inactive color in High Contrast Mode as we don't have the
+     distinct background that is set in regular mode */
+  color: var(--theme-text-color-inactive);
 }
 
-.ruleview-rule.uneditable :focus,
-.ruleview-rule[uneditable=true] :focus {
+.ruleview-rule[uneditable="true"] :focus {
   outline: none;
 }
 
-.ruleview-rule.uneditable .theme-link,
-.ruleview-rule[uneditable=true] .theme-link {
+.ruleview-rule[uneditable="true"] .theme-link {
   color: var(--theme-highlight-bluegrey);
 }
 
-.ruleview-rule.uneditable .ruleview-enableproperty,
-.ruleview-rule[uneditable=true] .ruleview-enableproperty {
+.ruleview-rule[uneditable="true"] .ruleview-enableproperty {
   visibility: hidden;
 }
 
-.ruleview-rule.uneditable .ruleview-swatch,
-.ruleview-rule[uneditable=true] .ruleview-swatch {
+.ruleview-rule[uneditable="true"] .inspector-swatch {
   cursor: default;
 }
 
-.ruleview-rule.uneditable .ruleview-namecontainer > .ruleview-propertyname,
-.ruleview-rule.uneditable .ruleview-propertyvaluecontainer >
-.ruleview-propertyvalue,
-.ruleview-rule[uneditable=true] .ruleview-namecontainer > .ruleview-propertyname,
-.ruleview-rule[uneditable=true] .ruleview-propertyvaluecontainer >
-.ruleview-propertyvalue {
-  border-bottom-color: transparent;
+.ruleview-rule[uneditable="true"] .ruleview-namecontainer > .ruleview-propertyname,
+.ruleview-rule[uneditable="true"] .ruleview-propertyvaluecontainer > .ruleview-propertyvalue {
+  text-decoration: none;
+}
+
+/* Display a lock before the selector for uneditable rules */
+.ruleview-rule[uneditable="true"] .ruleview-selectors-container::before {
+  content: url(images/lock.svg) / "read only";
+  display: inline-block;
+  translate: 0 1px;
+  margin-inline-end: 2px;
+  -moz-context-properties: fill;
+  fill: var(--theme-icon-dimmed-color);
 }
 
 .ruleview-overridden-rule-filter {
@@ -414,7 +442,8 @@
   color: var(--theme-comment);
 }
 
-.ruleview-rule-indent, .ruleview-ancestor-ruleclose {
+.ruleview-rule-indent,
+.ruleview-ancestor-ruleclose {
   white-space: pre;
   /*
   * We do want to keep the underlying chars for the indent for user to copy/paste,
@@ -473,7 +502,7 @@
     background: url("chrome://devtools/skin/images/checkbox.svg") center no-repeat content-box;
     /* Using fill to paint the border, and stroke for the tick */
     -moz-context-properties: fill, stroke;
-    fill: rgba(0,0,0,.3);
+    fill: rgba(0, 0, 0, 0.3);
     stroke: transparent;
   }
 
@@ -485,21 +514,21 @@
 
 :root[platform="win"].theme-dark .ruleview-enableproperty,
 :root[platform="linux"].theme-dark .ruleview-enableproperty {
-  fill: rgba(255,255,255,.4);
+  fill: rgba(255, 255, 255, 0.4);
 }
 
 :root[platform="win"] .ruleview-enableproperty:checked,
 :root[platform="linux"] .ruleview-enableproperty:checked {
-  stroke: rgba(0,0,0,.6);
+  stroke: rgba(0, 0, 0, 0.6);
 }
 
 :root[platform="win"].theme-dark .ruleview-enableproperty:checked,
 :root[platform="linux"].theme-dark .ruleview-enableproperty:checked {
-  stroke: rgba(255,255,255,.8);
+  stroke: rgba(255, 255, 255, 0.8);
 }
 
 .ruleview-warning,
-.ruleview-unused-warning,
+.ruleview-inactive-css-warning,
 .ruleview-compatibility-warning,
 .ruleview-invalid-at-computed-value-time-warning {
   display: inline-block;
@@ -516,12 +545,11 @@
 }
 
 .ruleview-invalid-at-computed-value-time-warning {
-    background-image: var(--invalid-at-computed-value-time-icon);
-    fill: var(--invalid-at-computed-value-time-fill-color);
+  background-image: var(--invalid-at-computed-value-time-icon);
+  fill: var(--invalid-at-computed-value-time-fill-color);
 }
 
-
-.ruleview-unused-warning {
+.ruleview-inactive-css-warning {
   background-image: url(resource://devtools-shared-images/info-small.svg);
   background-color: var(--theme-sidebar-background);
   fill: var(--theme-icon-dimmed-color);
@@ -533,7 +561,7 @@
   fill: var(--theme-icon-dimmed-color);
 }
 
-.ruleview-unused-warning:hover,
+.ruleview-inactive-css-warning:hover,
 .ruleview-compatibility-warning:hover {
   fill: var(--theme-icon-color);
   stroke: var(--theme-icon-color);
@@ -551,21 +579,26 @@
 
 .ruleview-propertycontainer .ruleview-expander {
   margin-left: -6px;
+  border: none;
+  background-color: transparent;
+  /* Prevent line break when copy/pasting an entire rule */
+  user-select: auto;
 }
 
-.ruleview-propertycontainer .ruleview-expander:dir(rtl):not([open]) {
+.ruleview-propertycontainer .ruleview-expander:dir(rtl)[aria-expanded="false"] {
   /* for preventing .theme-twisty's wrong direction in rtl; Bug 1296648 */
   transform: rotate(-90deg);
+}
+
+.ruleview-propertycontainer .ruleview-variable-link {
+  /* Prevent line break when copy/pasting an entire rule */
+  user-select: auto;
 }
 
 .ruleview-newproperty {
   /* As we don't have the checkbox displayed before the input, we need to align it
      with the property name above it. */
-  margin-inline-start: calc(
-    var(--rule-enableproperty-size) +
-    var(--rule-enableproperty-margin-inline-start) +
-    var(--rule-enableproperty-margin-inline-end)
-  );
+  margin-inline-start: calc(var(--rule-enableproperty-size) + var(--rule-enableproperty-margin-inline-start) + var(--rule-enableproperty-margin-inline-end));
 }
 
 .ruleview-namecontainer,
@@ -577,6 +610,7 @@
 
 .ruleview-computedlist {
   list-style: none;
+  margin: 0;
   padding: 0;
 }
 
@@ -622,19 +656,20 @@
   margin-left: 0;
 }
 
-.ruleview-overridden {
-  text-decoration: line-through solid var(--theme-text-color-alt);
+.ruleview-overridden,
+.ruleview-invalid {
+  text-decoration: line-through solid var(--theme-text-color-inactive);
 }
 
 /**
  * Hide swatches (tool icons) from properties that are overwritten by higher specificity * rules.
- * .ruleview-swatch is a base class for many tool swatches (shapes, color, bezier curves)
- * .ruleview-flex and .ruleview-grid are custom
+ * .inspector-swatch is a base class for many tool swatches (shapes, color, bezier curves)
+ * .inspector-flex and .inspector-grid are custom
  */
-.ruleview-overridden .ruleview-flex,
-.ruleview-overridden .ruleview-grid,
-.ruleview-overridden .ruleview-shapeswatch,
-.ruleview-overridden .ruleview-swatch {
+.ruleview-overridden .inspector-flex,
+.ruleview-overridden .inspector-grid,
+.ruleview-overridden .inspector-shapeswatch,
+.ruleview-overridden .inspector-swatch {
   display: none;
 }
 
@@ -661,13 +696,23 @@
   /* When the text of the property wraps, we want the wrapping lines to have an indent so
      they don't go under the checkbox */
   text-indent: var(--rule-computed-margin-inline-start) hanging;
+
+  :root[forced-colors-active] & {
+    /* We opt-out of forced-colors because we want the left border to be actually transparent
+       in High Contrast Mode when the declaration isn't new/updated, and green when it is */
+    forced-color-adjust: none;
+    /* But we opt-in forced colors on direct child so we have expected High Contrast colors
+       for the children */
+    & > * {
+      forced-color-adjust: auto;
+    }
+  }
 }
 
-.ruleview-propertycontainer  > * {
+.ruleview-propertycontainer > * {
   vertical-align: middle;
 }
 
-.ruleview-property.ruleview-changed,
 .ruleview-property[dirty] {
   border-left-color: var(--theme-highlight-green);
 }
@@ -681,10 +726,9 @@
    * So here we'll use a bottom box-shadow (not a border to avoid impacting the layout)
    * which will match the style we have in Debugger for search results.
    */
-  background-color: var(--rule-highlight-background-color);
+  background-color: var(--inspector-highlight-background-color);
   /* Put the box-shadow inside the element so it's still visible when sibling elements are highlighted  */
-  box-shadow: inset 0px -1px 0px 0px var(--theme-contrast-border);
-
+  box-shadow: inset 0 -1px 0 0 var(--theme-contrast-border);
 
   /* property name and value and unmatched/inactive colors need to be adjusted
      in order to have enough contrast against the highlighted background */
@@ -697,20 +741,30 @@
   }
 
   &.ruleview-selector.unmatched,
-  & .ruleview-unmatched,
-  .ruleview-property:is(.unused, .ruleview-overridden) & :is(.ruleview-propertyname, .ruleview-propertyvalue) {
+  & .inspector-unmatched,
+  .ruleview-property:is(.inactive-css, .ruleview-overridden) & :is(.ruleview-propertyname, .ruleview-propertyvalue) {
     color: var(--rule-highlight-unmatched-unused-color);
   }
-}
 
-.ruleview-namecontainer > .ruleview-propertyname,
-.ruleview-propertyvaluecontainer > .ruleview-propertyvalue {
-  border-bottom: 1px dashed transparent;
+  /* In High Contrast Mode, we need to specifiy an additional color for elements which
+     don't have specific highlighted colors (selectors, semi colons, stylesheet location, ...) */
+  :root[forced-colors-active] & {
+    color: var(--theme-contrast-color);
+    a,
+    .theme-twisty {
+      color: var(--theme-contrast-color);
+    }
+
+    /* the overridden class is set on a parent element of the ruleview-highlight one */
+    .ruleview-overridden:has(&) {
+      text-decoration-color: var(--theme-contrast-color);
+    }
+  }
 }
 
 .ruleview-namecontainer:hover > .ruleview-propertyname,
 .ruleview-propertyvaluecontainer:hover > .ruleview-propertyvalue {
-  border-bottom-color: hsl(0,0%,50%);
+  text-decoration: 1px underline dashed hsl(0, 0%, 50%);
 }
 
 /* ancestor rules info element (parent at-rules, parent of nested rules, …) */
@@ -728,7 +782,7 @@
   max-width: max-content;
 }
 
-.ruleview-rule-ancestor-data  [role="listitem"].has-tooltip:hover .container-query-declaration {
+.ruleview-rule-ancestor-data [role="listitem"] .container-condition:is(:hover, .tooltip-anchor) {
   text-decoration: underline;
   text-decoration-color: var(--theme-highlight-blue);
   text-decoration-style: dotted;
@@ -737,7 +791,7 @@
   text-underline-offset: 2px;
 }
 
-.ruleview-rule-ancestor-data  [role="listitem"] :is(button,[role="button"]).open-inspector {
+.ruleview-rule-ancestor-data [role="listitem"] :is(button, [role="button"]).open-inspector {
   /* There's a space character after the button, so add a 1ch margin-inline-start to be consistent */
   margin-inline: 1ch 0;
   user-select: auto;
@@ -749,21 +803,34 @@
   cursor: text;
 }
 
-.ruleview-selector-separator,
-.ruleview-selector.unmatched,
-.ruleview-property:is(.unused, .ruleview-overridden) :is(.ruleview-propertyname,.ruleview-propertyvalue) {
+.ruleview-selector-separator {
   color: var(--theme-text-color-alt);
+}
+
+.ruleview-rule:is(.unmatched, [unmatched="true"]) .ruleview-selector,
+.ruleview-selector.unmatched,
+.container-condition.unmatched,
+/* prettier-ignore */
+.ruleview-property:is(
+  .inactive-css,
+  .ruleview-overridden,
+  .ruleview-invalid
+) :is(.ruleview-propertyname, .ruleview-propertyvalue) {
+  color: var(--theme-text-color-inactive);
 }
 
 /* We use a dimmer color for those unmatching element, but we can't convey state change
     only with colors, so let's add a line-through line */
 :is(
   .ruleview-selector.unmatched,
-  .ruleview-unmatched,
-  .ruleview-invalid-at-computed-value-time
+  .inspector-unmatched,
+  .ruleview-invalid-at-computed-value-time,
+  .ruleview-rule:is(.unmatched, [unmatched=true]) .ruleview-selector,
+  .container-condition.unmatched,
 ):not(
   /* don't show the strike through when the element is hovered so it's more legible */
-  :hover
+  :hover,
+  .tooltip-anchor
 ) {
   text-decoration: line-through solid currentColor;
 }
@@ -895,4 +962,24 @@
 
 .ruleview-propertyvalue-break-spaces {
   white-space: break-spaces;
+}
+
+.ruleview-propertyvalue .inspector-attr-param:not(.inspector-unmatched) .inspector-attr-name {
+  color: var(--theme-highlight-blue);
+}
+
+.ruleview-show-unused-custom-css-properties {
+  margin-block: 4px;
+  /* Align the button with the properties above it. */
+  /* prettier-ignore */
+  margin-inline-start: calc(
+    var(--rule-enableproperty-size) +
+    var(--rule-enableproperty-margin-inline-start) +
+    var(--rule-enableproperty-margin-inline-end)
+  );
+}
+
+[data-function-expression] .css-explainers-function-name {
+  text-decoration: 1px solid underline;
+  text-underline-offset: 2px;
 }

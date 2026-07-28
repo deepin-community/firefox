@@ -1,4 +1,4 @@
-// |reftest| shell-option(--enable-float16array) skip-if(!this.hasOwnProperty('Atomics')) -- Atomics is not enabled unconditionally
+// |reftest| skip-if(!this.hasOwnProperty('Atomics')) -- Atomics is not enabled unconditionally
 // Copyright (C) 2020 Rick Waldron. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -15,6 +15,6 @@ testWithNonAtomicsFriendlyTypedArrayConstructors(TA => {
   assert.throws(TypeError, function() {
     Atomics.load(view, 0);
   }, `Atomics.load(new ${TA.name}(buffer), 0) throws TypeError`);
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

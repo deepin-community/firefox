@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 /* exported CustomizableUI makeWidgetId focusWindow forceGC
@@ -19,7 +17,7 @@
  *          openTabContextMenu closeTabContextMenu
  *          openToolsMenu closeToolsMenu
  *          imageBuffer imageBufferFromDataURI
- *          getInlineOptionsBrowser
+ *          getInlineOptionsBrowser getMenuitemImage getRawMenuitemImage
  *          getListStyleImage getRawListStyleImage getPanelForNode
  *          awaitExtensionPanel awaitPopupResize
  *          promiseContentDimensions alterContent
@@ -56,12 +54,16 @@ const { AppUiTestDelegate, AppUiTestInternals } = ChromeUtils.importESModule(
   "resource://testing-common/AppUiTestDelegate.sys.mjs"
 );
 
-const { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
-);
-
 ChromeUtils.defineESModuleGetters(this, {
   Management: "resource://gre/modules/Extension.sys.mjs",
+});
+
+ChromeUtils.defineLazyGetter(this, "SidebarTestUtils", () => {
+  const { SidebarTestUtils: utils } = ChromeUtils.importESModule(
+    "resource://testing-common/SidebarTestUtils.sys.mjs"
+  );
+  utils.init(this);
+  return utils;
 });
 
 var { makeWidgetId, promisePopupShown, getPanelForNode, awaitBrowserLoaded } =
@@ -145,22 +147,37 @@ function getInlineOptionsBrowser(aboutAddonsBrowser) {
   return contentDocument.getElementById("addon-inline-options");
 }
 
-function getRawListStyleImage(button) {
+function _ensurePopupsInitialized(element) {
   // Ensure popups are initialized so that the elements are rendered and
   // getComputedStyle works.
   for (
-    let popup = button.closest("panel,menupopup");
+    let popup = element.closest("panel,menupopup");
     popup;
     popup = popup.parentElement?.closest("panel,menupopup")
   ) {
     popup.ensureInitialized();
   }
+}
 
-  return button.ownerGlobal.getComputedStyle(button).listStyleImage;
+function getRawListStyleImage(button) {
+  _ensurePopupsInitialized(button);
+  return button.documentGlobal.getComputedStyle(button).listStyleImage;
 }
 
 function getListStyleImage(button) {
   let match = /url\("([^"]*)"\)/.exec(getRawListStyleImage(button));
+  return match && match[1];
+}
+
+function getRawMenuitemImage(menuitem) {
+  _ensurePopupsInitialized(menuitem);
+  return menuitem.documentGlobal
+    .getComputedStyle(menuitem)
+    .getPropertyValue("--webextension-menuitem-image");
+}
+
+function getMenuitemImage(menuitem) {
+  let match = /url\("([^"]*)"\)/.exec(getRawMenuitemImage(menuitem));
   return match && match[1];
 }
 
@@ -179,9 +196,9 @@ async function promiseBrowserContentUnloaded(browser) {
     });
   });
 
-  await ContentTask.spawn(
+  await SpecialPowers.spawn(
     browser,
-    MSG_WINDOW_DESTROYED,
+    [MSG_WINDOW_DESTROYED],
     MSG_WINDOW_DESTROYED => {
       let innerWindowId = this.content.windowGlobalChild.innerWindowId;
       let observer = subject => {
@@ -282,6 +299,11 @@ function promisePossiblyInaccurateContentDimensions(browser) {
         "scrollWidth",
         "scrollHeight",
       ]),
+      visualViewport: copyProps(content.visualViewport, [
+        "width",
+        "height",
+        "scale",
+      ]),
       isStandards: content.document.compatMode !== "BackCompat",
     };
   });
@@ -310,23 +332,46 @@ async function promiseContentDimensions(browser, tolleratedWidthSizeDiff = 1) {
   // unpredictability in the timing, mainly due to the unpredictability of
   // reflows, we need to wait until the content window dimensions match the
   // <browser> dimensions before returning data.
-
-  let dims = await promisePossiblyInaccurateContentDimensions(browser);
-  while (
-    Math.abs(browser.clientWidth - dims.window.innerWidth) >
-      tolleratedWidthSizeDiff ||
-    browser.clientHeight !== Math.round(dims.window.innerHeight)
-  ) {
+  for (;;) {
+    let dims = await promisePossiblyInaccurateContentDimensions(browser);
+    info(`Got dimensions: ${JSON.stringify(dims)}`);
+    if (
+      Math.abs(browser.clientWidth - dims.window.innerWidth) <=
+        tolleratedWidthSizeDiff &&
+      browser.clientHeight === Math.round(dims.window.innerHeight)
+    ) {
+      // We don't expect zoom or so on these documents, so these should stay
+      // consistent, assuming there are no scrollbars.
+      // If you want to test extension popup pinch zooming you probably need to
+      // remove this assert.
+      is(
+        dims.visualViewport.scale,
+        1,
+        "We expect no pinch zoom on these tests"
+      );
+      if (!dims.window.scrollMaxY && !dims.window.scrollMaxX) {
+        isfuzzy(
+          dims.window.innerHeight,
+          dims.visualViewport.height,
+          1,
+          "VisualViewport and window height are consistent"
+        );
+        isfuzzy(
+          dims.window.innerWidth,
+          dims.visualViewport.width,
+          1,
+          "VisualViewport and window width are consistent"
+        );
+      }
+      return dims;
+    }
     const diffWidth = Math.abs(browser.clientWidth - dims.window.innerWidth);
     const diffHeight = Math.abs(browser.clientHeight - dims.window.innerHeight);
     info(
       `Content dimension did not reached the expected size yet (diff: ${diffWidth}x${diffHeight}). Wait further.`
     );
     await delay(50);
-    dims = await promisePossiblyInaccurateContentDimensions(browser);
   }
-
-  return dims;
 }
 
 async function awaitPopupResize(browser) {
@@ -395,7 +440,9 @@ async function triggerBrowserActionWithKeyboard(
   await showBrowserAction(extension, win);
 
   let group = getBrowserActionWidget(extension);
-  let node = group.forWindow(win).node.firstElementChild;
+  let node = group
+    .forWindow(win)
+    .node.querySelector(".unified-extensions-item-action-button");
 
   if (group.areaType == CustomizableUI.TYPE_TOOLBAR) {
     await focusButtonAndPressKey(key, node, modifiers);
@@ -453,7 +500,7 @@ async function openContextMenuInPopup(
 
   // Ensure that the document layout has been flushed before triggering the mouse event
   // (See Bug 1519808 for a rationale).
-  await browser.ownerGlobal.promiseDocumentFlushed(() => {});
+  await browser.documentGlobal.promiseDocumentFlushed(() => {});
   let popupShownPromise = BrowserTestUtils.waitForEvent(
     contentAreaContextMenu,
     "popupshown"
@@ -471,6 +518,20 @@ async function openContextMenuInPopup(
   await popupShownPromise;
   return contentAreaContextMenu;
 }
+
+// Ensure each test leaves the sidebar in its initial state when it completes
+const initialSidebarState = { ...SidebarController.getUIState(), command: "" };
+registerCleanupFunction(async function () {
+  const { ObjectUtils } = ChromeUtils.importESModule(
+    "resource://gre/modules/ObjectUtils.sys.mjs"
+  );
+  if (
+    !ObjectUtils.deepEqual(SidebarController.getUIState(), initialSidebarState)
+  ) {
+    info("Restoring to initial sidebar state");
+    await SidebarController.updateUIState(initialSidebarState);
+  }
+});
 
 async function openContextMenuInSidebar(selector = "body") {
   let contentAreaContextMenu =
@@ -697,7 +758,7 @@ function openTabContextMenu(tab = gBrowser.selectedTab) {
   return openChromeContextMenu(
     "tabContextMenu",
     `.tabbrowser-tab:nth-child(${indexOfTab + 1})`,
-    tab.ownerGlobal
+    tab.documentGlobal
   );
 }
 
@@ -799,15 +860,6 @@ async function triggerPageActionWithKeyboardInPanel(
 
 function closePageAction(extension, win = window) {
   return AppUiTestDelegate.closePageAction(win, extension.id);
-}
-
-function promisePrefChangeObserved(pref) {
-  return new Promise(resolve =>
-    Preferences.observe(pref, function prefObserver() {
-      Preferences.ignore(pref, prefObserver);
-      resolve();
-    })
-  );
 }
 
 function promiseWindowRestored(window) {
@@ -1076,10 +1128,10 @@ function isRectContained(actualRect, maxRect) {
 }
 
 function getToolboxBackgroundColor() {
-  let toolbox = document.getElementById("navigator-toolbox");
+  let body = document.body;
   // Ignore any potentially ongoing transition.
-  toolbox.style.transitionProperty = "none";
-  let color = window.getComputedStyle(toolbox).backgroundColor;
-  toolbox.style.transitionProperty = "";
+  body.style.transitionProperty = "none";
+  let color = window.getComputedStyle(body).backgroundColor;
+  body.style.transitionProperty = "";
   return color;
 }

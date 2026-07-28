@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { html, ifDefined } from "../vendor/lit.all.mjs";
+import { html, ifDefined, classMap } from "../vendor/lit.all.mjs";
 import "./moz-button.mjs";
 
 export default {
@@ -22,7 +22,18 @@ export default {
       control: { type: "radio" },
     },
     type: {
-      options: ["default", "primary", "destructive", "icon", "icon ghost"],
+      options: [
+        "default",
+        "primary",
+        "destructive",
+        "icon",
+        "icon ghost",
+        "split",
+      ],
+      control: { type: "select" },
+    },
+    iconPosition: {
+      options: ["start", "end"],
       control: { type: "select" },
     },
   },
@@ -30,7 +41,7 @@ export default {
     actions: {
       handles: ["click"],
     },
-    status: "in-development",
+    status: "stable",
     fluent: `
 moz-button-labelled =
   .label = Button
@@ -52,7 +63,17 @@ const Template = ({
   disabled,
   accesskey,
   clickHandler,
+  showOuterPadding,
+  attention,
+  iconPosition,
+  menuId,
 }) => html`
+  <style>
+    .show-outer-padding {
+      --button-outer-padding-inline: var(--space-medium);
+      --button-outer-padding-block: var(--space-medium);
+    }
+  </style>
   <moz-button
     @click=${clickHandler}
     data-l10n-id=${l10nId}
@@ -62,7 +83,18 @@ const Template = ({
     ?disabled=${disabled}
     iconSrc=${ifDefined(iconSrc)}
     accesskey=${ifDefined(accesskey)}
+    ?attention=${attention}
+    iconPosition=${ifDefined(iconPosition)}
+    menuId=${ifDefined(menuId)}
+    class=${classMap({ "show-outer-padding": showOuterPadding })}
   ></moz-button>
+  ${menuId
+    ? html` <panel-list id="panel-list">
+        <panel-item>Item One</panel-item>
+        <panel-item>Item Two</panel-item>
+        <panel-item>Item Three</panel-item>
+      </panel-list>`
+    : ""}
 `;
 
 export const Default = Template.bind({});
@@ -72,14 +104,19 @@ Default.args = {
   l10nId: "moz-button-labelled",
   iconSrc: "",
   disabled: false,
+  showOuterPadding: false,
+  attention: false,
+  iconPosition: "start",
 };
 export const DefaultSmall = Template.bind({});
 DefaultSmall.args = {
-  type: "default",
+  ...Default.args,
   size: "small",
-  l10nId: "moz-button-labelled",
-  iconSrc: "",
-  disabled: false,
+};
+export const Disabled = Template.bind({});
+Disabled.args = {
+  ...Default.args,
+  disabled: true,
 };
 export const Primary = Template.bind({});
 Primary.args = {
@@ -111,14 +148,43 @@ IconGhost.args = {
 };
 export const IconText = Template.bind({});
 IconText.args = {
-  type: "default",
-  size: "default",
+  ...Default.args,
   iconSrc: "chrome://global/skin/icons/edit-copy.svg",
   l10nId: "moz-button-labelled",
+};
+export const IconPositionEnd = Template.bind({});
+IconPositionEnd.args = {
+  ...IconText.args,
+  iconPosition: "end",
 };
 export const WithAccesskey = Template.bind({});
 WithAccesskey.args = {
   ...Default.args,
   accesskey: "t",
   clickHandler: () => alert("Activating the accesskey clicks the button"),
+};
+export const Toolbar = Template.bind({});
+Toolbar.args = {
+  ...Default.args,
+  showOuterPadding: true,
+};
+export const Badged = Template.bind({});
+Badged.args = {
+  ...Icon.args,
+  type: "icon",
+  attention: true,
+};
+export const MenuButton = Template.bind({});
+MenuButton.args = {
+  ...Icon.args,
+  type: "icon",
+  l10nId: "moz-button-more-options",
+  menuId: "panel-list",
+};
+
+export const SplitButton = Template.bind({});
+SplitButton.args = {
+  ...Default.args,
+  type: "split",
+  menuId: "panel-list",
 };

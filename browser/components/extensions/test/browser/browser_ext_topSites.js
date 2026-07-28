@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const { PlacesTestUtils } = ChromeUtils.importESModule(
@@ -57,6 +55,7 @@ add_setup(async function () {
 
   await SpecialPowers.pushPrefEnv({
     set: [
+      ["test.wait300msAfterTabSwitch", true],
       // The pref for TopSites is empty by default.
       [
         "browser.newtabpage.activity-stream.default.sites",

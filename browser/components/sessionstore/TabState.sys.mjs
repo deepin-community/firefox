@@ -8,36 +8,19 @@ ChromeUtils.defineESModuleGetters(lazy, {
   PrivacyFilter: "resource://gre/modules/sessionstore/PrivacyFilter.sys.mjs",
   TabAttributes: "resource:///modules/sessionstore/TabAttributes.sys.mjs",
   TabStateCache: "resource:///modules/sessionstore/TabStateCache.sys.mjs",
+  sessionStoreLogger: "resource:///modules/sessionstore/SessionLogger.sys.mjs",
 });
 
 /**
  * Module that contains tab state collection methods.
  */
-export var TabState = Object.freeze({
-  update(permanentKey, data) {
-    TabStateInternal.update(permanentKey, data);
-  },
-
-  collect(tab, extData) {
-    return TabStateInternal.collect(tab, extData);
-  },
-
-  clone(tab, extData) {
-    return TabStateInternal.clone(tab, extData);
-  },
-
-  copyFromCache(permanentKey, tabData, options) {
-    TabStateInternal.copyFromCache(permanentKey, tabData, options);
-  },
-});
-
-var TabStateInternal = {
+class _TabState {
   /**
    * Processes a data update sent by the content script.
    */
   update(permanentKey, { data }) {
     lazy.TabStateCache.update(permanentKey, data);
-  },
+  }
 
   /**
    * Collect data related to a single tab, synchronously.
@@ -47,13 +30,13 @@ var TabStateInternal = {
    * @param [extData]
    *        optional dictionary object, containing custom tab values.
    *
-   * @returns {TabData} An object with the data for this tab.  If the
+   * @returns {TabStateData} An object with the data for this tab.  If the
    * tab has not been invalidated since the last call to
    * collect(aTab), the same object is returned.
    */
   collect(tab, extData) {
-    return this._collectBaseTabData(tab, { extData });
-  },
+    return this.#collectBaseTabData(tab, { extData });
+  }
 
   /**
    * Collect data related to a single tab, including private data.
@@ -69,8 +52,8 @@ var TabStateInternal = {
    *                   up-to-date.
    */
   clone(tab, extData) {
-    return this._collectBaseTabData(tab, { extData, includePrivateData: true });
-  },
+    return this.#collectBaseTabData(tab, { extData, includePrivateData: true });
+  }
 
   /**
    * Collects basic tab data for a given tab.
@@ -81,9 +64,9 @@ var TabStateInternal = {
    *        {extData: object} optional dictionary object, containing custom tab values
    *        {includePrivateData: true} to always include private data
    *
-   * @returns {object} An object with the basic data for this tab.
+   * @returns {TabStateData} An object with the basic data for this tab.
    */
-  _collectBaseTabData(tab, options) {
+  #collectBaseTabData(tab, options) {
     let tabData = { entries: [], lastAccessed: tab.lastAccessed };
     let browser = tab.linkedBrowser;
 
@@ -98,7 +81,28 @@ var TabStateInternal = {
       tabData.muteReason = tab.muteReason;
     }
 
-    tabData.searchMode = tab.ownerGlobal.gURLBar.getSearchMode(browser, true);
+    if (tab.group) {
+      tabData.groupId = tab.group.id;
+    }
+
+    if (tab.splitview) {
+      tabData.splitViewId = tab.splitview.splitViewId;
+    }
+
+    if (tab.canonicalUrl) {
+      let canonicalUrl = tab.canonicalUrl;
+      if (!options.includePrivateData) {
+        canonicalUrl = lazy.PrivacyFilter.filterCanonicalUrl(canonicalUrl);
+      }
+      if (canonicalUrl) {
+        tabData.canonicalUrl = canonicalUrl;
+      }
+    }
+
+    tabData.searchMode = tab.documentGlobal.gURLBar.getSearchMode(
+      browser,
+      true
+    );
 
     tabData.userContextId = tab.userContextId || 0;
 
@@ -120,7 +124,7 @@ var TabStateInternal = {
 
     // Store the tab icon.
     if (!("image" in tabData)) {
-      let tabbrowser = tab.ownerGlobal.gBrowser;
+      let tabbrowser = tab.documentGlobal.gBrowser;
       tabData.image = tabbrowser.getIcon(tab);
     }
 
@@ -141,7 +145,41 @@ var TabStateInternal = {
     }
 
     return tabData;
-  },
+  }
+
+  processAboutRestartrequiredEnties(aEntries) {
+    // Find if there are some entries that matches (contains) the
+    // about:restartrequired page. It can be plain about:restartrequired
+    // or something more complicated like about:restartrequired?e=restartrequired&u=about%3Ablank&c=UTF-8&d=%20
+    if (
+      !aEntries.some(e => e.url && e.url.startsWith("about:restartrequired"))
+    ) {
+      return aEntries;
+    }
+
+    // now we need a deep copy
+    let newEntries = structuredClone(aEntries);
+    newEntries.forEach((item, index, object) => {
+      if (item.url === "about:restartrequired") {
+        object.splice(index, 1);
+      } else if (item.url.startsWith("about:restartrequired")) {
+        try {
+          const parsedURL = new URL(item.url);
+          if (parsedURL && parsedURL.searchParams.has("u")) {
+            const previousURL = parsedURL.searchParams.get("u");
+            object[index].url = previousURL;
+          }
+        } catch (ex) {
+          lazy.sessionStoreLogger.error(
+            `Exception when parsing "${item.url}"`,
+            ex
+          );
+        }
+      }
+    });
+
+    return newEntries;
+  }
 
   /**
    * Copy data for the given |browser| from the cache to |tabData|.
@@ -187,6 +225,8 @@ var TabStateInternal = {
         if (value.hasOwnProperty("requestedIndex")) {
           tabData.requestedIndex = value.requestedIndex;
         }
+
+        tabData.entries = this.processAboutRestartrequiredEnties(value.entries);
       } else if (!value && (key == "scroll" || key == "formdata")) {
         // [Bug 1554512]
 
@@ -200,5 +240,7 @@ var TabStateInternal = {
         tabData[key] = value;
       }
     }
-  },
-};
+  }
+}
+
+export const TabState = new _TabState();

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,11 +8,10 @@
 #include "mozilla/Attributes.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/HighlightBinding.h"
-
-#include "nsCycleCollectionParticipant.h"
 #include "nsAtomHashKeys.h"
-#include "nsTHashSet.h"
+#include "nsCycleCollectionParticipant.h"
 #include "nsTArray.h"
+#include "nsTHashSet.h"
 #include "nsWrapperCache.h"
 
 class nsFrameSelection;
@@ -28,6 +25,7 @@ class AbstractRange;
 class Document;
 class HighlightRegistry;
 class Selection;
+class ShadowRoot;
 
 /**
  * @brief Collection of all data of a highlight instance.
@@ -88,12 +86,6 @@ class Highlight final : public nsISupports, public nsWrapperCache {
   void RemoveFromHighlightRegistry(HighlightRegistry& aHighlightRegistry,
                                    nsAtom& aHighlightName);
 
-  /**
-   * @brief Creates a Highlight Selection using the given ranges.
-   */
-  MOZ_CAN_RUN_SCRIPT already_AddRefed<Selection> CreateHighlightSelection(
-      nsAtom* aHighlightName, nsFrameSelection* aFrameSelection);
-
   // WebIDL interface
   nsPIDOMWindowInner* GetParentObject() const { return mWindow; }
 
@@ -117,7 +109,7 @@ class Highlight final : public nsISupports, public nsWrapperCache {
    *
    * Priority is used to stack overlapping highlights.
    */
-  void SetPriority(int32_t aPriority) { mPriority = aPriority; }
+  void SetPriority(int32_t aPriority);
 
   /**
    * @brief The HighlightType of this Highlight (Highlight, Spelling Error,
@@ -128,15 +120,18 @@ class Highlight final : public nsISupports, public nsWrapperCache {
   /**
    * @brief Sets the HighlightType (Highlight, Spelling Error, Grammar Error)
    */
-  void SetType(HighlightType aHighlightType) {
-    mHighlightType = aHighlightType;
-  }
+  void SetType(HighlightType aHighlightType);
 
   /**
    * @brief This mirrors the `size` property in JS world (_not_ exposed via
    * webIDL)
    */
   uint32_t Size() const { return mRanges.Length(); }
+
+  /**
+   * @brief Access to the ranges for frame selection population.
+   */
+  const nsTArray<RefPtr<AbstractRange>>& Ranges() const { return mRanges; }
 
   /**
    * @brief Adds a `Range` to this highlight.
@@ -146,7 +141,7 @@ class Highlight final : public nsISupports, public nsWrapperCache {
    *
    * Also notifies all `HighlightRegistry` instances.
    */
-  MOZ_CAN_RUN_SCRIPT void Add(AbstractRange& aRange, ErrorResult& aRv);
+  MOZ_CAN_RUN_SCRIPT Highlight* Add(AbstractRange& aRange, ErrorResult& aRv);
 
   /**
    * @brief Removes all ranges from this highlight.
@@ -170,7 +165,29 @@ class Highlight final : public nsISupports, public nsWrapperCache {
    */
   MOZ_CAN_RUN_SCRIPT bool Delete(AbstractRange& aRange, ErrorResult& aRv);
 
+  /**
+   * @brief Returns ranges of this highlight present at the given point.
+   *
+   * This method uses `range.getClientRects()` to determine if a range is
+   * present at the given point.
+   * Ranges in a shadow tree are only considered if the shadow root is in
+   * `aShadowRoots`. If `aPointShadowRoot` is non-null, only ranges in that
+   * shadow tree are considered (the point itself is inside it).
+   *
+   * @param aX               x coordinate
+   * @param aY               y coordinate
+   * @param aShadowRoots     List of shadow roots to consider
+   * @param aPointShadowRoot Shadow root containing the hit-tested point, or
+   *                         nullptr if the point is in the light DOM.
+   */
+  nsTArray<RefPtr<AbstractRange>> RangesAtPoint(
+      float aX, float aY,
+      const Sequence<OwningNonNull<mozilla::dom::ShadowRoot>>& aShadowRoots,
+      mozilla::dom::ShadowRoot* aPointShadowRoot = nullptr) const;
+
  private:
+  void Repaint();
+
   RefPtr<nsPIDOMWindowInner> mWindow;
 
   /**

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -153,13 +151,12 @@ class EventListenerManagerBase {
 
   EventMessage mNoListenerForEvents[3];
   uint16_t mMayHaveDOMActivateEventListener : 1;
-  uint16_t mMayHavePaintEventListener : 1;
-  uint16_t mMayHaveMutationListeners : 1;
   uint16_t mMayHaveCapturingListeners : 1;
   uint16_t mMayHaveSystemGroupListeners : 1;
   uint16_t mMayHaveTouchEventListener : 1;
   uint16_t mMayHaveMouseEnterLeaveEventListener : 1;
   uint16_t mMayHavePointerEnterLeaveEventListener : 1;
+  uint16_t mMayHavePointerRawUpdateEventListener : 1;
   uint16_t mMayHaveSelectionChangeEventListener : 1;
   uint16_t mMayHaveFormSelectEventListener : 1;
   uint16_t mMayHaveTransitionEventListener : 1;
@@ -167,7 +164,7 @@ class EventListenerManagerBase {
   uint16_t mClearingListeners : 1;
   uint16_t mIsMainThreadELM : 1;
   uint16_t mMayHaveListenersForUntrustedEvents : 1;
-  // 1 unused flag.
+  // 2 unused flag.
 };
 
 /*
@@ -474,11 +471,6 @@ class EventListenerManager final : public EventListenerManagerBase {
   void Disconnect();
 
   /**
-   * Allows us to quickly determine if we have mutation listeners registered.
-   */
-  bool HasMutationListeners();
-
-  /**
    * Allows us to quickly determine whether we have unload listeners registered.
    */
   bool HasUnloadListeners();
@@ -490,15 +482,6 @@ class EventListenerManager final : public EventListenerManagerBase {
   bool HasBeforeUnloadListeners();
 
   /**
-   * Returns the mutation bits depending on which mutation listeners are
-   * registered to this listener manager.
-   * @note If a listener is an nsIDOMMutationListener, all possible mutation
-   *       event bits are returned. All bits are also returned if one of the
-   *       event listeners is registered to handle DOMSubtreeModified events.
-   */
-  uint32_t MutationListenerBits();
-
-  /**
    * Returns true if there is at least one event listener for aEventName.
    */
   bool HasListenersFor(const nsAString& aEventName) const;
@@ -508,6 +491,8 @@ class EventListenerManager final : public EventListenerManagerBase {
    * Note that aEventNameWithOn must start with "on"!
    */
   bool HasListenersFor(nsAtom* aEventNameWithOn) const;
+
+  bool HasNonPassiveListenersFor(const WidgetEvent* aEvent) const;
 
   /**
    * Similar to HasListenersFor, but ignores system group listeners.
@@ -542,12 +527,6 @@ class EventListenerManager final : public EventListenerManagerBase {
   }
 
   /**
-   * Returns true if there may be a paint event listener registered,
-   * false if there definitely isn't.
-   */
-  bool MayHavePaintEventListener() const { return mMayHavePaintEventListener; }
-
-  /**
    * Returns true if there may be a touch event listener registered,
    * false if there definitely isn't.
    */
@@ -558,6 +537,9 @@ class EventListenerManager final : public EventListenerManagerBase {
   }
   bool MayHavePointerEnterLeaveEventListener() const {
     return mMayHavePointerEnterLeaveEventListener;
+  }
+  bool MayHavePointerRawUpdateEventListener() const {
+    return mMayHavePointerRawUpdateEventListener;
   }
   bool MayHaveSelectionChangeEventListener() const {
     return mMayHaveSelectionChangeEventListener;
@@ -756,8 +738,8 @@ class EventListenerManager final : public EventListenerManagerBase {
   nsPIDOMWindowInner* GetInnerWindowForTarget();
   already_AddRefed<nsPIDOMWindowInner> GetTargetAsInnerWindow() const;
 
-  bool ListenerCanHandle(const Listener* aListener, const WidgetEvent* aEvent,
-                         EventMessage aEventMessage) const;
+  bool ListenerCanHandle(const Listener* aListener,
+                         const WidgetEvent* aEvent) const;
 
   // BE AWARE, a lot of instances of EventListenerManager will be created.
   // Therefor, we need to keep this class compact.  When you add integer

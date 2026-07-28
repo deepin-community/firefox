@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
 
 import datetime
+import errno
 import functools
 import glob
 import os
@@ -16,8 +15,6 @@ import subprocess
 import tempfile
 import time
 from threading import Timer
-
-import six
 
 from mozharness.base.script import PostScriptAction, PreScriptAction
 from mozharness.mozilla.automation import EXIT_STATUS_DICT, TBPL_RETRY
@@ -33,7 +30,7 @@ def ensure_dir(dir):
                 raise
 
 
-class AndroidMixin(object):
+class AndroidMixin:
     """
     Mixin class used by Android test scripts.
     """
@@ -43,14 +40,16 @@ class AndroidMixin(object):
         self._device = None
         self.app_name = None
         self.device_name = os.environ.get("DEVICE_NAME", None)
-        self.device_serial = os.environ.get("DEVICE_SERIAL", None)
+        self.device_serial = os.environ.get("ANDROID_SERIAL") or os.environ.get(
+            "DEVICE_SERIAL"
+        )
         self.device_ip = os.environ.get("DEVICE_IP", None)
         self.logcat_proc = None
         self.logcat_file = None
         self.use_gles3 = False
         self.use_root = True
         self.xre_path = None
-        super(AndroidMixin, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     @property
     def adb_path(self):
@@ -164,7 +163,7 @@ class AndroidMixin(object):
             # The ini file points to the absolute path to the emulator folder,
             # which might be different, so we need to update it.
             old_config = ""
-            with open(avd_config_path, "r") as config_file:
+            with open(avd_config_path) as config_file:
                 old_config = config_file.readlines()
                 self.info("Old Config: %s" % old_config)
             with open(avd_config_path, "w") as config_file:
@@ -268,31 +267,48 @@ class AndroidMixin(object):
             status = func()
         return status
 
+    def _dump_host_perf_linux(self, f):
+        f.write("\n\nHost cpufreq/scaling_governor:\n")
+        cpus = glob.glob("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+        for cpu in cpus:
+            out = subprocess.check_output(["cat", cpu], universal_newlines=True)
+            f.write(f"{cpu}: {out}")
+
+        f.write("\n\nHost /proc/cpuinfo:\n")
+        out = subprocess.check_output(["cat", "/proc/cpuinfo"], universal_newlines=True)
+        f.write(out)
+
+        f.write("\n\nHost /proc/meminfo:\n")
+        out = subprocess.check_output(["cat", "/proc/meminfo"], universal_newlines=True)
+        f.write(out)
+
+    def _dump_host_perf_darwin(self, f):
+        f.write("\n\nHost CPU info:\n")
+        out = subprocess.check_output(
+            ["sysctl", "-a", "machdep.cpu"], universal_newlines=True
+        )
+        f.write(out)
+
+        f.write("\n\nHost memory info:\n")
+        out = subprocess.check_output(
+            ["sysctl", "-a", "hw.memsize"], universal_newlines=True
+        )
+        f.write(out)
+
     def dump_perf_info(self):
         """
         Dump some host and android device performance-related information
         to an artifact file, to help understand task performance.
         """
+        import sys
+
         dir = self.query_abs_dirs()["abs_blob_upload_dir"]
         perf_path = os.path.join(dir, "android-performance.log")
         with open(perf_path, "w") as f:
-            f.write("\n\nHost cpufreq/scaling_governor:\n")
-            cpus = glob.glob("/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
-            for cpu in cpus:
-                out = subprocess.check_output(["cat", cpu], universal_newlines=True)
-                f.write("%s: %s" % (cpu, out))
-
-            f.write("\n\nHost /proc/cpuinfo:\n")
-            out = subprocess.check_output(
-                ["cat", "/proc/cpuinfo"], universal_newlines=True
-            )
-            f.write(out)
-
-            f.write("\n\nHost /proc/meminfo:\n")
-            out = subprocess.check_output(
-                ["cat", "/proc/meminfo"], universal_newlines=True
-            )
-            f.write(out)
+            if sys.platform == "linux":
+                self._dump_host_perf_linux(f)
+            elif sys.platform == "darwin":
+                self._dump_host_perf_darwin(f)
 
             f.write("\n\nHost process list:\n")
             out = subprocess.check_output(["ps", "-ef"], universal_newlines=True)
@@ -523,7 +539,8 @@ class AndroidMixin(object):
 
     def kill_processes(self, process_name):
         self.info("Killing every process called %s" % process_name)
-        process_name = six.ensure_binary(process_name)
+        if isinstance(process_name, str):
+            process_name = process_name.encode("utf-8")
         out = subprocess.check_output(["ps", "-A"])
         for line in out.splitlines():
             if process_name in line:
@@ -630,7 +647,9 @@ class AndroidMixin(object):
             return
 
         if self.is_emulator:
-            max_restarts = 5
+            # Emulator hangs can take up to 10 min for all the inner retry loops
+            # and timeouts to fire.
+            max_restarts = 2
             emulator_ok = self._retry(
                 max_restarts,
                 10,

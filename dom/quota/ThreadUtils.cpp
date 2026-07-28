@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,6 +9,8 @@
 #include "nsIThreadInternal.h"
 #include "nsThreadPool.h"
 #include "nsThreadUtils.h"
+#include "prinrval.h"
+#include "prthread.h"
 
 namespace mozilla::dom::quota {
 
@@ -79,6 +79,13 @@ nsresult RunAfterProcessingCurrentEvent(std::function<void()>&& aCallback) {
   QM_TRY(MOZ_TO_RESULT(helper->Init(std::move(aCallback))));
 
   return NS_OK;
+}
+
+void SleepIfEnabled(StripAtomic<RelaxedAtomicUint32> aMirroredPrefValue) {
+  uint32_t pauseOnThreadMs = aMirroredPrefValue;
+  if (pauseOnThreadMs > 0) {
+    PR_Sleep(PR_MillisecondsToInterval(pauseOnThreadMs));
+  }
 }
 
 }  // namespace mozilla::dom::quota

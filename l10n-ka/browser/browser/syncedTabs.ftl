@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-synced-tabs-sidebar-title = დასინქრონებული ჩანართები
+synced-tabs-sidebar-title = დასინქ. ჩანართები
 synced-tabs-sidebar-noclients-subtitle = გსურთ სხვა მოწყობილობების ჩანართების აქ ნახვა?
 synced-tabs-sidebar-intro = იხილეთ ჩანართების სია თქვენი სხვა მოწყობილობებიდან.
 synced-tabs-sidebar-unverified = თქვენი ანგარიში საჭიროებს დამოწმებას.
@@ -11,7 +11,7 @@ synced-tabs-sidebar-open-settings = სინქრონიზაციის �
 synced-tabs-sidebar-tabsnotsyncing = ჩართეთ ჩანართების სინქრონიზაცია თქვენი სხვა მოწყობილობებიდან ჩანართების სიის სანახავად.
 synced-tabs-sidebar-connect-another-device = სხვა მოწყობილობის დაკავშირება
 synced-tabs-sidebar-search =
-    .placeholder = დასინქრონებული ჩანართების მოძიება
+    .placeholder = დასინქ. ჩანართების მოძიება
 
 ## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
 ## and/or devices in the list. The "Open" strings below should be translated
@@ -54,8 +54,19 @@ synced-tabs-context-open-all-in-tabs =
 synced-tabs-context-manage-devices =
     .label = მოწყობილობების მართვა…
     .accesskey = მ
+synced-tabs-context-manage-this-device =
+    .label = მოწყობილობების მართვა
+    .accesskey = წ
+synced-tabs-context-connect-another-device =
+    .label = სხვა მოწყობილობის დაკავშირება
+    .accesskey = ხ
 synced-tabs-context-sync-now =
     .label = დასინქრონება ახლავე
     .accesskey = ს
 synced-tabs-fxa-sign-in = სინქრონიზაციაში შესვლა
 synced-tabs-turn-on-sync = დასინქრონების ჩართვა
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables
+# $deviceName - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab = ჩანართის დახურვა – { $deviceName }

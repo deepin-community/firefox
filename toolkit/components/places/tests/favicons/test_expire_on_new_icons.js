@@ -50,19 +50,19 @@ add_task(async function test_expire_associated() {
 
   // Only the second and the third icons should have survived.
   Assert.equal(
-    await getFaviconUrlForPage(TEST_URL, 16),
+    (await PlacesTestUtils.getFaviconForPage(TEST_URL, 16)).uri.spec,
     TEST_URL + favicons[1].name,
     "Should retrieve the 32px icon, not the 16px one."
   );
   Assert.equal(
-    await getFaviconUrlForPage(TEST_URL, 64),
+    (await PlacesTestUtils.getFaviconForPage(TEST_URL, 64)).uri.spec,
     TEST_URL + favicons[2].name,
     "Should retrieve the 64px icon"
   );
 
   // The expired icon for page 2 should have survived.
   Assert.equal(
-    await getFaviconUrlForPage(TEST_URL2, 16),
+    (await PlacesTestUtils.getFaviconForPage(TEST_URL2, 16)).uri.spec,
     TEST_URL + favicons[0].name,
     "Should retrieve the expired 16px icon"
   );
@@ -83,11 +83,11 @@ add_task(async function test_expire_root() {
 
   Assert.equal(await countEntries("moz_icons"), 0, "There should be no icons");
 
-  let pageURI = NetUtil.newURI("http://root.mozilla.com/");
+  let pageURI = Services.io.newURI("http://root.mozilla.com/");
   await PlacesTestUtils.addVisits(pageURI);
 
   // Insert an expired icon.
-  let iconURI = NetUtil.newURI(pageURI.spec + "favicon-normal16.png");
+  let iconURI = Services.io.newURI(pageURI.spec + "favicon-normal16.png");
   await PlacesTestUtils.setFaviconForPage(pageURI, iconURI, SMALLPNG_DATA_URI);
   Assert.equal(
     await countEntries("moz_icons_to_pages"),
@@ -98,7 +98,7 @@ add_task(async function test_expire_root() {
   await expireIconRelationsForPage(pageURI.spec);
 
   // Now insert a new root icon.
-  let rootIconURI = NetUtil.newURI(pageURI.spec + "favicon.ico");
+  let rootIconURI = Services.io.newURI(pageURI.spec + "favicon.ico");
   await PlacesTestUtils.setFaviconForPage(
     pageURI,
     rootIconURI,
@@ -107,7 +107,7 @@ add_task(async function test_expire_root() {
 
   // Only the root icon should have survived.
   Assert.equal(
-    await getFaviconUrlForPage(pageURI, 16),
+    (await PlacesTestUtils.getFaviconForPage(pageURI, 16)).uri.spec,
     rootIconURI.spec,
     "Should retrieve the root icon."
   );

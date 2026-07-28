@@ -4,7 +4,8 @@
 
 package mozilla.components.service.pocket
 
-import mozilla.components.service.pocket.spocs.SpocsUseCases
+import mozilla.components.service.pocket.mars.SponsoredContentsUseCases
+import mozilla.components.service.pocket.recommendations.ContentRecommendationsUseCases
 import mozilla.components.service.pocket.stories.PocketStoriesUseCases
 import mozilla.components.support.test.mock
 import org.junit.Assert.assertNull
@@ -31,20 +32,38 @@ class GlobalDependencyProviderTest {
     }
 
     @Test
-    fun `GIVEN SponsoredStories WHEN initializing THEN store the provided arguments`() {
-        val useCases: SpocsUseCases = mock()
+    fun `GIVEN ContentRecommendations WHEN initializing THEN store the provided arguments`() {
+        val useCases: ContentRecommendationsUseCases = mock()
 
-        GlobalDependencyProvider.SponsoredStories.initialize(useCases)
+        GlobalDependencyProvider.ContentRecommendations.initialize(useCases)
 
-        assertSame(useCases, GlobalDependencyProvider.SponsoredStories.useCases)
+        assertSame(useCases, GlobalDependencyProvider.ContentRecommendations.useCases)
     }
 
     @Test
-    fun `GIVEN SponsoredStories WHEN resetting THEN clear all current state`() {
-        GlobalDependencyProvider.SponsoredStories.initialize(mock())
+    fun `GIVEN ContentRecommendations WHEN resetting THEN clear all current state`() {
+        GlobalDependencyProvider.ContentRecommendations.initialize(mock())
 
-        GlobalDependencyProvider.SponsoredStories.reset()
+        GlobalDependencyProvider.ContentRecommendations.reset()
 
-        assertNull(GlobalDependencyProvider.SponsoredStories.useCases)
+        assertNull(GlobalDependencyProvider.ContentRecommendations.useCases)
+    }
+
+    @Test
+    fun `GIVEN SponsoredContents WHEN initializing THEN store the provided arguments`() {
+        val useCases: SponsoredContentsUseCases = mock()
+
+        GlobalDependencyProvider.SponsoredContents.initialize(useCases)
+
+        assertSame(useCases, GlobalDependencyProvider.SponsoredContents.useCases)
+    }
+
+    @Test
+    fun `GIVEN SponsoredContents WHEN resetting THEN clear all current state`() {
+        GlobalDependencyProvider.SponsoredContents.initialize(mock())
+
+        GlobalDependencyProvider.SponsoredContents.reset()
+
+        assertNull(GlobalDependencyProvider.SponsoredContents.useCases)
     }
 }

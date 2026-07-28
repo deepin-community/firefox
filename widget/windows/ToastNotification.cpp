@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sts=2 sw=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -27,6 +25,7 @@
 #include "nsAppRunner.h"
 #include "nsComponentManagerUtils.h"
 #include "nsCOMPtr.h"
+#include "nsIAlertsServiceRust.h"
 #include "nsIObserverService.h"
 #include "nsIWindowMediator.h"
 #include "nsPIDOMWindow.h"
@@ -58,7 +57,7 @@ using IVectorView_ScheduledToastNotification =
 LazyLogModule sWASLog("WindowsAlertsService");
 
 NS_IMPL_ISUPPORTS(ToastNotification, nsIAlertsService, nsIWindowsAlertsService,
-                  nsIAlertsDoNotDisturb, nsIObserver)
+                  nsIAlertsDoNotDisturb)
 
 ToastNotification::ToastNotification() = default;
 
@@ -79,15 +78,6 @@ nsresult ToastNotification::Init() {
 
   MOZ_LOG(sWASLog, LogLevel::Info,
           ("Using AUMID: '%s'", NS_ConvertUTF16toUTF8(mAumid.ref()).get()));
-
-  nsCOMPtr<nsIObserverService> obsServ =
-      mozilla::services::GetObserverService();
-  if (obsServ) {
-    Unused << NS_WARN_IF(
-        NS_FAILED(obsServ->AddObserver(this, "last-pb-context-exited", false)));
-    Unused << NS_WARN_IF(
-        NS_FAILED(obsServ->AddObserver(this, "quit-application", false)));
-  }
 
   return NS_OK;
 }
@@ -180,8 +170,11 @@ bool ToastNotification::RegisterRuntimeAumid(nsAutoString& aInstallHash,
   rv = appdir->Clone(getter_AddRefs(icon));
   NS_ENSURE_SUCCESS(rv, false);
 
+  // Add  browser subdirectory only for Firefox
+#ifdef MOZ_BUILD_APP_IS_BROWSER
   rv = icon->Append(u"browser"_ns);
   NS_ENSURE_SUCCESS(rv, false);
+#endif
 
   rv = icon->Append(u"VisualElements"_ns);
   NS_ENSURE_SUCCESS(rv, false);
@@ -335,67 +328,33 @@ ToastNotification::SetSuppressForScreenSharing(bool aSuppress) {
   return NS_OK;
 }
 
-NS_IMETHODIMP
-ToastNotification::Observe(nsISupports* aSubject, const char* aTopic,
-                           const char16_t* aData) {
-  nsDependentCString topic(aTopic);
-
+NS_IMETHODIMP ToastNotification::Teardown() {
   for (auto iter = mActiveHandlers.Iter(); !iter.Done(); iter.Next()) {
     RefPtr<ToastNotificationHandler> handler = iter.UserData();
 
-    auto removeNotification = [&]() {
-      // The handlers' destructors will do the right thing (de-register with
-      // Windows).
-      iter.Remove();
+    // The handlers' destructors will do the right thing (de-register with
+    // Windows).
+    iter.Remove();
 
-      // Break the cycle between the handler and the MSCOM notification so the
-      // handler's destructor will be called.
-      handler->UnregisterHandler();
-    };
-
-    if (topic == "last-pb-context-exited"_ns) {
-      if (handler->IsPrivate()) {
-        handler->HideAlert();
-        removeNotification();
-      }
-    } else if (topic == "quit-application"_ns) {
-      removeNotification();
-    }
+    // Break the cycle between the handler and the MSCOM notification so the
+    // handler's destructor will be called.
+    handler->UnregisterHandler();
   }
-
   return NS_OK;
 }
 
-NS_IMETHODIMP
-ToastNotification::ShowAlertNotification(
-    const nsAString& aImageUrl, const nsAString& aAlertTitle,
-    const nsAString& aAlertText, bool aAlertTextClickable,
-    const nsAString& aAlertCookie, nsIObserver* aAlertListener,
-    const nsAString& aAlertName, const nsAString& aBidi, const nsAString& aLang,
-    const nsAString& aData, nsIPrincipal* aPrincipal, bool aInPrivateBrowsing,
-    bool aRequireInteraction) {
-  nsCOMPtr<nsIAlertNotification> alert =
-      do_CreateInstance(ALERT_NOTIFICATION_CONTRACTID);
-  if (NS_WARN_IF(!alert)) {
-    return NS_ERROR_FAILURE;
-  }
-  // vibrate is unused for now
-  nsTArray<uint32_t> vibrate;
-  nsresult rv = alert->Init(aAlertName, aImageUrl, aAlertTitle, aAlertText,
-                            aAlertTextClickable, aAlertCookie, aBidi, aLang,
-                            aData, aPrincipal, aInPrivateBrowsing,
-                            aRequireInteraction, false, vibrate);
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return rv;
-  }
-  return ShowAlert(alert, aAlertListener);
-}
+NS_IMETHODIMP ToastNotification::PbmTeardown() {
+  for (auto iter = mActiveHandlers.Iter(); !iter.Done(); iter.Next()) {
+    RefPtr<ToastNotificationHandler> handler = iter.UserData();
+    if (!handler->IsPrivate()) {
+      continue;
+    }
 
-NS_IMETHODIMP
-ToastNotification::ShowPersistentNotification(const nsAString& aPersistentData,
-                                              nsIAlertNotification* aAlert,
-                                              nsIObserver* aAlertListener) {
-  return ShowAlert(aAlert, aAlertListener);
+    iter.Remove();
+    handler->HideAlert();
+    handler->UnregisterHandler();
+  }
+  return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -464,13 +423,11 @@ ToastNotification::ShowAlert(nsIAlertNotification* aAlert,
   MOZ_TRY(aAlert->GetPrincipal(getter_AddRefs(principal)));
   bool isSystemPrincipal = principal && principal->IsSystemPrincipal();
 
-  bool handleActions = false;
   auto imagePlacement = ImagePlacement::eInline;
+  nsAutoString imagePath;
   if (isSystemPrincipal) {
     nsCOMPtr<nsIWindowsAlertNotification> winAlert(do_QueryInterface(aAlert));
     if (winAlert) {
-      MOZ_TRY(winAlert->GetHandleActions(&handleActions));
-
       nsIWindowsAlertNotification::ImagePlacement placement;
       MOZ_TRY(winAlert->GetImagePlacement(&placement));
       switch (placement) {
@@ -488,17 +445,22 @@ ToastNotification::ShowAlert(nsIAlertNotification* aAlert,
                   ("Invalid image placement enum value: %hhu", placement));
           return NS_ERROR_UNEXPECTED;
       }
+
+      MOZ_TRY(winAlert->GetImagePathUnchecked(imagePath));
     }
   }
 
-  RefPtr<ToastNotificationHandler> oldHandler = mActiveHandlers.Get(name);
+  // If there was a previous handler with the same name then unregister it.
+  if (RefPtr<ToastNotificationHandler> oldHandler = mActiveHandlers.Get(name)) {
+    oldHandler->HandleCloseFromBrowser();
+  }
 
   NS_ENSURE_TRUE(mAumid.isSome(), NS_ERROR_UNEXPECTED);
   RefPtr<ToastNotificationHandler> handler = new ToastNotificationHandler(
-      this, mAumid.ref(), aAlertListener, name, cookie, title, text, hostPort,
-      textClickable, requireInteraction, actions, isSystemPrincipal,
-      opaqueRelaunchData, inPrivateBrowsing, isSilent, handleActions,
-      imagePlacement);
+      this, mAumid.ref(), aAlert, aAlertListener, name, cookie, title, text,
+      hostPort, textClickable, requireInteraction, actions, isSystemPrincipal,
+      opaqueRelaunchData, inPrivateBrowsing, isSilent, imagePlacement,
+      imagePath);
   mActiveHandlers.InsertOrUpdate(name, RefPtr{handler});
 
   MOZ_LOG(sWASLog, LogLevel::Debug,
@@ -506,19 +468,14 @@ ToastNotification::ShowAlert(nsIAlertNotification* aAlert,
            NS_ConvertUTF16toUTF8(name).get(), handler.get(),
            mActiveHandlers.Count()));
 
-  nsresult rv = handler->InitAlertAsync(aAlert);
+  nsresult rv = handler->InitAlertAsync();
   if (NS_WARN_IF(NS_FAILED(rv))) {
     MOZ_LOG(sWASLog, LogLevel::Debug,
             ("Failed to init alert, removing '%s'",
              NS_ConvertUTF16toUTF8(name).get()));
     mActiveHandlers.Remove(name);
-    handler->UnregisterHandler();
+    handler->HandleCloseFromBrowser();
     return rv;
-  }
-
-  // If there was a previous handler with the same name then unregister it.
-  if (oldHandler) {
-    oldHandler->UnregisterHandler();
   }
 
   return NS_OK;
@@ -569,8 +526,8 @@ ToastNotification::GetXmlStringForWindowsAlert(nsIAlertNotification* aAlert,
 
   NS_ENSURE_TRUE(mAumid.isSome(), NS_ERROR_UNEXPECTED);
   RefPtr<ToastNotificationHandler> handler = new ToastNotificationHandler(
-      this, mAumid.ref(), nullptr /* aAlertListener */, name, cookie, title,
-      text, hostPort, textClickable, requireInteraction, actions,
+      this, mAumid.ref(), aAlert, nullptr /* aAlertListener */, name, cookie,
+      title, text, hostPort, textClickable, requireInteraction, actions,
       isSystemPrincipal, opaqueRelaunchData, inPrivateBrowsing, isSilent);
 
   // Usually, this will be empty during testing, making test output
@@ -752,8 +709,7 @@ ToastNotification::HandleWindowsTag(const nsAString& aWindowsTag,
             JS::Rooted<JSObject*> obj(cx, JS_NewPlainObject(cx));
 
             JS::Rooted<JS::Value> attVal(cx, JS::BooleanValue(aTagWasHandled));
-            Unused << NS_WARN_IF(
-                !JS_SetProperty(cx, obj, "tagWasHandled", attVal));
+            (void)NS_WARN_IF(!JS_SetProperty(cx, obj, "tagWasHandled", attVal));
 
             promise->MaybeResolve(obj);
           },
@@ -785,12 +741,24 @@ ToastNotification::CloseAlert(const nsAString& aAlertName,
     // Hide the alert when not implicitly closed by tab/window closing or when
     // notification originated from a private tab.
     handler->HideAlert();
+    handler->HandleCloseFromBrowser();
+  } else {
+    handler->UnregisterHandler();
   }
 
   mActiveHandlers.Remove(aAlertName);
-  handler->UnregisterHandler();
 
   return NS_OK;
+}
+
+NS_IMETHODIMP
+ToastNotification::GetHistory(nsTArray<nsString>& aResult) {
+  if (mAumid.isNothing()) {
+    return NS_ERROR_NOT_INITIALIZED;
+  }
+  nsCOMPtr<nsIAlertsServiceRust> service =
+      do_GetService("@mozilla.org/windows-alerts-service-rust;1");
+  return service->GetHistory(*mAumid, aResult);
 }
 
 bool ToastNotification::IsActiveHandler(const nsAString& aAlertName,
@@ -868,7 +836,7 @@ ToastNotification::RemoveAllNotificationsForInstall() {
       }
 
       hr = notifier->RemoveFromSchedule(schedToast.Get());
-      Unused << NS_WARN_IF(FAILED(hr));
+      (void)NS_WARN_IF(FAILED(hr));
     }
   }();
 
@@ -877,18 +845,6 @@ ToastNotification::RemoveAllNotificationsForInstall() {
 
 NS_IMPL_ISUPPORTS_INHERITED(WindowsAlertNotification, AlertNotification,
                             nsIWindowsAlertNotification)
-
-NS_IMETHODIMP
-WindowsAlertNotification::GetHandleActions(bool* aHandleActions) {
-  *aHandleActions = mHandleActions;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-WindowsAlertNotification::SetHandleActions(bool aHandleActions) {
-  mHandleActions = aHandleActions;
-  return NS_OK;
-}
 
 NS_IMETHODIMP WindowsAlertNotification::GetImagePlacement(
     nsIWindowsAlertNotification::ImagePlacement* aImagePlacement) {
@@ -912,6 +868,18 @@ NS_IMETHODIMP WindowsAlertNotification::SetImagePlacement(
 
   return NS_OK;
 }
+
+NS_IMETHODIMP WindowsAlertNotification::GetImagePathUnchecked(
+    nsAString& aImagePathUnchecked) {
+  aImagePathUnchecked = mImagePathUnchecked;
+  return NS_OK;
+};
+
+NS_IMETHODIMP WindowsAlertNotification::SetImagePathUnchecked(
+    const nsAString& aImagePathUnchecked) {
+  mImagePathUnchecked = aImagePathUnchecked;
+  return NS_OK;
+};
 
 }  // namespace widget
 }  // namespace mozilla

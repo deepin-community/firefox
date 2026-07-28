@@ -4,17 +4,21 @@
 
 page-title = Informações técnicas
 page-subtitle = Esta página contém informações técnicas que podem ser úteis se você estiver tentando solucionar um problema. Se estiver procurando respostas às dúvidas mais comuns sobre o { -brand-short-name }, consulte o <a data-l10n-name="support-link">site de suporte</a>.
-crashes-title = Relatórios de travamento
+crashes-title = Relatórios de falha
 crashes-id = ID do relatório
 crashes-send-date = Envio
-crashes-all-reports = Todos os relatórios de travamento
-crashes-no-config = Este aplicativo não foi configurado para exibir relatórios de travamento.
+crashes-all-reports = Todos os relatórios de falha
+crashes-no-config = Este aplicativo não foi configurado para exibir relatórios de falha.
 support-addons-title = Extensões
 support-addons-name = Nome
 support-addons-type = Tipo
 support-addons-enabled = Ativado
 support-addons-version = Versão
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Local
 legacy-user-stylesheets-title = Folhas de estilo de usuário legadas
 legacy-user-stylesheets-enabled = Ativo
 legacy-user-stylesheets-stylesheet-types = Folhas de estilo
@@ -72,7 +76,7 @@ app-basics-multi-process-support = Janelas multiprocessadas
 app-basics-fission-support = Janelas do Fission
 app-basics-remote-processes-count = Processos remotos
 app-basics-enterprise-policies = Diretivas corporativas
-app-basics-location-service-key-google = Chave do Serviço de Localização do Google
+app-basics-location-service-key-google = Chave do serviço de localização do Google
 app-basics-safebrowsing-key-google = Chave do Google Safebrowsing
 app-basics-key-mozilla = Chave do serviço de localização da Mozilla
 app-basics-safe-mode = Modo de segurança
@@ -110,7 +114,7 @@ graphics-failure-log-title = Registro de falhas
 graphics-gpu1-title = GPU #1
 graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Registro de decisões
-graphics-crash-guards-title = Recursos desativados da proteção contra travamentos
+graphics-crash-guards-title = Recursos desativados da proteção contra falhas
 graphics-workarounds-title = Soluções alternativas
 graphics-device-pixel-ratios = Proporções de pixels do dispositivo de janela
 # Windowing system in use on Linux (e.g. X11, Wayland).
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = Eficiência (%)
 place-database-stats-sequentiality-perc = Sequencialidade (%)
 place-database-integrity = Integridade
 place-database-verify-integrity = Verificar integridade
+place-database-last-idle-maintenance-data = Data da última manutenção automática
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Data da última limpeza de banco de dados
+place-database-last-integrity-corruption-date = Data da última violação de integridade
 a11y-title = Acessibilidade
 a11y-activated = Ativado
 a11y-force-disabled = Bloquear acessibilidade
@@ -161,8 +169,8 @@ max-audio-channels = Máximo de Canais
 sample-rate = Taxa de amostragem preferida
 roundtrip-latency = Latência de ida e volta (desvio padrão)
 media-title = Mídia
-media-output-devices-title = Dispositivos de Saída
-media-input-devices-title = Dispositivos de Entrada
+media-output-devices-title = Dispositivos de saída
+media-input-devices-title = Dispositivos de entrada
 media-device-name = Nome
 media-device-group = Grupo
 media-device-vendor = Fabricante
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Enumeração de banco de dados
 
 media-codec-support-sw-decoding = Decodificação de software
 media-codec-support-hw-decoding = Decodificação de hardware
+media-codec-support-sw-encoding = Codificação de software
+media-codec-support-hw-encoding = Codificação de hardware
 media-codec-support-codec-name = Nome do codec
 media-codec-support-supported = Suportado
 media-codec-support-unsupported = Não suportado
@@ -235,8 +245,8 @@ remote-debugging-url = URL
 # $days (Integer) - Number of days of crashes to log
 report-crash-for-days =
     { $days ->
-        [one] Relatórios de travamentos do último dia
-       *[other] Relatórios de travamento dos últimos { $days } dias
+        [one] Relatórios de falha do último dia
+       *[other] Relatórios de falha dos últimos { $days } dias
     }
 # Variables
 # $minutes (integer) - Number of minutes since crash
@@ -263,8 +273,8 @@ crashes-time-days =
 # $reports (integer) - Number of pending reports
 pending-reports =
     { $reports ->
-        [one] Todos os relatórios de travamento (incluindo { $reports } travamento pendente na faixa de tempo indicada)
-       *[other] Todos os relatórios de travamento (incluindo { $reports } travamentos pendentes na faixa de tempo indicada)
+        [one] Todos os relatórios de falha (inclusive { $reports } falha pendente no intervalo de tempo indicado)
+       *[other] Todos os relatórios de falha (inclusive { $reports } falhas pendentes no intervalo de tempo indicado)
     }
 raw-data-copied = Dados copiados para área de transferência
 text-copied = Texto copiado para área de transferência
@@ -332,7 +342,7 @@ wmfvpxvideo-crash-guard = Decodificador de vídeo WMF VPX
 reset-on-next-restart = Redefinir na próxima reinicialização
 gpu-process-kill-button = Finalizar processo GPU
 gpu-device-reset = Redefinir dispositivo
-gpu-device-reset-button = Ativar a Redefinição de Dispositivo
+gpu-device-reset-button = Ativar a redefinição de dispositivo
 uses-tiling = Usa mosaicos
 content-uses-tiling = Usa mosaicos (conteúdo)
 off-main-thread-paint-enabled = Ativado o desenho fora do processo principal

@@ -34,20 +34,22 @@ class WorkerTargetActor extends BaseTargetActor {
    *
    * @param {DevToolsServerConnection} conn: The connection to the client.
    * @param {WorkerGlobalScope} workerGlobal: The worker global.
-   * @param {Object} workerDebuggerData: The worker debugger information
-   * @param {String} workerDebuggerData.id: The worker debugger id
-   * @param {String} workerDebuggerData.url: The worker debugger url
-   * @param {String} workerDebuggerData.type: The worker debugger type
-   * @param {Boolean} workerDebuggerData.workerConsoleApiMessagesDispatchedToMainThread:
+   * @param {object} workerDebuggerData: The worker debugger information
+   * @param {string} workerDebuggerData.id: The worker debugger id
+   * @param {string} workerDebuggerData.url: The worker debugger url
+   * @param {string} workerDebuggerData.type: The worker debugger type
+   * @param {number?} workerDebuggerData.relatedDocumentInnerWindowId: (optional)
+   *                  If the worker is spawned from a document, the innerWindowId of it.
+   * @param {boolean} workerDebuggerData.workerConsoleApiMessagesDispatchedToMainThread:
    *                  Value of the dom.worker.console.dispatch_events_to_main_thread pref
-   * @param {Object} sessionContext: The Session Context to help know what is debugged.
+   * @param {object} sessionContext: The Session Context to help know what is debugged.
    *                                 See devtools/server/actors/watcher/session-context.js
    */
   constructor(conn, workerGlobal, workerDebuggerData, sessionContext) {
     super(conn, Targets.TYPES.WORKER, workerTargetSpec);
 
     // workerGlobal is needed by the console actor for evaluations.
-    this.workerGlobal = workerGlobal;
+    this.#workerGlobal = workerGlobal;
     this.sessionContext = sessionContext;
 
     // We don't have access to Ci from worker thread
@@ -58,6 +60,8 @@ class WorkerTargetActor extends BaseTargetActor {
     } else if (workerDebuggerData.type == 1) {
       this.targetType = Targets.TYPES.SHARED_WORKER;
     }
+    this._relatedDocumentInnerWindowId =
+      workerDebuggerData.relatedDocumentInnerWindowId;
 
     this._workerDebuggerData = workerDebuggerData;
     this._sourcesManager = null;
@@ -86,6 +90,12 @@ class WorkerTargetActor extends BaseTargetActor {
     this.manage(this.objectsManagerActor);
   }
 
+  #workerGlobal = null;
+
+  get targetGlobal() {
+    return this.#workerGlobal;
+  }
+
   // Expose the worker URL to the thread actor.
   // so that it can easily know what is the base URL of all worker scripts.
   get workerUrl() {
@@ -95,6 +105,7 @@ class WorkerTargetActor extends BaseTargetActor {
   form() {
     return {
       actor: this.actorID,
+      targetType: this.targetType,
 
       consoleActor: this._consoleActor?.actorID,
       threadActor: this.threadActor?.actorID,
@@ -102,8 +113,10 @@ class WorkerTargetActor extends BaseTargetActor {
       objectsManagerActor: this.objectsManagerActor?.actorID,
 
       id: this._workerDebuggerData.id,
+      name: this._workerDebuggerData.name,
       type: this._workerDebuggerData.type,
       url: this._workerDebuggerData.url,
+      relatedDocumentInnerWindowId: this._relatedDocumentInnerWindowId,
       traits: {
         // See trait description in browsing-context.js
         supportsTopLevelTargetFlag: false,
@@ -134,7 +147,7 @@ class WorkerTargetActor extends BaseTargetActor {
       this._sourcesManager = null;
     }
 
-    this.workerGlobal = null;
+    this.#workerGlobal = null;
     this._dbg = null;
     this._consoleActor = null;
     this.threadActor = null;

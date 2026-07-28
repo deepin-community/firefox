@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -24,12 +22,14 @@ class MemoryReportRequestHost;
 class RDDProcessHost;
 
 class RDDChild final : public PRDDChild,
-                       public ipc::CrashReporterHelper<GeckoProcessType_RDD>,
+                       public ipc::CrashReporterHelper<RDDChild>,
                        public gfx::gfxVarReceiver,
                        public gfx::GPUProcessListener {
   typedef mozilla::dom::MemoryReportRequestHost MemoryReportRequestHost;
 
  public:
+  static constexpr GeckoProcessType PROCESS_TYPE = GeckoProcessType_RDD;
+
   NS_INLINE_DECL_REFCOUNTING(RDDChild, final)
 
   explicit RDDChild(RDDProcessHost* aHost);
@@ -37,7 +37,7 @@ class RDDChild final : public PRDDChild,
   bool Init();
 
   void OnCompositorUnexpectedShutdown() override;
-  void OnVarChanged(const GfxVarUpdate& aVar) override;
+  void OnVarChanged(const nsTArray<GfxVarUpdate>& aVar) override;
 
   void ActorDestroy(ActorDestroyReason aWhy) override;
 
@@ -77,7 +77,7 @@ class RDDChild final : public PRDDChild,
   RDDProcessHost* mHost;
   UniquePtr<MemoryReportRequestHost> mMemoryReportRequest;
 #if defined(XP_LINUX) && defined(MOZ_SANDBOX)
-  UniquePtr<SandboxBroker> mSandboxBroker;
+  RefPtr<SandboxBroker> mSandboxBroker;
 #endif
 };
 

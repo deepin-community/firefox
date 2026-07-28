@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -16,7 +15,7 @@ static already_AddRefed<imgFrame> CreateEmptyFrame(
     const gfx::IntSize& aSize = gfx::IntSize(1, 1),
     const gfx::IntRect& aFrameRect = gfx::IntRect(0, 0, 1, 1),
     bool aCanRecycle = true) {
-  RefPtr<imgFrame> frame = new imgFrame();
+  auto frame = MakeRefPtr<imgFrame>();
   AnimationParams animParams{aFrameRect, FrameTimeout::Forever(),
                              /* aFrameNum */ 1, BlendMethod::OVER,
                              DisposalMethod::NOT_SPECIFIED};
@@ -759,8 +758,7 @@ TEST_F(ImageAnimationFrameBuffer, RecyclingResetBeforeComplete) {
   while (!buffer.Recycle().empty()) {
     gfx::IntRect recycleRect;
     RawAccessFrameRef frameRef = buffer.RecycleFrame(recycleRect);
-    EXPECT_TRUE(frameRef);
-    EXPECT_FALSE(ReinitForRecycle(frameRef));
+    EXPECT_FALSE(frameRef);
   }
 
   // Reinsert the first two frames as recyclable and reset again.
@@ -829,8 +827,7 @@ TEST_F(ImageAnimationFrameBuffer, RecyclingRect) {
   gfx::IntRect recycleRect;
   EXPECT_FALSE(buffer.Recycle().empty());
   RawAccessFrameRef frameRef = buffer.RecycleFrame(recycleRect);
-  EXPECT_TRUE(frameRef);
-  EXPECT_FALSE(ReinitForRecycle(frameRef));
+  EXPECT_FALSE(frameRef);
   EXPECT_TRUE(buffer.Recycle().empty());
 
   // Insert a recyclable partial frame. Its dirty rect shouldn't matter since
@@ -842,8 +839,7 @@ TEST_F(ImageAnimationFrameBuffer, RecyclingRect) {
   VerifyAdvance(buffer, 5, true);
   EXPECT_FALSE(buffer.Recycle().empty());
   frameRef = buffer.RecycleFrame(recycleRect);
-  EXPECT_TRUE(frameRef);
-  EXPECT_FALSE(ReinitForRecycle(frameRef));
+  EXPECT_FALSE(frameRef);
   EXPECT_TRUE(buffer.Recycle().empty());
 
   // Insert a recyclable partial frame. Its dirty rect should match the recycle

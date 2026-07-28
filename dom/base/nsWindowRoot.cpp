@@ -1,38 +1,36 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#include "nsWindowRoot.h"
 
 #include "mozilla/BasicEvents.h"
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/EventListenerManager.h"
 #include "mozilla/StaticPrefs_browser.h"
-#include "mozilla/dom/WindowRootBinding.h"
-#include "nsCOMPtr.h"
-#include "nsWindowRoot.h"
-#include "nsPIDOMWindow.h"
-#include "nsPresContext.h"
-#include "nsString.h"
-#include "nsFrameLoaderOwner.h"
-#include "nsFrameLoader.h"
-#include "nsQueryActor.h"
-#include "nsGlobalWindowOuter.h"
-#include "nsFocusManager.h"
-#include "nsIContent.h"
-#include "nsIControllers.h"
-#include "nsIController.h"
-#include "nsQueryObject.h"
-#include "xpcpublic.h"
-#include "nsCycleCollectionParticipant.h"
 #include "mozilla/dom/BrowserParent.h"
 #include "mozilla/dom/CanonicalBrowsingContext.h"
-#include "mozilla/dom/HTMLTextAreaElement.h"
 #include "mozilla/dom/HTMLInputElement.h"
+#include "mozilla/dom/HTMLTextAreaElement.h"
 #include "mozilla/dom/JSActorService.h"
 #include "mozilla/dom/WindowGlobalParent.h"
-
+#include "mozilla/dom/WindowRootBinding.h"
+#include "nsCOMPtr.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsFocusManager.h"
+#include "nsFrameLoader.h"
+#include "nsFrameLoaderOwner.h"
+#include "nsGlobalWindowOuter.h"
+#include "nsIContent.h"
+#include "nsIController.h"
+#include "nsIControllers.h"
+#include "nsPIDOMWindow.h"
+#include "nsPresContext.h"
+#include "nsQueryActor.h"
+#include "nsQueryObject.h"
+#include "nsString.h"
 #include "nsXULElement.h"
+#include "xpcpublic.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -118,11 +116,11 @@ nsresult nsWindowRoot::PostHandleEvent(EventChainPostVisitor& aVisitor) {
   return NS_OK;
 }
 
-nsPIDOMWindowOuter* nsWindowRoot::GetOwnerGlobalForBindingsInternal() {
-  return mWindow;
+nsGlobalWindowInner* nsWindowRoot::GetInnerWindow() {
+  return nsGlobalWindowInner::Cast(mWindow->GetCurrentInnerWindow());
 }
 
-nsIGlobalObject* nsWindowRoot::GetOwnerGlobal() const {
+nsIGlobalObject* nsWindowRoot::GetRelevantGlobal() const {
   nsCOMPtr<nsIGlobalObject> global =
       do_QueryInterface(mWindow->GetCurrentInnerWindow());
   // We're still holding a ref to it, so returning the raw pointer is ok...
@@ -146,24 +144,22 @@ nsresult nsWindowRoot::GetControllers(bool aForVisibleWindow,
   nsIContent* focusedContent = nsFocusManager::GetFocusedDescendant(
       mWindow, searchRange, getter_AddRefs(focusedWindow));
   if (focusedContent) {
-    RefPtr<nsXULElement> xulElement = nsXULElement::FromNode(focusedContent);
-    if (xulElement) {
-      ErrorResult rv;
-      *aResult = xulElement->GetControllers(rv);
+    if (auto* xulElement = nsXULElement::FromNode(focusedContent)) {
+      *aResult = xulElement->GetExtantControllers();
       NS_IF_ADDREF(*aResult);
-      return rv.StealNSResult();
+      return NS_OK;
     }
-
-    HTMLTextAreaElement* htmlTextArea =
-        HTMLTextAreaElement::FromNode(focusedContent);
-    if (htmlTextArea) return htmlTextArea->GetControllers(aResult);
-
-    HTMLInputElement* htmlInputElement =
-        HTMLInputElement::FromNode(focusedContent);
-    if (htmlInputElement) return htmlInputElement->GetControllers(aResult);
-
-    if (focusedContent->IsEditable() && focusedWindow)
+    auto* htmlTextArea = HTMLTextAreaElement::FromNode(focusedContent);
+    if (htmlTextArea) {
+      return htmlTextArea->GetControllers(aResult);
+    }
+    auto* htmlInputElement = HTMLInputElement::FromNode(focusedContent);
+    if (htmlInputElement) {
+      return htmlInputElement->GetControllers(aResult);
+    }
+    if (focusedContent->IsEditable() && focusedWindow) {
       return focusedWindow->GetControllers(aResult);
+    }
   } else {
     return focusedWindow->GetControllers(aResult);
   }

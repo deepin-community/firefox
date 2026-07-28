@@ -3,22 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Параметри
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Налаштування…
 menu-application-services =
     .label = Служби
 menu-application-hide-this =
@@ -147,8 +138,6 @@ menu-view-history-button =
     .label = Історія
 menu-view-synced-tabs-sidebar =
     .label = Синхронізовані вкладки
-menu-view-megalist-sidebar =
-    .label = Паролі
 menu-view-full-zoom =
     .label = Масштаб
     .accesskey = ш
@@ -194,12 +183,12 @@ menu-view-full-screen =
 
 # This should match reader-view-enter-button in browser.ftl
 menu-view-enter-readerview =
-    .label = Перейти в режим читача
-    .accesskey = П
+    .label = Відкрити режим читання
+    .accesskey = ч
 # This should match reader-view-close-button in browser.ftl
 menu-view-close-readerview =
-    .label = Закрити режим читача
-    .accesskey = З
+    .label = Закрити режим читання
+    .accesskey = к
 
 ##
 
@@ -256,6 +245,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Мобільні закладки
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Профілі
+menu-profiles-manage-profiles =
+    .label = Керувати профілями
+menu-profiles-new-profile =
+    .label = Новий профіль
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (поточний)
+menu-profiles-menu =
+    .label = Профілі
+    .accesskey = П
+
 ## Tools Menu
 
 menu-tools =
@@ -264,6 +269,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Завантаження
     .accesskey = З
+menu-tools-extensions-and-themes =
+    .label = Розширення і теми
+    .accesskey = Р
 menu-tools-addons-and-themes =
     .label = Додатки й теми
     .accesskey = к

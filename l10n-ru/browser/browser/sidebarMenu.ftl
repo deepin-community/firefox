@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Закладки
+sidebar-menu-bookmarks-2 = Закладки
 sidebar-menu-history =
     .label = Журнал
 sidebar-menu-synced-tabs =
     .label = Облачные вкладки
-sidebar-menu-megalist =
-    .label = Пароли
 sidebar-menu-close =
     .label = Закрыть боковую панель
 sidebar-close-button =

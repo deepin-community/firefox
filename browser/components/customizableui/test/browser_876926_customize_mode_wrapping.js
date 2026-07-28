@@ -4,6 +4,12 @@
 
 "use strict";
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 const kXULWidgetId = "a-test-button"; // we'll create a button with this ID.
 const kAPIWidgetId = "save-page-button";
 const kPanel = CustomizableUI.AREA_FIXED_OVERFLOW_PANEL;
@@ -42,16 +48,22 @@ async function ensureVisible(node) {
     return nodeBounds.height && nodeBounds.width;
   });
 }
-
 var move = {
   async drag(id, target) {
     let targetNode = document.getElementById(target);
     if (CustomizableUI.getCustomizationTarget(targetNode)) {
       targetNode = CustomizableUI.getCustomizationTarget(targetNode);
     }
+    // For the palette, drop on the content container (parent of visiblePalette)
+    // so the paletteDragHandler fires and routes through #onDragOver with
+    // visiblePalette as the override target, which always appends to the end
+    // regardless of window size or palette grid layout. This avoids having to
+    // deal with bugs like bug 1395950.
+    if (target == kVisiblePalette) {
+      targetNode = document.getElementById("customization-content-container");
+    }
     let nodeToMove = document.getElementById(id);
     await ensureVisible(nodeToMove);
-
     simulateItemDrag(nodeToMove, targetNode, "end");
   },
   async dragToItem(id, target) {
@@ -210,11 +222,6 @@ async function checkPalette(id, method) {
     method == "dragToItem"
       ? visibleChildren[0]
       : visibleChildren[visibleChildren.length - 1];
-  // Items dragged to the end of the palette should be the final item. That they're the penultimate
-  // item when dragged is tracked in bug 1395950. Once that's fixed, this hack can be removed.
-  if (method == "drag") {
-    expectedChild = expectedChild.previousElementSibling;
-  }
   is(
     expectedChild.firstElementChild.id,
     id,

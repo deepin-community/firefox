@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,15 +6,14 @@
 #include "mozilla/URLPreloader.h"
 #include "mozilla/loader/AutoMemMap.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/ClearOnShutdown.h"
+#include "mozilla/EndianUtils.h"
 #include "mozilla/FileUtils.h"
 #include "mozilla/IOBuffers.h"
 #include "mozilla/Logging.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/Services.h"
 #include "mozilla/Try.h"
-#include "mozilla/Unused.h"
 #include "mozilla/Vector.h"
 #include "mozilla/scache/StartupCache.h"
 
@@ -162,7 +159,7 @@ Result<nsCOMPtr<nsIFile>, nsresult> URLPreloader::GetCacheFile(
   MOZ_TRY(mProfD->Clone(getter_AddRefs(cacheFile)));
 
   MOZ_TRY(cacheFile->AppendNative("startupCache"_ns));
-  Unused << cacheFile->Create(nsIFile::DIRECTORY_TYPE, 0777);
+  (void)cacheFile->Create(nsIFile::DIRECTORY_TYPE, 0777);
 
   MOZ_TRY(cacheFile->Append(u"urlCache"_ns + suffix));
 
@@ -176,8 +173,7 @@ Result<nsCOMPtr<nsIFile>, nsresult> URLPreloader::FindCacheFile() {
     return Err(NS_ERROR_ABORT);
   }
 
-  nsCOMPtr<nsIFile> cacheFile;
-  MOZ_TRY_VAR(cacheFile, GetCacheFile(u".bin"_ns));
+  nsCOMPtr<nsIFile> cacheFile = MOZ_TRY(GetCacheFile(u".bin"_ns));
 
   bool exists;
   MOZ_TRY(cacheFile->Exists(&exists));
@@ -212,8 +208,7 @@ Result<Ok, nsresult> URLPreloader::WriteCache() {
 
   LOG(Debug, "Writing cache...");
 
-  nsCOMPtr<nsIFile> cacheFile;
-  MOZ_TRY_VAR(cacheFile, GetCacheFile(u"-new.bin"_ns));
+  nsCOMPtr<nsIFile> cacheFile = MOZ_TRY(GetCacheFile(u"-new.bin"_ns));
 
   bool exists;
   MOZ_TRY(cacheFile->Exists(&exists));
@@ -267,8 +262,7 @@ Result<Ok, nsresult> URLPreloader::ReadCache(
     LinkedList<URLEntry>& pendingURLs) {
   LOG(Debug, "Reading cache...");
 
-  nsCOMPtr<nsIFile> cacheFile;
-  MOZ_TRY_VAR(cacheFile, FindCacheFile());
+  nsCOMPtr<nsIFile> cacheFile = MOZ_TRY(FindCacheFile());
 
   AutoMemMap cache;
   MOZ_TRY(cache.init(cacheFile));
@@ -313,7 +307,7 @@ Result<Ok, nsresult> URLPreloader::ReadCache(
       mCachedURLs.Clear();
     });
 
-    Range<uint8_t> header(data, data + headerSize);
+    Range<const uint8_t> header(data, data + headerSize);
     data += headerSize;
 
     InputBuffer buf(header);
@@ -338,7 +332,7 @@ Result<Ok, nsresult> URLPreloader::ReadCache(
                               "Entry should be in pendingURLs");
         MOZ_DIAGNOSTIC_ASSERT(key.mPath.Length() > 0,
                               "Path should be non-empty");
-        MOZ_DIAGNOSTIC_ASSERT(false, "Entry should be new and not in any list");
+        MOZ_DIAGNOSTIC_CRASH("Entry should be new and not in any list");
 #endif
         return Err(NS_ERROR_UNEXPECTED);
       }
@@ -402,7 +396,7 @@ void URLPreloader::BackgroundReadFiles() {
             entry->TypeString(), entry->mPath.get());
       }
 
-      auto item = zip->GetItem(entry->mPath.get());
+      auto item = zip->GetItem(entry->mPath);
       if (!item) {
         entry->mResultCode = NS_ERROR_FILE_NOT_FOUND;
         continue;
@@ -500,8 +494,7 @@ Result<nsCString, nsresult> URLPreloader::ReadInternal(const CacheKey& key,
 
 Result<nsCString, nsresult> URLPreloader::ReadURIInternal(nsIURI* uri,
                                                           ReadType readType) {
-  CacheKey key;
-  MOZ_TRY_VAR(key, ResolveURI(uri));
+  CacheKey key = MOZ_TRY(ResolveURI(uri));
 
   return ReadInternal(key, readType);
 }
@@ -567,7 +560,7 @@ Result<nsCString, nsresult> URLPreloader::ReadURIInternal(nsIURI* uri,
   }
 
   // Not an Omnijar archive, so just read it directly.
-  FileLocation location(zip, PromiseFlatCString(path).BeginReading());
+  FileLocation location(zip, path);
   return URLEntry::ReadLocation(location);
 }
 
@@ -630,20 +623,19 @@ size_t URLPreloader::ShallowSizeOfIncludingThis(
 Result<FileLocation, nsresult> URLPreloader::CacheKey::ToFileLocation() {
   if (mType == TypeFile) {
     nsCOMPtr<nsIFile> file;
-    MOZ_TRY(NS_NewLocalFile(NS_ConvertUTF8toUTF16(mPath), false,
-                            getter_AddRefs(file)));
+    MOZ_TRY(
+        NS_NewLocalFile(NS_ConvertUTF8toUTF16(mPath), getter_AddRefs(file)));
     return FileLocation(file);
   }
 
   RefPtr<nsZipArchive> zip = Archive();
-  return FileLocation(zip, mPath.get());
+  return FileLocation(zip, mPath);
 }
 
 Result<nsCString, nsresult> URLPreloader::URLEntry::Read() {
-  FileLocation location;
-  MOZ_TRY_VAR(location, ToFileLocation());
+  FileLocation location = MOZ_TRY(ToFileLocation());
 
-  MOZ_TRY_VAR(mData, ReadLocation(location));
+  mData = MOZ_TRY(ReadLocation(location));
   return mData;
 }
 

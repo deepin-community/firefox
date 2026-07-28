@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,9 +9,9 @@
 #include <sstream>
 #include <cstring>
 #include <functional>
-#include <vector>
 
 #include "RecordingTypes.h"
+#include "mozilla/PodOperations.h"
 #include "mozilla/gfx/Point.h"
 #include "mozilla/gfx/Types.h"
 #include "mozilla/ipc/ByteBuf.h"
@@ -43,6 +41,8 @@ struct ReferencePtr {
   MOZ_IMPLICIT ReferencePtr(const RefPtr<T>& aPtr)
       : mLongPtr(uint64_t(aPtr.get())) {}
 
+  explicit ReferencePtr(uintptr_t aLongPtr) : mLongPtr(uint64_t(aLongPtr)) {}
+
   ReferencePtr& operator=(const void* aLongPtr) {
     mLongPtr = uint64_t(aLongPtr);
     return *this;
@@ -56,12 +56,35 @@ struct ReferencePtr {
 
   operator void*() const { return (void*)mLongPtr; }
 
+  explicit operator uintptr_t() const { return uintptr_t(mLongPtr); }
+
+  // Implement some operators so this class can be used as a key in
+  // stdlib classes.
+  bool operator<(const ReferencePtr& aOther) const {
+    return mLongPtr < aOther.mLongPtr;
+  }
+
+  bool operator>(const ReferencePtr& aOther) const {
+    return mLongPtr > aOther.mLongPtr;
+  }
+
+  bool operator==(const ReferencePtr& aOther) const {
+    return mLongPtr == aOther.mLongPtr;
+  }
+
+  bool operator!=(const ReferencePtr& aOther) const {
+    return !(*this == aOther);
+  }
+
+  bool operator>=(const ReferencePtr& aOther) const {
+    return mLongPtr >= aOther.mLongPtr;
+  }
+
   uint64_t mLongPtr;
 };
 
 struct RecordedFontDetails {
   uint64_t fontDataKey = 0;
-  uint32_t size = 0;
   uint32_t index = 0;
 };
 
@@ -155,6 +178,7 @@ class Translator {
     mDependentSurfaces = aDependentSurfaces;
   }
 
+  // NOTE that the returned DrawTarget may be in an error state!
   DrawTarget* GetCurrentDrawTarget() const { return mCurrentDT; }
 
   nsRefPtrHashtable<nsUint64HashKey, RecordedDependentSurface>*
@@ -233,7 +257,7 @@ struct MemWriter {
 
 // An istream like class for reading from memory
 struct MemReader {
-  constexpr MemReader(char* aData, size_t aLen)
+  constexpr MemReader(const char* aData, size_t aLen)
       : mData(aData), mEnd(aData + aLen) {}
   void read(char* s, std::streamsize n) {
     if (n <= (mEnd - mData)) {
@@ -249,8 +273,8 @@ struct MemReader {
   bool good() { return !eof(); }
   void SetIsBad() { mData = mEnd + 1; }
 
-  char* mData;
-  char* mEnd;
+  const char* mData;
+  const char* mEnd;
 };
 
 class ContiguousBuffer {
@@ -388,6 +412,7 @@ class RecordedEvent {
     PUSHCLIP,
     PUSHCLIPRECT,
     POPCLIP,
+    REMOVEALLCLIPS,
     FILL,
     FILLCIRCLE,
     FILLGLYPHS,
@@ -410,6 +435,7 @@ class RecordedEvent {
     SCALEDFONTDESTRUCTION,
     MASKSURFACE,
     FILTERNODECREATION,
+    DEFERFILTERINPUT,
     FILTERNODEDESTRUCTION,
     DRAWFILTER,
     FILTERNODESETATTRIBUTE,
@@ -432,6 +458,7 @@ class RecordedEvent {
     OPTIMIZESOURCESURFACE,
     LINK,
     DESTINATION,
+    ACCESSIBLEID,
     LAST,
   };
 
@@ -465,11 +492,6 @@ class RecordedEvent {
   template <class S>
   void ReadPatternData(S& aStream, PatternStorage& aPatternStorage) const;
   void StorePattern(PatternStorage& aDestination, const Pattern& aSource) const;
-  template <class S>
-  void RecordStrokeOptions(S& aStream,
-                           const StrokeOptions& aStrokeOptions) const;
-  template <class S>
-  void ReadStrokeOptions(S& aStream, StrokeOptions& aStrokeOptions);
 
   virtual std::string GetName() const = 0;
 
@@ -503,7 +525,105 @@ class RecordedEvent {
   MOZ_IMPLICIT RecordedEvent(EventType aType) : mType(aType) {}
 
   EventType mType;
-  std::vector<Float> mDashPatternStorage;
+};
+
+class RecordedStrokeOptionsMixin {
+ public:
+  template <class S>
+  void RecordStrokeOptions(S& aStream,
+                           const StrokeOptions& aStrokeOptions) const;
+  template <class S>
+  void ReadStrokeOptions(S& aStream, StrokeOptions& aStrokeOptions);
+
+ protected:
+  UniquePtr<Float[]> mDashPatternStorage;
+};
+
+template <typename T, typename Z = size_t>
+class RecordedEventArray {
+ public:
+  T* data() { return mData.get(); }
+  const T* data() const { return mData.get(); }
+  Z size() const { return mSize; }
+  bool empty() const { return !mSize; }
+
+  void Assign(const T* aData, Z aSize) {
+    mSize = aSize;
+    mData = MakeUnique<T[]>(aSize);
+    PodCopy(mData.get(), aData, aSize);
+  }
+
+  bool TryAlloc(Z aSize) {
+    if (mSize > 0) {
+      MOZ_ASSERT_UNREACHABLE();
+      return false;
+    }
+    mData = MakeUniqueFallible<T[]>(aSize);
+    if (!mData) {
+      return false;
+    }
+    mSize = aSize;
+    return true;
+  }
+
+  bool TryAssign(const T* aData, Z aSize) {
+    if (!TryAlloc(aSize)) {
+      return false;
+    }
+    PodCopy(mData.get(), aData, aSize);
+    return true;
+  }
+
+  template <typename S>
+  void Write(S& aStream) const {
+    if (mSize) {
+      aStream.write(reinterpret_cast<const char*>(mData.get()),
+                    sizeof(T) * mSize);
+    }
+  }
+
+  template <typename S>
+  bool Read(S& aStream, Z aSize) {
+    if (!aStream.good() || !TryAlloc(aSize)) {
+      return false;
+    }
+    aStream.read(reinterpret_cast<char*>(mData.get()), sizeof(T) * mSize);
+    if (!aStream.good()) {
+      Clear();
+      return false;
+    }
+    return true;
+  }
+
+  void Clear() {
+    mSize = 0;
+    mData.reset();
+  }
+
+ protected:
+  Z mSize = 0;
+  UniquePtr<T[]> mData;
+};
+
+class RecordedEventCString : public RecordedEventArray<char> {
+ public:
+  explicit RecordedEventCString(const char* aStr = nullptr) {
+    if (aStr) {
+      if (size_t len = strlen(aStr)) {
+        Assign(aStr, len + 1);
+      }
+    }
+  }
+
+  template <typename S>
+  bool Read(S& aStream, size_t aSize) {
+    if (!RecordedEventArray<char>::Read(aStream, aSize) ||
+        (size() > 0 && !memchr(data(), '\0', size()))) {
+      Clear();
+      return false;
+    }
+    return true;
+  }
 };
 
 template <class Derived>
@@ -539,5 +659,14 @@ class RecordedEventDerived : public RecordedEvent {
 
 }  // namespace gfx
 }  // namespace mozilla
+
+// Helper struct that allows ReferencePtr to be used as a key in
+// std::unordered_map
+template <>
+struct std::hash<mozilla::gfx::ReferencePtr> {
+  std::size_t operator()(const mozilla::gfx::ReferencePtr& aRef) const {
+    return std::hash<uint64_t>{}(aRef.mLongPtr);
+  }
+};
 
 #endif

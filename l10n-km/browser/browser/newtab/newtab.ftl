@@ -9,6 +9,48 @@ newtab-page-title = ផ្ទាំង​ថ្មី
 newtab-settings-button =
     .title = ប្តូរទំព័រ ផ្ទាំងថ្មី របស់អ្នកតាមបំណង
 
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-windows =
+    .label = បង្អួចថ្មី
+home-homepage-new-tabs =
+    .label = ផ្ទាំងថ្មី
+
+## Custom URLs subpage
+
+home-custom-homepage-delete-address-button =
+    .aria-label = លុបអាសយដ្ឋាន
+    .title = លុបអាសយដ្ឋាន
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with-prompt)
+home-custom-homepage-bookmarks-button =
+    .label = ចំណាំ…
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+           *[other] { $num } ជួរ
+        }
+home-restore-defaults-srd =
+    .label = ស្ដារ​លំនាំ​ដើម
+    .accesskey = R
+home-mode-choice-custom-srd =
+    .label = URL ផ្ទាល់ខ្លួន…
+home-mode-choice-blank-srd =
+    .label = ទំព័រទទេ
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = រឿងរ៉ាវដែលបានឧបត្ថម្ភ
+home-prefs-highlights-option-visited-pages-srd =
+    .label = ទំព័រ​ដែល​បាន​ទស្សនា
+home-prefs-highlights-options-bookmarks-srd =
+    .label = ចំណាំ
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = ការទាញយកថ្មីបំផុត
+
 ## Search box component.
 
 # "Search" is a verb/action
@@ -16,19 +58,17 @@ newtab-search-box-search-button =
     .title = ស្វែងរក
     .aria-label = ស្វែងរក
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = បន្ថែម​ម៉ាស៊ីន​ស្វែងរក
 newtab-topsites-edit-topsites-header = កែសម្រួលសាយកំពូល
 newtab-topsites-title-label = ចំណង​ជើង
 newtab-topsites-title-input =
     .placeholder = បញ្ចូលចំណងជើង
-
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = វាយបញ្ចូល ឬបិទភ្ជាប់ URL
 newtab-topsites-url-validation = ត្រូវការ URL ដែលត្រឹមត្រូវ
-
 newtab-topsites-image-url-label = URL រូបភាពផ្ទាល់ខ្លួន
 newtab-topsites-use-image-link = ប្រើ​ប្រាស់​រូបភាព​ផ្ទាល់ខ្លួន...
 newtab-topsites-image-validation = មិន​អាច​ផ្ទុក​រូបភាព​បាន​ទេ។ សាកល្បង URL ផ្សេង។
@@ -47,18 +87,15 @@ newtab-confirm-delete-history-p1 = តើអ្នកប្រាកដថាអ
 # "This action" refers to deleting a page from history.
 newtab-confirm-delete-history-p2 = សកម្មភាពនេះមិនអាចមិនធ្វើឡើង​វិញបានទេ។
 
-## Top Sites - Sponsored label
-
 ## Context Menu - Action Tooltips.
 
 # General tooltip for context menus.
 newtab-menu-section-tooltip =
     .title = បើក​ម៉ឺនុយ
     .aria-label = បើក​ម៉ឺនុយ
-
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = បើក​ម៉ឺនុយ
     .aria-label = បើកម៉ឺនុយបរិបទសម្រាប់ { $title }
@@ -82,6 +119,7 @@ newtab-menu-archive-pocket = ទុកក្នុងប័ណ្ណសារក
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
+newtab-privacy-modal-button-done = ធ្វើ​រួច
 
 ##
 
@@ -132,28 +170,20 @@ newtab-section-menu-move-up = ​ផ្លាស់ទី​ឡើង​លើ
 newtab-section-menu-move-down = ផ្លាស់ទី​ចុះក្រោម
 newtab-section-menu-privacy-notice = ការជូនដំណឹង​អំពី​ឯកជនភាព
 
-## Section aria-labels
-
-
 ## Section Headers.
 
 newtab-section-header-topsites = វិបសាយ​លើ​គេ
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = បានណែនាំដោយ { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = ចាប់ផ្តើមការរុករក ហើយយើងនឹងបង្ហាញអត្ថបទ វីដេអូ និងទំព័រដ៏អស្ចារ្យផ្សេងទៀតដែលអ្នកបានមើល ឬបានចំណាំនៅទីនេះ។
-
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = អ្នកបានអានរឿងទាំងអស់ហើយ។ ពិនិត្យ​រឿង​ដែល​ពេញនិយមបំផុត​ឡើងវិញ​​ពី { $provider }។ មិនអាចរង់ចាំ? ជ្រើសរើសប្រធានបទកំពុងពេញនិយម ដើម្បីស្វែងរករឿងដ៏អស្ចារ្យនៅ​លើ​អ៊ីនធឺណិត។
-
-
-## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
-
 
 ## Pocket Content Section.
 
@@ -162,10 +192,11 @@ newtab-pocket-read-more = ប្រធានបទកំពុងពេញនិ
 newtab-pocket-more-recommendations = ការណែនាំច្រើនទៀត
 newtab-pocket-cta-button = ទាញយក { -pocket-brand-name }
 
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
 
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = មិនមែនសម្រាប់ខ្ញុំទេ
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -173,5 +204,53 @@ newtab-pocket-cta-button = ទាញយក { -pocket-brand-name }
 newtab-error-fallback-info = អូ មានអ្វីមួយខុសប្រក្រតីក្នុងការផ្ទុក​ខ្លឹមសារ​នេះ។
 newtab-error-fallback-refresh-link = ផ្ទុកទំព័រឡើងវិញ ដើម្បីព្យាយាមម្ដងទៀត។
 
-## Customization Menu
+## New Tab Wallpapers
 
+newtab-wallpaper-title = ផ្ទាំងរូបភាព
+newtab-wallpaper-toggle-title =
+    .label = ផ្ទាំងរូបភាព
+
+## New Tab Weather
+
+newtab-weather-opt-in-not-now =
+    .label = កុំទាន់
+newtab-weather-opt-in-yes =
+    .label = បាទ/ចាស៎
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = ទីក្រុងញូវយ៉ក
+
+## Topic Selection Modal
+
+newtab-topic-selection-cancel-button = បោះបង់
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = កុំទាន់
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-cta = សាកល្បងឥឡូវនេះ
+
+## Strings for reporting issues with ads and content
+
+newtab-report-ads-reason-not-interested =
+    .label = ខ្ញុំមិនចាប់អារម្មណ៍ទេ
+newtab-report-cancel = បោះបង់
+
+## Strings for task / to-do list productivity widget
+
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = ថ្មី
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = បានបញ្ចប់ ({ $number })
+newtab-widget-lists-menu-delete = លុបបញ្ជីនេះ
+newtab-widget-lists-input-menu-delete = លុប
+
+## Strings introduced by the Nova redesign of the Timer widget
+
+newtab-widget-timer-notification-warning = ការជូនដំណឹងត្រូវបានបិទ
+newtab-widget-timer-menu-notifications = បិទការជូនដំណឹង
+newtab-widget-timer-menu-notifications-on = បើកការជូនដំណឹង

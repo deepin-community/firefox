@@ -4,18 +4,22 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![allow(clippy::module_name_repetitions)] // This lint doesn't work here.
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 use neqo_common::qwarn;
-use neqo_crypto::Error as CryptoError;
+use nss::Error as CryptoError;
+use thiserror::Error;
 
 mod ackrate;
+#[cfg(fuzzing)]
+pub mod addr_valid;
+#[cfg(not(fuzzing))]
 mod addr_valid;
 mod cc;
 mod cid;
 mod connection;
 mod crypto;
-mod ecn;
+pub mod ecn;
 mod events;
 mod fc;
 #[cfg(fuzzing)]
@@ -23,26 +27,27 @@ pub mod frame;
 #[cfg(not(fuzzing))]
 mod frame;
 mod pace;
-#[cfg(fuzzing)]
+#[cfg(any(fuzzing, feature = "bench"))]
 pub mod packet;
-#[cfg(not(fuzzing))]
+#[cfg(not(any(fuzzing, feature = "bench")))]
 mod packet;
 mod path;
 mod pmtud;
 mod qlog;
 mod quic_datagrams;
+#[cfg(feature = "bench")]
+pub mod recovery;
+#[cfg(not(feature = "bench"))]
 mod recovery;
-#[cfg(feature = "bench")]
 pub mod recv_stream;
-#[cfg(not(feature = "bench"))]
-mod recv_stream;
 mod rtt;
-#[cfg(feature = "bench")]
+mod saved;
+mod scone;
 pub mod send_stream;
-#[cfg(not(feature = "bench"))]
-mod send_stream;
 mod sender;
 pub mod server;
+mod sni;
+mod stateless_reset;
 mod stats;
 pub mod stream_id;
 pub mod streams;
@@ -51,23 +56,27 @@ mod tracking;
 pub mod version;
 
 pub use self::{
-    cc::CongestionControlAlgorithm,
+    cc::{CongestionControl, CongestionTrigger, HyStartCssBaseline, SlowStart},
     cid::{
         ConnectionId, ConnectionIdDecoder, ConnectionIdGenerator, ConnectionIdRef,
         EmptyConnectionIdGenerator, RandomConnectionIdGenerator,
     },
     connection::{
-        params::{ConnectionParameters, ACK_RATIO_SCALE},
-        Connection, Output, State, ZeroRttState,
+        Connection, Output, OutputBatch, State, ZeroRttState,
+        params::{
+            ConnectionParameters, INITIAL_LOCAL_MAX_DATA, INITIAL_LOCAL_MAX_STREAM_DATA,
+            MAX_LOCAL_MAX_STREAM_DATA,
+        },
     },
     events::{ConnectionEvent, ConnectionEvents},
     frame::CloseError,
     packet::MIN_INITIAL_PACKET_SIZE,
     pmtud::Pmtud,
     quic_datagrams::DatagramTracking,
-    recv_stream::{RecvStreamStats, RECV_BUFFER_SIZE},
-    send_stream::{SendStreamStats, SEND_BUFFER_SIZE},
-    stats::Stats,
+    rtt::DEFAULT_INITIAL_RTT,
+    sni::find_sni,
+    stateless_reset::Token,
+    stats::{SlowStartExitReason, Stats},
     stream_id::{StreamId, StreamType},
     version::Version,
 };
@@ -77,89 +86,133 @@ const ERROR_APPLICATION_CLOSE: TransportError = 12;
 const ERROR_CRYPTO_BUFFER_EXCEEDED: TransportError = 13;
 const ERROR_AEAD_LIMIT_REACHED: TransportError = 15;
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Error)]
 pub enum Error {
-    NoError,
-    // Each time this error is returned a different parameter is supplied.
-    // This will be used to distinguish each occurance of this error.
-    InternalError,
+    #[error("no error")]
+    None,
+    #[error("internal error")]
+    Internal,
+    #[error("connection refused")]
     ConnectionRefused,
-    FlowControlError,
-    StreamLimitError,
-    StreamStateError,
-    FinalSizeError,
-    FrameEncodingError,
-    TransportParameterError,
+    #[error("flow control error")]
+    FlowControl,
+    #[error("stream limit exceeded")]
+    StreamLimit,
+    #[error("stream state error")]
+    StreamState,
+    #[error("stream final size error")]
+    FinalSize,
+    #[error("frame encoding error")]
+    FrameEncoding,
+    #[error("transport parameter error")]
+    TransportParameter,
+    #[error("protocol violation")]
     ProtocolViolation,
+    #[error("invalid token")]
     InvalidToken,
-    ApplicationError,
+    #[error("application error")]
+    Application,
+    #[error("crypto buffer exceeded")]
     CryptoBufferExceeded,
-    CryptoError(CryptoError),
-    QlogError,
+    #[error("crypto error: {0}")]
+    Crypto(#[source] CryptoError),
+    #[error("qlog error")]
+    Qlog,
+    #[error("crypto alert: {0}")]
     CryptoAlert(u8),
+    #[error("ECH retry")]
     EchRetry(Vec<u8>),
 
     // All internal errors from here.  Please keep these sorted.
+    #[error("packet acknowledged but never sent")]
     AckedUnsentPacket,
+    #[error("connection ID limit exceeded")]
     ConnectionIdLimitExceeded,
+    #[error("connection IDs exhausted")]
     ConnectionIdsExhausted,
+    #[error("invalid connection state")]
     ConnectionState,
-    DecodingFrame,
-    DecryptError,
+    #[error("decryption error")]
+    Decrypt,
+    #[error("disabled version")]
     DisabledVersion,
-    HandshakeFailed,
+    #[error("no packets received for longer than the idle timeout")]
     IdleTimeout,
+    #[error("integer overflow")]
     IntegerOverflow,
+    #[error("invalid input")]
     InvalidInput,
+    #[error("invalid migration")]
     InvalidMigration,
+    #[error("an invalid packet was dropped (internal use only)")]
     InvalidPacket,
+    #[error("invalid resumption token")]
     InvalidResumptionToken,
+    #[error("invalid retry packet dropped (internal use only)")]
     InvalidRetry,
+    #[error("invalid stream ID")]
     InvalidStreamId,
-    KeysDiscarded(crypto::CryptoSpace),
-    /// Packet protection keys are exhausted.
-    /// Also used when too many key updates have happened.
+    #[error("keys discarded for epoch {0:?}")]
+    KeysDiscarded(crypto::Epoch),
+    /// Packet protection keys are exhausted.  Also used when too many key
+    /// updates have happened.
+    #[error("keys exhausted")]
     KeysExhausted,
     /// Packet protection keys aren't available yet for the identified space.
-    KeysPending(crypto::CryptoSpace),
-    /// An attempt to update keys can be blocked if
-    /// a packet sent with the current keys hasn't been acknowledged.
+    #[error("keys pending for epoch {0:?} (internal use only)")]
+    KeysPending(crypto::Epoch),
+    /// An attempt to update keys can be blocked if a packet sent with the
+    /// current keys hasn't been acknowledged.
+    #[error("key update blocked")]
     KeyUpdateBlocked,
+    #[error("no available path")]
     NoAvailablePath,
+    #[error("no more data")]
     NoMoreData,
-    NotConnected,
-    PacketNumberOverlap,
-    PeerApplicationError(AppError),
-    PeerError(TransportError),
-    StatelessReset,
-    TooMuchData,
-    UnexpectedMessage,
-    UnknownConnectionId,
-    UnknownFrameType,
-    VersionNegotiation,
-    WrongRole,
+    #[error("not available")]
     NotAvailable,
+    #[error("not connected")]
+    NotConnected,
+    #[error("packet number overlap")]
+    PacketNumberOverlap,
+    #[error("peer application error: 0x{0:x}")]
+    PeerApplication(AppError),
+    #[error("peer error: {0}")]
+    Peer(TransportError),
+    #[error("stateless reset")]
+    StatelessReset,
+    #[error("too much data")]
+    TooMuchData,
+    #[error("unexpected message")]
+    UnexpectedMessage,
+    #[error("unknown connection ID")]
+    UnknownConnectionId,
+    #[error("unknown frame type")]
+    UnknownFrameType,
+    #[error("version negotiation")]
+    VersionNegotiation,
+    #[error("wrong role")]
+    WrongRole,
+    #[error("unknown transport parameter (internal use only)")]
+    UnknownTransportParameter,
 }
 
 impl Error {
     #[must_use]
     pub fn code(&self) -> TransportError {
         match self {
-            Self::NoError
-            | Self::IdleTimeout
-            | Self::PeerError(_)
-            | Self::PeerApplicationError(_) => 0,
+            Self::None | Self::IdleTimeout | Self::Peer(_) | Self::PeerApplication(_) => 0,
             Self::ConnectionRefused => 2,
-            Self::FlowControlError => 3,
-            Self::StreamLimitError => 4,
-            Self::StreamStateError => 5,
-            Self::FinalSizeError => 6,
-            Self::FrameEncodingError => 7,
-            Self::TransportParameterError => 8,
+            Self::FlowControl => 3,
+            Self::StreamLimit => 4,
+            Self::StreamState => 5,
+            Self::FinalSize => 6,
+            Self::FrameEncoding => 7,
+            Self::TransportParameter => 8,
             Self::ProtocolViolation => 10,
             Self::InvalidToken => 11,
             Self::KeysExhausted => ERROR_AEAD_LIMIT_REACHED,
-            Self::ApplicationError => ERROR_APPLICATION_CLOSE,
+            Self::Application => ERROR_APPLICATION_CLOSE,
             Self::NoAvailablePath => 16,
             Self::CryptoBufferExceeded => ERROR_CRYPTO_BUFFER_EXCEEDED,
             Self::CryptoAlert(a) => 0x100 + u64::from(*a),
@@ -175,38 +228,17 @@ impl Error {
 
 impl From<CryptoError> for Error {
     fn from(err: CryptoError) -> Self {
-        qwarn!("Crypto operation failed {:?}", err);
+        qwarn!("Crypto operation failed {err:?}");
         match err {
             CryptoError::EchRetry(config) => Self::EchRetry(config),
-            _ => Self::CryptoError(err),
+            _ => Self::Crypto(err),
         }
-    }
-}
-
-impl From<::qlog::Error> for Error {
-    fn from(_err: ::qlog::Error) -> Self {
-        Self::QlogError
     }
 }
 
 impl From<std::num::TryFromIntError> for Error {
     fn from(_: std::num::TryFromIntError) -> Self {
         Self::IntegerOverflow
-    }
-}
-
-impl ::std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Self::CryptoError(e) => Some(e),
-            _ => None,
-        }
-    }
-}
-
-impl ::std::fmt::Display for Error {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "Transport error: {self:?}")
     }
 }
 
@@ -223,29 +255,67 @@ pub enum CloseReason {
 }
 
 impl CloseReason {
-    #[must_use]
-    pub const fn app_code(&self) -> Option<AppError> {
-        match self {
-            Self::Application(e) => Some(*e),
-            Self::Transport(_) => None,
-        }
-    }
-
-    /// Checks enclosed error for [`Error::NoError`] and
-    /// [`CloseReason::Application(0)`].
+    /// Checks enclosed error for [`Error::None`] and
+    /// [`CloseReason::Application`] with code `0`.
     #[must_use]
     pub const fn is_error(&self) -> bool {
-        !matches!(self, Self::Transport(Error::NoError) | Self::Application(0),)
+        !matches!(self, Self::Transport(Error::None) | Self::Application(0),)
     }
 }
 
-impl From<CloseError> for CloseReason {
-    fn from(err: CloseError) -> Self {
-        match err {
-            CloseError::Transport(c) => Self::Transport(Error::PeerError(c)),
-            CloseError::Application(c) => Self::Application(c),
+pub type Res<T> = Result<T, Error>;
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use super::{CloseReason, Error};
+
+    #[test]
+    fn error_codes() {
+        for (err, code) in [
+            (Error::None, 0),
+            (Error::IdleTimeout, 0),
+            (Error::Peer(0), 0),
+            (Error::PeerApplication(0), 0),
+            (Error::ConnectionRefused, 2),
+            (Error::FlowControl, 3),
+            (Error::StreamLimit, 4),
+            (Error::StreamState, 5),
+            (Error::FinalSize, 6),
+            (Error::FrameEncoding, 7),
+            (Error::TransportParameter, 8),
+            (Error::ProtocolViolation, 10),
+            (Error::InvalidToken, 11),
+            (Error::KeysExhausted, 15),
+            (Error::Application, 12),
+            (Error::NoAvailablePath, 16),
+            (Error::CryptoBufferExceeded, 13),
+            (Error::CryptoAlert(0x2a), 0x12a),
+            (Error::EchRetry(vec![]), 0x179),
+            (Error::VersionNegotiation, 0x53f8),
+            (Error::Internal, 1),
+        ] {
+            assert_eq!(err.code(), code);
         }
     }
-}
 
-pub type Res<T> = std::result::Result<T, Error>;
+    #[test]
+    fn close_reason_is_error() {
+        assert!(!CloseReason::Transport(Error::None).is_error());
+        assert!(!CloseReason::Application(0).is_error());
+        assert!(CloseReason::Transport(Error::Internal).is_error());
+        assert!(CloseReason::Application(1).is_error());
+    }
+
+    #[test]
+    fn error_from_impls() {
+        assert_eq!(
+            Error::from(nss::Error::EchRetry(vec![1, 2])),
+            Error::EchRetry(vec![1, 2])
+        );
+        assert!(matches!(
+            Error::from(u64::try_from(-1_i32).unwrap_err()),
+            Error::IntegerOverflow
+        ));
+    }
+}

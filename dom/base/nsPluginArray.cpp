@@ -1,18 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsPluginArray.h"
 
+#include "mozilla/StaticPrefs_pdfjs.h"
 #include "mozilla/dom/PluginArrayBinding.h"
 #include "mozilla/dom/PluginBinding.h"
-#include "mozilla/StaticPrefs_pdfjs.h"
-
+#include "nsContentUtils.h"
 #include "nsMimeTypeArray.h"
 #include "nsPIDOMWindow.h"
-#include "nsContentUtils.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -36,12 +33,12 @@ nsPluginArray::nsPluginArray(nsPIDOMWindowInner* aWindow) : mWindow(aWindow) {
   mPlugins[0] = MakeRefPtr<nsPluginElement>(this, aWindow, kMainPluginName);
 
   mozilla::Array<RefPtr<nsMimeType>, 2> mimeTypes;
-  for (uint32_t i = 0; i < ArrayLength(kMimeTypeNames); ++i) {
+  for (uint32_t i = 0; i < std::size(kMimeTypeNames); ++i) {
     mimeTypes[i] = MakeRefPtr<nsMimeType>(mPlugins[0], kMimeTypeNames[i]);
   }
   mMimeTypeArray = MakeRefPtr<nsMimeTypeArray>(aWindow, mimeTypes);
 
-  for (uint32_t i = 0; i < ArrayLength(kExtraPluginNames); ++i) {
+  for (uint32_t i = 0; i < std::size(kExtraPluginNames); ++i) {
     mPlugins[i + 1] =
         MakeRefPtr<nsPluginElement>(this, aWindow, kExtraPluginNames[i]);
   }
@@ -60,7 +57,7 @@ JSObject* nsPluginArray::WrapObject(JSContext* aCx,
 }
 
 nsPluginElement* nsPluginArray::IndexedGetter(uint32_t aIndex, bool& aFound) {
-  if (!ForceNoPlugins() && aIndex < ArrayLength(mPlugins)) {
+  if (!ForceNoPlugins() && aIndex < std::size(mPlugins)) {
     aFound = true;
     return mPlugins[aIndex];
   }
@@ -97,7 +94,11 @@ void nsPluginArray::GetSupportedNames(nsTArray<nsString>& aRetval) {
   }
 }
 
-bool nsPluginArray::ForceNoPlugins() { return StaticPrefs::pdfjs_disabled(); }
+bool nsPluginArray::ForceNoPlugins() {
+  return StaticPrefs::pdfjs_disabled() &&
+         !nsContentUtils::ShouldResistFingerprinting(
+             mWindow ? mWindow->GetDocShell() : nullptr, RFPTarget::PdfjsSpoof);
+}
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(nsPluginArray)
 NS_IMPL_CYCLE_COLLECTING_RELEASE(nsPluginArray)

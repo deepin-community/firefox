@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsDocShell_h__
-#define nsDocShell_h__
+#ifndef nsDocShell_h_
+#define nsDocShell_h_
 
 #include "Units.h"
 #include "mozilla/Encoding.h"
@@ -15,6 +13,8 @@
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WeakPtr.h"
 #include "mozilla/dom/BrowsingContext.h"
+#include "mozilla/dom/NavigationBinding.h"
+#include "mozilla/dom/SessionHistoryEntry.h"
 #include "mozilla/dom/WindowProxyHolder.h"
 #include "nsCOMPtr.h"
 #include "nsCharsetSource.h"
@@ -23,6 +23,7 @@
 #include "nsIBaseWindow.h"
 #include "nsIDocShell.h"
 #include "nsIDocShellTreeItem.h"
+#include "nsIDocumentViewer.h"
 #include "nsIInterfaceRequestor.h"
 #include "nsILoadContext.h"
 #include "nsINetworkInterceptController.h"
@@ -44,10 +45,14 @@ class HTMLEditor;
 class ObservedDocShell;
 class ScrollContainerFrame;
 enum class TaskCategory;
+class PresShell;
 namespace dom {
 class ClientInfo;
 class ClientSource;
 class EventTarget;
+class WindowGlobalChild;
+enum class NavigationHistoryBehavior : uint8_t;
+struct NavigationAPIMethodTracker;
 class SessionHistoryInfo;
 struct LoadingSessionHistoryInfo;
 struct Wireframe;
@@ -63,6 +68,7 @@ class nsIDocShellTreeOwner;
 class nsIDocumentViewer;
 class nsIHttpChannel;
 class nsIMutableArray;
+class nsIPolicyContainer;
 class nsIPrompt;
 class nsIStringBundle;
 class nsIURIFixup;
@@ -71,7 +77,9 @@ class nsIURILoader;
 class nsIWebBrowserFind;
 class nsIWidget;
 class nsIReferrerInfo;
+class nsIOpenWindowInfo;
 
+class nsBrowserStatusFilter;
 class nsCommandManager;
 class nsDocShellEditorData;
 class nsDOMNavigationTiming;
@@ -136,19 +144,6 @@ class nsDocShell final : public nsDocLoader,
     INTERNAL_LOAD_FLAGS_BYPASS_LOAD_URI_DELEGATE = 0x2000,
   };
 
-  // Event type dispatched by RestorePresentation
-  class RestorePresentationEvent : public mozilla::Runnable {
-   public:
-    NS_DECL_NSIRUNNABLE
-    explicit RestorePresentationEvent(nsDocShell* aDs)
-        : mozilla::Runnable("nsDocShell::RestorePresentationEvent"),
-          mDocShell(aDs) {}
-    void Revoke() { mDocShell = nullptr; }
-
-   private:
-    RefPtr<nsDocShell> mDocShell;
-  };
-
   class InterfaceRequestorProxy : public nsIInterfaceRequestor {
    public:
     explicit InterfaceRequestorProxy(nsIInterfaceRequestor* aRequestor);
@@ -174,12 +169,21 @@ class nsDocShell final : public nsDocLoader,
   NS_DECL_NSIAUTHPROMPTPROVIDER
   NS_DECL_NSINETWORKINTERCEPTCONTROLLER
 
+  using nsIBaseWindow::GetMainWidget;
+
   // Create a new nsDocShell object.
   static already_AddRefed<nsDocShell> Create(
       mozilla::dom::BrowsingContext* aBrowsingContext,
       uint64_t aContentWindowID = 0);
 
-  bool Initialize();
+  MOZ_CAN_RUN_SCRIPT nsresult
+  Initialize(nsIOpenWindowInfo* aOpenWindowInfo,
+             mozilla::dom::WindowGlobalChild* aWindowActor);
+
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY nsresult
+  InitWindow(nsIWidget* aParentWidget, int32_t aX, int32_t aY, int32_t aWidth,
+             int32_t aHeight, nsIOpenWindowInfo* aOpenWindowInfo,
+             mozilla::dom::WindowGlobalChild* aWindowActor);
 
   NS_IMETHOD Stop() override {
     // Need this here because otherwise nsIWebNavigation::Stop
@@ -219,22 +223,23 @@ class nsDocShell final : public nsDocLoader,
    * file
    * @param aPostDataStream the POST data to send
    * @param aHeadersDataStream ??? (only used for plugins)
-   * @param aIsTrusted false if the triggerer is an untrusted DOM event.
    * @param aTriggeringPrincipal, if not passed explicitly we fall back to
    *        the document's principal.
-   * @param aCsp, the CSP to be used for the load, that is the CSP of the
-   *        entity responsible for causing the load to occur. Most likely
-   *        this is the CSP of the document that started the load. In case
-   *        aCsp was not passed explicitly we fall back to using
-   *        aContent's document's CSP if that document holds any.
+   * @param aPolicyContainer, the policyContainer to be used for the load, that
+   * is the policyContainer of the entity responsible for causing the load to
+   * occur. Most likely this is the policyContainer of the document that started
+   * the load. In case aPolicyContainer was not passed explicitly we fall back
+   * to using aContent's document's policyContainer if that document holds any.
    */
+  MOZ_CAN_RUN_SCRIPT
   nsresult OnLinkClick(nsIContent* aContent, nsIURI* aURI,
                        const nsAString& aTargetSpec, const nsAString& aFileName,
                        nsIInputStream* aPostDataStream,
                        nsIInputStream* aHeadersDataStream,
-                       bool aIsUserTriggered, bool aIsTrusted,
+                       bool aIsUserTriggered,
+                       mozilla::dom::UserNavigationInvolvement aUserInvolvement,
                        nsIPrincipal* aTriggeringPrincipal,
-                       nsIContentSecurityPolicy* aCsp);
+                       nsIPolicyContainer* aPolicyContainer);
   /**
    * Process a click on a link.
    *
@@ -284,11 +289,6 @@ class nsDocShell final : public nsDocLoader,
       JSContext*, JS::MutableHandle<JS::Value>) override;
   NS_IMETHOD_(void)
   GetOriginAttributes(mozilla::OriginAttributes& aAttrs) override;
-
-  // Restores a cached presentation from history (mLSHE).
-  // This method swaps out the content viewer and simulates loads for
-  // subframes. It then simulates the completion of the toplevel load.
-  nsresult RestoreFromHistory();
 
   /**
    * Parses the passed in header string and sets up a refreshURI if a "refresh"
@@ -350,15 +350,6 @@ class nsDocShell final : public nsDocLoader,
     return mBrowsingContext->OriginAttributesRef();
   }
 
-  // Determine whether this docshell corresponds to the given history entry,
-  // via having a pointer to it in mOSHE or mLSHE.
-  bool HasHistoryEntry(nsISHEntry* aEntry) const {
-    return aEntry && (aEntry == mOSHE || aEntry == mLSHE);
-  }
-
-  // Update any pointers (mOSHE or mLSHE) to aOldEntry to point to aNewEntry
-  void SwapHistoryEntries(nsISHEntry* aOldEntry, nsISHEntry* aNewEntry);
-
   bool GetCreatedDynamically() const {
     return mBrowsingContext && mBrowsingContext->CreatedDynamically();
   }
@@ -386,10 +377,13 @@ class nsDocShell final : public nsDocLoader,
     return mozilla::dom::WindowProxyHolder(mBrowsingContext);
   }
 
+  nsPIDOMWindowInner* GetActiveWindow();
+
   /**
    * Loads the given URI. See comments on nsDocShellLoadState members for more
    * information on information used.
-   * `aCacheKey` gets passed to DoURILoad call.
+   *
+   * @param aCacheKey gets passed to DoURILoad call.
    */
   MOZ_CAN_RUN_SCRIPT_BOUNDARY
   nsresult InternalLoad(
@@ -402,11 +396,6 @@ class nsDocShell final : public nsDocLoader,
 
   void SetWillChangeProcess() { mWillChangeProcess = true; }
   bool WillChangeProcess() { return mWillChangeProcess; }
-
-  // Create a content viewer within this nsDocShell for the given
-  // `WindowGlobalChild` actor.
-  nsresult CreateDocumentViewerForActor(
-      mozilla::dom::WindowGlobalChild* aWindowActor);
 
   // Creates a real network channel (not a DocumentChannel) using the specified
   // parameters.
@@ -445,7 +434,7 @@ class nsDocShell final : public nsDocLoader,
       bool aIsTopFrame, bool aAllowKeywordFixup, bool aUsePrivateBrowsing,
       bool aNotifyKeywordSearchLoading = false,
       nsIInputStream** aNewPostData = nullptr,
-      bool* outWasSchemelessInput = nullptr);
+      nsILoadInfo::SchemelessInputType* outSchemelessInput = nullptr);
 
   static already_AddRefed<nsIURI> MaybeFixBadCertDomainErrorURI(
       nsIChannel* aChannel, nsIURI* aUrl);
@@ -494,6 +483,8 @@ class nsDocShell final : public nsDocLoader,
       mozilla::dom::BrowsingContext* aBrowsingContext, uint32_t aLoadType,
       bool aIsDocumentLoad = true);
 
+  mozilla::dom::SessionHistoryInfo* GetActiveSessionHistoryInfo() const;
+
   void SetLoadingSessionHistoryInfo(
       const mozilla::dom::LoadingSessionHistoryInfo& aLoadingInfo,
       bool aNeedToReportActiveAfterLoadingBecomesActive = false);
@@ -508,10 +499,6 @@ class nsDocShell final : public nsDocLoader,
   // Loading and/or active entries are only set when session history
   // in the parent is on.
   bool FillLoadStateFromCurrentEntry(nsDocShellLoadState& aLoadState);
-
-  static bool ShouldAddToSessionHistory(nsIURI* aURI, nsIChannel* aChannel);
-
-  bool IsOSHE(nsISHEntry* aEntry) const { return mOSHE == aEntry; }
 
   mozilla::dom::ChildSHistory* GetSessionHistory() {
     return mBrowsingContext->GetChildSessionHistory();
@@ -563,14 +550,24 @@ class nsDocShell final : public nsDocLoader,
   // Content Viewer Management
   //
 
-  nsresult EnsureDocumentViewer();
+  // Return whether a viewer exists and assert that we aren't
+  // trying to get a viewer before it's eager creation during docshell
+  // initialization.
+  bool VerifyDocumentViewer();
+
+  void DestroyDocumentViewer();
+
+  MOZ_CAN_RUN_SCRIPT nsresult CreateInitialDocumentViewer(
+      nsIOpenWindowInfo* aOpenWindowInfo = nullptr,
+      mozilla::dom::WindowGlobalChild* aWindowActor = nullptr);
 
   // aPrincipal can be passed in if the caller wants. If null is
   // passed in, the about:blank principal will end up being used.
-  // aCSP, if any, will be used for the new about:blank load.
-  nsresult CreateAboutBlankDocumentViewer(
+  // aPolicyContainer, if any, will be used for the new about:blank load.
+  MOZ_CAN_RUN_SCRIPT nsresult CreateAboutBlankDocumentViewer(
       nsIPrincipal* aPrincipal, nsIPrincipal* aPartitionedPrincipal,
-      nsIContentSecurityPolicy* aCSP, nsIURI* aBaseURI, bool aIsInitialDocument,
+      nsIPolicyContainer* aPolicyContainer, nsIURI* aBaseURI,
+      bool aIsInitialDocument,
       const mozilla::Maybe<nsILoadInfo::CrossOriginEmbedderPolicy>& aCOEP =
           mozilla::Nothing(),
       bool aTryToSaveOldPresentation = true, bool aCheckPermitUnload = true,
@@ -595,49 +592,12 @@ class nsDocShell final : public nsDocLoader,
   // Session History
   //
 
-  // Either aChannel or aOwner must be null. If aChannel is
-  // present, the owner should be gotten from it.
-  // If aCloneChildren is true, then our current session history's
-  // children will be cloned onto the new entry. This should be
-  // used when we aren't actually changing the document while adding
-  // the new session history entry.
-  // aCsp is the CSP to be used for the load. That is *not* the CSP
-  // that will be applied to subresource loads within that document
-  // but the CSP for the document load itself. E.g. if that CSP
-  // includes upgrade-insecure-requests, then the new top-level load
-  // will be upgraded to HTTPS.
-  nsresult AddToSessionHistory(nsIURI* aURI, nsIChannel* aChannel,
-                               nsIPrincipal* aTriggeringPrincipal,
-                               nsIPrincipal* aPrincipalToInherit,
-                               nsIPrincipal* aPartitionedPrincipalToInherit,
-                               nsIContentSecurityPolicy* aCsp,
-                               bool aCloneChildren, nsISHEntry** aNewEntry);
-
   void UpdateActiveEntry(
       bool aReplace, const mozilla::Maybe<nsPoint>& aPreviousScrollPos,
       nsIURI* aURI, nsIURI* aOriginalURI, nsIReferrerInfo* aReferrerInfo,
-      nsIPrincipal* aTriggeringPrincipal, nsIContentSecurityPolicy* aCsp,
+      nsIPrincipal* aTriggeringPrincipal, nsIPolicyContainer* aPolicyContainer,
       const nsAString& aTitle, bool aScrollRestorationIsManual,
       nsIStructuredCloneContainer* aData, bool aURIWasModified);
-
-  nsresult AddChildSHEntry(nsISHEntry* aCloneRef, nsISHEntry* aNewEntry,
-                           int32_t aChildOffset, uint32_t aLoadType,
-                           bool aCloneChildren);
-
-  nsresult AddChildSHEntryToParent(nsISHEntry* aNewEntry, int32_t aChildOffset,
-                                   bool aCloneChildren);
-
-  // Call this method to swap in a new history entry to m[OL]SHE, rather than
-  // setting it directly. This completes the navigation in all docshells
-  // in the case of a subframe navigation.
-  // Returns old mOSHE/mLSHE.
-  already_AddRefed<nsISHEntry> SetHistoryEntry(nsCOMPtr<nsISHEntry>* aPtr,
-                                               nsISHEntry* aEntry);
-
-  // This method calls SetHistoryEntry and updates mOSHE and mLSHE in BC to be
-  // the same as in docshell
-  void SetHistoryEntryAndUpdateBC(const mozilla::Maybe<nsISHEntry*>& aLSHE,
-                                  const mozilla::Maybe<nsISHEntry*>& aOSHE);
 
   // If aNotifiedBeforeUnloadListeners is true, "beforeunload" event listeners
   // were notified by the caller and given the chance to abort the navigation,
@@ -649,9 +609,14 @@ class nsDocShell final : public nsDocLoader,
       bool aNotifiedBeforeUnloadListeners = false);
 
  public:
-  bool IsAboutBlankLoadOntoInitialAboutBlank(nsIURI* aURI,
-                                             bool aInheritPrincipal,
-                                             nsIPrincipal* aPrincipalToInherit);
+  bool ShouldDoInitialAboutBlankSyncLoad(nsIURI* aURI,
+                                         nsDocShellLoadState* aLoadState,
+                                         nsIPrincipal* aPrincipalToInherit);
+
+  void UnsuppressPaintingIfNoNavigationAwayFromAboutBlank(
+      mozilla::PresShell* aPresShell);
+
+  bool HasStartedLoadingOtherThanInitialBlankURI();
 
  private:
   //
@@ -672,8 +637,28 @@ class nsDocShell final : public nsDocLoader,
   // will be set as the originalURI. If LoadReplace is true, LOAD_REPLACE flag
   // will be set on the nsIChannel.
   // If `aCacheKey` is supplied, use it for the session history entry.
-  nsresult DoURILoad(nsDocShellLoadState* aLoadState,
-                     mozilla::Maybe<uint32_t> aCacheKey, nsIRequest** aRequest);
+  MOZ_CAN_RUN_SCRIPT nsresult DoURILoad(nsDocShellLoadState* aLoadState,
+                                        mozilla::Maybe<uint32_t> aCacheKey,
+                                        nsIRequest** aRequest);
+
+  // Implement require-trusted-types-for Pre-Navigation check on a javascript:
+  // URL. There is some disconnect between Trusted Types spec, CSP spec and
+  // implementations. We try to have something consistent with other browsers,
+  // following the intended goal of the Pre-Navigation check.
+  // https://w3c.github.io/webappsec-csp/#should-block-navigation-request
+  // https://w3c.github.io/trusted-types/dist/spec/#require-trusted-types-for-pre-navigation-check
+  // https://github.com/w3c/trusted-types/issues/548
+  //
+  // If trusted types are not required by a CSP policy, this returns immediately
+  // without side effect. Otherwise the method tries to modify aLoadState's URI
+  // to ensure its JavaScript code is a trusted script.
+  // @return An error if trusted types are required by an enforced CSP policy
+  //         but the operation fails. NS_OK otherwise.
+  MOZ_CAN_RUN_SCRIPT nsresult PerformTrustedTypesPreNavigationCheck(
+      nsDocShellLoadState* aLoadState, nsGlobalWindowInner* aWindow) const;
+
+  MOZ_CAN_RUN_SCRIPT nsresult CompleteInitialAboutBlankLoad(
+      nsDocShellLoadState* aLoadState, nsILoadInfo* aLoadInfo);
 
   static nsresult AddHeadersToChannel(nsIInputStream* aHeadersData,
                                       nsIChannel* aChannel);
@@ -704,16 +689,16 @@ class nsDocShell final : public nsDocLoader,
   // present, the owner should be gotten from it.
   // If OnNewURI calls AddToSessionHistory, it will pass its
   // aCloneSHChildren argument as aCloneChildren.
-  // aCsp is the CSP to be used for the load. That is *not* the CSP
-  // that will be applied to subresource loads within that document
-  // but the CSP for the document load itself. E.g. if that CSP
-  // includes upgrade-insecure-requests, then the new top-level load
-  // will be upgraded to HTTPS.
+  // aPolicyContainer is the policyContainer to be used for the load. That is
+  // *not* the policyContainer that will be applied to subresource loads within
+  // that document but the policyContainer for the document load itself. E.g. if
+  // that policyContainer's CSP includes upgrade-insecure-requests, then the new
+  // top-level load will be upgraded to HTTPS.
   bool OnNewURI(nsIURI* aURI, nsIChannel* aChannel,
                 nsIPrincipal* aTriggeringPrincipal,
                 nsIPrincipal* aPrincipalToInherit,
                 nsIPrincipal* aPartitionedPrincipalToInherit,
-                nsIContentSecurityPolicy* aCsp, bool aAddToGlobalHistory,
+                nsIPolicyContainer* aPolicyContainer, bool aAddToGlobalHistory,
                 bool aCloneSHChildren);
 
  public:
@@ -751,6 +736,11 @@ class nsDocShell final : public nsDocLoader,
     DisplayLoadError(aError, aURI, aURL, aFailedChannel, &didDisplayLoadError);
     return didDisplayLoadError;
   }
+
+  // Called when a document is recognised as content the device owner doesn't
+  // want to be displayed. Stops parsing, stops scripts, and displays an
+  // error page with DisplayLoadError.
+  void DisplayRestrictedContentError();
 
   //
   // Uncategorized
@@ -819,11 +809,10 @@ class nsDocShell final : public nsDocLoader,
   static already_AddRefed<nsIURIFixupInfo> KeywordToURI(
       const nsACString& aKeyword, bool aIsPrivateContext);
 
-  // Sets the current document's current state object to the given SHEntry's
+  // Sets the current document's current state object to the given
   // state object. The current state object is eventually given to the page
   // in the PopState event.
-  void SetDocCurrentStateObj(nsISHEntry* aShEntry,
-                             mozilla::dom::SessionHistoryInfo* aInfo);
+  void SetDocCurrentStateObj(mozilla::dom::SessionHistoryInfo* aInfo);
 
   // Returns true if would have called FireOnLocationChange,
   // but did not because aFireOnLocationChange was false on entry.
@@ -847,12 +836,13 @@ class nsDocShell final : public nsDocLoader,
   //   2) The content viewer is still being displayed while we begin loading
   //      a new document. The content viewer is owned by the _new_
   //      content viewer's mPreviousViewer, and has a pointer to the
-  //      nsISHEntry where it will eventually be stored. The content viewer
-  //      has been close()d by the docshell, which detaches the document from
-  //      the window object.
-  //   3) The content viewer is cached in session history. The nsISHEntry
-  //      has the only owning reference to the content viewer. The viewer
-  //      has released its nsISHEntry pointer to prevent circular ownership.
+  //      SessionHistoryEntry where it will eventually be stored. The content
+  //      viewer has been close()d by the docshell, which detaches the document
+  //      from the window object.
+  //   3) The content viewer is cached in session history. The
+  //      SessionHistoryEntry has the only owning reference to the content
+  //      viewer. The viewer has released its SessionHistoryEntry pointer to
+  //      prevent circular ownership.
   //
   // When restoring a content viewer from session history, open() is called
   // to reattach the document to the window object. The content viewer is
@@ -860,32 +850,7 @@ class nsDocShell final : public nsDocLoader,
   // (mDocumentViewer is put into session history as described above, if
   // applicable).
 
-  // Determines whether we can safely cache the current mDocumentViewer in
-  // session history. This checks a number of factors such as cache policy,
-  // pending requests, and unload handlers.
-  // |aLoadType| should be the load type that will replace the current
-  // presentation. |aNewRequest| should be the request for the document to
-  // be loaded in place of the current document, or null if such a request
-  // has not been created yet. |aNewDocument| should be the document that will
-  // replace the current document.
-  bool CanSavePresentation(uint32_t aLoadType, nsIRequest* aNewRequest,
-                           mozilla::dom::Document* aNewDocument,
-                           bool aReportBFCacheComboTelemetry);
-
   static void ReportBFCacheComboTelemetry(uint32_t aCombo);
-
-  // Captures the state of the supporting elements of the presentation
-  // (the "window" object, docshell tree, meta-refresh loads, and security
-  // state) and stores them on |mOSHE|.
-  nsresult CaptureState();
-
-  // Begin the toplevel restore process for |aSHEntry|.
-  // This simulates a channel open, and defers the real work until
-  // RestoreFromHistory is called from a PLEvent.
-  nsresult RestorePresentation(nsISHEntry* aSHEntry, bool* aRestoring);
-
-  // Call BeginRestore(nullptr, false) for each child of this shell.
-  nsresult BeginRestoreChildren();
 
   // Method to get our current position and size without flushing
   void DoGetPositionAndSize(int32_t* aX, int32_t* aY, int32_t* aWidth,
@@ -913,6 +878,10 @@ class nsDocShell final : public nsDocLoader,
   // In these cases the initial about:blank will appear to not exist until
   // its real document and window are created.
   void MaybeCreateInitialClientSource(nsIPrincipal* aPrincipal = nullptr);
+
+  // Try to inherit the controller from same-origin parent.
+  void MaybeInheritController(mozilla::dom::ClientSource* aClientSource,
+                              nsIPrincipal* aPrincipal);
 
   // Determine if a service worker is allowed to control a window in this
   // docshell with the given URL.  If there are any reasons it should not,
@@ -950,7 +919,7 @@ class nsDocShell final : public nsDocLoader,
   // children docshells.
   // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230)
   MOZ_CAN_RUN_SCRIPT_BOUNDARY void FirePageHideNotificationInternal(
-      bool aIsUnload, bool aSkipCheckingDynEntries);
+      bool aSkipCheckingDynEntries);
 
   void ThawFreezeNonRecursive(bool aThaw);
   // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230)
@@ -958,8 +927,6 @@ class nsDocShell final : public nsDocLoader,
 
   nsresult Dispatch(already_AddRefed<nsIRunnable>&& aRunnable);
 
-  void ReattachEditorToWindow(nsISHEntry* aSHEntry);
-  void ClearFrameHistory(nsISHEntry* aEntry);
   // Determine if this type of load should update history.
   static bool ShouldUpdateGlobalHistory(uint32_t aLoadType);
   void UpdateGlobalHistoryTitle(nsIURI* aURI);
@@ -983,15 +950,26 @@ class nsDocShell final : public nsDocLoader,
   void RefreshURIToQueue();
   nsresult Embed(nsIDocumentViewer* aDocumentViewer,
                  mozilla::dom::WindowGlobalChild* aWindowActor,
-                 bool aIsTransientAboutBlank, bool aPersist,
-                 nsIRequest* aRequest, nsIURI* aPreviousURI);
+                 bool aIsTransientAboutBlank, nsIRequest* aRequest,
+                 nsIURI* aPreviousURI);
   nsPresContext* GetEldestPresContext();
   nsresult CheckLoadingPermissions();
-  nsresult LoadHistoryEntry(nsISHEntry* aEntry, uint32_t aLoadType,
-                            bool aUserActivation);
+
+  // Fire a traverse navigate event for a non-traversable navigable.
+  MOZ_CAN_RUN_SCRIPT
+  void MaybeFireTraverseHistory(nsDocShellLoadState* aLoadState);
+  // Fire a traverse navigate event for a traversable navigable. Since this
+  // participates in #checking-if-unloading-is-canceled we return false to
+  // indicate that we should cancel the navigation.
+  MOZ_CAN_RUN_SCRIPT
+  nsIDocumentViewer::PermitUnloadResult MaybeFireTraversableTraverseHistory(
+      const mozilla::dom::SessionHistoryInfo& aInfo,
+      mozilla::Maybe<mozilla::dom::UserNavigationInvolvement> aUserInvolvement);
+
   nsresult LoadHistoryEntry(
       const mozilla::dom::LoadingSessionHistoryInfo& aEntry, uint32_t aLoadType,
-      bool aUserActivation);
+      bool aUserActivation, bool aNotifiedBeforeUnloadListeners);
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY
   nsresult LoadHistoryEntry(nsDocShellLoadState* aLoadState, uint32_t aLoadType,
                             bool aLoadingCurrentEntry);
   nsresult GetHttpChannel(nsIChannel* aChannel, nsIHttpChannel** aReturn);
@@ -1001,6 +979,9 @@ class nsDocShell final : public nsDocLoader,
   nsresult SetCurScrollPosEx(int32_t aCurHorizontalPos,
                              int32_t aCurVerticalPos);
   nsPoint GetCurScrollPos();
+
+  void RestoreScrollPositionFromTargetSessionHistoryInfo(
+      mozilla::dom::SessionHistoryInfo* aTarget);
 
   already_AddRefed<mozilla::dom::ChildSHistory> GetRootSessionHistory();
 
@@ -1060,10 +1041,9 @@ class nsDocShell final : public nsDocLoader,
 
   void SetTitleOnHistoryEntry(bool aUpdateEntryInSessionHistory);
 
-  void SetScrollRestorationIsManualOnHistoryEntry(nsISHEntry* aSHEntry,
-                                                  bool aIsManual);
+  void SetScrollRestorationIsManualOnHistoryEntry(bool aIsManual);
 
-  void SetCacheKeyOnHistoryEntry(nsISHEntry* aSHEntry, uint32_t aCacheKey);
+  void SetCacheKeyOnHistoryEntry(uint32_t aCacheKey);
 
   // If the LoadState's URI is a javascript: URI, checks that the triggering
   // principal subsumes the principal of the current document, and returns
@@ -1079,8 +1059,8 @@ class nsDocShell final : public nsDocLoader,
   // aCacheKey is the channel's cache key.
   // aPreviousURI should be the URI that was previously loaded into the
   // nsDocshell
-  void MoveLoadingToActiveEntry(bool aPersist, bool aExpired,
-                                uint32_t aCacheKey, nsIURI* aPreviousURI);
+  void MoveLoadingToActiveEntry(bool aExpired, uint32_t aCacheKey,
+                                nsIURI* aPreviousURI);
 
   void ActivenessMaybeChanged();
 
@@ -1112,8 +1092,7 @@ class nsDocShell final : public nsDocLoader,
    * URI.
    * @param aNewURI the new URI.
    * @param aData The serialized state data.  May be null.
-   * @param aTitle The new title.  May be empty.
-   * @param aReplace whether this should replace the exising SHEntry.
+   * @param aHistoryHandling how to handle updating the history entries.
    *
    * Arguments we need internally because deriving them from the
    * others is a bit complicated:
@@ -1121,14 +1100,63 @@ class nsDocShell final : public nsDocLoader,
    * @param aCurrentURI the current URI we're working with.  Might be null.
    * @param aEqualURIs whether the two URIs involved are equal.
    */
-  nsresult UpdateURLAndHistory(mozilla::dom::Document* aDocument,
-                               nsIURI* aNewURI,
-                               nsIStructuredCloneContainer* aData,
-                               const nsAString& aTitle, bool aReplace,
-                               nsIURI* aCurrentURI, bool aEqualURIs);
+  MOZ_CAN_RUN_SCRIPT
+  nsresult UpdateURLAndHistory(
+      mozilla::dom::Document* aDocument, nsIURI* aNewURI,
+      nsIStructuredCloneContainer* aData,
+      mozilla::dom::NavigationHistoryBehavior aHistoryHandling,
+      nsIURI* aCurrentURI, bool aEqualURIs, bool aFiredNavigateEvent = true);
+
+  bool IsSameDocumentAsActiveEntry(
+      const mozilla::dom::SessionHistoryInfo& aSHInfo);
+
+  using nsIWebNavigation::Reload;
+
+  /**
+   * Implementation of the spec algorithm #reload.
+   *
+   * Arguments the spec defines:
+   *
+   * @param aNavigationAPIState state for Navigation API.
+   * @param aUserInvolvement if the user is involved in the reload.
+   *
+   * Arguments we need internally:
+   *
+   * @param aReloadFlags see nsIWebNavigation.reload.
+   * @param aCx if the NavigateEvent is expected to fire aCx cannot be Nothing.
+   */
+  MOZ_CAN_RUN_SCRIPT
+  nsresult ReloadNavigable(
+      mozilla::Maybe<mozilla::NotNull<JSContext*>> aCx, uint32_t aReloadFlags,
+      nsIStructuredCloneContainer* aNavigationAPIState = nullptr,
+      mozilla::dom::UserNavigationInvolvement aUserInvolvement =
+          mozilla::dom::UserNavigationInvolvement::None,
+      mozilla::dom::NavigationAPIMethodTracker* aNavigationAPIMethodTracker =
+          nullptr);
+
+  MOZ_CAN_RUN_SCRIPT
+  void InformNavigationAPIAboutAbortingNavigation();
 
  private:
+  // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230)
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY
+  void InformNavigationAPIAboutChildNavigableDestruction();
+
+  enum class OngoingNavigation : uint8_t { NavigationID, Traversal };
+  enum class UnsetOngoingNavigation : bool { No, Yes };
+  // Implementation for `nsIWebNavigation::Stop`, extended to add a flag whether
+  // to unset the ongoing navigation or not.
+  MOZ_CAN_RUN_SCRIPT
+  nsresult StopInternal(uint32_t aStopFlags,
+                        UnsetOngoingNavigation aUnsetOngoingNavigation);
+
+  MOZ_CAN_RUN_SCRIPT
+  void SetOngoingNavigation(
+      const mozilla::Maybe<OngoingNavigation>& aOngoingNavigation);
+
   void SetCurrentURIInternal(nsIURI* aURI);
+
+  already_AddRefed<nsIWebProgressListener> BCWebProgressListener();
 
   // data members
   nsString mTitle;
@@ -1158,12 +1186,13 @@ class nsDocShell final : public nsDocLoader,
   nsCOMPtr<nsIWebBrowserFind> mFind;
   RefPtr<nsCommandManager> mCommandManager;
   RefPtr<mozilla::dom::BrowsingContext> mBrowsingContext;
+  RefPtr<nsBrowserStatusFilter> mBCWebProgressStatusFilter;
 
   // Weak reference to our BrowserChild actor.
   nsWeakPtr mBrowserChild;
 
   // Dimensions of the docshell
-  nsIntRect mBounds;
+  mozilla::LayoutDeviceIntRect mBounds;
 
   /**
    * Content-Type Hint of the most-recently initiated load. Used for
@@ -1183,32 +1212,18 @@ class nsDocShell final : public nsDocLoader,
   nsCOMPtr<nsIURI> mLastOpenedURI;
 #endif
 
-  // Reference to the SHEntry for this docshell until the page is destroyed.
-  // Somebody give me better name
-  // Only used when SHIP is disabled.
-  nsCOMPtr<nsISHEntry> mOSHE;
+  // The ongoing navigation should really be a UUID, "traverse" or null, but
+  // until we actually start using the UUID we'll only store an enum value.
+  // Nothing here is interpreted as null.
+  // https://html.spec.whatwg.org/#ongoing-navigation
+  mozilla::Maybe<OngoingNavigation> mOngoingNavigation;
 
-  // Reference to the SHEntry for this docshell until the page is loaded
-  // Somebody give me better name.
-  // If mLSHE is non-null, non-pushState subframe loads don't create separate
-  // root history entries. That is, frames loaded during the parent page
-  // load don't generate history entries the way frame navigation after the
-  // parent has loaded does. (This isn't the only purpose of mLSHE.)
-  // Only used when SHIP is disabled.
-  nsCOMPtr<nsISHEntry> mLSHE;
-
-  // These are only set when fission.sessionHistoryInParent is set.
   mozilla::UniquePtr<mozilla::dom::SessionHistoryInfo> mActiveEntry;
   bool mActiveEntryIsLoadingFromSessionHistory = false;
   // mLoadingEntry is set when we're about to start loading. Whenever
   // setting mLoadingEntry, be sure to also set
   // mNeedToReportActiveAfterLoadingBecomesActive.
   mozilla::UniquePtr<mozilla::dom::LoadingSessionHistoryInfo> mLoadingEntry;
-
-  // Holds a weak pointer to a RestorePresentationEvent object if any that
-  // holds a weak pointer back to us. We use this pointer to possibly revoke
-  // the event whenever necessary.
-  nsRevocableEventPtr<RestorePresentationEvent> mRestorePresentationEvent;
 
   // Editor data, if this document is designMode or contentEditable.
   mozilla::UniquePtr<nsDocShellEditorData> mEditorData;
@@ -1248,8 +1263,8 @@ class nsDocShell final : public nsDocLoader,
   // This can either be a content docshell or a chrome docshell.
   const int32_t mItemType;
 
-  // Index into the nsISHEntry array, indicating the previous and current
-  // entry at the time that this DocShell begins to load. Consequently
+  // Index into the SessionHistoryEntry array, indicating the previous and
+  // current entry at the time that this DocShell begins to load. Consequently
   // root docshell's indices can differ from child docshells'.
   int32_t mPreviousEntryIndex;
   int32_t mLoadedEntryIndex;
@@ -1306,14 +1321,13 @@ class nsDocShell final : public nsDocLoader,
 
   bool mIsExecutingOnLoadHandler : 1;
 
-  // Indicates to CreateDocumentViewer() that it is safe to cache the old
-  // presentation of the page, and to SetupNewViewer() that the old viewer
-  // should be passed a SHEntry to save itself into.
-  // Only used with SHIP disabled.
-  bool mSavingOldViewer : 1;
-
   bool mInvisible : 1;
+
+  // There has been an OnStartRequest for a non-about:blank URI
   bool mHasLoadedNonBlankURI : 1;
+
+  // There has been a DoURILoad that wasn't the initial commit to about:blank
+  bool mHasStartedLoadingOtherThanInitialBlankURI : 1;
 
   // This flag means that mTiming has been initialized but nulled out.
   // We will check the innerWin's timing before creating a new one
@@ -1352,4 +1366,4 @@ inline nsISupports* ToSupports(nsDocShell* aDocShell) {
   return static_cast<nsIDocumentLoader*>(aDocShell);
 }
 
-#endif /* nsDocShell_h__ */
+#endif /* nsDocShell_h_ */

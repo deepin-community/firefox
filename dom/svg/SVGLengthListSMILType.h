@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #ifndef DOM_SVG_SVGLENGTHLISTSMILTYPE_H_
 #define DOM_SVG_SVGLENGTHLISTSMILTYPE_H_
 
-#include "mozilla/Attributes.h"
 #include "mozilla/SMILType.h"
 
 namespace mozilla {
@@ -74,9 +71,9 @@ class SVGLengthListSMILType : public SMILType {
    * from each sandwich layer are composited together, we could end up allowing
    * animation between lists of different length when we should not!)
    */
-  void Init(SMILValue& aValue) const override;
+  void InitValue(SMILValue& aValue) const override;
 
-  void Destroy(SMILValue& aValue) const override;
+  void DestroyValue(SMILValue& aValue) const override;
   nsresult Assign(SMILValue& aDest, const SMILValue& aSrc) const override;
   bool IsEqual(const SMILValue& aLeft, const SMILValue& aRight) const override;
   nsresult Add(SMILValue& aDest, const SMILValue& aValueToAdd,

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -126,26 +124,28 @@ void SelectionChangeEventDispatcher::OnSelectionChange(Document* aDoc,
 
   // Be aware, don't call GetTextControlFromSelectionLimiter once you might
   // run script because selection limit may have already been changed by it.
-  nsCOMPtr<nsIContent> textControl;
-  if ((maybeHasFormSelectEventListeners &&
-       (aReason & nsISelectionListener::JS_REASON)) ||
-      maybeHasSelectionChangeEventListeners) {
-    if (const nsFrameSelection* fs = aSel->GetFrameSelection()) {
-      if (nsCOMPtr<nsIContent> root = fs->GetLimiter()) {
-        textControl = root->GetClosestNativeAnonymousSubtreeRootParentOrHost();
-        MOZ_ASSERT_IF(textControl,
-                      textControl->IsTextControlElement() &&
-                          !textControl->IsInNativeAnonymousSubtree());
-      }
+  const RefPtr<Element> textControlElement = [&]() -> Element* {
+    if (!(maybeHasFormSelectEventListeners &&
+          (aReason & nsISelectionListener::JS_REASON)) &&
+        !maybeHasSelectionChangeEventListeners) {
+      return nullptr;
     }
-  };
+    const nsFrameSelection* fs = aSel->GetFrameSelection();
+    if (!fs || !fs->IsIndependentSelection()) {
+      return nullptr;
+    }
+    Element* textControl = fs->GetIndependentSelectionRootParentElement();
+    MOZ_ASSERT_IF(textControl, textControl->IsTextControlElement());
+    MOZ_ASSERT_IF(textControl, !textControl->IsInNativeAnonymousSubtree());
+    return textControl;
+  }();
 
   // Selection changes with non-JS reason only cares about whether the new
   // selection is collapsed or not. See TextInputListener::OnSelectionChange.
-  if (textControl && maybeHasFormSelectEventListeners &&
+  if (textControlElement && maybeHasFormSelectEventListeners &&
       (aReason & nsISelectionListener::JS_REASON)) {
-    RefPtr<AsyncEventDispatcher> asyncDispatcher =
-        new AsyncEventDispatcher(textControl, eFormSelect, CanBubble::eYes);
+    RefPtr<AsyncEventDispatcher> asyncDispatcher = new AsyncEventDispatcher(
+        textControlElement, eFormSelect, CanBubble::eYes);
     asyncDispatcher->PostDOMEvent();
   }
 
@@ -157,13 +157,14 @@ void SelectionChangeEventDispatcher::OnSelectionChange(Document* aDoc,
   // controls, so for now we only support doing that under a pref, disabled by
   // default.
   // See https://github.com/w3c/selection-api/issues/53.
-  if (textControl &&
+  if (textControlElement &&
       !StaticPrefs::dom_select_events_textcontrols_selectionchange_enabled()) {
     return;
   }
 
-  nsINode* target =
-      textControl ? static_cast<nsINode*>(textControl.get()) : aDoc;
+  nsINode* target = textControlElement
+                        ? static_cast<nsINode*>(textControlElement.get())
+                        : aDoc;
   if (!target) {
     return;
   }
@@ -174,7 +175,7 @@ void SelectionChangeEventDispatcher::OnSelectionChange(Document* aDoc,
 
   target->SetHasScheduledSelectionChangeEvent();
 
-  CanBubble canBubble = textControl ? CanBubble::eYes : CanBubble::eNo;
+  CanBubble canBubble = textControlElement ? CanBubble::eYes : CanBubble::eNo;
   RefPtr<AsyncEventDispatcher> asyncDispatcher =
       new AsyncSelectionChangeEventDispatcher(target, eSelectionChange,
                                               canBubble);

@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Άνοιγμα συνδέσμου σε νέα καρτέλα
     .accesskey = τ
+main-context-menu-open-link-split-view =
+    .label = Άνοιγμα συνδέσμου σε διαχωρισμό προβολής
+    .accesskey = μ
 main-context-menu-open-link-container-tab =
     .label = Άνοιγμα συνδέσμου σε νέα θεματική καρτέλα
     .accesskey = κ
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Αποθήκευση συνδέσμου στο { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Αντιγραφή διεύθυνσης email
@@ -162,10 +163,14 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Αντιγραφή συνδέσμου
     .accesskey = σ
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Αντιγραφή συνδέσμου χωρίς καταγραφή ιστοτόπου
+main-context-menu-preview-link =
+    .label = Προεπισκόπηση συνδέσμου
+    .accesskey = ρ
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Αντιγραφή «καθαρού» συνδέσμου
     .accesskey = γ
 
 ## Media (video/audio) controls
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Απόκρυψη στοιχείων ελέγχου
     .accesskey = ψ
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Πλήρης οθόνη
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Προβολή περιγραφής
     .accesskey = φ
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Αναζήτηση εικόνας με { $engine }
+    .accesskey = ν
 main-context-menu-video-save-as =
     .label = Αποθήκευση βίντεο ως…
     .accesskey = θ
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Αποστολή ήχου με email…
     .accesskey = σ
+main-context-menu-send-to-device-2 =
+    .label = Αποστολή σε συσκευή
+    .accesskey = π
+main-context-menu-send-to-mobile-2 =
+    .label = Αποστολή σε κινητή συσκευή
+    .accesskey = π
+main-context-menu-send-to-mobile-sign-in = Σύνδεση για αποστολή καρτελών
+main-context-menu-send-to-mobile-enable-sync2 = Ενεργοποιήστε τον συγχρονισμό για να στείλετε μια καρτέλα
+main-context-menu-send-to-mobile-connect-phone2 = Συνδέστε το τηλέφωνό σας
+main-context-menu-send-to-mobile-device-missing2 = Δεν βλέπετε τη συσκευή σας;
+main-context-menu-send-to-mobile-sign-in-from-link = Συνδεθείτε για αποστολή συνδέσμου
+main-context-menu-send-to-mobile-sign-in-from-page = Συνδεθείτε για αποστολή σελίδας
+main-context-menu-send-to-mobile-enable-sync3 = Ενεργοποιήστε τον συγχρονισμό για αποστολή καρτελών
+main-context-menu-send-to-mobile-enable-sync-from-link = Ενεργοποιήστε τον συγχρονισμό για αποστολή συνδέσμου
+main-context-menu-send-to-mobile-enable-sync-from-page = Ενεργοποιήστε τον συγχρονισμό για αποστολή σελίδας
+main-context-menu-send-to-mobile-connect-phone3 = Συνδέστε μια συσκευή για αποστολή καρτελών
+main-context-menu-send-to-mobile-connect-phone-from-link = Συνδέστε μια συσκευή για αποστολή συνδέσμου
+main-context-menu-send-to-mobile-connect-phone-from-page = Συνδέστε μια συσκευή για αποστολή σελίδας
 main-context-menu-save-to-pocket =
     .label = Αποθήκευση σελίδας στο { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Αποστολή σελίδας σε συσκευή
     .accesskey = δ
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Χρήση αποθηκευμένης σύνδεσης
@@ -317,11 +343,17 @@ main-context-menu-manage-passwords =
     .label = Διαχείριση κωδικών πρόσβασης
     .accesskey = Δ
 main-context-menu-keyword =
-    .label = Προσθήκη λέξης-κλειδιού για αυτήν την αναζήτηση…
+    .label = Προσθήκη λέξης-κλειδιού αναζήτησης…
     .accesskey = Π
+main-context-menu-add-engine =
+    .label = Προσθήκη μηχανής αναζήτησης
+    .accesskey = κ
 main-context-menu-link-send-to-device =
     .label = Αποστολή συνδέσμου σε συσκευή
     .accesskey = μ
+main-context-menu-link-send-to-mobile =
+    .label = Αποστολή συνδέσμου σε κινητή συσκευή
+    .accesskey = π
 main-context-menu-frame =
     .label = Αυτό το πλαίσιο
     .accesskey = λ
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Εμφάνιση κωδικού πρόσβασης
     .accesskey = φ
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Νέο
+main-context-menu-pdfjs-copy-page =
+    .label = Αντιγραφή σελίδας
+main-context-menu-pdfjs-cut-page =
+    .label = Αποκοπή σελίδας
+main-context-menu-pdfjs-delete-page =
+    .label = Διαγραφή σελίδας
+main-context-menu-pdfjs-save-page =
+    .label = Αποθήκευση επιλογής ως…

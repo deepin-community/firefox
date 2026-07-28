@@ -8,6 +8,12 @@ const TEST_PATH = getRootDirectory(gTestPath).replace(
   "https://example.com"
 );
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 /**
  * Ensure that click handlers that prevent the default action but fire
  * a different click event that does open a tab are allowed to work.
@@ -42,8 +48,8 @@ add_task(async function test_unused_click_doesnt_consume_activation() {
   // Enable the popup blocker.
   await SpecialPowers.pushPrefEnv({
     set: [
+      // Enable popup blocker
       ["dom.disable_open_during_load", true],
-      ["dom.block_multiple_popups", true],
     ],
   });
   await BrowserTestUtils.withNewTab(TEST_PATH + "click.html", async browser => {
@@ -75,8 +81,8 @@ add_task(async function test_click_without_href_doesnt_consume_activation() {
   // Enable the popup blocker.
   await SpecialPowers.pushPrefEnv({
     set: [
+      // Enable popup blocker
       ["dom.disable_open_during_load", true],
-      ["dom.block_multiple_popups", true],
     ],
   });
   await BrowserTestUtils.withNewTab(TEST_PATH + "click.html", async browser => {

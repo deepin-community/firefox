@@ -24,14 +24,14 @@ add_task(async function test_open_built_in_folder() {
   let bm = await PlacesUtils.bookmarks.insert({
     parentGuid: PlacesUtils.bookmarks.menuGuid,
     title: "testBM",
-    url: "http://example.com/1",
+    url: "https://example.com/1",
   });
 
   library = await promiseLibrary("AllBookmarks");
 
   library.ContentTree.view.selectItems([PlacesUtils.bookmarks.menuGuid]);
 
-  synthesizeClickOnSelectedTreeCell(library.ContentTree.view, {
+  await synthesizeClickOnSelectedTreeCell(library.ContentTree.view, {
     clickCount: 2,
   });
 
@@ -57,7 +57,7 @@ add_task(async function test_open_new_folder_in_unfiled() {
         children: [
           {
             title: "Bookmark",
-            url: "http://example.com",
+            url: "https://example.com",
           },
         ],
       },
@@ -78,7 +78,7 @@ add_task(async function test_open_new_folder_in_unfiled() {
   // Select the folder node in the right pane.
   library.ContentTree.view.selectNode(folderNode);
 
-  synthesizeClickOnSelectedTreeCell(library.ContentTree.view, {
+  await synthesizeClickOnSelectedTreeCell(library.ContentTree.view, {
     clickCount: 2,
   });
 
@@ -93,7 +93,7 @@ add_task(async function test_open_history_query() {
   const todayTitle = PlacesUtils.getString("finduri-AgeInDays-is-0");
   await PlacesTestUtils.addVisits([
     {
-      uri: "http://example.com",
+      uri: "https://example.com",
       title: "Whittingtons",
     },
   ]);
@@ -108,7 +108,7 @@ add_task(async function test_open_history_query() {
 
   library.ContentTree.view.selectNode(query);
 
-  synthesizeClickOnSelectedTreeCell(library.ContentTree.view, {
+  await synthesizeClickOnSelectedTreeCell(library.ContentTree.view, {
     clickCount: 2,
   });
 

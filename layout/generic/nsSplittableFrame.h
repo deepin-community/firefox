@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,10 +7,9 @@
  * columns, or pages
  */
 
-#ifndef nsSplittableFrame_h___
-#define nsSplittableFrame_h___
+#ifndef nsSplittableFrame_h_
+#define nsSplittableFrame_h_
 
-#include "mozilla/Attributes.h"
 #include "nsIFrame.h"
 
 // Derived class that allows splitting
@@ -88,20 +85,24 @@ class nsSplittableFrame : public nsIFrame {
   // frame's Destroy() method.
   static void RemoveFromFlow(nsIFrame* aFrame);
 
+  /**
+   * A version of GetLogicalSkipSides() that is intended to be used inside
+   * Reflow before it's known if |this| frame will be COMPLETE or not.
+   * It returns a result that assumes this fragment is the last and thus
+   * should apply the block-end border/padding etc (except for "true" overflow
+   * containers which always skip block sides).  You're then expected to
+   * recalculate the block-end side (as needed) when you know |this| frame's
+   * reflow status is INCOMPLETE.
+   * This method is intended for frames that break in the block axis.
+   */
+  LogicalSides PreReflowBlockLevelLogicalSkipSides() const {
+    return GetBlockLevelLogicalSkipSides(false);
+  };
+
  protected:
   nsSplittableFrame(ComputedStyle* aStyle, nsPresContext* aPresContext,
                     ClassID aID)
       : nsIFrame(aStyle, aPresContext, aID) {}
-
-  // Return the first-continuation for this frame if this frame is the
-  // first-continuation in the chain or if it has a cached first-continuation.
-  // Otherwise, return nullptr.
-  nsIFrame* GetFirstContinuationIfCached() const;
-
-  // Return the first-in-flow for this frame if this frame is the first-in-flow
-  // in the chain or if it has a cached first-in-flow. Otherwise, return
-  // nullptr.
-  nsIFrame* GetFirstInFlowIfCached() const;
 
   // Update the first-continuation and first-in-flow cache for this frame and
   // the next-continuations in the chain.
@@ -155,22 +156,16 @@ class nsSplittableFrame : public nsIFrame {
 
   LogicalSides GetBlockLevelLogicalSkipSides(bool aAfterReflow) const;
 
-  /**
-   * A version of GetLogicalSkipSides() that is intended to be used inside
-   * Reflow before it's known if |this| frame will be COMPLETE or not.
-   * It returns a result that assumes this fragment is the last and thus
-   * should apply the block-end border/padding etc (except for "true" overflow
-   * containers which always skip block sides).  You're then expected to
-   * recalculate the block-end side (as needed) when you know |this| frame's
-   * reflow status is INCOMPLETE.
-   * This method is intended for frames that break in the block axis.
-   */
-  LogicalSides PreReflowBlockLevelLogicalSkipSides() const {
-    return GetBlockLevelLogicalSkipSides(false);
-  };
-
   nsIFrame* mPrevContinuation = nullptr;
   nsIFrame* mNextContinuation = nullptr;
+
+  /**
+   * Cached pointers to the first-continuation and first-in-flow, if currently
+   * known. These may be null, in which case the first-* will need to be found
+   * by following the chain.
+   */
+  nsIFrame* mFirstContinuation = nullptr;
+  nsIFrame* mFirstInFlow = nullptr;
 };
 
-#endif /* nsSplittableFrame_h___ */
+#endif /* nsSplittableFrame_h_ */

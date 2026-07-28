@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +9,7 @@
 #include "Units.h"
 
 @class NSView;
-class nsChildView;
+class nsCocoaWindow;
 
 namespace mozilla {
 
@@ -30,7 +28,7 @@ struct MaxContiguousEnumValue<VibrancyType> {
 
 /**
  * VibrancyManager takes care of updating the vibrant regions of a window.
- * Vibrancy is a visual look that was introduced on OS X starting with 10.10.
+ * Vibrancy is a visual look that was introduced on macOS starting with 10.10.
  * An app declares vibrant window regions to the window server, and the window
  * server will display a blurred rendering of the screen contents from behind
  * the window in these areas, behind the actual window contents. Consequently,
@@ -45,13 +43,13 @@ class VibrancyManager {
    * Create a new VibrancyManager instance and provide it with an NSView
    * to attach NSVisualEffectViews to.
    *
-   * @param aCoordinateConverter  The nsChildView to use for converting
+   * @param aCoordinateConverter  The nsCocoaWindow to use for converting
    *   nsIntRect device pixel coordinates into Cocoa NSRect coordinates. Must
    *   outlive this VibrancyManager instance.
    * @param aContainerView  The view that's going to be the superview of the
    *   NSVisualEffectViews which will be created for vibrant regions.
    */
-  VibrancyManager(const nsChildView& aCoordinateConverter,
+  VibrancyManager(const nsCocoaWindow& aCoordinateConverter,
                   NSView* aContainerView);
 
   ~VibrancyManager();
@@ -67,8 +65,10 @@ class VibrancyManager {
   bool UpdateVibrantRegion(VibrancyType aType,
                            const LayoutDeviceIntRegion& aRegion);
 
+  void PrefChanged();
+
  protected:
-  const nsChildView& mCoordinateConverter;
+  const nsCocoaWindow& mCoordinateConverter;
   NSView* mContainerView;
   EnumeratedArray<VibrancyType, UniquePtr<ViewRegion>> mVibrantRegions;
 };

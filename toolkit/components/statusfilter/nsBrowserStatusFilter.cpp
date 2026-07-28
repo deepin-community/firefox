@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -14,7 +13,7 @@ using namespace mozilla;
 // nsBrowserStatusFilter <public>
 //-----------------------------------------------------------------------------
 
-nsBrowserStatusFilter::nsBrowserStatusFilter()
+nsBrowserStatusFilter::nsBrowserStatusFilter(bool aDisableStateChangeFilters)
     : mTarget(GetMainThreadSerialEventTarget()),
       mCurProgress(0),
       mMaxProgress(0),
@@ -22,7 +21,8 @@ nsBrowserStatusFilter::nsBrowserStatusFilter()
       mStatusIsDirty(true),
       mIsLoadingDocument(false),
       mDelayedStatus(false),
-      mDelayedProgress(false) {}
+      mDelayedProgress(false),
+      mDisableStateChangeFilters(aDisableStateChangeFilters) {}
 
 nsBrowserStatusFilter::~nsBrowserStatusFilter() {
   if (mTimer) {
@@ -164,7 +164,8 @@ nsBrowserStatusFilter::OnStateChange(nsIWebProgress* aWebProgress,
   }
 
   // Only notify listener for STATE_IS_NETWORK or STATE_IS_REDIRECTED_DOCUMENT
-  if (aStateFlags & STATE_IS_NETWORK ||
+  // unless mDisableStateChangeFilters is set.
+  if (mDisableStateChangeFilters || aStateFlags & STATE_IS_NETWORK ||
       aStateFlags & STATE_IS_REDIRECTED_DOCUMENT) {
     return mListener->OnStateChange(aWebProgress, aRequest, aStateFlags,
                                     aStatus);
@@ -300,7 +301,7 @@ void nsBrowserStatusFilter::MaybeSendProgress() {
   if (mCurProgress > mMaxProgress || mCurProgress <= 0) return;
 
   // check our percentage
-  int32_t percentage = (int32_t) double(mCurProgress) * 100 / mMaxProgress;
+  int32_t percentage = (int32_t)double(mCurProgress) * 100 / mMaxProgress;
 
   // The progress meter only updates for increases greater than 3 percent
   if (percentage > (mCurrentPercentage + 3)) {
@@ -324,7 +325,7 @@ nsresult nsBrowserStatusFilter::StartDelayTimer() {
 
   return NS_NewTimerWithFuncCallback(getter_AddRefs(mTimer), TimeoutHandler,
                                      this, 160, nsITimer::TYPE_ONE_SHOT,
-                                     "nsBrowserStatusFilter::TimeoutHandler",
+                                     "nsBrowserStatusFilter::TimeoutHandler"_ns,
                                      mTarget);
 }
 

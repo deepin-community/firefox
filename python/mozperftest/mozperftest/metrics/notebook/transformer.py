@@ -17,7 +17,7 @@ from mozperftest.runner import HERE
 from mozperftest.utils import load_class
 
 
-class Transformer(object):
+class Transformer:
     """Abstract class for data transformers."""
 
     def __init__(self, files=None, custom_transformer=None, logger=None, prefix=None):
@@ -176,11 +176,13 @@ def get_transformer(path, ret_members=False):
 
     members = inspect.getmembers(
         module,
-        lambda c: inspect.isclass(c)
-        and hasattr(c, "transform")
-        and hasattr(c, "merge")
-        and callable(c.transform)
-        and callable(c.merge),
+        lambda c: (
+            inspect.isclass(c)
+            and hasattr(c, "transform")
+            and hasattr(c, "merge")
+            and callable(c.transform)
+            and callable(c.merge)
+        ),
     )
 
     if not members and not ret_members:

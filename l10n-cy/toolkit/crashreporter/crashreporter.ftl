@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = Cafodd { -brand-short-name } anhawster a chw
 crashreporter-plea = I'n cynorthwyo i ddatrys yr anhawster, anfonwch adroddiad gwall atom.
 crashreporter-information = Mae'r rhaglen hon yn cael ei rhedeg ar ôl chwalfa er mwyn adrodd ar anhawster i { -vendor-short-name }.  Ni ddylai gael ei redeg yn uniongyrchol.
 crashreporter-error = Profodd { -brand-short-name } anhawster ac mae wedi chwalu. Yn anffodus, nid yw'r adroddwr chwalu yn medru cyflwyno adroddiad ynglŷn â'r chwalu hwn.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Manylion: { $details }
+crashreporter-error-details-header = Manylion:
 crashreporter-no-run-message = Mae'r rhaglen yn cael ei rhedeg ar ôl chwalfa er mwyn adrodd ar anhawster i ddarparwr y rhaglen.  Ni ddylai gael ei redeg yn uniongyrchol.
 crashreporter-button-details = Manylion…
 crashreporter-loading-details = Yn llwytho…
 crashreporter-view-report-title = Cynnwys yr Adroddiad
 crashreporter-comment-prompt = Ychwanegu sylw (sylwadau yn weladwy'n gyhoeddus)
 crashreporter-report-info = Mae'r adroddiad hefyd yn cynnwys gwybodaeth dechnegol am gyflwr y rhaglen wrth iddi chwalu.
-crashreporter-send-report = Dweud wrth { -vendor-short-name }; am y chwalfa hwn fel bod modd iddyn nhw ei drwsio
-crashreporter-include-url = Cofio cynnwys cyfeiriad y dudalen roeddwn arni
+crashreporter-checkbox-test-hardware = Gwiriwch am broblemau caledwedd a ffurfweddiad ar fy nyfais.
+crashreporter-checkbox-send-report = Dywedwch wrth { -vendor-short-name }; am y chwalfa hwn fel bod modd iddyn nhw ei drwsio
+crashreporter-checkbox-include-url = Cofio cynnwys cyfeiriad y dudalen roeddwn arni
 crashreporter-submit-status = Bydd eich adroddiad chwalu yn cael ei gyflwyno cyn i chi adael neu ail gychwyn.
+crashreporter-submit-waiting-hardware-tests = Yn gwirio am broblemau caledwedd a ffurfweddiad ar fy nyfais.
 crashreporter-submit-in-progress = Cyflwyno eich adroddiad…
 crashreporter-submit-success = Adroddiad wedi ei gyflwyno'n llwyddiannus!
 crashreporter-submit-failure = Bu anhawster wrth gyflwyno eich adroddiad.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Gallwch weld manylion y chwalfa hon yn { $url }.
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Wedi methu â rhedeg minidump-analyzer
 # $path (String) - the file path
 crashreporter-error-opening-file = Wedi methu ac agor ffeil ( { $path } )
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Cyfeiriadur cartref coll
 # $to (String) - the destination path
 crashreporter-error-moving-path = Wedi methu â symud { $from } i { $to }
 crashreporter-error-version-eol = Diwedd oes fersiwn: nid yw adroddiadau chwalu bellach yn cael eu derbyn.
+crashreporter-error-failed-to-generate-minidump = Methodd y rhaglen â chynhyrchu manylion y chwalfa.

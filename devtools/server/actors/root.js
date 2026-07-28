@@ -135,6 +135,20 @@ class RootActor extends Actor {
             "dom.worker.console.dispatch_events_to_main_thread"
           )
         : true,
+      // @backward-compat { version 151 } Process Descriptor's `getWatcher()`
+      // supports a new 'enableWindowGlobalThreadActors' flag to enable
+      // the WindowGlobal's thread actors when debugging the whole browser.
+      // This was actually changed in 137, but we support it for VSCode until
+      // ESR 140 is the only ESR available.
+      //
+      // ESR 115 EOL is currently planned for March 24 2026. Do not remove
+      // this trait before that date AND make sure the extension has been
+      // updated (https://github.com/firefox-devtools/vscode-firefox-debug/issues/391).
+      // Contact Holger Benl (hbenl) for topics related to the extension.
+      supportsEnableWindowGlobalThreadActors: true,
+      // @backward-compat { version 152 } Once 152 hits release, we can remove this boolean
+      // and always consider it true (i.e. remove everything related to the "show comments" option in the toolbox).
+      supportsCommentNodesDisplayControl: true,
     };
   }
 
@@ -214,6 +228,17 @@ class RootActor extends Actor {
     this._globalActorPool = null;
     this._parameters = null;
   }
+
+  /**
+   * Method called by the client right after the root actor is communicated to it,
+   * with information about the frontend.
+   *
+   * For now this is used by Servo which implements different backend APIs,
+   * based on the frontend version. (backward compat to support many frontend versions
+   * on the same backend revision)
+   */
+  // eslint-disable-next-line no-unused-vars
+  connect({ frontendVersion }) {}
 
   /**
    * Gets the "root" form, which lists all the global actors that affect the entire
@@ -325,7 +350,7 @@ class RootActor extends Actor {
   /**
    * This function can receive the following option from devtools client.
    *
-   * @param {Object} option
+   * @param {object} option
    *        - iconDataURL: {boolean}
    *            When true, make data url from the icon of addon, then make possible to
    *            access by iconDataURL in the actor. The iconDataURL is useful when

@@ -196,6 +196,14 @@ migration-safari-password-import-step1 = In Safari, aperi le menu de “Safari�
 migration-safari-password-import-step2 = Selige le button <img data-l10n-name="safari-icon-3dots"/> e selige “Export All Passwords”
 migration-safari-password-import-step3 = Salva le file passwords
 migration-safari-password-import-step4 = Usa “Select File” infra pro seliger le file passwords que tu salvava
+migration-chrome-windows-password-import-header = Como importar contrasignos de Chrome
+migration-chrome-windows-password-import-steps-header = In Chrome:
+migration-chrome-windows-password-import-step1 = Aperi le menu principal <img data-l10n-name="chrome-icon-3dots"/> e visita Passwords and Autofill > Google Password Manager.
+migration-chrome-windows-password-import-step2 = Selige “Parametros” in le menu.
+migration-chrome-windows-password-import-step3 = Selige “Discargar file” e salva lo a tu apparato.
+migration-chrome-windows-password-import-step4 = Retorna ci e usa “Seliger file” pro finir le importation.
+migration-manual-password-import-skip-button = Saltar
+migration-manual-password-import-select-button = Eliger file
 migration-safari-password-import-skip-button = Saltar
 migration-safari-password-import-select-button = Eliger file
 # Shown in the migration wizard after importing bookmarks from another

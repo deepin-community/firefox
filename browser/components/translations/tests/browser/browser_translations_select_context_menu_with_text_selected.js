@@ -22,7 +22,7 @@ add_task(
       "The button is available."
     );
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(runInPage);
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(runInPage);
 
     await SelectTranslationsTestUtils.assertContextMenuTranslateSelectionItem(
       runInPage,
@@ -65,10 +65,8 @@ add_task(
         selectEnglishSentence: true,
         openAtEnglishSentence: true,
         expectMenuItemVisible: true,
-        expectedTargetLanguage: "en",
       },
-      "The translate-selection context menu item should still display a target language " +
-        "when the selected text is in the preferred language."
+      "The translate-selection context menu item should  use the generic label when the selected text is already in the preferred language."
     );
 
     await cleanup();

@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Göster
 download-cert-view-text = CA sertifikasını incele
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Veren: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Depolama yeri: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Bu kararı hatırla
+client-auth-cert-remember-label = Bu kararı hatırla:
+client-auth-cert-remember-never =
+    .label = Bir defa
+client-auth-cert-remember-always =
+    .label = Kalıcı olarak
+client-auth-cert-remember-temporarily =
+    .label = Bu oturumda
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Sertifika yedek parolası (tekrar):
 set-password-reminder = Önemli: Eğer sertifika yedek parolanızı unutursanız bu yedeği daha sonra geri yükleyemezsiniz.  Lütfen bunu güvenli bir yere kaydedin.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Korumalı kimlik doğrulama
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Lütfen güvenlik cihazınızda ({ $tokenName }) kimliğinizi doğrulayın. Bunun nasıl yapılacağı cihaza bağlıdır. (Örneğin parmak izi okuyucu kullanmanız veya tuş takımıyla bir kod girmeniz gerekebilir.)
 
 ## Protected authentication alert
 

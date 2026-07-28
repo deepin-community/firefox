@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,10 +5,11 @@
 #ifndef MOZILLA_VIDEOSEGMENT_H_
 #define MOZILLA_VIDEOSEGMENT_H_
 
-#include "MediaSegment.h"
-#include "nsCOMPtr.h"
-#include "gfxPoint.h"
 #include "ImageContainer.h"
+#include "MediaSegment.h"
+#include "TimeUnits.h"
+#include "gfxPoint.h"
+#include "nsCOMPtr.h"
 
 namespace mozilla {
 
@@ -93,6 +93,11 @@ struct VideoChunk {
   TrackTime mDuration;
   VideoFrame mFrame;
   TimeStamp mTimeStamp;
+  media::TimeUnit mProcessingDuration;
+  media::TimeUnit mMediaTime;
+  layers::ContainerCaptureTime mWebrtcCaptureTime = AsVariant(Nothing());
+  layers::ContainerReceiveTime mWebrtcReceiveTime;
+  layers::ContainerRtpTimestamp mRtpTimestamp;
 };
 
 class VideoSegment : public MediaSegmentBase<VideoSegment, VideoChunk> {
@@ -108,11 +113,28 @@ class VideoSegment : public MediaSegmentBase<VideoSegment, VideoChunk> {
 
   ~VideoSegment();
 
-  void AppendFrame(already_AddRefed<Image>&& aImage,
-                   const IntSize& aIntrinsicSize,
-                   const PrincipalHandle& aPrincipalHandle,
-                   bool aForceBlack = false,
-                   TimeStamp aTimeStamp = TimeStamp::Now());
+  void AppendFrame(const VideoChunk& aChunk,
+                   const Maybe<bool>& aForceBlack = Nothing(),
+                   const Maybe<TimeStamp>& aTimeStamp = Nothing());
+  void AppendFrame(
+      already_AddRefed<Image>&& aImage, const IntSize& aIntrinsicSize,
+      const PrincipalHandle& aPrincipalHandle, bool aForceBlack = false,
+      TimeStamp aTimeStamp = TimeStamp::Now(),
+      media::TimeUnit aProcessingDuration = media::TimeUnit::Invalid(),
+      media::TimeUnit aMediaTime = media::TimeUnit::Invalid());
+  void AppendWebrtcRemoteFrame(already_AddRefed<Image>&& aImage,
+                               const IntSize& aIntrinsicSize,
+                               const PrincipalHandle& aPrincipalHandle,
+                               bool aForceBlack, TimeStamp aTimeStamp,
+                               media::TimeUnit aProcessingDuration,
+                               uint32_t aRtpTimestamp,
+                               int64_t aWebrtcCaptureTimeNtp,
+                               int64_t aWebrtcReceiveTimeUs);
+  void AppendWebrtcLocalFrame(already_AddRefed<Image>&& aImage,
+                              const IntSize& aIntrinsicSize,
+                              const PrincipalHandle& aPrincipalHandle,
+                              bool aForceBlack, TimeStamp aTimeStamp,
+                              TimeStamp aWebrtcCaptureTime);
   void ExtendLastFrameBy(TrackTime aDuration) {
     if (aDuration <= 0) {
       return;

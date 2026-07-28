@@ -1,26 +1,26 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "Worker.h"
 
+#include "EventWithOptionsRunnable.h"
 #include "MessageEventRunnable.h"
-#include "mozilla/dom/WorkerBinding.h"
+#include "WorkerPrivate.h"
+#include "js/RootingAPI.h"
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/ProfilerMarkers.h"
-#include "mozilla/Unused.h"
-#include "nsContentUtils.h"
-#include "nsGlobalWindowInner.h"
-#include "WorkerPrivate.h"
-#include "EventWithOptionsRunnable.h"
-#include "js/RootingAPI.h"
-#include "mozilla/dom/BindingDeclarations.h"
-#include "nsISupports.h"
-#include "nsDebug.h"
-#include "mozilla/dom/WorkerStatus.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/TrustedScriptURL.h"
+#include "mozilla/dom/TrustedTypeUtils.h"
+#include "mozilla/dom/TrustedTypesConstants.h"
+#include "mozilla/dom/WorkerBinding.h"
+#include "mozilla/dom/WorkerStatus.h"
+#include "nsContentUtils.h"
+#include "nsDebug.h"
+#include "nsGlobalWindowInner.h"
+#include "nsISupports.h"
 
 #ifdef XP_WIN
 #  undef PostMessage
@@ -29,24 +29,53 @@
 namespace mozilla::dom {
 
 /* static */
-already_AddRefed<Worker> Worker::Constructor(const GlobalObject& aGlobal,
-                                             const nsAString& aScriptURL,
-                                             const WorkerOptions& aOptions,
-                                             ErrorResult& aRv) {
+already_AddRefed<Worker> Worker::Constructor(
+    const GlobalObject& aGlobal, const TrustedScriptURLOrUSVString& aScriptURL,
+    const WorkerOptions& aOptions, ErrorResult& aRv) {
   JSContext* cx = aGlobal.Context();
 
   nsCOMPtr<nsIGlobalObject> globalObject =
       do_QueryInterface(aGlobal.GetAsSupports());
 
-  if (globalObject->GetAsInnerWindow() &&
-      !globalObject->GetAsInnerWindow()->IsCurrentInnerWindow()) {
+  nsPIDOMWindowInner* innerWindow = globalObject->GetAsInnerWindow();
+  if (innerWindow && !innerWindow->IsCurrentInnerWindow()) {
     aRv.ThrowInvalidStateError(
         "Cannot create worker for a going to be discarded document");
     return nullptr;
   }
 
+  // TODO(Bug 1963277) This doen't work for content scripts.
+  nsCOMPtr<nsIPrincipal> principal = aGlobal.GetSubjectPrincipal();
+
+  // The spec only mentions Window and WorkerGlobalScope global objects, but
+  // Gecko can actually call the constructor with other ones, so we just skip
+  // trusted types handling in that case.
+  // https://html.spec.whatwg.org/multipage/workers.html#dedicated-workers-and-the-worker-interface
+  const nsAString* compliantString = nullptr;
+  bool performTrustedTypeConversion = innerWindow;
+  if (!performTrustedTypeConversion) {
+    if (JSObject* globalJSObject = globalObject->GetGlobalJSObject()) {
+      performTrustedTypeConversion = IsWorkerGlobal(globalJSObject);
+    }
+  }
+  Maybe<nsAutoString> compliantStringHolder;
+  if (performTrustedTypeConversion) {
+    constexpr nsLiteralString sink = u"Worker constructor"_ns;
+    compliantString = TrustedTypeUtils::GetTrustedTypesCompliantString(
+        aScriptURL, sink, kTrustedTypesOnlySinkGroup, *globalObject, principal,
+        compliantStringHolder, aRv);
+    if (aRv.Failed()) {
+      return nullptr;
+    }
+  } else {
+    compliantString = aScriptURL.IsUSVString()
+                          ? &aScriptURL.GetAsUSVString()
+                          : &aScriptURL.GetAsTrustedScriptURL().mData;
+  }
+  MOZ_ASSERT(compliantString);
+
   RefPtr<WorkerPrivate> workerPrivate = WorkerPrivate::Constructor(
-      cx, aScriptURL, false /* aIsChromeWorker */, WorkerKindDedicated,
+      cx, *compliantString, false /* aIsChromeWorker */, WorkerKindDedicated,
       aOptions.mCredentials, aOptions.mType, aOptions.mName, VoidCString(),
       nullptr /*aLoadInfo */, aRv);
   if (NS_WARN_IF(aRv.Failed())) {
@@ -98,7 +127,7 @@ void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
     return;
   }
   RefPtr<WorkerPrivate> workerPrivate = mWorkerPrivate;
-  Unused << workerPrivate;
+  (void)workerPrivate;
 
   JS::Rooted<JS::Value> transferable(aCx, JS::UndefinedValue());
 
@@ -157,7 +186,7 @@ void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
   // The worker could have closed between the time we entered this function and
   // checked ParentStatusProtected and now, which could cause the dispatch to
   // fail.
-  Unused << NS_WARN_IF(!runnable->Dispatch(mWorkerPrivate));
+  (void)NS_WARN_IF(!runnable->Dispatch(mWorkerPrivate));
 }
 
 void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
@@ -178,7 +207,7 @@ void Worker::PostEventWithOptions(JSContext* aCx,
     return;
   }
   RefPtr<WorkerPrivate> workerPrivate = mWorkerPrivate;
-  Unused << workerPrivate;
+  (void)workerPrivate;
 
   aRunnable->InitOptions(aCx, aOptions, aTransferable, aRv);
 
@@ -191,7 +220,7 @@ void Worker::PostEventWithOptions(JSContext* aCx,
     return;
   }
 
-  Unused << NS_WARN_IF(!aRunnable->Dispatch(mWorkerPrivate));
+  (void)NS_WARN_IF(!aRunnable->Dispatch(mWorkerPrivate));
 }
 
 void Worker::Terminate() {

@@ -1,9 +1,6 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-/* eslint-env mozilla/browser-window */
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -14,6 +11,7 @@ document.addEventListener(
       switch (event.target.id) {
         // == edit-menu ==
         case "menu_preferences":
+        case "menu_settings":
           openPreferences(undefined);
           break;
 
@@ -26,6 +24,10 @@ document.addEventListener(
           break;
         case "repair-text-encoding":
           BrowserCommands.forceEncodingDetection();
+          break;
+        case "enterFullScreenItem":
+        case "exitFullScreenItem":
+          BrowserCommands.fullScreen();
           break;
         case "documentDirection-swap":
           gBrowser.selectedBrowser.sendMessageToActor(
@@ -61,6 +63,9 @@ document.addEventListener(
         case "menu_openFirefoxView":
           FirefoxViewHandler.openTab();
           break;
+        case "hiddenUndoCloseWindow":
+          SessionWindowUI.undoCloseWindow(0);
+          break;
 
         // == menu_HelpPopup ==
         // (Duplicated in PanelUI._onHelpCommand)
@@ -82,9 +87,6 @@ document.addEventListener(
         case "troubleShooting":
           openTroubleshootingPage();
           break;
-        case "help_reportSiteIssue":
-          ReportSiteIssue();
-          break;
         case "menu_HelpPopup_reportPhishingtoolmenu":
           openUILink(gSafeBrowsing.getReportURL("Phish"), event, {
             triggeringPrincipal:
@@ -92,7 +94,7 @@ document.addEventListener(
           });
           break;
         case "menu_HelpPopup_reportPhishingErrortoolmenu":
-          ReportFalseDeceptiveSite();
+          gSafeBrowsing.reportFalseDeceptiveSite();
           break;
         case "helpSwitchDevice":
           openSwitchingDevicesPage();
@@ -102,6 +104,17 @@ document.addEventListener(
           break;
         case "helpPolicySupport":
           openTrustedLinkIn(Services.policies.getSupportMenu().URL.href, "tab");
+          break;
+
+        // menu_setAsDefault is only available on macOS
+        case "menu_setAsDefault":
+          if (AppConstants.platform == "macosx") {
+            Glean.browserApplicationmenu.setAsDefault.record();
+            ShellService.setAsDefault().catch(async _ => {
+              // Due to https://bugzilla.mozilla.org/show_bug.cgi?id=1205066
+              // setAsDefault() always throws on macOS so we don't need to log it.
+            });
+          }
           break;
       }
     });
@@ -114,6 +127,36 @@ document.addEventListener(
         let historyMenu = document.getElementById("history-menu");
         historyMenu._placesView._onCommand(event);
       });
+
+    let bookmarksMenuPopup = document.getElementById("bookmarksMenuPopup");
+    bookmarksMenuPopup.addEventListener("command", event => {
+      BookmarksEventHandler.onCommand(event);
+    });
+
+    bookmarksMenuPopup.addEventListener("click", event => {
+      BookmarksEventHandler.onClick(
+        event,
+        bookmarksMenuPopup.parentNode._placesView
+      );
+    });
+
+    bookmarksMenuPopup.addEventListener("mouseup", event => {
+      BookmarksEventHandler.onMouseUp(event);
+    });
+
+    const bookmarksMenu = document.getElementById("bookmarksMenu");
+    bookmarksMenu.addEventListener("dragover", event =>
+      PlacesMenuDNDHandler.onDragOver(event)
+    );
+    bookmarksMenu.addEventListener("dragenter", event =>
+      PlacesMenuDNDHandler.onDragEnter(event)
+    );
+    bookmarksMenu.addEventListener("dragleave", event =>
+      PlacesMenuDNDHandler.onDragLeave(event)
+    );
+    bookmarksMenu.addEventListener("drop", event =>
+      PlacesMenuDNDHandler.onDrop(event)
+    );
 
     mainMenuBar.addEventListener("popupshowing", event => {
       // On macOS, we don't track whether activation of the native menubar happened
@@ -149,6 +192,8 @@ document.addEventListener(
           if (!event.target.parentNode._placesView) {
             new HistoryMenu(event);
           }
+
+          AIWindow.appMenu(event, window);
           break;
         case "historyUndoPopup":
           document
@@ -195,6 +240,9 @@ document.addEventListener(
           break;
         case "menu_HelpPopup":
           buildHelpMenu();
+          break;
+        case "menu_ProfilesPopup":
+          gProfiles.onPopupShowing(event);
           break;
       }
     });

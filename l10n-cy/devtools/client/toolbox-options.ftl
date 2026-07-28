@@ -30,10 +30,18 @@ options-context-inspector = Archwiliwr
 options-show-user-agent-styles-label = Dangos Arddulliau Porwr
 options-show-user-agent-styles-tooltip =
     .title = Bydd cychwyn hwn yn dangos yr arddulliau rhagosodedig sy'n cael eu llwytho gan y porwr.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Dangos Shadow DOM Porwr
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Bydd troi hwn ymlaen yn dangos elfennau Shadow DOM sy'n cael eu trin gan y porwr.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Tocio priodoleddau DOM
 options-collapse-attrs-tooltip =
     .title = Tocio'r priodoleddau hir yn yr arolygydd
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Dangos sylwadau
+options-show-comments-tooltip =
+    .title = Dangos nodau sylwadau yn yr arolygydd
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Cliciwch a llusgwch i olygu gwerthoedd maint
 options-inspector-draggable-properties-tooltip =
@@ -67,6 +75,35 @@ options-webconsole-label = Consol Gwe
 options-webconsole-split-console-label = Galluogi Consol Hollt
 options-webconsole-split-console-tooltip =
     .title = Agor Consol Hollt gyda'r Fysell Escape
+
+## Network Monitor section
+
+# The heading
+options-netmonitor-label = Monitor Rhwydwaith
+# The label for the input defining the limit of stored request and response body size
+options-netmonitor-body-limit-label = Uchafswm maint y corff cais ac ymateb (wedi'i osod i 0 ar gyfer diderfyn):
+options-netmonitor-body-limit-tooltip =
+    .title = Bydd cyrff cais neu ymateb sy'n fwy na'r maint penodedig yn cael eu cwtogi pan fyddan nhw'n cael eu harddangos neu eu llwytho i lawr yn Monitor y Rhwydwaith. Gosodwch i 0 i fod heb gyfyngiad.
+# Text shown in the input when there is no limitation (instead of showing "0")
+options-netmonitor-body-limit-unlimited-label = Diderfyn
+options-netmonitor-body-limit-button =
+    .title = Golygu maint mwyaf y corff cais/ymateb.
+options-netmonitor-body-limit-restore-default =
+    .title = Adfer y gwerth rhagosodedig ar gyfer uchafswm maint y corff cais/ymateb.
+options-netmonitor-body-limit-set =
+    .title = Gosod y gwerth mewnbwn cyfredol fel uchafswm maint corff cais/ymateb.
+
+## Experimental section
+
+# The heading
+options-experimental-label = Nodweddion Arbrofol
+# The label for the checkbox that toggles showing stylesheets in the debugger
+options-stylesheets-in-the-debugger-label = Dangos dalennau arddull yn y dadfygiwr
+options-stylesheets-in-the-debugger-tooltip =
+    .title = Rhestru a gweld y dalennau arddull yn y dadfygiwr
+# The message shown for settings that indicates that the attached setting requires the
+# toolbox to be reopened to take effect.
+options-reopen-toolbox-message = (angen ailagor y blwch offer)
 
 ## Style Editor section
 
@@ -107,6 +144,40 @@ options-sourceeditor-tabsize-label = Maint tab
 options-sourceeditor-keybinding-label = Rhwymwyr allwedd
 options-sourceeditor-keybinding-default-label = Rhagosodiad
 
+## Local Mode section
+
+# The heading
+options-local-mode-label = Y Modd Lleol
+options-local-mode-only-work-locally = Dim ond yn lleol y mae'r Modd Lleol yn gweithio ac mae'n cael ei analluogi wrth ddadfygio cyd-destunau pell
+options-local-mode-behavior = Mae'r Modd Lleol yn caniatáu ichi lwytho ffeiliau lleol trwy URL https heb unrhyw ddibyniaeth allanol. Dim ond o dabiau y mae DevTools wedi'u hagor y mae modd llwytho'r URLau.
+options-local-mode-domain-label = Parth cyfaddas:
+options-local-mode-origin-input =
+    .placeholder = Tarddiad ar gyfer y mapiau lleol
+# Errors shown when the origin input has an error
+options-local-mode-origin-conflict = Mae'r tarddiad hwn yn gwrthdaro â mapio arall sy'n bodoli
+options-local-mode-origin-invalid = Mae'r tarddiad hwn yn annilys
+options-local-mode-folder-label = Ffolder leol:
+options-local-mode-choose-folder = Pori…
+    .title = Dewiswch ffolder leol i weini'r mapio hwn
+# Dialog's title when picking a folder for a mapping
+# Variables:
+#   $url (String): The url for the mapping being configured
+options-local-mode-choose-folder-picker-title = Dewiswch ffolder modd lleol ar gyfer: { $url }
+# Error shown when the folder is invalid
+# (can easily be triggered when using about:config and changing underlying mappings prefs)
+options-local-mode-folder-invalid = Dyw'r ffolder hwn ddim yn bodoli, neu mae'n annilys.
+options-local-mode-toggle =
+    .title = Toglo'r mapio lleol hwn
+options-local-mode-toggle-enable = Galluogi
+options-local-mode-toggle-disable = Analluogi
+options-local-mode-navigate-to =
+    .title = Llywiwch i'r URL mapio hwn
+# Dialog message prompted when clicking on the Delete button
+# Variables:
+#   $mappingOrigin (String): The origin for the mapping
+options-local-mode-confirm-deletion = Ydych chi am dynnu mapio “{ $mappingOrigin }”?
+options-local-mode-new-mapping = Ychwanegu mapio lleol newydd
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
@@ -115,6 +186,8 @@ options-context-advanced-settings = Gosodiadau uwch
 options-disable-http-cache-label = Analluogi Storfa Dros Dro HTTP (pan mae'r blwch offer ar agor)
 options-disable-http-cache-tooltip =
     .title = Bydd cychwyn y dewis hwn yn analluogi storfa dros dro'r HTTP ar gyfer pob tab sydd a' r blwch offer ar agor. Nid yw Service Workers yn cael eu heffeithio gan y dewis hwn.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Analluogi JavaScript *
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Analluogi JavaScript *
 options-disable-javascript-tooltip =
@@ -143,5 +216,21 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Galluogi Mapiau Ffynhonnell
 options-source-maps-tooltip =
     .title = Os ydych yn galluogi'r dewis hwn bydd ffenylalanin cael eu mapio yn yr offer.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (dim ond y sesiwn gyfredol, yn ail-lwytho'r dudalen)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Sesiwn gyfredol yn unig, ail-lwytho'r dudalen
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (yn ail-lwytho'r dudalen)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Awtomatig
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Anghydnaws. Darllen Rhagor…

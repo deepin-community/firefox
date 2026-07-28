@@ -5,77 +5,65 @@
 permissions-window2 =
     .title = Mga Exception
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Address ng website
     .accesskey = d
-
 permissions-block =
     .label = Harangin
     .accesskey = H
-
+permissions-disable-etp =
+    .label = Magdagdag ng Exception
+    .accesskey = E
 permissions-session =
     .label = Payagan para sa Session
     .accesskey = S
-
 permissions-allow =
     .label = Payagan
     .accesskey = a
-
 permissions-button-off =
     .label = Patayin
     .accesskey = P
-
 permissions-button-off-temporarily =
     .label = Pansamantalang patayin
     .accesskey = P
-
 permissions-site-name =
     .label = Website
-
 permissions-status =
     .label = Kalagayan
-
 permissions-remove =
     .label = Alisin ang Website
     .accesskey = R
-
 permissions-remove-all =
     .label = Alisin ang Lahat ng mga Website
     .accesskey = e
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = i-Save ang mga Pagbabago
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = i-Save ang mga Pagbabago
     .buttonaccesskeyaccept = S
-
 permissions-autoplay-menu = Ang default para sa lahat ng mga website:
-
 permissions-searchbox =
     .placeholder = Maghanap ng Website
-
 permissions-capabilities-autoplay-allow =
     .label = Payagan ang Audio at Video
 permissions-capabilities-autoplay-block =
     .label = Harangin ang Audio
 permissions-capabilities-autoplay-blockall =
     .label = Harangin ang Audio at Video
-
 permissions-capabilities-allow =
     .label = Payagan
 permissions-capabilities-block =
     .label = Harangin
 permissions-capabilities-prompt =
     .label = Palaging Magtanong
-
 permissions-capabilities-listitem-allow =
     .value = Payagan
 permissions-capabilities-listitem-block =
     .value = Harangin
 permissions-capabilities-listitem-allow-session =
     .value = Payagan ang Session
-
 permissions-capabilities-listitem-off =
     .value = Nakapatay
 permissions-capabilities-listitem-off-temporarily =
@@ -183,8 +171,3 @@ permissions-site-microphone-desc = Ang mga sumusunod na website ay humihingi ng 
 permissions-site-microphone-disable-label =
     .label = I-block ang mga humihingi ng pahintulot na i-access ang iyong microphone
 permissions-site-microphone-disable-desc = Pipigilan nito ang kahit na anong website na hindi kasama sa listahan sa paghingi ng permiso upang i-access ang iyong microphone. Ang pagblock ng access sa iyong microphone ay maaaring makasira sa ibang features ng website.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

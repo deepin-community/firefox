@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = Actualisation fallite — systema non compatibile
 appmenuitem-banner-update-restart =
     .label = Actualisation disponibile — reinitiar ora
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Habe un fresc { -brand-short-name }. Mantene tote tu schedas.
+appmenu-nova-update-link = Reinitialisa pro actualisar
+appmenu-nova-fxa-sign-in = Aperir session
+appmenu-nova-switch-device-promo =
+    .message = Tosto te procura tu un nove apparato? Porta con te { -brand-short-name }!
+appmenu-nova-switch-device-link = Como transferer tu datos
 appmenuitem-new-tab =
     .label = Nove scheda
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Nove fenestra private
 appmenuitem-history =
     .label = Chronologia
+appmenuitem-tab-groups =
+    .label = Gruppos de scheda
 appmenuitem-downloads =
     .label = Discargamentos
 appmenuitem-passwords =
     .label = Contrasignos
+appmenuitem-extensions-and-themes =
+    .label = Extensiones e themas
+appmenuitem-extensions =
+    .label = Extensiones
 appmenuitem-addons-and-themes =
     .label = Additivos e themas
 appmenuitem-print =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Synchronisar e salvar datos
 appmenu-fxa-signed-in-label = Aperir session
 appmenu-fxa-setup-sync =
     .label = Activar synchronisation…
+appmenu-fxa-setup-sync-new = Activar
 appmenuitem-save-page =
     .label = Salvar le pagina como…
+appmenuitem-fxa-sync-off-title = Synchronisation disactivate
+appmenuitem-fxa-sync-off-description = Protege e accede tu marcapaginas, contrasignos e altere cosas ubicunque.
 
 ## What's New panel in App menu.
 
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Aperir le quadro de profilator
+    .tooltiptext = Aperir le quadro de profilator
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,9 +209,15 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Pre-configuration pro investigar errores audio e video in { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Multimedia
+profiler-popup-presets-ml-description = Pre-configuration pro investigar errores de apprendimento automatic in { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Apprendimento automatic
 profiler-popup-presets-networking-description = Pre-configuration pro investigar errores de rete in { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Rete
+profiler-popup-presets-networking-with-logs-description = Predefinite pro investigar errores de rete in { -brand-shorter-name }, includente registros de rete. Iste registros pote continer datos sensibile tal como le URLs que tu visita.
+profiler-popup-presets-networking-with-logs-label =
+    .label = Rete con registros
 profiler-popup-presets-power-description = Pre-configuration pro investigar errores in le uso del energia in { -brand-shorter-name }, con basse supercarga.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
@@ -199,6 +225,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Predefinir pro depuration in { -brand-shorter-name }. Alte supercarga, non usar pro analyses del prestationes, ma usar solo pro comprender le comportamento del navigator.
 profiler-popup-presets-debug-label =
     .label = Depurar
+profiler-popup-presets-web-compat-description = Pre-configuration recommendate pro depurar problemas de compatibilitate web in sitos web, plus tosto que traciar prestationes.
+profiler-popup-presets-web-compat-label =
+    .label = Compatibilitate web
 profiler-popup-presets-custom-label =
     .label = Personalisate
 
@@ -264,6 +293,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Personalisar le barra de instrumentos…
+appmenu-abouttranslations =
+    .label = Traducer…
+appmenu-edit-pdf =
+    .label = Modificar un PDF…
 appmenu-developer-tools-subheader = Instrumentos de navigator
 appmenu-developer-tools-extensions =
     .label = Extensiones pro disveloppatores
@@ -273,9 +306,50 @@ appmenuitem-report-broken-site =
 ## Panel for privacy and security products
 
 appmenuitem-sign-in-account = Accede a tu conto
+appmenuitem-monitor-title2 = Preveni le usurpation de identitate
+appmenuitem-monitor-description2 = Obtene avisos re violationes de datos
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Obtener alertas de violation de datos
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = Mantene private tu e-mails
+appmenuitem-relay-description2 = Adjuta impedir spam in tu cassa de entrata
 appmenuitem-relay-description = Masca tu email e numero de telephono real
+appmenuitem-services-relay-description = Lancear le pannello de controlo del mascas de e-mail
+appmenuitem-vpn-title2 = Cela tu position con { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description3 = Rende tu navigar plus ardue a traciar
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Obtene protection pro tote le apparato
 appmenuitem-vpn-description = Protege tu activitate online
+appmenu-services-header = Mi servicios
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = Utensiles de confidentialitate
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Tenta altere utensiles de protection de Mozilla:
+appmenu-other-protection-header = Tentar altere utensiles de protection de { -vendor-short-name }
+
+## Profiles panel
+
+appmenu-other-profiles = Altere profilos
+appmenu-manage-profiles =
+    .label = Gerer le profilos
+appmenu-copy-profile =
+    .label = Copiar iste profilo
+appmenu-create-profile2 =
+    .label = Crear un nove profilo
+appmenu-create-profile =
+    .label = Nove profilo
+appmenu-edit-profile =
+    .aria-label = Rediger le profilo
+appmenu-edit-this-profile =
+    .label = Rediger iste profilo
+appmenu-profile-current-in-use = Actual profilo in uso
+appmenu-profiles-2 =
+    .label = Profilos
+appmenu-profiles-header = Profilos
+appmenu-all-profiles =
+    .label = Tote le profilos
+appmenu-secure-sync-header = Synchronisation secur

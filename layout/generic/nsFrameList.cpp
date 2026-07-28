@@ -1,17 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsFrameList.h"
 
-#include "mozilla/intl/BidiEmbeddingLevel.h"
 #include "mozilla/ArenaObjectID.h"
 #include "mozilla/PresShell.h"
+#include "mozilla/intl/BidiEmbeddingLevel.h"
 #include "nsBidiPresUtils.h"
 #include "nsContainerFrame.h"
-#include "nsGkAtoms.h"
 #include "nsILineIterator.h"
 #include "nsLayoutUtils.h"
 #include "nsPresContext.h"
@@ -176,7 +173,9 @@ nsFrameList nsFrameList::TakeFramesBefore(nsIFrame* aFrame) {
 
 nsIFrame* nsFrameList::FrameAt(int32_t aIndex) const {
   MOZ_ASSERT(aIndex >= 0, "invalid arg");
-  if (aIndex < 0) return nullptr;
+  if (aIndex < 0) {
+    return nullptr;
+  }
   nsIFrame* frame = mFirstChild;
   while ((aIndex-- > 0) && frame) {
     frame = frame->GetNextSibling();
@@ -184,10 +183,12 @@ nsIFrame* nsFrameList::FrameAt(int32_t aIndex) const {
   return frame;
 }
 
-int32_t nsFrameList::IndexOf(nsIFrame* aFrame) const {
+int32_t nsFrameList::IndexOf(const nsIFrame* aFrame) const {
   int32_t count = 0;
   for (nsIFrame* f = mFirstChild; f; f = f->GetNextSibling()) {
-    if (f == aFrame) return count;
+    if (f == aFrame) {
+      return count;
+    }
     ++count;
   }
   return -1;
@@ -245,10 +246,14 @@ void nsFrameList::List(FILE* out) const {
 #endif
 
 nsIFrame* nsFrameList::GetPrevVisualFor(nsIFrame* aFrame) const {
-  if (!mFirstChild) return nullptr;
+  if (!mFirstChild) {
+    return nullptr;
+  }
 
   nsIFrame* parent = mFirstChild->GetParent();
-  if (!parent) return aFrame ? aFrame->GetPrevSibling() : LastChild();
+  if (!parent) {
+    return aFrame ? aFrame->GetPrevSibling() : LastChild();
+  }
 
   mozilla::intl::BidiDirection paraDir =
       nsBidiPresUtils::ParagraphDirection(mFirstChild);
@@ -282,7 +287,9 @@ nsIFrame* nsFrameList::GetPrevVisualFor(nsIFrame* aFrame) const {
   int32_t thisLine;
   if (aFrame) {
     thisLine = iter->FindLineContaining(aFrame);
-    if (thisLine < 0) return nullptr;
+    if (thisLine < 0) {
+      return nullptr;
+    }
   } else {
     thisLine = iter->GetNumLines();
   }
@@ -317,10 +324,14 @@ nsIFrame* nsFrameList::GetPrevVisualFor(nsIFrame* aFrame) const {
 }
 
 nsIFrame* nsFrameList::GetNextVisualFor(nsIFrame* aFrame) const {
-  if (!mFirstChild) return nullptr;
+  if (!mFirstChild) {
+    return nullptr;
+  }
 
   nsIFrame* parent = mFirstChild->GetParent();
-  if (!parent) return aFrame ? aFrame->GetPrevSibling() : mFirstChild;
+  if (!parent) {
+    return aFrame ? aFrame->GetPrevSibling() : mFirstChild;
+  }
 
   mozilla::intl::BidiDirection paraDir =
       nsBidiPresUtils::ParagraphDirection(mFirstChild);
@@ -354,7 +365,9 @@ nsIFrame* nsFrameList::GetNextVisualFor(nsIFrame* aFrame) const {
   int32_t thisLine;
   if (aFrame) {
     thisLine = iter->FindLineContaining(aFrame);
-    if (thisLine < 0) return nullptr;
+    if (thisLine < 0) {
+      return nullptr;
+    }
   } else {
     thisLine = -1;
   }
@@ -439,14 +452,10 @@ const char* ChildListName(FrameChildListID aListID) {
   switch (aListID) {
     case FrameChildListID::Principal:
       return "";
-    case FrameChildListID::Caption:
-      return "CaptionList";
-    case FrameChildListID::ColGroup:
-      return "ColGroupList";
     case FrameChildListID::Absolute:
       return "AbsoluteList";
-    case FrameChildListID::Fixed:
-      return "FixedList";
+    case FrameChildListID::PushedAbsolute:
+      return "PushedAbsoluteList";
     case FrameChildListID::Overflow:
       return "OverflowList";
     case FrameChildListID::OverflowContainers:
@@ -457,12 +466,10 @@ const char* ChildListName(FrameChildListID aListID) {
       return "OverflowOutOfFlowList";
     case FrameChildListID::Float:
       return "FloatList";
-    case FrameChildListID::Bullet:
-      return "BulletList";
+    case FrameChildListID::Marker:
+      return "MarkerList";
     case FrameChildListID::PushedFloats:
       return "PushedFloatsList";
-    case FrameChildListID::Backdrop:
-      return "BackdropList";
     case FrameChildListID::NoReflowPrincipal:
       return "NoReflowPrincipalList";
   }

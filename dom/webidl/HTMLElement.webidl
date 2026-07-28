@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -12,8 +11,7 @@
  * and create derivative works of this document.
  */
 
-[Exposed=Window,
- InstrumentedProps=(attributeStyleMap,hidePopover,popover,showPopover,togglePopover)]
+[Exposed=Window]
 interface HTMLElement : Element {
   [HTMLConstructor] constructor();
 
@@ -27,14 +25,14 @@ interface HTMLElement : Element {
   [CEReactions, SetterThrows, Pure]
            attribute DOMString dir;
 
-  [CEReactions, GetterThrows, Pure]
+  [CEReactions, GetterThrows]
            attribute [LegacyNullToEmptyString] DOMString innerText;
-  [CEReactions, GetterThrows, SetterThrows, Pure]
+  [CEReactions, GetterThrows, SetterThrows]
            attribute [LegacyNullToEmptyString] DOMString outerText;
 
   // user interaction
   [CEReactions, SetterThrows, Pure]
-           attribute boolean hidden;
+           attribute (boolean or unrestricted double or DOMString)? hidden;
   [CEReactions, SetterThrows, Pure]
            attribute boolean inert;
   [NeedsCallerType]
@@ -50,7 +48,9 @@ interface HTMLElement : Element {
            attribute DOMString contentEditable;
   [Pure]
   readonly attribute boolean isContentEditable;
-  [CEReactions, SetterThrows, Pure, Pref="dom.element.popover.enabled"]
+  [Pure, SetterThrows, Pref="dom.editcontext.enabled"]
+  attribute EditContext? editContext;
+  [CEReactions, SetterThrows, Pure]
            attribute DOMString? popover;
   [CEReactions, SetterThrows, Pure]
            attribute boolean spellcheck;
@@ -60,6 +60,8 @@ interface HTMLElement : Element {
            attribute DOMString enterKeyHint;
   [CEReactions, Pure, SetterThrows]
            attribute DOMString autocapitalize;
+  [CEReactions, Pure, SetterThrows, Pref="dom.forms.autocorrect"]
+           attribute boolean autocorrect;
 
   attribute DOMString nonce;
 
@@ -75,16 +77,22 @@ interface HTMLElement : Element {
   [Throws]
   ElementInternals attachInternals();
 
-  [Throws, Pref="dom.element.popover.enabled"]
-  undefined showPopover();
-  [Throws, Pref="dom.element.popover.enabled"]
-  undefined hidePopover();
-  [Throws, Pref="dom.element.popover.enabled"]
-  boolean togglePopover(optional boolean force);
+  [Throws] undefined showPopover(optional ShowPopoverOptions options = {});
+  [Throws] undefined hidePopover();
+  [Throws] boolean togglePopover(optional (TogglePopoverOptions or boolean) options = {});
 };
 
-// http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
-partial interface HTMLElement {
+dictionary ShowPopoverOptions {
+  HTMLElement source;
+};
+
+dictionary TogglePopoverOptions : ShowPopoverOptions {
+  boolean force;
+};
+
+// https://drafts.csswg.org/cssom-view/#extensions-to-the-htmlelement-interface
+// We make this an interface mixin to be shared with XULElement.
+interface mixin ElementOffsetAttributes {
   // CSSOM things are not [Pure] because they can flush
   readonly attribute Element? offsetParent;
   readonly attribute long offsetTop;
@@ -98,7 +106,7 @@ partial interface HTMLElement {
   readonly attribute ElementInternals? internals;
 
   [ChromeOnly]
-  readonly attribute boolean isFormAssociatedCustomElements;
+  readonly attribute boolean isFormAssociatedCustomElement;
 };
 
 interface mixin TouchEventHandlers {
@@ -112,8 +120,9 @@ interface mixin TouchEventHandlers {
            attribute EventHandler ontouchcancel;
 };
 
+HTMLElement includes ElementOffsetAttributes;
 HTMLElement includes GlobalEventHandlers;
-HTMLElement includes HTMLOrForeignElement;
+HTMLElement includes HTMLOrSVGOrMathMLElement;
 HTMLElement includes ElementCSSInlineStyle;
 HTMLElement includes TouchEventHandlers;
 HTMLElement includes OnErrorEventHandlerForNodes;

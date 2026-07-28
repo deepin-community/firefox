@@ -2,16 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
 browser-main-window-window-titles =
@@ -19,14 +18,17 @@ browser-main-window-window-titles =
     .data-title-private = { -brand-full-name } Navegaçion privâ
     .data-content-title-default = { $content-title } — { -brand-full-name }
     .data-content-title-private = { $content-title } — { -brand-full-name } Navegaçion privâ
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
@@ -46,6 +48,78 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } Navegaçion privâ
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name }  Navegaçion Privâ
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Navegaçion Privâ
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } Navegaçion Privâ
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } Navegaçion Privâ
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Navegaçion Privâ
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Navegaçion Privâ
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Navegaçion Privâ
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Navegaçion Privâ
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Navegaçion Privâ
+       *[other] { -brand-full-name } Navegaçion Privâ
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Navegaçion Privâ
 
 ##
 
@@ -60,6 +134,8 @@ urlbar-web-notification-anchor =
     .tooltiptext = Deciddi se riçeive notifiche da sto scito
 urlbar-midi-notification-anchor =
     .tooltiptext = Arvi panello MIDI
+urlbar-serial-notification-anchor =
+    .tooltiptext = Arvi panello seriale
 urlbar-eme-notification-anchor =
     .tooltiptext = Gestisci l'uzo do software DRM
 urlbar-web-authn-anchor =
@@ -103,6 +179,15 @@ urlbar-result-menu-button =
     .title = Arvi menû
 urlbar-result-menu-button-feedback = Comento
     .title = Arvi menû
+urlbar-result-menu-learn-more2 = Atre informaçioin
+    .accesskey = A
+urlbar-result-menu-remove-from-history2 = Scancella da-a stöia
+    .accesskey = S
+urlbar-result-menu-tip-get-help2 = Fatte agiutâ
+    .accesskey = a
+urlbar-result-menu-manage-firefox-suggest2 = Gestisci { -firefox-suggest-brand-name }
+    .accesskey = G
+urlbar-result-menu-show-less-frequently2 = Mostra de meno
 urlbar-result-menu-learn-more =
     .label = Atre informaçioin
     .accesskey = A
@@ -112,6 +197,17 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Fatte agiutâ
     .accesskey = a
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Informaçion in sce { -firefox-suggest-brand-name }
+    .accesskey = I
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Gestisci { -firefox-suggest-brand-name }
+    .accesskey = G
+urlbar-result-menu-show-less-frequently =
+    .label = Mostra de meno
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Arvi menû
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -123,6 +219,8 @@ urlbar-search-tips-redirect-2 = Iniçia a çercâ chi pe vedde i conseggi da { $
 
 ## Local search mode indicator labels in the urlbar
 
+urlbar-search-mode-bookmarks = Segnalibbri
+urlbar-search-mode-tabs = Feuggi
 urlbar-search-mode-history = Stöia
 urlbar-search-mode-actions = Açioin
 
@@ -156,6 +254,15 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Azonzi ai segnalibri ({ $shortcut })
+urlbar-split-view-button =
+    .aria-label = Schermo divizo
+    .tooltiptext = Schermo divizo
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = Scancella a stöia de riçerca
+    .accesskey = s
 
 ## Page Action Context Menu
 
@@ -206,6 +313,8 @@ search-one-offs-add-engine-menu =
 ##    restrict their searches to certain sources (e.g., "*" to search only
 ##    bookmarks).
 
+search-one-offs-bookmarks =
+    .tooltiptext = Segnalibbri ({ $restrict })
 search-one-offs-tabs =
     .tooltiptext = Feuggi ({ $restrict })
 search-one-offs-history =
@@ -215,7 +324,7 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Amia conponenti azonti
@@ -223,6 +332,7 @@ quickactions-cmd-addons2 = Conponenti azonti
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Gestisci segnalibbri
 quickactions-cmd-bookmarks = segnalibbri
+quickactions-cmd-clearrecenthistory = scancella a stöia ciù neuva, stöia
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Scancella Stöia
 quickactions-cmd-clearhistory = scancella stöia
@@ -232,12 +342,32 @@ quickactions-cmd-downloads = scaregamenti
 # Opens about:addons page in the extensions section
 quickactions-extensions = Gestisci estenscioin
 quickactions-cmd-extensions = estenscioin
+# Opens Firefox View
+quickactions-firefoxview = Arvi { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = arvi { -firefoxview-brand-name }, { -firefoxview-brand-name }, arvi view, view
+# Opens SUMO home page
+quickactions-help = Guidda de { -brand-product-name }
 # Opens the devtools web inspector
 quickactions-inspector2 = Arvi Strumenti do svilupatô
+# Opens the devtools eyedropper to pick a color from the page
+quickactions-colorpicker = Çerni 'n cô
+# Opens Firefox Library
+quickactions-cmd-library = Libraia
+quickactions-library = Arvi Libraia
+# List of words that would trigger the "mute tabs" action from the address bar.
+# Replace with idiomatic expressions in your language to silence something or
+# someone.
+quickactions-cmd-mute = silençia, zitto, sssssh
 quickactions-cmd-plugins = Plugin
 # Opens the print dialog
 quickactions-print2 = Stanpa pagina
 quickactions-cmd-print = stanpa
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Sarva pagina comme PDF
+quickactions-cmd-savepdf2 = pdf, sarva pagina
 # Opens a new private browsing window
 quickactions-private2 = Arvi barcon privòu
 quickactions-cmd-private = navegaçion privâ
@@ -249,13 +379,22 @@ quickactions-restart = Arvi torna { -brand-short-name }
 quickactions-cmd-restart = arvi torna
 # Opens the screenshot tool
 quickactions-screenshot3 = Fanni föto do schermo
+# Opens about:translations
+quickactions-translate = Traduci
+quickactions-cmd-translate = Traduci
 quickactions-cmd-screenshot = föto do schermo
+quickactions-cmd-themes = Temi
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = Agiorna { -brand-short-name }
 quickactions-cmd-update = agiorna
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Mostra sorgente da pagina
+quickactions-cmd-viewsource = veddi sorgente, sorgente
 
 ## Bookmark Panel
 
+bookmarks-add-bookmark = Azonzi segnalibbro
+bookmarks-edit-bookmark = Cangia segnalibbro
 bookmark-panel-cancel =
     .label = Anulla
     .accesskey = A
@@ -271,6 +410,8 @@ bookmark-panel-remove =
 bookmark-panel-show-editor-checkbox =
     .label = Fanni vedde l'editô quande sarvo
     .accesskey = F
+bookmark-panel-save-button =
+    .label = Sarva
 # Width of the bookmark panel.
 # Should be large enough to fully display the Done and
 # Cancel/Remove Bookmark buttons.
@@ -282,6 +423,10 @@ bookmark-panel =
 # Variables
 #  $host (String): the hostname of the site that is being displayed.
 identity-site-information = Informaçion do scito pe { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+identity-header-security-with-host =
+    .title = Seguessa da conescion pe { $host }
 identity-connection-not-secure = Conescion no segua
 identity-connection-secure = Conescion segua
 identity-connection-internal = Sta chi a l'é 'na pagina segua de { -brand-short-name }.
@@ -302,6 +447,8 @@ identity-clear-site-data =
     .label = Scancella cookie e dæti di sciti…
 identity-connection-not-secure-security-view = Ti no ê conesso in mòddo seguo a sto scito.
 identity-ev-owner-label = Certificati publicou da:
+identity-verifier-label = Verificou da:
+identity-cert-exception-overridden = T’æ azonto 'na eceçion de seguessa pe sto scito.
 identity-remove-cert-exception =
     .label = Scancella Eceçion
     .accesskey = S
@@ -328,21 +475,46 @@ identity-more-info-link-text =
 
 browser-window-minimize-button =
     .tooltiptext = Riduci
+browser-window-maximize-button =
+    .tooltiptext = Mascimizza
 browser-window-restore-down-button =
     .tooltiptext = Repiggia zù
 browser-window-close-button =
     .tooltiptext = Særa
+# Clicking this button closes the window and returns to the tab where it was opened from
+browser-window-return-to-opener =
+    .tooltiptext = Inderæ
 
 ## Tab actions
 
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-playing2 = RIPRODUÇION
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-muted2 = MUTTO
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-blocked = RIPRODUÇION AOTOMATICA BLOCÂ
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-pip = PICTURE-IN-PICTURE
 
 ## These labels should be written in all capital letters if your locale supports them.
 ## Variables:
 ##  $count (number): number of affected tabs
 
-
-## Bookmarks toolbar items
-
+browser-tab-mute =
+    { $count ->
+        [1] DIZATIVA AODIO FEUGGIO
+       *[other] DIZATIVA AODIO { $count } FEUGGI
+    }
+browser-tab-unmute =
+    { $count ->
+        [1] ATIVA AODIO FEUGGIO
+       *[other] ATIVA AODIO { $count } FEUGGI
+    }
+browser-tab-unblock =
+    { $count ->
+        [1] RIPRODUXI FEUGGIO
+       *[other] RIPRODUXI { $count } FEUGGI
+    }
 
 ## WebRTC Pop-up notifications
 
@@ -368,9 +540,6 @@ popup-all-windows-shared = Tutti i barcoin vixibili into schermo saian condivizi
 sharing-warning-proceed-to-tab =
     .label = Vanni a-o feuggio
 
-## DevTools F12 popup
-
-
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
@@ -380,6 +549,38 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Scrivi indirisso ò iniçia riçerca
+# This placeholder is used in search mode with search engines that search the
+# entire web.
+# Variables
+#  $name (String): the name of a search engine that searches the entire Web
+#  (e.g. Google).
+urlbar-placeholder-search-mode-web-2 =
+    .aria-label = Çerca con { $name }
+    .placeholder = Çerca inta Ræ
+# This placeholder is used in search mode with search engines that search a
+# specific site (e.g., Amazon).
+# Variables
+#  $name (String): the name of a search engine that searches a specific site
+#  (e.g. Amazon).
+urlbar-placeholder-search-mode-other-engine =
+    .placeholder = Scrivi termini de riçerca
+    .aria-label = Çerca { $name }
+# This placeholder is used when searching bookmarks.
+urlbar-placeholder-search-mode-other-bookmarks =
+    .aria-label = Çerca segnalibbri
+    .placeholder = Scrivi termini de riçerca
+# This placeholder is used when searching history.
+urlbar-placeholder-search-mode-other-history =
+    .aria-label = Çerca inta stöia
+    .placeholder = Scrivi termini de riçerca
+# This placeholder is used when searching open tabs.
+urlbar-placeholder-search-mode-other-tabs =
+    .aria-label = Çerca feuggi
+    .placeholder = Scrivi termini de riçerca
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .aria-label = Çerca açioin
+    .placeholder = Scrivi termini de riçerca
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
@@ -389,13 +590,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Estenscioin:
+urlbar-go-button2 =
+    .title = Vanni a l'indirisso in sciâ bara di indirissi
 urlbar-go-button =
     .tooltiptext = Vanni a l'indirisso in sciâ bara di indirissi
 urlbar-page-action-button =
     .tooltiptext = Pagina açioin
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # The "with" format was chosen because the search engine name can end with
 # "Search", and we would like to avoid strings like "Search MSN Search".
@@ -404,11 +608,22 @@ urlbar-page-action-button =
 urlbar-result-action-search-w-engine = Çerca con { $engine }
 urlbar-result-action-switch-tab = Vanni a-o feuggio
 urlbar-result-action-visit = Vixita
+# Action text for copying to clipboard.
+urlbar-result-action-copy-to-clipboard = Còpia
 # Shows the result of a formula expression being calculated, the last = sign will be shown
 # as part of the result (e.g. "= 2").
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-history =
+    .label = Stöia
+urlbar-searchmode-actions =
+    .label = Açioin
+urlbar-searchmode-history2 = Stöia
+urlbar-searchmode-actions2 = Açioin
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -417,9 +632,19 @@ urlbar-result-action-calculator-result = = { $result }
 urlbar-result-action-search-bookmarks = Çerca Segnalibbri
 urlbar-result-action-search-history = Çerca Stöia
 urlbar-result-action-search-tabs = Çerca inte schede.
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Passa a { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Arvi { $group }
 
 ## Labels shown above groups of urlbar results
 
+# A label shown above the "Firefox Suggest" (bookmarks/history) group in the
+# urlbar results.
+urlbar-group-firefox-suggest =
+    .label = { -firefox-suggest-brand-name }
 
 ## Reader View toolbar buttons
 
@@ -429,11 +654,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Særa Modalitæ letua
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -511,10 +731,7 @@ save-to-pocket-button =
     .label = Sarva in { -pocket-brand-name }
     .tooltiptext = Sarva in { -pocket-brand-name }
 
-## Repair text encoding toolbar button
-
-
-## Customize Toolbar Buttons
+##
 
 toolbar-overflow-customize-button =
     .label = Personaliza a bara di atressi…
@@ -545,9 +762,6 @@ toolbar-button-new-private-window =
 
 eme-notifications-drm-content-playing = Quarche contegnuo aodio ò video in sto scito deuvia software DRM. Porieivan esighe de limitaçioin a-e açioin pe l’utente in { -brand-short-name }.
 
-## Password save/update panel
-
-
 ##
 
 # "More" item in macOS share menu
@@ -571,10 +785,6 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = No fâ vedde sta notiçia quande i pop-up son blocæ
     .accesskey = N
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -609,29 +819,12 @@ tabs-toolbar-list-all-tabs =
     .label = Lista de tutti i feuggi
     .tooltiptext = Lista de tutti i feuggi
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = Çerte informaçioin se mandan aotomaticamente a { -vendor-short-name } da { -brand-short-name } pe megioane l'uzo.
 data-reporting-notification-button =
     .label = Çerni cöse condividde
     .accesskey = s
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -640,9 +833,6 @@ refresh-blocked-redirect-label = { -brand-short-name } o l'inpedisce l'indirisam
 refresh-blocked-allow =
     .label = Permetti
     .accesskey = P
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

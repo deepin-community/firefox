@@ -1,21 +1,18 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "HLSDemuxer.h"
 
-#include <algorithm>
-#include <limits>
 #include <stdint.h>
+
+#include <algorithm>
 
 #include "HLSUtils.h"
 #include "MediaCodec.h"
 #include "mozilla/java/GeckoAudioInfoWrappers.h"
 #include "mozilla/java/GeckoHLSDemuxerWrapperNatives.h"
 #include "mozilla/java/GeckoVideoInfoWrappers.h"
-#include "mozilla/Unused.h"
 #include "nsPrintfCString.h"
 
 namespace mozilla {
@@ -92,7 +89,7 @@ class HLSDemuxer::HLSDemuxerCallbacksSupport
           }
         }));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
   }
 
   void OnError(int aErrorCode) {
@@ -111,7 +108,7 @@ class HLSDemuxer::HLSDemuxerCallbacksSupport
           }
         }));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
   }
 
   void Detach() {
@@ -290,8 +287,8 @@ RefPtr<HLSTrackDemuxer::SamplesPromise> HLSTrackDemuxer::DoGetSamples(
                                              __func__);
     }
     MOZ_ASSERT(mQueuedSample->mKeyframe, "mQueuedSample must be a keyframe");
-    samples->AppendSample(mQueuedSample);
-    mQueuedSample = nullptr;
+    samples->AppendSample(std::move(mQueuedSample));
+    MOZ_ASSERT(!mQueuedSample);
     aNumSamples--;
   }
   if (aNumSamples == 0) {
@@ -332,7 +329,7 @@ RefPtr<HLSTrackDemuxer::SamplesPromise> HLSTrackDemuxer::DoGetSamples(
       return SamplesPromise::CreateAndReject(NS_ERROR_DOM_MEDIA_DEMUXER_ERR,
                                              __func__);
     }
-    samples->AppendSample(mrd);
+    samples->AppendSample(std::move(mrd));
   }
   if (mType == TrackInfo::kVideoTrack &&
       (mNextKeyframeTime.isNothing() ||
@@ -620,7 +617,7 @@ void HLSTrackDemuxer::BreakCycles() {
       "HLSTrackDemuxer::BreakCycles", [self]() { self->mParent = nullptr; });
   nsresult rv = mParent->GetTaskQueue()->Dispatch(task.forget());
   MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-  Unused << rv;
+  (void)rv;
 }
 
 HLSTrackDemuxer::~HLSTrackDemuxer() {}

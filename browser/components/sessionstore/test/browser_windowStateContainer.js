@@ -41,7 +41,7 @@ add_task(async function () {
   // We want the 1st tab to have non-default userContextId, so later when we
   // restore into win2 we can test restore into an existing tab with different
   // userContextId.
-  win.gBrowser.moveTabTo(win.gBrowser.tabs[0], win.gBrowser.tabs.length - 1);
+  win.gBrowser.moveTabToEnd(win.gBrowser.tabs[0]);
 
   let winState = ss.getWindowState(win);
 
@@ -71,44 +71,36 @@ add_task(async function () {
 
   for (let i = 0; i < 4; i++) {
     let browser = win2.gBrowser.tabs[i].linkedBrowser;
-    await ContentTask.spawn(
-      browser,
-      { expectedId: i + 1 },
-      async function (args) {
-        Assert.equal(
-          docShell.getOriginAttributes().userContextId,
-          args.expectedId,
-          "The docShell has the correct userContextId"
-        );
-
-        Assert.equal(
-          content.document.nodePrincipal.originAttributes.userContextId,
-          args.expectedId,
-          "The document has the correct userContextId"
-        );
-      }
-    );
-  }
-
-  // Test the last tab, which doesn't have userContextId.
-  let browser = win2.gBrowser.tabs[4].linkedBrowser;
-  await SpecialPowers.spawn(
-    browser,
-    [{ expectedId: 0 }],
-    async function (args) {
+    await SpecialPowers.spawn(browser, [i + 1], async function (expectedId) {
       Assert.equal(
         docShell.getOriginAttributes().userContextId,
-        args.expectedId,
+        expectedId,
         "The docShell has the correct userContextId"
       );
 
       Assert.equal(
         content.document.nodePrincipal.originAttributes.userContextId,
-        args.expectedId,
+        expectedId,
         "The document has the correct userContextId"
       );
-    }
-  );
+    });
+  }
+
+  // Test the last tab, which doesn't have userContextId.
+  let browser = win2.gBrowser.tabs[4].linkedBrowser;
+  await SpecialPowers.spawn(browser, [0], async function (expectedId) {
+    Assert.equal(
+      docShell.getOriginAttributes().userContextId,
+      expectedId,
+      "The docShell has the correct userContextId"
+    );
+
+    Assert.equal(
+      content.document.nodePrincipal.originAttributes.userContextId,
+      expectedId,
+      "The document has the correct userContextId"
+    );
+  });
 
   await BrowserTestUtils.closeWindow(win);
   await BrowserTestUtils.closeWindow(win2);
@@ -147,7 +139,7 @@ add_task(async function () {
 
   // Move the first normal tab to end, so the first tab of win2 will be a
   // container tab.
-  win2.gBrowser.moveTabTo(win2.gBrowser.tabs[0], win2.gBrowser.tabs.length - 1);
+  win2.gBrowser.moveTabToEnd(win2.gBrowser.tabs[0]);
   await TabStateFlusher.flush(win2.gBrowser.tabs[0].linkedBrowser);
 
   let tabsRestored = promiseTabsRestored(win2, 2);
@@ -156,16 +148,16 @@ add_task(async function () {
 
   for (let i = 0; i < 2; i++) {
     let browser = win2.gBrowser.tabs[i].linkedBrowser;
-    await ContentTask.spawn(browser, { expectedId: i }, async function (args) {
+    await SpecialPowers.spawn(browser, [i], async function (expectedId) {
       Assert.equal(
         docShell.getOriginAttributes().userContextId,
-        args.expectedId,
+        expectedId,
         "The docShell has the correct userContextId"
       );
 
       Assert.equal(
         content.document.nodePrincipal.originAttributes.userContextId,
-        args.expectedId,
+        expectedId,
         "The document has the correct userContextId"
       );
     });

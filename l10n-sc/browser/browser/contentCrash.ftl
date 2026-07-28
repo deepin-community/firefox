@@ -6,7 +6,6 @@
 ## Subframe crash notification
 
 crashed-subframe-message = <strong>Parte de custa pàgina est faddida.</strong> Pro sinnalare custu problema a { -brand-product-name }, pro chi ddu risolvat a lestru, imbia un'informe.
-
 # The string for crashed-subframe-title.title should match crashed-subframe-message,
 # but without any markup.
 crashed-subframe-title =
@@ -32,3 +31,20 @@ pending-crash-reports-send =
     .label = Imbia
 pending-crash-reports-always-send =
     .label = Imbia·ddos semper
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message-new =
+    { $reportCount ->
+        [one] Tenes un’informe chi pertocat faddinas chi semus averiguende. Imbiende·ddu nos as a agiudare a megiorare { -brand-product-name }. Serra custu avisu pro inniorare custu informe.
+       *[other] Tenes { $reportCount } informes chi pertocant faddinas chi semus averiguende. Imbiende·ddos nos as a agiudare a megiorare { -brand-product-name }. Serra custu avisu pro inniorare custos informes.
+    }
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message =
+    { $reportCount ->
+        [one] Tenes un’informe chi pertocat faddinas chi semus giai averiguende. Imbiende·ddu nos as a agiudare a megiorare { -brand-product-name }. Serra custu avisu pro inniorare custu informe.
+       *[other] Tenes { $reportCount } informes chi pertocant faddinas chi semus giai averiguende. Imbiende·ddos nos as a agiudare a megiorare { -brand-product-name }. Serra custu avisu pro inniorare custos informes.
+    }
+requested-crash-reports-dont-show-again =
+    .label = No dd’ammustres prus
+    .accesskey = N

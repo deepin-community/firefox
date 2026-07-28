@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Moha’ãnga ojehúva
 contentanalysis-slow-agent-dialog-body-file = { $agent } ohechahína “{ $filename }” he’iháicha atyguasu mba’ekuaarã porureko. Kóva ipukumiekuaa.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } ohechajeyhína “{ $filename }” ha { $count } mba’eporurã oĩvéva he’iháicha atyguasu mba’ekuaarã porureko. Kóva ipukumiekuaa.
+       *[other] { $agent } ohechajeyhína “{ $filename }” ha { $count } mba’eporurã oĩvéva he’iháicha atyguasu mba’ekuaarã porureko. Kóva ipukumiekuaa.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } ohechahína oikova’ekue he’iháicha atyguasu mba’ekuaarã porureko. Kóva ipukumiekuaa.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = kuatiajokoha
 contentanalysis-operationtype-dropped-text = moñe’ẽrã ho’áva
 contentanalysis-operationtype-print = Mbokuatia
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = “{ $filename }” ñemyanyhẽ
+contentanalysis-upload-description = “{ $filename }” ñemyanyhẽ
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = “{ $filename }” ñemboguejy
 contentanalysis-warndialogtitle = Ko tetepy ikatu nahekorosãi
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -58,10 +69,18 @@ contentanalysis-error-message-upload-file = “{ $filename }” myanyhẽ noñem
 contentanalysis-error-message-dropped-text = Embosyryry ha epoi mbotovepyre
 contentanalysis-error-message-clipboard = Emboja mbotovepyre
 contentanalysis-error-message-print = Monguatia mbotovepyre.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Opaitéma aravo jeike { $agent } ndivegua. { $contentName } ojejokóma.
 contentanalysis-block-dialog-title-upload-file = Noñemoneĩri ndéve ehupikuaa hag̃uáicha
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Tendaguasu mba’ekuaarã ñemo’ã porureko he’iháicha, ndaikatumo’ãi emyanyhẽ marandurenda “{ $filename }”. Eñe’ẽ iñangarekohára ndive eikuaave hag̃ua.
+contentanalysis-block-dialog-title-download-file = Ndererekói ñemoneĩ emboguejývo ko marandurenda
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = He’iháicha pe mba’ekuaarã ñemo’ã porureko, noñemoneĩri emboguejy hag̃ua “{ $filename }” marandurenda. Eikuaave hag̃ua, eñe’ẽ ne ñangarekoha ndive.
 contentanalysis-block-dialog-title-clipboard = Noñemoĩri ndéve embojakuaa hag̃ua ko tetepy
 contentanalysis-block-dialog-body-clipboard = Tendaguasu mba’ekuaarã ñemo’ã porureko he’iháicha, ndaikatumo’ãi emboja ko tetepy. Eñe’ẽ iñangarekohára ndive eikuaave hag̃ua.
 contentanalysis-block-dialog-title-dropped-text = Noñemoĩri ndéve epoikuaa hag̃ua ko tetepy

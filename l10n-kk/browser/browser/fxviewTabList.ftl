@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Соңына жылжыту
     .accesskey = о
 fxviewtabrow-move-tab-window = Жаңа терезеге жылжыту
     .accesskey = т
+fxviewtabrow-send-to-device = Құрылғыға жіберу
+    .accesskey = ж
+fxviewtabrow-send-to-mobile = Мобильді құрылғыға жіберу
+    .accesskey = ж
 fxviewtabrow-send-tab = Бетті құрылғыға жіберу
     .accesskey = л
 fxviewtabrow-pin-tab = Бетті бекіту
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Бет дыбысын іске қосу
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = { $tabTitle } опциялары
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = { $tabTitle } дыбысын басу
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = { $tabTitle } дыбысын іске қосу
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Бет дыбысын басу
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Бет дыбысын іске қосу
+fxviewtabrow-send-to-mobile-connect-device = Беттерді жіберу үшін құрылғыны қосыңыз
+fxviewtabrow-send-to-mobile-device-missing2 = Құрылғыңыз көрінбей ме?
+fxviewtabrow-send-to-mobile-not-verified = Тіркелгі расталмаған
+fxviewtabrow-send-to-mobile-verify-account = Тіркелгіні растау
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Беттерді жіберу үшін жүйеге кіріңіз
+fxviewtabrow-send-to-mobile-turn-on-sync = Беттерді жіберу үшін синхронизацияны іске қосыңыз

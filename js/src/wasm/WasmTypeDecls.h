@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2021 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,6 +90,19 @@ using Bytes = Vector<uint8_t, 0, SystemAllocPolicy>;
 using UTF8Bytes = Vector<char, 0, SystemAllocPolicy>;
 using InstanceVector = Vector<Instance*, 0, SystemAllocPolicy>;
 using UniqueCharsVector = Vector<UniqueChars, 0, SystemAllocPolicy>;
+
+class RecGroup;
+class TypeDef;
+class TypeContext;
+enum class TypeDefKind : uint8_t;
+
+template <class T>
+class PackedType;
+
+class ValTypeTraits;
+using ValType = PackedType<ValTypeTraits>;
+class RefType;
+class MaybeRefType;
 
 }  // namespace wasm
 }  // namespace js

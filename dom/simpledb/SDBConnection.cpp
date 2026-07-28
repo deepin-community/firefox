@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,20 +11,19 @@
 
 // Global includes
 #include <stdint.h>
+
 #include <utility>
+
 #include "MainThreadUtils.h"
 #include "js/ArrayBuffer.h"
 #include "js/RootingAPI.h"
 #include "js/TypeDecls.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/MacroForEach.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/Variant.h"
 #include "mozilla/dom/PBackgroundSDBConnection.h"
 #include "mozilla/dom/TypedArray.h"
-#include "mozilla/dom/quota/QuotaManager.h"
+#include "mozilla/dom/quota/PrincipalUtils.h"
 #include "mozilla/fallible.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/BackgroundUtils.h"
@@ -161,6 +158,12 @@ void SDBConnection::OnClose(bool aAbnormal) {
   }
 }
 
+bool SDBConnection::IsAllowedToClose() const {
+  AssertIsOnOwningThread();
+
+  return mAllowedToClose;
+}
+
 void SDBConnection::AllowToClose() {
   AssertIsOnOwningThread();
 
@@ -244,7 +247,7 @@ SDBConnection::Init(nsIPrincipal* aPrincipal,
     return NS_ERROR_INVALID_ARG;
   }
 
-  if (NS_WARN_IF(!quota::QuotaManager::IsPrincipalInfoValid(*principalInfo))) {
+  if (NS_WARN_IF(!quota::IsPrincipalInfoValid(*principalInfo))) {
     return NS_ERROR_INVALID_ARG;
   }
 

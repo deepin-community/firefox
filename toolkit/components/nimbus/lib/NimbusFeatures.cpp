@@ -1,21 +1,19 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/browser/NimbusFeatures.h"
 #include "mozilla/browser/NimbusFeatureManifest.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/Try.h"
 #include "mozilla/dom/ScriptSettings.h"
+#include "mozilla/glean/NimbusMetrics.h"
 #include "jsapi.h"
 #include "js/JSON.h"
 #include "nsJSUtils.h"
 
 namespace mozilla {
 
-static nsTHashSet<nsCString> sExposureFeatureSet;
+constinit static nsTHashSet<nsCString> sExposureFeatureSet;
 
 void NimbusFeatures::GetPrefName(const nsACString& branchPrefix,
                                  const nsACString& aFeatureId,
@@ -195,12 +193,18 @@ nsresult NimbusFeatures::RecordExposureEvent(const nsACString& aFeatureId,
     // this featureId
     return NS_ERROR_UNEXPECTED;
   }
-  Telemetry::SetEventRecordingEnabled("normandy"_ns, true);
-  nsTArray<Telemetry::EventExtraEntry> extra(2);
-  extra.AppendElement(Telemetry::EventExtraEntry{"branchSlug"_ns, branchName});
-  extra.AppendElement(Telemetry::EventExtraEntry{"featureId"_ns, featureName});
-  Telemetry::RecordEvent(Telemetry::EventID::Normandy_Expose_NimbusExperiment,
-                         Some(slugName), Some(std::move(extra)));
+  glean::normandy::expose_nimbus_experiment.Record(
+      Some(glean::normandy::ExposeNimbusExperimentExtra{
+          .branchslug = Some(branchName),
+          .featureid = Some(featureName),
+          .value = Some(slugName),
+      }));
+  glean::nimbus_events::exposure.Record(
+      Some(glean::nimbus_events::ExposureExtra{
+          .branch = Some(branchName),
+          .experiment = Some(slugName),
+          .featureId = Some(featureName),
+      }));
 
   return NS_OK;
 }

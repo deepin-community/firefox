@@ -1,34 +1,32 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsPageFrame.h"
 
+#include "PrintedSheetFrame.h"
+#include "gfxContext.h"
 #include "mozilla/AppUnits.h"
+#include "mozilla/Logging.h"
 #include "mozilla/PresShell.h"
+#include "mozilla/ReflowInput.h"
 #include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/StaticPrefs_print.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/intl/Segmenter.h"
-#include "gfxContext.h"
-#include "nsDeviceContext.h"
-#include "nsFontMetrics.h"
-#include "nsIFrame.h"
-#include "nsLayoutUtils.h"
-#include "nsPresContext.h"
-#include "nsGkAtoms.h"
-#include "nsFieldSetFrame.h"
-#include "nsPageContentFrame.h"
-#include "nsDisplayList.h"
-#include "nsPageSequenceFrame.h"  // for nsSharedPageData
-#include "nsTextFormatter.h"      // for page number localization formatting
 #include "nsBidiUtils.h"
+#include "nsDeviceContext.h"
+#include "nsDisplayList.h"
+#include "nsFieldSetFrame.h"
+#include "nsFontMetrics.h"
+#include "nsGkAtoms.h"
+#include "nsIFrame.h"
 #include "nsIPrintSettings.h"
-#include "PrintedSheetFrame.h"
-
-#include "mozilla/Logging.h"
+#include "nsLayoutUtils.h"
+#include "nsPageContentFrame.h"
+#include "nsPageSequenceFrame.h"  // for nsSharedPageData
+#include "nsPresContext.h"
+#include "nsTextFormatter.h"  // for page number localization formatting
 extern mozilla::LazyLogModule gLayoutPrintingLog;
 #define PR_PL(_p1) MOZ_LOG(gLayoutPrintingLog, mozilla::LogLevel::Debug, _p1)
 
@@ -103,9 +101,13 @@ nsReflowStatus nsPageFrame::ReflowPageContent(
     return {};
   }
 
-  ReflowInput kidReflowInput(
-      aPresContext, aPageReflowInput, frame,
-      LogicalSize(frame->GetWritingMode(), availableSpace));
+  const auto kidWM = frame->GetWritingMode();
+  LogicalSize availSizeForKid(kidWM, availableSpace);
+  if (aPageReflowInput.mFlags.mIsInFragmentainerMeasuringReflow) {
+    availSizeForKid.BSize(kidWM) = NS_UNCONSTRAINEDSIZE;
+  }
+  ReflowInput kidReflowInput(aPresContext, aPageReflowInput, frame,
+                             availSizeForKid);
   kidReflowInput.mFlags.mIsTopOfPage = true;
   kidReflowInput.mFlags.mTableIsSplittable = true;
 
@@ -124,10 +126,12 @@ nsReflowStatus nsPageFrame::ReflowPageContent(
   // that we will respect a margin of zero if specified, assuming this means
   // the document is intended to fit the paper size exactly, and the client is
   // taking full responsibility for what happens around the edges.
+  const auto anchorResolutionParams =
+      AnchorPosResolutionParams::From(&kidReflowInput);
   if (mPD->mPrintSettings->GetHonorPageRuleMargins()) {
-    const auto& margin = kidReflowInput.mStyleMargin->mMargin;
     for (const auto side : mozilla::AllPhysicalSides()) {
-      if (!margin.Get(side).IsAuto()) {
+      if (!kidReflowInput.mStyleMargin->GetMargin(side, anchorResolutionParams)
+               ->IsAuto()) {
         // Computed margins are already in the coordinate space of the content,
         // do not scale.
         const nscoord computed =
@@ -248,11 +252,25 @@ nsresult nsPageFrame::GetFrameName(nsAString& aResult) const {
 void nsPageFrame::ProcessSpecialCodes(const nsString& aStr, nsString& aNewStr) {
   aNewStr = aStr;
 
+  // Helper to wrap a string in Unicode FSI/PDI controls, so that its bidi
+  // rendering will be isolated from the context, and will respect the default
+  // directionality of the string's content.
+  // We apply this to each of the strings being substituted in for "special"
+  // codes in the header/footer.
+  constexpr char16_t kFirstStrongIsolate = char16_t(0x2068);
+  constexpr char16_t kPopDirectionalIsolate = char16_t(0x2069);
+  auto bidiIsolateWrap = [](nsString& aString) {
+    aString.Insert(kFirstStrongIsolate, 0);
+    aString.Append(kPopDirectionalIsolate);
+  };
+
   // Search to see if the &D code is in the string
   // then subst in the current date/time
   constexpr auto kDate = u"&D"_ns;
   if (aStr.Find(kDate) != kNotFound) {
-    aNewStr.ReplaceSubstring(kDate, mPD->mDateTimeStr);
+    nsAutoString uStr(mPD->mDateTimeStr);
+    bidiIsolateWrap(uStr);
+    aNewStr.ReplaceSubstring(kDate, uStr);
   }
 
   // NOTE: Must search for &PT before searching for &P
@@ -265,6 +283,7 @@ void nsPageFrame::ProcessSpecialCodes(const nsString& aStr, nsString& aNewStr) {
     nsAutoString uStr;
     nsTextFormatter::ssprintf(uStr, mPD->mPageNumAndTotalsFormat.get(),
                               mPageNum, mPD->mRawNumPages);
+    bidiIsolateWrap(uStr);
     aNewStr.ReplaceSubstring(kPageAndTotal, uStr);
   }
 
@@ -274,17 +293,22 @@ void nsPageFrame::ProcessSpecialCodes(const nsString& aStr, nsString& aNewStr) {
   if (aStr.Find(kPage) != kNotFound) {
     nsAutoString uStr;
     nsTextFormatter::ssprintf(uStr, mPD->mPageNumFormat.get(), mPageNum);
+    bidiIsolateWrap(uStr);
     aNewStr.ReplaceSubstring(kPage, uStr);
   }
 
   constexpr auto kTitle = u"&T"_ns;
   if (aStr.Find(kTitle) != kNotFound) {
-    aNewStr.ReplaceSubstring(kTitle, mPD->mDocTitle);
+    nsAutoString uStr(mPD->mDocTitle);
+    bidiIsolateWrap(uStr);
+    aNewStr.ReplaceSubstring(kTitle, uStr);
   }
 
   constexpr auto kDocURL = u"&U"_ns;
   if (aStr.Find(kDocURL) != kNotFound) {
-    aNewStr.ReplaceSubstring(kDocURL, mPD->mDocURL);
+    nsAutoString uStr(mPD->mDocURL);
+    bidiIsolateWrap(uStr);
+    aNewStr.ReplaceSubstring(kDocURL, uStr);
   }
 
   constexpr auto kPageTotal = u"&L"_ns;
@@ -292,6 +316,7 @@ void nsPageFrame::ProcessSpecialCodes(const nsString& aStr, nsString& aNewStr) {
     nsAutoString uStr;
     nsTextFormatter::ssprintf(uStr, mPD->mPageNumFormat.get(),
                               mPD->mRawNumPages);
+    bidiIsolateWrap(uStr);
     aNewStr.ReplaceSubstring(kPageTotal, uStr);
   }
 }
@@ -336,11 +361,19 @@ void nsPageFrame::DrawHeaderFooter(
     const nsString& aStrCenter, const nsString& aStrRight, const nsRect& aRect,
     nscoord aAscent, nscoord aHeight) {
   int32_t numStrs = 0;
-  if (!aStrLeft.IsEmpty()) numStrs++;
-  if (!aStrCenter.IsEmpty()) numStrs++;
-  if (!aStrRight.IsEmpty()) numStrs++;
+  if (!aStrLeft.IsEmpty()) {
+    numStrs++;
+  }
+  if (!aStrCenter.IsEmpty()) {
+    numStrs++;
+  }
+  if (!aStrRight.IsEmpty()) {
+    numStrs++;
+  }
 
-  if (numStrs == 0) return;
+  if (numStrs == 0) {
+    return;
+  }
   const nscoord contentWidth =
       aRect.width - (mPD->mEdgePaperMargin.left + mPD->mEdgePaperMargin.right);
   const nscoord strSpace = contentWidth / numStrs;
@@ -463,13 +496,21 @@ class nsDisplayHeaderFooter final : public nsPaintedDisplayItem {
       : nsPaintedDisplayItem(aBuilder, aFrame) {
     MOZ_COUNT_CTOR(nsDisplayHeaderFooter);
   }
-  MOZ_COUNTED_DTOR_OVERRIDE(nsDisplayHeaderFooter)
+
+  MOZ_COUNTED_DTOR_FINAL(nsDisplayHeaderFooter)
 
   virtual void Paint(nsDisplayListBuilder* aBuilder,
                      gfxContext* aCtx) override {
 #ifdef DEBUG
     nsPageFrame* pageFrame = do_QueryFrame(mFrame);
     MOZ_ASSERT(pageFrame, "We should have an nsPageFrame");
+#endif
+#ifdef ACCESSIBILITY
+    // There will likely have been a prior AccessibleId item to associate all
+    // subsequent items  with a node in the accessibility tree. However, this
+    // header/footer isn't part of that accessibility node. An AccessibleId of
+    // (0, 0) disassociates subsequent content from any accessibility node.
+    aCtx->GetDrawTarget()->AccessibleId(0, 0);
 #endif
     static_cast<nsPageFrame*>(mFrame)->PaintHeaderFooter(
         *aCtx, ToReferenceFrame(), false);
@@ -499,7 +540,7 @@ static void PaintMarginGuides(nsIFrame* aFrame, DrawTarget* aDrawTarget,
                        JoinStyle::MITER_OR_BEVEL, CapStyle::BUTT,
                        /* mitre limit (default, not used) */ 10.0f,
                        /* set dash pattern of 2px stroke, 2px gap */
-                       ArrayLength(dashes), dashes,
+                       std::size(dashes), dashes,
                        /* dash offset */ 0.0f);
   DrawOptions options;
 
@@ -766,11 +807,7 @@ nsPageContentFrame* nsPageFrame::PageContentFrame() const {
 
 nsSize nsPageFrame::ComputePageSize() const {
   // Compute the expected page-size.
-  const nsPageFrame* const frame =
-      StaticPrefs::layout_css_allow_mixed_page_sizes()
-          ? this
-          : static_cast<nsPageFrame*>(FirstContinuation());
-  const StylePageSize& pageSize = frame->PageContentFrame()->StylePage()->mSize;
+  const StylePageSize& pageSize = PageContentFrame()->StylePage()->mSize;
   nsSize size = PresContext()->GetPageSize();
   if (pageSize.IsSize()) {
     // Use the specified size,
@@ -812,18 +849,8 @@ float nsPageFrame::ComputeSinglePPSPageSizeScale(
   MOZ_ASSERT(aContentPageSize == ComputePageSize(),
              "Incorrect content page size");
 
-  // Check for the simplest case first, an auto page-size which requires no
-  // scaling at all.
-  {
-    const nsPageFrame* const frame =
-        StaticPrefs::layout_css_allow_mixed_page_sizes()
-            ? this
-            : static_cast<nsPageFrame*>(FirstContinuation());
-    const StylePageSize& pageSize =
-        frame->PageContentFrame()->StylePage()->mSize;
-    if (pageSize.IsAuto()) {
-      return 1.0f;
-    }
+  if (PageContentFrame()->StylePage()->mSize.IsAuto()) {
+    return 1.0f;
   }
 
   const nsContainerFrame* const parent = GetParent();
@@ -854,10 +881,6 @@ float nsPageFrame::ComputeSinglePPSPageSizeScale(
 }
 
 double nsPageFrame::GetPageOrientationRotation(nsSharedPageData* aPD) const {
-  if (!StaticPrefs::layout_css_page_orientation_enabled()) {
-    return 0.0;
-  }
-
   if (aPD->PagesPerSheetInfo()->mNumPages == 1 && !PresContext()->IsScreen() &&
       aPD->mPrintSettings->GetOutputFormat() !=
           nsIPrintSettings::kOutputFormatPDF) {
@@ -1029,8 +1052,8 @@ void nsPageBreakFrame::Reflow(nsPresContext* aPresContext,
     // frame and thus "misplaced".  nsFieldSetFrame::Reflow deals with these
     // forced breaks explicitly instead.
     const nsContainerFrame* parent = GetParent();
-    if (parent &&
-        parent->Style()->GetPseudoType() == PseudoStyleType::fieldsetContent) {
+    if (parent && parent->Style()->GetPseudoType() ==
+                      PseudoStyleType::MozFieldsetContent) {
       while ((parent = parent->GetParent())) {
         if (const nsFieldSetFrame* const fieldset = do_QueryFrame(parent)) {
           const auto* const legend = fieldset->GetLegend();

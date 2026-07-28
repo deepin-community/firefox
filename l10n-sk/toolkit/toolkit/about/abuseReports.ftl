@@ -18,8 +18,6 @@ abuse-report-addon-authored-by = autor: <a data-l10n-name="author-name">{ $autho
 abuse-report-learnmore =
     Neviete, ktorý problém vybrať?
     <a data-l10n-name="learnmore-link">Pozrite sa na ďalšie informácie o nahlasovaní rozšírení a tém vzhľadu</a>
-abuse-report-learnmore-intro = Neviete, ktorý problém vybrať?
-abuse-report-learnmore-link = Pozrite sa na ďalšie informácie o nahlasovaní rozšírení a tém vzhľadu
 abuse-report-submit-description = Popis problému (voliteľný)
 abuse-report-textarea =
     .placeholder = Ak váš problém podrobne popíšete, môžeme ho jednoduchšie vyriešiť. Ďakujeme vám za hlásenie.
@@ -46,24 +44,6 @@ abuse-report-messagebar-removed-sitepermission = Ďakujeme vám za hlásenie. Do
 abuse-report-messagebar-removed-theme = Ďakujeme vám za hlásenie. Téma vzhľadu <span data-l10n-name="addon-name">{ $addon-name }</span> bola odstránená.
 abuse-report-messagebar-error = Pri odosielaní hlásenia o doplnku <span data-l10n-name="addon-name">{ $addon-name }</span> nastala chyba.
 abuse-report-messagebar-error-recent-submit = Hlásenie o doplnku <span data-l10n-name="addon-name">{ $addon-name }</span> nebolo odoslané, pretože ste ho už nedávno nahlásili.
-abuse-report-messagebar-aborted2 =
-    .message = Nahlásenie doplnku { $addon-name } bolo zrušené.
-abuse-report-messagebar-submitting2 =
-    .message = Odosielanie hlásenia o doplnku { $addon-name }.
-abuse-report-messagebar-submitted2 =
-    .message = Ďakujeme vám za hlásenie. Chcete doplnok { $addon-name } odstrániť?
-abuse-report-messagebar-submitted-noremove2 =
-    .message = Ďakujeme vám za hlásenie.
-abuse-report-messagebar-removed-extension2 =
-    .message = Ďakujeme vám za hlásenie. Rozšírenie { $addon-name } bolo odstránené.
-abuse-report-messagebar-removed-sitepermission2 =
-    .message = Ďakujeme vám za hlásenie. Doplnok oprávnení stránok { $addon-name } bol odstránený.
-abuse-report-messagebar-removed-theme2 =
-    .message = Ďakujeme vám za hlásenie. Téma vzhľadu { $addon-name } bola odstránená.
-abuse-report-messagebar-error2 =
-    .message = Pri odosielaní hlásenia o doplnku { $addon-name } nastala chyba.
-abuse-report-messagebar-error-recent-submit2 =
-    .message = Hlásenie o doplnku { $addon-name } nebolo odoslané, pretože ste ho už nedávno nahlásili.
 
 ## Message bars actions.
 
@@ -82,9 +62,9 @@ abuse-report-damage-reason-v2 = Poškodzuje môj počítač a údaje
 abuse-report-damage-example = Príklad: malvér alebo krádež údajov
 abuse-report-spam-reason-v2 = Spam alebo reklamy
 abuse-report-spam-example = Príklad: vkladanie reklám do webových stránok
-abuse-report-settings-reason-v2 = Zmena vyhľadávacieho modulu, domovskej stránky alebo stránky novej karty bez predchádzajúceho upozornenia
+abuse-report-settings-reason-v2 = Zmena vyhľadávača, domovskej stránky alebo stránky novej karty bez predchádzajúceho upozornenia
 abuse-report-settings-suggestions = Pred nahlásením tohto rozšírenia skúste upraviť svoje nastavenia:
-abuse-report-settings-suggestions-search = Zmena vyhľadávacieho modulu
+abuse-report-settings-suggestions-search = Zmena vyhľadávača
 abuse-report-settings-suggestions-homepage = Zmena domovskej stránky a stránky novej karty
 abuse-report-deceptive-reason-v2 = Vydáva sa za niečo iné
 abuse-report-deceptive-example = Príklad: zavádzajúci popis alebo náhľady

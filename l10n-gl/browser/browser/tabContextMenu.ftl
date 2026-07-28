@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Nova lapela
     .accesskey = n
@@ -28,10 +32,16 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Pechar as lapelas á esquerda
     .accesskey = e
+close-tabs-to-the-start-vertical =
+    .label = Pechar as pestanas superiores
+    .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Pechar as lapelas á dereita
+    .accesskey = i
+close-tabs-to-the-end-vertical =
+    .label = Pecha as pestanas inferiores
     .accesskey = i
 close-other-tabs =
     .label = Pechar as outras lapelas
@@ -72,9 +82,22 @@ move-to-new-window =
 tab-context-close-multiple-tabs =
     .label = Pechar varias lapelas
     .accesskey = v
+tab-context-close-duplicate-tabs =
+    .label = Pechar as pestanas duplicadas
+    .accesskey = u
 tab-context-share-url =
     .label = Compartir
     .accesskey = C
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nova pestana á dereita
+    .accesskey = v
+tab-context-new-tab-open-vertical =
+    .label = Nova pestana debaixo
+    .accesskey = x
+tab-context-new-group =
+    .label = Novo grupo
+    .accesskey = g
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -103,7 +126,6 @@ tab-context-move-tabs =
            *[other] Mover lapelas
         }
     .accesskey = v
-
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -111,3 +133,11 @@ tab-context-send-tabs-to-device =
            *[other] Enviar { $tabCount } lapelas ao dispositivo
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Descargar pestana
+            [one] Descargar pestana
+           *[other] Descargar { $tabCount } pestanas
+        }
+    .accesskey = D

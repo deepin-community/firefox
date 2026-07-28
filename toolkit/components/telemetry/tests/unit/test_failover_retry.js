@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const { HttpServer } = ChromeUtils.importESModule(
@@ -18,6 +16,13 @@ Services.prefs.setBoolPref(
 );
 
 Services.prefs.setBoolPref("network.dns.native-is-localhost", true);
+
+// We don't normally allow localhost channels to be proxied, but this
+// is easier than updating all the certs and/or domains.
+Services.prefs.setBoolPref("network.proxy.allow_hijacking_localhost", true);
+registerCleanupFunction(() => {
+  Services.prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
+});
 
 // Trigger a proper telemetry init.
 do_get_profile(true);
@@ -94,7 +99,6 @@ add_task(async function setup() {
     TelemetryUtils.Preferences.HealthPingEnabled,
     false
   );
-  TelemetryStopwatch.setTestModeEnabled(true);
 
   registerProxy();
 

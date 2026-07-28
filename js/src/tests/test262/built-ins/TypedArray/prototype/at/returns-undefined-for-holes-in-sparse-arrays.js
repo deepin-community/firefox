@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2020 Rick Waldron. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -28,8 +27,8 @@ assert.sameValue(
   'The value of `typeof TypedArray.prototype.at` is "function"'
 );
 
-testWithTypedArrayConstructors(TA => {
-  let a = new TA([0, 1, , 3, 4, , 6]);
+testWithTypedArrayConstructors((TA, makeCtorArg) => {
+  let a = new TA(makeCtorArg([0, 1, , 3, 4, , 6]));
   let filler = 0;
   if (TA.name.startsWith('Float')) {
     filler = NaN;

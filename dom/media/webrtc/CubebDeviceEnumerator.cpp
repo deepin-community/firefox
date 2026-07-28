@@ -1,11 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "CubebDeviceEnumerator.h"
 
+#include <algorithm>
+
+#include "mozilla/Assertions.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/SchedulerGroup.h"
 #include "mozilla/StaticMutex.h"
@@ -26,7 +27,7 @@ static StaticRefPtr<CubebDeviceEnumerator> sInstance;
 static StaticMutex sInstanceMutex MOZ_UNANNOTATED;
 
 /* static */
-CubebDeviceEnumerator* CubebDeviceEnumerator::GetInstance() {
+already_AddRefed<CubebDeviceEnumerator> CubebDeviceEnumerator::GetInstance() {
   StaticMutexAutoLock lock(sInstanceMutex);
   if (!sInstance) {
     sInstance = new CubebDeviceEnumerator();
@@ -43,9 +44,9 @@ CubebDeviceEnumerator* CubebDeviceEnumerator::GetInstance() {
       }
       return true;
     }();
-    Unused << clearOnShutdownSetup;
+    (void)clearOnShutdownSetup;
   }
-  return sInstance.get();
+  return do_AddRef(sInstance);
 }
 
 CubebDeviceEnumerator::CubebDeviceEnumerator()
@@ -185,6 +186,30 @@ static uint16_t ConvertCubebFormat(cubeb_device_fmt aFormat) {
   return format;
 }
 
+static int GetDevicePriority(const RefPtr<AudioDeviceInfo>& device) {
+  if (!device->Preferred()) {
+    return 0;
+  }
+
+  uint16_t prefs = 0;
+  device->GetPreferred(&prefs);
+
+  // Priority order: multimedia (playback) -> voice (communication) ->
+  // notification. PERF_ALL contains all flags, so is of the highest priority
+  // and ends up sorted first.
+  if (prefs & nsIAudioDeviceInfo::PREF_MULTIMEDIA) {
+    return 3;
+  }
+  if (prefs & nsIAudioDeviceInfo::PREF_VOICE) {
+    return 2;
+  }
+  if (prefs & nsIAudioDeviceInfo::PREF_NOTIFICATION) {
+    return 1;
+  }
+  MOZ_ASSERT_UNREACHABLE("Unknown value in Preferred flag");
+  return 0;
+}
+
 static RefPtr<AudioDeviceSet> GetDeviceCollection(Side aSide) {
   RefPtr set = new AudioDeviceSet();
   RefPtr<CubebHandle> handle = GetCubeb();
@@ -212,6 +237,7 @@ static RefPtr<AudioDeviceSet> GetDeviceCollection(Side aSide) {
               ConvertCubebFormat(device.default_format), device.max_channels,
               device.default_rate, device.max_rate, device.min_rate,
               device.latency_hi, device.latency_lo);
+
           set->AppendElement(std::move(info));
         }
       }
@@ -220,6 +246,16 @@ static RefPtr<AudioDeviceSet> GetDeviceCollection(Side aSide) {
     });
 #  endif
   }
+
+  // On Windows, there is multiple kinds of default devices. This uses
+  // this order: multimedia -> voice -> notification -> non-preferred.
+  // This code works as expected on other OSes.
+  std::stable_sort(
+      set->begin(), set->end(),
+      [](const RefPtr<AudioDeviceInfo>& a, const RefPtr<AudioDeviceInfo>& b) {
+        return GetDevicePriority(a) > GetDevicePriority(b);
+      });
+
   return set;
 }
 #endif  // non ANDROID

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,6 +13,7 @@
 #include "ImageRegion.h"
 #include "Orientation.h"
 #include "mozilla/image/Resolution.h"
+#include "nsPresContext.h"
 
 #include "mozilla/MemoryReporting.h"
 
@@ -98,15 +98,26 @@ nsresult DynamicImage::GetNativeSizes(nsTArray<IntSize>&) {
 size_t DynamicImage::GetNativeSizesLength() { return 0; }
 
 NS_IMETHODIMP
-DynamicImage::GetIntrinsicSize(nsSize* aSize) {
+DynamicImage::GetIntrinsicSize(ImageIntrinsicSize* aIntrinsicSize) {
   IntSize intSize(mDrawable->Size());
-  *aSize = nsSize(intSize.width, intSize.height);
+  aIntrinsicSize->mWidth = Some(intSize.width);
+  aIntrinsicSize->mHeight = Some(intSize.height);
+
   return NS_OK;
 }
 
-Maybe<AspectRatio> DynamicImage::GetIntrinsicRatio() {
+NS_IMETHODIMP
+DynamicImage::GetIntrinsicSizeInAppUnits(nsSize* aSize) {
+  IntSize intSize(mDrawable->Size());
+
+  *aSize = nsSize(nsPresContext::CSSPixelsToAppUnits(intSize.width),
+                  nsPresContext::CSSPixelsToAppUnits(intSize.height));
+  return NS_OK;
+}
+
+AspectRatio DynamicImage::GetIntrinsicRatio() {
   auto size = mDrawable->Size();
-  return Some(AspectRatio::FromSize(size.width, size.height));
+  return AspectRatio::FromSize(size.width, size.height);
 }
 
 NS_IMETHODIMP_(Orientation)

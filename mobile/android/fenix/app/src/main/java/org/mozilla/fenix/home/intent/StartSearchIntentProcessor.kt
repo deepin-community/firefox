@@ -6,22 +6,25 @@ package org.mozilla.fenix.home.intent
 
 import android.content.Intent
 import androidx.navigation.NavController
-import androidx.navigation.navOptions
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.SearchWidget
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.NavGraphDirections
-import org.mozilla.fenix.R
 import org.mozilla.fenix.components.metrics.MetricsUtils
 import org.mozilla.fenix.ext.nav
+import org.mozilla.fenix.utils.Settings
 
 /**
- * When the search widget is tapped, Fenix should open to the search fragment.
- * Tapping the private browsing mode launcher icon should also open to the search fragment.
+ * When the search widget is tapped and the user has been onboarded, Fenix should open directly to search.
+ * Tapping the private browsing mode launcher icon should also open to search.
  */
-class StartSearchIntentProcessor : HomeIntentProcessor {
+class StartSearchIntentProcessor(private val userHasBeenOnboarded: () -> Boolean) : HomeIntentProcessor {
 
-    override fun process(intent: Intent, navController: NavController, out: Intent): Boolean {
+    override fun process(intent: Intent, navController: NavController, out: Intent, settings: Settings): Boolean {
+        if (!userHasBeenOnboarded()) {
+            return false
+        }
+
         val event = intent.extras?.getString(HomeActivity.OPEN_TO_SEARCH)
         return if (event != null) {
             val source = when (event) {
@@ -40,18 +43,16 @@ class StartSearchIntentProcessor : HomeIntentProcessor {
 
             out.removeExtra(HomeActivity.OPEN_TO_SEARCH)
 
-            val directions = source?.let {
-                NavGraphDirections.actionGlobalSearchDialog(
-                    sessionId = null,
-                    searchAccessPoint = it,
+            source?.let {
+                navController.nav(
+                    id = null,
+                    directions = NavGraphDirections.actionGlobalHome(
+                        focusOnAddressBar = true,
+                        searchAccessPoint = it,
+                    ),
                 )
             }
-            directions?.let {
-                val options = navOptions {
-                    popUpTo(R.id.homeFragment)
-                }
-                navController.nav(null, it, options)
-            }
+
             true
         } else {
             false

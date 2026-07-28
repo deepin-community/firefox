@@ -9,10 +9,14 @@ ChromeUtils.defineESModuleGetters(this, {
   FormHistoryTestUtils:
     "resource://testing-common/FormHistoryTestUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+  SearchService: "moz-src:///toolkit/components/search/SearchService.sys.mjs",
   SearchTestUtils: "resource://testing-common/SearchTestUtils.sys.mjs",
-  SearchUtils: "resource://gre/modules/SearchUtils.sys.mjs",
+  SearchUITestUtils: "resource://testing-common/SearchUITestUtils.sys.mjs",
+  SearchUtils: "moz-src:///toolkit/components/search/SearchUtils.sys.mjs",
+  sinon: "resource://testing-common/Sinon.sys.mjs",
   TelemetryTestUtils: "resource://testing-common/TelemetryTestUtils.sys.mjs",
-  UrlbarSearchUtils: "resource:///modules/UrlbarSearchUtils.sys.mjs",
+  UrlbarSearchUtils:
+    "moz-src:///browser/components/urlbar/UrlbarSearchUtils.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(this, "UrlbarTestUtils", () => {
@@ -27,6 +31,7 @@ let gCUITestUtils = new CustomizableUITestUtils(window);
 
 AddonTestUtils.initMochitest(this);
 SearchTestUtils.init(this);
+SearchUITestUtils.init(this);
 
 /**
  * Recursively compare two objects and check that every property of expectedObj has the same value
@@ -77,12 +82,19 @@ function promiseEvent(aTarget, aEventName, aPreventDefault) {
   return BrowserTestUtils.waitForEvent(aTarget, aEventName, false, cancelEvent);
 }
 
-// Get an array of the one-off buttons.
-function getOneOffs() {
+/**
+ * Get an array of the one-off buttons.
+ */
+async function getOneOffs() {
+  /** @type {Element[]} */
   let oneOffs = [];
   let searchPopup = document.getElementById("PopupSearchAutoComplete");
+  if (searchPopup.oneOffButtons._rebuilding) {
+    await promiseEvent(searchPopup.oneOffButtons, "rebuild");
+  }
   let oneOffsContainer = searchPopup.searchOneOffsContainer;
   let oneOff = oneOffsContainer.querySelector(".search-panel-one-offs");
+
   for (oneOff = oneOff.firstChild; oneOff; oneOff = oneOff.nextSibling) {
     if (oneOff.nodeType == Node.ELEMENT_NODE) {
       oneOffs.push(oneOff);
@@ -104,15 +116,21 @@ async function typeInSearchField(browser, text, fieldName) {
   );
 }
 
-async function searchInSearchbar(inputText, win = window) {
+async function searchInSearchbar(
+  inputText,
+  win = window,
+  popupAlreadyOpen = false
+) {
   await new Promise(r => waitForFocus(r, win));
-  let sb = win.BrowserSearch.searchBar;
+  let sb = win.document.getElementById("searchbar");
   // Write the search query in the searchbar.
   sb.focus();
   sb.value = inputText;
   sb.textbox.controller.startSearch(inputText);
-  // Wait for the popup to show.
-  await BrowserTestUtils.waitForEvent(sb.textbox.popup, "popupshown");
+  if (!popupAlreadyOpen) {
+    // Wait for the popup to show.
+    await BrowserTestUtils.waitForEvent(sb.textbox.popup, "popupshown");
+  }
   // And then for the search to complete.
   await TestUtils.waitForCondition(
     () =>
@@ -131,3 +149,82 @@ function clearSearchbarHistory() {
 registerCleanupFunction(async () => {
   await PlacesUtils.history.clear();
 });
+
+/**
+ * Fills a text field ensuring to cause expected edit events.
+ *
+ * @param {string} id
+ *        id of the text field
+ * @param {string} text
+ *        text to fill in
+ * @param {object} win
+ *        dialog window
+ */
+function fillTextField(id, text, win) {
+  let elt = win.document.getElementById(id);
+  elt.focus();
+  elt.select();
+  EventUtils.synthesizeKey("a", { metaKey: true }, win);
+  EventUtils.synthesizeKey("KEY_Backspace", {}, win);
+
+  for (let c of text.split("")) {
+    EventUtils.synthesizeKey(c, {}, win);
+  }
+}
+
+/**
+ * Wait for the user's default search engine to change.
+ *
+ * @param {XULBrowser} browser
+ * @param {Function} searchEngineChangeFn
+ *   A function that is called to change the search engine.
+ */
+async function promiseContentSearchChange(browser, searchEngineChangeFn) {
+  // Add an event listener manually then perform the action, rather than using
+  // BrowserTestUtils.addContentEventListener as that doesn't add the listener
+  // early enough.
+  await SpecialPowers.spawn(browser, [], async () => {
+    // Store the results in a temporary place.
+    content._searchDetails = {
+      defaultEnginesList: [],
+      listener: event => {
+        if (event.detail.type == "CurrentEngine") {
+          content._searchDetails.defaultEnginesList.push(
+            content.wrappedJSObject.gContentSearchController.defaultEngine.name
+          );
+        }
+      },
+    };
+
+    // Listen using the system group to ensure that it fires after
+    // the default behaviour.
+    content.addEventListener(
+      "ContentSearchService",
+      content._searchDetails.listener,
+      { mozSystemGroup: true }
+    );
+  });
+
+  let expectedEngineName = await searchEngineChangeFn();
+
+  await SpecialPowers.spawn(
+    browser,
+    [expectedEngineName],
+    async expectedEngineNameChild => {
+      await ContentTaskUtils.waitForCondition(
+        () =>
+          content._searchDetails.defaultEnginesList &&
+          content._searchDetails.defaultEnginesList[
+            content._searchDetails.defaultEnginesList.length - 1
+          ] == expectedEngineNameChild,
+        `Waiting for ${expectedEngineNameChild} to be set`
+      );
+      content.removeEventListener(
+        "ContentSearchService",
+        content._searchDetails.listener,
+        { mozSystemGroup: true }
+      );
+      delete content._searchDetails;
+    }
+  );
+}

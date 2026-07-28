@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- */
 // Copyright 2011 the V8 project authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -27,9 +24,9 @@
 
 #include "jit/riscv64/disasm/Disasm-riscv64.h"
 
-#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <string_view>
 
 #include "jit/riscv64/Assembler-riscv64.h"
 
@@ -240,20 +237,20 @@ int Decoder::switch_sew(Instruction* instr) {
 
 // Handle all register based formatting in this function to reduce the
 // complexity of FormatOption.
-int Decoder::FormatRegister(Instruction* instr, const char* format) {
-  MOZ_ASSERT(format[0] == 'r');
-  if (format[1] == 's') {  // 'rs[12]: Rs register.
-    if (format[2] == '1') {
+int Decoder::FormatRegister(Instruction* instr, const char* option) {
+  MOZ_ASSERT(option[0] == 'r');
+  if (option[1] == 's') {  // 'rs[12]: Rs register.
+    if (option[2] == '1') {
       int reg = instr->Rs1Value();
       PrintRegister(reg);
       return 3;
-    } else if (format[2] == '2') {
+    } else if (option[2] == '2') {
       int reg = instr->Rs2Value();
       PrintRegister(reg);
       return 3;
     }
     MOZ_CRASH();
-  } else if (format[1] == 'd') {  // 'rd: rd register.
+  } else if (option[1] == 'd') {  // 'rd: rd register.
     int reg = instr->RdValue();
     PrintRegister(reg);
     return 2;
@@ -264,29 +261,29 @@ int Decoder::FormatRegister(Instruction* instr, const char* format) {
 // Handle all FPUregister based formatting in this function to reduce the
 // complexity of FormatOption.
 int Decoder::FormatFPURegisterOrRoundMode(Instruction* instr,
-                                          const char* format) {
-  MOZ_ASSERT(format[0] == 'f');
-  if (format[1] == 's') {  // 'fs[1-3]: Rs register.
-    if (format[2] == '1') {
+                                          const char* option) {
+  MOZ_ASSERT(option[0] == 'f');
+  if (option[1] == 's') {  // 'fs[1-3]: Rs register.
+    if (option[2] == '1') {
       int reg = instr->Rs1Value();
       PrintFPURegister(reg);
       return 3;
-    } else if (format[2] == '2') {
+    } else if (option[2] == '2') {
       int reg = instr->Rs2Value();
       PrintFPURegister(reg);
       return 3;
-    } else if (format[2] == '3') {
+    } else if (option[2] == '3') {
       int reg = instr->Rs3Value();
       PrintFPURegister(reg);
       return 3;
     }
     MOZ_CRASH();
-  } else if (format[1] == 'd') {  // 'fd: fd register.
+  } else if (option[1] == 'd') {  // 'fd: fd register.
     int reg = instr->RdValue();
     PrintFPURegister(reg);
     return 2;
-  } else if (format[1] == 'r') {  // 'frm
-    MOZ_ASSERT(STRING_STARTS_WITH(format, "frm"));
+  } else if (option[1] == 'r') {  // 'frm
+    MOZ_ASSERT(STRING_STARTS_WITH(option, "frm"));
     PrintRoundingMode(instr);
     return 3;
   }
@@ -295,51 +292,51 @@ int Decoder::FormatFPURegisterOrRoundMode(Instruction* instr,
 
 // Handle all C extension register based formatting in this function to reduce
 // the complexity of FormatOption.
-int Decoder::FormatRvcRegister(Instruction* instr, const char* format) {
-  MOZ_ASSERT(format[0] == 'C');
-  MOZ_ASSERT(format[1] == 'r' || format[1] == 'f');
-  if (format[2] == 's') {  // 'Crs[12]: Rs register.
-    if (format[3] == '1') {
-      if (format[4] == 's') {  // 'Crs1s: 3-bits register
+int Decoder::FormatRvcRegister(Instruction* instr, const char* option) {
+  MOZ_ASSERT(option[0] == 'C');
+  MOZ_ASSERT(option[1] == 'r' || option[1] == 'f');
+  if (option[2] == 's') {  // 'Crs[12]: Rs register.
+    if (option[3] == '1') {
+      if (option[4] == 's') {  // 'Crs1s: 3-bits register
         int reg = instr->RvcRs1sValue();
-        if (format[1] == 'r') {
+        if (option[1] == 'r') {
           PrintRegister(reg);
-        } else if (format[1] == 'f') {
+        } else if (option[1] == 'f') {
           PrintFPURegister(reg);
         }
         return 5;
       }
       int reg = instr->RvcRs1Value();
-      if (format[1] == 'r') {
+      if (option[1] == 'r') {
         PrintRegister(reg);
-      } else if (format[1] == 'f') {
+      } else if (option[1] == 'f') {
         PrintFPURegister(reg);
       }
       return 4;
-    } else if (format[3] == '2') {
-      if (format[4] == 's') {  // 'Crs2s: 3-bits register
+    } else if (option[3] == '2') {
+      if (option[4] == 's') {  // 'Crs2s: 3-bits register
         int reg = instr->RvcRs2sValue();
-        if (format[1] == 'r') {
+        if (option[1] == 'r') {
           PrintRegister(reg);
-        } else if (format[1] == 'f') {
+        } else if (option[1] == 'f') {
           PrintFPURegister(reg);
         }
         return 5;
       }
       int reg = instr->RvcRs2Value();
-      if (format[1] == 'r') {
+      if (option[1] == 'r') {
         PrintRegister(reg);
-      } else if (format[1] == 'f') {
+      } else if (option[1] == 'f') {
         PrintFPURegister(reg);
       }
       return 4;
     }
     MOZ_CRASH();
-  } else if (format[2] == 'd') {  // 'Crd: rd register.
+  } else if (option[2] == 'd') {  // 'Crd: rd register.
     int reg = instr->RvcRdValue();
-    if (format[1] == 'r') {
+    if (option[1] == 'r') {
       PrintRegister(reg);
-    } else if (format[1] == 'f') {
+    } else if (option[1] == 'f') {
       PrintFPURegister(reg);
     }
     return 3;
@@ -349,43 +346,43 @@ int Decoder::FormatRvcRegister(Instruction* instr, const char* format) {
 
 // Handle all C extension immediates based formatting in this function to reduce
 // the complexity of FormatOption.
-int Decoder::FormatRvcImm(Instruction* instr, const char* format) {
+int Decoder::FormatRvcImm(Instruction* instr, const char* option) {
   // TODO(riscv): add other rvc imm format
-  MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm"));
-  if (format[4] == '6') {
-    if (format[5] == 'U') {
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm6U"));
+  MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm"));
+  if (option[4] == '6') {
+    if (option[5] == 'U') {
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm6U"));
       PrintRvcImm6U(instr);
       return 6;
-    } else if (format[5] == 'A') {
-      if (format[9] == '1' && format[10] == '6') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm6Addi16sp"));
+    } else if (option[5] == 'A') {
+      if (option[9] == '1' && option[10] == '6') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm6Addi16sp"));
         PrintRvcImm6Addi16sp(instr);
         return 13;
       }
       MOZ_CRASH();
-    } else if (format[5] == 'L') {
-      if (format[6] == 'd') {
-        if (format[7] == 's') {
-          MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm6Ldsp"));
+    } else if (option[5] == 'L') {
+      if (option[6] == 'd') {
+        if (option[7] == 's') {
+          MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm6Ldsp"));
           PrintRvcImm6Ldsp(instr);
           return 9;
         }
-      } else if (format[6] == 'w') {
-        if (format[7] == 's') {
-          MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm6Lwsp"));
+      } else if (option[6] == 'w') {
+        if (option[7] == 's') {
+          MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm6Lwsp"));
           PrintRvcImm6Lwsp(instr);
           return 9;
         }
       }
       MOZ_CRASH();
-    } else if (format[5] == 'S') {
-      if (format[6] == 'w') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm6Swsp"));
+    } else if (option[5] == 'S') {
+      if (option[6] == 'w') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm6Swsp"));
         PrintRvcImm6Swsp(instr);
         return 9;
-      } else if (format[6] == 'd') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm6Sdsp"));
+      } else if (option[6] == 'd') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm6Sdsp"));
         PrintRvcImm6Sdsp(instr);
         return 9;
       }
@@ -393,34 +390,34 @@ int Decoder::FormatRvcImm(Instruction* instr, const char* format) {
     }
     PrintRvcImm6(instr);
     return 5;
-  } else if (format[4] == '5') {
-    MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm5"));
-    if (format[5] == 'W') {
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm5W"));
+  } else if (option[4] == '5') {
+    MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm5"));
+    if (option[5] == 'W') {
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm5W"));
       PrintRvcImm5W(instr);
       return 6;
-    } else if (format[5] == 'D') {
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm5D"));
+    } else if (option[5] == 'D') {
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm5D"));
       PrintRvcImm5D(instr);
       return 6;
     }
     MOZ_CRASH();
-  } else if (format[4] == '8') {
-    MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm8"));
-    if (format[5] == 'A') {
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm8Addi4spn"));
+  } else if (option[4] == '8') {
+    MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm8"));
+    if (option[5] == 'A') {
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm8Addi4spn"));
       PrintRvcImm8Addi4spn(instr);
       return 13;
-    } else if (format[5] == 'B') {
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm8B"));
+    } else if (option[5] == 'B') {
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm8B"));
       PrintRvcImm8B(instr);
       return 6;
     }
     MOZ_CRASH();
-  } else if (format[4] == '1') {
-    MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm1"));
-    if (format[5] == '1') {
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "Cimm11CJ"));
+  } else if (option[4] == '1') {
+    MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm1"));
+    if (option[5] == '1') {
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "Cimm11CJ"));
       PrintRvcImm11CJ(instr);
       return 8;
     }
@@ -434,23 +431,23 @@ int Decoder::FormatRvcImm(Instruction* instr, const char* format) {
 // character of the option string (the option escape has already been
 // consumed by the caller.)  FormatOption returns the number of
 // characters that were consumed from the formatting string.
-int Decoder::FormatOption(Instruction* instr, const char* format) {
-  switch (format[0]) {
+int Decoder::FormatOption(Instruction* instr, const char* option) {
+  switch (option[0]) {
     case 'C': {  // `C extension
-      if (format[1] == 'r' || format[1] == 'f') {
-        return FormatRvcRegister(instr, format);
-      } else if (format[1] == 'i') {
-        return FormatRvcImm(instr, format);
-      } else if (format[1] == 's') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "Cshamt"));
+      if (option[1] == 'r' || option[1] == 'f') {
+        return FormatRvcRegister(instr, option);
+      } else if (option[1] == 'i') {
+        return FormatRvcImm(instr, option);
+      } else if (option[1] == 's') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "Cshamt"));
         PrintRvcShamt(instr);
         return 6;
       }
       MOZ_CRASH();
     }
     case 'c': {  // `csr: CSR registers
-      if (format[1] == 's') {
-        if (format[2] == 'r') {
+      if (option[1] == 's') {
+        if (option[2] == 'r') {
           PrintCSRReg(instr);
           return 3;
         }
@@ -458,25 +455,25 @@ int Decoder::FormatOption(Instruction* instr, const char* format) {
       MOZ_CRASH();
     }
     case 'i': {  // 'imm12, 'imm12x, 'imm20U, or 'imm20J: Immediates.
-      if (format[3] == '1') {
-        if (format[4] == '2') {
-          MOZ_ASSERT(STRING_STARTS_WITH(format, "imm12"));
-          if (format[5] == 'x') {
+      if (option[3] == '1') {
+        if (option[4] == '2') {
+          MOZ_ASSERT(STRING_STARTS_WITH(option, "imm12"));
+          if (option[5] == 'x') {
             PrintImm12X(instr);
             return 6;
           }
           PrintImm12(instr);
           return 5;
         }
-      } else if (format[3] == '2' && format[4] == '0') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "imm20"));
-        switch (format[5]) {
+      } else if (option[3] == '2' && option[4] == '0') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "imm20"));
+        switch (option[5]) {
           case 'U':
-            MOZ_ASSERT(STRING_STARTS_WITH(format, "imm20U"));
+            MOZ_ASSERT(STRING_STARTS_WITH(option, "imm20U"));
             PrintImm20U(instr);
             break;
           case 'J':
-            MOZ_ASSERT(STRING_STARTS_WITH(format, "imm20J"));
+            MOZ_ASSERT(STRING_STARTS_WITH(option, "imm20J"));
             PrintImm20J(instr);
             break;
         }
@@ -485,92 +482,92 @@ int Decoder::FormatOption(Instruction* instr, const char* format) {
       MOZ_CRASH();
     }
     case 'o': {  // 'offB or 'offS: Offsets.
-      if (format[3] == 'B') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "offB"));
+      if (option[3] == 'B') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "offB"));
         PrintBranchOffset(instr);
         return 4;
-      } else if (format[3] == 'S') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "offS"));
+      } else if (option[3] == 'S') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "offS"));
         PrintStoreOffset(instr);
         return 4;
       }
       MOZ_CRASH();
     }
     case 'r': {  // 'r: registers.
-      return FormatRegister(instr, format);
+      return FormatRegister(instr, option);
     }
     case 'f': {  // 'f: FPUregisters or `frm
-      return FormatFPURegisterOrRoundMode(instr, format);
+      return FormatFPURegisterOrRoundMode(instr, option);
     }
     case 'a': {  // 'a: Atomic acquire and release.
       PrintAcquireRelease(instr);
       return 1;
     }
     case 'p': {  // `pre
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "pre"));
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "pre"));
       PrintMemoryOrder(instr, true);
       return 3;
     }
     case 's': {  // 's32 or 's64: Shift amount.
-      if (format[1] == '3') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "s32"));
+      if (option[1] == '3') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "s32"));
         PrintShamt32(instr);
         return 3;
-      } else if (format[1] == '6') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "s64"));
+      } else if (option[1] == '6') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "s64"));
         PrintShamt(instr);
         return 3;
-      } else if (format[1] == 'u') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "suc"));
+      } else if (option[1] == 'u') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "suc"));
         PrintMemoryOrder(instr, false);
         return 3;
-      } else if (format[1] == 'e') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "sew"));
+      } else if (option[1] == 'e') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "sew"));
         PrintRvvSEW(instr);
         return 3;
-      } else if (format[1] == 'i') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "simm5"));
+      } else if (option[1] == 'i') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "simm5"));
         PrintRvvSimm5(instr);
         return 5;
       }
       MOZ_CRASH();
     }
     case 'v': {
-      if (format[1] == 'd') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "vd"));
+      if (option[1] == 'd') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "vd"));
         PrintVd(instr);
         return 2;
-      } else if (format[2] == '1') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "vs1"));
+      } else if (option[2] == '1') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "vs1"));
         PrintVs1(instr);
         return 3;
-      } else if (format[2] == '2') {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "vs2"));
+      } else if (option[2] == '2') {
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "vs2"));
         PrintVs2(instr);
         return 3;
       } else {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "vm"));
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "vm"));
         PrintRvvVm(instr);
         return 2;
       }
     }
     case 'l': {
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "lmul"));
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "lmul"));
       PrintRvvLMUL(instr);
       return 4;
     }
     case 'u': {
-      if (STRING_STARTS_WITH(format, "uimm5")) {
+      if (STRING_STARTS_WITH(option, "uimm5")) {
         PrintRvvUimm5(instr);
         return 5;
       } else {
-        MOZ_ASSERT(STRING_STARTS_WITH(format, "uimm"));
+        MOZ_ASSERT(STRING_STARTS_WITH(option, "uimm"));
         PrintUimm(instr);
         return 4;
       }
     }
     case 't': {  // 'target: target of branch instructions'
-      MOZ_ASSERT(STRING_STARTS_WITH(format, "target"));
+      MOZ_ASSERT(STRING_STARTS_WITH(option, "target"));
       PrintTarget(instr);
       return 6;
     }
@@ -843,7 +840,7 @@ void Decoder::PrintAcquireRelease(Instruction* instr) {
 
 void Decoder::PrintCSRReg(Instruction* instr) {
   int32_t csr_reg = instr->CsrValue();
-  std::string s;
+  std::string_view s;
   switch (csr_reg) {
     case csr_fflags:  // Floating-Point Accrued Exceptions (RW)
       s = "csr_fflags";
@@ -875,12 +872,12 @@ void Decoder::PrintCSRReg(Instruction* instr) {
     default:
       MOZ_CRASH();
   }
-  out_buffer_pos_ += SNPrintF(out_buffer_ + out_buffer_pos_, "%s", s.c_str());
+  out_buffer_pos_ += SNPrintF(out_buffer_ + out_buffer_pos_, "%s", s.data());
 }
 
 void Decoder::PrintRoundingMode(Instruction* instr) {
   int frm = instr->RoundMode();
-  std::string s;
+  std::string_view s;
   switch (frm) {
     case RNE:
       s = "RNE";
@@ -903,25 +900,26 @@ void Decoder::PrintRoundingMode(Instruction* instr) {
     default:
       MOZ_CRASH();
   }
-  out_buffer_pos_ += SNPrintF(out_buffer_ + out_buffer_pos_, "%s", s.c_str());
+  out_buffer_pos_ += SNPrintF(out_buffer_ + out_buffer_pos_, "%s", s.data());
 }
 
 void Decoder::PrintMemoryOrder(Instruction* instr, bool is_pred) {
   int memOrder = instr->MemoryOrder(is_pred);
-  std::string s;
+  char s[5] = {};
+  char* ps = s;
   if ((memOrder & PSI) == PSI) {
-    s += "i";
+    *ps++ = 'i';
   }
   if ((memOrder & PSO) == PSO) {
-    s += "o";
+    *ps++ = 'o';
   }
   if ((memOrder & PSR) == PSR) {
-    s += "r";
+    *ps++ = 'r';
   }
   if ((memOrder & PSW) == PSW) {
-    s += "w";
+    *ps++ = 'w';
   }
-  out_buffer_pos_ += SNPrintF(out_buffer_ + out_buffer_pos_, "%s", s.c_str());
+  out_buffer_pos_ += SNPrintF(out_buffer_ + out_buffer_pos_, "%s", s);
 }
 
 // Printing of instruction name.
@@ -971,9 +969,24 @@ void Decoder::DecodeRType(Instruction* instr) {
     case RO_AND:
       Format(instr, "and       'rd, 'rs1, 'rs2");
       break;
-#ifdef JS_CODEGEN_RISCV64
+    case RO_ANDN:
+      Format(instr, "andn      'rd, 'rs1, 'rs2");
+      break;
+    case RO_ORN:
+      Format(instr, "orn       'rd, 'rs1, 'rs2");
+      break;
+    case RO_XNOR:
+      Format(instr, "xnor      'rd, 'rs1, 'rs2");
+      break;
     case RO_ADDW:
       Format(instr, "addw      'rd, 'rs1, 'rs2");
+      break;
+    case RO_ADDUW:
+      if (instr->Rs2Value() == zero_reg.code()) {
+        Format(instr, "zext.w    'rd, 'rs1");
+      } else {
+        Format(instr, "add.uw    'rd, 'rs1, 'rs2");
+      }
       break;
     case RO_SUBW:
       if (instr->Rs1Value() == zero.code())
@@ -990,7 +1003,6 @@ void Decoder::DecodeRType(Instruction* instr) {
     case RO_SRAW:
       Format(instr, "sraw      'rd, 'rs1, 'rs2");
       break;
-#endif /* JS_CODEGEN_RISCV64 */
     // TODO(riscv): Add RISCV M extension macro
     case RO_MUL:
       Format(instr, "mul       'rd, 'rs1, 'rs2");
@@ -1016,7 +1028,6 @@ void Decoder::DecodeRType(Instruction* instr) {
     case RO_REMU:
       Format(instr, "remu      'rd, 'rs1, 'rs2");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_MULW:
       Format(instr, "mulw      'rd, 'rs1, 'rs2");
       break;
@@ -1032,7 +1043,63 @@ void Decoder::DecodeRType(Instruction* instr) {
     case RO_REMUW:
       Format(instr, "remuw     'rd, 'rs1, 'rs2");
       break;
-#endif /*JS_CODEGEN_RISCV64*/
+    case RO_SH1ADDUW:
+      Format(instr, "sh1add.uw 'rd, 'rs1, 'rs2");
+      break;
+    case RO_SH2ADDUW:
+      Format(instr, "sh2add.uw 'rd, 'rs1, 'rs2");
+      break;
+    case RO_SH3ADDUW:
+      Format(instr, "sh3add.uw 'rd, 'rs1, 'rs2");
+      break;
+    case RO_ROLW:
+      Format(instr, "rolw     'rd, 'rs1, 'rs2");
+      break;
+    case RO_RORW:
+      Format(instr, "rorw     'rd, 'rs1, 'rs2");
+      break;
+    case RO_SH1ADD:
+      Format(instr, "sh1add    'rd, 'rs1, 'rs2");
+      break;
+    case RO_SH2ADD:
+      Format(instr, "sh2add    'rd, 'rs1, 'rs2");
+      break;
+    case RO_SH3ADD:
+      Format(instr, "sh3add    'rd, 'rs1, 'rs2");
+      break;
+    case RO_MAX:
+      Format(instr, "max       'rd, 'rs1, 'rs2");
+      break;
+    case RO_MAXU:
+      Format(instr, "maxu      'rd, 'rs1, 'rs2");
+      break;
+    case RO_MIN:
+      Format(instr, "min       'rd, 'rs1, 'rs2");
+      break;
+    case RO_MINU:
+      Format(instr, "minu      'rd, 'rs1, 'rs2");
+      break;
+    case RO_ZEXTH:
+      Format(instr, "zext.h    'rd, 'rs1");
+      break;
+    case RO_ROL:
+      Format(instr, "rol      'rd, 'rs1, 'rs2");
+      break;
+    case RO_ROR:
+      Format(instr, "ror      'rd, 'rs1, 'rs2");
+      break;
+    case RO_BCLR:
+      Format(instr, "bclr      'rd, 'rs1, 'rs2");
+      break;
+    case RO_BEXT:
+      Format(instr, "bext      'rd, 'rs1, 'rs2");
+      break;
+    case RO_BINV:
+      Format(instr, "binv      'rd, 'rs1, 'rs2");
+      break;
+    case RO_BSET:
+      Format(instr, "bset      'rd, 'rs1, 'rs2");
+      break;
     // TODO(riscv): End Add RISCV M extension macro
     default: {
       switch (instr->BaseOpcode()) {
@@ -1088,7 +1155,6 @@ void Decoder::DecodeRAType(Instruction* instr) {
     case RO_AMOMAXU_W:
       Format(instr, "amomaxu.w'a 'rd, 'rs2, ('rs1)");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_LR_D:
       Format(instr, "lr.d'a 'rd, ('rs1)");
       break;
@@ -1122,7 +1188,6 @@ void Decoder::DecodeRAType(Instruction* instr) {
     case RO_AMOMAXU_D:
       Format(instr, "amomaxu.d'a 'rd, 'rs2, ('rs1)");
       break;
-#endif /*JS_CODEGEN_RISCV64*/
     // TODO(riscv): End Add macro for RISCV A extension
     default: {
       UNSUPPORTED_RISCV();
@@ -1197,14 +1262,12 @@ void Decoder::DecodeRFPType(Instruction* instr) {
         case 0b00001:  // RO_FCVT_WU_S
           Format(instr, "fcvt.wu.s ['frm] 'rd, 'fs1");
           break;
-#ifdef JS_CODEGEN_RISCV64
         case 0b00010:  // RO_FCVT_L_S
           Format(instr, "fcvt.l.s  ['frm] 'rd, 'fs1");
           break;
         case 0b00011:  // RO_FCVT_LU_S
           Format(instr, "fcvt.lu.s ['frm] 'rd, 'fs1");
           break;
-#endif /* JS_CODEGEN_RISCV64 */
         default:
           UNSUPPORTED_RISCV();
       }
@@ -1250,14 +1313,12 @@ void Decoder::DecodeRFPType(Instruction* instr) {
         case 0b00001:  // RO_FCVT_S_WU
           Format(instr, "fcvt.s.wu 'fd, 'rs1");
           break;
-#ifdef JS_CODEGEN_RISCV64
         case 0b00010:  // RO_FCVT_S_L
           Format(instr, "fcvt.s.l  'fd, 'rs1");
           break;
         case 0b00011:  // RO_FCVT_S_LU
           Format(instr, "fcvt.s.lu 'fd, 'rs1");
           break;
-#endif /* JS_CODEGEN_RISCV64 */
         default: {
           UNSUPPORTED_RISCV();
         }
@@ -1372,11 +1433,9 @@ void Decoder::DecodeRFPType(Instruction* instr) {
         case 0b001:  // RO_FCLASS_D
           Format(instr, "fclass.d  'rd, 'fs1");
           break;
-#ifdef JS_CODEGEN_RISCV64
         case 0b000:  // RO_FMV_X_D
           Format(instr, "fmv.x.d   'rd, 'fs1");
           break;
-#endif /* JS_CODEGEN_RISCV64 */
         default:
           UNSUPPORTED_RISCV();
       }
@@ -1390,14 +1449,12 @@ void Decoder::DecodeRFPType(Instruction* instr) {
         case 0b00001:  // RO_FCVT_WU_D
           Format(instr, "fcvt.wu.d ['frm] 'rd, 'fs1");
           break;
-#ifdef JS_CODEGEN_RISCV64
         case 0b00010:  // RO_FCVT_L_D
           Format(instr, "fcvt.l.d  ['frm] 'rd, 'fs1");
           break;
         case 0b00011:  // RO_FCVT_LU_D
           Format(instr, "fcvt.lu.d ['frm] 'rd, 'fs1");
           break;
-#endif /* JS_CODEGEN_RISCV64 */
         default:
           UNSUPPORTED_RISCV();
       }
@@ -1411,20 +1468,17 @@ void Decoder::DecodeRFPType(Instruction* instr) {
         case 0b00001:  // RO_FCVT_D_WU
           Format(instr, "fcvt.d.wu 'fd, 'rs1");
           break;
-#ifdef JS_CODEGEN_RISCV64
         case 0b00010:  // RO_FCVT_D_L
           Format(instr, "fcvt.d.l  'fd, 'rs1");
           break;
         case 0b00011:  // RO_FCVT_D_LU
           Format(instr, "fcvt.d.lu 'fd, 'rs1");
           break;
-#endif /* JS_CODEGEN_RISCV64 */
         default:
           UNSUPPORTED_RISCV();
       }
       break;
     }
-#ifdef JS_CODEGEN_RISCV64
     case RO_FMV_D_X: {
       if (instr->Funct3Value() == 0b000 && instr->Rs2Value() == 0b00000) {
         Format(instr, "fmv.d.x   'fd, 'rs1");
@@ -1433,7 +1487,6 @@ void Decoder::DecodeRFPType(Instruction* instr) {
       }
       break;
     }
-#endif /* JS_CODEGEN_RISCV64 */
     default: {
       UNSUPPORTED_RISCV();
     }
@@ -1501,14 +1554,12 @@ void Decoder::DecodeIType(Instruction* instr) {
     case RO_LHU:
       Format(instr, "lhu       'rd, 'imm12('rs1)");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_LWU:
       Format(instr, "lwu       'rd, 'imm12('rs1)");
       break;
     case RO_LD:
       Format(instr, "ld        'rd, 'imm12('rs1)");
       break;
-#endif /*JS_CODEGEN_RISCV64*/
     case RO_ADDI:
       if (instr->Imm12Value() == 0) {
         if (instr->RdValue() == zero.code() && instr->Rs1Value() == zero.code())
@@ -1542,36 +1593,125 @@ void Decoder::DecodeIType(Instruction* instr) {
     case RO_ANDI:
       Format(instr, "andi      'rd, 'rs1, 'imm12x");
       break;
-    case RO_SLLI:
-      Format(instr, "slli      'rd, 'rs1, 's64");
+    case OP_SHL:
+      switch (instr->Funct6FieldRaw() | OP_SHL) {
+        case RO_SLLI:
+          Format(instr, "slli      'rd, 'rs1, 's64");
+          break;
+        case RO_BCLRI:
+          Format(instr, "bclri     'rd, 'rs1, 's64");
+          break;
+        case RO_BINVI:
+          Format(instr, "binvi     'rd, 'rs1, 's64");
+          break;
+        case RO_BSETI:
+          Format(instr, "bseti     'rd, 'rs1, 's64");
+          break;
+        case OP_COUNT:
+          switch (instr->Shamt()) {
+            case 0:
+              Format(instr, "clz       'rd, 'rs1");
+              break;
+            case 1:
+              Format(instr, "ctz       'rd, 'rs1");
+              break;
+            case 2:
+              Format(instr, "cpop      'rd, 'rs1");
+              break;
+            case 4:
+              Format(instr, "sext.b    'rd, 'rs1");
+              break;
+            case 5:
+              Format(instr, "sext.h    'rd, 'rs1");
+              break;
+            default:
+              UNSUPPORTED_RISCV();
+          }
+          break;
+        default:
+          UNSUPPORTED_RISCV();
+      }
       break;
-    case RO_SRLI: {  //  RO_SRAI
-      if (!instr->IsArithShift()) {
-        Format(instr, "srli      'rd, 'rs1, 's64");
-      } else {
-        Format(instr, "srai      'rd, 'rs1, 's64");
+    case OP_SHR: {  //  RO_SRAI
+      switch (instr->Funct6FieldRaw() | OP_SHR) {
+        case RO_SRLI:
+          Format(instr, "srli      'rd, 'rs1, 's64");
+          break;
+        case RO_SRAI:
+          Format(instr, "srai      'rd, 'rs1, 's64");
+          break;
+        case RO_BEXTI:
+          Format(instr, "bexti     'rd, 'rs1, 's64");
+          break;
+        case RO_ORCB&(kFunct6Mask | OP_SHR):
+          Format(instr, "orc.b     'rd, 'rs1");
+          break;
+        case RO_RORI:
+          Format(instr, "rori      'rd, 'rs1, 's64");
+          break;
+        case RO_REV8: {
+          if (instr->Imm12Value() == RO_REV8_IMM12) {
+            Format(instr, "rev8      'rd, 'rs1");
+            break;
+          }
+          UNSUPPORTED_RISCV();
+          break;
+        }
+        default:
+          UNSUPPORTED_RISCV();
       }
       break;
     }
-#ifdef JS_CODEGEN_RISCV64
     case RO_ADDIW:
       if (instr->Imm12Value() == 0)
         Format(instr, "sext.w    'rd, 'rs1");
       else
         Format(instr, "addiw     'rd, 'rs1, 'imm12");
       break;
-    case RO_SLLIW:
-      Format(instr, "slliw     'rd, 'rs1, 's32");
+    case OP_SHLW:
+      switch (instr->Funct7FieldRaw() | OP_SHLW) {
+        case RO_SLLIW:
+          Format(instr, "slliw     'rd, 'rs1, 's32");
+          break;
+        case RO_SLLIUW:
+          Format(instr, "slli.uw   'rd, 'rs1, 's32");
+          break;
+        case OP_COUNTW: {
+          switch (instr->Shamt()) {
+            case 0:
+              Format(instr, "clzw      'rd, 'rs1");
+              break;
+            case 1:
+              Format(instr, "ctzw      'rd, 'rs1");
+              break;
+            case 2:
+              Format(instr, "cpopw     'rd, 'rs1");
+              break;
+            default:
+              UNSUPPORTED_RISCV();
+          }
+          break;
+        }
+        default:
+          UNSUPPORTED_RISCV();
+      }
       break;
-    case RO_SRLIW: {  //  RO_SRAIW
-      if (!instr->IsArithShift()) {
-        Format(instr, "srliw     'rd, 'rs1, 's32");
-      } else {
-        Format(instr, "sraiw     'rd, 'rs1, 's32");
+    case OP_SHRW: {  //  RO_SRAI
+      switch (instr->Funct7FieldRaw() | OP_SHRW) {
+        case RO_SRLIW:
+          Format(instr, "srliw     'rd, 'rs1, 's32");
+          break;
+        case RO_SRAIW:
+          Format(instr, "sraiw     'rd, 'rs1, 's32");
+          break;
+        case RO_RORIW:
+          Format(instr, "roriw     'rd, 'rs1, 's32");
+          break;
+        default:
+          UNSUPPORTED_RISCV();
       }
       break;
     }
-#endif /*JS_CODEGEN_RISCV64*/
     case RO_FENCE:
       if (instr->MemoryOrder(true) == PSIORW &&
           instr->MemoryOrder(false) == PSIORW)
@@ -1715,11 +1855,9 @@ void Decoder::DecodeSType(Instruction* instr) {
     case RO_SW:
       Format(instr, "sw        'rs2, 'offS('rs1)");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_SD:
       Format(instr, "sd        'rs2, 'offS('rs1)");
       break;
-#endif /*JS_CODEGEN_RISCV64*/
     // TODO(riscv): use F Extension macro block
     case RO_FSW:
       Format(instr, "fsw       'fs2, 'offS('rs1)");
@@ -1835,14 +1973,12 @@ void Decoder::DecodeCAType(Instruction* instr) {
     case RO_C_AND:
       Format(instr, "and       'Crs1s, 'Crs1s, 'Crs2s");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_C_SUBW:
       Format(instr, "subw       'Crs1s, 'Crs1s, 'Crs2s");
       break;
     case RO_C_ADDW:
       Format(instr, "addw       'Crs1s, 'Crs1s, 'Crs2s");
       break;
-#endif
     default:
       UNSUPPORTED_RISCV();
   }
@@ -1856,11 +1992,9 @@ void Decoder::DecodeCIType(Instruction* instr) {
       else
         Format(instr, "addi      'Crd, 'Crd, 'Cimm6");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_C_ADDIW:
       Format(instr, "addiw     'Crd, 'Crd, 'Cimm6");
       break;
-#endif
     case RO_C_LI:
       Format(instr, "li        'Crd, 'Cimm6");
       break;
@@ -1881,15 +2015,9 @@ void Decoder::DecodeCIType(Instruction* instr) {
     case RO_C_LWSP:
       Format(instr, "lw        'Crd, 'Cimm6Lwsp(sp)");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_C_LDSP:
       Format(instr, "ld        'Crd, 'Cimm6Ldsp(sp)");
       break;
-#elif defined(JS_CODEGEN_RISCV32)
-    case RO_C_FLWSP:
-      Format(instr, "flw       'Cfd, 'Cimm6Ldsp(sp)");
-      break;
-#endif
     default:
       UNSUPPORTED_RISCV();
   }
@@ -1910,15 +2038,9 @@ void Decoder::DecodeCSSType(Instruction* instr) {
     case RO_C_SWSP:
       Format(instr, "sw        'Crs2, 'Cimm6Swsp(sp)");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_C_SDSP:
       Format(instr, "sd        'Crs2, 'Cimm6Sdsp(sp)");
       break;
-#elif defined(JS_CODEGEN_RISCV32)
-    case RO_C_FSWSP:
-      Format(instr, "fsw       'Cfs2, 'Cimm6Sdsp(sp)");
-      break;
-#endif
     case RO_C_FSDSP:
       Format(instr, "fsd       'Cfs2, 'Cimm6Sdsp(sp)");
       break;
@@ -1935,16 +2057,9 @@ void Decoder::DecodeCLType(Instruction* instr) {
     case RO_C_LW:
       Format(instr, "lw       'Crs2s, 'Cimm5W('Crs1s)");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_C_LD:
       Format(instr, "ld       'Crs2s, 'Cimm5D('Crs1s)");
       break;
-#elif defined(JS_CODEGEN_RISCV32)
-    case RO_C_FLW:
-      Format(instr, "fld       'Cfs2s, 'Cimm5D('Crs1s)");
-      break;
-#endif
-
     default:
       UNSUPPORTED_RISCV();
   }
@@ -1958,15 +2073,9 @@ void Decoder::DecodeCSType(Instruction* instr) {
     case RO_C_SW:
       Format(instr, "sw       'Crs2s, 'Cimm5W('Crs1s)");
       break;
-#ifdef JS_CODEGEN_RISCV64
     case RO_C_SD:
       Format(instr, "sd       'Crs2s, 'Cimm5D('Crs1s)");
       break;
-#elif defined(JS_CODEGEN_RISCV32)
-    case RO_C_FSW:
-      Format(instr, "fsw       'Cfs2s, 'Cimm5D('Crs1s)");
-      break;
-#endif
     default:
       UNSUPPORTED_RISCV();
   }
@@ -2018,8 +2127,8 @@ int Decoder::ConstantPoolSizeAt(uint8_t* instr_ptr) {
 }
 
 // Disassemble the instruction at *instr_ptr into the output buffer.
-int Decoder::InstructionDecode(byte* instr_ptr) {
-  Instruction* instr = Instruction::At(instr_ptr);
+int Decoder::InstructionDecode(uint8_t* instruction) {
+  Instruction* instr = Instruction::At(instruction);
   // Print raw instruction bytes.
   out_buffer_pos_ += SNPrintF(out_buffer_ + out_buffer_pos_, "%08x       ",
                               instr->InstructionBits());

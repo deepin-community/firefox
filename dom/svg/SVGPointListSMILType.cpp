@@ -1,16 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SVGPointListSMILType.h"
 
-#include "mozilla/FloatingPoint.h"
+#include <math.h>
+
+#include "SVGPointList.h"
 #include "mozilla/SMILValue.h"
 #include "nsMathUtils.h"
-#include "SVGPointList.h"
-#include <math.h>
 
 namespace mozilla {
 
@@ -20,14 +18,14 @@ SVGPointListSMILType SVGPointListSMILType::sSingleton;
 //----------------------------------------------------------------------
 // nsISMILType implementation
 
-void SVGPointListSMILType::Init(SMILValue& aValue) const {
+void SVGPointListSMILType::InitValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.IsNull(), "Unexpected value type");
 
   aValue.mU.mPtr = new SVGPointListAndInfo();
   aValue.mType = this;
 }
 
-void SVGPointListSMILType::Destroy(SMILValue& aValue) const {
+void SVGPointListSMILType::DestroyValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.mType == this, "Unexpected SMIL value type");
   delete static_cast<SVGPointListAndInfo*>(aValue.mU.mPtr);
   aValue.mU.mPtr = nullptr;

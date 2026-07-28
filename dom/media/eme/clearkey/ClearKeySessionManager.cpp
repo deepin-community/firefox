@@ -21,12 +21,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "content_decryption_module.h"
-
 #include "ClearKeyDecryptionManager.h"
 #include "ClearKeyPersistence.h"
 #include "ClearKeyStorage.h"
 #include "ClearKeyUtils.h"
+#include "content_decryption_module.h"
 #include "psshparser/PsshParser.h"
 
 using namespace cdm;
@@ -35,7 +34,7 @@ using std::function;
 using std::string;
 using std::vector;
 
-ClearKeySessionManager::ClearKeySessionManager(Host_10* aHost)
+ClearKeySessionManager::ClearKeySessionManager(Host_11* aHost)
     : mDecryptionManager(ClearKeyDecryptionManager::Get()) {
   CK_LOGD("ClearKeySessionManager ctor %p", this);
   AddRef();
@@ -82,8 +81,8 @@ void ClearKeySessionManager::CreateSession(uint32_t aPromiseId,
   vector<uint8_t> initData(aInitData, aInitData + aInitDataSize);
 
   RefPtr<ClearKeySessionManager> self(this);
-  function<void()> deferrer = [self, aPromiseId, aInitDataType, initData,
-                               aSessionType]() {
+  function<void()> deferrer = [self, aPromiseId, aInitDataType,
+                               initData = std::move(initData), aSessionType]() {
     self->CreateSession(aPromiseId, aInitDataType, initData.data(),
                         initData.size(), aSessionType);
   };
@@ -142,6 +141,7 @@ void ClearKeySessionManager::CreateSession(uint32_t aPromiseId,
     // request, whether or not another session has sent a request with the same
     // key ID. Otherwise a script can end up waiting for another script to
     // respond to the request (which may not necessarily happen).
+    CK_LOGARRAY("Key ID: ", it->data(), it->size());
     neededKeys.push_back(*it);
     mDecryptionManager->ExpectKeyId(*it);
   }
@@ -263,14 +263,14 @@ void ClearKeySessionManager::PersistentSessionDataLoaded(
     keyPairs.push_back(keyPair);
 
     KeyInformation keyInfo = {};
-    keyInfo.key_id = &keyPairs.back().mKeyId[0];
+    keyInfo.key_id = keyPairs.back().mKeyId.data();
     keyInfo.key_id_size = keyPair.mKeyId.size();
     keyInfo.status = KeyStatus::kUsable;
 
     keyInfos.push_back(keyInfo);
   }
 
-  mHost->OnSessionKeysChange(&aSessionId[0], aSessionId.size(), true,
+  mHost->OnSessionKeysChange(aSessionId.data(), aSessionId.size(), true,
                              keyInfos.data(), keyInfos.size());
 
   mHost->OnResolveNewSessionPromise(aPromiseId, aSessionId.c_str(),
@@ -291,6 +291,8 @@ void ClearKeySessionManager::UpdateSession(uint32_t aPromiseId,
   // Hold  a reference to the SessionManager so it isn't released before we
   // callback.
   RefPtr<ClearKeySessionManager> self(this);
+  // sessionId is captured by copy (not std::move) because the outer function
+  // still uses it below to look up the session in mSessions.
   function<void()> deferrer = [self, aPromiseId, sessionId, response]() {
     self->UpdateSession(aPromiseId, sessionId.data(), sessionId.size(),
                         response.data(), response.size());
@@ -351,7 +353,7 @@ void ClearKeySessionManager::UpdateSession(uint32_t aPromiseId,
     mKeyIds.insert(keyPair.mKeyId);
 
     KeyInformation keyInfo = {};
-    keyInfo.key_id = &keyPair.mKeyId[0];
+    keyInfo.key_id = keyPair.mKeyId.data();
     keyInfo.key_id_size = keyPair.mKeyId.size();
     keyInfo.status = KeyStatus::kUsable;
 

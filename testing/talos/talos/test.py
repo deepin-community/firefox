@@ -31,7 +31,7 @@ def test_dict():
     return _TESTS
 
 
-class Test(object):
+class Test:
     """abstract base class for a Talos test case"""
 
     __test__ = False  # not pytest
@@ -146,7 +146,7 @@ class TsBase(Test):
     ]
 
     def __init__(self, **kw):
-        super(TsBase, self).__init__(**kw)
+        super().__init__(**kw)
 
         # Unless set to False explicitly, all TsBase tests will have the blocklist
         # enabled by default in order to more accurately test the startup paths.
@@ -416,6 +416,7 @@ class pdfpaint(PageloaderTest):
     be rendered.
     """
 
+    alert_threshold = 6.0
     tpmanifest = "${talos}/tests/pdfpaint/pdfpaint.manifest"
     tppagecycles = 1
     timeout = 2000
@@ -676,10 +677,6 @@ class offscreencanvas_webcodecs_main_webgl_h264(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "CanvasRenderer,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -702,10 +699,6 @@ class offscreencanvas_webcodecs_main_webgl_vp9(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "CanvasRenderer,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -728,10 +721,6 @@ class offscreencanvas_webcodecs_main_webgl_av1(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "CanvasRenderer,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -754,10 +743,6 @@ class offscreencanvas_webcodecs_worker_webgl_h264(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "DOM Worker,CanvasRenderer,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -780,10 +765,6 @@ class offscreencanvas_webcodecs_worker_webgl_vp9(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "DOM Worker,CanvasRenderer,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -806,10 +787,6 @@ class offscreencanvas_webcodecs_worker_webgl_av1(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "DOM Worker,CanvasRenderer,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -834,10 +811,6 @@ class offscreencanvas_webcodecs_main_2d_h264(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "CanvasRenderer,CanvasWorker,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -862,10 +835,6 @@ class offscreencanvas_webcodecs_main_2d_vp9(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "CanvasRenderer,CanvasWorker,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -890,10 +859,6 @@ class offscreencanvas_webcodecs_main_2d_av1(PageloaderTest):
     gecko_profile_interval = 2
     gecko_profile_extra_threads = "CanvasRenderer,CanvasWorker,MediaSupervisor"
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -918,10 +883,6 @@ class offscreencanvas_webcodecs_worker_2d_h264(PageloaderTest):
         "DOM Worker,CanvasRenderer,CanvasWorker,MediaSupervisor"
     )
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -946,10 +907,6 @@ class offscreencanvas_webcodecs_worker_2d_vp9(PageloaderTest):
         "DOM Worker,CanvasRenderer,CanvasWorker,MediaSupervisor"
     )
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -974,10 +931,6 @@ class offscreencanvas_webcodecs_worker_2d_av1(PageloaderTest):
         "DOM Worker,CanvasRenderer,CanvasWorker,MediaSupervisor"
     )
     win_counters = linux_counters = mac_counters = None
-    preferences = {
-        "dom.media.webcodecs.enabled": True,
-        "dom.media.webcodecs.force-osx-h264-enabled": True,
-    }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "ms"
 
@@ -1034,7 +987,7 @@ class tp5n(PageloaderTest):
     setup = "${talos}/xtalos/start_xperf.py -c ${talos}/bcontroller.json"
     cleanup = "${talos}/xtalos/parse_xperf.py -c ${talos}/bcontroller.json"
     preferences = {
-        "extensions.enabledScopes": "",
+        "extensions.enabledScopes": 5,
         "talos.logfile": "browser_output.txt",
     }
     unit = "ms"
@@ -1087,11 +1040,29 @@ class tp5o_scroll(PageloaderTest):
         "docshell.event_starvation_delay_hint": 1,
         "dom.send_after_paint_to_content": True,
         "apz.paint_skipping.enabled": False,
-        "layout.css.scroll-behavior.spring-constant": "'10'",
+        "layout.css.scroll-snap.spring-constant": "'10'",
+        "layout.css.scroll-behavior.same-physics-as-user-input": False,
         "toolkit.framesRecording.bufferSize": 10000,
     }
     filters = filter.ignore_first.prepare(1) + filter.median.prepare()
     unit = "1/FPS"
+
+
+@register_test()
+class tp5o_scroll_paint_skip(tp5o_scroll):
+    """
+    Tests scroll with paint skip (like tscrollx does, including ASAP) but on the tp5o pageset.
+    """
+
+    preferences = {
+        "layout.frame_rate": 0,
+        "docshell.event_starvation_delay_hint": 1,
+        "dom.send_after_paint_to_content": True,
+        "apz.paint_skipping.enabled": True,
+        "layout.css.scroll-snap.spring-constant": "'10'",
+        "layout.css.scroll-behavior.same-physics-as-user-input": False,
+        "toolkit.framesRecording.bufferSize": 10000,
+    }
 
 
 @register_test()
@@ -1317,12 +1288,30 @@ class tscrollx(PageloaderTest):
         "docshell.event_starvation_delay_hint": 1,
         "dom.send_after_paint_to_content": True,
         "apz.paint_skipping.enabled": False,
-        "layout.css.scroll-behavior.spring-constant": "'10'",
+        "layout.css.scroll-snap.spring-constant": "'10'",
+        "layout.css.scroll-behavior.same-physics-as-user-input": False,
         "toolkit.framesRecording.bufferSize": 10000,
     }
     filters = filter.ignore_first.prepare(5) + filter.median.prepare()
     unit = "ms"
     pine = False
+
+
+@register_test()
+class tscrollx_paint_skip(tscrollx):
+    """
+    This test does some scrolly thing with paint skip.
+    """
+
+    preferences = {
+        "layout.frame_rate": 0,
+        "docshell.event_starvation_delay_hint": 1,
+        "dom.send_after_paint_to_content": True,
+        "apz.paint_skipping.enabled": True,
+        "layout.css.scroll-snap.spring-constant": "'10'",
+        "layout.css.scroll-behavior.same-physics-as-user-input": False,
+        "toolkit.framesRecording.bufferSize": 10000,
+    }
 
 
 @register_test()

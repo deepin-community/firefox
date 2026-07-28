@@ -71,7 +71,7 @@ detail-private-browsing-on =
     .tooltiptext = הפעלה בגלישה פרטית
 detail-private-browsing-off =
     .label = לא לאפשר
-    .tooltiptext = נטרול בגלישה פרטית
+    .tooltiptext = השבתה בגלישה פרטית
 detail-home =
     .label = דף הבית
 detail-home-value =
@@ -117,6 +117,8 @@ legacy-extensions-description = הרחבות אלו לא עומדות בתקני
 private-browsing-description2 =
     ‏{ -brand-short-name } משנה את האופן שבו הרחבות פועלות בגלישה פרטית. כל הרחבה חדשה שתתווסף אל { -brand-short-name } לא תרוץ כברירת מחדל בחלונות פרטיים. כל עוד אפשרות זו לא תופעל בהגדרות, ההרחבה לא תפעל בזמן גלישה פרטית, ולא תהיה לה גישה לפעילויות המקוונות שלך שם. עשינו את השינוי הזה כדי לשמור על הגלישה הפרטית שלך פרטית.
     <label data-l10n-name="private-browsing-learn-more">מידע נוסף על ניהול הגדרות הרחבות.</label>
+aboutaddons-sidebar =
+    .heading = תוספות
 addon-category-discover = המלצות
 addon-category-discover-title =
     .title = המלצות
@@ -167,6 +169,8 @@ extensions-warning-update-security-button = הפעלה
 extensions-warning-imported-addons2 =
     .message = נא להשלים את התקנת ההרחבות שיובאו אל { -brand-short-name }.
 extensions-warning-imported-addons-button = התקנת הרחבות
+extensions-warning-safe-mode3 =
+    .message = כל התוספות הושבתו על־ידי המצב לפתרון בעיות.
 
 ## Strings connected to add-on updates
 
@@ -202,6 +206,10 @@ addon-updates-manual-updates-found = הצגת עדכונים זמינים
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = התקנת תוספת מקובץ…
+    .accesskey = ה
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = התקנה או עדכון תוספת מקובץ…
     .accesskey = ה
 addon-install-from-file-dialog-title = בחירת תוספת להתקנה
 addon-install-from-file-filter-name = תוספות
@@ -258,13 +266,23 @@ header-back-button =
 
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
-discopane-intro = הרחבות הן כמו יישומים לדפדפן שלך, ומאפשרות לך להגן על ססמאות, להוריד סרטונים, למצוא מבצעים, לחסום פרסומות מציקות, לשנות את תצוגת הדפדפן שלך ועוד. היישומים הקטנים האלו לרוב מפותחים על־ידי גורמי צד־שלישי. להלן מבחר הרחבות ש־{ -brand-product-name } <a data-l10n-name="learn-more-trigger">ממליצה</a> עליהן בגלל האבטחה, הביצועים והפונקציונליות יוצאת הדופן שלהן.
+discopane-intro = הרחבות הן כמו יישומים לדפדפן שלך, ומאפשרות לך להגן על ססמאות, להוריד סרטונים, למצוא מבצעים, לחסום פרסומות מציקות, לשנות את תצוגת הדפדפן שלך ועוד. היישומים הקטנים האלו לרוב מפותחים על־ידי גורמי צד שלישי. להלן מבחר הרחבות ש־{ -brand-product-name } <a data-l10n-name="learn-more-trigger">ממליצה</a> עליהן בגלל האבטחה, הביצועים והפונקציונליות יוצאת הדופן שלהן.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = חלק מהמלצות אלה מותאמות אישית. הן מבוססות על הרחבות אחרות שהתקנת, העדפות פרופיל וסטטיסטיקת שימוש.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations2 =
     .message = חלק מהמלצות אלה מותאמות אישית. הן מבוססות על הרחבות אחרות שהתקנת, העדפות פרופיל וסטטיסטיקת שימוש.
 discopane-notice-learn-more = מידע נוסף
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = ערכות הצבעים שלך הוסרו.
+    .message = ‏{ -brand-product-name } עדכן את אוסף ערכות הצבעים שלו. הסרנו את הגרסאות הישנות מרשימת ה״ערכות נושא שמורות״. ניתן לקבל את הגרסאות החדשות מאתר התוספות.
+colorway-removal-notice-learn-more = מידע נוסף
+colorway-removal-notice-button = קבלת ערכות צבעים מעודכנות
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = הגדרות הניגודיות שלך ב־Windows דורסות את ערכות הנושא של { -brand-short-name }. יש לכבות הגדרות אלו כדי להשתמש בערכות נושא ב־{ -brand-short-name }.
 privacy-policy = מדיניות פרטיות
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -285,6 +303,11 @@ find-more-themes = חיפוש ערכות נושא נוספות
 # used for screen readers.
 addon-options-button =
     .aria-label = אפשרויות נוספות
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 = הרחבות וערכות נושא מאפשרות לך להתאים אישית את { -brand-product-name }. הן יכולות להגביר את הפרטיות, לשפר את הפרודוקטיביות, לשפר את המדיה, לשנות את האופן שבו { -brand-product-name } נראה, ועוד כל כך הרבה. תוכנות קטנות אלו מפותחות לרוב על־ידי גורם צד שלישי. הנה מבחר של הרחבות ש־Firefox <a data-l10n-name="learn-more-trigger">ממליץ</a> עליהם לאבטחה, ביצועים ופונקציונליות יוצאי דופן.
 
 ## Add-on actions
 
@@ -362,6 +385,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = מופעלת בחלונות פרטיים
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = מופעלת בחלונות פרטיים
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -401,6 +428,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = הרחבה זו נסקרה לטובת עמידה בתקנים שלנו לאבטחה וביצועים
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = הרחבה רשמית שנבנתה על־ידי Mozilla ועומדת בתקני אבטחה וביצועים.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = הרחבה זו נסקרה לטובת עמידה בתקנים לאבטחה וביצועים
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = ‏Firefox ממליץ רק על הרחבות שעומדות בתקנים לאבטחה וביצועים
 
 ##
 
@@ -408,10 +453,18 @@ available-updates-heading = עדכונים זמינים
 recent-updates-heading = עדכונים אחרונים
 release-notes-loading = בטעינה…
 release-notes-error = מצטערים, אירעה שגיאה במהלך טעינת הערות השחרור.
+addon-permissions-heading = הרשאות
+addon-permissions-empty2 = להרחבה זו לא נדרשות הרשאות.
+addon-permissions-required-label = נדרש:
+addon-permissions-optional-label = אופציונלי:
 addon-permissions-empty = להרחבה זו לא נדרשות הרשאות
 addon-permissions-required = הרשאות נדרשות לתכונות ליבה:
 addon-permissions-optional = הרשאות רשות לתכונות נוספות:
 addon-permissions-learnmore = מידע נוסף על הרשאות
+# Shown above the permissions list when one or more permissions for this
+# extension are controlled by an enterprise policy and cannot be changed by
+# the user.
+addon-permissions-managed-by-policy = חלק מההרשאות מנוהלות על־ידי הארגון שלך.
 recommended-extensions-heading = הרחבות מומלצות
 recommended-themes-heading = ערכות נושא מומלצות
 # Variables:
@@ -435,6 +488,9 @@ shortcuts-heading = ניהול קיצורי דרך להרחבות
 default-heading-search-label = חיפוש תוספות נוספות
 addons-heading-search-input =
     .placeholder = חיפוש ב־addons.mozilla.org
+addons-heading-search-button =
+    .title = חיפוש ב־addons.mozilla.org
+    .aria-label = חיפוש ב־addons.mozilla.org
 addon-page-options-button =
     .title = כלים עבור כל התוספות
 
@@ -457,14 +513,32 @@ details-notification-unsigned-and-disabled-link = מידע נוסף
 details-notification-unsigned = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name }. נא להיזהר.
 details-notification-unsigned2 =
     .message = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name }. נא להיזהר.
+details-notification-hard-blocked-extension =
+    .message = הרחבה זו חסומה עקב הפרת המדיניות של Mozilla, ולכן הושבתה.
+details-notification-hard-blocked-other =
+    .message = תוספת זו חסומה עקב הפרת המדיניות של Mozilla, ולכן הושבתה.
 details-notification-unsigned-link = מידע נוסף
 details-notification-blocked = התוספת { $name } נחסמה עקב בעיות אבטחה או יציבות.
-details-notification-blocked2 =
-    .message = התוספת { $name } נחסמה עקב בעיות אבטחה או יציבות.
+details-notification-blocked-link2 = צפייה בפרטים
+details-notification-soft-blocked-extension-disabled2 =
+    .message = הרחבה זו מוגבלת ולכן הושבתה. באפשרותך להפעיל אותה, אבל ייתכן שזה יהיה כרוך בסיכון.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = הרחבה זו מוגבלת. השימוש בה עלול להיות כרוך בסיכון.
+details-notification-soft-blocked-other-disabled2 =
+    .message = תוספת זו מוגבלת ולכן הושבתה. באפשרותך להפעיל אותה, אבל ייתכן שזה יהיה כרוך בסיכון.
+details-notification-soft-blocked-other-enabled2 =
+    .message = תוספת זו מוגבלת. השימוש בה עלול להיות כרוך בסיכון.
+details-notification-soft-blocked-extension-disabled =
+    .message = הרחבה זו מוגבלת עקב הפרת המדיניות של Mozilla, ולכן הושבתה. באפשרותך להפעיל אותה, אבל ייתכן שזה יהיה כרוך בסיכון.
+details-notification-soft-blocked-extension-enabled =
+    .message = הרחבה זו מפרה את המדיניות של Mozilla. השימוש בה עשוי להיות כרוך בסיכון.
+details-notification-soft-blocked-other-disabled =
+    .message = תוספת זו מוגבלת עקב הפרת המדיניות של Mozilla, ולכן הושבתה. באפשרותך להפעיל אותה, אבל ייתכן שזה יהיה כרוך בסיכון.
+details-notification-soft-blocked-other-enabled =
+    .message = תוספת זו מפרה את המדיניות של Mozilla. השימוש בה עשוי להיות כרוך בסיכון.
+details-notification-softblocked-link2 = צפייה בפרטים
 details-notification-blocked-link = מידע נוסף
 details-notification-softblocked = התוספת { $name } נודעת בגרימת בעיות אבטחה או יציבות.
-details-notification-softblocked2 =
-    .message = התוספת { $name } נודעת בגרימת בעיות אבטחה או יציבות.
 details-notification-softblocked-link = מידע נוסף
 details-notification-gmp-pending = התוספת { $name } תותקן בהקדם.
 details-notification-gmp-pending2 =
@@ -478,3 +552,46 @@ plugins-openh264-name = OpenH264 Video Codec סופק על־ידי Cisco Systems
 plugins-openh264-description = תוסף חיצוני זה מותקן באופן אוטומטי על־ידי Mozilla כדי לעמוד במפרט ה־WebRTC ולאפשר קריאות WebRTC מול התקנים הדורשים קידוד וידאו H.264. ניתן לבקר באתר https://www.openh264.org לצפייה בקוד המקור ולקבלת מידע נוסף על המימוש.
 plugins-widevine-name = Widevine Content Decryption Module סופק על־ידי Google Inc.
 plugins-widevine-description = תוסף חיצוני זה מאפשר הפעלה של מדיה מוצפנת בהתאם למפרט Encrypted Media Extensions. מדיה מוצפנת משמשת בדרך כלל אתרים שמגנים מפני העתקה של תוכן בתשלום. ניתן לבקר באתר https://www.w3.org/TR/encrypted-media למידע נוסף על Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = איסוף נתונים נדרש:
+addon-permissions-optional-data-collection = איסוף נתונים אופציונלי:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = הרשאות ונתונים
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = בשימוש על־ידי ההרחבה { $extensionName }
+addon-permissions-data-collection-heading = איסוף נתונים
+addon-permissions-data-collection-empty = המפתח אומר שהרחבה זו אינה דורשת איסוף נתונים.
+addon-data-collection-provided = מידע המסופק על־ידי מפתח ההרחבה
+addon-data-collection-learnmore = מידע נוסף על איסוף נתונים
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = ‏{ -brand-short-name } משתמש בזה ב־about:inference
+mlmodel-link-preview = ‏{ -brand-short-name } משתמש בזה כדי לייצר נקודות מפתח בעת ריחוף על קישורים
+mlmodel-pdfjs = ‏{ -brand-short-name } משתמש בזה כדי לייצר טקסט חלופי עבור תמונות שמוסיפים לקובצי PDF
+mlmodel-smart-tab-topic-engine = ‏{ -brand-short-name } משתמש בזה כדי להציע שמות עבור קבוצות הלשוניות שלך
+mlmodel-smart-tab-embedding-engine = ‏{ -brand-short-name } משתמש בזה כדי להציע לשוניות עבור קבוצות הלשוניות שלך
+mlmodel-formfill-engine = ‏{ -brand-short-name } משתמש בזה כדי לסייע במילוי כתובות בטפסים
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = בינה מלאכותית במכשיר
+addon-category-mlmodel-title =
+    .title = בינה מלאכותית במכשיר
+mlmodel-heading = ניהול מודלים של בינה מלאכותית במכשיר
+mlmodel-description = חלק מהאפשרויות וההרחבות ב־{ -brand-short-name } מופעלות על־ידי מודלים של בינה מלאכותית שעובדים באופן מקומי במכשיר שלך. גישה זו מגינה על הפרטיות שלך, וברוב המקרים מאיצה את הביצועים. <a data-l10n-name="learn-more">מידע נוסף</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = הסרה
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = גודל הקובץ
+mlmodel-addon-detail-last-used-label = שימוש אחרון
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = בשימוש על־ידי
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = כרטיס מודל
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = הצגה ב־Hugging Face

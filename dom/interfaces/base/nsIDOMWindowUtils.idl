@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -39,10 +38,8 @@ interface nsIDOMWindow;
 interface nsIFile;
 interface nsIURI;
 interface nsIRunnable;
-interface nsITranslationNodeList;
 interface nsIJSRAIIHelper;
 interface nsIContentPermissionRequest;
-interface nsIObserver;
 
 webidl Animation;
 webidl DOMRect;
@@ -52,6 +49,14 @@ webidl Event;
 webidl Node;
 webidl NodeList;
 webidl Storage;
+
+[scriptable, function, uuid(56609ca4-8e06-4c4c-9918-2d95f8fa58d3)]
+interface nsISynthesizedEventCallback : nsISupports {
+  /**
+   * Called when a synthesized event has been dispatched.
+   */
+  void onCompleteDispatch();
+};
 
 [builtinclass, scriptable, uuid(4d6732ca-9da7-4176-b8a1-8dde15cd0bf9)]
 interface nsIDOMWindowUtils : nsISupports {
@@ -311,171 +316,14 @@ interface nsIDOMWindowUtils : nsISupports {
   const long MODIFIER_SYMBOL     = 0x0400;
   const long MODIFIER_SYMBOLLOCK = 0x0800;
 
-  /** Synthesize a mouse event. The event types supported are:
-   *    mousedown, mouseup, mousemove, mouseover, mouseout, mousecancel,
-   *    contextmenu, MozMouseHittest
-   *
-   * Events are sent in coordinates offset by aX and aY from the window.
-   *
-   * Note that additional events may be fired as a result of this call. For
-   * instance, typically a click event will be fired as a result of a
-   * mousedown and mouseup in sequence.
-   *
-   * Normally at this level of events, the mouseover and mouseout events are
-   * only fired when the window is entered or exited. For inter-element
-   * mouseover and mouseout events, a movemove event fired on the new element
-   * should be sufficient to generate the correct over and out events as well.
-   *
-   * Cannot be accessed from unprivileged context (not content-accessible)
-   * Will throw a DOM security error if called without chrome privileges.
-   *
-   * The event is dispatched via the toplevel window, so it could go to any
-   * window under the toplevel window, in some cases it could never reach this
-   * window at all.
-   *
-   * NOTE: mousecancel is used to represent the vanishing of an input device
-   * such as a pen leaving its digitizer by synthesizing a WidgetMouseEvent,
-   * whose mMessage is eMouseExitFromWidget and mExitFrom is
-   * WidgetMouseEvent::eTopLevel.
-   *
-   * @param aType event type
-   * @param aX x offset in CSS pixels
-   * @param aY y offset in CSS pixels
-   * @param aButton button to synthesize
-   * @param aClickCount number of clicks that have been performed
-   * @param aModifiers modifiers pressed, using constants defined as MODIFIER_*
-   * @param aIgnoreRootScrollFrame whether the event should ignore viewport bounds
-   *                           during dispatch
-   * @param aPressure touch input pressure: 0.0 -> 1.0
-   * @param aInputSourceArg input source, see MouseEvent for values,
-   *        defaults to mouse input.
-   * @param aIsDOMEventSynthesized controls Event.isSynthesized value
-   *                               that helps identifying test related events,
-   *                               defaults to true
-   * @param aIsWidgetEventSynthesized controls WidgetMouseEvent.mReason value
-   *                                  defaults to false (WidgetMouseEvent::eReal)
-   * @param aIdentifier A unique identifier for the pointer causing the event,
-   *                    defaulting to nsIDOMWindowUtils::DEFAULT_MOUSE_POINTER_ID.
-   *
-   * returns true if the page called prevent default on this event
-   */
-  [optional_argc, can_run_script]
-  boolean sendMouseEvent(in AString aType,
-                         in float aX,
-                         in float aY,
-                         in long aButton,
-                         in long aClickCount,
-                         in long aModifiers,
-                         [optional] in boolean aIgnoreRootScrollFrame,
-                         [optional] in float aPressure,
-                         [optional] in unsigned short aInputSourceArg,
-                         [optional] in boolean aIsDOMEventSynthesized,
-                         [optional] in boolean aIsWidgetEventSynthesized,
-                         [optional] in long aButtons,
-                         [optional] in unsigned long aIdentifier);
-
-  /** Synthesize a touch event. The event types supported are:
-   *    touchstart, touchend, touchmove, and touchcancel
-   *
-   * Events are sent in coordinates offset by aX and aY from the window.
-   *
-   * Cannot be accessed from unprivileged context (not content-accessible)
-   * Will throw a DOM security error if called without chrome privileges.
-   *
-   * The event is dispatched via the toplevel window, so it could go to any
-   * window under the toplevel window, in some cases it could never reach this
-   * window at all.
-   *
-   * @param aType event type
-   * @param xs array of offsets in CSS pixels for each touch to be sent
-   * @param ys array of offsets in CSS pixels for each touch to be sent
-   * @param rxs array of radii in CSS pixels for each touch to be sent
-   * @param rys array of radii in CSS pixels for each touch to be sent
-   * @param rotationAngles array of angles in degrees for each touch to be sent
-   * @param forces array of forces (floats from 0 to 1) for each touch to be sent
-   * @param tiltXs array of tiltX for each touch to be sent
-   * @param tiltYs array of tiltY for each touch to be sent
-   * @param twists array of twist for each touch to be sent
-   * @param count number of touches in this set
-   * @param aModifiers modifiers pressed, using constants defined as MODIFIER_*
-   * @param aIgnoreRootScrollFrame whether the event should ignore viewport bounds
-   *                           during dispatch
-   *
-   * returns true if the page called prevent default on this touch event
-   */
-  [can_run_script]
-  boolean sendTouchEvent(in AString aType,
-                         in Array<uint32_t> aIdentifiers,
-                         in Array<int32_t> aXs,
-                         in Array<int32_t> aYs,
-                         in Array<uint32_t> aRxs,
-                         in Array<uint32_t> aRys,
-                         in Array<float> aRotationAngles,
-                         in Array<float> aForces,
-                         in Array<long> aTiltXs,
-                         in Array<long> aTiltYs,
-                         in Array<long> aTwists,
-                         in long aModifiers,
-                         [optional] in boolean aIgnoreRootScrollFrame);
-
   /**
-   * The same as sendTouchEvent but sets input source to "pen" to mock Windows behavior.
-   *
-   * NOTE(krosylight):
-   * This is currently a separate function solely because of the PARAM_BUFFER_COUNT cap,
-   * but we might ultimately want to make this to a separate sendPenEvent that selects
-   * either sendMouseEvent or sendTouchEvent.
+   * AsyncEnabledOption is passed to functions to enable or disable
+   * asynchronous event dispatching. Default is disabled.
    */
-  [can_run_script]
-  boolean sendTouchEventAsPen(in AString aType,
-                              in uint32_t aIdentifier,
-                              in int32_t aX,
-                              in int32_t aY,
-                              in uint32_t aRx,
-                              in uint32_t aRy,
-                              in float aRotationAngle,
-                              in float aForce,
-                              in long aTiltX,
-                              in long aTiltY,
-                              in long aTwist,
-                              in long aModifier,
-                              [optional] in boolean aIgnoreRootScrollFrame);
-
-  /** The same as sendMouseEvent but ensures that the event is dispatched to
-   *  this DOM window or one of its children.
-   */
-  [optional_argc, can_run_script]
-  void sendMouseEventToWindow(in AString aType,
-                              in float aX,
-                              in float aY,
-                              in long aButton,
-                              in long aClickCount,
-                              in long aModifiers,
-                              [optional] in boolean aIgnoreRootScrollFrame,
-                              [optional] in float aPressure,
-                              [optional] in unsigned short aInputSourceArg,
-                              [optional] in boolean aIsDOMEventSynthesized,
-                              [optional] in boolean aIsWidgetEventSynthesized,
-                              [optional] in long aButtons,
-                              [optional] in unsigned long aIdentifier);
-
-  /** The same as sendTouchEvent but ensures that the event is dispatched to
-   *  this DOM window or one of its children.
-   */
-  [can_run_script]
-  boolean sendTouchEventToWindow(in AString aType,
-                                 in Array<uint32_t> aIdentifiers,
-                                 in Array<int32_t> aXs,
-                                 in Array<int32_t> aYs,
-                                 in Array<uint32_t> aRxs,
-                                 in Array<uint32_t> aRys,
-                                 in Array<float> aRotationAngles,
-                                 in Array<float> aForces,
-                                 in Array<long> aTiltXs,
-                                 in Array<long> aTiltYs,
-                                 in Array<long> aTwists,
-                                 in long aModifiers,
-                                 [optional] in boolean aIgnoreRootScrollFrame);
+  cenum AsyncEnabledOption : 8 {
+    ASYNC_DISABLED = 0,
+    ASYNC_ENABLED = 1
+  };
 
   /** Synthesize a wheel event for a window. The event types supported is only
    *  wheel.
@@ -503,10 +351,18 @@ interface nsIDOMWindowUtils : nsISupports {
    *                           dispatch NS_MOUSE_SCROLL event for vertical
    *                           scroll.
    * @param aOptions           Set following flags.
+   * @param aCallback          The callback will be notified when the
+   *                           synthesized wheel event has been dispatched.
+   *                           XXX: This is not implemented in the content
+   *                           process when async is enabled (i.e., either the
+   *                           option has WHEEL_EVENT_ASYNC_ENABLED or the
+   *                           test.events.async.enabled pref is true). In such
+   *                           cases, passing aCallback will throw an exception.
    */
   const unsigned long WHEEL_EVENT_CAUSED_BY_NO_LINE_OR_PAGE_DELTA_DEVICE = 0x0001;
   const unsigned long WHEEL_EVENT_CAUSED_BY_MOMENTUM                     = 0x0002;
   const unsigned long WHEEL_EVENT_CUSTOMIZED_BY_USER_PREFS               = 0x0004;
+  const unsigned long WHEEL_EVENT_ASYNC_ENABLED                          = 0x0008;
   // If any of the following flags is specified this method will throw an
   // exception in case the relevant overflowDelta has an unexpected value.
   const unsigned long WHEEL_EVENT_EXPECTED_OVERFLOW_DELTA_X_ZERO      = 0x0010;
@@ -524,7 +380,8 @@ interface nsIDOMWindowUtils : nsISupports {
                       in long aModifiers,
                       in long aLineOrPageDeltaX,
                       in long aLineOrPageDeltaY,
-                      in unsigned long aOptions);
+                      in unsigned long aOptions,
+                      [optional] in nsISynthesizedEventCallback aCallback);
 
   /**
    * Native modifiers for sendNativeKeyEvent and sendNativeMouseEvent.
@@ -559,15 +416,14 @@ interface nsIDOMWindowUtils : nsISupports {
    * When you use this for tests, use the constants defined in NativeKeyCodes.js
    *
    * NOTE: The synthesized native event will be fired asynchronously, and upon
-   * completion the observer, if provided, will be notified with a "keyevent"
-   * topic.
+   * completion the callback, if provided, will be notified.
    */
   void sendNativeKeyEvent(in long aNativeKeyboardLayout,
                           in long aNativeKeyCode,
                           in unsigned long aModifierFlags,
                           in AString aCharacters,
                           in AString aUnmodifiedCharacters,
-                          [optional] in nsIObserver aObserver);
+                          [optional] in nsISynthesizedEventCallback aCallback);
 
   /**
    * See nsIWidget::SynthesizeNativeMouseEvent
@@ -582,9 +438,9 @@ interface nsIDOMWindowUtils : nsISupports {
    * @param aButton     Same as `MouseEvent.button` value.
    * @param aModifierFlags      See nsIWidget's native modifier flags.
    * @param aElementOnWidget    An element which is on a widget.
-   * @param aObserver   The synthesized native event will be fired
-   *                    asynchronously, and upon completion the observer, if
-   *                    provided, will be notified with a "mouseevent" topic.
+   * @param aCallback   The synthesized native event will be fired
+   *                    asynchronously, and upon completion the callback, if
+   *                    provided, will be notified.
    */
   const unsigned long NATIVE_MOUSE_MESSAGE_BUTTON_DOWN  = 0x00000001;
   const unsigned long NATIVE_MOUSE_MESSAGE_BUTTON_UP    = 0x00000002;
@@ -597,7 +453,7 @@ interface nsIDOMWindowUtils : nsISupports {
                             in short aButton,
                             in unsigned long aModifierFlags,
                             in Element aElementOnWidget,
-                            [optional] in nsIObserver aObserver);
+                            [optional] in nsISynthesizedEventCallback aCallback);
 
   /**
    * Suppress animations that are applied to a window by OS when
@@ -640,8 +496,7 @@ interface nsIDOMWindowUtils : nsISupports {
    * Will throw a DOM security error if called without chrome privileges.
    *
    * NOTE: The synthesized native event will be fired asynchronously, and upon
-   * completion the observer, if provided, will be notified with a
-   * "mousescrollevent" topic.
+   * completion the callback, if provided, will be notified.
    *
    * @param aNativeMessage
    *   On Windows:  WM_MOUSEWHEEL (0x020A), WM_MOUSEHWHEEL(0x020E),
@@ -656,7 +511,7 @@ interface nsIDOMWindowUtils : nsISupports {
                                   in unsigned long aModifierFlags,
                                   in unsigned long aAdditionalFlags,
                                   in Element aElement,
-                                  [optional] in nsIObserver aObserver);
+                                  [optional] in nsISynthesizedEventCallback aCallback);
 
   /**
    * Touch states for sendNativeTouchPoint. These values match
@@ -693,16 +548,16 @@ interface nsIDOMWindowUtils : nsISupports {
    *
    * Widget support: Windows 8.0+, Winrt/Win32. Other widgets will throw.
    *
-   * NOTE: The synthesized native event will be fired asynchronously, and upon
-   * completion the observer, if provided, will be notified with a "touchpoint"
-   * topic.
-   *
    * @param aPointerId The touch point id to create or update.
    * @param aTouchState one or more of the touch states listed above
    * @param aScreenX, aScreenY screen coords of this event
    * @param aPressure 0.0 -> 1.0 float val indicating pressure
    * @param aOrientation 0 -> 359 degree value indicating the
    * orientation of the pointer. Use 90 for normal taps.
+   * @param aCallback The synthesized native event will be fired asynchronously,
+   * and upon completion the callback, if provided, will be notified.
+   * @param aElement If the touch point needs to happen on a popup window,
+   * aElement inside the popup window needs to be specified.
    */
   void sendNativeTouchPoint(in unsigned long aPointerId,
                             in unsigned long aTouchState,
@@ -710,7 +565,8 @@ interface nsIDOMWindowUtils : nsISupports {
                             in long aScreenY,
                             in double aPressure,
                             in unsigned long aOrientation,
-                            [optional] in nsIObserver aObserver);
+                            [optional] in nsISynthesizedEventCallback aCallback,
+                            [optional] in Element aElement);
   /**
    * These values indicate touchpad pinch phase states :
    * PHASE_BEGIN
@@ -745,8 +601,7 @@ interface nsIDOMWindowUtils : nsISupports {
    * throw.
    *
    * NOTE: The synthesized native event will be fired asynchronously, and upon
-   * completion the observer, if provided, will be notified, with a "touchtap"
-   * topic.
+   * completion the callback, if provided, will be notified.
    *
    * @param aScreenX, aScreenY screen coords of this event
    * @param aLongTap true if the tap should be long, false for a short
@@ -755,7 +610,7 @@ interface nsIDOMWindowUtils : nsISupports {
   void sendNativeTouchTap(in long aScreenX,
                           in long aScreenY,
                           in boolean aLongTap,
-                          [optional] in nsIObserver aObserver);
+                          [optional] in nsISynthesizedEventCallback aCallback);
 
   /**
    * Create a new or update an existing pen input on the digitizer.
@@ -763,8 +618,7 @@ interface nsIDOMWindowUtils : nsISupports {
    * Widget support: Windows 10 1809+. Other widgets will throw.
    *
    * NOTE: The synthesized native event will be fired asynchronously, and upon
-   * completion the observer, if provided, will be notified with a "peninput"
-   * topic.
+   * completion the callback, if provided, will be notified.
    *
    * @param aPointerId The touch point id to create or update.
    * @param aPointerState one or more of the TOUCH_* listed above
@@ -788,20 +642,8 @@ interface nsIDOMWindowUtils : nsISupports {
                           in long aTiltX,
                           in long aTiltY,
                           in long aButton,
-                          [optional] in nsIObserver aObserver);
-
-  /**
-   * Cancel any existing touch points or long tap delays. Calling this is safe
-   * even if you're sure there aren't any pointers recorded. You should call
-   * this when tests shut down to reset the digitizer driver. Not doing so can
-   * leave the digitizer in an undetermined state which can screw up subsequent
-   * tests and native input.
-   *
-   * NOTE: The synthesized native event will be fired asynchronously, and upon
-   * completion the observer, if provided, will be notified with a "cleartouch"
-   * topic.
-   */
-  void clearNativeTouchSequence([optional] in nsIObserver aObserver);
+                          [optional] in nsISynthesizedEventCallback aCallback,
+                          [optional] in Element aElement);
 
   /**
    * Send a native event as if the user double tapped the touchpad with two
@@ -820,8 +662,7 @@ interface nsIDOMWindowUtils : nsISupports {
    * fingers.
    *
    * NOTE: The synthesized native event will be fired asynchronously, and upon
-   * completion the observer, if provided, will be notified with a
-   * "touchpadpanevent" topic.
+   * completion the callback, if provided, will be notified.
    *
    * Widget support: Windows.
    * @param aScreenX, aScreenY screen coords of the focus point of this event.
@@ -834,17 +675,7 @@ interface nsIDOMWindowUtils : nsISupports {
                              in double aDeltaX,
                              in double aDeltaY,
                              in long aModifierFlags,
-                             [optional] in nsIObserver aObserver);
-
-  /**
-   * Clears the SharedStyleSheetCache.
-   */
-  void clearSharedStyleSheetCache();
-
-  /**
-   * Clears the SharedScriptCache.
-   */
-  void clearSharedScriptCache();
+                             [optional] in nsISynthesizedEventCallback aCallback);
 
   /**
    * Returns the number of stylesheets that have been parsed on this document.
@@ -989,15 +820,6 @@ interface nsIDOMWindowUtils : nsISupports {
 
 
   /**
-   * Get a list of nodes that have meaningful textual content to
-   * be translated. The implementation of this algorithm is in flux
-   * as we experiment and refine which approach works best.
-   *
-   * This method requires chrome privileges.
-   */
-  nsITranslationNodeList getTranslationNodes(in Node aRoot);
-
-  /**
    * Compare the two canvases, returning the number of differing pixels and
    * the maximum difference in a channel.  This will throw an error if
    * the dimensions of the two canvases are different.
@@ -1070,6 +892,9 @@ interface nsIDOMWindowUtils : nsISupports {
    * Returns the given element's bounds without flushing pending layout changes.
    */
   DOMRect getBoundsWithoutFlushing(in Element aElement);
+
+  /** Returns the opaque region, for testing */
+  Array<DOMRect> getWidgetOpaqueRegion();
 
   /**
    * Scroll the visual viewport to the given coordinates, relative to the
@@ -1284,17 +1109,6 @@ interface nsIDOMWindowUtils : nsISupports {
                                [optional] in unsigned long aAdditionalFlags);
 
   /**
-   * If sendQueryContentEvent()'s aAdditionalFlags argument is
-   * QUERY_CONTENT_FLAG_USE_XP_LINE_BREAK, plain text generated from content
-   * is created with "\n".
-   * Otherwise, platform dependent.  E.g., on Windows, "\r\n" is used.
-   * aOffset and aLength are offset and length in/of the plain text content.
-   * This flag also affects the result values such as offset, length and string.
-   */
-  const unsigned long QUERY_CONTENT_FLAG_USE_NATIVE_LINE_BREAK = 0x0000;
-  const unsigned long QUERY_CONTENT_FLAG_USE_XP_LINE_BREAK     = 0x0001;
-
-  /**
    * sendQueryContentEvent()'s aAdditionalFlags may have one of following
    * flags when aType is QUERY_SELECTED_TEXT.  If one of them is set,
    * the result is the first range of the selection type.  See also
@@ -1314,8 +1128,6 @@ interface nsIDOMWindowUtils : nsISupports {
   /**
    * One of sendQueryContentEvent()'s aAdditionalFlags.  If this is specified,
    * aOffset is relative to start of selection or composition.
-   * Note that this is supported only when QUERY_CONTENT_FLAG_USE_XP_LINE_BREAK
-   * is not specified for now.
    */
   const unsigned long QUERY_CONTENT_FLAG_OFFSET_RELATIVE_TO_INSERTION_POINT =
                                                                          0x0400;
@@ -1439,7 +1251,9 @@ interface nsIDOMWindowUtils : nsISupports {
    * aFrameElement is the iframe element which contains the child-process
    * fullscreen document.
    */
-  void remoteFrameFullscreenChanged(in Element aFrameElement);
+  void remoteFrameFullscreenChanged(
+    in Element aFrameElement,
+    [optional] in boolean aFullscreenKeyboardLockEnabled);
 
   /**
    * Called when the remote frame has popped all fullscreen elements off its
@@ -1711,8 +1525,11 @@ interface nsIDOMWindowUtils : nsISupports {
    * the observer service once the flush is complete. If the function returns
    * false, an error occurred or a flush is not needed, and the notification
    * will not fire. This is intended to be used by test code only!
+   *
+   * @param aElement if you want to do the flush inside popup windows, you need to
+   *        the element inside the poup window.
    */
-  boolean flushApzRepaints();
+  boolean flushApzRepaints([optional] in Element aElement);
 
   /**
    * Sets a flag on the element to forcibly disable APZ on it. This affects
@@ -1722,6 +1539,11 @@ interface nsIDOMWindowUtils : nsISupports {
    * use by test code only.
    */
   void disableApzForElement(in Element aElement);
+
+  /**
+   * Returns whether APZ is being disabled on the given |aElement|.
+   */
+  boolean isApzDisabledForElement(in Element aElement);
 
   /**
    * Ask APZ to pan and zoom to the focused input element.
@@ -1780,6 +1602,11 @@ interface nsIDOMWindowUtils : nsISupports {
   readonly attribute AString focusedAutocapitalize;
 
   /**
+   * Get the autocorrect of the currently focused editing host, if any.
+   */
+  readonly attribute boolean focusedAutocorrect;
+
+  /**
    * Find the view ID for a given element. This is the reverse of
    * findElementWithViewId().
    */
@@ -1796,6 +1623,12 @@ interface nsIDOMWindowUtils : nsISupports {
    * clears the display list flags if they have.
    */
   boolean checkAndClearDisplayListState(in Element aElement);
+
+  /**
+   * Check if WebRender rasterized any tiles during the last frame, and
+   * clear the state. Used by reftests with reftest-no-wr-raster class.
+   */
+  boolean checkAndClearWRDidRasterize();
 
   /**
    * Get internal id of the stored blob, file or file handle.
@@ -1957,8 +1790,7 @@ interface nsIDOMWindowUtils : nsISupports {
 
   /**
    * In certain cases the event handling of nodes, form controls in practice,
-   * may be disabled. Such cases are for example the existence of disabled
-   * attribute or -moz-user-input: none.
+   * may be disabled. For example, by the existence of the disabled attribute.
    */
   boolean isNodeDisabledForEvents(in Node aNode);
 
@@ -1991,9 +1823,28 @@ interface nsIDOMWindowUtils : nsISupports {
   /**
    * Get the content- and compositor-side APZ test data instances.
    * The return values are of type APZTestData (see APZTestData.webidl).
+   *
+   * |aElement| is an optional argument for popup window where APZ is enabled.
+   * |aElement| would be a popup element for popup
    */
-  [implicit_jscontext] jsval getContentAPZTestData();
-  [implicit_jscontext] jsval getCompositorAPZTestData();
+  [implicit_jscontext] jsval getContentAPZTestData([optional] in Element aElement);
+
+  /*
+   * |aElement| is an optional argument for popup window where APZ is enabled.
+   * |aElement| would be a popup element for popup
+   */
+  [implicit_jscontext] jsval getCompositorAPZTestData([optional] in Element aElement);
+
+  /**
+   * Send a MozMouseHittest event hit on the given (x, y) on this window.
+   * The event is sent to the corresponding APZCTreeManager and the manager
+   * performs a hit testing in APZ. The hit testing result can be via obtained
+   * by above getCompositorAPZTestData().
+   * |aElement| is an optional argument for popup window where APZ is enabled.
+   * |aElement| would be a popup element for popup
+   */
+  [can_run_script]
+  void sendMozMouseHitTestEvent(in float aX, in float aY, [optional] in Element aElement);
 
   /**
    * Posts an RestyleHint::RESTYLE_SELF restyle event for the given element.
@@ -2048,14 +1899,11 @@ interface nsIDOMWindowUtils : nsISupports {
   readonly attribute boolean refreshDriverHasPendingTick;
 
   /**
-   * Controls the amount of chrome that should be visible on each side of
-   * the window. Works like the chromemargin xul:window attribute.
+   * Controls whether we paint to the titlebar of the window.
+   * Works like the customtitlebar xul:window attribute.
    * This should only be used with non-XUL windows.
    */
-  void setChromeMargin(in int32_t aTop,
-                       in int32_t aRight,
-                       in int32_t aBottom,
-                       in int32_t aLeft);
+  void setCustomTitlebar(in boolean aCustomTitlebar);
 
   /**
    * Controls the amount of space on each edge of the window that can be
@@ -2125,6 +1973,11 @@ interface nsIDOMWindowUtils : nsISupports {
   readonly attribute int32_t gpuProcessPid;
 
   /**
+    * Returns the RDD process pid, or -1 if there is no RDD process.
+    */
+  readonly attribute int32_t rddProcessPid;
+
+  /**
    * Returns usage data for a given storage object.
    *
    * @param aStorage
@@ -2167,7 +2020,7 @@ interface nsIDOMWindowUtils : nsISupports {
   /**
    * Start capturing each WebRender frame to disk.
    *
-   * |aPath| is the name of a new directory to be created to hold the captures.
+   * a new directory with name "wr-capture" is created to hold the captures.
    * it is relative to:
    * - the |PUBLIC_STORAGE| environment variable, if set, else
    * - the |MOZ_UPLOAD_DIR| environment variable, if set, else
@@ -2175,15 +2028,14 @@ interface nsIDOMWindowUtils : nsISupports {
    * the current directory.
    *
    * If there is already a directory with the given name, a numeric suffix is
-   * added to ensure a fresh directory is created. This means that you can't
-   * be sure your capture directory is actually named |aPath|.
+   * added to ensure a fresh directory is created.
    *
    * |aFlags| is a set of flags from |webrender::render_api::CaptureBits|.
    *
    * If there is already a sequence capture in progress, stop it and start a new
    * one, with the new path and flags.
    */
-  void wrStartCaptureSequence(in ACString aPath, in uint32_t aFlags);
+  void wrStartCaptureSequence(in uint32_t aFlags);
 
   /**
    * Stop a capture begun with |wrStartCaptureSequence|.
@@ -2283,8 +2135,6 @@ interface nsIDOMWindowUtils : nsISupports {
   // Typically, "forward" button being right side of 5-button
   // mice, see "buttons" attribute document of DOM3 Events.
   const long MOUSE_BUTTONS_5TH_BUTTON = 0x10;
-  // Buttons are not specified, will be calculated from |aButton|.
-  const long MOUSE_BUTTONS_NOT_SPECIFIED = -1;
 
   // Return values for getDirectionFromText().
   const long DIRECTION_LTR = 0;
@@ -2293,7 +2143,9 @@ interface nsIDOMWindowUtils : nsISupports {
 
   void syncFlushCompositor();
 
-  unsigned long long getLayersId();
+  // |aElement| is an optional argument for popup window where APZ is enabled.
+  // |aElement| would be a popup element for popup.
+  unsigned long long getLayersId([optional] in Element aElement);
 
   // Returns true if we are effectively throttling frame requests.
   readonly attribute boolean effectivelyThrottlesFrameRequests;
@@ -2327,16 +2179,10 @@ interface nsIDOMWindowUtils : nsISupports {
 
   // The current drag session on this widget of this window (if any).
   readonly attribute nsIDragSession dragSession;
-};
 
-[scriptable, uuid(c694e359-7227-4392-a138-33c0cc1f15a6)]
-interface nsITranslationNodeList : nsISupports {
-  readonly attribute unsigned long length;
-  Node item(in unsigned long index);
-
-  // A translation root is a block element, or an inline element
-  // which its parent is not a translation node.
-  boolean isTranslationRootAtIndex(in unsigned long index);
+  // Get/Set microtask level. If you don't know how microtasks work both in the
+  // specification and Gecko, please don't use this.
+  attribute unsigned long microTaskLevel;
 };
 
 /**

@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Ignori
     .secondarybuttonaccesskey = I
 appmenu-update-restart-message2 = Elŝutu la lastan version de { -brand-shorter-name }. Malfermitaj langetoj kaj fenestroj estos restarigitaj.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Malfari
+    .secondarybuttonaccesskey = M
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } ne povas aŭtomate ĝisdatiĝi al la lasta versio.
     .buttonlabel = Tamen ĝisdatigi { -brand-shorter-name }
@@ -37,15 +40,19 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Nun ne
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Nova { -brand-shorter-name } estas disponebla, sed ĝi ne povas esti instalita ĉar alia kopio de { -brand-shorter-name } nuntempe estas uzata. Fermu ĝin por daŭrigi la ĝisdatigon, aŭ elektu tamen daŭrigi la ĝisdatigon ĉi tiel (la alia kopio povus ne bone funkcii ĝis restarto).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = En ordo
     .buttonaccesskey = o
 appmenu-addon-post-install-message3 = Administru viajn aldonaĵojn kaj etosojn ekde la menuo de la programo.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Ĝisdatigu la permesojn kaj preferojn pri datumoj iam ajn, en la <a data-l10n-name="settings-link">agordoj de etendaĵo</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Alpingli etendaĵon al ilaro
+    .accesskey = A
 appmenu-addon-post-install-incognito-checkbox =
     .label = Permesi al tiu ĉi etendaĵo funkcii en privataj fenestroj
     .accesskey = P
-    
 appmenu-new-tab-controlled-changes =
     .label = Via paĝo de nova langeto ŝanĝiĝis.
     .buttonlabel = Gardi ŝanĝojn

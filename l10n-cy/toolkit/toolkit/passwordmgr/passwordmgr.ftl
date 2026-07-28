@@ -30,10 +30,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = Peidio â Diweddaru
     .accesskey = P
+primary-password-prompt-message = Rhowch eich Prif Gyfrinair.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Dim enw defnyddiwr
-password-manager-toggle-password =
-    .label = Dangos cyfrinair
-    .accesskey = d
 password-manager-confirm-password-change = Cadarnhau Newid Cyfrinair
 password-manager-select-username = Dewis pa fewngofnod i'w ddiweddaru:

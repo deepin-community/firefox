@@ -168,6 +168,8 @@ extensions-warning-update-security-button = Aktivizoje
 extensions-warning-imported-addons2 =
     .message = Ju lutemi, përfundoni instalimin e zgjerimeve që qenë importuar në { -brand-short-name }.
 extensions-warning-imported-addons-button = Instalo Zgjerime
+extensions-warning-safe-mode3 =
+    .message = Krejt shtesat janë çaktivizuar nga Mënyra Diagnostikim.
 
 ## Strings connected to add-on updates
 
@@ -203,6 +205,10 @@ addon-updates-manual-updates-found = Shihni Përditësimet e Gatshme
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Instaloni Shtesë Prej Kartele…
+    .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Instaloni ose Përditësoni Shtesë Nga Kartelë…
     .accesskey = I
 addon-install-from-file-dialog-title = Përzgjidhni shtesë për instalim
 addon-install-from-file-filter-name = Shtesa
@@ -273,6 +279,19 @@ discopane-notice-recommendations = Disa nga këto rekomandime janë të personal
 discopane-notice-recommendations2 =
     .message = Disa nga këto rekomandime janë të personalizuara. Ato bazohen në zgjerime të tjera që keni instaluar, në parapëlqime profili dhe statistika përdorimi.
 discopane-notice-learn-more = Mësoni më tepër
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Tema(t) juaj me ngjyrim u hoq.
+    .message =
+        { -brand-product-name }-i përditësoi koleksionin e vet të ngjyrimeve.
+        Hoqëm versionin(et) e vjetër nga lista juaj“Tema të Ruajtura”. Merrni
+        te sajti i shtesave versione të rinj.
+colorway-removal-notice-learn-more = Mësoni më tepër
+colorway-removal-notice-button = Merrni tema ngjyrimesh të përditësuara
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Rregullimet tuaja për kontrast në Windows po anashkalojnë tema të { -brand-short-name }-it. Që të përdorni tema në { -brand-short-name }, çaktivizoni këto rregullime.
 privacy-policy = Rregulla Privatësie
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -293,6 +312,17 @@ find-more-themes = Shihni më tepër tema
 # used for screen readers.
 addon-options-button =
     .aria-label = Më tepër Mundësi
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Zgjerimet dhe tema ju lejojnë të përshtatnii { -brand-product-name }-in. Mund
+    të përforcojnë privatësinë, të thellojnë aftësitë produktive, të përmirësojnë media,
+    të ndryshojnë mënyrën se si duket { -brand-product-name }-i dhe mjaft gjëra të tjera.
+    Këto programe vockla shpesh zhvillohen nga një palë e tretë. Ja një përzgjedhje që
+    Firefox-i <a data-l10n-name="learn-more-trigger">rekomandon</a> për siguri, punim
+    dhe funksione të veçantë.
 
 ## Add-on actions
 
@@ -379,10 +409,14 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = E lejuar në dritare private
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = E lejuar në dritare private
     .aria-label = { addon-badge-private-browsing-allowed2.title }
-addon-detail-private-browsing-help = Nën lejim, zgjerimi do të mund të shohë veprimtaritë tuaja në linjë, teksa shfletoni privatisht. <a data-l10n-name="learn-more">Mësoni më tepër</a>
+addon-detail-private-browsing-help = Po të lejohet, zgjerimi do të mund të shohë veprimtaritë tuaja në internet, teksa shfletoni privatisht. <a data-l10n-name="learn-more">Mësoni më tepër</a>
 addon-detail-private-browsing-allow = Lejoje
 addon-detail-private-browsing-disallow = Mos e Lejo
 # aria-label associated to the private browsing row to help screen readers to announce the group
@@ -418,6 +452,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Ky zgjerim është shqyrtuar për të qenë në pajtim me standardet tona për sigurinë dhe punimin.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Zgjerim zyrtar i ndërtuar nga Mozilla. Plotëson standarde sigurie dhe funksionimi.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Ky zgjerim është shqyrtuar për të qenë në pajtim me standarde për sigurinë dhe punimin
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox-i rekomandon vetëm zgjerime që pajtohen me standarde për sigurinë dhe punimin.
 
 ##
 
@@ -425,6 +477,10 @@ available-updates-heading = Përditësime të Gatshme
 recent-updates-heading = Përditësime Së Fundi
 release-notes-loading = Po ngarkohet…
 release-notes-error = Na ndjeni, por pati një gabim gjatë ngarkimit të shënimeve të versionit.
+addon-permissions-heading = Leje
+addon-permissions-empty2 = Ky zgjerim nuk lyp ndonjë leje.
+addon-permissions-required-label = Të domosdoshme:
+addon-permissions-optional-label = Opsionale:
 addon-permissions-empty = Ky zgjerim nuk lyp ndonjë leje
 addon-permissions-required = Leje të domosdoshme për funksione bazë:
 addon-permissions-optional = Leje opsionale për më tepër funksione:
@@ -452,6 +508,9 @@ shortcuts-heading = Administroni Shkurtore Zgjerimesh
 default-heading-search-label = Gjeni më tepër shtesa
 addons-heading-search-input =
     .placeholder = Kërkoni te addons.mozilla.org
+addons-heading-search-button =
+    .title = Kërkoni te addons.mozilla.org
+    .aria-label = Kërkoni te addons.mozilla.org
 addon-page-options-button =
     .title = Mjete për krejt shtesat
 
@@ -474,14 +533,32 @@ details-notification-unsigned-and-disabled-link = Më Tepër Hollësi
 details-notification-unsigned = { $name } s’u verifikua dot për përdorim te { -brand-short-name }. Vazhdoni, por me kujdes.
 details-notification-unsigned2 =
     .message = { $name } s’u verifikua dot për përdorim te { -brand-short-name }. Vazhdoni, por me kujdes.
+details-notification-hard-blocked-extension =
+    .message = Ky zgjerim është bllokuar ngaqë cenon rregullat e Mozilla-s dhe është çaktivizuar.
+details-notification-hard-blocked-other =
+    .message = Kjo shtesë është bllokuar ngaqë cenon rregullat e Mozilla-s dhe është çaktivizuar.
 details-notification-unsigned-link = Më Tepër Hollësi
 details-notification-blocked = { $name } është çaktivizuar për shkak problemesh sigurie ose qëndrueshmërie.
-details-notification-blocked2 =
-    .message = { $name } është çaktivizuar për shkak problemesh sigurie ose qëndrueshmërie.
+details-notification-blocked-link2 = Shihni Hollësitë
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Ky zgjerim është i kufizuar dhe është çaktivizuar. Mund ta aktivizoni, por kjo mund të jetë e rrezikshme.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Ky zgjerim është i kufizuar. Përdorim i tij mund të jetë i rrezikshëm.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Kjo shtesë është ë kufizuar dhe është çaktivizuar. Mund ta aktivizoni, por kjo mund të jetë e rrezikshme.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Kjo shtesë është e kufizuar. Përdorimi i saj mund të jetë i rrezikshëm.
+details-notification-soft-blocked-extension-disabled =
+    .message = Ky zgjerim është kufizuar ngaqë cenon rregullat e Mozilla-s dhe është çaktivizuar. Mund ta aktivizoni, por kjo mund të jetë e rrezikshme.
+details-notification-soft-blocked-extension-enabled =
+    .message = Ky zgjerim cenon rregullat e Mozilla-s. Përdorimi i tij mund të jetë me rrezik.
+details-notification-soft-blocked-other-disabled =
+    .message = Kjo shtesë është kufizuar ngaqë cenon rregullat e Mozilla-s dhe është çaktivizuar. Mund ta aktivizoni, por kjo mund të jetë e rrezikshme.
+details-notification-soft-blocked-other-enabled =
+    .message = Kjo shtesë cenon rregullat e Mozilla-s. Përdorimi i saj mund të jetë me rrezik.
+details-notification-softblocked-link2 = Shihni Hollësitë
 details-notification-blocked-link = Më Tepër Hollësi
 details-notification-softblocked = { $name } njihet si shkaktare problemesh sigurie ose qëndrueshmërie.
-details-notification-softblocked2 =
-    .message = { $name } njihet si shkaktare problemesh sigurie ose qëndrueshmërie.
 details-notification-softblocked-link = Më Tepër Hollësi
 details-notification-gmp-pending = { $name } do të instalohet pas pak.
 details-notification-gmp-pending2 =
@@ -489,9 +566,51 @@ details-notification-gmp-pending2 =
 
 ## Gecko Media Plugins (GMPs)
 
-plugins-gmp-license-info = Të dhëna licence
+plugins-gmp-license-info = Hollësi licence
 plugins-gmp-privacy-info = Informacion Mbi Privatësinë
 plugins-openh264-name = Kodek Videosh OpenH264, i ofruar nga Cisco Systems, Inc.
 plugins-openh264-description = Kjo shtojcë është instaluar automatikisht nga Mozilla për përputhje me specifikimet WebRTC dhe për të bërë të mundur thirrje WebRTC me pajisje që lypin kodekun H.264 për video. Vizitoni http://www.openh264.org/ që të shihni kodin burim të kodekut dhe për të mësuar më tepër rreth sendërtimit të tij.
 plugins-widevine-name = Widevine Content Decryption Module ofruar nga Google Inc.
-plugins-widevine-description = Kjo shtojcë bën të mundur luajtje mediash të fshehtëzuara në përputhje me specifikimet Encrypted Media Extensions. Mediat e fshehtëzuara zakonisht përdoren nga sajtet për t’i mbrojtur kundër kopjimesh lënde media me pagesë. Vizitoni https://www.w3.org/TR/encrypted-media/ për më tepër të dhëna mbi Encrypted Media Extensions.
+plugins-widevine-description = Kjo shtojcë bën të mundur luajtje mediash të fshehtëzuara në përputhje me specifikimet Encrypted Media Extensions. Mediat e fshehtëzuara zakonisht përdoren nga sajtet për t’i mbrojtur kundër kopjimesh lënde media me pagesë. Vizitoni https://www.w3.org/TR/encrypted-media/ për më tepër hollësi mbi Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Grumbullim i domosdoshëm të dhënash:
+addon-permissions-optional-data-collection = Grumbullim opsional të dhënash:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Leje dhe të dhëna
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Përdorur nga zgjerimi { $extensionName }
+addon-permissions-data-collection-heading = Grumbullim të Dhënash
+addon-permissions-data-collection-empty = Zhvilluesi thotë se ky zgjerim s’lyp mbledhje të dhënash.
+addon-data-collection-provided = Hollësi të dhëna nga zhvilluesi i shtesës
+addon-data-collection-learnmore = Mësoni më tepër rreth grumbullimi të dhënash
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name }-i këtë e përdor te about:inference
+mlmodel-link-preview = { -brand-short-name }-i këtë e përdor për të prodhuar pika kyçe, kur bëhen paraparje lidhjesh
+mlmodel-pdfjs = { -brand-short-name }-i e përdor këtë për të krijuar tekst alternativ për figura që shtoni te PDF-ra
+mlmodel-smart-tab-topic-engine = { -brand-short-name }-i e përdor këtë për të sugjeruar emra për grupet tuaj të skedave
+mlmodel-smart-tab-embedding-engine = { -brand-short-name }-i e përdor këtë për të sugjeruar skeda për grupet tuaj të skedave
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = IA “on-device”
+addon-category-mlmodel-title =
+    .title = IA “on-device”
+mlmodel-heading = Administroni Modele IA “On-Device”
+mlmodel-description = Disa veçori dhe zgjerime në { -brand-short-name } bazohen në modele IA që funksionojnë lokalisht në pajisjen tuaj. Kjo mënyrë mbron privatësinë tuaj dhe, në mjaft raste, përshpejton funksionimin. <a data-l10n-name="learn-more">Mësoni më tepër</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Hiqe
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Madhësi kartele
+mlmodel-addon-detail-last-used-label = Përdorur së fundi më
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Përdorur nga
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Skedë modeli
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Shiheni te Hugging Face

@@ -5,33 +5,23 @@
 toolbar-button-firefox-view =
     .label = { -firefoxview-brand-name }
     .tooltiptext = { -firefoxview-brand-name }
-
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
-
 firefoxview-page-title = { -firefoxview-brand-name }
-
 firefoxview-close-button =
     .title = Særa
     .aria-label = Særa
-
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = oua
-
 firefoxview-tabpickup-step-signin-primarybutton = Vanni avanti
-
 firefoxview-tabpickup-network-offline-header = Contròlla a conescion internet
-
 firefoxview-tabpickup-password-locked-link = Atre informaçioin
-
 firefoxview-mobile-confirmation-header = 🎉 Ghe semmo!
-
 # Variables:
 #  $intensity (String): Colorway intensity
 #  $collection (String): Colorway Collection name
 firefoxview-colorway-description = { $intensity } · { $collection }
-
 firefoxview-synced-tabs-placeholder-header = Ninte da vedde
 
 ## History in this context refers to browser history
@@ -52,16 +42,7 @@ firefoxview-recently-closed-nav = Feuggi seræ urtimamente
     .title = Feuggi seræ urtimamente
 firefoxview-recently-closed-header = Feuggi seræ urtimamente
 
-## Tabs from other devices refers in this context refers to synced tabs from other devices
-
-
 ##
 
-# Used for a link in collapsible cards, in the 'Recent browsing' page of Firefox View
+# Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
 firefoxview-view-all-link = Veddi tutto
-
-## Variables:
-##   $date (string) - Date to be formatted based on locale
-
-##
-

@@ -1,5 +1,4 @@
 /* clang-format off */
-/* -*- Mode: Objective-C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* clang-format on */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -242,13 +241,9 @@ using namespace mozilla::a11y;
 }
 
 - (id)rootGroup {
-  NSArray* children = [super moxUnignoredChildren];
-  if (mRole == roles::DOCUMENT && [children count] == 1 &&
-      [[[children firstObject] moxUnignoredChildren] count] != 0) {
-    // We only need a root group if our document:
-    // (1) has multiple children, or
-    // (2) a one child that is a leaf, or
-    // (3) has a role other than the default document role
+  if (mRole == roles::DOCUMENT) {
+    // We only need a root group if our document has a role other than the
+    // default document role
     return nil;
   }
 

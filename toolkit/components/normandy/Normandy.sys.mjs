@@ -11,17 +11,14 @@ ChromeUtils.defineESModuleGetters(lazy, {
   AddonRollouts: "resource://normandy/lib/AddonRollouts.sys.mjs",
   AddonStudies: "resource://normandy/lib/AddonStudies.sys.mjs",
   CleanupManager: "resource://normandy/lib/CleanupManager.sys.mjs",
-  ExperimentManager: "resource://nimbus/lib/ExperimentManager.sys.mjs",
+  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
   LogManager: "resource://normandy/lib/LogManager.sys.mjs",
   NormandyMigrations: "resource://normandy/NormandyMigrations.sys.mjs",
   PreferenceExperiments:
     "resource://normandy/lib/PreferenceExperiments.sys.mjs",
   PreferenceRollouts: "resource://normandy/lib/PreferenceRollouts.sys.mjs",
   RecipeRunner: "resource://normandy/lib/RecipeRunner.sys.mjs",
-  RemoteSettingsExperimentLoader:
-    "resource://nimbus/lib/RemoteSettingsExperimentLoader.sys.mjs",
   ShieldPreferences: "resource://normandy/lib/ShieldPreferences.sys.mjs",
-  TelemetryEvents: "resource://normandy/lib/TelemetryEvents.sys.mjs",
 });
 
 const UI_AVAILABLE_NOTIFICATION = "sessionstore-windows-restored";
@@ -45,9 +42,17 @@ export var Normandy = {
 
   /** Initialization that needs to happen before the first paint on startup. */
   async init({ runAsync = true } = {}) {
-    // It is important to register the listener for the UI before the first
-    // await, to avoid missing it.
-    Services.obs.addObserver(this, UI_AVAILABLE_NOTIFICATION);
+    // NOTE: It looks like we can see us being called twice between init(true)
+    // coming from "browser-before-ui-startup" (see BrowserComponents.manifest)
+    // and init(false) coming from FirstStartup.sys.mjs.
+    // We need the UI_AVAILABLE_NOTIFICATION observer only if runAsync == true
+    // and we assume that the rest of the initialization can just happen twice.
+    // TODO: Check which pieces really need to run twice, if any.
+    if (runAsync) {
+      // It is important to register the listener for the UI before the first
+      // await, to avoid missing it.
+      Services.obs.addObserver(this, UI_AVAILABLE_NOTIFICATION);
+    }
 
     // It is important this happens before the first `await`. Note that this
     // also happens before migrations are applied.
@@ -67,31 +72,21 @@ export var Normandy = {
         this.uiAvailableNotificationObserved.promise,
         new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000)),
       ]);
-    }
 
-    // Remove observer for UI notifications. It will error if the notification
-    // was already removed, which is fine.
-    try {
+      // Remove observer for UI notifications.
       Services.obs.removeObserver(this, UI_AVAILABLE_NOTIFICATION);
-    } catch (e) {}
+    }
 
     await this.finishInit();
   },
 
   async observe(subject, topic) {
     if (topic === UI_AVAILABLE_NOTIFICATION) {
-      Services.obs.removeObserver(this, UI_AVAILABLE_NOTIFICATION);
       this.uiAvailableNotificationObserved.resolve();
     }
   },
 
   async finishInit() {
-    try {
-      lazy.TelemetryEvents.init();
-    } catch (err) {
-      log.error("Failed to initialize telemetry events:", err);
-    }
-
     await lazy.PreferenceRollouts.recordOriginalValues(
       this.rolloutPrefsChanged
     );
@@ -111,17 +106,7 @@ export var Normandy = {
       )
     );
 
-    try {
-      await lazy.ExperimentManager.onStartup();
-    } catch (err) {
-      log.error("Failed to initialize ExperimentManager:", err);
-    }
-
-    try {
-      await lazy.RemoteSettingsExperimentLoader.init();
-    } catch (err) {
-      log.error("Failed to initialize RemoteSettingsExperimentLoader:", err);
-    }
+    await lazy.ExperimentAPI.init();
 
     try {
       await lazy.AddonStudies.init();

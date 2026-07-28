@@ -24,11 +24,11 @@ about-private-browsing-info-description-simplified = { -brand-short-name } оч�
 about-private-browsing-learn-more-link = Докладніше
 about-private-browsing-hide-activity = Приховуйте свою активність і місцеперебування де б ви не переглядали щось в інтернеті
 about-private-browsing-get-privacy = Отримайте захист приватності в інтернеті всюди
-about-private-browsing-hide-activity-1 = Приховати активність перегляду та місцеперебування за допомогою { -mozilla-vpn-brand-name }. Одним натисканням створює безпечне з'єднання навіть у загальнодоступній мережі Wi-Fi.
+about-private-browsing-hide-activity-1 = Приховуйте діяльність в інтернеті та розташування за допомогою { -mozilla-vpn-brand-name }. Створюйте захищене з'єднання одним натисканням — навіть у публічній мережі Wi-Fi.
 about-private-browsing-prominent-cta = Зберігайте приватність з { -mozilla-vpn-brand-name }
 about-private-browsing-focus-promo-cta = Завантажити { -focus-brand-name }
 about-private-browsing-focus-promo-header = { -focus-brand-name }: приватний перегляд у дорозі
-about-private-browsing-focus-promo-text = Наш спеціалізований мобільний застосунок для приватного перегляду щоразу очищає вашу історію і файли cookie.
+about-private-browsing-focus-promo-text = Наша спеціальна програма для приватного перегляду на мобільних пристроях щоразу очищає вашу історію і файли cookie.
 
 ## The following strings will be used for experiments in Fx99 and Fx100
 
@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Дозвольте { -bran
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } оброблятиме запити про файли cookie для вас
 about-private-browsing-cookie-banners-promo-body = Тепер ми автоматично відхиляємо багато банерів про файли cookie, щоб зменшити стеження за вами і дати змогу не відволікатися під час користування інтернетом.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Не залишайте слідів на цьому пристрої
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } видаляє ваші файли cookie, історію та дані сайтів, коли ви закриваєте всі приватні вікна.
 about-private-browsing-felt-privacy-v1-info-link = Хто може бачити мою діяльність?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Закриття всіх приватних вікон видаляє файли cookie, історію та дані сайтів.
+about-private-browsing-nova-info-link = Хто все ще може бачити мою активність?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Ваші дані не записуються
+about-private-browsing-nova-info-subheader = Ми зітремо всі пошукові запити та дані входу, коли ви закриєте це вікно. Вбудовані засоби захисту { -brand-short-name }, як-от блокування стеження, також увімкнено.

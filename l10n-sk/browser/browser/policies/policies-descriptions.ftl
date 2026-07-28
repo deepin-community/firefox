@@ -11,6 +11,7 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = Nastaví, ku ktorým pravidlám majú prístup rozšírenia cez chrome.storage.managed.
+policy-AIControls = Konfiguruje ovládacie prvky umelej inteligencie.
 policy-AllowedDomainsForApps = Definuje domény, ktoré majú povolený prístup do služby Google Workspace.
 policy-AllowFileSelectionDialogs = Povolí dialógové okná pre výber súboru.
 policy-AppAutoUpdate = Zapne alebo vypne automatické aktualizácie aplikácie.
@@ -21,6 +22,7 @@ policy-AutofillAddressEnabled = Povolí automatické dopĺňanie adries.
 policy-AutofillCreditCardEnabled = Povolí automatické vypĺňanie spôsobov platby.
 policy-AutoLaunchProtocolsFromOrigins = Definuje zoznam externých protokolov, ktoré môžu byť použité z uvedených zdrojov bez vyzvania používateľa.
 policy-BackgroundAppUpdate2 = Povolí alebo zakáže aktualizácie na pozadí.
+policy-Backup = Zakáže zálohovanie alebo obnovu údajov profilu.
 policy-BlockAboutAddons = Zablokuje prístup ku správcovi doplnkov (about:addons).
 policy-BlockAboutConfig = Zablokuje prístup na stránku about:config.
 policy-BlockAboutProfiles = Zablokuje prístup na stránku about:profiles.
@@ -35,6 +37,7 @@ policy-Containers = Nastaví pravidlá súvisiace s kontajnermi.
 policy-DisableAccounts = Zakáže služby vyžadujúce účty, vrátane synchronizácie.
 policy-DisabledCiphers = Zakáže šifry.
 policy-DefaultDownloadDirectory = Nastaví predvolené umiestnenie pre sťahovanie súborov.
+policy-DefaultSerialGuardSetting = Ovláda používanie Serial API.
 policy-DisableAppUpdate = Zabráni aktualizáciám prehliadača.
 policy-DisableBuiltinPDFViewer = Zakáže PDF prehliadač PDF.js zabudovaný v prehliadači { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Zabráni agentovi Default browser vykonávať akékoľvek činnosti. Platí len pre Windows; iné platformy nemajú agenta Default browser.
@@ -55,6 +58,8 @@ policy-DisablePocket2 = Vypne funkciu pre ukladanie stránok do služby { -pocke
 policy-DisablePrivateBrowsing = Zablokuje súkromné prehliadanie.
 policy-DisableProfileImport = Zablokuje možnosť importu údajov z iných prehliadačov.
 policy-DisableProfileRefresh = Zablokuje tlačidlo pre obnovenie prehliadača { -brand-short-name } do pôvodných nastavení na stránke about:support.
+policy-DisableRemoteImprovements = Zabráni aplikovaniu zmien týkajúcich sa výkonu, stability a nových funkcií vo { -brand-short-name(case: "loc") } medzi aktualizáciami.
+policy-DisableRemoteSettingsAndAcceptSecurityConsequences = Zakáže vzdialené nastavenia.
 policy-DisableSafeMode = Zablokuje funkciu reštartu so zakázanými doplnkami. Poznámka: prechod do núdzového režimu podržaním klávesy Shift je v systéme Windows možné len pomocou skupinovej politiky.
 policy-DisableSecurityBypass = Zabráni používateľovi v obchádzaní niektorých bezpečnostných varovaní.
 policy-DisableSetAsDesktopBackground = Zablokuje kontextovú ponuku obrázkov a ich možnosť nastaviť ich ako pozadie plochy.
@@ -79,6 +84,7 @@ policy-ExtensionSettings = Spravuje všetky aspekty inštalácie rozšírenia.
 policy-ExtensionUpdate = Zapne alebo vypne automatické aktualizácie rozšírení.
 policy-FirefoxHome2 = Nakonfiguruje { -firefox-home-brand-name(case: "acc") }.
 policy-FirefoxSuggest = Nakonfiguruje { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Nakonfiguruje generatívne funkcie umelej inteligencie.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Vynúti priamu navigáciu v intranetovej lokalite namiesto vyhľadávania pri zadávaní jednotlivých slov do panela s adresou.
 policy-Handlers = Nastaví predvolené aplikácie pre odkazy a typy súborov.
 policy-HardwareAcceleration = Ak je nastavená hodnota false, vypne hardvérové urýchľovanie.
@@ -87,6 +93,7 @@ policy-Homepage = Nastaví a v prípade potreby uzamkne domovskú stránku.
 policy-HttpAllowlist = Zdroje, ktoré nebudú inovované na HTTPS.
 policy-HttpsOnlyMode = Povolí zapnutie režimu "Len HTTPS".
 policy-InstallAddonsPermission = Povolí určitým webovým stránkam inštalovať doplnky.
+policy-IPProtectionAvailable = Zabráni používateľom v prístupe k vstavanej sieti VPN.
 policy-LegacyProfiles = Vypne funkciu, ktorá vynucuje samostatný profil pre každú inštaláciu aplikácie.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
@@ -97,6 +104,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Povolí zastarané pre
 ##
 
 policy-LocalFileLinks = Povolí určitým webovým stránkam odkazovať na súbory uložené na pevnom disku.
+policy-LocalNetworkAccess = Povolí alebo zakáže kontroly prístupu k lokálnej sieti.
 policy-ManagedBookmarks = Konfiguruje zoznam záložiek spravovaný správcom, ktoré používateľ nemôže zmeniť.
 policy-ManualAppUpdateOnly = Povolí iba manuálne aktualizácie a neinformuje používateľa o aktualizáciách.
 policy-PrimaryPassword = Vyžadovanie alebo zabránenie používania hlavného hesla.
@@ -115,21 +123,26 @@ policy-PasswordManagerExceptions = Zabráni { -brand-short-name(case: "gen") } u
 policy-PostQuantumKeyAgreementEnabled = Povolí postkvantovú dohodu o kľúčoch pre TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Zablokuje alebo nastaví PDF prehliadač PDF.js zabudovaný v prehliadači { -brand-short-name }.
-policy-Permissions2 = Nastaví povolenia pre kameru, mikrofón, polohu, upozornenia a automatické prehrávanie.
+policy-Permissions2 = Nastaví oprávnenia pre kameru, mikrofón, polohu, upozornenia a automatické prehrávanie.
 policy-PictureInPicture = Povolí alebo zakáže režim Obraz v obraze.
+policy-PopupBlocking2 = Povolí určitým webovým stránkam zobrazovať vyskakovacie okná a byť presmerované rámcami tretích strán.
 policy-PopupBlocking = Povolí určitým webovým stránkam zobrazovať v predvolenom nastavení vyskakovacie okná.
 policy-Preferences = Nastaví a uzamkne hodnotu pre podmnožinu predvolieb.
 policy-PrivateBrowsingModeAvailability = Nastaví dostupnosť režimu súkromného prehliadania.
 policy-PromptForDownloadLocation = Spýta sa na umiestnenie súboru pred jeho stiahnutím.
 policy-Proxy = Nakonfiguruje nastavenia proxy.
+policy-RelaunchRequired = Vyžaduje opätovné spustenie { -brand-short-name(case: "gen") } v danom období a informuje používateľa o nadchádzajúcom reštarte.
 policy-RequestedLocales = Nastaví zoznam požadovaných jazykov aplikácie, v poradí podľa nastavenej priority.
 policy-SanitizeOnShutdown2 = Vymaže údaje o prehliadaní v priebehu vypnutia.
 policy-SearchBar = Nastaví predvolené umiestnenie vyhľadávacieho poľa. Používateľ ho môže premiestniť.
-policy-SearchEngines = Nakonfiguruje nastavenie vyhľadávacích modulov. Toto pravidlo je dostupné len vo verzii s rozšírenou podporou (ESR).
+policy-SearchEngines = Nakonfiguruje nastavenie vyhľadávačov. Toto pravidlo je dostupné len vo verzii s rozšírenou podporou (ESR).
 policy-SearchSuggestEnabled = Povolí alebo zakáže návrhy vyhľadávania.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Pridá alebo odstráni moduly PKCS #11.
 policy-ShowHomeButton = Zobrazí tlačidlo Domov na paneli nástrojov.
+policy-SitePolicies = Zásady špecifické pre danú stránku.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Pri spustení nezobrazí Podmienky používania a Vyhlásenie o ochrane osobných údajov. Potvrdzujete, že prijímate a máte oprávnenie prijať Podmienky používania v mene všetkých jednotlivcov, ktorým poskytnete prístup k tomuto prehliadaču.
 policy-SSLVersionMax = Nastaví maximálnu verziu SSL.
 policy-SSLVersionMin = Nastaví minimálnu verziu SSL.
 policy-StartDownloadsInTempDirectory = Vynúti spustenie sťahovania v lokálnom, dočasnom umiestnení a nie v predvolenom adresári sťahovania.
@@ -137,6 +150,11 @@ policy-SupportMenu = Pridá vlastnú položku do ponuky pomocníka.
 policy-TranslateEnabled = Povolí alebo zakáže preklad webových stránok.
 policy-UserMessaging = Používateľovi sa nebudú zobrazovať určité oznámenia.
 policy-UseSystemPrintDialog = Tlač pomocou systémového dialógového okna tlače.
+policy-VisualSearchEnabled = Povolí alebo zakáže vizuálne vyhľadávanie.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Zablokuje prístup na určité webové stránky. Ďalšie informácie o formáte nájdete v dokumentácii.
 policy-Windows10SSO = Povolí jednotné prihlásenie systému Windows pre konto Microsoft a pracovné a školské účty.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Povolí jednotné prihlásenie pre účty Microsoft Entra.
+# Do not translate "XSLTProcessor" as it is the name of an API interface.
+policy-XSLTEnabled = Povolí alebo zakáže podporu pre rozhranie XSLTProcessor JavaScript API a inštrukciu na spracovanie XSLT.

@@ -5,7 +5,7 @@
 /*---
 esid: sec-temporal.zoneddatetime
 description: Time zone names are case-normalized
-features: [Temporal]
+features: [Temporal, canonical-tz]
 ---*/
 
 const timeZone = 'eTc/gMt+1';
@@ -607,7 +607,6 @@ const timeZoneIdentifiers = [
   'US/Michigan',
   'US/Mountain',
   'US/Pacific',
-  'US/Pacific-New',
   'US/Samoa',
   'UTC',
   'Universal',

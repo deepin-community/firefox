@@ -11,12 +11,6 @@ Services.scriptloader.loadSubScript(
   this
 );
 
-Services.prefs.setCharPref("devtools.inspector.activeSidebar", "fontinspector");
-registerCleanupFunction(() => {
-  Services.prefs.clearUserPref("devtools.inspector.activeSidebar");
-  Services.prefs.clearUserPref("devtools.inspector.selectedSidebar");
-});
-
 var nodeConstants = require("resource://devtools/shared/dom-node-constants.js");
 
 /**
@@ -25,10 +19,10 @@ var nodeConstants = require("resource://devtools/shared/dom-node-constants.js");
  * the default selectNode isn't enough to guaranty that the panel has finished
  * updating. We also need to wait for the fontinspector-updated event.
  *
- * @param {String|NodeFront} selector
+ * @param {string | NodeFront} selector
  * @param {InspectorPanel} inspector
  *        The instance of InspectorPanel currently loaded in the toolbox.
- * @param {String} reason
+ * @param {string} reason
  *        Defaults to "test" which instructs the inspector not to highlight the
  *        node upon selection.
  */
@@ -61,6 +55,7 @@ selectNode = async function (node, inspector, reason) {
 /**
  * Adds a new tab with the given URL, opens the inspector and selects the
  * font-inspector tab.
+ *
  * @return {Promise} resolves to a {tab, toolbox, inspector, view} object
  */
 var openFontInspectorForURL = async function (url) {
@@ -85,7 +80,7 @@ var openFontInspectorForURL = async function (url) {
  * preview images to be updated.
  *
  * @param {FontInspector} view - The FontInspector instance.
- * @param {String} text - The text to preview.
+ * @param {string} text - The text to preview.
  */
 async function updatePreviewText(view, text) {
   info(`Changing the preview text to '${text}'`);
@@ -109,20 +104,6 @@ async function updatePreviewText(view, text) {
   }
 
   is(input.value, text, `The input now contains "${text}".`);
-}
-
-/**
- *  Get all of the <li> elements for the fonts used on the currently selected element.
- *
- *  NOTE: This method is used by tests which check the old Font Inspector. It, along with
- *  the tests should be removed once the Font Editor reaches Firefox Stable.
- *  @see https://bugzilla.mozilla.org/show_bug.cgi?id=1485324
- *
- * @param  {Document} viewDoc
- * @return {NodeList}
- */
-function getUsedFontsEls_obsolete(viewDoc) {
-  return viewDoc.querySelectorAll("#font-editor .fonts-list li");
 }
 
 /**
@@ -204,7 +185,7 @@ function getAllFontsEls(viewDoc) {
  *
  * @param  {DOMNode} fontEl
  *         The font element.
- * @return {String}
+ * @return {string}
  *         The name of the font as shown in the UI.
  */
 function getName(fontEl) {
@@ -216,7 +197,7 @@ function getName(fontEl) {
  *
  * @param  {DOMNode} fontEl
  *         The font element.
- * @return {String}
+ * @return {string}
  *         The URL where the font was loaded from as shown in the UI.
  */
 function getURL(fontEl) {
@@ -228,7 +209,7 @@ function getURL(fontEl) {
  *
  * @param  {DOMNode} fontEl
  *         The font element.
- * @return {String}
+ * @return {string}
  *         The name of the font family as shown in the UI.
  */
 function getFamilyName(fontEl) {
@@ -240,12 +221,12 @@ function getFamilyName(fontEl) {
  *
  * @param  {Document} viewDoc
  *         Host document of the font inspector panel.
- * @param  {String} name
+ * @param  {string} name
  *         Font property name or axis tag
- * @return {Object}
+ * @return {object}
  *         Object with the value and unit of the given font property or axis tag
  *         from the corresponding input fron the font editor.
- *         @Example:
+ *         @example
  *         {
  *          value: {String|null}
  *          unit: {String|null}
@@ -270,7 +251,7 @@ function getPropertyValue(viewDoc, name) {
  *
  * @param  {DOMNode} fontEl
  *         The font element.
- * @return {Boolean}
+ * @return {boolean}
  */
 function isRemote(fontEl) {
   return fontEl.querySelector(".font-origin").classList.contains("remote");

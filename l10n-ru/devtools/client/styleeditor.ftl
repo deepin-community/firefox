@@ -19,7 +19,7 @@ styleeditor-save-button = Сохранить
     .tooltiptext = Сохранить эту таблицу стилей в файл
     .accesskey = х
 styleeditor-options-button =
-    .tooltiptext = Настройки Редактора Стилей
+    .tooltiptext = Настройки редактора стилей
 styleeditor-at-rules = At-правила
 styleeditor-editor-textbox =
     .data-placeholder = Набирайте CSS здесь.
@@ -55,3 +55,7 @@ styleeditor-pretty-print-button =
 # Title for the pretty print button in the editor footer, when it's disabled
 styleeditor-pretty-print-button-disabled =
     .title = Можно красиво печатать только CSS-файлы
+# Title for the pretty print button in the editor footer, when it's disabled because
+# the stylesheet is read-only
+styleeditor-pretty-print-button-disabled-read-only =
+    .title = Не могу красиво распечатать таблицу стилей, доступную только для чтения.

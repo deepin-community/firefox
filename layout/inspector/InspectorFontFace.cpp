@@ -1,22 +1,20 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "InspectorFontFace.h"
 
+#include "brotli/decode.h"
 #include "gfxPlatformFontList.h"
 #include "gfxTextRun.h"
 #include "gfxUserFontSet.h"
-#include "nsFontFaceLoader.h"
-#include "mozilla/gfx/2D.h"
-#include "brotli/decode.h"
-#include "zlib.h"
+#include "harfbuzz/hb-ot.h"
+#include "mozilla/ServoBindings.h"
 #include "mozilla/dom/CSSFontFaceRule.h"
 #include "mozilla/dom/FontFaceSet.h"
-#include "mozilla/ServoBindings.h"
-#include "mozilla/Unused.h"
+#include "mozilla/gfx/2D.h"
+#include "nsFontFaceLoader.h"
+#include "zlib.h"
 
 namespace mozilla {
 namespace dom {
@@ -60,6 +58,23 @@ void InspectorFontFace::GetCSSGeneric(nsAString& aName) {
     aName.AssignASCII(gfxPlatformFontList::GetGenericName(mMatchType.generic));
   } else {
     aName.Truncate(0);
+  }
+}
+
+void InspectorFontFace::GetNameString(uint16_t aNameId, nsAString& aResult) {
+  gfxFontEntry::AutoHBFace face = mFontEntry->GetHBFace();
+  unsigned int textSize = 0;
+  unsigned int len = hb_ot_name_get_utf16(face, aNameId, HB_LANGUAGE_INVALID,
+                                          &textSize, nullptr);
+  if (len) {
+    aResult.SetLength(len + 1);  // Ensure there is space for NUL terminator.
+    textSize = len + 1;  // Tell HB the total size of the available buffer.
+    len = hb_ot_name_get_utf16(
+        face, aNameId, HB_LANGUAGE_INVALID, &textSize,
+        reinterpret_cast<uint16_t*>(aResult.BeginWriting()));
+    aResult.SetLength(len);  // Size the string to exclude terminator.
+  } else {
+    aResult.Truncate(0);
   }
 }
 
@@ -208,7 +223,7 @@ void InspectorFontFace::GetVariationAxes(
     aRV.Throw(NS_ERROR_OUT_OF_MEMORY);
     return;
   }
-  for (auto a : axes) {
+  for (const auto& a : axes) {
     InspectorVariationAxis& axis = *aResult.AppendElement();
     AppendTagAsASCII(axis.mTag, a.mTag);
     axis.mName.Append(NS_ConvertUTF8toUTF16(a.mName));
@@ -245,7 +260,7 @@ void InspectorFontFace::GetVariationInstances(
       AppendTagAsASCII(value.mAxis, v.mAxis);
       value.mValue = v.mValue;
       // This won't fail, because of SetCapacity above.
-      Unused << inst.mValues.AppendElement(value, mozilla::fallible);
+      (void)inst.mValues.AppendElement(value, mozilla::fallible);
     }
   }
 }

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2020 Google. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -23,8 +22,8 @@ var getter = Object.getOwnPropertyDescriptor(
   TypedArrayPrototype, "buffer"
 ).get;
 
-testWithTypedArrayConstructors(TA => {
-  var typedArray = new TA(5);
+testWithTypedArrayConstructors((TA, makeCtorArg) => {
+  var typedArray = new TA(makeCtorArg(5));
   var o = {};
   Object.setPrototypeOf(o, typedArray);
   assert.throws(TypeError, function() {

@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = ਬੰਦ ਕਰੋ
     .aria-label = ਬੰਦ ਕਰੋ
-firefoxview-empty-state-icon =
-    .alt = ਸਾਵਧਾਨ:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = ਹੁਣੇ ਹੁਣੇ
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% ਪੂਰਾ
 firefoxview-tabpickup-step-signin-header = ਡਿਵਾਈਸ ਵਿਚਾਲੇ ਸਹਿਜ ਨਾਲ ਬਦਲੋ
 firefoxview-tabpickup-step-signin-description = ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੀਆਂ ਟੈਬਾਂ ਵੇਖਣ ਲਈ, ਪਹਿਲਾਂ ਸਾਈਨ ਇਨ ਕਰੋ ਜਾਂ ਖਾਤਾ ਬਣਾਓ।
 firefoxview-tabpickup-step-signin-primarybutton = ਜਾਰੀ ਰੱਖੋ
-firefoxview-syncedtabs-signin-header = ਟੈਬਾਂ ਕਿਤੋਂ ਵੀ ਲਵੋ
-firefoxview-syncedtabs-signin-description = ਕਿਤੋਂ ਵੀ ਆਪਣੀਆਂ ਟੈਬਾਂ ਨੂੰ ਵੇਖਣ ਲਈ ਆਪਣੇ ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰਨ ਵਾਸਤੇ { -brand-product-name } ਵਰਤੋਂ। ਜੇ ਤੁਹਾਡੇ ਕੋਲ ਖਾਤਾ ਨਹੀਂ ਹੈ ਤਾਂ ਅਸੀਂ ਸਾਈਨ ਅੱਪ ਕਰਨ ਵਾਸਤੇ ਤੁਹਾਡੀ ਮਦਦ ਕਰਾਂਗੇ।
-firefoxview-syncedtabs-signin-primarybutton = ਸਾਈਨ ਇਨ ਜਾਂ ਸਾਈਨ ਅੱਪ ਕਰੋ
+firefoxview-syncedtabs-signin-header-2 = ਤੁਹਾਡੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਤੁਹਾਡਾ { -brand-product-name }
+firefoxview-syncedtabs-signin-description-2 = ਤੁਹਾਡੇ ਫ਼ੋਨ ਜਾਂ ਹੋਰ ਡਿਵਾਈਸ ਉੱਤੇ ਤੁਹਾਡੇ ਵਲੋਂ ਖੋਲ੍ਹੀਆਂ ਟੈਬਾਂ ਨੂੰ ਵੇਖਣ ਲਈ ਆਪਣੇ ਖਾਤੇ ਵਿਚ ਸਾਈਨ ਇਨ ਕਰੋ ਜਾਂ ਸਾਈਨ ਅੱਪ ਕਰੋ। ਖਾਤੇ ਨਾਲ ਤੁਸੀਂ ਆਪਣੇ ਪਾਸਵਰਡ, ਅਤੀਤ ਆਦਿ ਨੂੰ ਵੀ ਸਿੰਕ ਕਰ ਸਕਦੇ ਹੋ।
+firefoxview-syncedtabs-signin-primarybutton-2 = ਸਾਈਨ ਇਨ
 firefoxview-tabpickup-adddevice-header = { -brand-product-name } ਨੂੰ ਆਪਣੇ ਫ਼ੋਨ ਜਾਂ ਟੇਬਲੇਟ ਨਾਲ ਸਿੰਕ ਕਰੋ
 firefoxview-tabpickup-adddevice-description = ਮੋਬਾਈਲ ਲਈ { -brand-product-name } ਡਾਊਨਲੋਡ ਕਰੋ ਤੇ ਸਾਈਨ ਇਨ ਕਰੋ।
 firefoxview-tabpickup-adddevice-learn-how = ਸਿੱਖੋ ਕਿ ਕਿਵੇਂ
 firefoxview-tabpickup-adddevice-primarybutton = ਮੋਬਾਈਲ ਲਈ { -brand-product-name } ਲਵੋ
-firefoxview-syncedtabs-adddevice-header = ਆਪਣੇ ਹੋਰ ਡਿਵਾਈਸਾਂ ਉੱਤੇ { -brand-product-name } ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ
-firefoxview-syncedtabs-adddevice-description = ਜਿੱਥੇ ਵੀ ਤੁਸੀਂ { -brand-product-name } ਨੂੰ ਵਰਤੋਂ, ਓਥੇ ਆਪਣੀਆਂ ਟੈਬਾਂ ਨੂੰ ਵੇਖਣ ਲਈ ਆਪਣੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਸਾਈਨ ਇਨ ਕਰੋ। <a data-l10n-name="url">ਹੋਰ ਡਿਵਾਈਸਾਂ ਨਾਲ ਕਨੈਕਟ</a> ਕਰਨ ਬਾਰੇ ਸਿੱਖੋ।
+firefoxview-syncedtabs-adddevice-header-2 = ਟੈਬਾਂ ਕਿਤੋਂ ਵੀ ਲਵੋ
+firefoxview-syncedtabs-adddevice-description-2 = ਆਪਣੇ ਫ਼ੋਨ ਜਾਂ ਹੋਰ ਕੰਪਿਊਟਰ ਉੱਤੇ { -brand-product-name } ਸਾਈਨ ਇਨ ਕਰਕੇ ਟੈਬਾਂ ਇੱਥੇ ਵੇਖੋ। <a data-l10n-name="url">ਹੋਰ ਡਿਵਾਈਸ ਕਨੈਕਟ</a> ਲਈ ਸਿੱਖੋ।
 firefoxview-syncedtabs-adddevice-primarybutton = ਮੋਬਾਈਲ ਲਈ { -brand-product-name } ਵਰਤ ਕੇ ਵੇਖੋ
 firefoxview-tabpickup-synctabs-header = ਟੈਬਾਂ ਨੂੰ ਸਿੰਕ ਕਰਨ ਦੀ ਚੋਣ ਕਰੋ
 firefoxview-tabpickup-synctabs-description = { -brand-short-name } ਨੂੰ ਡਿਵਾਈਸਾਂ ਵਿਚਾਲੇ ਟੈਬਾਂ ਸਾਂਝੀਆਂ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = ਸਿੱਖੋ ਕਿ ਕਿਵੇ�
 firefoxview-tabpickup-synctabs-primarybutton = ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਸਿੰਕ ਕਰੋ
 firefoxview-syncedtabs-synctabs-header = ਆਪਣੀਆਂ ਸਿੰਕ ਸੈਟਿੰਗਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ
 firefoxview-syncedtabs-synctabs-description = ਹੋਰ ਡਿਵਾਈਸਾਂ ਤੋਂ ਟੈਬਾਂ ਵੇਖਣ ਵਾਸਤੇ ਤੁਹਾਨੂੰ ਆਪਣੀਆਂ ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਨੂੰ ਸਿੰਕ ਕਰਨਾ ਪਵੇਗਾ।
-firefoxview-syncedtabs-synctabs-checkbox = ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਨੂੰ ਸਿੰਕ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ
 firefoxview-syncedtabs-loading-header = ਸਿੰਕ ਜਾਰੀ ਹੈ
 firefoxview-syncedtabs-loading-description = ਜਦੋਂ ਇਹ ਕਰ ਲਿਆ ਤਾਂ ਤੁਸੀਂ ਹੋਰ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਖੋਲ੍ਹੀਆਂ ਕਿਸੇ ਵੀ ਟੈਬਾਂ ਨੂੰ ਵੇਖ ਸਕੋਗੇ। ਛੇਤੀ ਹੀ ਵੇਖਿਓ।
 firefoxview-tabpickup-fxa-admin-disabled-header = ਤੁਹਾਡੇ ਸੰਗਠਨ ਨੇ ਲਿੰਕ ਨੂੰ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = ਸੱਜਰੀਆਂ ਬੰਦ ਕੀਤੀਆ�
 firefoxview-closed-tabs-description2 = ਇਸ ਵਿੰਡੋ ਵਿੱਚ ਤੁਹਾਡੇ ਵਲੋਂ ਬੰਦ ਕੀਤੇ ਸਫ਼ਿਆਂ ਨੂੰ ਮੁੜ-ਖੋਲ੍ਹੋ।
 firefoxview-closed-tabs-placeholder-header = ਕੋਈ ਤਾਜ਼ਾ ਬੰਦ ਕੀਤੀ ਟੈਬ ਨਹੀਂ ਹੈ
 firefoxview-closed-tabs-placeholder-body = ਇਸ ਵਿੰਡੋ ਵਿੱਚ ਜਦੋਂ ਤੁਸੀਂ ਟੈਬ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ ਤੁਸੀਂ ਇਸ ਨੂੰ ਇੱਥੋਂ ਲੈ ਸਕਦੇ ਹੋ।
-firefoxview-closed-tabs-placeholder-body2 = ਜਦੋਂ ਤੁਸੀਂ ਟੈਬ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ ਤੁਸੀਂ ਇਸ ਨੂੰ ਇਥੋਂ ਲੈ ਸਕਦੇ ਹੋ।
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -117,6 +113,8 @@ firefoxview-history-nav = ਅਤੀਤ
 firefoxview-history-header = ਅਤੀਤ
 firefoxview-history-context-delete = ਅਤੀਤ ਵਿੱਚੋਂ ਹਟਾਓ
     .accesskey = D
+firefoxview-history-context-forget-site = …ਇਸ ਸਾਈਟ ਬਾਰੇ ਭੁੱਲ ਜਾਓ
+    .accesskey = F
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
@@ -148,8 +146,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = ਵਿੰਡੋ { $winID } (ਮੌਜੂਦਾ)
-firefoxview-opentabs-focus-tab =
-    .title = ਇਸ ਟੈਬ ਲਈ ਬਦਲੋ
 firefoxview-show-more = ਹੋਰ ਵੇਖਾਓ
 firefoxview-show-less = ਘੱਟ ਵੇਖਾਓ
 firefoxview-show-all = ਸਭ ਵੇਖੋ
@@ -161,12 +157,15 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = ਅਤੀਤ ਖੋਜੋ
+# Placeholder for the input field to search in bookmarks ("search" is a verb).
+firefoxview-search-text-box-bookmarks =
+    .placeholder = ਬੁੱਕਮਾਰਕ ਖੋਜੋ
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = ਸੱਜਰੀਆਂ ਬੰਦ ਕੀਤੀਆਂ ਟੈਬਾਂ ਖੋਜੋ
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = ਸਿੰਕ ਕੀਤੀਆਂ ਟੈਬਾਂ ਨੂੰ ਖੋਜੋ
+firefoxview-search-text-box-tabs =
+    .placeholder = ਟੈਬਾਂ ਨੂੰ ਲੱਭੋ
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਖੋਜੋ
@@ -189,10 +188,6 @@ firefoxview-sort-history-by-date-label = ਤਾਰੀਖ ਰਾਹੀਂ ਲੜ�
 firefoxview-sort-history-by-site-label = ਸਾਈਟ ਰਾਹੀਂ ਲੜੀਬੱਧ
 firefoxview-sort-open-tabs-by-recency-label = ਸੱਜਰੀ ਸਰਗਰਮੀ ਰਾਹੀਂ ਲੜੀਬੱਧ
 firefoxview-sort-open-tabs-by-order-label = ਟੈਬ ਕ੍ਰਮ ਰਾਹੀਂ ਲੜੀਬੱਧ
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = { $url } ਉੱਤੇ ਜਾਓ
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -209,7 +204,6 @@ firefoxview-history-site-localhost = (ਲੋਕਲ ਫਾਈਲਾਂ)
 ##
 
 firefoxview-show-all-history = ਸਾਰੇ ਅਤੀਤ ਨੂੰ ਵੇਖੋ
-firefoxview-view-more-browsing-history = ਹੋਰ ਬਰਾਊਜ਼ ਕਰਨ ਦੇ ਅਤੀਤ ਨੂੰ ਵੇਖੋ
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -225,9 +219,8 @@ firefoxview-choose-browser-button = ਬਰਾਊਜ਼ਰ ਚੁਣੋ
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = ਵੇਖਾਉਣ ਲਈ ਕੁਝ ਵੀ ਨਹੀਂ ਹੈ
-firefoxview-dont-remember-history-empty-description = ਅਸੀਂ ਜੋ ਵੀ ਕਰਦੇ ਹਾਂ, ਉਸ ਲਈ ਤੁਹਾਡੀ ਪਰਦੇਦਾਰੀ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਹਮੇਸ਼ਾਂ ਸਾਹਮਣੇ ਰੱਖਦੇ ਹਾਂ। ਇਸੇ ਕਰਕੇ ਤੁਸੀਂ { -brand-short-name } ਵਲੋਂ ਯਾਦ ਰੱਖਣ ਦੀ ਸਰਗਰਮੀ ਉੱਤੇ ਕੰਟਰੋਲ ਰੱਖ ਸਕਦੇ ਹੋ।
-firefoxview-dont-remember-history-empty-description-two = ਤੁਹਾਡੀਆਂ ਸੈਟਿੰਗਾਂ ਦੇ ਮੁਤਾਬਕ { -brand-short-name } ਬਰਾਊਜ਼ਰ ਕਰਨ ਦੌਰਾਨ ਤੁਹਾਡੀ ਸਰਗਰਮੀ ਨੂੰ ਯਾਦ ਨਹੀਂ ਰੱਖੇਗਾ। ਉਸ ਨੂੰ ਬਦਲਣ ਲਈ <a data-l10n-name="history-settings-url-two">ਆਪਣੀਆਂ ਅਤੀਤ ਸੈਟਿੰਗਾਂ ਨੂੰ ਆਪਣੇ ਅਤੀਤ ਨੂੰ ਯਾਦ ਰੱਖਣ ਲਈ ਬਦਲੋ</a>।
+firefoxview-dont-remember-history-empty-header-2 = ਤੁਸੀਂ ਕੰਟਰੋਲ ਕਰ ਸਕਦੇ ਹੋ ਕਿ { -brand-short-name } ਕੀ ਯਾਦ ਰੱਖਦਾ ਹੈ
+firefoxview-dont-remember-history-empty-description-one = ਇਸ ਵੇਲੇ { -brand-short-name } ਤੁਹਾਡੇ ਬਰਾਊਜ਼ਰ ਕਰਨ ਦੀ ਸਰਗਰਮੀ ਨੂੰ ਯਾਦ ਨਹੀਂ ਰੱਖਦਾ ਹੈ। ਉਸ ਨੂੰ ਬਦਲਣ ਲਈ <a data-l10n-name="history-settings-url-two">ਆਪਣੀਆਂ ਅਤੀਤ ਸੈਟਿੰਗਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ।</a>
 
 ##
 

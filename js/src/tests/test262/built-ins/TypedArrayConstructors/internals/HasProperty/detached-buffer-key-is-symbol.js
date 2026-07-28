@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -29,6 +28,6 @@ testWithTypedArrayConstructors(function(TA) {
 
   assert.sameValue(Reflect.has(sample, s1), true);
   assert.sameValue(Reflect.has(sample, s2), false);
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

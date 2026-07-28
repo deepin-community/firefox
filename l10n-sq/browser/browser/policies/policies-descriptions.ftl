@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Aktivizo vetëplotësim për adresa.
 policy-AutofillCreditCardEnabled = Aktivizo vetëplotësim për metoda pagesash.
 policy-AutoLaunchProtocolsFromOrigins = Përcaktoni një listë protokollesh të jashtë që mund të përdoren prej origjinash të treguara, pa pyetur përdoruesin.
 policy-BackgroundAppUpdate2 = Aktivizoni ose çaktivizoni përditësuesin në prapaskenë.
+policy-Backup = Çaktivizoni kopjeruajtje apo rikthim të dhënash profili.
 policy-BlockAboutAddons = Bllokoni hyrje te Përgjegjësi i Shtesave (about:addons).
 policy-BlockAboutConfig = Bllokoni hyrje te faqja about:config.
 policy-BlockAboutProfiles = Bllokoni hyrje te faqja about:profiles.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Çaktivizoni veçorinë e ruajtjes së faqeve web në { 
 policy-DisablePrivateBrowsing = Çaktivizoni Shfletimin Privat.
 policy-DisableProfileImport = Çaktivizoni te menuja urdhrin për Importim të dhënash nga një tjetër shfletues.
 policy-DisableProfileRefresh = Çaktivizoni te faqja about:support butonin Rifreskoni { -brand-short-name }-in.
+policy-DisableRemoteImprovements = Pengoje { -brand-short-name }-in mes përditësimesh të aplikojë ndryshime funksionimi, qëndrueshmërie dhe veçorish.
 policy-DisableSafeMode = Çaktivizoni veçorinë e rinisjes nën Mënyrën e Parrezik. Shënim: tasti Shift për hyrje nën Mënyrën e Parrezik mund të çaktivizohet vetëm në Windows, duke përdorur Rregulla Grupi.
 policy-DisableSecurityBypass = Pengojini përdoruesit të anashkalojë disa sinjalizime sigurie.
 policy-DisableSetAsDesktopBackground = Çaktivizoni urdhër menuje Vëre si Sfond Desktopi për figura.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Administroni krejt anët e instalimit të zgjerimeve.
 policy-ExtensionUpdate = Aktivizoni ose çaktivizoni përditësime të vetvetishme të zgjerimeve.
 policy-FirefoxHome2 = Formësoni { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Formësoni { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Formësoni veçori IA prodhuese.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Detyro lëvizje të drejtpërdrejtë në sajt intraneti, në vend të kërkimit, kur te shtylla e adresave shtypen zëra kërkimi të përbërë nga një fjalë e vetme.
 policy-Handlers = Formësoni trajtues parazgjedhje aplikacionesh.
 policy-HardwareAcceleration = Në u caktoftë "false", çaktivizohet përshpejtimi përmes hardware-it.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Rikthe sjelljen e diku
 ##
 
 policy-LocalFileLinks = Lejo sajte specifikë të krijojnë lidhje te kartela vendore.
+policy-LocalNetworkAccess = Aktivizoni, ose çaktivizoni kontrolle hyrjesh në rrjetin vendor.
 policy-ManagedBookmarks = Formëson një listë faqerojtësish të administruar nga një përgjegjës, e cila s’mund të ndryshohet nga përdoruesi.
 policy-ManualAppUpdateOnly = Lejo vetëm përditësime dorazi dhe mos i njofto përdoruesit rreth përditësimesh.
 policy-PrimaryPassword = Kërko doemos ose pengo përdorimin e një Fjalëkalimi të Përgjithshëm.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Aktivizo marrëveshje kyçesh “post-qu
 policy-PDFjs = Çaktivizoni pse formësoni PDF.js, parësin e brendshëm të PDF-ve në { -brand-short-name }.
 policy-Permissions2 = Formësoni lejet për kamerën, mikrofonin, vendndodhjen, njoftimet dhe vetëluajtjen.
 policy-PictureInPicture = Aktivizoni ose çaktivizoni veçorinë “Picture-in-Picture”.
+policy-PopupBlocking2 = Lejoni disa sajte të shfaqin flluska dhe të ridrejtohen nga kuadro palësh të treta.
 policy-PopupBlocking = Lejojuni, si parazgjedhje, disa sajteve të shfaqin flluska.
 policy-Preferences = Caktoni dhe kyçni vlerën për një nëngrup parapëlqimesh.
 policy-PrivateBrowsingModeAvailability = Caktoni përdorimin ose jo të mënyrës së shfletimit privat.
@@ -130,6 +135,9 @@ policy-SearchSuggestEnabled = Aktivizoni ose çaktivizoni sugjerime kërkimi.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Shtoni, ose fshini module PKCS #11.
 policy-ShowHomeButton = Shfaqe butonin Shtëpi te paneli.
+policy-SitePolicies = Rregulla specifike sipas sajtesh
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Mos shfaq gjatë nisjes Kushte Përdorimi dhe Njoftim Mbi Privatësinë. Kjo nënkupton se pranoni dhe keni autoritetin të pranoni Terma Përdorimi në emër të krejt individëve të cilëve u jepni hyrje në këtë shfletues.
 policy-SSLVersionMax = Caktoni version maksimum SSL-je.
 policy-SSLVersionMin = Caktoni version minimum SSL-je.
 policy-StartDownloadsInTempDirectory = Detyroji shkarkimet të nisin në një vendndodhje lokale të përkohshme, në vend se në drejtorinë parazgjedhje të shkarkimeve.
@@ -137,6 +145,9 @@ policy-SupportMenu = Shtoni te menuja e ndihmës një element vetjak menuje asis
 policy-TranslateEnabled = Aktivizoni, ose çaktivizoni përkthim faqesh web.
 policy-UserMessaging = Mos i shfaq përdoruesit disa mesazhe të caktuara
 policy-UseSystemPrintDialog = Shtype duke përdorur dialogun e sistemit për shtypje.
+policy-VisualSearchEnabled = Aktivizoni, ose çaktivizoni kërkim pamor
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bllokoni vizita në sajte. Për më tepër hollësi mbi këtë format, shihni dokumentimin.
 policy-Windows10SSO = Lejo hyrje njëshe Windows për llogari Microsoft, pune, apo shkolle.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Lejo hyrje njëshe për llogari Microsoft Entra.

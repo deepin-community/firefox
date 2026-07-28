@@ -5,7 +5,7 @@
 #include "PreloaderBase.h"
 
 #include "mozilla/dom/Document.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "nsContentUtils.h"
 #include "nsIAsyncVerifyRedirectCallback.h"
 #include "nsIHttpChannel.h"
@@ -27,7 +27,6 @@ PreloaderBase::UsageTimer::UsageTimer(PreloaderBase* aPreload,
 class PreloaderBase::RedirectSink final : public nsIInterfaceRequestor,
                                           public nsIChannelEventSink,
                                           public nsIRedirectResultListener {
-  RedirectSink() = delete;
   virtual ~RedirectSink();
 
  public:
@@ -37,6 +36,7 @@ class PreloaderBase::RedirectSink final : public nsIInterfaceRequestor,
   NS_DECL_NSIREDIRECTRESULTLISTENER
 
   RedirectSink(PreloaderBase* aPreloader, nsIInterfaceRequestor* aCallbacks);
+  RedirectSink() = delete;
 
  private:
   MainThreadWeakPtr<PreloaderBase> mPreloader;
@@ -249,7 +249,8 @@ void PreloaderBase::NotifyStop(nsIRequest* aRequest, nsresult aStatus) {
 }
 
 void PreloaderBase::NotifyStop(nsresult aStatus) {
-  mOnStopStatus.emplace(aStatus);
+  MOZ_DIAGNOSTIC_ASSERT(mOnStopStatus.isNothing());
+  mOnStopStatus = Some(aStatus);
 
   nsTArray<nsWeakPtr> nodes = std::move(mNodes);
 
@@ -305,7 +306,7 @@ void PreloaderBase::CancelUsageTimer() {
 }
 
 void PreloaderBase::ReportUsageTelemetry() {
-  if (mUsageTelementryReported) {
+  if (mUsageTelementryReported || !XRE_IsContentProcess()) {
     return;
   }
   mUsageTelementryReported = true;
@@ -321,8 +322,8 @@ void PreloaderBase::ReportUsageTelemetry() {
     ++index;
   }
 
-  auto label = static_cast<Telemetry::LABELS_REL_PRELOAD_MISS_RATIO>(index);
-  Telemetry::AccumulateCategorical(label);
+  auto label = static_cast<glean::network::RelPreloadMissRatioLabel>(index);
+  glean::network::rel_preload_miss_ratio.EnumGet(label).Add();
 }
 
 nsresult PreloaderBase::AsyncConsume(nsIStreamListener* aListener) {
@@ -333,11 +334,10 @@ nsresult PreloaderBase::AsyncConsume(nsIStreamListener* aListener) {
 
 // PreloaderBase::RedirectRecord
 
-nsCString PreloaderBase::RedirectRecord::Spec() const {
+already_AddRefed<nsIURI> PreloaderBase::RedirectRecord::URINoFragment() const {
   nsCOMPtr<nsIURI> noFragment;
-  NS_GetURIWithoutRef(mURI, getter_AddRefs(noFragment));
-  MOZ_ASSERT(noFragment);
-  return noFragment->GetSpecOrDefault();
+  MOZ_ALWAYS_SUCCEEDS(NS_GetURIWithoutRef(mURI, getter_AddRefs(noFragment)));
+  return noFragment.forget();
 }
 
 nsCString PreloaderBase::RedirectRecord::Fragment() const {
@@ -377,7 +377,7 @@ NS_IMETHODIMP PreloaderBase::UsageTimer::Notify(nsITimer* aTimer) {
   NS_GetSanitizedURIStringFromURI(uri, spec);
   nsContentUtils::ReportToConsole(
       nsIScriptError::warningFlag, "DOM"_ns, mDocument,
-      nsContentUtils::eDOM_PROPERTIES, "UnusedLinkPreloadPending",
+      PropertiesFile::DOM_PROPERTIES, "UnusedLinkPreloadPending",
       nsTArray<nsString>({NS_ConvertUTF8toUTF16(spec)}));
   return NS_OK;
 }

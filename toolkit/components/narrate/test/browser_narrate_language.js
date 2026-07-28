@@ -12,6 +12,12 @@ add_task(async function testVoiceselectDropdownAutoclose() {
   await spawnInNewReaderTab(TEST_ARTICLE, async function () {
     let $ = content.document.querySelector.bind(content.document);
 
+    is(
+      $(".container").getAttribute("lang"),
+      "en",
+      "Should have detected English and set a lang tag accordingly."
+    );
+
     await NarrateTestUtils.waitForNarrateToggle(content);
 
     ok(
@@ -42,10 +48,7 @@ add_task(async function testVoiceselectDropdownAutoclose() {
       "popup is toggled"
     );
 
-    let prefChanged = NarrateTestUtils.waitForPrefChange(
-      "narrate.voice",
-      "getCharPref"
-    );
+    let prefChanged = TestUtils.waitForPrefChange("narrate.voice");
     NarrateTestUtils.selectVoice(content, "urn:moz-tts:fake:lenny");
     let voicePref = JSON.parse(await prefChanged);
     is(voicePref.en, "urn:moz-tts:fake:lenny", "pref set correctly");
@@ -88,10 +91,7 @@ add_task(async function testVoiceselectDropdownAutoclose() {
       "popup is toggled"
     );
 
-    let prefChanged = NarrateTestUtils.waitForPrefChange(
-      "narrate.voice",
-      "getCharPref"
-    );
+    let prefChanged = TestUtils.waitForPrefChange("narrate.voice");
     NarrateTestUtils.selectVoice(content, "urn:moz-tts:fake:zanetta");
     let voicePref = JSON.parse(await prefChanged);
     is(voicePref.it, "urn:moz-tts:fake:zanetta", "pref set correctly");

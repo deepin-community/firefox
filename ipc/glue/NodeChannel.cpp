@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,7 @@
 #include "chrome/common/ipc_message.h"
 #include "chrome/common/ipc_message_utils.h"
 #include "mojo/core/ports/name.h"
-#include "mozilla/ipc/BrowserProcessSubThread.h"
+#include "mozilla/ipc/IOThread.h"
 #include "mozilla/ipc/GeckoChildProcessHost.h"
 #include "mozilla/ipc/ProtocolMessageUtils.h"
 #include "mozilla/ipc/ProtocolUtils.h"
@@ -25,14 +23,12 @@ struct IPC::ParamTraits<mozilla::ipc::NodeChannel::Introduction> {
   static void Write(MessageWriter* aWriter, paramType&& aParam) {
     WriteParam(aWriter, aParam.mName);
     WriteParam(aWriter, std::move(aParam.mHandle));
-    WriteParam(aWriter, aParam.mMode);
     WriteParam(aWriter, aParam.mMyPid);
     WriteParam(aWriter, aParam.mOtherPid);
   }
   static bool Read(MessageReader* aReader, paramType* aResult) {
     return ReadParam(aReader, &aResult->mName) &&
            ReadParam(aReader, &aResult->mHandle) &&
-           ReadParam(aReader, &aResult->mMode) &&
            ReadParam(aReader, &aResult->mMyPid) &&
            ReadParam(aReader, &aResult->mOtherPid);
   }
@@ -40,9 +36,8 @@ struct IPC::ParamTraits<mozilla::ipc::NodeChannel::Introduction> {
 
 namespace mozilla::ipc {
 
-NodeChannel::NodeChannel(const NodeName& aName,
-                         UniquePtr<IPC::Channel> aChannel, Listener* aListener,
-                         base::ProcessId aPid,
+NodeChannel::NodeChannel(const NodeName& aName, IPC::Channel* aChannel,
+                         Listener* aListener, base::ProcessId aPid,
                          GeckoChildProcessHost* aChildProcessHost)
     : mListener(aListener),
       mName(aName),
@@ -54,27 +49,23 @@ NodeChannel::~NodeChannel() { Close(); }
 
 // Called when the NodeChannel's refcount drops to `0`.
 void NodeChannel::Destroy() {
-  // Dispatch the `delete` operation to the IO thread. We need to do this even
-  // if we're already on the IO thread, as we could be in an `IPC::Channel`
-  // callback which unfortunately will not hold a strong reference to keep
-  // `this` alive.
-  MessageLoop* ioThread = XRE_GetIOMessageLoop();
-  if (ioThread->IsAcceptingTasks()) {
-    ioThread->PostTask(NewNonOwningRunnableMethod("NodeChannel::Destroy", this,
-                                                  &NodeChannel::FinalDestroy));
-    return;
-  }
+  // We want to dispatch the `delete` operation to the IO thread. We need to do
+  // this even if we're already on the IO thread, as we could be in an
+  // `IPC::Channel` callback which unfortunately will not hold a strong
+  // reference to keep `this` alive.
+  nsISerialEventTarget* ioThread = XRE_GetAsyncIOEventTarget();
 
-  // If the IOThread has already been destroyed, we must be shutting it down and
-  // need to synchronously invoke `FinalDestroy` to ensure we're cleaned up
-  // before the thread dies. This is safe as we can't be in a non-owning
-  // IPC::Channel callback at this point.
-  if (MessageLoop::current() == ioThread) {
+  // Synchronously invoke `FinalDestroy` if we're already shutting the IO thread
+  // down to ensure we're cleaned up before the thread dies. This is safe as we
+  // can't be in a non-owning IPC::Channel callback at this point.
+  if (ioThread->IsOnCurrentThread() && MessageLoop::current() &&
+      !MessageLoop::current()->IsAcceptingTasks()) {
     FinalDestroy();
     return;
   }
 
-  MOZ_ASSERT_UNREACHABLE("Leaking NodeChannel after IOThread destroyed!");
+  MOZ_ALWAYS_SUCCEEDS(ioThread->Dispatch(NewNonOwningRunnableMethod(
+      "NodeChannel::Destroy", this, &NodeChannel::FinalDestroy)));
 }
 
 void NodeChannel::FinalDestroy() {
@@ -202,7 +193,7 @@ void NodeChannel::SendMessage(UniquePtr<IPC::Message> aMessage) {
     // a runnable to actually close our channel.
     State expected = State::Active;
     if (mState.compare_exchange_strong(expected, State::Closing)) {
-      XRE_GetIOMessageLoop()->PostTask(
+      XRE_GetAsyncIOEventTarget()->Dispatch(
           NewRunnableMethod("NodeChannel::CloseForSendError", this,
                             &NodeChannel::OnChannelError));
     }

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #ifndef LAYOUT_SVG_SVGOUTERSVGFRAME_H_
 #define LAYOUT_SVG_SVGOUTERSVGFRAME_H_
 
-#include "mozilla/Attributes.h"
 #include "mozilla/ISVGSVGFrame.h"
 #include "mozilla/SVGContainerFrame.h"
 
@@ -35,6 +32,7 @@ class SVGOuterSVGFrame final : public SVGDisplayContainerFrame,
 
   friend nsContainerFrame* ::NS_NewSVGOuterSVGFrame(
       mozilla::PresShell* aPresShell, ComputedStyle* aStyle);
+  friend class AsyncSendIntrinsicSizeAndRatioToEmbedder;
   friend class AutoSVGViewHandler;
   friend class SVGFragmentIdentifier;
 
@@ -45,14 +43,14 @@ class SVGOuterSVGFrame final : public SVGDisplayContainerFrame,
   NS_DECL_QUERYFRAME
   NS_DECL_FRAMEARENA_HELPERS(SVGOuterSVGFrame)
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const IntrinsicSizeInput& aInput,
                          IntrinsicISizeType aType) override;
 
   IntrinsicSize GetIntrinsicSize() override;
   AspectRatio GetIntrinsicRatio() const override;
 
   SizeComputationResult ComputeSize(
-      gfxContext* aRenderingContext, WritingMode aWritingMode,
+      const SizeComputationInput& aSizingInput, WritingMode aWritingMode,
       const LogicalSize& aCBSize, nscoord aAvailableISize,
       const LogicalSize& aMargin, const LogicalSize& aBorderPadding,
       const mozilla::StyleSizeOverrides& aSizeOverrides,
@@ -61,9 +59,6 @@ class SVGOuterSVGFrame final : public SVGDisplayContainerFrame,
   void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
               const ReflowInput& aReflowInput,
               nsReflowStatus& aStatus) override;
-
-  void DidReflow(nsPresContext* aPresContext,
-                 const ReflowInput* aReflowInput) override;
 
   void UnionChildOverflow(mozilla::OverflowAreas& aOverflowAreas,
                           bool aAsIfScrolled) override;
@@ -85,7 +80,7 @@ class SVGOuterSVGFrame final : public SVGDisplayContainerFrame,
   void Destroy(DestroyContext&) override;
 
   nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+                            AttrModType aModType) override;
 
   nsContainerFrame* GetContentInsertionFrame() override {
     // Any children must be added to our single anonymous inner frame kid.
@@ -102,13 +97,13 @@ class SVGOuterSVGFrame final : public SVGDisplayContainerFrame,
   void AppendDirectlyOwnedAnonBoxes(nsTArray<OwnedAnonBox>& aResult) override;
 
   // ISVGSVGFrame interface:
-  void NotifyViewportOrTransformChanged(uint32_t aFlags) override;
+  void NotifyViewportOrTransformChanged(ChangeFlags aFlags) override;
 
   // ISVGDisplayableFrame methods:
   void PaintSVG(gfxContext& aContext, const gfxMatrix& aTransform,
                 imgDrawingParams& aImgParams) override;
   SVGBBox GetBBoxContribution(const Matrix& aToBBoxUserspace,
-                              uint32_t aFlags) override;
+                              SVGBBoxFlags aFlags) override;
 
   // SVGContainerFrame methods:
   gfxMatrix GetCanvasTM() override;

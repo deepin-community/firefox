@@ -5,12 +5,14 @@
 #ifndef DOM_MEDIA_MEDIASESSION_MEDIASESSIONIPCUTILS_H_
 #define DOM_MEDIA_MEDIASESSION_MEDIASESSIONIPCUTILS_H_
 
-#include "ipc/EnumSerializer.h"
-#include "mozilla/dom/BindingIPCUtils.h"
 #include "MediaMetadata.h"
+#include "ipc/EnumSerializer.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/dom/BindingIPCUtils.h"
+#include "mozilla/dom/DOMTypes.h"
 #include "mozilla/dom/MediaSession.h"
 #include "mozilla/dom/MediaSessionBinding.h"
-#include "mozilla/Maybe.h"
+#include "nsContentUtils.h"
 
 namespace mozilla {
 namespace dom {
@@ -23,13 +25,19 @@ typedef Maybe<MediaMetadataBase> MaybeMediaMetadataBase;
 namespace IPC {
 
 template <>
-struct ParamTraits<mozilla::dom::MediaImage> {
-  typedef mozilla::dom::MediaImage paramType;
+struct ParamTraits<mozilla::dom::MediaImageData> {
+  typedef mozilla::dom::MediaImageData paramType;
 
   static void Write(MessageWriter* aWriter, const paramType& aParam) {
     WriteParam(aWriter, aParam.mSizes);
     WriteParam(aWriter, aParam.mSrc);
     WriteParam(aWriter, aParam.mType);
+
+    mozilla::Maybe<mozilla::dom::IPCImage> image;
+    if (aParam.mDataSurface) {
+      image = nsContentUtils::SurfaceToIPCImage(*aParam.mDataSurface);
+    }
+    WriteParam(aWriter, std::move(image));
   }
 
   static bool Read(MessageReader* aReader, paramType* aResult) {
@@ -37,6 +45,14 @@ struct ParamTraits<mozilla::dom::MediaImage> {
         !ReadParam(aReader, &(aResult->mSrc)) ||
         !ReadParam(aReader, &(aResult->mType))) {
       return false;
+    }
+
+    mozilla::Maybe<mozilla::dom::IPCImage> image;
+    if (!ReadParam(aReader, &image)) {
+      return false;
+    }
+    if (image) {
+      aResult->mDataSurface = nsContentUtils::IPCImageToSurface(*image);
     }
     return true;
   }
@@ -50,6 +66,7 @@ struct ParamTraits<mozilla::dom::MediaMetadataBase> {
     WriteParam(aWriter, aParam.mTitle);
     WriteParam(aWriter, aParam.mArtist);
     WriteParam(aWriter, aParam.mAlbum);
+    WriteParam(aWriter, aParam.mUrl);
     WriteParam(aWriter, aParam.mArtwork);
   }
 
@@ -57,6 +74,7 @@ struct ParamTraits<mozilla::dom::MediaMetadataBase> {
     if (!ReadParam(aReader, &(aResult->mTitle)) ||
         !ReadParam(aReader, &(aResult->mArtist)) ||
         !ReadParam(aReader, &(aResult->mAlbum)) ||
+        !ReadParam(aReader, &(aResult->mUrl)) ||
         !ReadParam(aReader, &(aResult->mArtwork))) {
       return false;
     }

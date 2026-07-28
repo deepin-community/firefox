@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Åbn link i nyt faneblad
     .accesskey = f
+main-context-menu-open-link-split-view =
+    .label = Åbn link i opdelt visning
+    .accesskey = d
 main-context-menu-open-link-container-tab =
     .label = Åbn link i nyt kontekst-faneblad
     .accesskey = l
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Gem link til { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopier mailadresse
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Kopier link
     .accesskey = K
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Kopier link uden websteds-sporing
-    .accesskey = u
+main-context-menu-preview-link =
+    .label = Forhåndsvis link
+    .accesskey = o
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Kopier rent link
+    .accesskey = r
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Skjul knapper
     .accesskey = n
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Fuld skærm
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Vis beskrivelse
     .accesskey = b
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Søg efter billede med { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Gem video som…
     .accesskey = m
@@ -283,16 +293,29 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Send lyd…
     .accesskey = d
+main-context-menu-send-to-device-2 =
+    .label = Send til enhed
+    .accesskey = d
+main-context-menu-send-to-mobile-2 =
+    .label = Send til mobil
+    .accesskey = d
+main-context-menu-send-to-mobile-sign-in = Log ind for at sende faneblade
+main-context-menu-send-to-mobile-enable-sync2 = Aktiver synkronisering for at sende et faneblad
+main-context-menu-send-to-mobile-connect-phone2 = Opret forbindelse til din telefon
+main-context-menu-send-to-mobile-device-missing2 = Kan du ikke se din enhed?
+main-context-menu-send-to-mobile-sign-in-from-link = Log ind for at sende et link
+main-context-menu-send-to-mobile-sign-in-from-page = Log ind for at sende en side
+main-context-menu-send-to-mobile-enable-sync3 = Slå synkronisering til for at sende faneblade
+main-context-menu-send-to-mobile-enable-sync-from-link = Slå synkronisering til for at sende et link
+main-context-menu-send-to-mobile-enable-sync-from-page = Slå synkronisering til for at sende en side
 main-context-menu-save-to-pocket =
     .label = Gem side til { -pocket-brand-name }
     .accesskey = o
 main-context-menu-send-to-device =
     .label = Send side til enhed
-    .accesskey = h
+    .accesskey = d
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Brug gemt login
@@ -319,9 +342,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Tilføj en genvej til denne søgning…
     .accesskey = s
+main-context-menu-add-engine =
+    .label = Tilføj søgetjeneste
+    .accesskey = j
 main-context-menu-link-send-to-device =
     .label = Send link til enhed
     .accesskey = h
+main-context-menu-link-send-to-mobile =
+    .label = Send link til mobil
+    .accesskey = d
 main-context-menu-frame =
     .label = Denne ramme
     .accesskey = r
@@ -389,3 +418,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Vis adgangskode
     .accesskey = a
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nyt
+main-context-menu-pdfjs-copy-page =
+    .label = Kopier side
+main-context-menu-pdfjs-cut-page =
+    .label = Klip side
+main-context-menu-pdfjs-delete-page =
+    .label = Slet side
+main-context-menu-pdfjs-save-page =
+    .label = Gem markering som…

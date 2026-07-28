@@ -8,6 +8,19 @@ tabbrowser-menuitem-close-tab =
     .label = ปิดแท็บ
 tabbrowser-menuitem-close =
     .label = ปิด
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs in a container.
+# Variables:
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-container = { $containerName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } — { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -24,6 +37,8 @@ tabbrowser-close-tabs-button =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
     .label = ปิด { $tabCount } แท็บ
+tab-splitview-splitter =
+    .aria-label = ปรับขนาดแท็บมุมมองแยก
 
 ## Tooltips for tab audio control
 ## Variables:
@@ -44,6 +59,16 @@ tabbrowser-unmute-tab-audio-background-tooltip =
 tabbrowser-unblock-tab-audio-tooltip =
     .label = เล่น { $tabCount } แท็บ
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = เปิดเสียงแท็บ
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = ปิดเสียงแท็บ
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = เล่นแท็บ
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -52,6 +77,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = ต้องการปิด { $tabCount } แท็บหรือไม่?
 tabbrowser-confirm-close-tabs-button = ปิดแท็บ
+tabbrowser-ask-close-tabs-checkbox = ถามก่อนที่จะปิดหลายแท็บ
 tabbrowser-confirm-close-tabs-checkbox = ยืนยันก่อนปิดหลายแท็บ
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -74,7 +100,21 @@ tabbrowser-confirm-close-tabs-with-key-title = ต้องการปิดห
 tabbrowser-confirm-close-tabs-with-key-button = ออกจาก { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = ถามก่อนที่จะออกด้วย { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = ยืนยันก่อนออกด้วย { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = ต้องการออกจาก { -brand-short-name } หรือปิดแท็บปัจจุบัน?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] ออกจาก { -brand-short-name }
+       *[other] ออกจาก { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = ปิดแท็บปัจจุบัน
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -96,8 +136,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = ไม่ต้องแสดงก
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = ระวัง
-tabbrowser-confirm-close-duplicate-tabs-text = เราจะยังคงเปิดแท็บที่ใช้งานล่าสุดทิ้งไว้
 tabbrowser-confirm-close-all-duplicate-tabs-title = ปิดแท็บที่ซ้ำกันหรือไม่?
 tabbrowser-confirm-close-all-duplicate-tabs-text =
     เราจะปิดแท็บที่ซ้ำกันในหน้าต่างนี้ แท็บที่ใช้งานล่าสุด
@@ -139,6 +177,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = แสดงรายการ { $tabCount } แท็บทั้งหมด
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = ปิดเสียงแท็บ
@@ -146,3 +187,264 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = เปิดเสียงแท็บ
 tabbrowser-manager-close-tab =
     .tooltiptext = ปิดแท็บ
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — ปิดแล้ว
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — หน้าต่างปัจจุบัน
+
+##
+
+tab-group-editor-title-create = สร้างกลุ่มแท็บ
+tab-group-editor-title-edit = จัดการกลุ่มแท็บ
+tab-group-editor-name-label = ชื่อ
+tab-group-editor-name-field =
+    .placeholder = ตัวอย่าง: ซื้อของ
+tab-group-editor-cancel =
+    .label = ยกเลิก
+    .accesskey = ย
+tab-group-editor-color-selector =
+    .aria-label = สีกลุ่มแท็บ
+tab-group-editor-color-selector2-blue = น้ำเงิน
+    .title = น้ำเงิน
+tab-group-editor-color-selector2-purple = สีม่วง
+    .title = สีม่วง
+tab-group-editor-color-selector2-cyan = ฟ้าอมเขียว
+    .title = ฟ้าอมเขียว
+tab-group-editor-color-selector2-orange = สีส้ม
+    .title = สีส้ม
+tab-group-editor-color-selector2-yellow = สีเหลือง
+    .title = สีเหลือง
+tab-group-editor-color-selector2-pink = สีชมพู
+    .title = สีชมพู
+tab-group-editor-color-selector2-green = สีเขียว
+    .title = สีเขียว
+tab-group-editor-color-selector2-gray = สีเทา
+    .title = สีเทา
+tab-group-editor-color-selector2-red = สีแดง
+    .title = สีแดง
+tab-group-menu-closed-tab-group =
+    .label = { $tabGroupName }
+    .title = { $tabGroupName } — ถูกปิด
+tab-group-description = { $tabGroupName } — กลุ่มแท็บ
+tab-group-label-tooltip-collapsed = { $tabGroupName } — ยุบอยู่
+tab-group-label-tooltip-expanded = { $tabGroupName } — ขยายอยู่
+tab-group-preview-name =
+    .aria-label = แท็บในกลุ่มยุบ
+tab-context-unnamed-group =
+    .label = กลุ่มที่ไม่มีชื่อ
+tab-group-name-default = กลุ่มที่ไม่มีชื่อ
+
+## Tab Groups
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
+
+# Title placed over a list of all of the user's tab groups
+tab-groups-list-title = กลุ่มแท็บ
+
+## When collapsed, the tab group label's aria-description will indicate
+## whether the hover menu is open or closed.
+
+tab-group-preview-open-description = รายการแท็บเปิดอยู่
+tab-group-preview-closed-description = รายการแท็บปิดอยู่
+
+##
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] เพิ่มแท็บไปยังกลุ่มใหม่
+           *[other] เพิ่มแท็บไปยังกลุ่มใหม่
+        }
+    .accesskey = ก
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] เพิ่มแท็บไปยังกลุ่ม
+           *[other] เพิ่มแท็บไปยังกลุ่ม
+        }
+    .accesskey = ก
+tab-context-move-split-view-to-new-group =
+    .label =
+        { $splitViewCount ->
+            [1] เพิ่มมุมมองแยกไปยังกลุ่มใหม่
+           *[other] เพิ่มมุมมองแยกไปยังกลุ่มใหม่
+        }
+    .accesskey = ล
+tab-context-move-split-view-to-group =
+    .label =
+        { $splitViewCount ->
+            [1] เพิ่มมุมมองแยกไปยังกลุ่ม
+           *[other] เพิ่มมุมมองแยกไปยังกลุ่ม
+        }
+    .accesskey = ล
+tab-context-move-tab-to-group-saved-groups =
+    .label = กลุ่มที่ปิดแล้ว
+tab-group-editor-action-new-tab =
+    .label = แท็บใหม่ในกลุ่ม
+tab-group-editor-action-new-window =
+    .label = ย้ายกลุ่มไปยังหน้าต่างใหม่
+# Variables:
+#  $linkCount (Number): the number of shareable links in the group.
+tab-group-editor-action-copy-links =
+    .label =
+        { $linkCount ->
+            [1] คัดลองลิงก์ในกลุ่ม
+           *[other] คัดลอง { $linkCount } ลิงก์ในกลุ่ม
+        }
+tab-group-editor-action-save =
+    .label = บันทึกและปิดกลุ่ม
+tab-group-editor-action-ungroup =
+    .label = เลิกจัดกลุ่มแท็บ
+tab-group-editor-action-delete =
+    .label = ลบกลุ่ม
+tab-group-editor-done =
+    .label = เสร็จสิ้น
+    .accessKey = ส
+# Share is a verb here. Meaning to "Share" the "tab group"
+tab-group-editor-action-share-tab-group =
+    .label = แบ่งปันกลุ่มแท็บ
+tab-context-reopen-tab-group =
+    .label = เปิดกลุ่มแท็บอีกครั้ง
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] เอาออกจากกลุ่ม
+           *[other] เอาออกจากกลุ่ม
+        }
+    .accesskey = อ
+# When a tab group containing the active tab is collapsed, the active tab
+# remains visible. An indicator appears at the end of the group showing the
+# number of remaining tabs that are hidden by the collapsed group,
+# e.g. "+2" for a group with 3 total tabs.
+tab-group-overflow-count = +{ $tabCount }
+tab-group-overflow-count-tooltip =
+    { $tabCount ->
+        [one] อีก { $tabCount } แท็บ
+       *[other] อีก { $tabCount } แท็บ
+    }
+
+## The tab groups list provides a list of all open tab groups and saved tab
+## groups in one place. When the user has no tab groups, the list instead
+## recommends that the user create a tab group.
+
+tab-groups-list-empty-header = จัดระเบียบแท็บของคุณ
+tab-groups-list-empty-description = ลากแท็บหนึ่งไปวางซ้อนอีกแท็บหรือคลิกขวาที่แท็บเพื่อเริ่มจัดระเบียบ เราจะบันทึกกลุ่มแท็บของคุณไว้เพื่อให้ง่ายต่อการค้นหาในภายหลัง
+tab-groups-list-empty-button = สร้างกลุ่มแท็บ
+# Text for a button that, when clicked, creates a new tab group
+tab-groups-list-create-group-button = กลุ่มใหม่
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = ย้ายกลุ่มไปยังหน้าต่างใหม่
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = ย้ายกลุ่มมายังหน้าต่างนี้
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = ลบกลุ่ม
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = เปิดกลุ่มในหน้าต่างนี้
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = เปิดกลุ่มในหน้าต่างใหม่
+
+## Tab Notes
+
+tab-context-add-note =
+    .label = เพิ่มหมายเหตุ
+    .accesskey = พ
+tab-context-edit-note =
+    .label = แก้ไขหมายเหตุ
+    .accesskey = ก
+tab-context-delete-note =
+    .label = ลบบันทึกย่อ
+    .accesskey = ล
+tab-note-editor-title-create = เพิ่มหมายเหตุ
+tab-note-editor-title-edit = แก้ไขหมายเหตุ
+tab-note-editor-text-field =
+    .placeholder = คุณต้องการจดจำอะไรเกี่ยวกับแท็บนี้?
+tab-note-editor-button-cancel =
+    .label = ยกเลิก
+    .accesskey = ย
+tab-note-editor-button-save =
+    .label = บันทึก
+    .accesskey = บ
+tab-note-editor-button-delete =
+    .title = ลบบันทึกย่อ
+    .aria-label = ลบบันทึกย่อ
+    .accesskey = ล
+tab-note-preview-edit-icon =
+    .alt = แก้ไขบันทึกย่อ
+# Link to show the full tab note in case it was truncated.
+tab-note-preview-expand = อ่านเพิ่มเติม
+tab-note-panel-add-note-new-badge =
+    .label = ใหม่
+# Displayed within the tab note edit dialog box when the user has entered more
+# characters than are allowed.
+# Variables:
+#   $totalCharacters (Number): the number of characters the user has entered.
+#   $maxAllowedCharacters (Number): the maximum number of characters allowed for a tab note.
+tab-note-editor-character-limit =
+    { $maxAllowedCharacters ->
+       *[other] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } อักขระ
+    }
+
+## Split View
+
+# Open a new tab next to the current tab and display their contents side by side
+tab-context-add-split-view =
+    .label = เพิ่มมุมมองแยก
+    .accesskey = ย
+# Display the two selected tabs' contents side by side
+tab-context-open-in-split-view =
+    .label = เปิดในมุมมองแยก
+    .accesskey = ย
+# Separate the two split view tabs and display the tabs and their contents as normal
+tab-context-separate-split-view =
+    .label = แบ่งมุมมองแยก
+    .accesskey = ย
+# Reverse the order of the two tabs in the split view
+tab-context-reverse-split-view =
+    .label = กลับลำดับแท็บ
+    .accesskey = ก
+tab-context-badge-new = ใหม่
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the left tab inside of a tab split view
+# "left" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-left = { $label }, มุมมองแยกด้านซ้าย
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the right tab inside of a tab split view
+# "right" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-right = { $label }, มุมมองแยกด้านขวา
+
+## Manage Split View (icon in the address bar & three-dot menu in the footer)
+
+# "Separate" is a verb, as in "separate the split view tabs and display them normally".
+split-view-menuitem-separate-tabs =
+    .label = แยกแท็บ
+# "Reverse" is a verb, as in "reverse the order of split view tabs".
+split-view-menuitem-reverse-tabs =
+    .label = กลับลำดับแท็บ
+split-view-menuitem-close-both-tabs =
+    .label = ปิดทั้งสองแท็บ

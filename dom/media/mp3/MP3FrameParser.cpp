@@ -1,23 +1,21 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "MP3FrameParser.h"
 
-#include <algorithm>
 #include <inttypes.h>
 
+#include <algorithm>
+
+#include "MediaDataDemuxer.h"
 #include "TimeUnits.h"
+#include "VideoUtils.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/EndianUtils.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/Try.h"
-#include "VideoUtils.h"
 
-extern mozilla::LazyLogModule gMediaDemuxerLog;
 #define MP3LOG(msg, ...) \
   MOZ_LOG(gMediaDemuxerLog, LogLevel::Debug, ("MP3Demuxer " msg, ##__VA_ARGS__))
 #define MP3LOGV(msg, ...)                      \
@@ -403,17 +401,14 @@ Result<bool, nsresult> FrameParser::VBRHeader::ParseXing(BufferReader* aReader,
   MOZ_TRY(aReader->ReadU32());
   mType = XING;
 
-  uint32_t flags;
-  MOZ_TRY_VAR(flags, aReader->ReadU32());
+  uint32_t flags = MOZ_TRY(aReader->ReadU32());
 
   if (flags & NUM_FRAMES) {
-    uint32_t frames;
-    MOZ_TRY_VAR(frames, aReader->ReadU32());
+    uint32_t frames = MOZ_TRY(aReader->ReadU32());
     mNumAudioFrames = Some(frames);
   }
   if (flags & NUM_BYTES) {
-    uint32_t bytes;
-    MOZ_TRY_VAR(bytes, aReader->ReadU32());
+    uint32_t bytes = MOZ_TRY(aReader->ReadU32());
     mNumBytes = Some(bytes);
   }
   if (flags & TOC && aReader->Remaining() >= vbr_header::TOC_SIZE) {
@@ -423,22 +418,18 @@ Result<bool, nsresult> FrameParser::VBRHeader::ParseXing(BufferReader* aReader,
     } else {
       mTOC.clear();
       mTOC.reserve(vbr_header::TOC_SIZE);
-      uint8_t data;
       for (size_t i = 0; i < vbr_header::TOC_SIZE; ++i) {
-        MOZ_TRY_VAR(data, aReader->ReadU8());
+        uint8_t data = MOZ_TRY(aReader->ReadU8());
         mTOC.push_back(
             AssertedCast<uint32_t>(1.0f / 256.0f * data * mNumBytes.value()));
       }
     }
   }
   if (flags & VBR_SCALE) {
-    uint32_t scale;
-    MOZ_TRY_VAR(scale, aReader->ReadU32());
-    mScale = Some(scale);
+    mScale = Some(MOZ_TRY(aReader->ReadU32()));
   }
 
-  uint32_t lameOrLavcTag;
-  MOZ_TRY_VAR(lameOrLavcTag, aReader->ReadU32());
+  uint32_t lameOrLavcTag = MOZ_TRY(aReader->ReadU32());
 
   if (lameOrLavcTag == LAME_TAG || lameOrLavcTag == LAVC_TAG) {
     // Skip 17 bytes after the LAME tag:
@@ -476,9 +467,9 @@ Result<bool, nsresult> FrameParser::VBRHeader::ParseXing(BufferReader* aReader,
 }
 
 template <typename T>
-int readAndConvertToInt(BufferReader* aReader) {
-  int value = AssertedCast<int>(aReader->ReadType<T>());
-  return value;
+int64_t readAndConvertToInt(BufferReader* aReader) {
+  static_assert(sizeof(T) <= 8);
+  return aReader->ReadType<T>();
 }
 
 Result<bool, nsresult> FrameParser::VBRHeader::ParseVBRI(
@@ -503,26 +494,25 @@ Result<bool, nsresult> FrameParser::VBRHeader::ParseVBRI(
   // VBRI have a fixed relative position, so let's check for it there.
   if (aReader->Remaining() > MIN_FRAME_SIZE) {
     aReader->Seek(prevReaderOffset + OFFSET);
-    uint32_t tag;
-    MOZ_TRY_VAR(tag, aReader->ReadU32());
+    uint32_t tag = MOZ_TRY(aReader->ReadU32());
     if (tag == TAG) {
       uint16_t vbriEncoderVersion, vbriEncoderDelay, vbriQuality;
       uint32_t vbriBytes, vbriFrames;
       uint16_t vbriSeekOffsetsTableSize, vbriSeekOffsetsScaleFactor,
           vbriSeekOffsetsBytesPerEntry, vbriSeekOffsetsFramesPerEntry;
-      MOZ_TRY_VAR(vbriEncoderVersion, aReader->ReadU16());
-      MOZ_TRY_VAR(vbriEncoderDelay, aReader->ReadU16());
-      MOZ_TRY_VAR(vbriQuality, aReader->ReadU16());
-      MOZ_TRY_VAR(vbriBytes, aReader->ReadU32());
-      MOZ_TRY_VAR(vbriFrames, aReader->ReadU32());
-      MOZ_TRY_VAR(vbriSeekOffsetsTableSize, aReader->ReadU16());
-      MOZ_TRY_VAR(vbriSeekOffsetsScaleFactor, aReader->ReadU32());
-      MOZ_TRY_VAR(vbriSeekOffsetsBytesPerEntry, aReader->ReadU16());
-      MOZ_TRY_VAR(vbriSeekOffsetsFramesPerEntry, aReader->ReadU16());
+      vbriEncoderVersion = MOZ_TRY(aReader->ReadU16());
+      vbriEncoderDelay = MOZ_TRY(aReader->ReadU16());
+      vbriQuality = MOZ_TRY(aReader->ReadU16());
+      vbriBytes = MOZ_TRY(aReader->ReadU32());
+      vbriFrames = MOZ_TRY(aReader->ReadU32());
+      vbriSeekOffsetsTableSize = MOZ_TRY(aReader->ReadU16());
+      vbriSeekOffsetsScaleFactor = MOZ_TRY(aReader->ReadU32());
+      vbriSeekOffsetsBytesPerEntry = MOZ_TRY(aReader->ReadU16());
+      vbriSeekOffsetsFramesPerEntry = MOZ_TRY(aReader->ReadU16());
 
       mTOC.reserve(vbriSeekOffsetsTableSize + 1);
 
-      int (*readFunc)(BufferReader*) = nullptr;
+      int64_t (*readFunc)(BufferReader*) = nullptr;
       switch (vbriSeekOffsetsBytesPerEntry) {
         case 1:
           readFunc = &readAndConvertToInt<uint8_t>;
@@ -542,7 +532,7 @@ Result<bool, nsresult> FrameParser::VBRHeader::ParseVBRI(
           break;
       }
       for (uint32_t i = 0; readFunc && i < vbriSeekOffsetsTableSize; i++) {
-        int entry = readFunc(aReader);
+        int64_t entry = readFunc(aReader);
         mTOC.push_back(entry * vbriSeekOffsetsScaleFactor);
       }
       MP3LOG(
@@ -580,9 +570,12 @@ Result<bool, nsresult> FrameParser::VBRHeader::ParseVBRI(
 }
 
 bool FrameParser::VBRHeader::Parse(BufferReader* aReader, size_t aFrameSize) {
-  auto res = std::make_pair(ParseVBRI(aReader), ParseXing(aReader, aFrameSize));
-  const bool rv = (res.first.isOk() && res.first.unwrap()) ||
-                  (res.second.isOk() && res.second.unwrap());
+  auto xing = ParseXing(aReader, aFrameSize);
+  bool rv = xing.isOk() && xing.unwrap();
+  if (!rv) {
+    auto vbri = ParseVBRI(aReader);
+    rv = vbri.isOk() && vbri.unwrap();
+  }
   if (rv) {
     MP3LOG(
         "VBRHeader::Parse found valid VBR/CBR header: type=%s"
@@ -691,7 +684,7 @@ uint32_t ID3Parser::Parse(BufferReader* aReader) {
   uint32_t size = ParseInternal(aReader);
   if (!size) {
     // next ID3 is invalid, so revert the header.
-    mHeader = prevHeader;
+    mHeader = std::move(prevHeader);
     return size;
   }
 

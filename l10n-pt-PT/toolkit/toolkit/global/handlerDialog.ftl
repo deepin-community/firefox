@@ -20,6 +20,17 @@ permission-dialog-description-file-app = Permitir que este ficheiro possa abrir 
 permission-dialog-description-extension-app = Permitir que a extensão { $extension } abra a ligação { $scheme } com { $appName }?
 permission-dialog-description-system-app = Abrir a ligação { $scheme } com { $appName }?
 permission-dialog-description-system-noapp = Abrir a ligação { $scheme }?
+# Header on a permission prompt, asking the user if they should allow the website to continue.
+wallet-custom-scheme-warning-heading =
+    .heading = Permitir que este site abra a sua carteira digital?
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host-app = Ao abrir uma ligação <strong>{ $scheme }</strong>, está a permitir que <strong>{ $host }</strong> solicite a sua identidade real através de <strong>{ $appName }</strong>. Só deve continuar se confiar neste site.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-app = Ao abrir uma ligação <strong>{ $scheme }</strong>, está a permitir que este site solicite a sua identidade real através de <strong>{ $appName }</strong>. Só deve continuar se confiar neste site.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host = Ao abrir uma ligação <strong>{ $scheme }</strong>, está a permitir que <strong>{ $host }</strong> solicite a sua identidade real a partir da sua carteira digital. Só deve continuar se confiar neste site.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning = Ao abrir uma ligação <strong>{ $scheme }</strong>, está a permitir que este site solicite a sua identidade real a partir da sua carteira digital. Só deve continuar se confiar neste site.
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
@@ -55,7 +66,7 @@ chooser-dialog =
     .buttonaccesskeyaccept = o
 chooser-dialog-description = Escolha uma aplicação para abrir a ligação { $scheme }.
 # Please keep the emphasis around the scheme (ie the `<strong>` HTML tags).
-chooser-dialog-remember = Permitir sempre que esta aplicação possa abrir ligações <strong>{ $scheme }</strong>.
+chooser-dialog-remember = Utilizar sempre esta aplicação para abrir ligações <strong>{ $scheme }</strong>.
 chooser-dialog-remember-extra =
     { PLATFORM() ->
         [windows] Isto pode ser alterado nas opções do { -brand-short-name }.

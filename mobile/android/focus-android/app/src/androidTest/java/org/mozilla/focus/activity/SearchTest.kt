@@ -12,6 +12,7 @@ import org.mozilla.focus.activity.robots.browserScreen
 import org.mozilla.focus.activity.robots.homeScreen
 import org.mozilla.focus.activity.robots.searchScreen
 import org.mozilla.focus.helpers.FeatureSettingsHelper
+import org.mozilla.focus.helpers.FocusTestRule
 import org.mozilla.focus.helpers.MainActivityFirstrunTestRule
 import org.mozilla.focus.helpers.TestHelper.exitToTop
 import org.mozilla.focus.helpers.TestHelper.pressEnterKey
@@ -25,8 +26,11 @@ class SearchTest {
     private val enginesList = listOf("DuckDuckGo", "Google", "Wikipedia")
     private val featureSettingsHelper = FeatureSettingsHelper()
 
-    @get: Rule
-    var mActivityTestRule = MainActivityFirstrunTestRule(showFirstRun = false)
+    @get:Rule(order = 0)
+    val focusTestRule: FocusTestRule = FocusTestRule()
+
+    @get:Rule
+    val mActivityTestRule = MainActivityFirstrunTestRule(showFirstRun = false)
 
     @Before
     fun setUp() {

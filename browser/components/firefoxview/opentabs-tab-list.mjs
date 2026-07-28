@@ -16,18 +16,6 @@ import {
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://global/content/elements/moz-button.mjs";
 
-const lazy = {};
-let XPCOMUtils;
-
-XPCOMUtils = ChromeUtils.importESModule(
-  "resource://gre/modules/XPCOMUtils.sys.mjs"
-).XPCOMUtils;
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
-  "virtualListEnabledPref",
-  "browser.firefox-view.virtual-list.enabled"
-);
-
 /**
  * A list of clickable tab items
  *
@@ -136,9 +124,8 @@ export class OpenTabsTabList extends FxviewTabListBase {
   async focusIndex(index) {
     // Focus link or button of item
     if (
-      ((this.pinnedTabsGridView && index > this.pinnedTabs.length) ||
-        !this.pinnedTabsGridView) &&
-      lazy.virtualListEnabledPref
+      (this.pinnedTabsGridView && index > this.pinnedTabs.length) ||
+      !this.pinnedTabsGridView
     ) {
       let row = this.rootVirtualListEl.getItem(index - this.pinnedTabs.length);
       if (!row) {
@@ -261,25 +248,14 @@ export class OpenTabsTabList extends FxviewTabListBase {
         role="list"
         @keydown=${this.handleFocusElementInRow}
       >
-        ${when(
-          lazy.virtualListEnabledPref,
-          () => html`
-            <virtual-list
-              .activeIndex=${this.activeIndex}
-              .pinnedTabsIndexOffset=${this.pinnedTabsGridView
-                ? this.pinnedTabs.length
-                : 0}
-              .items=${this.pinnedTabsGridView
-                ? this.unpinnedTabs
-                : this.tabItems}
-              .template=${this.itemTemplate}
-            ></virtual-list>
-          `,
-          () =>
-            html`${this.tabItems.map((tabItem, i) =>
-              this.itemTemplate(tabItem, i)
-            )}`
-        )}
+        <virtual-list
+          .activeIndex=${this.activeIndex}
+          .pinnedTabsIndexOffset=${this.pinnedTabsGridView
+            ? this.pinnedTabs.length
+            : 0}
+          .items=${this.pinnedTabsGridView ? this.unpinnedTabs : this.tabItems}
+          .template=${this.itemTemplate}
+        ></virtual-list>
       </div>
       <slot name="menu"></slot>
     `;
@@ -412,13 +388,13 @@ export class OpenTabsTabRow extends FxviewTabRowBase {
 
   #faviconTemplate() {
     return html`<span
-      class="${classMap({
+      class=${classMap({
         "fxview-tab-row-favicon-wrapper": true,
         pinned: this.indicators?.includes("pinned"),
         pinnedOnNewTab: this.indicators?.includes("pinnedOnNewTab"),
         attention: this.indicators?.includes("attention"),
         bookmark: this.indicators?.includes("bookmark"),
-      })}"
+      })}
     >
       <span
         class="fxview-tab-row-favicon icon"
@@ -487,22 +463,23 @@ export class OpenTabsTabRow extends FxviewTabRowBase {
     return html`${when(
       this.indicators?.includes("soundplaying") ||
         this.indicators?.includes("muted"),
-      () => html`<moz-button
-        type="icon ghost"
-        class="fxview-tab-row-button"
-        id="fxview-tab-row-media-button"
-        data-l10n-id=${this.indicators?.includes("muted")
-          ? "fxviewtabrow-unmute-tab-button-no-context"
-          : "fxviewtabrow-mute-tab-button-no-context"}
-        muted=${this.indicators?.includes("muted")}
-        soundplaying=${this.indicators?.includes("soundplaying") &&
-        !this.indicators?.includes("muted")}
-        @click=${this.muteOrUnmuteTab}
-        tabindex="${this.active &&
-        this.currentActiveElementId === "fxview-tab-row-media-button"
-          ? "0"
-          : "-1"}"
-      ></moz-button>`,
+      () =>
+        html`<moz-button
+          type="icon ghost"
+          class="fxview-tab-row-button"
+          id="fxview-tab-row-media-button"
+          data-l10n-id=${this.indicators?.includes("muted")
+            ? "fxviewtabrow-unmute-tab-button-no-context"
+            : "fxviewtabrow-mute-tab-button-no-context"}
+          muted=${this.indicators?.includes("muted")}
+          soundplaying=${this.indicators?.includes("soundplaying") &&
+          !this.indicators?.includes("muted")}
+          @click=${this.muteOrUnmuteTab}
+          tabindex=${this.active &&
+          this.currentActiveElementId === "fxview-tab-row-media-button"
+            ? "0"
+            : "-1"}
+        ></moz-button>`,
       () => html`<span></span>`
     )}`;
   }
@@ -558,8 +535,9 @@ export class OpenTabsTabRow extends FxviewTabRowBase {
         ${this.#faviconTemplate()} ${this.titleTemplate()}
         ${when(
           !this.compact,
-          () => html`${this.#containerIndicatorTemplate()} ${this.urlTemplate()}
-          ${this.dateTemplate()} ${this.timeTemplate()}`
+          () =>
+            html`${this.#containerIndicatorTemplate()} ${this.urlTemplate()}
+            ${this.dateTemplate()} ${this.timeTemplate()}`
         )}
       </a>
       ${this.#mediaButtonTemplate()} ${this.secondaryButtonTemplate()}

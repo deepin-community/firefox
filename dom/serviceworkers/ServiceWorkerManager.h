@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,9 @@
 #define mozilla_dom_workers_serviceworkermanager_h
 
 #include <cstdint>
+
 #include "ErrorList.h"
+#include "ServiceWorkerDescriptor.h"
 #include "ServiceWorkerShutdownState.h"
 #include "js/ErrorReport.h"
 #include "mozilla/AlreadyAddRefed.h"
@@ -19,6 +19,7 @@
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/ClientHandle.h"
 #include "mozilla/dom/ClientOpPromise.h"
+#include "mozilla/dom/ServiceWorkerLifetimeExtension.h"
 #include "mozilla/dom/ServiceWorkerRegistrationBinding.h"
 #include "mozilla/dom/ServiceWorkerRegistrationInfo.h"
 #include "mozilla/dom/ServiceWorkerUtils.h"
@@ -33,6 +34,7 @@
 #include "nsTArray.h"
 
 class nsIConsoleReportCollector;
+class nsIServiceWorkerUnregisterCallback;
 
 namespace mozilla {
 
@@ -41,6 +43,10 @@ class OriginAttributes;
 namespace ipc {
 class PrincipalInfo;
 }  // namespace ipc
+
+namespace net {
+class CookieStruct;
+}
 
 namespace dom {
 
@@ -51,6 +57,7 @@ class ServiceWorkerManagerChild;
 class ServiceWorkerPrivate;
 class ServiceWorkerRegistrar;
 class ServiceWorkerShutdownBlocker;
+struct CookieListItem;
 
 class ServiceWorkerUpdateFinishCallback {
  protected:
@@ -64,12 +71,26 @@ class ServiceWorkerUpdateFinishCallback {
   virtual void UpdateFailed(ErrorResult& aStatus) = 0;
 };
 
-#define NS_SERVICEWORKERMANAGER_IMPL_IID             \
-  { /* f4f8755a-69ca-46e8-a65d-775745535990 */       \
-    0xf4f8755a, 0x69ca, 0x46e8, {                    \
-      0xa6, 0x5d, 0x77, 0x57, 0x45, 0x53, 0x59, 0x90 \
-    }                                                \
-  }
+#define NS_SERVICEWORKERMANAGER_IMPL_IID      \
+  {/* f4f8755a-69ca-46e8-a65d-775745535990 */ \
+   0xf4f8755a,                                \
+   0x69ca,                                    \
+   0x46e8,                                    \
+   {0xa6, 0x5d, 0x77, 0x57, 0x45, 0x53, 0x59, 0x90}}
+
+class ETPPermissionObserver final : public nsIObserver {
+ public:
+  NS_DECL_ISUPPORTS
+  NS_DECL_NSIOBSERVER
+
+  ETPPermissionObserver();
+
+ private:
+  ~ETPPermissionObserver();
+
+  void RegisterObserverEvents();
+  void UnregisterObserverEvents();
+};
 
 /*
  * The ServiceWorkerManager is a per-process global that deals with the
@@ -101,6 +122,7 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
                                    public nsIObserver {
   friend class GetRegistrationsRunnable;
   friend class GetRegistrationRunnable;
+  friend class ServiceWorkerInfo;
   friend class ServiceWorkerJob;
   friend class ServiceWorkerRegistrationInfo;
   friend class ServiceWorkerShutdownBlocker;
@@ -113,6 +135,18 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
   NS_DECL_NSISERVICEWORKERMANAGER
   NS_DECL_NSIOBSERVER
 
+  // Determine the correct lifetime extension to use for a given client.  This
+  // will work for ServiceWorker clients, but ideally you should have a
+  // ServiceWorkerDescriptor in that case.
+  ServiceWorkerLifetimeExtension DetermineLifetimeForClient(
+      const ClientInfo& aClientInfo);
+
+  // Determine the correct lifetime extension to use for a given client.  This
+  // will work for ServiceWorker clients, but ideally you should have a
+  // ServiceWorkerDescriptor in that case.
+  ServiceWorkerLifetimeExtension DetermineLifetimeForServiceWorker(
+      const ServiceWorkerDescriptor& aServiceWorker);
+
   // Return true if the given principal and URI matches a registered service
   // worker which handles fetch event.
   // If there is a matched service worker but doesn't handle fetch events, this
@@ -124,11 +158,12 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
 
   void DispatchFetchEvent(nsIInterceptedChannel* aChannel, ErrorResult& aRv);
 
-  void Update(nsIPrincipal* aPrincipal, const nsACString& aScope,
-              nsCString aNewestWorkerScriptUrl,
+  void Update(const ClientInfo& aClientInfo, nsIPrincipal* aPrincipal,
+              const nsACString& aScope, nsCString aNewestWorkerScriptUrl,
               ServiceWorkerUpdateFinishCallback* aCallback);
 
-  void UpdateInternal(nsIPrincipal* aPrincipal, const nsACString& aScope,
+  void UpdateInternal(const ClientInfo& aClientInfo, nsIPrincipal* aPrincipal,
+                      const nsACString& aScope,
                       nsCString&& aNewestWorkerScriptUrl,
                       ServiceWorkerUpdateFinishCallback* aCallback);
 
@@ -141,7 +176,7 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
 
   RefPtr<ServiceWorkerRegistrationPromise> Register(
       const ClientInfo& aClientInfo, const nsACString& aScopeURL,
-      const nsACString& aScriptURL,
+      const WorkerType& aType, const nsACString& aScriptURL,
       ServiceWorkerUpdateViaCache aUpdateViaCache);
 
   RefPtr<ServiceWorkerRegistrationPromise> GetRegistration(
@@ -158,8 +193,8 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
       const nsACString& aScope) const;
 
   already_AddRefed<ServiceWorkerRegistrationInfo> CreateNewRegistration(
-      const nsCString& aScope, nsIPrincipal* aPrincipal,
-      ServiceWorkerUpdateViaCache aUpdateViaCache,
+      const nsCString& aScope, const WorkerType& aType,
+      nsIPrincipal* aPrincipal, ServiceWorkerUpdateViaCache aUpdateViaCache,
       IPCNavigationPreloadState aNavigationPreloadState =
           IPCNavigationPreloadState(false, "true"_ns));
 
@@ -229,6 +264,11 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
 
   void MaybeCheckNavigationUpdate(const ClientInfo& aClientInfo);
 
+  nsresult SendCookieChangeEvent(const OriginAttributes& aOriginAttributes,
+                                 const nsACString& aScope,
+                                 const net::CookieStruct& aCookie,
+                                 bool aCookieDeleted);
+
   nsresult SendPushEvent(const nsACString& aOriginAttributes,
                          const nsACString& aScope, const nsAString& aMessageId,
                          const Maybe<nsTArray<uint8_t>>& aData);
@@ -276,6 +316,9 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
 
   void EvictFromBFCache(ServiceWorkerRegistrationInfo* aRegistration);
 
+  nsRefPtrHashtable<nsCStringHashKey, ServiceWorkerRegistrationInfo>
+  GetRegistrations(nsIPrincipal* aPrincipal);
+
  private:
   struct RegistrationDataPerPrincipal;
 
@@ -315,22 +358,43 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
   ServiceWorkerInfo* GetActiveWorkerInfoForScope(
       const OriginAttributes& aOriginAttributes, const nsACString& aScope);
 
+  // Given the ClientInfo for a ServiceWorker global, return the corresponding
+  // ServiceWorkerInfo, nullptr otherwise.  Do not use this for clients for
+  // globals that are not ServiceWorkers (and ideally you should be using
+  // GetServiceWorkerByDescriptor instead).
+  ServiceWorkerInfo* GetServiceWorkerByClientInfo(
+      const ClientInfo& aClientInfo) const;
+
+  // Given the ServiceWorkerDescriptor for a ServiceWorker, return the
+  // corresponding nullptr otherwise.
+  ServiceWorkerInfo* GetServiceWorkerByDescriptor(
+      const ServiceWorkerDescriptor& aServiceWorker) const;
+
   void StopControllingRegistration(
       ServiceWorkerRegistrationInfo* aRegistration);
 
+  // Find the ServiceWorkerRegistration whose scope best matches the URL of the
+  // given window or worker client (for the origin of the client based on its
+  // principal).  This cannot be used with ServiceWorker ClientInfos.
   already_AddRefed<ServiceWorkerRegistrationInfo>
   GetServiceWorkerRegistrationInfo(const ClientInfo& aClientInfo) const;
 
+  // Find the ServiceWorkerRegistration whose scope best matches the provided
+  // URL (for the origin of the given principal).
+  //
+  // Note that `GetRegistration` should be used in cases where you already have
+  // an exact scope.
   already_AddRefed<ServiceWorkerRegistrationInfo>
   GetServiceWorkerRegistrationInfo(nsIPrincipal* aPrincipal,
                                    nsIURI* aURI) const;
 
+  // Find the ServiceWorkerRegistration whose scope best matches the provided
+  // URL for the origin encoded as a scope key that has been obtained from
+  // PrincipToScopeKey.
   already_AddRefed<ServiceWorkerRegistrationInfo>
   GetServiceWorkerRegistrationInfo(const nsACString& aScopeKey,
                                    nsIURI* aURI) const;
 
-  // This method generates a key using isInElementBrowser from the principal. We
-  // don't use the origin because it can change during the loading.
   static nsresult PrincipalToScopeKey(nsIPrincipal* aPrincipal,
                                       nsACString& aKey);
 
@@ -376,19 +440,11 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
 
   void MaybeSendUnregister(nsIPrincipal* aPrincipal, const nsACString& aScope);
 
-  nsresult SendNotificationEvent(const nsAString& aEventName,
-                                 const nsACString& aOriginSuffix,
-                                 const nsACString& aScope, const nsAString& aID,
-                                 const nsAString& aTitle, const nsAString& aDir,
-                                 const nsAString& aLang, const nsAString& aBody,
-                                 const nsAString& aTag, const nsAString& aIcon,
-                                 const nsAString& aData,
-                                 const nsAString& aBehavior);
-
   // Used by remove() and removeAll() when clearing history.
   // MUST ONLY BE CALLED FROM UnregisterIfMatchesHost!
   void ForceUnregister(RegistrationDataPerPrincipal* aRegistrationData,
-                       ServiceWorkerRegistrationInfo* aRegistration);
+                       ServiceWorkerRegistrationInfo* aRegistration,
+                       nsIServiceWorkerUnregisterCallback* aCallback = nullptr);
 
   // An "orphaned" registration is one that is unregistered and not controlling
   // clients. The ServiceWorkerManager must know about all orphaned
@@ -431,6 +487,7 @@ class ServiceWorkerManager final : public nsIServiceWorkerManager,
 
   const uint32_t mTelemetryPeriodMs = 5 * 1000;
   TimeStamp mTelemetryLastChange;
+  RefPtr<ETPPermissionObserver> mETPPermissionObserver;
 };
 
 }  // namespace dom

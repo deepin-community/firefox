@@ -1,26 +1,20 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=2 et lcs=trail\:.,tab\:>~ :
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef mozStorageBindingParams_h
 #define mozStorageBindingParams_h
 
-#include "nsCOMArray.h"
 #include "nsIVariant.h"
-#include "nsInterfaceHashtable.h"
 
-#include "mozStorageBindingParamsArray.h"
 #include "mozStorageStatement.h"
 #include "mozStorageAsyncStatement.h"
 #include "Variant.h"
-
+#include "nsTHashMap.h"
 #include "mozIStorageBindingParams.h"
 #include "IStorageBindingParamsInternal.h"
 
-namespace mozilla {
-namespace storage {
+namespace mozilla::storage {
 
 class BindingParams : public mozIStorageBindingParams,
                       public IStorageBindingParamsInternal {
@@ -55,12 +49,16 @@ class BindingParams : public mozIStorageBindingParams,
                 Statement* aOwningStatement);
 
  protected:
-  virtual ~BindingParams() {}
+  virtual ~BindingParams() = default;
 
   explicit BindingParams(mozIStorageBindingParamsArray* aOwningArray);
+
   // Note that this is managed as a sparse array, so particular caution should
   // be used for out-of-bounds usage.
-  nsTArray<RefPtr<Variant_base> > mParameters;
+  // Variants added to this array must be thread-safe, thus you should not use
+  // XPCVariant or similar main-thread only implementations.
+  nsTArray<RefPtr<Variant_base>> mParameters;
+
   bool mLocked;
 
  private:
@@ -99,13 +97,14 @@ class AsyncBindingParams : public BindingParams {
       sqlite3_stmt* aStatement) override;
 
   explicit AsyncBindingParams(mozIStorageBindingParamsArray* aOwningArray);
-  virtual ~AsyncBindingParams() {}
+  virtual ~AsyncBindingParams() = default;
 
  private:
-  nsInterfaceHashtable<nsCStringHashKey, nsIVariant> mNamedParameters;
+  // Variants added to this array must be thread-safe, thus you should not use
+  // XPCVariant or similar main-thread only implementations.
+  nsTHashMap<nsCStringHashKey, RefPtr<Variant_base>> mNamedParameters;
 };
 
-}  // namespace storage
-}  // namespace mozilla
+}  // namespace mozilla::storage
 
 #endif  // mozStorageBindingParams_h

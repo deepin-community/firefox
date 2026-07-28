@@ -4,13 +4,16 @@
 
 //! Computed angles.
 
+use crate::derives::*;
 use crate::values::distance::{ComputeSquaredDistance, SquaredDistance};
 use crate::values::CSSFloat;
 use crate::Zero;
 use std::f64::consts::PI;
 use std::fmt::{self, Write};
+use std::ops::Neg;
 use std::{f32, f64};
-use style_traits::{CssWriter, ToCss};
+use style_traits::{CssString, CssWriter, NumericValue, ToCss, ToTyped, TypedValue, UnitValue};
+use thin_vec::ThinVec;
 
 /// A computed angle in degrees.
 #[derive(
@@ -37,6 +40,16 @@ impl ToCss for Angle {
     {
         self.degrees().to_css(dest)?;
         dest.write_str("deg")
+    }
+}
+
+impl ToTyped for Angle {
+    fn to_typed(&self, dest: &mut ThinVec<TypedValue>) -> Result<(), ()> {
+        dest.push(TypedValue::Numeric(NumericValue::Unit(UnitValue {
+            value: self.degrees(),
+            unit: CssString::from("deg"),
+        })));
+        Ok(())
     }
 }
 
@@ -97,5 +110,14 @@ impl ComputeSquaredDistance for Angle {
         // https://www.w3.org/TR/SVG/animate.html#complexDistances
         self.radians64()
             .compute_squared_distance(&other.radians64())
+    }
+}
+
+impl Neg for Angle {
+    type Output = Angle;
+
+    #[inline]
+    fn neg(self) -> Angle {
+        Angle(-self.0)
     }
 }

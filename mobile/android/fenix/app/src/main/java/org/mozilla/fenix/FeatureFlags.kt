@@ -4,10 +4,6 @@
 
 package org.mozilla.fenix
 
-import android.content.Context
-import mozilla.components.support.locale.LocaleManager
-import mozilla.components.support.locale.LocaleManager.getSystemDefault
-
 /**
  * A single source for setting feature flags that are mostly based on build type.
  */
@@ -24,67 +20,23 @@ object FeatureFlags {
      * Pull-to-refresh allows you to pull the web content down far enough to have the page to
      * reload.
      */
-    const val pullToRefreshEnabled = true
-
-    /**
-     * Enables the Sync Addresses feature.
-     */
-    const val syncAddressesFeature = false
-
-    /**
-     * Show Pocket recommended stories on home.
-     */
-    fun isPocketRecommendationsFeatureEnabled(context: Context): Boolean {
-        val langTag = LocaleManager.getCurrentLocale(context)
-            ?.toLanguageTag() ?: getSystemDefault().toLanguageTag()
-        return listOf("en-US", "en-CA").contains(langTag)
-    }
-
-    /**
-     * Show Pocket sponsored stories in between Pocket recommended stories on home.
-     */
-    fun isPocketSponsoredStoriesFeatureEnabled(context: Context): Boolean {
-        return isPocketRecommendationsFeatureEnabled(context)
-    }
-
-    /**
-     * Enables compose on the tabs tray items.
-     */
-    const val composeTabsTray = true
-
-    /**
-     * Enables compose on the top sites.
-     */
-    const val composeTopSites = false
-
-    /**
-     * Enables new search settings UI with two extra fragments, for managing the default engine
-     * and managing search shortcuts in the quick search menu.
-     */
-    const val unifiedSearchSettings = true
+    const val PULL_TO_REFRESH_ENABLED = true
 
     /**
      * Allows users to enable Firefox Suggest.
      */
-    const val fxSuggest = true
+    const val FX_SUGGEST = true
 
     /**
-     * Enable Meta attribution.
+     * Disables the Onboarding feature for debug builds by default. Set this to `true` if you need
+     * to access the Onboarding feature for development purposes.
+     *
+     * ⚠️ DO NOT MODIFY THIS FLAG IN PRODUCTION.
      */
-    const val metaAttributionEnabled = true
+    val onboardingFeatureEnabled = !Config.channel.isDebug
 
     /**
-     * Enables Navigation Toolbar.
+     * Enables Firefox Labs.
      */
-    val navigationToolbarEnabled = Config.channel.isNightlyOrDebug
-
-    /**
-     * Enables the Compose Homepage.
-     */
-    const val composeHomepage = false
-
-    /**
-     * Enables Homepage as a New Tab.
-     */
-    const val homepageAsNewTab = false
+    const val FIREFOX_LABS = false
 }

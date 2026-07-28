@@ -5,11 +5,9 @@
 #ifndef DOM_MEDIA_MEDIACONTROL_MEDIACONTROLSERVICE_H_
 #define DOM_MEDIA_MEDIACONTROL_MEDIACONTROLSERVICE_H_
 
-#include "mozilla/AlreadyAddRefed.h"
-
 #include "AudioFocusManager.h"
-#include "MediaController.h"
 #include "MediaControlKeyManager.h"
+#include "MediaController.h"
 #include "mozilla/dom/MediaControllerBinding.h"
 #include "nsIObserver.h"
 #include "nsTArray.h"
@@ -36,7 +34,7 @@ class MediaControlService final : public nsIObserver {
 
   // Currently these following static methods are only being used in testing.
   static void GenerateMediaControlKey(const GlobalObject& global,
-                                      MediaControlKey aKey);
+                                      MediaControlKey aKey, double aSeekTime);
   static void GetCurrentActiveMediaMetadata(const GlobalObject& aGlobal,
                                             MediaMetadataInit& aMetadata);
   static MediaSessionPlaybackState GetCurrentMediaSessionPlaybackState(
@@ -70,7 +68,7 @@ class MediaControlService final : public nsIObserver {
    * generate fake media control key events, get the media metadata and playback
    * state from the main controller.
    */
-  void GenerateTestMediaControlKey(MediaControlKey aKey);
+  void GenerateTestMediaControlKey(MediaControlKey aKey, double aSeekValue);
   MediaMetadataBase GetMainControllerMediaMetadata() const;
   MediaSessionPlaybackState GetMainControllerPlaybackState() const;
 

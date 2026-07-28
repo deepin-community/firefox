@@ -1,9 +1,9 @@
-/* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { ASRouterPreferences } from "resource:///modules/asrouter/ASRouterPreferences.sys.mjs";
+import { ASRouterScreenUtils } from "resource:///modules/asrouter/ASRouterScreenUtils.sys.mjs";
 import { MESSAGE_TYPE_HASH as msg } from "resource:///modules/asrouter/ActorConstants.mjs";
 
 export class ASRouterParentProcessMessageHandler {
@@ -30,6 +30,9 @@ export class ASRouterParentProcessMessageHandler {
       case msg.MOMENTS_PAGE_TELEMETRY:
       case msg.DOORHANGER_TELEMETRY:
       case msg.SPOTLIGHT_TELEMETRY:
+      case msg.MENU_MESSAGE_TELEMETRY:
+      case msg.NEWTAB_MESSAGE_TELEMETRY:
+      case msg.SMART_WINDOW_PROMO_TELEMETRY:
       case msg.TOAST_NOTIFICATION_TELEMETRY: {
         return this.handleTelemetry({ type, data });
       }
@@ -39,7 +42,7 @@ export class ASRouterParentProcessMessageHandler {
     }
   }
 
-  handleMessage(name, data, { id: tabId, browser } = { browser: null }) {
+  handleMessage(name, data, { browser } = { browser: null }) {
     switch (name) {
       case msg.AS_ROUTER_TELEMETRY_USER_EVENT:
         return this.handleTelemetry({
@@ -68,14 +71,12 @@ export class ASRouterParentProcessMessageHandler {
       case msg.TRIGGER: {
         return this._router.sendTriggerMessage({
           ...(data && data.trigger),
-          tabId,
           browser,
         });
       }
       case msg.PBNEWTAB_MESSAGE_REQUEST: {
         return this._router.sendPBNewTabMessage({
           ...data,
-          tabId,
           browser,
         });
       }
@@ -155,6 +156,12 @@ export class ASRouterParentProcessMessageHandler {
       case msg.EDIT_STATE: {
         const [[key, value]] = Object.entries(data);
         return this._router.editState(key, value);
+      }
+      case msg.AW_EVALUATE_SCREEN_TARGETING: {
+        return ASRouterScreenUtils.evaluateTargetingAndRemoveScreens(data);
+      }
+      case msg.AW_ADD_SCREEN_IMPRESSION: {
+        return ASRouterScreenUtils.addScreenImpression(data);
       }
       default: {
         return Promise.reject(new Error(`Unknown message received: ${name}`));

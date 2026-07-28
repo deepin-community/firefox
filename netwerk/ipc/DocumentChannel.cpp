@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +5,6 @@
 #include "mozilla/net/DocumentChannel.h"
 
 #include <inttypes.h>
-#include <utility>
 #include "mozIDOMWindow.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Assertions.h"
@@ -16,7 +12,6 @@
 #include "mozilla/Logging.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/net/DocumentChannelChild.h"
 #include "mozilla/net/ParentProcessDocumentChannel.h"
@@ -32,6 +27,7 @@
 #include "nsILoadInfo.h"
 #include "nsIStreamListener.h"
 #include "nsIURI.h"
+#include "nsLoadGroup.h"
 #include "nsMimeTypes.h"
 #include "nsNetUtil.h"
 #include "nsPIDOMWindow.h"
@@ -79,9 +75,7 @@ DocumentChannel::DocumentChannel(nsDocShellLoadState* aLoadState,
   LOG(("DocumentChannel ctor [this=%p, uri=%s]", this,
        aLoadState->URI()->GetSpecOrDefault().get()));
   RefPtr<nsHttpHandler> handler = nsHttpHandler::GetInstance();
-  uint64_t channelId;
-  Unused << handler->NewChannelId(channelId);
-  mChannelId = channelId;
+  mChannelId = handler->NewChannelId();
 }
 
 NS_IMETHODIMP
@@ -126,13 +120,27 @@ void DocumentChannel::ShutdownListeners(nsresult aStatusCode) {
 void DocumentChannel::DisconnectChildListeners(
     const nsresult& aStatus, const nsresult& aLoadGroupStatus) {
   MOZ_ASSERT(NS_FAILED(aStatus));
-  mStatus = aLoadGroupStatus;
-  // Make sure we remove from the load group before
-  // setting mStatus, as existing tests expect the
-  // status to be successful when we disconnect.
-  if (mLoadGroup) {
-    mLoadGroup->RemoveRequest(this, nullptr, aStatus);
-    mLoadGroup = nullptr;
+
+  // In the case where the channel was redirected to be downloaded by the
+  // nsExternalHelperAppService in the parent process, we'll be called with a
+  // different aLoadGroupStatus and aStatus.
+  //
+  // Before DocumentChannel was implemented, the channel would have been removed
+  // from the load group by the nsExternalHelperAppService. This simulates that
+  // behaviour by removing the load group when the channel is no longer in use.
+  //
+  // We cannot unconditionally remove the channel from the load group here, as
+  // that may unblock load events too early if new navigations will be started
+  // by channel listeners. See bug 1961008.
+  if (aStatus != aLoadGroupStatus) {
+    MOZ_ASSERT(aStatus == NS_BINDING_RETARGETED);
+    MOZ_ASSERT(NS_SUCCEEDED(aLoadGroupStatus));
+
+    mStatus = aLoadGroupStatus;
+    if (mLoadGroup) {
+      mLoadGroup->RemoveRequest(this, nullptr, aStatus);
+      mLoadGroup = nullptr;
+    }
   }
 
   ShutdownListeners(aStatus);
@@ -155,12 +163,16 @@ nsDocShell* DocumentChannel::GetDocShell() {
 }
 
 static bool URIUsesDocChannel(nsIURI* aURI) {
-  if (SchemeIsJavascript(aURI)) {
+  if (aURI->SchemeIs("javascript")) {
     return false;
   }
 
   nsCString spec = aURI->GetSpecOrDefault();
-  return !spec.EqualsLiteral("about:crashcontent");
+  return
+#ifdef MOZ_WIDGET_ANDROID
+      !spec.EqualsLiteral("about:crashcontentjava") &&
+#endif
+      !spec.EqualsLiteral("about:crashcontent");
 }
 
 bool DocumentChannel::CanUseDocumentChannel(nsIURI* aURI) {
@@ -294,25 +306,30 @@ DocumentChannel::SetTRRMode(nsIRequest::TRRMode aTRRMode) {
 }
 
 NS_IMETHODIMP DocumentChannel::SetLoadFlags(nsLoadFlags aLoadFlags) {
-  // Setting load flags for TYPE_OBJECT is OK, so long as the channel to parent
-  // isn't opened yet, or we're only setting the `LOAD_DOCUMENT_URI` flag.
-  auto contentPolicy = mLoadInfo->GetExternalContentPolicyType();
-  if (contentPolicy == ExtContentPolicy::TYPE_OBJECT) {
-    if (mWasOpened) {
-      MOZ_DIAGNOSTIC_ASSERT(
-          aLoadFlags == (mLoadFlags | nsIChannel::LOAD_DOCUMENT_URI),
-          "After the channel has been opened, can only set the "
-          "`LOAD_DOCUMENT_URI` flag.");
-    }
+  nsLoadFlags mayChange = 0;
+  if (mLoadInfo->GetExternalContentPolicyType() ==
+      ExtContentPolicy::TYPE_OBJECT) {
+    // Setting load flags for TYPE_OBJECT is OK, so long as the channel to
+    // parent isn't opened yet, or we're only setting the `LOAD_DOCUMENT_URI`
+    // flag.
+    mayChange = mWasOpened ? LOAD_DOCUMENT_URI : ~0u;
+  } else if (!mWasOpened) {
+    // If we haven't been opened yet, allow the LoadGroup to
+    // set cache control flags inherited from the default channel.
+    mayChange = nsLoadGroup::kInheritedLoadFlags;
+  }
+
+  // Check if we're allowed to adjust these flags.
+  if ((mLoadFlags & ~mayChange) == (aLoadFlags & ~mayChange)) {
     mLoadFlags = aLoadFlags;
     return NS_OK;
   }
-
   MOZ_CRASH_UNSAFE_PRINTF(
       "DocumentChannel::SetLoadFlags: Don't set flags after creation "
       "(differing flags %x != %x)",
       (mLoadFlags ^ aLoadFlags) & mLoadFlags,
       (mLoadFlags ^ aLoadFlags) & aLoadFlags);
+  return NS_OK;
 }
 
 NS_IMETHODIMP DocumentChannel::GetOriginalURI(nsIURI** aOriginalURI) {

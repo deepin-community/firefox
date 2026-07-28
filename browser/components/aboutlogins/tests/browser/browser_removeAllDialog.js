@@ -81,16 +81,16 @@ add_setup(async function () {
   // Undo mocking from head.js
   sinon.restore();
 
-  let oldPrefValue = LoginHelper.getOSAuthEnabled(PASSWORDS_OS_REAUTH_PREF);
-  LoginHelper.setOSAuthEnabled(PASSWORDS_OS_REAUTH_PREF, false);
+  let oldPrefValue = LoginHelper.getOSAuthEnabled();
+  LoginHelper.setOSAuthEnabled(false);
   await BrowserTestUtils.openNewForegroundTab({
     gBrowser,
     url: "about:logins",
   });
   registerCleanupFunction(async () => {
     BrowserTestUtils.removeTab(gBrowser.selectedTab);
-    Services.logins.removeAllUserFacingLogins();
-    LoginHelper.setOSAuthEnabled(PASSWORDS_OS_REAUTH_PREF, oldPrefValue);
+    await Services.logins.removeAllUserFacingLoginsAsync();
+    LoginHelper.setOSAuthEnabled(oldPrefValue);
   });
   TEST_LOGIN1 = await addLogin(TEST_LOGIN1);
 });
@@ -370,9 +370,15 @@ add_task(async function test_remove_all_dialog_remove_logins() {
     let removeAllMenuButton = menuButton.shadowRoot.querySelector(
       ".menuitem-remove-all-logins"
     );
+    let exportLoginsButton =
+      menuButton.shadowRoot.querySelector(".menuitem-export");
     Assert.ok(
       removeAllMenuButton.disabled,
       "Remove all logins menu button is disabled if there are no logins"
+    );
+    ok(
+      exportLoginsButton.disabled,
+      "Remove export logins button is disabled if there are no logins"
     );
   });
   await SpecialPowers.spawn(browser, [], async () => {

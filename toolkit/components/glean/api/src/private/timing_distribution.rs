@@ -10,52 +10,197 @@ use std::sync::{
     Arc, RwLock,
 };
 use std::time::{Duration, Instant};
+#[cfg(feature = "with_gecko")]
+use thin_vec::ThinVec;
 
-use super::{CommonMetricData, MetricId, TimeUnit};
-use glean::{DistributionData, ErrorType, TimerId};
+use super::{BaseMetricId, ChildMetricMeta, CommonMetricData, MetricId, MetricNamer, TimeUnit};
+use glean::{DistributionData, ErrorType, MetricIdentifier, TimerId};
 
 use crate::ipc::{need_ipc, with_ipc_payload};
 use glean::traits::TimingDistribution;
+
+#[cfg(feature = "with_gecko")]
+use super::MetricMetadataGetter;
+
+#[cfg(feature = "with_gecko")]
+use super::profiler_utils::{truncate_vector_for_marker, TelemetryProfilerCategory};
+
+#[cfg(feature = "with_gecko")]
+use std::marker::PhantomData;
+
+#[cfg(feature = "with_gecko")]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub(crate) enum TDMPayload {
+    Duration(std::time::Duration),
+    Sample(i64),
+    Samples(Vec<i64>),
+    SamplesNS(Vec<u64>),
+}
+
+#[cfg(feature = "with_gecko")]
+impl TDMPayload {
+    pub fn from_samples_signed(samples: &Vec<i64>) -> TDMPayload {
+        TDMPayload::Samples(truncate_vector_for_marker(samples))
+    }
+    pub fn from_samples_unsigned(samples: &Vec<u64>) -> TDMPayload {
+        TDMPayload::SamplesNS(truncate_vector_for_marker(samples))
+    }
+}
+
+#[cfg(feature = "with_gecko")]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub(crate) struct TimingDistributionMetricMarker<MetricT> {
+    id: MetricId,
+    label: Option<String>,
+    timer_id: Option<u64>,
+    value: Option<TDMPayload>,
+    _phantom: PhantomData<MetricT>,
+}
+
+#[cfg(feature = "with_gecko")]
+impl<MetricT: 'static> TimingDistributionMetricMarker<MetricT> {
+    pub fn new(
+        id: MetricId,
+        label: Option<String>,
+        timer_id: Option<u64>,
+        value: Option<TDMPayload>,
+    ) -> TimingDistributionMetricMarker<MetricT> {
+        TimingDistributionMetricMarker {
+            id,
+            label,
+            timer_id,
+            value,
+            _phantom: PhantomData,
+        }
+    }
+}
+
+#[cfg(feature = "with_gecko")]
+impl<MetricT: MetricMetadataGetter + MetricNamer + 'static> gecko_profiler::ProfilerMarker
+    for TimingDistributionMetricMarker<MetricT>
+{
+    fn marker_type_name() -> &'static str {
+        "TimingDist"
+    }
+
+    fn marker_type_display() -> gecko_profiler::MarkerSchema {
+        use gecko_profiler::schema::*;
+        let mut schema = MarkerSchema::new(&[Location::MarkerChart, Location::MarkerTable]);
+        schema.set_tooltip_label(
+            "{marker.data.cat}.{marker.data.id} {marker.data.label} {marker.data.duration}{marker.data.sample}",
+        );
+        schema.set_table_label("{marker.data.cat}.{marker.data.id} {marker.data.label}: {marker.data.duration}{marker.data.sample}{marker.data.samples}");
+        schema.set_chart_label("{marker.data.cat}.{marker.data.id} {marker.data.label}");
+        schema.add_key_label_format("cat", "Category", Format::UniqueString);
+        schema.add_key_label_format("id", "Metric", Format::UniqueString);
+        schema.add_key_label_format("label", "Label", Format::UniqueString);
+        schema.add_key_label_format("timer_id", "TimerId", Format::Integer);
+        schema.add_key_label_format("duration", "Duration", Format::String);
+        schema.add_key_label_format("sample", "Sample", Format::String);
+        schema.add_key_label_format("samples", "Samples", Format::String);
+        schema
+    }
+
+    fn stream_json_marker_data(&self, json_writer: &mut gecko_profiler::JSONWriter) {
+        crate::private::profiler_utils::stream_identifiers_by_id::<MetricT>(
+            &self.id.into(),
+            json_writer,
+        );
+
+        if let Some(id) = &self.timer_id {
+            // We don't care about exactly what the timer id is - so just
+            // perform a bitwise cast, as that provides a 1:1 mapping.
+            json_writer.int_property("timer_id", *id as i64);
+        };
+
+        match &self.value {
+            Some(p) => {
+                match p {
+                    TDMPayload::Duration(d) => {
+                        // Durations do not have a `Display` implementation,
+                        // however for the profiler, the debug formatting
+                        // should be more than sufficient.
+                        let s = format!("{:?}", d);
+                        json_writer.string_property("duration", s.as_str());
+                    }
+                    TDMPayload::Sample(s) => {
+                        let s = format!("{}", s);
+                        json_writer.string_property("sample", s.as_str());
+                    }
+                    TDMPayload::Samples(s) => {
+                        let s = format!(
+                            "[{}]",
+                            s.iter()
+                                .map(|v| v.to_string())
+                                .collect::<Vec<_>>()
+                                .join(",")
+                        );
+                        json_writer.string_property("samples", s.as_str());
+                    }
+                    TDMPayload::SamplesNS(s) => {
+                        let s = format!(
+                            "(ns) [{}]",
+                            s.iter()
+                                .map(|v| v.to_string())
+                                .collect::<Vec<_>>()
+                                .join(",")
+                        );
+                        json_writer.string_property("samples", s.as_str());
+                    }
+                };
+            }
+            None => {}
+        };
+    }
+}
 
 /// A timing distribution metric.
 ///
 /// Timing distributions are used to accumulate and store time measurements for analyzing distributions of the timing data.
 pub enum TimingDistributionMetric {
     Parent {
-        /// The metric's ID.
-        ///
-        /// No longer test-only, is also used for GIFFT.
+        /// The metric's ID. Used for testing, GIFFT, and profiler markers.
+        /// Timing distribution metrics can be labeled, so we may have either
+        /// a metric ID or sub-metric ID.
         id: MetricId,
+        gifft_time_unit: TimeUnit,
         inner: Arc<glean::private::TimingDistributionMetric>,
     },
     Child(TimingDistributionMetricIpc),
 }
 #[derive(Debug)]
 pub struct TimingDistributionMetricIpc {
-    metric_id: MetricId,
+    meta: ChildMetricMeta,
+    #[allow(unused)]
+    gifft_time_unit: TimeUnit,
     next_timer_id: AtomicUsize,
     instants: RwLock<HashMap<u64, Instant>>,
 }
 
 impl TimingDistributionMetric {
     /// Create a new timing distribution metric, _child process only_.
-    pub(crate) fn new_child(id: MetricId) -> Self {
+    pub(crate) fn new_child(meta: ChildMetricMeta, time_unit: TimeUnit) -> Self {
         debug_assert!(need_ipc());
         TimingDistributionMetric::Child(TimingDistributionMetricIpc {
-            metric_id: id,
+            meta,
+            gifft_time_unit: time_unit,
             next_timer_id: AtomicUsize::new(0),
             instants: RwLock::new(HashMap::new()),
         })
     }
 
     /// Create a new timing distribution metric.
-    pub fn new(id: MetricId, meta: CommonMetricData, time_unit: TimeUnit) -> Self {
+    pub fn new(id: BaseMetricId, meta: CommonMetricData, time_unit: TimeUnit) -> Self {
         if need_ipc() {
-            Self::new_child(id)
+            Self::new_child(
+                ChildMetricMeta::from_common_metric_data(id, meta),
+                time_unit,
+            )
         } else {
             let inner = glean::private::TimingDistributionMetric::new(meta, time_unit);
             TimingDistributionMetric::Parent {
-                id,
+                id: id.into(),
+                gifft_time_unit: time_unit,
                 inner: Arc::new(inner),
             }
         }
@@ -64,13 +209,23 @@ impl TimingDistributionMetric {
     #[cfg(test)]
     pub(crate) fn child_metric(&self) -> Self {
         match self {
-            TimingDistributionMetric::Parent { id, .. } => {
-                TimingDistributionMetric::Child(TimingDistributionMetricIpc {
-                    metric_id: *id,
-                    next_timer_id: AtomicUsize::new(0),
-                    instants: RwLock::new(HashMap::new()),
-                })
-            }
+            TimingDistributionMetric::Parent {
+                id,
+                gifft_time_unit,
+                inner,
+            } => TimingDistributionMetric::Child(TimingDistributionMetricIpc {
+                // SAFETY: We can unwrap here, as this code is only run in
+                // the context of a test. If this code is used elsewhere,
+                // the `unwrap` should be replaced with proper error
+                // handling of the `None` case.
+                meta: ChildMetricMeta::from_metric_identifier(
+                    id.base_metric_id().unwrap(),
+                    inner.as_ref(),
+                ),
+                gifft_time_unit: *gifft_time_unit,
+                next_timer_id: AtomicUsize::new(0),
+                instants: RwLock::new(HashMap::new()),
+            }),
             TimingDistributionMetric::Child(_) => {
                 panic!("Can't get a child metric from a child metric")
             }
@@ -108,10 +263,10 @@ impl TimingDistributionMetric {
             TimingDistributionMetric::Child(c) => {
                 if let Some(sample) = self.child_stop(id) {
                     with_ipc_payload(move |payload| {
-                        if let Some(v) = payload.timing_samples.get_mut(&c.metric_id) {
+                        if let Some(v) = payload.timing_samples.get_mut(&c.meta.id) {
                             v.push(sample);
                         } else {
-                            payload.timing_samples.insert(c.metric_id, vec![sample]);
+                            payload.timing_samples.insert(c.meta.id, vec![sample]);
                         }
                     });
                 } else {
@@ -188,12 +343,80 @@ impl TimingDistributionMetric {
             }
             TimingDistributionMetric::Child(c) => {
                 with_ipc_payload(move |payload| {
-                    if let Some(v) = payload.timing_samples.get_mut(&c.metric_id) {
+                    if let Some(v) = payload.timing_samples.get_mut(&c.meta.id) {
                         v.push(sample);
                     } else {
-                        payload.timing_samples.insert(c.metric_id, vec![sample]);
+                        payload.timing_samples.insert(c.meta.id, vec![sample]);
                     }
                 });
+            }
+        }
+    }
+
+    /// Accumulates the samples without notifying GIFFT.
+    pub(crate) fn inner_accumulate_samples(&self, samples: Vec<i64>) {
+        match self {
+            #[allow(unused)]
+            TimingDistributionMetric::Parent {
+                id: id @ MetricId::Id(_),
+                inner,
+                ..
+            } => {
+                // Only record a marker if we are accumulating samples for an
+                // actual metric. Sub-metrics will record their own markers
+                // in their own variant of `accumulate_samples`, so if we
+                // also record a marker, there will be duplicates.
+                #[cfg(feature = "with_gecko")]
+                gecko_profiler::lazy_add_marker!(
+                    "TimingDistribution::accumulate",
+                    TelemetryProfilerCategory,
+                    TimingDistributionMetricMarker::<TimingDistributionMetric>::new(
+                        *id,
+                        None,
+                        None,
+                        Some(TDMPayload::from_samples_signed(&samples)),
+                    )
+                );
+                inner.accumulate_samples(samples)
+            }
+            TimingDistributionMetric::Parent { inner, .. } => inner.accumulate_samples(samples),
+            TimingDistributionMetric::Child(_c) => {
+                // TODO: Instrument this error
+                log::error!("Can't record samples for a timing distribution from a child metric");
+            }
+        }
+    }
+
+    /// Accumulates the single sample without notifying GIFFT.
+    pub(crate) fn inner_accumulate_single_sample(&self, sample: i64) {
+        match self {
+            #[allow(unused)]
+            TimingDistributionMetric::Parent {
+                id: id @ MetricId::Id(_),
+                inner,
+                ..
+            } => {
+                // Only record metric markers, not sub-metric markers. See
+                // `inner_accumulate_samples` for details of why.
+                #[cfg(feature = "with_gecko")]
+                gecko_profiler::lazy_add_marker!(
+                    "TimingDistribution::accumulate",
+                    TelemetryProfilerCategory,
+                    TimingDistributionMetricMarker::<TimingDistributionMetric>::new(
+                        *id,
+                        None,
+                        None,
+                        Some(TDMPayload::Sample(sample)),
+                    )
+                );
+                inner.accumulate_single_sample(sample)
+            }
+            TimingDistributionMetric::Parent { inner, .. } => {
+                inner.accumulate_single_sample(sample)
+            }
+            TimingDistributionMetric::Child(_c) => {
+                // TODO: Instrument this error
+                log::error!("Can't record samples for a timing distribution from a child metric");
             }
         }
     }
@@ -215,9 +438,11 @@ impl TimingDistribution for TimingDistributionMetric {
         let timer_id = self.inner_start();
         #[cfg(feature = "with_gecko")]
         {
-            let metric_id = match self {
-                TimingDistributionMetric::Parent { id, .. } => id,
-                TimingDistributionMetric::Child(c) => &c.metric_id,
+            let metric_id: BaseMetricId = match self {
+                TimingDistributionMetric::Parent { id, .. } => id
+                    .base_metric_id()
+                    .expect("Cannot perform GIFFT calls without a metric id."),
+                TimingDistributionMetric::Child(c) => c.meta.id,
             };
             extern "C" {
                 fn GIFFT_TimingDistributionStart(metric_id: u32, timer_id: u64);
@@ -226,6 +451,29 @@ impl TimingDistribution for TimingDistributionMetric {
             unsafe {
                 GIFFT_TimingDistributionStart(metric_id.0, timer_id.id);
             }
+            // NOTE: we would like to record interval markers, either separate
+            // markers with start/end, or a single marker with both start/end.
+            // This is currently not possible, as the profiler incorrectly
+            // matches separate start/end markers in the frontend, and we do
+            // not have sufficient information to emit one marker when we stop
+            // or cancel a timer.
+            // This is being tracked in the following two bugs:
+            // - Profiler, Bug 1929070,
+            // - Glean, Bug 1931369,
+            // While these bugs are being solved, we record instant markers so
+            // that we still have *some* information.
+            gecko_profiler::lazy_add_marker!(
+                "TimingDistribution::start",
+                TelemetryProfilerCategory,
+                gecko_profiler::MarkerOptions::default()
+                    .with_timing(gecko_profiler::MarkerTiming::instant_now()),
+                TimingDistributionMetricMarker::<TimingDistributionMetric>::new(
+                    metric_id.into(),
+                    None,
+                    Some(timer_id.id),
+                    None
+                )
+            );
         }
         timer_id.into()
     }
@@ -245,17 +493,46 @@ impl TimingDistribution for TimingDistributionMetric {
         self.inner_stop_and_accumulate(id);
         #[cfg(feature = "with_gecko")]
         {
-            let metric_id = match self {
-                TimingDistributionMetric::Parent { id, .. } => id,
-                TimingDistributionMetric::Child(c) => &c.metric_id,
+            let (metric_id, gifft_time_unit) = match self {
+                TimingDistributionMetric::Parent {
+                    id,
+                    gifft_time_unit,
+                    ..
+                } => (
+                    id.base_metric_id()
+                        .expect("Cannot perform GIFFT calls without a metric id."),
+                    gifft_time_unit,
+                ),
+                TimingDistributionMetric::Child(c) => (c.meta.id, &c.gifft_time_unit),
             };
             extern "C" {
-                fn GIFFT_TimingDistributionStopAndAccumulate(metric_id: u32, timer_id: u64);
+                fn GIFFT_TimingDistributionStopAndAccumulate(
+                    metric_id: u32,
+                    timer_id: u64,
+                    unit: i32,
+                );
             }
             // SAFETY: using only primitives, no return value.
             unsafe {
-                GIFFT_TimingDistributionStopAndAccumulate(metric_id.0, id.id);
+                GIFFT_TimingDistributionStopAndAccumulate(
+                    metric_id.0,
+                    id.id,
+                    *gifft_time_unit as i32,
+                );
             }
+            // See note on TimingDistribution::start
+            gecko_profiler::lazy_add_marker!(
+                "TimingDistribution::stop",
+                TelemetryProfilerCategory,
+                gecko_profiler::MarkerOptions::default()
+                    .with_timing(gecko_profiler::MarkerTiming::instant_now()),
+                TimingDistributionMetricMarker::<TimingDistributionMetric>::new(
+                    metric_id.into(),
+                    None,
+                    Some(id.id),
+                    None
+                )
+            );
         }
     }
 
@@ -272,9 +549,11 @@ impl TimingDistribution for TimingDistributionMetric {
         self.inner_cancel(id);
         #[cfg(feature = "with_gecko")]
         {
-            let metric_id = match self {
-                TimingDistributionMetric::Parent { id, .. } => id,
-                TimingDistributionMetric::Child(c) => &c.metric_id,
+            let metric_id: BaseMetricId = match self {
+                TimingDistributionMetric::Parent { id, .. } => id
+                    .base_metric_id()
+                    .expect("Cannot perform GIFFT calls without a metric id."),
+                TimingDistributionMetric::Child(c) => c.meta.id,
             };
             extern "C" {
                 fn GIFFT_TimingDistributionCancel(metric_id: u32, timer_id: u64);
@@ -283,6 +562,19 @@ impl TimingDistribution for TimingDistributionMetric {
             unsafe {
                 GIFFT_TimingDistributionCancel(metric_id.0, id.id);
             }
+            // See note on TimingDistribution::start
+            gecko_profiler::lazy_add_marker!(
+                "TimingDistribution::cancel",
+                TelemetryProfilerCategory,
+                gecko_profiler::MarkerOptions::default()
+                    .with_timing(gecko_profiler::MarkerTiming::instant_now()),
+                TimingDistributionMetricMarker::<TimingDistributionMetric>::new(
+                    metric_id.into(),
+                    None,
+                    Some(id.id),
+                    None
+                )
+            );
         }
     }
 
@@ -308,15 +600,39 @@ impl TimingDistribution for TimingDistributionMetric {
     /// for each of them. Reports an [`ErrorType::InvalidOverflow`] error for samples that
     /// are longer than `MAX_SAMPLE_TIME`.
     pub fn accumulate_samples(&self, samples: Vec<i64>) {
-        match self {
-            TimingDistributionMetric::Parent { id: _id, inner } => {
-                inner.accumulate_samples(samples)
+        #[cfg(feature = "with_gecko")]
+        {
+            let gifft_samples = samples
+                .iter()
+                .filter(|&&i| i >= 0)
+                .map(|&i| {
+                    i.try_into().unwrap_or_else(|_| {
+                        // TODO: Instrument this error
+                        log::warn!(
+                            "Samples larger than fits into 32-bytes. Saturating at u32::MAX."
+                        );
+                        u32::MAX
+                    })
+                })
+                .collect();
+            let metric_id = match self {
+                TimingDistributionMetric::Parent { id, .. } => id
+                    .base_metric_id()
+                    .expect("Cannot perform GIFFT calls without a metric id."),
+                TimingDistributionMetric::Child(c) => c.meta.id,
+            };
+            extern "C" {
+                fn GIFFT_TimingDistributionAccumulateRawSamples(
+                    metric_id: u32,
+                    samples: &ThinVec<u32>,
+                );
             }
-            TimingDistributionMetric::Child(_c) => {
-                // TODO: Instrument this error
-                log::error!("Can't record samples for a timing distribution from a child metric");
+            // SAFETY: No one uses the ThinVec after lending it to C++, no return value.
+            unsafe {
+                GIFFT_TimingDistributionAccumulateRawSamples(metric_id.0, &gifft_samples);
             }
         }
+        self.inner_accumulate_samples(samples);
     }
 
     /// Accumulates the provided samples in the metric.
@@ -329,9 +645,30 @@ impl TimingDistribution for TimingDistributionMetric {
     ///
     /// Reports an [`ErrorType::InvalidOverflow`] error for samples that
     /// are longer than `MAX_SAMPLE_TIME`.
-    pub fn accumulate_raw_samples_nanos(&self, samples: Vec<u64>) {
+    pub(crate) fn accumulate_raw_samples_nanos(&self, samples: Vec<u64>) {
         match self {
-            TimingDistributionMetric::Parent { id: _id, inner } => {
+            #[allow(unused)]
+            TimingDistributionMetric::Parent {
+                id: id @ MetricId::Id(_),
+                inner,
+                ..
+            } => {
+                // Only record metric markers, not sub-metric markers. See
+                // `inner_accumulate_samples` for details of why.
+                #[cfg(feature = "with_gecko")]
+                gecko_profiler::lazy_add_marker!(
+                    "TimingDistribution::accumulate",
+                    TelemetryProfilerCategory,
+                    TimingDistributionMetricMarker::<TimingDistributionMetric>::new(
+                        *id,
+                        None,
+                        None,
+                        Some(TDMPayload::from_samples_unsigned(&samples)),
+                    )
+                );
+                inner.accumulate_raw_samples_nanos(samples)
+            }
+            TimingDistributionMetric::Parent { inner, .. } => {
                 inner.accumulate_raw_samples_nanos(samples)
             }
             TimingDistributionMetric::Child(_c) => {
@@ -342,13 +679,26 @@ impl TimingDistribution for TimingDistributionMetric {
     }
 
     pub fn accumulate_single_sample(&self, sample: i64) {
-        match self {
-            TimingDistributionMetric::Parent { id: _id, inner } => {
-                inner.accumulate_single_sample(sample)
-            }
-            TimingDistributionMetric::Child(_c) => {
+        self.inner_accumulate_single_sample(sample);
+        #[cfg(feature = "with_gecko")]
+        {
+            let metric_id = match self {
+                TimingDistributionMetric::Parent { id, .. } => id
+                    .base_metric_id()
+                    .expect("Cannot perform GIFFT calls without a metric id."),
+                TimingDistributionMetric::Child(c) => c.meta.id,
+            };
+            let sample = sample.try_into().unwrap_or_else(|_| {
                 // TODO: Instrument this error
-                log::error!("Can't record samples for a timing distribution from a child metric");
+                log::warn!("Sample larger than fits into 32-bytes. Saturating at u32::MAX.");
+                u32::MAX
+            });
+            extern "C" {
+                fn GIFFT_TimingDistributionAccumulateRawSample(metric_id: u32, sample: u32);
+            }
+            // SAFETY: using only primitives, no return value.
+            unsafe {
+                GIFFT_TimingDistributionAccumulateRawSample(metric_id.0, sample);
             }
         }
     }
@@ -370,47 +720,44 @@ impl TimingDistribution for TimingDistributionMetric {
         self.inner_accumulate_raw_duration(duration);
         #[cfg(feature = "with_gecko")]
         {
-            let sample_ms = duration.as_millis().try_into().unwrap_or_else(|_| {
+            let (metric_id, gifft_time_unit) = match self {
+                TimingDistributionMetric::Parent {
+                    id,
+                    gifft_time_unit,
+                    ..
+                } => (
+                    id.base_metric_id()
+                        .expect("Cannot perform GIFFT calls without a metric id."),
+                    gifft_time_unit,
+                ),
+                TimingDistributionMetric::Child(c) => (c.meta.id, &c.gifft_time_unit),
+            };
+            let sample = gifft_time_unit.duration_convert(duration);
+            let sample = sample.try_into().unwrap_or_else(|_| {
                 // TODO: Instrument this error
                 log::warn!(
-                    "Elapsed milliseconds larger than fits into 32-bytes. Saturating at u32::MAX."
+                    "Elapsed duration larger than fits into 32-bytes. Saturating at u32::MAX."
                 );
                 u32::MAX
             });
-            let metric_id = match self {
-                TimingDistributionMetric::Parent { id, .. } => id,
-                TimingDistributionMetric::Child(c) => &c.metric_id,
-            };
             extern "C" {
-                fn GIFFT_TimingDistributionAccumulateRawMillis(metric_id: u32, sample: u32);
+                fn GIFFT_TimingDistributionAccumulateRawSample(metric_id: u32, sample: u32);
             }
             // SAFETY: using only primitives, no return value.
             unsafe {
-                GIFFT_TimingDistributionAccumulateRawMillis(metric_id.0, sample_ms);
+                GIFFT_TimingDistributionAccumulateRawSample(metric_id.0, sample);
             }
-        }
-    }
 
-    /// **Exported for test purposes.**
-    ///
-    /// Gets the currently stored value of the metric.
-    ///
-    /// This doesn't clear the stored value.
-    ///
-    /// # Arguments
-    ///
-    /// * `ping_name` - represents the optional name of the ping to retrieve the
-    ///   metric for. Defaults to the first value in `send_in_pings`.
-    pub fn test_get_value<'a, S: Into<Option<&'a str>>>(
-        &self,
-        ping_name: S,
-    ) -> Option<DistributionData> {
-        let ping_name = ping_name.into().map(|s| s.to_string());
-        match self {
-            TimingDistributionMetric::Parent { inner, .. } => inner.test_get_value(ping_name),
-            TimingDistributionMetric::Child(c) => {
-                panic!("Cannot get test value for {:?} in non-parent process!", c)
-            }
+            gecko_profiler::lazy_add_marker!(
+                "TimingDistribution::accumulate",
+                TelemetryProfilerCategory,
+                TimingDistributionMetricMarker::<TimingDistributionMetric>::new(
+                    metric_id.into(),
+                    None,
+                    None,
+                    Some(TDMPayload::Duration(duration)),
+                )
+            );
         }
     }
 
@@ -440,6 +787,39 @@ impl TimingDistribution for TimingDistributionMetric {
     }
 }
 
+#[inherent]
+impl glean::TestGetValue for TimingDistributionMetric {
+    type Output = DistributionData;
+
+    /// **Exported for test purposes.**
+    ///
+    /// Gets the currently stored value of the metric.
+    ///
+    /// This doesn't clear the stored value.
+    ///
+    /// # Arguments
+    ///
+    /// * `ping_name` - represents the optional name of the ping to retrieve the
+    ///   metric for. Defaults to the first value in `send_in_pings`.
+    pub fn test_get_value(&self, ping_name: Option<String>) -> Option<DistributionData> {
+        match self {
+            TimingDistributionMetric::Parent { inner, .. } => inner.test_get_value(ping_name),
+            TimingDistributionMetric::Child(c) => {
+                panic!("Cannot get test value for {:?} in non-parent process!", c)
+            }
+        }
+    }
+}
+
+impl MetricNamer for TimingDistributionMetric {
+    fn get_metadata(&self) -> super::MetricMetadata {
+        crate::private::MetricMetadata::from_triple(match self {
+            TimingDistributionMetric::Parent { inner, .. } => inner.get_identifiers(),
+            TimingDistributionMetric::Child(tdmi) => tdmi.meta.get_identifiers(),
+        })
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::{common_test::*, ipc, metrics};
@@ -457,7 +837,9 @@ mod test {
         metric.cancel(id);
 
         // We can't inspect the values yet.
-        assert!(metric.test_get_value("store1").is_none());
+        assert!(metric
+            .test_get_value(Some("test-ping".to_string()))
+            .is_none());
     }
 
     #[test]
@@ -489,7 +871,7 @@ mod test {
         assert!(ipc::replay_from_buf(&buf).is_ok());
 
         let data = parent_metric
-            .test_get_value("store1")
+            .test_get_value(Some("test-ping".to_string()))
             .expect("should have some data");
 
         // No guarantees from timers means no guarantees on buckets.

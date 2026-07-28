@@ -6,10 +6,11 @@ task-defaults:
     suite: awsy
     max-run-time: 7200
     instance-size: xlarge-noscratch
-    virtualization:
+    worker-type:
         by-test-platform:
-            windows.*(?:-shippable)?-qr/.*: virtual-with-gpu
-            default: virtual
+            windows.*/.*: win11-64-25h2
+            default: default
+    virtualization: virtual
     allow-software-gl-layers: false
     mozharness:
         script: awsy_script.py
@@ -29,6 +30,9 @@ awsy:
     description: Are we slim yet - tp5 pageset
     treeherder-symbol: SY(sy)
     run-on-projects: []
+    mozharness:
+        extra-options:
+            - --tp5
 
 awsy-tp6:
     description: Are we slim yet - tp6 pageset
@@ -36,12 +40,10 @@ awsy-tp6:
     run-on-projects:
         by-test-platform:
             .*-devedition/.*: []  # don't run on devedition
-            windows.*-32.*/opt: []
-            (linux|windows|mac)(?!.*shippable).*/opt: []
+            linux(?!.*shippable).*/opt: []
+            windows(?!.*shippable).*/opt: []
+            mac(?!.*shippable).*/opt: []
             default: [trunk]
-    mozharness:
-        extra-options:
-            - --tp6
 
 awsy-dmd:
     description: Are we slim yet - dmd enabled
@@ -57,8 +59,9 @@ awsy-base:
     run-on-projects:
         by-test-platform:
             .*-devedition/.*: []  # don't run on devedition.
-            windows.*-32.*/opt: []
-            (linux|windows|mac)(?!.*shippable).*/opt: []
+            linux(?!.*shippable).*/opt: []
+            windows(?!.*shippable).*/opt: []
+            mac(?!.*shippable).*/opt: []
             default: [trunk]
     tier: default
     mozharness:

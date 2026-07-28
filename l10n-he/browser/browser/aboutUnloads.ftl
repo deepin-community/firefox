@@ -6,6 +6,16 @@
 ### Strings used in about:unloads, allowing users to manage the "tab unloading"
 ### feature.
 
+about-unloads-page-title = פריקה של לשוניות
+# The link points to a Firefox documentation page, only available in English,
+# with title "Tab Unloading"
+about-unloads-learn-more =
+    ניתן לעיין ב<a data-l10n-name="doc-link">פריקה של לשוניות</a> כדי ללמוד יותר על
+    היכולת והעמוד הזה.
+about-unloads-last-updated = עדכון אחרון: { DATETIME($date, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: "false") }
+about-unloads-button-unload = פריקה
+    .title = פריקת לשונית עם העדיפות הגבוהה ביותר
+about-unloads-no-unloadable-tab = אין לשוניות שניתן לפרוק.
 about-unloads-column-priority = עדיפות
 about-unloads-column-host = מארח
 about-unloads-column-last-accessed = גישה אחרונה
@@ -17,7 +27,6 @@ about-unloads-column-memory = זיכרון
     .title = הערכת ניצול הזיכרון של הלשונית
 about-unloads-column-processes = מזהי תהליכים
     .title = מספרי הזיהוי של התהליכים שמאחסנים את תוכן הלשונית
-
 about-unloads-last-accessed = { DATETIME($date, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: "false") }
 about-unloads-memory-in-mb = { NUMBER($mem, maxFractionalUnits: 2) } מ״ב
 about-unloads-memory-in-mb-tooltip =

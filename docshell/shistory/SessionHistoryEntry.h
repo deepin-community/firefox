@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,8 @@
 #include "mozilla/dom/DocumentBinding.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/UniquePtr.h"
+#include "mozilla/dom/NavigationBinding.h"
+#include "nsIInputStream.h"
 #include "nsILayoutHistoryState.h"
 #include "nsISHEntry.h"
 #include "nsSHEntryShared.h"
@@ -24,9 +24,9 @@ class nsIReferrerInfo;
 class nsISHistory;
 class nsIURI;
 
-namespace mozilla::ipc {
+namespace IPC {
 template <typename P>
-struct IPDLParamTraits;
+struct ParamTraits;
 }
 
 namespace mozilla {
@@ -47,17 +47,18 @@ class SessionHistoryInfo {
   SessionHistoryInfo(nsIURI* aURI, nsIPrincipal* aTriggeringPrincipal,
                      nsIPrincipal* aPrincipalToInherit,
                      nsIPrincipal* aPartitionedPrincipalToInherit,
-                     nsIContentSecurityPolicy* aCsp,
+                     nsIPolicyContainer* aPolicyContainer,
                      const nsACString& aContentType);
   SessionHistoryInfo(nsIChannel* aChannel, uint32_t aLoadType,
                      nsIPrincipal* aPartitionedPrincipalToInherit,
-                     nsIContentSecurityPolicy* aCsp);
+                     nsIPolicyContainer* aPolicyContainer);
 
   void Reset(nsIURI* aURI, const nsID& aDocShellID, bool aDynamicCreation,
              nsIPrincipal* aTriggeringPrincipal,
              nsIPrincipal* aPrincipalToInherit,
              nsIPrincipal* aPartitionedPrincipalToInherit,
-             nsIContentSecurityPolicy* aCsp, const nsACString& aContentType);
+             nsIPolicyContainer* aPolicyContainer,
+             const nsACString& aContentType);
 
   bool operator==(const SessionHistoryInfo& aInfo) const {
     return false;  // FIXME
@@ -141,8 +142,9 @@ class SessionHistoryInfo {
   nsIPrincipal* GetPrincipalToInherit() const;
 
   nsIPrincipal* GetPartitionedPrincipalToInherit() const;
+  void SetPartitionedPrincipalToInherit(nsIPrincipal* aPrincipal);
 
-  nsIContentSecurityPolicy* GetCsp() const;
+  nsIPolicyContainer* GetPolicyContainer() const;
 
   uint32_t GetCacheKey() const;
   void SetCacheKey(uint32_t aCacheKey);
@@ -159,11 +161,21 @@ class SessionHistoryInfo {
 
   void SetSaveLayoutStateFlag(bool aSaveLayoutStateFlag);
 
-  bool GetPersist() const { return mPersist; }
+  bool IsTransient() const { return mTransient; }
+  void SetTransient() { mTransient = true; }
+
+  nsID& NavigationKey() { return mNavigationKey; }
+  const nsID& NavigationKey() const { return mNavigationKey; }
+  const nsID& NavigationId() const { return mNavigationId; }
+
+  nsIStructuredCloneContainer* GetNavigationAPIState() const;
+  void SetNavigationAPIState(nsIStructuredCloneContainer* aState);
+
+  already_AddRefed<nsIURI> GetURIOrInheritedForAboutBlank() const;
 
  private:
   friend class SessionHistoryEntry;
-  friend struct mozilla::ipc::IPDLParamTraits<SessionHistoryInfo>;
+  friend struct IPC::ParamTraits<SessionHistoryInfo>;
 
   void MaybeUpdateTitleFromURI();
 
@@ -182,10 +194,16 @@ class SessionHistoryInfo {
   Maybe<nsString> mSrcdocData;
   nsCOMPtr<nsIURI> mBaseURI;
 
+  // Fields needed for NavigationHistoryEntry.
+  nsID mNavigationKey = nsID::GenerateUUID();
+  nsID mNavigationId = nsID::GenerateUUID();
+  // https://html.spec.whatwg.org/#she-navigation-api-state
+  RefPtr<nsStructuredCloneContainer> mNavigationAPIState;
+
   bool mLoadReplace = false;
   bool mURIWasModified = false;
   bool mScrollRestorationIsManual = false;
-  bool mPersist = true;
+  bool mTransient = false;
   bool mHasUserInteraction = false;
   bool mHasUserActivation = false;
 
@@ -206,7 +224,7 @@ class SessionHistoryInfo {
     static SharedState Create(nsIPrincipal* aTriggeringPrincipal,
                               nsIPrincipal* aPrincipalToInherit,
                               nsIPrincipal* aPartitionedPrincipalToInherit,
-                              nsIContentSecurityPolicy* aCsp,
+                              nsIPolicyContainer* aPolicyContainer,
                               const nsACString& aContentType);
 
    private:
@@ -228,6 +246,36 @@ class SessionHistoryInfo {
   SharedState mSharedState;
 };
 
+// This is basically a thin type for a Maybe<Maybe<SessionHistoryInfo>>, where
+// the outer maybe implies there not being a previous entry, and the inner Maybe
+// implies that there is a previous entry, but it's cross origin.
+class PreviousSessionHistoryInfo {
+ public:
+  PreviousSessionHistoryInfo() = default;
+  PreviousSessionHistoryInfo(const PreviousSessionHistoryInfo&) = default;
+  PreviousSessionHistoryInfo(PreviousSessionHistoryInfo&&) = default;
+  PreviousSessionHistoryInfo& operator=(const PreviousSessionHistoryInfo&) =
+      default;
+  PreviousSessionHistoryInfo& operator=(PreviousSessionHistoryInfo&&) = default;
+
+  explicit PreviousSessionHistoryInfo(
+      const SessionHistoryInfo& aSessionHistoryInfo)
+      : mSameOriginSessionHistoryInfo(Some(aSessionHistoryInfo)) {}
+
+  explicit PreviousSessionHistoryInfo(
+      const Maybe<SessionHistoryInfo>& aSessionHistoryInfo)
+      : mSameOriginSessionHistoryInfo(aSessionHistoryInfo) {}
+
+  // Prepare a session history info that is validated to be a previous entry for
+  // a Navigation API navigation.
+  static Maybe<PreviousSessionHistoryInfo> CreateValidatedPreviousEntry(
+      const SessionHistoryInfo& aCurrentEntry,
+      const Maybe<SessionHistoryInfo>& aPreviousEntryForActivation,
+      Maybe<NavigationType> aNavigationType);
+
+  Maybe<SessionHistoryInfo> mSameOriginSessionHistoryInfo;
+};
+
 struct LoadingSessionHistoryInfo {
   LoadingSessionHistoryInfo() = default;
   explicit LoadingSessionHistoryInfo(SessionHistoryEntry* aEntry);
@@ -240,6 +288,14 @@ struct LoadingSessionHistoryInfo {
   already_AddRefed<nsDocShellLoadState> CreateLoadInfo() const;
 
   SessionHistoryInfo mInfo;
+
+  // The same origin (to mInfo) preceeding entries.
+  CopyableTArray<SessionHistoryInfo> mContiguousEntries;
+
+  // The entry that triggered the navigation to this entry.
+  Maybe<PreviousSessionHistoryInfo> mPreviousEntry;
+  // The type of navigation which triggered this load.
+  Maybe<NavigationType> mTriggeringNavigationType;
 
   uint64_t mLoadId = 0;
 
@@ -353,12 +409,8 @@ class HistoryEntryCounterForBrowsingContext {
 // SessionHistoryEntry is used to store session history data in the parent
 // process. It holds a SessionHistoryInfo, some state shared amongst multiple
 // SessionHistoryEntries, a parent and children.
-#define NS_SESSIONHISTORYENTRY_IID                   \
-  {                                                  \
-    0x5b66a244, 0x8cec, 0x4caa, {                    \
-      0xaa, 0x0a, 0x78, 0x92, 0xfd, 0x17, 0xa6, 0x67 \
-    }                                                \
-  }
+#define NS_SESSIONHISTORYENTRY_IID \
+  {0x5b66a244, 0x8cec, 0x4caa, {0xaa, 0x0a, 0x78, 0x92, 0xfd, 0x17, 0xa6, 0x67}}
 
 class SessionHistoryEntry : public nsISHEntry, public nsSupportsWeakReference {
  public:
@@ -369,11 +421,13 @@ class SessionHistoryEntry : public nsISHEntry, public nsSupportsWeakReference {
 
   NS_DECL_ISUPPORTS
   NS_DECL_NSISHENTRY
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_SESSIONHISTORYENTRY_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_SESSIONHISTORYENTRY_IID)
+
+  using nsISHEntry::IsTransient;
 
   bool IsInSessionHistory() {
     SessionHistoryEntry* entry = this;
-    while (nsCOMPtr<SessionHistoryEntry> parent =
+    while (RefPtr<SessionHistoryEntry> parent =
                do_QueryReferent(entry->mParent)) {
       entry = parent;
     }
@@ -397,6 +451,12 @@ class SessionHistoryEntry : public nsISHEntry, public nsSupportsWeakReference {
   // aNewChild and returns true. If there is no child with the same docshell ID
   // then it returns false.
   bool ReplaceChild(SessionHistoryEntry* aNewChild);
+  void GetChildAt(int32_t aIndex, SessionHistoryEntry** aChild);
+
+  SessionHistoryEntry* GetChildSHEntryIfHasNoDynamicallyAddedChild(
+      int32_t aChildOffset);
+
+  already_AddRefed<SessionHistoryEntry> GetParent();
 
   void SetInfo(SessionHistoryInfo* aInfo);
 
@@ -438,6 +498,17 @@ class SessionHistoryEntry : public nsISHEntry, public nsSupportsWeakReference {
 
   const nsTArray<RefPtr<SessionHistoryEntry>>& Children() { return mChildren; }
 
+  already_AddRefed<nsIURI> GetURIOrInheritedForAboutBlank() const;
+
+  void SetNavigationAPIState(nsIStructuredCloneContainer* aState) {
+    mInfo->SetNavigationAPIState(aState);
+  }
+
+  // Get the session history this entry belongs to. Unlike
+  // nsISHEntry::GetShistory this will return a value, if it's in session
+  // history, even if this isn't the root node.
+  already_AddRefed<nsSHistory> GetSessionHistory();
+
  private:
   friend struct LoadingSessionHistoryInfo;
   virtual ~SessionHistoryEntry();
@@ -455,53 +526,56 @@ class SessionHistoryEntry : public nsISHEntry, public nsSupportsWeakReference {
   static nsTHashMap<nsUint64HashKey, LoadingEntry>* sLoadIdToEntry;
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(SessionHistoryEntry, NS_SESSIONHISTORYENTRY_IID)
-
 }  // namespace dom
+}  // namespace mozilla
 
-namespace ipc {
-
-class IProtocol;
+namespace IPC {
 
 // Allow sending SessionHistoryInfo objects over IPC.
 template <>
-struct IPDLParamTraits<dom::SessionHistoryInfo> {
-  static void Write(IPC::MessageWriter* aWriter, IProtocol* aActor,
-                    const dom::SessionHistoryInfo& aParam);
-  static bool Read(IPC::MessageReader* aReader, IProtocol* aActor,
-                   dom::SessionHistoryInfo* aResult);
+struct ParamTraits<mozilla::dom::SessionHistoryInfo> {
+  static void Write(IPC::MessageWriter* aWriter,
+                    const mozilla::dom::SessionHistoryInfo& aParam);
+  static bool Read(IPC::MessageReader* aReader,
+                   mozilla::dom::SessionHistoryInfo* aResult);
+};
+
+// Allow sending PreviousSessionHistoryInfo objects over IPC.
+template <>
+struct ParamTraits<mozilla::dom::PreviousSessionHistoryInfo> {
+  static void Write(IPC::MessageWriter* aWriter,
+                    const mozilla::dom::PreviousSessionHistoryInfo& aParam);
+  static bool Read(IPC::MessageReader* aReader,
+                   mozilla::dom::PreviousSessionHistoryInfo* aResult);
 };
 
 // Allow sending LoadingSessionHistoryInfo objects over IPC.
 template <>
-struct IPDLParamTraits<dom::LoadingSessionHistoryInfo> {
-  static void Write(IPC::MessageWriter* aWriter, IProtocol* aActor,
-                    const dom::LoadingSessionHistoryInfo& aParam);
-  static bool Read(IPC::MessageReader* aReader, IProtocol* aActor,
-                   dom::LoadingSessionHistoryInfo* aResult);
+struct ParamTraits<mozilla::dom::LoadingSessionHistoryInfo> {
+  static void Write(IPC::MessageWriter* aWriter,
+                    const mozilla::dom::LoadingSessionHistoryInfo& aParam);
+  static bool Read(IPC::MessageReader* aReader,
+                   mozilla::dom::LoadingSessionHistoryInfo* aResult);
 };
 
 // Allow sending nsILayoutHistoryState objects over IPC.
 template <>
-struct IPDLParamTraits<nsILayoutHistoryState*> {
-  static void Write(IPC::MessageWriter* aWriter, IProtocol* aActor,
-                    nsILayoutHistoryState* aParam);
-  static bool Read(IPC::MessageReader* aReader, IProtocol* aActor,
+struct ParamTraits<nsILayoutHistoryState*> {
+  static void Write(IPC::MessageWriter* aWriter, nsILayoutHistoryState* aParam);
+  static bool Read(IPC::MessageReader* aReader,
                    RefPtr<nsILayoutHistoryState>* aResult);
 };
 
-// Allow sending dom::Wireframe objects over IPC.
+// Allow sending mozilla::dom::Wireframe objects over IPC.
 template <>
-struct IPDLParamTraits<mozilla::dom::Wireframe> {
-  static void Write(IPC::MessageWriter* aWriter, IProtocol* aActor,
+struct ParamTraits<mozilla::dom::Wireframe> {
+  static void Write(IPC::MessageWriter* aWriter,
                     const mozilla::dom::Wireframe& aParam);
-  static bool Read(IPC::MessageReader* aReader, IProtocol* aActor,
+  static bool Read(IPC::MessageReader* aReader,
                    mozilla::dom::Wireframe* aResult);
 };
 
-}  // namespace ipc
-
-}  // namespace mozilla
+}  // namespace IPC
 
 inline nsISupports* ToSupports(mozilla::dom::SessionHistoryEntry* aEntry) {
   return static_cast<nsISHEntry*>(aEntry);

@@ -12,14 +12,16 @@ const { IconDetails, StartupCache } = ExtensionParent;
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
-const lazy = {};
+const lazy = XPCOMUtils.declareLazy({
+  MV2_ACTION_POPURL_RESTRICTED: {
+    pref: "extensions.manifestV2.actionsPopupURLRestricted",
+    default: false,
+  },
+});
 
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
-  "MV2_ACTION_POPURL_RESTRICTED",
-  "extensions.manifestV2.actionsPopupURLRestricted",
-  false
-);
+const PERSONAL_TOOLBAR_VISIBILITY_PREF =
+  "browser.toolbars.bookmarks.visibility";
+const VERTICAL_TABS_PREF = "sidebar.verticalTabs";
 
 function parseColor(color, kind) {
   if (typeof color == "string") {
@@ -31,6 +33,8 @@ function parseColor(color, kind) {
   }
   return color;
 }
+
+const activePanelActions = new Set();
 
 /** Common base class for Page and Browser actions. */
 class PanelActionBase {
@@ -59,9 +63,12 @@ class PanelActionBase {
     // the preloaded popup. If we don't end up opening we need to clear this
     // permission when clearing the popup.
     this.activeTabForPreload = null;
+
+    activePanelActions.add(this);
   }
 
   onShutdown() {
+    activePanelActions.delete(this);
     this.tabContext.shutdown();
   }
 
@@ -252,6 +259,25 @@ class PanelActionBase {
     return popupUrl;
   }
 
+  /**
+   * Check whether any panel instance is blocking openPopup().
+   *
+   * @param {ChromeWindow} window
+   *        The browser window for which openPopup() is called.
+   * @throws {ExtensionError} If the openPopup() call should be rejected.
+   */
+  throwIfOpenPopupIsBlockedByAnyAction(window) {
+    for (const action of activePanelActions) {
+      if (action.isPanelShownBlockingOpenPopup(window)) {
+        // This message is intentionally generic, in case we also want to throw
+        // this error if non-extension panels are open.
+        throw new ExtensionError(
+          "openPopup() cannot be called while another panel is open"
+        );
+      }
+    }
+  }
+
   api(context) {
     let { extension } = context;
     return {
@@ -380,6 +406,17 @@ class PanelActionBase {
    */
   isShownForTab(_tab) {
     return false;
+  }
+
+  /**
+   * Check whether the panel is showing (blocking openPopup()).
+   *
+   * @param {ChromeWindow} _window
+   *        The browser window for which openPopup() is called.
+   * @throws {ExtensionError} If the openPopup() call should be rejected.
+   */
+  isPanelShownBlockingOpenPopup(_window) {
+    throw new Error("Not implemented.");
   }
 }
 
@@ -512,6 +549,20 @@ export class BrowserActionBase extends PanelActionBase {
       options.default_area ||
       "menupanel";
 
+    // When the personal toolbar (bookmarks) is never visible OR vertical tabs
+    // are enabled, we want to place the extension action (widget) in the panel
+    // and not in one of these areas, otherwise it would be invisible to the
+    // user.
+    if (
+      (default_area === "tabstrip" &&
+        Services.prefs.getBoolPref(VERTICAL_TABS_PREF)) ||
+      (default_area === "personaltoolbar" &&
+        Services.prefs.getStringPref(PERSONAL_TOOLBAR_VISIBILITY_PREF) ===
+          "never")
+    ) {
+      default_area = "menupanel";
+    }
+
     this.defaults = {
       ...this.defaults,
       badgeText: "",
@@ -528,7 +579,13 @@ export class BrowserActionBase extends PanelActionBase {
     extension.on("remove-permissions", () => this.updateOnChange());
     // eslint-disable-next-line mozilla/balanced-listeners
     extension.on("update-ignore-quarantine", () => this.updateOnChange());
+    // eslint-disable-next-line mozilla/balanced-listeners
+    extension.on("update-blocklist-state", () => this.updateOnChange());
   }
+
+  // action.openPopup() only supports focused windows (bug 2011516).
+  static ERROR_WIN_NOT_FOCUSED =
+    "Cannot show popup for an inactive window, only for the currently focused window.";
 
   async loadIconData() {
     const { extension } = this;
@@ -635,7 +692,10 @@ export class BrowserActionBase extends PanelActionBase {
       enable: (...args) => this.enable(...args),
       disable: (...args) => this.disable(...args),
       isEnabled: details => {
-        return this.getPropertyFromDetails(details, "enabled");
+        if (typeof details == "number") {
+          details = { tabId: details };
+        }
+        return this.getPropertyFromDetails(details ?? {}, "enabled");
       },
       setBadgeText: details => {
         this.setPropertyFromDetails(details, "badgeText", details.text);

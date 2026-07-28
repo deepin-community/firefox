@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,18 +15,13 @@
 namespace mozilla::dom {
 
 /**
- * When privacy.resistFingerprinting.randomDataOnCanvasExtract is true, tries
- * to generate random data for placeholder canvas by sampling
- * RANDOM_BYTES_TO_SAMPLE bytes and then returning it. If this fails or if
- * privacy.resistFingerprinting.randomDataOnCanvasExtract is false, returns
- * nullptr.
+ * This function tries to generate random data for placeholder canvas by
+ * sampling RANDOM_BYTES_TO_SAMPLE bytes and then returning it. If it fails,
+ * returns nullptr.
  *
  * @return uint8_t*  output buffer
  */
 inline uint8_t* TryToGenerateRandomDataForPlaceholderCanvasData() {
-  if (!StaticPrefs::privacy_resistFingerprinting_randomDataOnCanvasExtract()) {
-    return nullptr;
-  }
   nsresult rv;
   nsCOMPtr<nsIRandomGenerator> rg =
       do_GetService("@mozilla.org/security/random-generator;1", &rv);

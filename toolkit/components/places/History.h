@@ -1,13 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef mozilla_places_History_h_
 #define mozilla_places_History_h_
-
-#include <utility>
 
 #include "Database.h"
 #include "mozIAsyncHistory.h"
@@ -28,7 +24,6 @@
 namespace mozilla::places {
 
 struct VisitData;
-class ConcurrentStatementsHolder;
 class VisitedQuery;
 
 // Initial size of mRecentlyVisitedURIs.
@@ -64,7 +59,7 @@ class History final : public BaseHistory,
 
   History();
 
-  nsresult QueueVisitedStatement(RefPtr<VisitedQuery>);
+  nsresult QueueVisitedStatement(RefPtr<VisitedQuery>&&);
 
   /**
    * Adds an entry in moz_places with the data in aVisitData.
@@ -161,8 +156,6 @@ class History final : public BaseHistory,
    * invoke GetDBConn() before.
    */
   RefPtr<mozilla::places::Database> mDB;
-
-  RefPtr<ConcurrentStatementsHolder> mConcurrentStatementsHolder;
 
   /**
    * Remove any memory references to tasks and do not take on any more.

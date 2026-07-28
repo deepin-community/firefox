@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,6 @@
 
 #include <algorithm>  // for std::stable_sort
 #include "mozilla/Assertions.h"
-#include "mozilla/FloatingPoint.h"
 #include "AsyncPanZoomController.h"
 
 namespace mozilla {
@@ -18,22 +15,6 @@ OverscrollHandoffChain::~OverscrollHandoffChain() = default;
 
 void OverscrollHandoffChain::Add(AsyncPanZoomController* aApzc) {
   mChain.push_back(aApzc);
-}
-
-struct CompareByScrollPriority {
-  bool operator()(const RefPtr<AsyncPanZoomController>& a,
-                  const RefPtr<AsyncPanZoomController>& b) const {
-    return a->HasScrollgrab() && !b->HasScrollgrab();
-  }
-};
-
-void OverscrollHandoffChain::SortByScrollPriority() {
-  // The sorting being stable ensures that the relative order between
-  // non-scrollgrabbing APZCs remains child -> parent.
-  // (The relative order between scrollgrabbing APZCs will also remain
-  // child -> parent, though that's just an artefact of the implementation
-  // and users of 'scrollgrab' should not rely on this.)
-  std::stable_sort(mChain.begin(), mChain.end(), CompareByScrollPriority());
 }
 
 const RefPtr<AsyncPanZoomController>& OverscrollHandoffChain::GetApzcAtIndex(
@@ -231,10 +212,10 @@ bool OverscrollHandoffChain::ScrollingUpWillTriggerPullToRefresh(
 
   for (uint32_t i = IndexOf(aApzc); i < Length(); i++) {
     if (mChain[i]->IsRootContent()) {
-      return mChain[i]->CanOverscrollUpwards();
+      return mChain[i]->CanOverscrollUpwards(HandoffConsumer::PullToRefresh);
     }
 
-    if (!mChain[i]->CanOverscrollUpwards()) {
+    if (!mChain[i]->CanOverscrollUpwards(HandoffConsumer::PullToRefresh)) {
       return false;
     }
   }

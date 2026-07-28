@@ -15,6 +15,10 @@ support-addons-type = ਕਿਸਮ
 support-addons-enabled = ਸਮਰੱਥ ਹੈ
 support-addons-version = ਵਰਜ਼ਨ
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = ਟਿਕਾਣਾ
 legacy-user-stylesheets-title = ਪੁਰਾਣੀਆਂ ਵਰਤੋਂਕਾਰ ਸਟਾਈਲਸ਼ੀਟਾਂ
 legacy-user-stylesheets-enabled = ਸਰਗਰਮ
 legacy-user-stylesheets-stylesheet-types = ਸਟਾਈਲਸ਼ੀਟਾਂ
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = ਕਾਰਗੁਜ਼ਾਰੀ (%)
 place-database-stats-sequentiality-perc = ਲੜੀ (%)
 place-database-integrity = ਇਕਸਾਰਤਾ
 place-database-verify-integrity = ਇਕਸਾਰਤਾ ਨੂੰ ਤਸਦੀਕ ਕਰੋ
+place-database-last-idle-maintenance-data = ਆਖਰੀ ਸਥਿਰ ਦੇਖਭਾਲ ਦੀ ਤਾਰੀਖ
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = ਆਖਰੀ ਸਫ਼ਾਈ ਦੀ ਤਾਰੀਖ
+place-database-last-integrity-corruption-date = ਆਖਰੀ ਇਕਸਾਰਤਾ ਖ਼ਰਾਬ ਦੀ ਤਾਰੀਖ
 a11y-title = ਅਸੈਸਬਿਲਟੀ
 a11y-activated = ਸਰਗਰਮ ਹੈ
 a11y-force-disabled = ਅਸੈਸਬਿਲਟੀ ਰੋਕੋ
@@ -181,6 +189,8 @@ media-capabilities-enumerate = ਡਾਟਾਬੇਸ ਦੇ ਇੰਦਰਾਜ਼�
 
 media-codec-support-sw-decoding = ਸਾਫ਼ਟਵੇਅਰ ਡਿਕੋਡਿੰਗ
 media-codec-support-hw-decoding = ਹਾਰਡਵੇਅਰ ਡਿਕੋਡਿੰਗ
+media-codec-support-sw-encoding = ਸਾਫ਼ਟਵੇਅਰ ਇਨਕੋਡਿੰਗ
+media-codec-support-hw-encoding = ਹਾਰਡਵੇਅਰ ਇਨਕੋਡਿੰਗ
 media-codec-support-codec-name = Codec ਦਾ ਨਾਂ
 media-codec-support-supported = ਸਹਿਯੋਗੀ
 media-codec-support-unsupported = ਗ਼ੈਰ-ਸਹਿਯੋਗੀ

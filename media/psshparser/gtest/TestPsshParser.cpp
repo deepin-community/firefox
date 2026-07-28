@@ -1,16 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "gtest/gtest.h"
-#include <algorithm>
 #include <stdint.h>
 #include <vector>
 
 #include "psshparser/PsshParser.h"
-#include "mozilla/ArrayUtils.h"
 
 using namespace std;
 
@@ -131,42 +127,40 @@ TEST(PsshParser, ParseCencInitData)
   bool rv;
 
   rv = ParseCENCInitData(gGoogleWPTCencInitData,
-                         MOZ_ARRAY_LENGTH(gGoogleWPTCencInitData), keyIds);
+                         std::size(gGoogleWPTCencInitData), keyIds);
   EXPECT_TRUE(rv);
   EXPECT_EQ(1u, keyIds.size());
   EXPECT_EQ(16u, keyIds[0].size());
   EXPECT_EQ(0, memcmp(&keyIds[0].front(), &gGoogleWPTCencInitData[32], 16));
 
   rv = ParseCENCInitData(gW3SpecExampleCencInitData,
-                         MOZ_ARRAY_LENGTH(gW3SpecExampleCencInitData), keyIds);
+                         std::size(gW3SpecExampleCencInitData), keyIds);
   EXPECT_TRUE(rv);
   EXPECT_EQ(2u, keyIds.size());
   EXPECT_EQ(16u, keyIds[0].size());
   EXPECT_EQ(0, memcmp(&keyIds[0].front(), &gW3SpecExampleCencInitData[32], 16));
   EXPECT_EQ(0, memcmp(&keyIds[1].front(), &gW3SpecExampleCencInitData[48], 16));
 
-  rv = ParseCENCInitData(gOverflowBoxSize, MOZ_ARRAY_LENGTH(gOverflowBoxSize),
-                         keyIds);
+  rv = ParseCENCInitData(gOverflowBoxSize, std::size(gOverflowBoxSize), keyIds);
   EXPECT_FALSE(rv);
   EXPECT_EQ(0u, keyIds.size());
 
   rv = ParseCENCInitData(gTooLargeKeyCountInitData,
-                         MOZ_ARRAY_LENGTH(gTooLargeKeyCountInitData), keyIds);
+                         std::size(gTooLargeKeyCountInitData), keyIds);
   EXPECT_FALSE(rv);
   EXPECT_EQ(0u, keyIds.size());
 
-  rv = ParseCENCInitData(gNonCencInitData, MOZ_ARRAY_LENGTH(gNonCencInitData),
-                         keyIds);
+  rv = ParseCENCInitData(gNonCencInitData, std::size(gNonCencInitData), keyIds);
   EXPECT_TRUE(rv);
   EXPECT_EQ(0u, keyIds.size());
 
-  rv = ParseCENCInitData(gNonPSSHBoxZeroSize,
-                         MOZ_ARRAY_LENGTH(gNonPSSHBoxZeroSize), keyIds);
+  rv = ParseCENCInitData(gNonPSSHBoxZeroSize, std::size(gNonPSSHBoxZeroSize),
+                         keyIds);
   EXPECT_FALSE(rv);
   EXPECT_EQ(0u, keyIds.size());
 
   rv = ParseCENCInitData(g2xGoogleWPTCencInitData,
-                         MOZ_ARRAY_LENGTH(g2xGoogleWPTCencInitData), keyIds);
+                         std::size(g2xGoogleWPTCencInitData), keyIds);
   EXPECT_TRUE(rv);
   EXPECT_EQ(2u, keyIds.size());
   EXPECT_EQ(16u, keyIds[0].size());

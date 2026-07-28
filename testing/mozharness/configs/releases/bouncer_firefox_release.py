@@ -11,8 +11,8 @@ config = {
         "installer": {
             "product-name": "Firefox-%(version)s",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -22,8 +22,8 @@ config = {
         "installer-latest": {
             "product-name": "Firefox-latest",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -33,8 +33,8 @@ config = {
         "installer-ssl": {
             "product-name": "Firefox-%(version)s-SSL",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -44,8 +44,8 @@ config = {
         "installer-latest-ssl": {
             "product-name": "Firefox-latest-SSL",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -85,8 +85,8 @@ config = {
         "langpack": {
             "product-name": "Firefox-%(version)s-langpack-SSL",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -95,8 +95,8 @@ config = {
         "langpack-latest": {
             "product-name": "Firefox-langpack-latest-SSL",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -129,8 +129,8 @@ config = {
         "complete-mar": {
             "product-name": "Firefox-%(version)s-Complete",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -142,8 +142,8 @@ config = {
         "releases-dir": {
             "product-name": "Firefox-%(version)s-Partial-%(prev_version)s",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",

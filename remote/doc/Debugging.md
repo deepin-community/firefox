@@ -18,9 +18,7 @@ can set `remote.log.truncate` to false.
 
 ## Enabling logging of emitted events
 
-To dump events produced by EventEmitter,
-including CDP events produced by the Remote Agent,
-you can use the `toolkit.dump.emit` [preference]:
+To dump events produced by EventEmitter you can use the `toolkit.dump.emit` [preference]:
 
 ```shell
 % ./mach run --setpref "toolkit.dump.emit=true" --remote-debugging-port
@@ -50,5 +48,5 @@ This enables `LogLevel::Debug` level information and places all
 output in the file service.log in your current working directory.
 
 [preference]: Prefs.md
-[prlog.h]: https://searchfox.org/mozilla-central/source/nsprpub/pr/include/prlog.h
+[prlog.h]: https://searchfox.org/firefox-main/source/nsprpub/pr/include/prlog.h
 [wiki]: https://wiki.mozilla.org/Remote/Developer_Resources

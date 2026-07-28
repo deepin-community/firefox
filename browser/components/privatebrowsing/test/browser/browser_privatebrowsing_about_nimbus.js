@@ -4,6 +4,12 @@
 
 requestLongerTimeout(2);
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.privatebrowsing.felt-privacy-v1", false]],
+  });
+});
+
 add_task(async function test_experiment_plain_text() {
   const defaultMessageContent = (await PanelTestProvider.getMessages()).find(
     m => m.template === "pb_newtab"
@@ -67,7 +73,7 @@ add_task(async function test_experiment_plain_text() {
   });
 
   await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_info_disabled() {
@@ -93,7 +99,7 @@ add_task(async function test_experiment_info_disabled() {
   });
 
   await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_promo_disabled() {
@@ -120,7 +126,7 @@ add_task(async function test_experiment_promo_disabled() {
   });
 
   await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_format_urls() {
@@ -164,93 +170,7 @@ add_task(async function test_experiment_format_urls() {
   });
 
   await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
-});
-
-add_task(async function test_experiment_click_info_telemetry() {
-  let doExperimentCleanup = await setupMSExperimentWithMessage({
-    id: "PB_NEWTAB_MESSAGING_SYSTEM_CLICK_INFO_TELEM",
-    template: "pb_newtab",
-    content: {
-      infoEnabled: true,
-      infoLinkUrl: "http://example.com",
-    },
-    // Priority ensures this message is picked over the one in
-    // OnboardingMessageProvider
-    priority: 5,
-    targeting: "true",
-  });
-
-  // Required for `mach test --verify`
-  Services.telemetry.clearEvents();
-
-  let { win, tab } = await openTabAndWaitForRender();
-
-  await SpecialPowers.spawn(tab, [], () => {
-    const el = content.document.querySelector(".info a");
-    el.click();
-  });
-
-  let event = await waitForTelemetryEvent("aboutprivatebrowsing");
-
-  ok(
-    event[2] == "click" && event[3] == "info_link",
-    "recorded telemetry for info link"
-  );
-
-  await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
-});
-
-add_task(async function test_experiment_click_promo_telemetry() {
-  let doExperimentCleanup = await setupMSExperimentWithMessage({
-    id: `PB_NEWTAB_MESSAGING_SYSTEM_PROMO_TELEM_${Math.random()}`,
-    template: "pb_newtab",
-    content: {
-      promoEnabled: true,
-      promoLinkType: "link",
-      promoButton: {
-        action: {
-          type: "OPEN_URL",
-          data: {
-            args: "https://example.com",
-            where: "tabshifted",
-          },
-        },
-      },
-    },
-    // Priority ensures this message is picked over the one in
-    // OnboardingMessageProvider
-    priority: 5,
-    targeting: "true",
-  });
-
-  let { win, tab } = await openTabAndWaitForRender();
-
-  Services.telemetry.clearEvents();
-
-  await SpecialPowers.spawn(tab, [], () => {
-    is(
-      content.document
-        .querySelector(".promo-cta button")
-        .classList.contains("promo-link"),
-      true,
-      "Should have a button styled as a link"
-    );
-
-    const el = content.document.querySelector(".promo button");
-    el.click();
-  });
-
-  let event = await waitForTelemetryEvent("aboutprivatebrowsing");
-
-  ok(
-    event[2] == "click" && event[3] == "promo_link",
-    "recorded telemetry for promo link"
-  );
-
-  await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_bottom_promo() {
@@ -318,7 +238,7 @@ add_task(async function test_experiment_bottom_promo() {
   });
 
   await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_below_search_promo() {
@@ -390,7 +310,7 @@ add_task(async function test_experiment_below_search_promo() {
   });
 
   await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_top_promo() {
@@ -455,5 +375,5 @@ add_task(async function test_experiment_top_promo() {
   });
 
   await BrowserTestUtils.closeWindow(win);
-  doExperimentCleanup();
+  await doExperimentCleanup();
 });

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -33,6 +31,8 @@ class RecordedTextureData final : public TextureData {
 
   void EndDraw() final;
 
+  void ReturnDrawTarget(already_AddRefed<gfx::DrawTarget> aDT) final;
+
   already_AddRefed<gfx::SourceSurface> BorrowSnapshot() final;
 
   void ReturnSnapshot(already_AddRefed<gfx::SourceSurface> aSnapshot) final;
@@ -45,13 +45,14 @@ class RecordedTextureData final : public TextureData {
 
   TextureFlags GetTextureFlags() const final;
 
-  void SetRemoteTextureOwnerId(
-      RemoteTextureOwnerId aRemoteTextureOwnerId) final;
-
   bool RequiresRefresh() const final;
 
   already_AddRefed<FwdTransactionTracker> UseCompositableForwarder(
       CompositableForwarder* aForwarder) final;
+
+  RecordedTextureData* AsRecordedTextureData() final { return this; }
+
+  const RemoteTextureOwnerId mRemoteTextureOwnerId;
 
  protected:
   friend class gfx::DrawTargetRecording;
@@ -65,19 +66,18 @@ class RecordedTextureData final : public TextureData {
 
   void DetachSnapshotWrapper(bool aInvalidate = false, bool aRelease = true);
 
-  int64_t mTextureId;
   RefPtr<CanvasChild> mCanvasChild;
   gfx::IntSize mSize;
   gfx::SurfaceFormat mFormat;
   RefPtr<gfx::DrawTargetRecording> mDT;
   RefPtr<gfx::SourceSurface> mSnapshot;
   RefPtr<gfx::SourceSurface> mSnapshotWrapper;
-  OpenMode mLockedMode;
+  OpenMode mLockedMode = OpenMode::OPEN_NONE;
   RemoteTextureId mLastRemoteTextureId;
-  RemoteTextureOwnerId mRemoteTextureOwnerId;
   RefPtr<layers::FwdTransactionTracker> mFwdTransactionTracker;
   bool mUsedRemoteTexture = false;
   bool mInvalidContents = true;
+  bool mInited = false;
 };
 
 }  // namespace layers

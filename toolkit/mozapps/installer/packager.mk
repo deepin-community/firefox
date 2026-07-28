@@ -32,10 +32,13 @@ stage-package: multilocale.txt locale-manifest.in $(MOZ_PKG_MANIFEST) $(MOZ_PKG_
 		$(if $(MOZ_PACKAGER_MINIFY_JS),--minify-js \
 		  $(addprefix --js-binary ,$(JS_BINARY)) \
 		) \
+		$(if $(MOZ_PACKAGER_MINIFY_PDFJS),--minify-pdfjs) \
 		$(addprefix --jarlog ,$(wildcard $(JARLOG_FILE_AB_CD))) \
 		$(addprefix --compress ,$(JAR_COMPRESSION)) \
 		$(MOZ_PKG_MANIFEST) '$(DIST)' '$(DIST)'/$(MOZ_PKG_DIR)$(if $(MOZ_PKG_MANIFEST),,$(_BINPATH:%=/%)) \
 		$(if $(filter omni,$(MOZ_PACKAGER_FORMAT)),$(if $(NON_OMNIJAR_FILES),--non-resource $(NON_OMNIJAR_FILES)))
+
+prepare-package: stage-package
 ifdef RUN_FIND_DUPES
 	$(PYTHON3) $(MOZILLA_DIR)/toolkit/mozapps/installer/find-dupes.py $(DEFINES) $(ACDEFINES) $(MOZ_PKG_DUPEFLAGS) $(DIST)/$(MOZ_PKG_DIR)
 endif # RUN_FIND_DUPES
@@ -55,14 +58,14 @@ ifdef MOZ_PACKAGE_JSSHELL
 endif # MOZ_PACKAGE_JSSHELL
 ifdef MOZ_AUTOMATION
 ifdef MOZ_ARTIFACT_BUILD_SYMBOLS
-	@echo 'Packaging existing crashreporter symbols from artifact build...'
-	$(NSINSTALL) -D $(DIST)/$(PKG_PATH)
-	cd $(DIST)/crashreporter-symbols && \
-          zip -r5D '../$(PKG_PATH)$(SYMBOL_ARCHIVE_BASENAME).zip' . -i '*.sym' -i '*.txt'
+	@echo 'Checking for crashreporter symbols from artifact build...'
+ifeq ($(wildcard $(UPLOAD_DIR)/$(SYMBOL_ARCHIVE_BASENAME).zip),)
+$(error Expected symbol archive $(UPLOAD_DIR)/$(SYMBOL_ARCHIVE_BASENAME).zip not found. This should have been created by artifacts.py during artifact installation. Check that UPLOAD_DIR is set correctly and that symbols were downloaded.)
+endif
 ifeq ($(MOZ_ARTIFACT_BUILD_SYMBOLS),full)
-	$(call py_action,symbols_archive $(SYMBOL_FULL_ARCHIVE_BASENAME).tar.zst,'$(DIST)/$(PKG_PATH)$(SYMBOL_FULL_ARCHIVE_BASENAME).tar.zst' \
-                                     $(abspath $(DIST)/crashreporter-symbols) \
-                                     --full-archive)
+ifeq ($(wildcard $(UPLOAD_DIR)/$(SYMBOL_FULL_ARCHIVE_BASENAME).tar.zst),)
+$(error Expected full symbol archive $(UPLOAD_DIR)/$(SYMBOL_FULL_ARCHIVE_BASENAME).tar.zst not found. This should have been created by artifacts.py during artifact installation. Check that UPLOAD_DIR is set correctly and that full symbols were downloaded.)
+endif
 endif
 endif # MOZ_ARTIFACT_BUILD_SYMBOLS
 endif # MOZ_AUTOMATION
@@ -85,14 +88,14 @@ ifdef ENABLE_MOZSEARCH_PLUGIN
 	cd $(topobjdir)/ && cp _build_manifests/install/dist_include '$(ABS_DIST)/$(PKG_PATH)$(MOZSEARCH_INCLUDEMAP_BASENAME).map'
 	@echo 'Generating mozsearch scip index...'
 	$(RM) $(MOZSEARCH_SCIP_INDEX_BASENAME).zip
-	cp $(topsrcdir)/.cargo/config.toml.in $(topsrcdir)/.cargo/config.toml
 	cd $(topsrcdir)/ && \
+          $(PYTHON3) $(topsrcdir)/mach rust-analyzer-config -o $(topsrcdir)/rust-analyzer.json && \
           CARGO=$(MOZ_FETCHES_DIR)/rustc/bin/cargo \
           RUSTC=$(MOZ_FETCHES_DIR)/rustc/bin/rustc \
-          $(MOZ_FETCHES_DIR)/rustc/bin/rust-analyzer scip . && \
+          $(MOZ_FETCHES_DIR)/rustc/bin/rust-analyzer scip . --config-path $(topsrcdir)/rust-analyzer.json && \
           zip -r5D '$(ABS_DIST)/$(PKG_PATH)$(MOZSEARCH_SCIP_INDEX_BASENAME).zip' \
           index.scip
-	rm $(topsrcdir)/.cargo/config.toml
+	rm $(topsrcdir)/rust-analyzer.json
 ifeq ($(MOZ_BUILD_APP),mobile/android)
 	@echo 'Generating mozsearch java/kotlin semanticdb tarball...'
 	$(RM) $(MOZSEARCH_JAVA_INDEX_BASENAME).zip
@@ -102,29 +105,29 @@ ifeq ($(MOZ_BUILD_APP),mobile/android)
           zip -r5D '$(ABS_DIST)/$(PKG_PATH)$(MOZSEARCH_JAVA_INDEX_BASENAME).zip' .
 endif # MOZ_BUILD_APP == mobile/android
 endif
-ifeq (Darwin, $(OS_ARCH))
+ifeq (Darwin_cocoa, $(OS_ARCH)_$(MOZ_WIDGET_TOOLKIT))
 ifneq (,$(MOZ_ASAN)$(LIBFUZZER)$(MOZ_UBSAN))
 	@echo "Rewriting sanitizer runtime dylib paths for all binaries in $(DIST)/$(MOZ_PKG_DIR)/$(_BINPATH) ..."
 	$(PYTHON3) $(MOZILLA_DIR)/build/unix/rewrite_sanitizer_dylib.py '$(DIST)/$(MOZ_PKG_DIR)/$(_BINPATH)'
 endif # MOZ_ASAN || LIBFUZZER || MOZ_UBSAN
-endif # Darwin
+endif # Darwin_cocoa
 ifndef MOZ_ARTIFACT_BUILDS
+ifdef COMPILE_ENVIRONMENT
 	@echo 'Generating XPT artifacts archive ($(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip)'
-	$(call py_action,zip $(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip,-C $(topobjdir)/config/makefiles/xpidl '$(ABS_DIST)/$(PKG_PATH)$(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip' '*.xpt')
-ifeq (Darwin, $(OS_ARCH))
+	$(call py_action,zip $(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip,--error-if-empty -C $(topobjdir)/config/makefiles/xpidl '$(ABS_DIST)/$(PKG_PATH)$(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip' '*.xpt')
+ifeq (Darwin_cocoa, $(OS_ARCH)_$(MOZ_WIDGET_TOOLKIT))
 	@echo 'Generating update-related macOS framework artifacts archive ($(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip)'
-	$(call py_action,zip $(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip,-C '$(ABS_DIST)/update_framework_artifacts' '$(ABS_DIST)/$(PKG_PATH)$(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip' '*.framework')
-endif # Darwin
+	$(call py_action,zip $(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip,--error-if-empty -C '$(ABS_DIST)/update_framework_artifacts' '$(ABS_DIST)/$(PKG_PATH)$(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip' '*.framework')
+endif # Darwin_cocoa
+endif # COMPILE_ENVIRONMENT
 else
 	@echo 'Packaging existing XPT artifacts from artifact build into archive ($(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip)'
-	$(call py_action,zip $(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip,-C $(ABS_DIST)/xpt_artifacts '$(ABS_DIST)/$(PKG_PATH)$(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip' '*.xpt')
-ifeq (Darwin, $(OS_ARCH))
+	$(call py_action,zip $(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip,--error-if-empty -C $(ABS_DIST)/xpt_artifacts '$(ABS_DIST)/$(PKG_PATH)$(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip' '*.xpt')
+ifeq (Darwin_cocoa, $(OS_ARCH)_$(MOZ_WIDGET_TOOLKIT))
 	@echo 'Packaging existing update-related macOS framework artifacts from artifact build into archive ($(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip)'
-	$(call py_action,zip $(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip,-C $(ABS_DIST)/update_framework_artifacts '$(ABS_DIST)/$(PKG_PATH)$(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip' '*.framework')
-endif # Darwin
+	$(call py_action,zip $(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip,--error-if-empty -C $(ABS_DIST)/update_framework_artifacts '$(ABS_DIST)/$(PKG_PATH)$(UPDATE_FRAMEWORK_ARTIFACTS_ARCHIVE_BASENAME).zip' '*.framework')
+endif # Darwin_cocoa
 endif # MOZ_ARTIFACT_BUILDS
-
-prepare-package: stage-package
 
 make-package-internal: prepare-package make-sourcestamp-file
 	@echo 'Compressing...'
@@ -172,41 +175,17 @@ endif
 	ln -s $(installdir)/$(MOZ_APP_NAME) $(DESTDIR)$(bindir)
 
 upload:
-	$(PYTHON3) -u $(MOZILLA_DIR)/build/upload.py --base-path $(DIST) $(UPLOAD_FILES)
+	$(PYTHON3) -u $(MOZILLA_DIR)/build/upload.py --base-path $(ABS_DIST) $(UPLOAD_FILES)
 	mkdir -p `dirname $(CHECKSUM_FILE)`
-	@$(PYTHON3) $(MOZILLA_DIR)/build/checksums.py \
+	$(PYTHON3) $(MOZILLA_DIR)/build/checksums.py \
 		-o $(CHECKSUM_FILE) \
 		$(CHECKSUM_ALGORITHM_PARAM) \
 		$(UPLOAD_PATH)
-	@echo 'CHECKSUM FILE START'
-	@cat $(CHECKSUM_FILE)
-	@echo 'CHECKSUM FILE END'
-	$(PYTHON3) -u $(MOZILLA_DIR)/build/upload.py --base-path $(DIST) $(CHECKSUM_FILES)
-
-# source-package creates a source tarball from the files in MOZ_PKG_SRCDIR,
-# which is either set to a clean checkout or defaults to $topsrcdir
-source-package:
-	@echo 'Generate the sourcestamp file'
-	# Make sure to have repository information available and then generate the
-	# sourcestamp file.
-	$(MAKE) -C $(DEPTH) 'source-repo.h' 'buildid.h'
-	$(MAKE) make-sourcestamp-file
-	@echo 'Packaging source tarball...'
-	# We want to include the sourcestamp file in the source tarball, so copy it
-	# in the root source directory. This is useful to enable telemetry submissions
-	# from builds made from the source package with the correct revision information.
-	# Don't bother removing it as this is only used by automation.
-	@cp $(MOZ_SOURCESTAMP_FILE) '$(MOZ_PKG_SRCDIR)/sourcestamp.txt'
-	$(MKDIR) -p $(DIST)/$(PKG_SRCPACK_PATH)
-	(cd $(MOZ_PKG_SRCDIR) && $(CREATE_SOURCE_TAR) - ./ ) | xz -9e > $(SOURCE_TAR)
+	$(PYTHON3) -u $(MOZILLA_DIR)/build/upload.py --base-path $(ABS_DIST) $(CHECKSUM_FILE)
 
 hg-bundle:
 	$(MKDIR) -p $(DIST)/$(PKG_SRCPACK_PATH)
 	$(CREATE_HG_BUNDLE_CMD)
-
-source-upload:
-	$(MAKE) upload UPLOAD_FILES='$(SOURCE_UPLOAD_FILES)' CHECKSUM_FILE='$(SOURCE_CHECKSUM_FILE)'
-
 
 ALL_LOCALES = $(if $(filter en-US,$(LOCALES)),$(LOCALES),$(LOCALES) en-US)
 

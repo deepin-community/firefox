@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Gune hau zure MIDI (Musical Instrument Digital Interface) gailuetarako sarbidea eskatzen ari da. Gehigarri bat instalatuz gai daiteke gailuetarako sarbidea.
 site-permission-install-first-prompt-midi-message = Ezin da ziurtatu sarbidea segurua denik. Jarraitu soilik gunea konfiantzazkoa bada.
+site-permission-install-first-prompt-serial-header = Gune hau zure serieko gailuetarako sarbidea eskatzen ari da. Gailuetarako sarbidea gehigarri bat instalatuz gai daiteke.
+site-permission-install-first-prompt-serial-message = Ezin da ziurtatu sarbidea segurua denik. Jarraitu soilik gunea konfiantzazkoa bada.
 
 ##
 
@@ -57,6 +59,8 @@ addon-domain-blocked-by-policy = Zure sistemaren kudeatzaileak gune honi galaraz
 #   $addonName (String): the name of the add-on.
 #   $addonId (String): the ID of add-on.
 addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) blokeatu du zure erakundeak.
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = Zure erakundeak galarazi egin dio gune honi ordenagailuan softwarea instalatzeaz galdetzea.
 addon-install-full-screen-blocked = Gehigarrien instalazioa ez da baimentzen pantaila osoko moduan edo modu horretara sartu aurretik.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
@@ -64,6 +68,10 @@ webext-perms-sideload-menu-item = { $addonName } gehigarria { -brand-short-name 
 # Variables:
 #   $addonName (String): the localized name of the extension which has been updated.
 webext-perms-update-menu-item = { $addonName } hedapenak baimen berriak behar ditu
+# This message is shown when one or more extensions have been imported from a
+# different browser into Firefox, and the user needs to complete the import to
+# start these extensions. This message is shown in the appmenu.
+webext-imported-addons = Amaitu { -brand-short-name }(e)ra inportatutako hedapenak instalatzen.
 
 ## Add-on removal warning
 
@@ -75,6 +83,8 @@ addon-removal-title = { $name } kendu?
 addon-removal-message = Kendu { $name } { -brand-shorter-name }(e)tik?
 addon-removal-button = Kendu
 addon-removal-abuse-report-checkbox = Salatu hedapen hau { -vendor-short-name }(r)i
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Modelo hau darabilten eginbide edo hedapenak badarabilzkizu, modeloa berriro gehituko da.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -117,12 +127,19 @@ addon-install-error-corrupt-file = Ezin izan da gune honetako gehigarria instala
 addon-install-error-file-access = Ezin izan da { $addonName } instalatu { -brand-short-name }(e)k ezin duelako beharrezko fitxategia aldatu.
 addon-install-error-not-signed = { -brand-short-name }(e)k gune honi egiaztatu gabeko gehigarri bat instalatzea eragotzi dio.
 addon-install-error-invalid-domain = Ezin da helbide honetatik { $addonName } gehigarria instalatu.
+addon-install-error-no-addon-name-file-access = Ezin izan da gehigarria instalatu { -brand-short-name }(e)k ezin duelako beharrezko fitxategia aldatu.
 addon-local-install-error-network-failure = Ezin izan da gehigarri hau instalatu fitxategi-sistemako errore bat dela-eta.
 addon-local-install-error-incorrect-hash = Ezin izan da gehigarri hau instalatu ez datorrelako esperotako { -brand-short-name } gehigarriarekin bat.
 addon-local-install-error-corrupt-file = Ezin izan da gehigarri hau instalatu hondatuta dagoela dirudielako.
 addon-local-install-error-file-access = Ezin izan da { $addonName } instalatu { -brand-short-name }(e)k ezin duelako beharrezko fitxategia aldatu.
 addon-local-install-error-not-signed = Ezin izan da gehigarri hau instalatu egiaztatu gabea delako.
+addon-local-install-no-addon-name-error-file-access = Ezin izan da gehigarria instalatu { -brand-short-name }(e)k ezin duelako beharrezko fitxategia aldatu.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Ezin da { $addonName } instalatu ez delako { -brand-short-name } { $appVersion } bertsioarekin bateragarria.
+addon-install-error-hard-blocked = { $addonName } gehigarriak Mozillaren politikak bortxatzen ditu eta ezin da { -brand-short-name }(e)n instalatu.
+addon-install-error-soft-blocked2 = { $addonName } gehigarria mugatuta dago eta ezin da { -brand-short-name }(e)n instalatu.
 addon-install-error-blocklisted = Ezin izan da { $addonName } instalatu egonkortasun- eta segurtasun-arazoak eragiteko arrisku handia daukalako.
+addon-install-error-soft-blocked = { $addonName } gehigarriak Mozillaren politikak bortxatzen ditu eta ezin da { -brand-short-name }(e)n instalatu.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = Ezin duzu erabiltzaile gisa { $addonName } gehigarria instalatu, enpresa-politikak darabiltzan erakunde batek bakarrik instala dezake.

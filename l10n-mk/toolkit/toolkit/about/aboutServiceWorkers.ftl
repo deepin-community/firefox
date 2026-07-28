@@ -6,7 +6,7 @@
 ### The term "Service Workers" and "Workers" should not be translated
 
 about-service-workers-title = За Service Workers
-
+about-service-workers-main-title = Регистрирани Service Workers
 # The original title of service workers' information
 #
 # Variables:
@@ -19,3 +19,4 @@ origin-title = Потекло: { $originTitle }
 ##  $name: the name of scope, active cache, waiting cache and the push end point.
 ##  $url: the url of script specification and current worker.
 
+waiting = Чека…

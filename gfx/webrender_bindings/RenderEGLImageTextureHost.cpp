@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -54,9 +52,9 @@ wr::WrExternalImage RenderEGLImageTextureHost::Lock(uint8_t aChannelIndex,
     return InvalidToWrExternalImage();
   }
 
-  const auto uvs = GetUvCoords(mSize);
-  return NativeTextureToWrExternalImage(
-      mTextureHandle, uvs.first.x, uvs.first.y, uvs.second.x, uvs.second.y);
+  return NativeTextureToWrExternalImage(mTextureHandle, 0.0, 0.0,
+                                        static_cast<float>(mSize.width),
+                                        static_cast<float>(mSize.height));
 }
 
 void RenderEGLImageTextureHost::Unlock() {}
@@ -209,8 +207,8 @@ RenderEGLImageTextureHost::ReadTexImage() {
   int shaderConfig = config.mFeatures;
 
   bool ret = mGL->ReadTexImageHelper()->ReadTexImage(
-      surf, mTextureHandle, mTextureTarget, mSize, shaderConfig,
-      /* aYInvert */ false);
+      surf, mTextureHandle, mTextureTarget, mSize, gfx::Matrix4x4(),
+      shaderConfig, /* aYInvert */ false);
   if (!ret) {
     return nullptr;
   }

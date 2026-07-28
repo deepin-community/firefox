@@ -115,6 +115,8 @@ legacy-extensions =
     .value = Kadukaj etendaĵoj
 legacy-extensions-description = Tiuj ĉi etendaĵoj ne kongruas kun la nunaj normoj de { -brand-short-name }, tial ili estis malaktivigitaj. <label data-l10n-name="legacy-learn-more">Pli da informo pri la ŝanĝoj en aldonaĵoj</label>
 private-browsing-description2 = { -brand-short-name } modifis la funkciadon de etendaĵoj en privata retumo. Norme, neniu nova etendaĵo aldonita al { -brand-short-name } funkcios en privataj fenestroj. Krom se vi permesos tion en agordoj, la etendaĵo ne funkcios en privata retumo kaj ne havos aliron al viaj agoj en la interreto. Ni ŝanĝis tion por certigi, ke via privata retumo restu privata. <label data-l10n-name="private-browsing-learn-more">Pli da informo pri administro de agordoj de etendaĵoj.</label>
+aboutaddons-sidebar =
+    .heading = Aldonaĵoj
 addon-category-discover = Rekomendoj
 addon-category-discover-title =
     .title = Rekomendoj
@@ -157,14 +159,16 @@ extensions-warning-check-compatibility2 =
     .message = La kontrolado de kongrueco de aldonaĵoj estas malaktiva.  Vi povus havi nekongruajn aldonaĵojn.
 extensions-warning-check-compatibility-button = Aktivigi
     .title = Aktivigi la kontroladon de kongrueco de aldonaĵoj
-extensions-warning-update-security = La kontrolado de sekurecaj ĝisdatigoj de aldonaĵoj ne estas aktiva.  Vi povus esti kompromitita de ĝisdatigoj.
+extensions-warning-update-security = La kontrolado de sekurecaj ĝisdatigoj de aldonaĵoj ne estas aktiva.  Vi povus esti elmetita de ĝisdatigoj.
 extensions-warning-update-security2 =
-    .message = La kontrolado de sekurecaj ĝisdatigoj de aldonaĵoj ne estas aktiva.  Vi povus esti kompromitita de ĝisdatigoj.
+    .message = La kontrolado de sekurecaj ĝisdatigoj de aldonaĵoj ne estas aktiva.  Vi povus esti elmetita de ĝisdatigoj.
 extensions-warning-update-security-button = Aktivigi
     .title = Aktivigi la kontroladon de sekurecaj ĝisdatigoj de aldonaĵoj
 extensions-warning-imported-addons2 =
-    .message = Bonvolu fini la instalon de etendaĵoj, kiuj estis enportitaj en { -brand-short-name }.
+    .message = Bonvolu fini la instalon de etendaĵoj, kiuj estis importitaj en { -brand-short-name }.
 extensions-warning-imported-addons-button = Instali etendaĵojn
+extensions-warning-safe-mode3 =
+    .message = Ĉiuj aldonaĵoj estis malaktivigitaj de la problemsolva reĝimo.
 
 ## Strings connected to add-on updates
 
@@ -201,6 +205,10 @@ addon-updates-manual-updates-found = Vidi haveblajn ĝisdatigojn
 
 addon-install-from-file = Instali aldonaĵon el dosiero…
     .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Instali aŭ ĝisdatigi eldonaĵon el dosiero…
+    .accesskey = a
 addon-install-from-file-dialog-title = Elekti aldonaĵon por instali
 addon-install-from-file-filter-name = Aldonaĵoj
 addon-open-about-debugging = Senerarigi aldonaĵojn
@@ -263,6 +271,16 @@ discopane-notice-recommendations = Kelkaj el tiuj ĉi rekomendoj estas personeci
 discopane-notice-recommendations2 =
     .message = Kelkaj el tiuj ĉi rekomendoj estas personecigitaj. Ili baziĝas sur la listo de viaj nunaj etendaĵoj, preferoj de profilo kaj statistikoj de uzo.
 discopane-notice-learn-more = Pli da informo
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Via(j) kolorara(j) etoso(j) estis forigita(j).
+    .message = { -brand-product-name } ĝisdatigis sian kolekton de koloraroj. Ni forigis la malnova(j)n versio(j)n el viaj listo de konservitaj etosoj. Ricevu novajn versiojn en la retejo por aldonaĵoj.
+colorway-removal-notice-learn-more = Pli da informo
+colorway-removal-notice-button = Ricevu ĝisdatigitajn kolorarajn etosojn
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Viaj kontrastaj agordoj de Windows superregas la etosojn de { -brand-short-name }. Malŝaltu tiujn agordojn por uzi etosojn en { -brand-short-name }.
 privacy-policy = Politiko pri privateco
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -283,6 +301,11 @@ find-more-themes = Serĉi pli da etosoj
 # used for screen readers.
 addon-options-button =
     .aria-label = Pli da ebloj
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 = Etendaĵoj kaj etosoj permesas al vi personcecigi { -brand-product-name }. Ili povas pliigi privatecon, plialtigi produktadon, plibonigi aŭvidaĵojn, ŝanĝi la aspekton de { -brand-product-name }, kaj multe, multe pli. Tiuj etaj programoj estas ofte disvolvitaj de aliaj. Jen kelkaj <a data-l10n-name="learn-more-trigger">rekomendoj</a> de Firefox por havi eksterordinaran sekurecon, efikecon kaj aldonajn funkciojn.
 
 ## Add-on actions
 
@@ -369,6 +392,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permesita en privataj fenestroj
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permesita en privataj fenestroj
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -408,6 +435,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Tiu ĉi etendaĵo estis reviziita por kontroli ke ĝi kongruas kun niaj sekurecaj kaj efikecaj normoj.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Oficiala etendaĵo verkita de Mozilla. Ĝi observas sekurecajn kaj efikecajn normojn
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Tiu ĉi etendaĵo estis reviziita por kontroli ke ĝi kongruas kun sekurecaj kaj efikecaj normoj.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox nur rekomendas etendaĵojn, kiuj konformas al normoj pri sekureco kaj efikeco
 
 ##
 
@@ -415,10 +460,18 @@ available-updates-heading = Haveblaj ĝisdatigoj
 recent-updates-heading = Ĵusaj ĝisdatigoj
 release-notes-loading = Ŝargado…
 release-notes-error = Bedaŭrinde okazis eraro dum la ŝargado de la notoj pri liverado.
+addon-permissions-heading = Permesoj
+addon-permissions-empty2 = Tiu ĉi etendaĵo ne postulas iun ajn permeson.
+addon-permissions-required-label = Postulataj:
+addon-permissions-optional-label = Nedevigaj:
 addon-permissions-empty = Tiu ĉi etendaĵo postulas neniun permeson
 addon-permissions-required = Postulataj permesoj por kernaj funkcioj:
 addon-permissions-optional = Elekteblaj permesoj por aldonaj funkcioj:
 addon-permissions-learnmore = Pli da informo pri permesoj
+# Shown above the permissions list when one or more permissions for this
+# extension are controlled by an enterprise policy and cannot be changed by
+# the user.
+addon-permissions-managed-by-policy = Kelkaj permesoj estas regataj de via organizo.
 recommended-extensions-heading = Rekomenditaj etendaĵoj
 recommended-themes-heading = Rekomenditaj etosoj
 # Variables:
@@ -442,6 +495,9 @@ shortcuts-heading = Administri alirklavojn de etendaĵoj
 default-heading-search-label = Serĉi pli da aldonaĵoj
 addons-heading-search-input =
     .placeholder = Serĉi en addons.mozilla.org
+addons-heading-search-button =
+    .title = Serĉi en addons.mozilla.org
+    .aria-label = Serĉi en addons.mozilla.org
 addon-page-options-button =
     .title = Iloj por ĉiuj aldonaĵoj
 
@@ -464,14 +520,32 @@ details-notification-unsigned-and-disabled-link = Pli da informo
 details-notification-unsigned = { $name } ne povis esti kontrolita por uzo en { -brand-short-name }. Daŭrigu singarde.
 details-notification-unsigned2 =
     .message = { $name } ne povis esti kontrolita por uzo en { -brand-short-name }. Daŭrigu singarde.
+details-notification-hard-blocked-extension =
+    .message = Tiu ĉi etendaĵo estis blokita pro malobservo de la politikoj de Mozilla kaj ĝi estis do malaktivigita.
+details-notification-hard-blocked-other =
+    .message = Tiu ĉi aldonaĵo estis blokita pro malobservo de la politikoj de Mozilla kaj ĝi estis do malaktivigita.
 details-notification-unsigned-link = Pli da informo
 details-notification-blocked = { $name } estis blokita pro sekurecaj kaj stabilecaj problemoj.
-details-notification-blocked2 =
-    .message = { $name } estis blokita pro sekurecaj kaj stabilecaj problemoj.
+details-notification-blocked-link2 = Montri detalojn
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Tiu ĉi etendaĵo estas limigita kaj ĝi estis do malaktivigita. Vi povas reaktivigi ĝin, sed tio povus esti riska.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Tiu ĉi etendaĵo estas limigita. Uzi ĝin povus esti riske.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Tiu ĉi aldonaĵo estas limigita kaj ĝi estis do malaktivigita. Vi povas reaktivigi ĝin, sed tio povus esti riska.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Tiu ĉi aldonaĵo estas limigita. Uzi ĝin povus esti riske.
+details-notification-soft-blocked-extension-disabled =
+    .message = Tiu ĉi etendaĵo estis blokita pro malobservo de la politikoj de Mozilla kaj ĝi estis do malaktivigita. Vi povas reaktivigi ĝin, sed tio povus esti riska.
+details-notification-soft-blocked-extension-enabled =
+    .message = Tiu ĉi etendaĵo malobservas la politikojn de Mozilla. Uzi ĝin povas esti riske.
+details-notification-soft-blocked-other-disabled =
+    .message = Tiu ĉi aldonaĵo estis blokita pro malobservo de la politikoj de Mozilla kaj ĝi estis do malaktivigita. Vi povas reaktivigi ĝin, sed tio povus esti riska.
+details-notification-soft-blocked-other-enabled =
+    .message = Tiu ĉi aldonaĵo malobservas la politikojn de Mozilla. Uzi ĝin povas esti riske.
+details-notification-softblocked-link2 = Montri detalojn
 details-notification-blocked-link = Plia informo
 details-notification-softblocked = Estas konata fakto ke { $name } povas okazigi sekurecajn kaj stabilecajn problemojn.
-details-notification-softblocked2 =
-    .message = Estas konata fakto ke { $name } povas okazigi sekurecajn kaj stabilecajn problemojn.
 details-notification-softblocked-link = Plia informo
 details-notification-gmp-pending = { $name } estos baldaŭ instalita.
 details-notification-gmp-pending2 =
@@ -485,3 +559,46 @@ plugins-openh264-name = OpenH264 videa kodeko provizita de Cisco Systems, Inc.
 plugins-openh264-description = Tiu ĉi kromprogramo estas aŭtomate instalita de Mozilla por esti konforma kun la specifoj de WebRTC kaj por ebligi vokojn WebRTC kun aparatoj kiuj postulas la videan kodekon H.264. Vizitu http://www.openh264.org/ por vidi la fontan kodon de la kodeko kaj por havi pli da informo pri la aplikado.
 plugins-widevine-name = La malĉifra modulo de enhavo «Widevine» estas provizita de Google Inc.
 plugins-widevine-description = Tiu ĉi kromprogramo ebligas ludadon de ĉifritaj aŭdvidaĵoj kongruaj kun la specifo “Encrypted Media Extensions”. Retejoj uzas ĉifritajn aŭdvidaĵojn por protekti enhavon kontraŭ kopiado. Pli da informo pri “Encrypted Media Extensions” troviĝas ĉe https://www.w3.org/TR/encrypted-media/
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Postulata kolekto de datumoj:
+addon-permissions-optional-data-collection = Nedeviga kolekto de datumoj:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Permesoj kaj datumoj
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Uzita de la etendaĵo { $extensionName }
+addon-permissions-data-collection-heading = Kolektado de datumoj
+addon-permissions-data-collection-empty = La programisto indikas ke tiu ĉi etendaĵo ne postulas kolekton de datumoj.
+addon-data-collection-provided = Informoj provizitaj de la programisto de la etendaĵo
+addon-data-collection-learnmore = Pli da informo pri kolektado de datumoj
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } uzas tion ĉi en about:inference
+mlmodel-link-preview = { -brand-short-name } uzas tion ĉi por eltiri ĉefajn punktojn kiam vi antaŭvidas ligilojn
+mlmodel-pdfjs = { -brand-short-name } uzas tion ĉi por krei alternativajn tekstojn por bildoj, kiujn vi aldonas al dosieroj PDF
+mlmodel-smart-tab-topic-engine = { -brand-short-name } uzas tion ĉi por sugesti nomojn por viaj grupoj de langetoj
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } uzas tion ĉi por sugesti langetojn por viaj grupoj de langetoj
+mlmodel-formfill-engine = { -brand-short-name } uzas tion por helpi plenigi adressajn formularojn
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = AI en la aparato
+addon-category-mlmodel-title =
+    .title = AI en la aparato
+mlmodel-heading = Administri modelojn de AI en la aparato
+mlmodel-description = Kelkaj trajtoj kaj etendaĵoj en { -brand-short-name } funkcias danke al modelo A.I. kiu ruliĝas surloke, en via aparato. La surloka funkciado protektas vian privatecon kaj, en pluraj okazoj, estas pli rapida. <a data-l10n-name="learn-more">Pli da informo</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Forigi
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Grando de dosiero
+mlmodel-addon-detail-last-used-label = Laste uzita
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Uzita de
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Karto de la modelo
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Montri en Hugging Face

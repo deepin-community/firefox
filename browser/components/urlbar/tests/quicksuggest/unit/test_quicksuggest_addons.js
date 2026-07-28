@@ -30,7 +30,6 @@ const MERINO_SUGGESTIONS = [
     url: "https://example.com/merino-addon",
     title: "title",
     description: "description",
-    is_top_pick: true,
     custom_details: {
       amo: {
         rating: "5",
@@ -102,7 +101,7 @@ add_setup(async function init() {
   await QuickSuggestTestUtils.ensureQuickSuggestInit({
     remoteSettingsRecords: REMOTE_SETTINGS_RESULTS,
     merinoSuggestions: MERINO_SUGGESTIONS,
-    prefs: [["suggest.quicksuggest.nonsponsored", true]],
+    prefs: [["suggest.quicksuggest.all", true]],
   });
 });
 
@@ -115,9 +114,16 @@ add_task(async function telemetryType() {
 });
 
 // When quick suggest prefs are disabled, addon suggestions should be disabled.
-add_tasks_with_rust(async function quickSuggestPrefsDisabled() {
-  let prefs = ["quicksuggest.enabled", "suggest.quicksuggest.nonsponsored"];
+add_task(async function prefsDisabled() {
+  let prefs = [
+    "quicksuggest.enabled",
+    "addons.featureGate",
+    "suggest.quicksuggest.all",
+    "suggest.addons",
+  ];
   for (let pref of prefs) {
+    info("Testing pref: " + pref);
+
     // Before disabling the pref, first make sure the suggestion is added.
     await check_results({
       context: createContext("test", {
@@ -128,6 +134,7 @@ add_tasks_with_rust(async function quickSuggestPrefsDisabled() {
         makeExpectedResult({
           suggestion: MERINO_SUGGESTIONS[0],
           source: "merino",
+          provider: "amo",
         }),
       ],
     });
@@ -147,44 +154,9 @@ add_tasks_with_rust(async function quickSuggestPrefsDisabled() {
   }
 });
 
-// When addon suggestions specific preference is disabled, addon suggestions
-// should not be added.
-add_tasks_with_rust(async function addonSuggestionsSpecificPrefDisabled() {
-  const prefs = ["suggest.addons", "addons.featureGate"];
-  for (const pref of prefs) {
-    // First make sure the suggestion is added.
-    await check_results({
-      context: createContext("test", {
-        providers: [UrlbarProviderQuickSuggest.name],
-        isPrivate: false,
-      }),
-      matches: [
-        makeExpectedResult({
-          suggestion: MERINO_SUGGESTIONS[0],
-          source: "merino",
-        }),
-      ],
-    });
-
-    // Now disable the pref.
-    UrlbarPrefs.set(pref, false);
-    await check_results({
-      context: createContext("test", {
-        providers: [UrlbarProviderQuickSuggest.name],
-        isPrivate: false,
-      }),
-      matches: [],
-    });
-
-    // Revert.
-    UrlbarPrefs.clear(pref);
-    await QuickSuggestTestUtils.forceSync();
-  }
-});
-
 // Check wheather the addon suggestions will be shown by the setup of Nimbus
 // variable.
-add_tasks_with_rust(async function nimbus() {
+add_task(async function nimbus() {
   // Disable the fature gate.
   UrlbarPrefs.set("addons.featureGate", false);
   await check_results({
@@ -209,6 +181,7 @@ add_tasks_with_rust(async function nimbus() {
       makeExpectedResult({
         suggestion: MERINO_SUGGESTIONS[0],
         source: "merino",
+        provider: "amo",
       }),
     ],
   });
@@ -236,7 +209,7 @@ add_tasks_with_rust(async function nimbus() {
   await QuickSuggestTestUtils.forceSync();
 });
 
-add_tasks_with_rust(async function hideIfAlreadyInstalled() {
+add_task(async function hideIfAlreadyInstalled() {
   // Show suggestion.
   await check_results({
     context: createContext("test", {
@@ -247,6 +220,7 @@ add_tasks_with_rust(async function hideIfAlreadyInstalled() {
       makeExpectedResult({
         suggestion: MERINO_SUGGESTIONS[0],
         source: "merino",
+        provider: "amo",
       }),
     ],
   });
@@ -274,7 +248,7 @@ add_tasks_with_rust(async function hideIfAlreadyInstalled() {
   xpi.remove(false);
 });
 
-add_tasks_with_rust(async function remoteSettings() {
+add_task(async function remoteSettings() {
   const testCases = [
     {
       input: "f",
@@ -296,14 +270,12 @@ add_tasks_with_rust(async function remoteSettings() {
       input: "first",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "1st",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
@@ -318,119 +290,102 @@ add_tasks_with_rust(async function remoteSettings() {
       input: "two",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "two ",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "two w",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "two wo",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "two wor",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "two word",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "two words",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "aa",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "aa ",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "aa b",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "aa b ",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "aa b c",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-        source: "remote-settings",
       }),
     },
     {
       input: "second",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[1],
-        source: "remote-settings",
       }),
     },
     {
       input: "2nd",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[1],
-        source: "remote-settings",
       }),
     },
     {
       input: "third",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[2],
-        source: "remote-settings",
       }),
     },
     {
       input: "3rd",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[2],
-        source: "remote-settings",
       }),
     },
     {
       input: "fourth",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[3],
-        source: "remote-settings",
         setUtmParams: false,
       }),
     },
@@ -438,14 +393,13 @@ add_tasks_with_rust(async function remoteSettings() {
       input: "FoUrTh",
       expected: makeExpectedResult({
         suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[3],
-        source: "remote-settings",
         setUtmParams: false,
       }),
     },
   ];
 
   // Disable Merino so we trigger only remote settings suggestions.
-  UrlbarPrefs.set("quicksuggest.dataCollection.enabled", false);
+  UrlbarPrefs.set("quicksuggest.online.enabled", false);
 
   for (let { input, expected } of testCases) {
     await check_results({
@@ -457,7 +411,7 @@ add_tasks_with_rust(async function remoteSettings() {
     });
   }
 
-  UrlbarPrefs.set("quicksuggest.dataCollection.enabled", true);
+  UrlbarPrefs.clear("quicksuggest.online.enabled");
 });
 
 add_task(async function merinoIsTopPick() {
@@ -475,6 +429,7 @@ add_task(async function merinoIsTopPick() {
       makeExpectedResult({
         suggestion,
         source: "merino",
+        provider: "amo",
       }),
     ],
   });
@@ -491,22 +446,79 @@ add_task(async function merinoIsTopPick() {
       makeExpectedResult({
         suggestion,
         source: "merino",
+        provider: "amo",
       }),
     ],
   });
 });
 
-// Tests the "show less frequently" behavior.
-add_tasks_with_rust(async function showLessFrequently() {
-  await doShowLessFrequentlyTests({
+// Tests the "Dismiss" command: a dismissed suggestion shouldn't be added.
+add_task(async function dismiss() {
+  // Disable Merino suggestions to make this task simpler.
+  UrlbarPrefs.set("quicksuggest.online.enabled", false);
+
+  await doDismissOneTest({
+    result: makeExpectedResult({
+      suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
+    }),
+    command: "dismiss",
     feature: QuickSuggest.getFeature("AddonSuggestions"),
+    queriesForDismissals: [
+      {
+        query: REMOTE_SETTINGS_RESULTS[0].attachment[0].keywords[0],
+      },
+    ],
+    queriesForOthers: [
+      {
+        query: REMOTE_SETTINGS_RESULTS[0].attachment[1].keywords[0],
+        expectedResults: [
+          makeExpectedResult({
+            suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[1],
+          }),
+        ],
+      },
+    ],
+  });
+
+  UrlbarPrefs.clear("quicksuggest.online.enabled");
+});
+
+// Tests the "Not interested" command: all addon suggestions should be disabled
+// and not added anymore.
+add_task(async function notInterested() {
+  await doDismissAllTest({
+    result: makeExpectedResult({
+      suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
+    }),
+    command: "not_interested",
+    feature: QuickSuggest.getFeature("AddonSuggestions"),
+    pref: "suggest.addons",
+    queries: [
+      {
+        query: REMOTE_SETTINGS_RESULTS[0].attachment[0].keywords[0],
+      },
+      {
+        query: REMOTE_SETTINGS_RESULTS[0].attachment[1].keywords[0],
+        expectedResults: [
+          makeExpectedResult({
+            suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[1],
+          }),
+        ],
+      },
+    ],
+  });
+});
+
+// Tests the "show less frequently" behavior.
+add_task(async function showLessFrequently() {
+  await doShowLessFrequentlyTest({
+    feature: QuickSuggest.getFeature("AddonSuggestions"),
+    keyword: "two words",
+    minKeywordLengthPref: "addons.minKeywordLength",
     showLessFrequentlyCountPref: "addons.showLessFrequentlyCount",
-    nimbusCapVariable: "addonsShowLessFrequentlyCap",
     expectedResult: makeExpectedResult({
       suggestion: REMOTE_SETTINGS_RESULTS[0].attachment[0],
-      source: "remote-settings",
     }),
-    keyword: "two words",
   });
 });
 
@@ -535,14 +547,12 @@ add_task(async function rustProviders() {
   await QuickSuggestTestUtils.forceSync();
 });
 
-function makeExpectedResult({ suggestion, source, setUtmParams = true }) {
-  let provider;
-  if (source == "merino") {
-    provider = "amo";
-  } else {
-    source = undefined;
-  }
-
+function makeExpectedResult({
+  suggestion,
+  source,
+  provider,
+  setUtmParams = true,
+}) {
   return QuickSuggestTestUtils.amoResult({
     source,
     provider,
@@ -553,4 +563,137 @@ function makeExpectedResult({ suggestion, source, setUtmParams = true }) {
     originalUrl: suggestion.url,
     icon: suggestion.icon,
   });
+}
+
+/**
+ * Tests the `show_less_frequently` command for a given feature.
+ *
+ * @param {object} options
+ *   Options object.
+ * @param {SuggestFeature} options.feature
+ *   The feature being tested.
+ * @param {SuggestFeature} options.keyword
+ *   The keyword to search for. Its length must be at least 3, and each prefix
+ *   starting at `keyword.length - 3` must match a suggestion.
+ * @param {object} options.expectedResult
+ *   The result that is expected to match the keyword and its prefixes.
+ * @param {string} options.minKeywordLengthPref
+ *   The name of the pref for the min keyword length being tested.
+ * @param {string} options.showLessFrequentlyCountPref
+ *   The name of the pref for the "show less frequently" count being tested.
+ */
+async function doShowLessFrequentlyTest({
+  feature,
+  keyword,
+  expectedResult,
+  minKeywordLengthPref,
+  showLessFrequentlyCountPref,
+}) {
+  let showLessFrequentlyCap = 3;
+
+  if (keyword.length < showLessFrequentlyCap) {
+    throw new Error(
+      "keyword must be long enough to 'Show less frequently' enough times"
+    );
+  }
+
+  await QuickSuggestTestUtils.withConfig({
+    config: { show_less_frequently_cap: showLessFrequentlyCap },
+    callback: async () => {
+      // Do `showLessFrequentlyCap` searches and trigger the
+      // `show_less_frequently` command after each one. In each iteration, the
+      // length of `searchString` increases by 1.
+      for (let count = 0; count < showLessFrequentlyCap; count++) {
+        let searchString = keyword.substring(
+          0,
+          keyword.length - showLessFrequentlyCap + count + 1
+        );
+
+        info(
+          "Doing search: " +
+            JSON.stringify({
+              count,
+              searchString,
+            })
+        );
+
+        // Check prefs and other values before searching.
+        Assert.equal(
+          UrlbarPrefs.get(minKeywordLengthPref),
+          count == 0 ? 0 : searchString.length,
+          "minKeywordLength pref should be correct before search " + count
+        );
+        Assert.equal(
+          feature.showLessFrequentlyCount,
+          count,
+          "showLessFrequentlyCount should be correct before search " + count
+        );
+        Assert.equal(
+          UrlbarPrefs.get(showLessFrequentlyCountPref),
+          count,
+          "showLessFrequentlyCount pref should be correct before search " +
+            count
+        );
+        Assert.ok(
+          feature.canShowLessFrequently,
+          "canShowLessFrequently should be correct before search " + count
+        );
+
+        // Do the search.
+        await check_results({
+          context: createContext(searchString, {
+            providers: [UrlbarProviderQuickSuggest.name],
+            isPrivate: false,
+          }),
+          matches: [expectedResult],
+        });
+
+        // Trigger the command.
+        triggerCommand({
+          feature,
+          searchString,
+          command: "show_less_frequently",
+          result: expectedResult,
+          expectedCountsByCall: {
+            acknowledgeFeedback: 1,
+            invalidateResultMenuCommands:
+              count == showLessFrequentlyCap - 1 ? 1 : 0,
+          },
+        });
+
+        // The same search should now match nothing.
+        await check_results({
+          context: createContext(searchString, {
+            providers: [UrlbarProviderQuickSuggest.name],
+            isPrivate: false,
+          }),
+          matches: [],
+        });
+      }
+
+      // Check prefs and other values now that all searches are done.
+      Assert.equal(
+        UrlbarPrefs.get(minKeywordLengthPref),
+        keyword.length + 1,
+        "minKeywordLength pref should be correct after all searches"
+      );
+      Assert.equal(
+        feature.showLessFrequentlyCount,
+        showLessFrequentlyCap,
+        "showLessFrequentlyCount should be correct after all searches"
+      );
+      Assert.equal(
+        UrlbarPrefs.get(showLessFrequentlyCountPref),
+        showLessFrequentlyCap,
+        "showLessFrequentlyCap pref should be correct after all searches"
+      );
+      Assert.ok(
+        !feature.canShowLessFrequently,
+        "canShowLessFrequently should be correct after all searches"
+      );
+    },
+  });
+
+  UrlbarPrefs.clear(minKeywordLengthPref);
+  UrlbarPrefs.clear(showLessFrequentlyCountPref);
 }

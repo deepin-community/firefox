@@ -78,7 +78,7 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
@@ -132,8 +132,8 @@ webrtc-indicator-menuitem-sharing-browser-with =
 webrtc-indicator-menuitem-sharing-browser-with-n-tabs =
     .label =
         { $tabCount ->
-            [one] Համօգտագործել տեսախցիկը { $tabCount } ներդիրի հետ
-           *[other] Համօգտագործել տեսախցիկը { $tabCount } ներդիրների հետ
+            [one] Տարածվում է ներդիրը { $tabCount } ներդիրի հետ
+           *[other] Տարածվում են ներդիրները { $tabCount } ներդիրների հետ
         }
 
 ## Variables:
@@ -217,6 +217,9 @@ webrtc-action-not-now =
 ##
 
 webrtc-remember-allow-checkbox = Հիշել այս որոշումը
+webrtc-remember-allow-checkbox-camera = Հիշել բոլոր տեսախցիկների համար
+webrtc-remember-allow-checkbox-microphone = Հիշել բոլոր խոսափողների համար
+webrtc-remember-allow-checkbox-camera-and-microphone = Հիշել բոլոր տեսախցիկների և խոսափողների համար
 webrtc-mute-notifications-checkbox = Տարածելիս անջատել կայքի ծանուցումները
 webrtc-reason-for-no-permanent-allow-screen = { -brand-short-name }-ը չի կարող թույլատրել մշտական մատչում ձեր էկրանին:
 webrtc-reason-for-no-permanent-allow-audio = { -brand-short-name }-ը կարող է չթույատրել մշտական մատչում Ձեր ներդիրների ձայնանյութին՝ առանց հարցնելու, թե որ ներդիրը համօգտագործել։

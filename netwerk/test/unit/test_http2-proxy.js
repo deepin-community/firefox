@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -29,12 +27,21 @@
  *   session to the proxy.
  */
 
-/* eslint-env node */
 /* global serverPort */
 
 "use strict";
 
+// We don't normally allow localhost channels to be proxied, but this
+// is easier than updating all the certs and/or domains.
+Services.prefs.setBoolPref("network.proxy.allow_hijacking_localhost", true);
+registerCleanupFunction(() => {
+  Services.prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
+});
+
 const pps = Cc["@mozilla.org/network/protocol-proxy-service;1"].getService();
+const { NodeServer } = ChromeUtils.importESModule(
+  "resource://testing-common/NodeServer.sys.mjs"
+);
 
 let proxy_port;
 let filter;
@@ -365,10 +372,6 @@ add_task(async function setup() {
   );
 
   Services.prefs.setBoolPref("network.http.http2.enabled", true);
-
-  // Even with network state isolation active, we don't end up using the
-  // partitioned principal.
-  Services.prefs.setBoolPref("privacy.partition.network_state", true);
 
   // make all native resolve calls "secretly" resolve localhost instead
   Services.prefs.setBoolPref("network.dns.native-is-localhost", true);

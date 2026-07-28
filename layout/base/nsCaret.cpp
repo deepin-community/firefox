@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,34 +8,34 @@
 
 #include <algorithm>
 
+#include "SelectionMovementUtils.h"
 #include "gfxUtils.h"
 #include "mozilla/CaretAssociationHint.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/intl/BidiEmbeddingLevel.h"
-#include "mozilla/ScrollContainerFrame.h"
-#include "mozilla/StaticPrefs_bidi.h"
-#include "nsCOMPtr.h"
-#include "nsFontMetrics.h"
-#include "nsITimer.h"
-#include "nsFrameSelection.h"
-#include "nsIFrame.h"
-#include "nsIContent.h"
-#include "nsIFrameInlines.h"
-#include "nsLayoutUtils.h"
-#include "nsPresContext.h"
-#include "nsBlockFrame.h"
-#include "nsISelectionController.h"
-#include "nsTextFrame.h"
-#include "nsXULPopupManager.h"
-#include "nsMenuPopupFrame.h"
-#include "nsTextFragment.h"
+#include "mozilla/LookAndFeel.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/PresShell.h"
-#include "mozilla/LookAndFeel.h"
+#include "mozilla/ScrollContainerFrame.h"
+#include "mozilla/StaticPrefs_bidi.h"
+#include "mozilla/dom/CharacterDataBuffer.h"
 #include "mozilla/dom/Selection.h"
-#include "nsIBidiKeyboard.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/intl/BidiEmbeddingLevel.h"
+#include "nsBlockFrame.h"
+#include "nsCOMPtr.h"
 #include "nsContentUtils.h"
-#include "SelectionMovementUtils.h"
+#include "nsFontMetrics.h"
+#include "nsFrameSelection.h"
+#include "nsIBidiKeyboard.h"
+#include "nsIContent.h"
+#include "nsIFrame.h"
+#include "nsIFrameInlines.h"
+#include "nsISelectionController.h"
+#include "nsITimer.h"
+#include "nsLayoutUtils.h"
+#include "nsMenuPopupFrame.h"
+#include "nsPresContext.h"
+#include "nsTextFrame.h"
+#include "nsXULPopupManager.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -57,10 +55,6 @@ nsCaret::~nsCaret() { StopBlinking(); }
 nsresult nsCaret::Init(PresShell* aPresShell) {
   NS_ENSURE_ARG(aPresShell);
 
-  mPresShell =
-      do_GetWeakReference(aPresShell);  // the presshell owns us, so no addref
-  NS_ASSERTION(mPresShell, "Hey, pres shell should support weak refs");
-
   RefPtr<Selection> selection =
       aPresShell->GetSelection(nsISelectionController::SELECTION_NORMAL);
   if (!selection) {
@@ -69,6 +63,7 @@ nsresult nsCaret::Init(PresShell* aPresShell) {
 
   selection->AddSelectionListener(this);
   mDomSelectionWeak = selection;
+  UpdateHiddenDuringSelection();
   UpdateCaretPositionFromSelectionIfNeeded();
 
   return NS_OK;
@@ -76,14 +71,17 @@ nsresult nsCaret::Init(PresShell* aPresShell) {
 
 static bool DrawCJKCaret(nsIFrame* aFrame, int32_t aOffset) {
   nsIContent* content = aFrame->GetContent();
-  const nsTextFragment* frag = content->GetText();
-  if (!frag) {
+  const CharacterDataBuffer* characterDataBuffer =
+      content->GetCharacterDataBuffer();
+  if (!characterDataBuffer) {
     return false;
   }
-  if (aOffset < 0 || static_cast<uint32_t>(aOffset) >= frag->GetLength()) {
+  if (aOffset < 0 ||
+      static_cast<uint32_t>(aOffset) >= characterDataBuffer->GetLength()) {
     return false;
   }
-  const char16_t ch = frag->CharAt(AssertedCast<uint32_t>(aOffset));
+  const char16_t ch =
+      characterDataBuffer->CharAt(AssertedCast<uint32_t>(aOffset));
   return 0x2e80 <= ch && ch <= 0xd7ff;
 }
 
@@ -124,7 +122,6 @@ void nsCaret::Terminate() {
     mDomSelectionWeak->RemoveSelectionListener(this);
   }
   mDomSelectionWeak = nullptr;
-  mPresShell = nullptr;
   mCaretPosition = {};
 }
 
@@ -135,6 +132,7 @@ Selection* nsCaret::GetSelection() { return mDomSelectionWeak; }
 void nsCaret::SetSelection(Selection* aDOMSel) {
   MOZ_ASSERT(aDOMSel);
   mDomSelectionWeak = aDOMSel;
+  UpdateHiddenDuringSelection();
   UpdateCaretPositionFromSelectionIfNeeded();
   ResetBlinking();
   SchedulePaint();
@@ -143,7 +141,6 @@ void nsCaret::SetSelection(Selection* aDOMSel) {
 void nsCaret::SetVisible(bool aVisible) {
   const bool wasVisible = mVisible;
   mVisible = aVisible;
-  mIgnoreUserModify = aVisible;
   if (mVisible != wasVisible) {
     CaretVisibilityMaybeChanged();
   }
@@ -189,10 +186,8 @@ static nsPoint AdjustRectForClipping(const nsRect& aRect, nsIFrame* aFrame,
                                      bool aVertical) {
   nsRect rectRelativeToClip = aRect;
   ScrollContainerFrame* sf = nullptr;
-  nsIFrame* scrollFrame = nullptr;
   for (nsIFrame* current = aFrame; current; current = current->GetParent()) {
     if ((sf = do_QueryFrame(current))) {
-      scrollFrame = current;
       break;
     }
     if (current->IsTransformed()) {
@@ -208,27 +203,6 @@ static nsPoint AdjustRectForClipping(const nsRect& aRect, nsIFrame* aFrame,
   }
 
   nsRect clipRect = sf->GetScrollPortRect();
-  {
-    const auto& disp = *scrollFrame->StyleDisplay();
-    if (disp.mOverflowClipBoxBlock == StyleOverflowClipBox::ContentBox ||
-        disp.mOverflowClipBoxInline == StyleOverflowClipBox::ContentBox) {
-      const WritingMode wm = scrollFrame->GetWritingMode();
-      const bool cbH = (wm.IsVertical() ? disp.mOverflowClipBoxBlock
-                                        : disp.mOverflowClipBoxInline) ==
-                       StyleOverflowClipBox::ContentBox;
-      const bool cbV = (wm.IsVertical() ? disp.mOverflowClipBoxInline
-                                        : disp.mOverflowClipBoxBlock) ==
-                       StyleOverflowClipBox::ContentBox;
-      nsMargin padding = scrollFrame->GetUsedPadding();
-      if (!cbH) {
-        padding.left = padding.right = 0;
-      }
-      if (!cbV) {
-        padding.top = padding.bottom = 0;
-      }
-      clipRect.Deflate(padding);
-    }
-  }
   nsPoint offset;
   // Now see if the caret extends beyond the view's bounds. If it does, then
   // snap it back, put it as close to the edge as it can.
@@ -377,11 +351,22 @@ nsIFrame* nsCaret::GetGeometry(const Selection* aSelection, nsRect* aRect) {
   return data.mFrame;
 }
 
+// Generally we want the caret to paint from the containing block of the frame
+// the caret is positioned at. The one exception is the
+// ::-moz-text-control-editing-root, in which case we want the caret to paint
+// from the input itself, so that it paints atop the placeholder and such
+// without having to do magic elsewhere.
 [[nodiscard]] static nsIFrame* GetContainingBlockIfNeeded(nsIFrame* aFrame) {
-  if (aFrame->IsBlockOutside() || aFrame->IsBlockFrameOrSubclass()) {
-    return nullptr;
+  for (auto* f = aFrame; f; f = f->GetContainingBlock()) {
+    if (f->Style()->GetPseudoType() ==
+        PseudoStyleType::MozTextControlEditingRoot) {
+      continue;
+    }
+    if (f != aFrame || f->IsBlockOutside() || f->IsBlockFrameOrSubclass()) {
+      return f == aFrame ? nullptr : f;
+    }
   }
-  return aFrame->GetContainingBlock();
+  return nullptr;
 }
 
 void nsCaret::SchedulePaint() {
@@ -405,10 +390,7 @@ void nsCaret::SetVisibilityDuringSelection(bool aVisibility) {
     return;
   }
   mShowDuringSelection = aVisibility;
-  if (mHiddenDuringSelection && aVisibility) {
-    RemoveForceHide();
-    mHiddenDuringSelection = false;
-  }
+  UpdateHiddenDuringSelection();
   SchedulePaint();
 }
 
@@ -420,7 +402,7 @@ void nsCaret::UpdateCaretPositionFromSelectionIfNeeded() {
   if (newPos == mCaretPosition) {
     return;
   }
-  mCaretPosition = newPos;
+  mCaretPosition = std::move(newPos);
   SchedulePaint();
 }
 
@@ -464,15 +446,21 @@ void nsCaret::CheckSelectionLanguageChange() {
     return aFrame;
   }
 
-  *aCaretRect = nsLayoutUtils::TransformFrameRectToAncestor(aFrame, *aCaretRect,
-                                                            containingBlock);
-  *aHookRect = nsLayoutUtils::TransformFrameRectToAncestor(aFrame, *aHookRect,
-                                                           containingBlock);
+  if (aCaretRect) {
+    *aCaretRect = nsLayoutUtils::TransformFrameRectToAncestor(
+        aFrame, *aCaretRect, containingBlock);
+  }
+  if (aHookRect) {
+    *aHookRect = nsLayoutUtils::TransformFrameRectToAncestor(aFrame, *aHookRect,
+                                                             containingBlock);
+  }
   return containingBlock;
 }
 
 nsIFrame* nsCaret::GetPaintGeometry(nsRect* aCaretRect, nsRect* aHookRect,
                                     nscolor* aCaretColor) {
+  MOZ_ASSERT(!!aCaretRect == !!aHookRect);
+
   // Return null if we should not be visible.
   if (!IsVisible() || !mIsBlinkOn) {
     return nullptr;
@@ -500,9 +488,7 @@ nsIFrame* nsCaret::GetPaintGeometry(nsRect* aCaretRect, nsRect* aHookRect,
   // Where the selection is targeting the <br>. We want to display the caret,
   // since the <br> we're focused at is editable, but we do want to paint it at
   // the adjusted frame offset, so that we can see the collapsed whitespace.
-  const nsStyleUI* ui = unadjustedFrame->StyleUI();
-  if ((!mIgnoreUserModify && ui->UserModify() == StyleUserModify::ReadOnly) ||
-      unadjustedFrame->IsContentDisabled()) {
+  if (unadjustedFrame->IsContentDisabled()) {
     return nullptr;
   }
 
@@ -518,8 +504,14 @@ nsIFrame* nsCaret::GetPaintGeometry(nsRect* aCaretRect, nsRect* aHookRect,
     *aCaretColor = frame->GetCaretColorAt(frameOffset);
   }
 
-  ComputeCaretRects(frame, frameOffset, aCaretRect, aHookRect);
+  if (aCaretRect || aHookRect) {
+    ComputeCaretRects(frame, frameOffset, aCaretRect, aHookRect);
+  }
   return MapToContainingBlock(frame, aCaretRect, aHookRect);
+}
+
+nsIFrame* nsCaret::GetPaintGeometry() {
+  return GetPaintGeometry(nullptr, nullptr);
 }
 
 nsIFrame* nsCaret::GetPaintGeometry(nsRect* aRect) {
@@ -571,15 +563,7 @@ nsCaret::NotifySelectionChanged(Document*, Selection* aDomSel, int16_t aReason,
 
   // Check if we need to hide / un-hide the caret due to the selection being
   // collapsed.
-  if (!mShowDuringSelection &&
-      !aDomSel->IsCollapsed() != mHiddenDuringSelection) {
-    if (mHiddenDuringSelection) {
-      RemoveForceHide();
-    } else {
-      AddForceHide();
-    }
-    mHiddenDuringSelection = !mHiddenDuringSelection;
-  }
+  UpdateHiddenDuringSelection();
 
   // We don't bother computing the caret position when invisible. We'll do it if
   // we become visible in CaretVisibilityMaybeChanged().
@@ -591,14 +575,26 @@ nsCaret::NotifySelectionChanged(Document*, Selection* aDomSel, int16_t aReason,
   return NS_OK;
 }
 
+void nsCaret::UpdateHiddenDuringSelection() {
+  const bool shouldShowCaret = mShowDuringSelection || !mDomSelectionWeak ||
+                               mDomSelectionWeak->IsCollapsed();
+  if (!shouldShowCaret == mHiddenDuringSelection) {
+    return;
+  }
+  if (shouldShowCaret) {
+    RemoveForceHide();
+  } else {
+    AddForceHide();
+  }
+  mHiddenDuringSelection = !shouldShowCaret;
+}
+
 void nsCaret::ResetBlinking() {
-  using IntID = LookAndFeel::IntID;
-
-  // The default caret blinking rate (in ms of blinking interval)
-  constexpr uint32_t kDefaultBlinkRate = 500;
-  // The default caret blinking count (-1 for "never stop blinking")
-  constexpr int32_t kDefaultBlinkCount = -1;
-
+  // How many milliseconds we allow the timer to get off-sync when resetting
+  // blinking too often. 50 is not likely to be user observable in practice,
+  // it's ~4 animation frames at 60fps.
+  static const auto kBlinkTimerSlack = TimeDuration::FromMilliseconds(50);
+  const bool wasBlinkOn = mIsBlinkOn;
   mIsBlinkOn = true;
 
   if (mReadOnly || !IsVisible()) {
@@ -606,53 +602,45 @@ void nsCaret::ResetBlinking() {
     return;
   }
 
-  auto blinkRate =
-      LookAndFeel::GetInt(IntID::CaretBlinkTime, kDefaultBlinkRate);
-
-  if (blinkRate > 0) {
-    // Make sure to reset the remaining blink count even if the blink rate
-    // hasn't changed.
-    mBlinkCount =
-        LookAndFeel::GetInt(IntID::CaretBlinkCount, kDefaultBlinkCount);
-  }
-
-  if (mBlinkRate == blinkRate) {
-    // If the rate hasn't changed, then there is nothing else to do.
+  const int32_t oldBlinkTime = mBlinkTime;
+  mBlinkTime = LookAndFeel::CaretBlinkTime();
+  if (mBlinkTime <= 0) {
+    StopBlinking();
     return;
   }
 
-  mBlinkRate = blinkRate;
-
-  if (mBlinkTimer) {
-    mBlinkTimer->Cancel();
-  } else {
-    mBlinkTimer = NS_NewTimer(GetMainThreadSerialEventTarget());
-    if (!mBlinkTimer) {
-      return;
-    }
+  if (!wasBlinkOn) {
+    SchedulePaint();
   }
 
-  if (blinkRate > 0) {
-    mBlinkTimer->InitWithNamedFuncCallback(CaretBlinkCallback, this, blinkRate,
-                                           nsITimer::TYPE_REPEATING_SLACK,
-                                           "nsCaret::CaretBlinkCallback_timer");
+  mBlinkCount = LookAndFeel::CaretBlinkCount();
+
+  const auto now = TimeStamp::NowLoRes();
+  const bool mustResetTimer = mBlinkTime != oldBlinkTime ||
+                              mLastBlinkTimerReset.IsNull() ||
+                              (now - mLastBlinkTimerReset) > kBlinkTimerSlack;
+  if (!mustResetTimer) {
+    return;
   }
+
+  if (!mBlinkTimer) {
+    mBlinkTimer = NS_NewTimer();
+  }
+  mLastBlinkTimerReset = now;
+  mBlinkTimer->InitWithNamedFuncCallback(CaretBlinkCallback, this, mBlinkTime,
+                                         nsITimer::TYPE_REPEATING_SLACK,
+                                         "CaretBlinkCallback"_ns);
 }
 
 void nsCaret::StopBlinking() {
   if (mBlinkTimer) {
     mBlinkTimer->Cancel();
-    mBlinkRate = 0;
+    mLastBlinkTimerReset = TimeStamp();
   }
 }
 
 size_t nsCaret::SizeOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf) const {
   size_t total = aMallocSizeOf(this);
-  if (mPresShell) {
-    // We only want the size of the nsWeakReference object, not the PresShell
-    // (since we don't own the PresShell).
-    total += mPresShell->SizeOfOnlyThis(aMallocSizeOf);
-  }
   if (mBlinkTimer) {
     total += mBlinkTimer->SizeOfIncludingThis(aMallocSizeOf);
   }
@@ -661,6 +649,7 @@ size_t nsCaret::SizeOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf) const {
 
 void nsCaret::ComputeCaretRects(nsIFrame* aFrame, int32_t aFrameOffset,
                                 nsRect* aCaretRect, nsRect* aHookRect) {
+  MOZ_ASSERT(aCaretRect && aHookRect);
   NS_ASSERTION(aFrame, "Should have a frame here");
 
   WritingMode wm = aFrame->GetWritingMode();
@@ -708,10 +697,11 @@ void nsCaret::ComputeCaretRects(nsIFrame* aFrame, int32_t aFrameOffset,
 
 /* static */
 void nsCaret::CaretBlinkCallback(nsITimer* aTimer, void* aClosure) {
-  nsCaret* theCaret = reinterpret_cast<nsCaret*>(aClosure);
+  nsCaret* theCaret = static_cast<nsCaret*>(aClosure);
   if (!theCaret) {
     return;
   }
+  theCaret->mLastBlinkTimerReset = TimeStamp();
   theCaret->mIsBlinkOn = !theCaret->mIsBlinkOn;
   theCaret->SchedulePaint();
 
@@ -727,9 +717,4 @@ void nsCaret::CaretBlinkCallback(nsITimer* aTimer, void* aClosure) {
       theCaret->StopBlinking();
     }
   }
-}
-
-void nsCaret::SetIgnoreUserModify(bool aIgnoreUserModify) {
-  mIgnoreUserModify = aIgnoreUserModify;
-  SchedulePaint();
 }

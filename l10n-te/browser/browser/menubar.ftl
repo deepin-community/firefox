@@ -3,22 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = అభిరుచులు
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = అమరికలు…
 menu-application-services =
     .label = సేవలు
 menu-application-hide-this =
@@ -304,3 +295,5 @@ menu-help-report-deceptive-site =
 menu-help-not-deceptive =
     .label = ఇది ఒక మోసపూరిత సైట్ కాదు...
     .accesskey = d
+menu-report-broken-site =
+    .label = పనిచేయని సైటును నివేదించండి

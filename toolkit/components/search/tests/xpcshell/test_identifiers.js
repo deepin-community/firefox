@@ -7,6 +7,10 @@
 
 "use strict";
 
+let { SearchEngine } = ChromeUtils.importESModule(
+  "moz-src:///toolkit/components/search/SearchEngine.sys.mjs"
+);
+
 add_setup(async function () {
   SearchTestUtils.setRemoteSettingsConfig([
     {
@@ -29,7 +33,7 @@ add_setup(async function () {
     },
   ]);
 
-  const result = await Services.search.init();
+  const result = await SearchService.init();
   Assert.ok(
     Components.isSuccessCode(result),
     "Should have initialized the service"
@@ -39,24 +43,16 @@ add_setup(async function () {
 });
 
 function checkIdentifier(engineName, expectedIdentifier, expectedTelemetryId) {
-  const engine = Services.search.getEngineByName(engineName);
+  const engine = SearchService.getEngineByName(engineName);
   Assert.ok(
-    engine instanceof Ci.nsISearchEngine,
-    "Should be derived from nsISearchEngine"
+    engine instanceof SearchEngine,
+    "Should be derived from SearchEngine"
   );
 
   Assert.equal(
     engine.telemetryId,
     expectedTelemetryId,
     "Should have the correct telemetry Id"
-  );
-
-  // TODO: Bug 1877721 - We have 3 forms of identifiers which causes confusion,
-  // we can remove the identifier for nsISearchEngine.
-  Assert.equal(
-    engine.identifier,
-    expectedIdentifier,
-    "Should have the correct identifier"
   );
 }
 
@@ -70,7 +66,7 @@ add_task(async function test_appProvided_suffix() {
 
 add_task(async function test_opensearch() {
   await SearchTestUtils.installOpenSearchEngine({
-    url: `${gDataUrl}engine.xml`,
+    url: `${gHttpURL}/opensearch/generic1.xml`,
   });
 
   // An OpenSearch engine won't have a dedicated identifier because it's not

@@ -22,7 +22,6 @@ webext-perms-add =
 webext-perms-cancel =
     .label = Batal
     .accesskey = B
-
 webext-perms-sideload-text = Atur cara lain dalam komputer anda memasang add-on yang boleh menjejaskan pelayar. Sila semak permintaan keizinan add-on ini dan pilih samada Dayakan atau Batal (biarkannya dinyahdayakan).
 webext-perms-sideload-text-no-perms = Atur cara lain dalam komputer anda memasang add-on yang boleh menjejaskan pelayar. Sila pilih samada Dayakan atau Batal (biarkannya dinyahdayakan).
 webext-perms-sideload-enable =
@@ -31,11 +30,9 @@ webext-perms-sideload-enable =
 webext-perms-sideload-cancel =
     .label = Batal
     .accesskey = B
-
 webext-perms-update-accept =
     .label = Kemaskini
     .accesskey = K
-
 webext-perms-optional-perms-list-intro = Aplikasi ini mahu:
 webext-perms-optional-perms-allow =
     .label = Izinkan
@@ -43,13 +40,10 @@ webext-perms-optional-perms-allow =
 webext-perms-optional-perms-deny =
     .label = Tolak
     .accesskey = T
-
 webext-perms-host-description-all-urls = Akses semua data anda dalam laman web
-
 # Variables:
 #   $domain (String): will be replaced by the DNS domain for which a webextension is requesting access (e.g., mozilla.org)
 webext-perms-host-description-wildcard = Akses data laman anda dalam domain { $domain }
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -57,29 +51,7 @@ webext-perms-host-description-too-many-wildcards = Akses data anda dalam { $doma
 # Variables:
 #   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., www.mozilla.org)
 webext-perms-host-description-one-site = Akses data anda untuk { $domain }
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
 webext-perms-host-description-too-many-sites = Akses data anda dalam { $domainCount } laman lain
-
-## Headers used in the webextension permissions dialog for synthetic add-ons.
-## The part of the string describing what privileges the extension gives should be consistent
-## with the value of webext-site-perms-description-gated-perms-{sitePermission}.
-## Note, this string will be used as raw markup. Avoid characters like <, >, &
-## Variables:
-##   $hostname (String): the hostname of the site the add-on is being installed from.
-
-
-##
-
-
-## Headers used in the webextension permissions dialog.
-## Note: This string will be used as raw markup. Avoid characters like <, >, &
-## Variables:
-##   $extension (String): replaced with the localized name of the extension being installed.
-##   $hostname (String): will be replaced by the DNS host name for which a webextension enables permissions.
-
-
-## These should remain in sync with permissions.NAME.label in sitePermissions.properties
-

@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -22,7 +20,7 @@ with Files("nsDOM*"):
 with Files("AnimationCollection.*"):
     BUG_COMPONENT = ("Core", "CSS Transitions and Animations")
 
-with Files("AnimatedPropertyID*"):
+with Files("CSSPropertyId*"):
     BUG_COMPONENT = ("Core", "CSS Transitions and Animations")
 
 with Files("AnimationCommon.*"):
@@ -37,22 +35,27 @@ with Files("nsTransitionManager.*"):
 with Files("StyleAnimationValue.*"):
     BUG_COMPONENT = ("Core", "CSS Transitions and Animations")
 
+DIRS += ["typedom"]
+
 TEST_DIRS += ["test"]
 
+XPIDL_SOURCES += [
+    "nsIPreloadedStyleSheet.idl",
+    "nsIStyleSheetService.idl",
+]
+
+XPIDL_MODULE = "layout_style"
+
 EXPORTS += [
-    "!nsCSSPropertyID.h",
+    "!NonCustomCSSPropertyId.h",
+    "!PseudoStyleTypeList.h",
     "AnimationCommon.h",
     "CounterStyleManager.h",
     "nsAnimationManager.h",
+    "nsChangeHint.h",
     "nsComputedDOMStyle.h",
-    "nsCSSAnonBoxes.h",
-    "nsCSSAnonBoxList.h",
-    "nsCSSCounterDescList.h",
-    "nsCSSFontDescList.h",
     "nsCSSPropertyIDSet.h",
     "nsCSSProps.h",
-    "nsCSSPseudoElementList.h",
-    "nsCSSPseudoElements.h",
     "nsCSSValue.h",
     "nsDOMCSSAttrDeclaration.h",
     "nsDOMCSSDeclaration.h",
@@ -60,7 +63,9 @@ EXPORTS += [
     "nsICSSDeclaration.h",
     "nsICSSLoaderObserver.h",
     "nsStyleAutoArray.h",
+    "nsStyleChangeList.h",
     "nsStyleConsts.h",
+    "nsStyleSheetService.h",
     "nsStyleStruct.h",
     "nsStyleStructFwd.h",
     "nsStyleStructInlines.h",
@@ -70,15 +75,19 @@ EXPORTS += [
 ]
 
 EXPORTS.mozilla += [
+    "!PseudoStyleTypeList.h",
     "!ServoCSSPropList.h",
-    "AnimatedPropertyID.h",
     "AnimatedPropertyIDSet.h",
     "AnimationCollection.h",
     "AttributeStyles.h",
+    "BindgenUniquePtr.h",
+    "BuiltInStyleSheetList.inc",
+    "BuiltInStyleSheets.h",
     "CachedInheritingStyles.h",
     "ComputedStyle.h",
     "ComputedStyleInlines.h",
     "CSSEnabledState.h",
+    "CSSPropertyId.h",
     "CSSPropFlags.h",
     "DeclarationBlock.h",
     "DocumentStyleRootIterator.h",
@@ -93,17 +102,19 @@ EXPORTS.mozilla += [
     "PostTraversalTask.h",
     "PreferenceSheet.h",
     "PreloadedStyleSheet.h",
+    "PseudoStyleRequest.h",
     "PseudoStyleType.h",
+    "RestyleManager.h",
     "RustCell.h",
     "ServoBindings.h",
     "ServoBindingTypes.h",
-    "ServoBoxedTypeList.h",
+    "ServoBoxedTypeList.inc",
     "ServoComputedData.h",
     "ServoCSSParser.h",
     "ServoCSSRuleList.h",
     "ServoElementSnapshot.h",
     "ServoElementSnapshotTable.h",
-    "ServoLockedArcTypeList.h",
+    "ServoLockedArcTypeList.inc",
     "ServoStyleConstsForwards.h",
     "ServoStyleConstsInlines.h",
     "ServoStyleSet.h",
@@ -122,14 +133,14 @@ EXPORTS.mozilla += [
     "TimelineCollection.h",
     "TimelineManager.h",
     "URLExtraData.h",
-    "UserAgentStyleSheetID.h",
-    "UserAgentStyleSheetList.h",
 ]
 
 EXPORTS.mozilla.dom += [
     "CSS.h",
+    "CSSAppearanceBaseRule.h",
     "CSSContainerRule.h",
     "CSSCounterStyleRule.h",
+    "CSSCustomMediaRule.h",
     "CSSFontFaceRule.h",
     "CSSFontFeatureValuesRule.h",
     "CSSFontPaletteValuesRule.h",
@@ -142,6 +153,7 @@ EXPORTS.mozilla.dom += [
     "CSSMediaRule.h",
     "CSSMozDocumentRule.h",
     "CSSNamespaceRule.h",
+    "CSSNestedDeclarations.h",
     "CSSPageRule.h",
     "CSSPositionTryRule.h",
     "CSSPropertyRule.h",
@@ -151,6 +163,7 @@ EXPORTS.mozilla.dom += [
     "CSSStyleRule.h",
     "CSSSupportsRule.h",
     "CSSValue.h",
+    "CSSViewTransitionRule.h",
     "FontFace.h",
     "FontFaceImpl.h",
     "FontFaceSet.h",
@@ -183,8 +196,10 @@ UNIFIED_SOURCES += [
     "ComputedStyle.cpp",
     "CounterStyleManager.cpp",
     "CSS.cpp",
+    "CSSAppearanceBaseRule.cpp",
     "CSSContainerRule.cpp",
     "CSSCounterStyleRule.cpp",
+    "CSSCustomMediaRule.cpp",
     "CSSFontFaceRule.cpp",
     "CSSFontFeatureValuesRule.cpp",
     "CSSFontPaletteValuesRule.cpp",
@@ -197,6 +212,7 @@ UNIFIED_SOURCES += [
     "CSSMediaRule.cpp",
     "CSSMozDocumentRule.cpp",
     "CSSNamespaceRule.cpp",
+    "CSSNestedDeclarations.cpp",
     "CSSPageRule.cpp",
     "CSSPositionTryRule.cpp",
     "CSSPropertyRule.cpp",
@@ -205,6 +221,7 @@ UNIFIED_SOURCES += [
     "CSSStartingStyleRule.cpp",
     "CSSStyleRule.cpp",
     "CSSSupportsRule.cpp",
+    "CSSViewTransitionRule.cpp",
     "DeclarationBlock.cpp",
     "DocumentStyleRootIterator.cpp",
     "ErrorReporter.cpp",
@@ -229,9 +246,7 @@ UNIFIED_SOURCES += [
     "MediaQueryList.cpp",
     "nsAnimationManager.cpp",
     "nsComputedDOMStyle.cpp",
-    "nsCSSAnonBoxes.cpp",
     "nsCSSProps.cpp",
-    "nsCSSPseudoElements.cpp",
     "nsCSSValue.cpp",
     "nsDOMCSSAttrDeclaration.cpp",
     "nsDOMCSSDeclaration.cpp",
@@ -241,6 +256,8 @@ UNIFIED_SOURCES += [
     "nsICSSDeclaration.cpp",
     "nsMediaFeatures.cpp",
     "nsROCSSPrimitiveValue.cpp",
+    "nsStyleChangeList.cpp",
+    "nsStyleSheetService.cpp",
     "nsStyleStruct.cpp",
     "nsStyleTransformMatrix.cpp",
     "nsStyleUtil.cpp",
@@ -251,6 +268,7 @@ UNIFIED_SOURCES += [
     "PreferenceSheet.cpp",
     "PreloadedStyleSheet.cpp",
     "PseudoStyleType.cpp",
+    "RestyleManager.cpp",
     "Rule.cpp",
     "ServoCSSParser.cpp",
     "ServoCSSRuleList.cpp",
@@ -258,6 +276,7 @@ UNIFIED_SOURCES += [
     "ServoStyleSet.cpp",
     "ShadowParts.cpp",
     "SharedStyleSheetCache.cpp",
+    "SharedSubResourceCache.cpp",
     "StreamLoader.cpp",
     "StyleAnimationValue.cpp",
     "StyleColor.cpp",
@@ -279,6 +298,9 @@ LOCAL_INCLUDES += [
     "/dom/html",
     "/dom/xul",
     "/image",
+    # For nsHttpChannel.h
+    "/netwerk/base",
+    "/netwerk/protocol/http",
 ]
 
 JAR_MANIFESTS += ["jar.mn"]
@@ -290,33 +312,28 @@ RESOURCE_FILES += [
 
 CONTENT_ACCESSIBLE_FILES += [
     "ImageDocument.css",
-    "res/accessiblecaret.css",
-    "res/details.css",
+    "res/close-12.svg",
     "res/plaintext.css",
-    "res/searchfield-cancel.svg",
     "res/viewsource.css",
     "TopLevelImageDocument.css",
     "TopLevelVideoDocument.css",
 ]
 
-
 GeneratedFile(
-    "nsCSSPropertyID.h",
-    script="GenerateCSSPropertyID.py",
-    entry_point="generate",
-    inputs=["nsCSSPropertyID.h.in", "!ServoCSSPropList.py"],
+    "NonCustomCSSPropertyId.h",
+    script="GenerateCSSProperties.py",
+    entry_point="gen_non_custom_css_property_id",
+    inputs=["NonCustomCSSPropertyId.h.in"],
 )
 GeneratedFile(
     "ServoCSSPropList.h",
-    script="GenerateServoCSSPropList.py",
-    entry_point="generate_header",
-    inputs=["!ServoCSSPropList.py"],
+    script="GenerateCSSProperties.py",
+    entry_point="gen_css_prop_list_header",
 )
 GeneratedFile(
-    "ServoCSSPropList.py",
-    script="GenerateServoCSSPropList.py",
-    entry_point="generate_data",
-    inputs=["ServoCSSPropList.mako.py"],
+    "PseudoStyleTypeList.h",
+    script="GeneratePseudoStyleTypeList.py",
+    entry_point="generate",
 )
 
 if CONFIG["COMPILE_ENVIRONMENT"]:
@@ -328,35 +345,28 @@ if CONFIG["COMPILE_ENVIRONMENT"]:
 
     GeneratedFile(
         "CompositorAnimatableProperties.h",
-        script="GenerateCompositorAnimatableProperties.py",
-        entry_point="generate",
-        inputs=["!ServoCSSPropList.py"],
+        script="GenerateCSSProperties.py",
+        entry_point="gen_compositor_animatable_properties",
     )
     GeneratedFile(
         "CountedUnknownProperties.h",
-        script="GenerateCountedUnknownProperties.py",
-        entry_point="generate",
+        script="GenerateCSSProperties.py",
+        entry_point="gen_counted_unknown_properties",
         inputs=[
             "/servo/components/style/properties/counted_unknown_properties.py",
         ],
     )
     GeneratedFile(
         "nsComputedDOMStyleGenerated.inc",
-        script="GenerateComputedDOMStyleGenerated.py",
-        entry_point="generate",
-        inputs=["!ServoCSSPropList.py"],
+        script="GenerateCSSProperties.py",
+        entry_point="gen_computed_style",
     )
     GeneratedFile(
         "nsCSSPropsGenerated.inc",
-        script="GenerateCSSPropsGenerated.py",
-        entry_point="generate",
-        inputs=["!ServoCSSPropList.py"],
+        script="GenerateCSSProperties.py",
+        entry_point="gen_ns_css_props",
     )
     CbindgenHeader(
         "ServoStyleConsts.h",
         inputs=["/servo/ports/geckolib", "/servo/components/style"],
     )
-
-    CONFIGURE_SUBST_FILES += [
-        "extra-bindgen-flags",
-    ]

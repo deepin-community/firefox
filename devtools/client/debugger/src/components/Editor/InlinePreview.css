@@ -35,11 +35,11 @@
       display: inline-block;
       width: 12px;
       height: 12px;
-      padding: 0px 4px;
+      padding: 0 4px;
       margin-top: -1px;
       vertical-align: middle;
 
-      background-image: url("chrome://devtools/content/debugger/images/trace.svg");
+      background-image: url("chrome://devtools/content/shared/components/images/trace.svg");
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;

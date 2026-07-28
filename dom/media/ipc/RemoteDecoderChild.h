@@ -1,20 +1,17 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef include_dom_media_ipc_RemoteDecoderChild_h
 #define include_dom_media_ipc_RemoteDecoderChild_h
 
-#include <functional>
-
+#include "mozilla/EnumeratedArray.h"
 #include "mozilla/PRemoteDecoderChild.h"
-#include "mozilla/RemoteDecoderManagerChild.h"
+#include "mozilla/RemoteMediaManagerChild.h"
 #include "mozilla/ShmemRecycleAllocator.h"
 
 namespace mozilla {
 
-class RemoteDecoderManagerChild;
+class RemoteMediaManagerChild;
 using mozilla::MediaDataDecoder;
 using mozilla::ipc::IPCResult;
 
@@ -25,7 +22,7 @@ class RemoteDecoderChild : public ShmemRecycleAllocator<RemoteDecoderChild>,
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(RemoteDecoderChild);
 
-  explicit RemoteDecoderChild(RemoteDecodeIn aLocation);
+  explicit RemoteDecoderChild(RemoteMediaIn aLocation);
 
   void ActorDestroy(ActorDestroyReason aWhy) override;
 
@@ -44,23 +41,33 @@ class RemoteDecoderChild : public ShmemRecycleAllocator<RemoteDecoderChild>,
   void SetSeekThreshold(const media::TimeUnit& aTime);
   MediaDataDecoder::ConversionRequired NeedsConversion() const;
   bool ShouldDecoderAlwaysBeRecycled() const;
+  using DecodeProperties =
+      EnumeratedArray<MediaDataDecoder::PropertyName,
+                      Maybe<MediaDataDecoder::PropertyValue>,
+                      MediaDataDecoder::sPropertyNameCount>;
+  const DecodeProperties& GetDecodeProperties() const {
+    return mDecodeProperties;
+  }
+
   void DestroyIPDL();
 
   // Called from IPDL when our actor has been destroyed
   void IPDLActorDestroyed();
 
-  RemoteDecoderManagerChild* GetManager();
+  RemoteMediaManagerChild* GetManager();
 
  protected:
   virtual ~RemoteDecoderChild();
   void AssertOnManagerThread() const;
+
+  nsresult GetCrashedErrorCode() const;
 
   virtual MediaResult ProcessOutput(DecodedOutputIPDL&& aDecodedData) = 0;
   virtual void RecordShutdownTelemetry(bool aForAbnormalShutdown) {}
 
   RefPtr<RemoteDecoderChild> mIPDLSelfRef;
   MediaDataDecoder::DecodedData mDecodedData;
-  const RemoteDecodeIn mLocation;
+  const RemoteMediaIn mLocation;
 
  private:
   const nsCOMPtr<nsISerialEventTarget> mThread;
@@ -72,10 +79,6 @@ class RemoteDecoderChild : public ShmemRecycleAllocator<RemoteDecoderChild>,
   MozPromiseHolder<MediaDataDecoder::FlushPromise> mFlushPromise;
   MozPromiseHolder<mozilla::ShutdownPromise> mShutdownPromise;
 
-  void HandleRejectionError(
-      const ipc::ResponseRejectReason& aReason,
-      std::function<void(const MediaResult&)>&& aCallback);
-
   nsCString mHardwareAcceleratedReason;
   nsCString mDescription;
   nsCString mProcessName;
@@ -85,6 +88,7 @@ class RemoteDecoderChild : public ShmemRecycleAllocator<RemoteDecoderChild>,
   MediaDataDecoder::ConversionRequired mConversion =
       MediaDataDecoder::ConversionRequired::kNeedNone;
   bool mShouldDecoderAlwaysBeRecycled = false;
+  DecodeProperties mDecodeProperties;
 };
 
 }  // namespace mozilla

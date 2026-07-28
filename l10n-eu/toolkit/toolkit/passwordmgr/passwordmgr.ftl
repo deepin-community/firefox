@@ -30,10 +30,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = Ez eguneratu
     .accesskey = E
+primary-password-prompt-message = Idatzi zure pasahitz nagusia.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Erabiltzaile-izenik ez
-password-manager-toggle-password =
-    .label = Erakutsi pasahitza
-    .accesskey = r
 password-manager-confirm-password-change = Berretsi pasahitz aldaketa
 password-manager-select-username = Hautatu eguneratu beharreko saio-hasiera:

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,10 +13,11 @@ namespace loader {
 
 void ScriptCacheChild::Init(const Maybe<FileDescriptor>& cacheFile,
                             bool wantCacheData) {
+  AssertIsOnMainThread();
   mWantCacheData = wantCacheData;
 
   auto& cache = ScriptPreloader::GetChildSingleton();
-  Unused << cache.InitCache(cacheFile, this);
+  (void)cache.InitCache(cacheFile, this);
 
   if (!wantCacheData) {
     // If the parent process isn't expecting any cache data from us, we're
@@ -33,13 +32,16 @@ void ScriptCacheChild::SendScriptsAndFinalize(
     ScriptPreloader::ScriptHash& scripts) {
   MOZ_ASSERT(mWantCacheData);
 
-  AutoSafeJSAPI jsapi;
-
   auto matcher = ScriptPreloader::Match<ScriptPreloader::ScriptStatus::Saved>();
+
+  JS::FrontendContext* fc = JS::NewFrontendContext();
+  if (!fc) {
+    return;
+  }
 
   nsTArray<ScriptData> dataArray;
   for (auto& script : IterHash(scripts, matcher)) {
-    if (!script->mSize && !script->XDREncode(jsapi.cx())) {
+    if (!script->mSize && !script->XDREncode(fc)) {
       continue;
     }
 
@@ -55,6 +57,8 @@ void ScriptCacheChild::SendScriptsAndFinalize(
       script->FreeData();
     }
   }
+
+  JS::DestroyFrontendContext(fc);
 
   Send__delete__(this, dataArray);
 }
@@ -82,6 +86,7 @@ IPCResult ScriptCacheParent::Recv__delete__(nsTArray<ScriptData>&& scripts) {
     cache.NoteStencil(script.url(), script.cachePath(), processType,
                       std::move(script.xdrData()), script.loadTime());
   }
+  cache.NoteReceivedAllChildStencilsForProcess(processType);
 
   return IPC_OK();
 }

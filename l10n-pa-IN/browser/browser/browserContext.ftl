@@ -93,43 +93,46 @@ main-context-menu-page-save =
 ## Simple menu items
 
 main-context-menu-bookmark-page =
-    .aria-label = …ਸਫ਼ਾ ਬੁੱਕਮਾਰਕ ਕਰੋ
+    .aria-label = …ਸਫ਼ੇ ਨੂੰ ਬੁੱਕਮਾਰਕ ਕਰੋ
     .accesskey = m
-    .tooltiptext = ਸਫ਼ਾ ਬੁੱਕਮਾਰਕ ਕਰੋ
+    .tooltiptext = ਸਫ਼ੇ ਨੂੰ ਬੁੱਕਮਾਰਕ ਕਰੋ
 # This menuitem is only visible on macOS
 # Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
 main-context-menu-bookmark-page-mac =
-    .label = …ਸਫ਼ਾ ਬੁੱਕਮਾਰਕ ਕਰੋ
+    .label = …ਸਫ਼ੇ ਨੂੰ ਬੁੱਕਮਾਰਕ ਕਰੋ
     .accesskey = m
 # This menuitem is only visible on macOS
 # Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
 main-context-menu-edit-bookmark-mac =
-    .label = …ਬੁੱਕਮਾਰਕ ਸੋਧੋ
+    .label = …ਬੁੱਕਮਾਰਕ ਨੂੰ ਸੋਧੋ
     .accesskey = m
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 main-context-menu-bookmark-page-with-shortcut =
-    .aria-label = …ਸਫ਼ਾ ਬੁੱਕਮਾਰਕ ਕਰੋ
+    .aria-label = …ਸਫ਼ੇ ਨੂੰ ਬੁੱਕਮਾਰਕ ਕਰੋ
     .accesskey = m
     .tooltiptext = ਸਫ਼ਾ ਬੁਕਮਾਰਕ ਕਰੋ({ $shortcut })
 main-context-menu-edit-bookmark =
-    .aria-label = …ਬੁੱਕਮਾਰਕ ਸੋਧੋ
+    .aria-label = …ਬੁੱਕਮਾਰਕ ਨੂੰ ਸੋਧੋ
     .accesskey = m
-    .tooltiptext = ਬੁੱਕਮਾਰਕ ਸੋਧੋ
+    .tooltiptext = ਬੁੱਕਮਾਰਕ ਨੂੰ ਸੋਧੋ
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 main-context-menu-edit-bookmark-with-shortcut =
-    .aria-label = …ਬੁੱਕਮਾਰਕ ਸੋਧੋ
+    .aria-label = …ਬੁੱਕਮਾਰਕ ਨੂੰ ਸੋਧੋ
     .accesskey = m
-    .tooltiptext = ਬੁੱਕਮਾਰਕ ਸੋਧੋ ({ $shortcut })
+    .tooltiptext = ਬੁੱਕਮਾਰਕ ਨੂੰ ਸੋਧੋ ({ $shortcut })
 main-context-menu-open-link =
     .label = ਲਿੰਕ ਨੂੰ ਖੋਲ੍ਹੋ
     .accesskey = O
 main-context-menu-open-link-new-tab =
     .label = ਨਵੀਂ ਟੈਬ ‘ਚ ਖੋਲ੍ਹੋ
     .accesskey = T
+main-context-menu-open-link-split-view =
+    .label = ਲਿੰਕ ਨੂੰ ਵੰਡੀ ਹੋਈ ਝਲਕ ਵਿੱਚ ਖੋਲ੍ਹੋ
+    .accesskey = M
 main-context-menu-open-link-container-tab =
     .label = ਲਿੰਕ ਨੂੰ ਨਵੀਂ ਕਨਟੇਨਰ ਟੈਬ ‘ਚ ਖੋਲ੍ਹੋ
     .accesskey = C
@@ -149,24 +152,26 @@ main-context-menu-save-link-to-pocket =
     .label = ਲਿੰਕ ਨੂੰ { -pocket-brand-name } ਵਿੱਚ ਸੰਭਾਲੋ
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = ਈਮੇਲ ਐਡਰੈੱਸ ਨੂੰ ਕਾਪੀ ਕਰੋ
     .accesskey = E
 main-context-menu-copy-phone =
-    .label = ਫ਼ੋਨ ਨੰਬਰ ਕਾਪੀ ਕਰੋ
+    .label = ਫ਼ੋਨ ਨੰਬਰ ਨੂੰ ਕਾਪੀ ਕਰੋ
     .accesskey = o
 main-context-menu-copy-link-simple =
     .label = ਲਿੰਕ ਕਾਪੀ ਕਰੋ
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = ਸਾਈਟ ਟਰੈਕਿੰਗ ਤੋਂ ਬਿਨਾਂ ਲਿੰਕ ਕਾਪੀ ਕਰੋ
-    .accesskey = y
+main-context-menu-preview-link =
+    .label = ਲਿੰਕ ਦੀ ਝਲਕ
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = ਸਾਫ਼ ਲਿੰਕ ਨੂੰ ਕਾਪੀ ਕਰੋ
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -210,19 +215,19 @@ main-context-menu-media-loop =
 ## because the two context-menu items are mutually exclusive.
 
 main-context-menu-media-show-controls =
-    .label = ਕੰਟਰੋਲ ਵੇਖੋ
+    .label = ਕੰਟਰੋਲਾਂ ਨੂੰ ਵੇਖੋ
     .accesskey = C
 main-context-menu-media-hide-controls =
-    .label = ਕੰਟਰੋਲ ਨੂੰ ਓਹਲੇ ਕਰੋ
+    .label = ਕੰਟਰੋਲਾਂ ਨੂੰ ਓਹਲੇ ਕਰੋ
     .accesskey = C
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = ਪੂਰੀ ਸਕਰੀਨ
     .accesskey = F
 main-context-menu-media-video-leave-fullscreen =
-    .label = ਪੂਰੀ ਸਕਰੀਨ ਬੰਦ ਕਰੋ
+    .label = ਪੂਰੀ ਸਕਰੀਨ ਤੋਂ ਬਾਹਰ
     .accesskey = u
 # This is used when right-clicking on a video in the
 # content area when the Picture-in-Picture feature is enabled.
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = ਵੇਰਵਿਆਂ ਨੂੰ ਵੇਖੋ
     .accesskey = D
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = { $engine } ਨਾਲ ਚਿੱਤਰ ਲੱਭੋ
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = …ਵੀਡੀਓ ਨੂੰ ਇੰਝ ਸੰਭਾਲੋ
     .accesskey = v
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = …ਆਡੀਓ ਨੂੰ ਈਮੇਲ ਕਰੋ
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = ਡਿਵਾਈਸ ਉੱਤੇ ਭੇਜੋ
+    .accesskey = n
+main-context-menu-send-to-mobile-2 =
+    .label = ਮੋਬਾਈਲ ਉੱਤੇ ਭੇਜੋ
+    .accesskey = n
+main-context-menu-send-to-mobile-sign-in = ਟੈਬਾਂ ਭੇਜਣ ਲਈ ਸਾਈਨ ਇਨ ਕਰੋ
+main-context-menu-send-to-mobile-enable-sync2 = ਟੈਬ ਭੇਜਣ ਲਈ ਸਿੰਕ ਨੂੰ ਸਮਰੱਥ ਕਰੋ
+main-context-menu-send-to-mobile-connect-phone2 = ਆਪਣੇ ਫ਼ੋਨ ਨੂੰ ਕਨੈਕਟ ਕਰੋ
+main-context-menu-send-to-mobile-device-missing2 = ਆਪਣੇ ਫ਼ੋਨ ਨੂੰ ਨਹੀਂ ਵੇਖ ਰਹੇ ਹੋ?
+main-context-menu-send-to-mobile-sign-in-from-link = ਕੋਈ ਲਿੰਕ ਭੇਜਣ ਲਈ ਸਾਈਨ ਇਨ ਕਰੋ
+main-context-menu-send-to-mobile-sign-in-from-page = ਕੋਈ ਸਫ਼ੇ ਨੂੰ  ਭੇਜਣ ਲਈ ਸਾਈਨ ਇਨ ਕਰੋ
+main-context-menu-send-to-mobile-enable-sync3 = ਟੈਬਾਂ ਨੂੰ ਭੇਜਣ ਲਈ ਸਿੰਕ ਨੂੰ ਚਾਲੂ ਕਰੋ
+main-context-menu-send-to-mobile-enable-sync-from-link = ਕਿਸੇ ਲਿੰਕ ਨੂੰ ਭੇਜਣ ਲਈ ਸਿੰਕ ਨੂੰ ਚਾਲੂ ਕਰੋ
+main-context-menu-send-to-mobile-enable-sync-from-page = ਕਿਸੇ ਸਫ਼ੇ ਨੂੰ ਭੇਜਣ ਲਈ ਸਿੰਕ ਨੂੰ ਚਾਲੂ ਕਰੋ
+main-context-menu-send-to-mobile-connect-phone3 = ਟੈਬਾਂ ਨੂੰ ਭੇਜਣ ਲਈ ਕਿਸੇ ਡਿਵਾਈਸ ਨੂੰ ਕਨੈਕਟ ਕਰੋ
+main-context-menu-send-to-mobile-connect-phone-from-link = ਕਿਸੇ ਲਿੰਕ ਨੂੰ ਭੇਜਣ ਲਈ ਕਿਸੇ ਡਿਵਾਈਸ ਨੂੰ ਕਨੈਕਟ ਕਰੋ
+main-context-menu-send-to-mobile-connect-phone-from-page = ਕਿਸੇ ਸਫ਼ੇ ਨੂੰ ਭੇਜਣ ਲਈ ਕਿਸੇ ਡਿਵਾਈਸ ਨੂੰ ਕਨੈਕਟ ਕਰੋ
 main-context-menu-save-to-pocket =
     .label = ਸਫ਼ੇ ਨੂੰ { -pocket-brand-name } ‘ਚ ਸੰਭਾਲੋ
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = ਸਫ਼ੇ ਨੂੰ ਡਿਵਾਈਸ ‘ਤੇ ਭੇਜੋ
     .accesskey = D
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = ਸੰਭਾਲੇ ਲਾਗਇਨ ਨੂੰ ਵਰਤੋਂ
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = ਇਸ ਖੋਜ ਲਈ ਸ਼ਬਦ ਦਿਓ…
     .accesskey = K
+main-context-menu-add-engine =
+    .label = ਖੋਜ ਇੰਜਣ ਨੂੰ ਖੋਜੋ
+    .accesskey = S
 main-context-menu-link-send-to-device =
     .label = ਲਿੰਕ ਨੂੰ ਡਿਵਾਈਸ ਉੱਤੇ ਭੇਜੋ
     .accesskey = D
+main-context-menu-link-send-to-mobile =
+    .label = ਲਿੰਕ ਮੋਬਾਈਲ ਉੱਤੇ ਭੇਜੋ
+    .accesskey = n
 main-context-menu-frame =
     .label = ਇਹ ਫਰੇਮ
     .accesskey = h
@@ -338,7 +370,7 @@ main-context-menu-frame-reload =
     .label = ਫਰੇਮ ਨੂੰ ਮੁੜ ਲੋਡ ਕਰੋ
     .accesskey = R
 main-context-menu-frame-add-bookmark =
-    .label = …ਫਰੇਮ ਬੁੱਕਮਾਰਕ ਕਰੋ
+    .label = …ਫਰੇਮ ਨੂੰ ਬੁੱਕਮਾਰਕ ਕਰੋ
     .accesskey = m
 main-context-menu-frame-save-as =
     .label = …ਫਰੇਮ ਨੂੰ ਇੰਝ ਸੰਭਾਲੋ
@@ -387,5 +419,15 @@ main-context-menu-open-link-in-container-tab =
     .label = ਲਿੰਕ ਨਵੀੰ { $containerName } ਟੈਬ ਵਿੱਚ ਖੋਲ੍ਹੋ
     .accesskey = T
 main-context-menu-reveal-password =
-    .label = ਪਾਸਵਰਡ ਦਿਖਾਓ
+    .label = ਪਾਸਵਰਡ ਨੂੰ ਦਿਖਾਓ
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = ਨਵਾਂ
+main-context-menu-pdfjs-copy-page =
+    .label = ਸਫ਼ੇ ਨੂੰ ਕਾਪੀ ਕਰੋ
+main-context-menu-pdfjs-cut-page =
+    .label = ਸਫ਼ੇ ਨੂੰ ਕੱਟੋ
+main-context-menu-pdfjs-delete-page =
+    .label = ਸਫ਼ੇ ਨੂੰ ਹਟਾਓ
+main-context-menu-pdfjs-save-page =
+    .label = ਚੋਣ ਨੂੰ ਇਸ ਵਜੋਂ ਸੰਭਾਲੋ…

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,9 +21,8 @@
 #include "Registry.h"
 
 #include "json/json.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/CmdLineAndEnvUtils.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/ToolkitMozappsDefaultagentMetrics.h"
 #include "mozilla/glean/GleanPings.h"
 #include "mozilla/HelperMacros.h"
 #include "mozilla/UniquePtr.h"
@@ -160,7 +157,7 @@ static mozilla::WindowsError SendDesktopTelemetryPing(
     const std::string prevOSVersion, const std::string osLocale,
     const std::string notificationType, const std::string notificationShown,
     const std::string notificationAction,
-    const std::string prevNotificationAction) {
+    const std::string prevNotificationAction, uint32_t daysSinceLastAppLaunch) {
   // Fill in the ping JSON object.
   Json::Value ping;
   ping["build_channel"] = MOZ_STRINGIFY(MOZ_UPDATE_CHANNEL);
@@ -175,6 +172,7 @@ static mozilla::WindowsError SendDesktopTelemetryPing(
   ping["notification_shown"] = notificationShown;
   ping["notification_action"] = notificationAction;
   ping["previous_notification_action"] = prevNotificationAction;
+  ping["days_since_last_app_launch"] = daysSinceLastAppLaunch;
 
   // Stringify the JSON.
   Json::StreamWriterBuilder jsonStream;
@@ -221,9 +219,8 @@ static mozilla::WindowsError SendDesktopTelemetryPing(
 
   const wchar_t* pingsenderArgs[] = {pingsenderPath.c_str(), url.c_str(),
                                      pingFilePath.c_str()};
-  mozilla::UniquePtr<wchar_t[]> pingsenderCmdLine(
-      mozilla::MakeCommandLine(mozilla::ArrayLength(pingsenderArgs),
-                               const_cast<wchar_t**>(pingsenderArgs)));
+  mozilla::UniquePtr<wchar_t[]> pingsenderCmdLine(mozilla::MakeCommandLine(
+      std::size(pingsenderArgs), const_cast<wchar_t**>(pingsenderArgs)));
 
   PROCESS_INFORMATION pi;
   STARTUPINFOW si = {sizeof(si)};
@@ -449,9 +446,10 @@ HRESULT MaybeWritePreviousNotificationAction(
 }
 
 // Sends Firefox Desktop and Glean telemetry for the Default Agent in parallel.
-HRESULT SendDefaultAgentPing(
-    const DefaultBrowserInfo& browserInfo, const DefaultPdfInfo& pdfInfo,
-    const NotificationActivities& activitiesPerformed) {
+HRESULT SendDefaultAgentPing(const DefaultBrowserInfo& browserInfo,
+                             const DefaultPdfInfo& pdfInfo,
+                             const NotificationActivities& activitiesPerformed,
+                             uint32_t daysSinceLastAppLaunch) {
   std::string currentDefaultBrowser =
       GetStringForBrowser(browserInfo.currentDefaultBrowser);
   std::string currentDefaultPdf =
@@ -570,10 +568,13 @@ HRESULT SendDefaultAgentPing(
     mozilla::glean::system_default::pdf_handler.Set(
         nsDependentCString(currentDefaultPdf.c_str()));
 
+    mozilla::glean::defaultagent::days_since_last_app_launch.Set(
+        daysSinceLastAppLaunch);
     return SendDesktopTelemetryPing(
                currentDefaultBrowser, previousDefaultBrowser, currentDefaultPdf,
                osVersion, prevOSVersion, osLocale, notificationType,
-               notificationShown, notificationAction, prevNotificationAction)
+               notificationShown, notificationAction, prevNotificationAction,
+               daysSinceLastAppLaunch)
         .AsHResult();
   }();
 

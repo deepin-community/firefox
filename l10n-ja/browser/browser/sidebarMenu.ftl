@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = ブックマーク
+sidebar-menu-bookmarks-2 = ブックマーク
 sidebar-menu-history =
     .label = 履歴
 sidebar-menu-synced-tabs =
-    .label = 同期タブ
-sidebar-menu-megalist =
-    .label = パスワード
+    .label = 同期したタブ
 sidebar-menu-close =
     .label = サイドバーを閉じる
 sidebar-close-button =

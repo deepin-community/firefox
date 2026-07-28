@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -88,12 +87,12 @@ class nsAutoreleasePool {
 
 @interface NSApplication (Undocumented)
 
-// Present in all versions of OS X from (at least) 10.2.8 through 10.5.
+// Present in all versions of macOS from (at least) 10.2.8 through 10.5.
 - (BOOL)_isRunningModal;
 - (BOOL)_isRunningAppModal;
 
 // Send an event to the current Cocoa app-modal session.  Present in all
-// versions of OS X from (at least) 10.2.8 through 10.5.
+// versions of macOS from (at least) 10.2.8 through 10.5.
 - (void)_modalSession:(NSModalSession)aSession sendEvent:(NSEvent*)theEvent;
 
 @end
@@ -250,9 +249,6 @@ class nsCocoaUtils {
    */
   static BOOL ShouldRestoreStateDueToLaunchAtLogin();
 
-  static void PrepareForNativeAppModalDialog();
-  static void CleanUpAfterNativeAppModalDialog();
-
   // 3 utility functions to go from a frame of imgIContainer to CGImage and then
   // to NSImage Convert imgIContainer -> CGImageRef, caller owns result
 
@@ -286,8 +282,8 @@ class nsCocoaUtils {
      the <code>NSImage</code>.
       @param aImage the image to extract a frame from
       @param aWhichFrame the frame to extract (see imgIContainer FRAME_*)
-      @param aComputedStyle the ComputedStyle of the element that the image is
-     for, to support SVG context paint properties, can be null
+      @param aSVGContext the SVG context paint properties for the image. Can be
+     null.
       @param aResult the resulting NSImage
       @param scaleFactor the desired scale factor of the NSImage (2 for a retina
      display)
@@ -298,18 +294,16 @@ class nsCocoaUtils {
    */
   static nsresult CreateNSImageFromImageContainer(
       imgIContainer* aImage, uint32_t aWhichFrame,
-      const nsPresContext* aPresContext,
-      const mozilla::ComputedStyle* aComputedStyle,
-      const NSSize& aPreferredSize, NSImage** aResult, CGFloat scaleFactor,
-      bool* aIsEntirelyBlack = nullptr);
+      const mozilla::SVGImageContext* aSVGContext, const NSSize& aPreferredSize,
+      NSImage** aResult, CGFloat scaleFactor, bool* aIsEntirelyBlack = nullptr);
 
   /** Creates a Cocoa <code>NSImage</code> from a frame of an
      <code>imgIContainer</code>. The new <code>NSImage</code> will have both a
      regular and HiDPI representation. The caller owns the <code>NSImage</code>.
       @param aImage the image to extract a frame from
       @param aWhichFrame the frame to extract (see imgIContainer FRAME_*)
-      @param aComputedStyle the ComputedStyle of the element that the image is
-     for, to support SVG context paint properties, can be null
+      @param aSVGContext the SVG context paint properties for the image. Can be
+     null.
       @param aResult the resulting NSImage
       @param aIsEntirelyBlack an outparam that, if non-null, will be set to a
                               bool that indicates whether the RGB values on all
@@ -318,10 +312,8 @@ class nsCocoaUtils {
    */
   static nsresult CreateDualRepresentationNSImageFromImageContainer(
       imgIContainer* aImage, uint32_t aWhichFrame,
-      const nsPresContext* aPresContext,
-      const mozilla::ComputedStyle* aComputedStyle,
-      const NSSize& aPreferredSize, NSImage** aResult,
-      bool* aIsEntirelyBlack = nullptr);
+      const mozilla::SVGImageContext* aSVGContext, const NSSize& aPreferredSize,
+      NSImage** aResult, bool* aIsEntirelyBlack = nullptr);
 
   /**
    * Returns nsAString for aSrc.
@@ -374,7 +366,7 @@ class nsCocoaUtils {
   /**
    * Makes a cocoa event from a widget keyboard event.
    */
-  static NSEvent* MakeNewCococaEventFromWidgetEvent(
+  static NSEvent* MakeNewCocoaEventFromWidgetEvent(
       const mozilla::WidgetKeyboardEvent& aKeyEvent, NSInteger aWindowNumber,
       NSGraphicsContext* aContext);
 
@@ -508,10 +500,16 @@ class nsCocoaUtils {
       mozilla::Modifiers aModifiers);
 
   /**
-   * Return true if aAvailableType is a vaild NSPasteboard type.
+   * Return true if aAvailableType is a valid NSPasteboard type.
    */
   static bool IsValidPasteboardType(NSString* aAvailableType,
                                     bool aAllowFileURL);
+
+  /**
+   * Get data for specific type from NSPasteboardItem.
+   */
+  static already_AddRefed<nsISupports> GetDataFromPasteboardItem(
+      const nsACString& aFlavor, NSPasteboardItem* aItem);
 
   /**
    * Set data for specific type from NSPasteboardItem to Transferable.

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -24,20 +23,20 @@
 #include "nsIFrame.h"
 #include "mozilla/dom/Document.h"
 #include "nsIContent.h"
-#include "nsTextFragment.h"
 #include "nsIEditor.h"
 
 #include "nsIDocShellTreeItem.h"
 #include "nsIInterfaceRequestorUtils.h"
 #include "nsIObserverService.h"
-#include "nsISound.h"
 #include "nsFocusManager.h"
+#include "mozilla/dom/CharacterDataBuffer.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/HTMLInputElement.h"
 #include "mozilla/dom/HTMLTextAreaElement.h"
 #include "mozilla/dom/Link.h"
 #include "mozilla/dom/RangeBinding.h"
 #include "mozilla/dom/Selection.h"
+#include "mozilla/StaticPrefs_accessibility.h"
 #include "nsLayoutUtils.h"
 #include "nsRange.h"
 
@@ -64,9 +63,7 @@ NS_IMPL_CYCLE_COLLECTION_WEAK(nsTypeAheadFind, mFoundLink, mFoundEditable,
 
 nsTypeAheadFind::nsTypeAheadFind()
     : mStartLinksOnlyPref(false),
-      mCaretBrowsingOn(false),
       mDidAddObservers(false),
-      mLastFindLength(0),
       mCaseSensitive(false),
       mEntireWord(false),
       mMatchDiacritics(false) {}
@@ -76,7 +73,6 @@ nsTypeAheadFind::~nsTypeAheadFind() {
       do_GetService(NS_PREFSERVICE_CONTRACTID));
   if (prefInternal) {
     prefInternal->RemoveObserver("accessibility.typeaheadfind", this);
-    prefInternal->RemoveObserver("accessibility.browsewithcaret", this);
   }
 }
 
@@ -95,9 +91,7 @@ nsresult nsTypeAheadFind::Init(nsIDocShell* aDocShell) {
     mDidAddObservers = true;
     // ----------- Listen to prefs ------------------
     nsresult rv =
-        prefInternal->AddObserver("accessibility.browsewithcaret", this, true);
-    NS_ENSURE_SUCCESS(rv, rv);
-    rv = prefInternal->AddObserver("accessibility.typeaheadfind", this, true);
+        prefInternal->AddObserver("accessibility.typeaheadfind", this, true);
     NS_ENSURE_SUCCESS(rv, rv);
 
     // ----------- Get initial preferences ----------
@@ -113,17 +107,6 @@ nsresult nsTypeAheadFind::PrefsReset() {
 
   prefBranch->GetBoolPref("accessibility.typeaheadfind.startlinksonly",
                           &mStartLinksOnlyPref);
-
-  bool isSoundEnabled = true;
-  prefBranch->GetBoolPref("accessibility.typeaheadfind.enablesound",
-                          &isSoundEnabled);
-  nsAutoCString soundStr;
-  if (isSoundEnabled)
-    prefBranch->GetCharPref("accessibility.typeaheadfind.soundURL", soundStr);
-
-  mNotFoundSoundURL = soundStr;
-
-  prefBranch->GetBoolPref("accessibility.browsewithcaret", &mCaretBrowsingOn);
 
   return NS_OK;
 }
@@ -216,7 +199,7 @@ void nsTypeAheadFind::ReleaseFoundResultsAndDisconnect() {
 }
 
 void nsTypeAheadFind::SetCurrentWindow(nsPIDOMWindowInner* aWindow) {
-  BindToOwner(aWindow->AsGlobal());
+  BindToGlobal(aWindow->AsGlobal());
 }
 
 NS_IMETHODIMP
@@ -267,33 +250,6 @@ void nsTypeAheadFind::DisconnectFromOwner() {
 
 void nsTypeAheadFind::SaveFind() {
   if (mWebBrowserFind) mWebBrowserFind->SetSearchString(mTypeAheadBuffer);
-
-  // save the length of this find for "not found" sound
-  mLastFindLength = mTypeAheadBuffer.Length();
-}
-
-void nsTypeAheadFind::PlayNotFoundSound() {
-  if (mNotFoundSoundURL.IsEmpty())  // no sound
-    return;
-
-  nsCOMPtr<nsISound> soundInterface = do_GetService("@mozilla.org/sound;1");
-
-  if (soundInterface) {
-    if (mNotFoundSoundURL.EqualsLiteral("beep")) {
-      soundInterface->Beep();
-      return;
-    }
-
-    nsCOMPtr<nsIURI> soundURI;
-    if (mNotFoundSoundURL.EqualsLiteral("default"))
-      NS_NewURI(getter_AddRefs(soundURI),
-                nsLiteralCString(TYPEAHEADFIND_NOTFOUND_WAV_URL));
-    else
-      NS_NewURI(getter_AddRefs(soundURI), mNotFoundSoundURL);
-
-    nsCOMPtr<nsIURL> soundURL(do_QueryInterface(soundURI));
-    if (soundURL) soundInterface->Play(soundURL);
-  }
 }
 
 nsresult nsTypeAheadFind::FindItNow(uint32_t aMode, bool aIsLinksOnly,
@@ -422,7 +378,7 @@ nsresult nsTypeAheadFind::FindItNow(uint32_t aMode, bool aIsLinksOnly,
       bool canSeeRange = IsRangeVisible(returnRange, aIsFirstVisiblePreferred,
                                         false, &usesIndependentSelection);
 
-      mStartPointRange = returnRange->CloneRange();
+      RefPtr newBoundaryRange = returnRange->CloneRange();
 
       // If we can't see the range, we still might be able to scroll
       // it into view if usesIndependentSelection is true. If both are
@@ -432,7 +388,13 @@ nsresult nsTypeAheadFind::FindItNow(uint32_t aMode, bool aIsLinksOnly,
           (mStartLinksOnlyPref && aIsLinksOnly && !isStartingLink)) {
         // We want to jump over this range, so collapse to the start if we're
         // finding backwards and vice versa.
-        mStartPointRange->Collapse(findPrev);
+        if (findPrev) {
+          mEndPointRange = newBoundaryRange;
+          mEndPointRange->Collapse(true);
+        } else {
+          mStartPointRange = newBoundaryRange;
+          mStartPointRange->Collapse(false);
+        }
         continue;
       }
 
@@ -489,14 +451,12 @@ nsresult nsTypeAheadFind::FindItNow(uint32_t aMode, bool aIsLinksOnly,
         nsINode* node = returnRange->GetStartContainer();
         while (node) {
           nsCOMPtr<nsIEditor> editor;
-          if (RefPtr<HTMLInputElement> input =
-                  HTMLInputElement::FromNode(node)) {
+          if (RefPtr input = HTMLInputElement::FromNode(node)) {
             editor = input->GetTextEditor();
-          } else if (RefPtr<HTMLTextAreaElement> textarea =
-                         HTMLTextAreaElement::FromNode(node)) {
+          } else if (RefPtr textarea = HTMLTextAreaElement::FromNode(node)) {
             editor = textarea->GetTextEditor();
           } else {
-            node = node->GetParentNode();
+            node = node->GetParentOrShadowHostNode();
             continue;
           }
 
@@ -555,20 +515,34 @@ nsresult nsTypeAheadFind::FindItNow(uint32_t aMode, bool aIsLinksOnly,
                       getter_AddRefs(mFoundLink));
       }
 
-      // Change selection color to ATTENTION and scroll to it.  Careful: we
-      // must wait until after we goof with focus above before changing to
-      // ATTENTION, or when we MoveFocus() and the selection is not on a
-      // link, we'll blur, which will lose the ATTENTION.
+      // Change selection color to ATTENTION.  Careful: we must wait until
+      // after we goof with focus above before changing to ATTENTION, or when
+      // we MoveFocus() and the selection is not on a link, we'll blur, which
+      // will lose the ATTENTION.
       if (selectionController) {
-        // Beware! This may flush notifications via synchronous
-        // ScrollSelectionIntoView.
         SetSelectionModeAndRepaint(nsISelectionController::SELECTION_ATTENTION);
-        selectionController->ScrollSelectionIntoView(
-            nsISelectionController::SELECTION_NORMAL,
-            nsISelectionController::SELECTION_WHOLE_SELECTION,
-            nsISelectionController::SCROLL_VERTICAL_CENTER |
-                nsISelectionController::SCROLL_SYNCHRONOUS);
       }
+
+      NS_DispatchToMainThread(NS_NewRunnableFunction(
+          "AncestorRevealingAlgorithm",
+          [self = RefPtr{this}, returnRange = RefPtr{returnRange},
+           selectionController = nsCOMPtr{selectionController}]()
+              MOZ_CAN_RUN_SCRIPT_BOUNDARY_LAMBDA {
+                // Reveal hidden-until-found and closed details elements.
+                // https://html.spec.whatwg.org/#interaction-with-details-and-hidden=until-found
+                if (RefPtr startNode = returnRange->GetStartContainer()) {
+                  startNode->AncestorRevealingAlgorithm(IgnoreErrors());
+                }
+                // Scroll to the selection.
+                if (selectionController) {
+                  selectionController->ScrollSelectionIntoView(
+                      SelectionType::eNormal,
+                      nsISelectionController::SELECTION_WHOLE_SELECTION,
+                      AxisScrollParams(WhereToScroll::Center),
+                      AxisScrollParams(), ScrollFlags::None,
+                      SelectionScrollMode::SyncFlush);
+                }
+              }));
 
       SetCurrentWindow(window);
       *aResult = hasWrapped ? FIND_WRAPPED : FIND_FOUND;
@@ -617,24 +591,9 @@ nsresult nsTypeAheadFind::FindItNow(uint32_t aMode, bool aIsLinksOnly,
     }
 
     if (continueLoop) {
-      if (NS_FAILED(GetSearchContainers(
-              currentContainer, nullptr, aIsFirstVisiblePreferred, findPrev,
-              getter_AddRefs(presShell), getter_AddRefs(presContext)))) {
-        continue;
-      }
-
-      if (findPrev) {
-        // Reverse mode: swap start and end points, so that we start
-        // at end of document and go to beginning
-        RefPtr<nsRange> tempRange = mStartPointRange->CloneRange();
-        if (!mEndPointRange) {
-          mEndPointRange = nsRange::Create(presShell->GetDocument());
-        }
-
-        mStartPointRange = mEndPointRange;
-        mEndPointRange = tempRange;
-      }
-
+      (void)GetSearchContainers(
+          currentContainer, nullptr, aIsFirstVisiblePreferred, findPrev,
+          getter_AddRefs(presShell), getter_AddRefs(presContext));
       continue;
     }
 
@@ -699,22 +658,10 @@ nsresult nsTypeAheadFind::GetSearchContainers(
 
   if (!doc) return NS_ERROR_FAILURE;
 
-  nsCOMPtr<nsIContent> rootContent;
-  if (doc->IsHTMLOrXHTML()) {
-    rootContent = doc->GetBody();
-  }
-
-  if (!rootContent) {
-    rootContent = doc->GetRootElement();
-    if (!rootContent) {
-      return NS_ERROR_FAILURE;
-    }
-  }
-
   if (!mSearchRange) {
     mSearchRange = nsRange::Create(doc);
   }
-  nsCOMPtr<nsINode> searchRootNode(rootContent);
+  nsCOMPtr<nsINode> searchRootNode(doc);
 
   mSearchRange->SelectNodeContents(*searchRootNode, IgnoreErrors());
 
@@ -742,30 +689,21 @@ nsresult nsTypeAheadFind::GetSearchContainers(
   }
 
   if (!currentSelectionRange) {
-    mStartPointRange = mSearchRange->CloneRange();
     // We want to search in the visible selection range. That means that the
     // start point needs to be the end if we're looking backwards, or vice
     // versa.
-    mStartPointRange->Collapse(!aFindPrev);
+    mStartPointRange = mSearchRange->CloneRange();
+    mStartPointRange->Collapse(true);
+    mEndPointRange = mSearchRange->CloneRange();
+    mEndPointRange->Collapse(false);
   } else {
-    uint32_t startOffset;
-    nsCOMPtr<nsINode> startNode;
     if (aFindPrev) {
-      startNode = currentSelectionRange->GetStartContainer();
-      startOffset = currentSelectionRange->StartOffset();
+      (void)mEndPointRange->SetStartAndEnd(currentSelectionRange->StartRef(),
+                                           currentSelectionRange->StartRef());
     } else {
-      startNode = currentSelectionRange->GetEndContainer();
-      startOffset = currentSelectionRange->EndOffset();
+      (void)mStartPointRange->SetStartAndEnd(currentSelectionRange->EndRef(),
+                                             currentSelectionRange->EndRef());
     }
-
-    if (!startNode) {
-      startNode = rootContent;
-    }
-
-    // We need to set the start point this way, other methods haven't worked
-    mStartPointRange->SelectNode(*startNode, IgnoreErrors());
-    mStartPointRange->SetStart(*startNode, startOffset, IgnoreErrors());
-    mStartPointRange->Collapse(true);  // collapse to start
   }
 
   presShell.forget(aPresShell);
@@ -797,12 +735,14 @@ void nsTypeAheadFind::RangeStartsInsideLink(nsRange* aRange,
       startContent = childContent;
     }
   } else if (startOffset > 0) {
-    const nsTextFragment* textFrag = startContent->GetText();
-    if (textFrag) {
+    const CharacterDataBuffer* characterDataBuffer =
+        startContent->GetCharacterDataBuffer();
+    if (characterDataBuffer) {
       // look for non whitespace character before start offset
       for (uint32_t index = 0; index < startOffset; index++) {
         // FIXME: take content language into account when deciding whitespace.
-        if (!mozilla::dom::IsSpaceCharacter(textFrag->CharAt(index))) {
+        if (!mozilla::dom::IsSpaceCharacter(
+                characterDataBuffer->CharAt(index))) {
           *aIsStartingLink = false;  // not at start of a node
           break;
         }
@@ -960,8 +900,9 @@ nsresult nsTypeAheadFind::FindInternal(uint32_t aMode,
 
     // If true, we will scan from top left of visible area
     // If false, we will scan from start of selection
-    isFirstVisiblePreferred =
-        !atEnd && !mCaretBrowsingOn && isSelectionCollapsed;
+    isFirstVisiblePreferred = !atEnd &&
+                              !StaticPrefs::accessibility_browsewithcaret() &&
+                              isSelectionCollapsed;
     if (isFirstVisiblePreferred) {
       // Get the focused content. If there is a focused node, ensure the
       // selection is at that point. Otherwise, we will just want to start
@@ -1009,10 +950,6 @@ nsresult nsTypeAheadFind::FindInternal(uint32_t aMode,
         }
       }
     }
-  } else if (isInitial) {
-    // Error sound, except when whole word matching is ON.
-    if (!mEntireWord && mTypeAheadBuffer.Length() > mLastFindLength)
-      PlayNotFoundSound();
   }
 
   SaveFind();
@@ -1022,23 +959,30 @@ nsresult nsTypeAheadFind::FindInternal(uint32_t aMode,
 void nsTypeAheadFind::GetSelection(PresShell* aPresShell,
                                    nsISelectionController** aSelCon,
                                    Selection** aDOMSel) {
-  if (!aPresShell) return;
-
-  // if aCurrentNode is nullptr, get selection for document
+  *aSelCon = nullptr;
   *aDOMSel = nullptr;
 
-  nsPresContext* presContext = aPresShell->GetPresContext();
-
-  nsIFrame* frame = aPresShell->GetRootFrame();
-
-  if (presContext && frame) {
-    frame->GetSelectionController(presContext, aSelCon);
-    if (*aSelCon) {
-      RefPtr<Selection> sel =
-          (*aSelCon)->GetSelection(nsISelectionController::SELECTION_NORMAL);
-      sel.forget(aDOMSel);
-    }
+  if (MOZ_UNLIKELY(!aPresShell)) {
+    return;
   }
+
+  nsPresContext* const presContext = aPresShell->GetPresContext();
+  if (MOZ_UNLIKELY(!presContext)) {
+    return;
+  }
+
+  nsIFrame* const frame = aPresShell->GetRootFrame();
+  if (MOZ_UNLIKELY(!frame)) {
+    return;
+  }
+
+  nsCOMPtr<nsISelectionController> selCon = frame->GetSelectionController();
+  RefPtr<Selection> sel;
+  if (selCon) {
+    sel = selCon->GetSelection(nsISelectionController::SELECTION_NORMAL);
+  }
+  selCon.forget(aSelCon);
+  sel.forget(aDOMSel);
 }
 
 NS_IMETHODIMP
@@ -1083,8 +1027,7 @@ bool nsTypeAheadFind::IsRangeVisible(nsRange* aRange, bool aMustBeInViewPort,
   // Detect if we are _inside_ a text control, or something else with its own
   // selection controller.
   if (aUsesIndependentSelection) {
-    *aUsesIndependentSelection =
-        frame->HasAnyStateBits(NS_FRAME_INDEPENDENT_SELECTION);
+    *aUsesIndependentSelection = frame->IsInsideTextControl();
   }
 
   return aMustBeInViewPort ? IsRangeRendered(aRange) : true;

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,17 +16,31 @@ class CommandEvent : public Event {
   CommandEvent(EventTarget* aOwner, nsPresContext* aPresContext,
                WidgetCommandEvent* aEvent);
 
-  NS_INLINE_DECL_REFCOUNTING_INHERITED(CommandEvent, Event)
+  NS_DECL_ISUPPORTS_INHERITED
+  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS_INHERITED(CommandEvent, Event)
 
   virtual JSObject* WrapObjectInternal(
       JSContext* aCx, JS::Handle<JSObject*> aGivenProto) override {
     return CommandEvent_Binding::Wrap(aCx, this, aGivenProto);
   }
 
-  void GetCommand(nsAString& aCommand);
+  static already_AddRefed<CommandEvent> Constructor(
+      EventTarget* aOwner, const nsAString& aType,
+      const CommandEventInit& aEventInitDict);
+
+  static already_AddRefed<CommandEvent> Constructor(
+      const GlobalObject& aGlobal, const nsAString& aType,
+      const CommandEventInit& aEventInitDict);
+
+  void GetCommand(nsAString& aCommand) const;
+
+  Element* GetSource();
 
  protected:
   ~CommandEvent() = default;
+
+ private:
+  RefPtr<Element> mSource;
 };
 
 }  // namespace mozilla::dom

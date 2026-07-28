@@ -6,7 +6,7 @@ certificate-viewer-certificate-section-title = Dëshmi
 
 ## Error messages
 
-certificate-viewer-error-message = S’qemë në gjendje të gjejmë të dhënat e dëshmisë, ose dëshmia është dëmtuar. Ju lutemi, riprovoni.
+certificate-viewer-error-message = S’qemë në gjendje të gjejmë hollësitë e dëshmisë, ose dëshmia është dëmtuar. Ju lutemi, riprovoni.
 certificate-viewer-error-title = Diçka shkoi ters.
 
 ## Certificate information labels
@@ -36,6 +36,9 @@ certificate-viewer-key-size = Madhësi Kyçi
 certificate-viewer-inc-locality = Lokalitet i Inc.
 certificate-viewer-locality = Lokalitet
 certificate-viewer-location = Vendndodhje
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Emër Regjistri
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID Regjistri
 certificate-viewer-method = Metodë
 certificate-viewer-modulus = Modul
@@ -78,7 +81,6 @@ certificate-viewer-authority-info-aia = Të dhëna Autoriteti (AIA)
 certificate-viewer-certificate-policies = Rregulla Dëshmish
 certificate-viewer-embedded-scts = SCT-ra të Trupëzuara
 certificate-viewer-crl-endpoints = Pikëmbarime CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Shkarkoje
@@ -98,7 +100,6 @@ certificate-viewer-download-pem = PEM (dëshmi)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (zinxhir)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Këtij zgjerimi i është vënë shenjë si kritik, që do të thotë se klientët duhet ta hedhin tej dëshminë, nëse nuk e kuptojnë.
@@ -109,6 +110,8 @@ certificate-viewer-export = Eksporto
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (i panjohur)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = dëshmi
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

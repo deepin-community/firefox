@@ -10,10 +10,15 @@ containers-window-new2 =
 containers-window-update-settings2 =
     .title = Paramètres du conteneur « { $name } »
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = Nom
+    .placeholder = Ajouter un nom
+containers-icon-label2 =
+    .label = Icône
+containers-color-label2 =
+    .label = Couleur
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,26 +29,20 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 6rem
-
 containers-name-label = Nom
     .accesskey = N
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = Saisir un nom de conteneur
-
 containers-icon-label = Icône
     .accesskey = I
     .style = { -containers-labels-style }
-
 containers-color-label = Couleur
     .accesskey = o
     .style = { -containers-labels-style }
-
 containers-dialog =
     .buttonlabelaccept = Terminer
     .buttonaccesskeyaccept = T
-
 containers-color-blue =
     .label = Bleu
 containers-color-turquoise =
@@ -62,7 +61,6 @@ containers-color-purple =
     .label = Violet
 containers-color-toolbar =
     .label = Assortie à la barre d’outils
-
 containers-icon-fence =
     .label = Barrière
 containers-icon-fingerprint =
@@ -91,3 +89,19 @@ containers-icon-tree =
     .label = Arbre
 containers-icon-chill =
     .label = Détente
+containers-window-new3 =
+    .title = Ajouter un nouveau conteneur
+    .style = min-width: 34em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = Paramètres du conteneur « { $name } »
+    .style = min-width: 34em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-title = Ajouter un nouveau conteneur
+containers-panel-create-button =
+    .label = Terminé
+containers-panel-cancel-button =
+    .label = Annuler

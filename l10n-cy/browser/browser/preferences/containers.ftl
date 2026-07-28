@@ -12,6 +12,13 @@ containers-window-update-settings2 =
     .style = min-width: 45em
 containers-window-close =
     .key = w
+containers-name-label2 =
+    .label = Enw
+    .placeholder = Ychwanegu enw
+containers-icon-label2 =
+    .label = Eicon
+containers-color-label2 =
+    .label = Lliw
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -82,3 +89,19 @@ containers-icon-tree =
     .label = Coeden
 containers-icon-chill =
     .label = Ymlacio
+containers-window-new3 =
+    .title = Ychwanegu Cynhwysydd Newydd
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = Gosodiadau Cynhwysydd { $name }
+    .style = min-width: 32em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-title = Ychwanegu Cynhwysydd Newydd
+containers-panel-create-button =
+    .label = Gorffen
+containers-panel-cancel-button =
+    .label = Diddymu

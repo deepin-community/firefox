@@ -7,37 +7,35 @@
 
 # Key shortcut used to focus the filter box on top of the data view
 storage-filter-key = CmdOrCtrl+F
-
+# Hint shown when the IndexedDB storage type is selected. Clicking the link will open
+# https://firefox-source-docs.mozilla.org/devtools-user/storage_inspector/indexeddb/
+storage-table-type-indexeddb-hint = មើល និងលុបធាតុ IndexedDB ដោយជ្រើសរើសមូលដ្ឋានទិន្នន័យ។ <a data-l10n-name="learn-more-link">ស្វែងយល់បន្ថែម</a>
+# Hint shown when the cache storage type is selected. Clicking the link will open
+# https://firefox-source-docs.mozilla.org/devtools-user/storage_inspector/cache_storage/
+storage-table-type-cache-hint = មើល និងលុបធាតុផ្ទុកទិន្នន័យឃ្លាំងសម្ងាត់ដោយជ្រើសរើសកន្លែងផ្ទុក។ <a data-l10n-name="learn-more-link">ស្វែងយល់បន្ថែម</a>
 # Placeholder for the searchbox that allows you to filter the table items
 storage-search-box =
     .placeholder = ត្រង់​ធាតុ
-
 # Placeholder text in the sidebar search box
 storage-variable-view-search-box =
     .placeholder = ច្រោះ​ការ​ហៅ
-
 # Add Item button title
 storage-add-button =
     .title = បញ្ចូល​ធាតុ
-
 # Context menu action to delete all storage items
 storage-context-menu-delete-all =
     .label = លុប​ចោល​ទាំងអស់
-
 # Context menu action to delete all session cookies
 storage-context-menu-delete-all-session-cookies =
     .label = លុបឃូគីសម័យទាំងអស់
-
 # Context menu action to delete storage item
 # Variables:
 #   $itemName (String) - Name of the storage item that will be deleted
 storage-context-menu-delete =
     .label = លុប “{ $itemName }”
-
 # Context menu action to add an item
 storage-context-menu-add-item =
     .label = បញ្ចូល​ធាតុ
-
 # Context menu action to delete all storage items from a given host
 # Variables:
 #   $host (String) - Host for which we want to delete the items
@@ -63,10 +61,7 @@ storage-tree-labels-cache = ទំហំផ្ទុក​ឃ្លាំងស�
 
 # String displayed in the expires column when the cookie is a Session Cookie
 storage-expires-session = សម័យ
-
 # Heading displayed over the item value in the sidebar
 storage-data = ទិន្នន័យ
-
 # Heading displayed over the item parsed value in the sidebar
 storage-parsed-value = តម្លៃ​ដែល​បាន​ញែក
-

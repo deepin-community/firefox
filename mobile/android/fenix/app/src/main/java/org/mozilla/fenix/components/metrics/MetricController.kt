@@ -61,7 +61,10 @@ import org.mozilla.fenix.GleanMetrics.ProgressiveWebApp
 import org.mozilla.fenix.GleanMetrics.SitePermissions
 import org.mozilla.fenix.GleanMetrics.Sync
 import org.mozilla.fenix.GleanMetrics.SyncedTabs
-import org.mozilla.fenix.search.awesomebar.ShortcutsSuggestionProvider
+import org.mozilla.fenix.GleanMetrics.Toolbar
+import org.mozilla.fenix.telemetry.ACTION_TAB_COUNTER_CLICKED
+import org.mozilla.fenix.telemetry.ACTION_TAB_COUNTER_LONG_CLICKED
+import org.mozilla.fenix.telemetry.SOURCE_ADDRESS_BAR
 import org.mozilla.fenix.utils.Settings
 import java.util.UUID
 import mozilla.components.compose.browser.awesomebar.AwesomeBarFacts as ComposeAwesomeBarFacts
@@ -72,10 +75,20 @@ interface MetricController {
     fun track(event: Event)
 
     companion object {
+        /**
+         * Instantiate either a debug or release version of the metric controller.
+         * The debug version writes logs rather than sending real telemetry.
+         * @param services the list of available services to start
+         * @param isDataTelemetryEnabled has data telemetry been enabled?
+         * @param isMarketingDataTelemetryEnabled has marketing telemetry been enabled?
+         * @param isUsageTelemetryEnabled has usage telemetry been enabled?
+         * @param settings the user's preferences are held in the settings object
+         */
         fun create(
             services: List<MetricsService>,
             isDataTelemetryEnabled: () -> Boolean,
             isMarketingDataTelemetryEnabled: () -> Boolean,
+            isUsageTelemetryEnabled: () -> Boolean,
             settings: Settings,
         ): MetricController {
             return if (BuildConfig.TELEMETRY) {
@@ -83,6 +96,7 @@ interface MetricController {
                     services,
                     isDataTelemetryEnabled,
                     isMarketingDataTelemetryEnabled,
+                    isUsageTelemetryEnabled,
                     settings,
                 )
             } else {
@@ -116,6 +130,7 @@ internal class ReleaseMetricController(
     private val services: List<MetricsService>,
     private val isDataTelemetryEnabled: () -> Boolean,
     private val isMarketingDataTelemetryEnabled: () -> Boolean,
+    private val isUsageTelemetryEnabled: () -> Boolean,
     private val settings: Settings,
 ) : MetricController {
     private var initialized = mutableSetOf<MetricServiceType>()
@@ -131,7 +146,7 @@ internal class ReleaseMetricController(
     }
 
     @VisibleForTesting
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CognitiveComplexMethod")
     internal fun Fact.process(): Unit = when (component to item) {
         Component.FEATURE_PROMPTS to LoginDialogFacts.Items.DISPLAY -> {
             LoginDialog.displayed.record(NoExtras())
@@ -169,20 +184,28 @@ internal class ReleaseMetricController(
         Component.BROWSER_TOOLBAR to ToolbarFacts.Items.MENU -> {
             Events.toolbarMenuVisible.record(NoExtras())
         }
+        Component.UI_TABCOUNTER to ToolbarFacts.Items.TOOLBAR -> {
+            Toolbar.buttonTapped.record(
+                Toolbar.ButtonTappedExtra(source = SOURCE_ADDRESS_BAR, item = ACTION_TAB_COUNTER_CLICKED),
+            )
+        }
+        Component.UI_TABCOUNTER to ToolbarFacts.Items.MENU -> {
+            Toolbar.buttonTapped.record(
+                Toolbar.ButtonTappedExtra(source = SOURCE_ADDRESS_BAR, item = ACTION_TAB_COUNTER_LONG_CLICKED),
+            )
+        }
         Component.FEATURE_CONTEXTMENU to ContextMenuFacts.Items.ITEM -> {
             metadata?.get("item")?.let { item ->
                 contextMenuAllowList[item]?.let { extraKey ->
                     ContextMenu.itemTapped.record(ContextMenu.ItemTappedExtra(extraKey))
                 }
-            }
-            Unit
+            } ?: Unit
         }
 
         Component.BROWSER_MENU to BrowserMenuFacts.Items.WEB_EXTENSION_MENU_ITEM -> {
             metadata?.get("id")?.let {
                 Addons.openAddonInToolbarMenu.record(Addons.OpenAddonInToolbarMenuExtra(it.toString()))
-            }
-            Unit
+            } ?: Unit
         }
         Component.FEATURE_PROMPTS to CreditCardAutofillDialogFacts.Items.AUTOFILL_CREDIT_CARD_FORM_DETECTED ->
             CreditCards.formDetected.record(NoExtras())
@@ -270,11 +293,57 @@ internal class ReleaseMetricController(
         Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.SEARCH_SUGGESTION_CLICKED -> {
             Awesomebar.searchSuggestionClicked.record(NoExtras())
         }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.TRENDING_SEARCH_SUGGESTION_CLICKED -> {
+            Awesomebar.trendingSearchSuggestionClicked.record(
+                Awesomebar.TrendingSearchSuggestionClickedExtra(position = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.TOP_SITE_SUGGESTION_CLICKED -> {
+            Awesomebar.topSiteSuggestionClicked.record(
+                Awesomebar.TopSiteSuggestionClickedExtra(position = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.RECENT_SEARCH_SUGGESTION_CLICKED -> {
+            Awesomebar.recentSearchSuggestionClicked.record(
+                Awesomebar.RecentSearchSuggestionClickedExtra(position = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.TRENDING_SEARCH_SUGGESTIONS_DISPLAYED -> {
+            Awesomebar.trendingSearchSuggestionsDisplayed.record(
+                Awesomebar.TrendingSearchSuggestionsDisplayedExtra(count = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.TOP_SITE_SUGGESTIONS_DISPLAYED -> {
+            Awesomebar.topSiteSuggestionsDisplayed.record(
+                Awesomebar.TopSiteSuggestionsDisplayedExtra(count = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.RECENT_SEARCH_SUGGESTIONS_DISPLAYED -> {
+            Awesomebar.recentSearchSuggestionsDisplayed.record(
+                Awesomebar.RecentSearchSuggestionsDisplayedExtra(count = value?.toInt() ?: 0),
+            )
+        }
         Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.OPENED_TAB_SUGGESTION_CLICKED -> {
             Awesomebar.openedTabSuggestionClicked.record(NoExtras())
         }
         Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.SEARCH_TERM_SUGGESTION_CLICKED -> {
             Awesomebar.searchTermSuggestionClicked.record(NoExtras())
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.OPTIMIZED_SUGGESTION_CARD_DISPLAYED -> {
+            Awesomebar.optimizedSuggestionCardDisplayed.record(
+                Awesomebar.OptimizedSuggestionCardDisplayedExtra(
+                    cardType = value,
+                    extra = metadata?.get("extra")?.toString(),
+                ),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.OPTIMIZED_SUGGESTION_CARD_CLICKED -> {
+            Awesomebar.optimizedSuggestionCardClicked.record(
+                Awesomebar.OptimizedSuggestionCardClickedExtra(
+                    cardType = value,
+                    extra = metadata?.get("extra")?.toString(),
+                ),
+            )
         }
         Component.FEATURE_CONTEXTMENU to ContextMenuFacts.Items.TEXT_SELECTION_OPTION -> {
             when (metadata?.get("textSelectionOption")?.toString()) {
@@ -313,6 +382,9 @@ internal class ReleaseMetricController(
 
             // Submit a separate `fx-suggest` ping for this click. These pings do not include the `client_id`.
             FxSuggest.pingType.set("fxsuggest-click")
+            (metadata?.get(FxSuggestFacts.MetadataKeys.CLIENT_COUNTRY) as? String)?.let {
+                FxSuggest.country.set(it)
+            }
             FxSuggest.isClicked.set(true)
             (metadata?.get(FxSuggestFacts.MetadataKeys.POSITION) as? Long)?.let {
                 FxSuggest.position.set(it)
@@ -335,57 +407,14 @@ internal class ReleaseMetricController(
 
         Component.FEATURE_FXSUGGEST to FxSuggestFacts.Items.AMP_SUGGESTION_IMPRESSED,
         Component.FEATURE_FXSUGGEST to FxSuggestFacts.Items.WIKIPEDIA_SUGGESTION_IMPRESSED,
-        -> {
-            val impressionInfo = metadata?.get(FxSuggestFacts.MetadataKeys.INTERACTION_INFO)
-            val engagementAbandoned = metadata?.get(FxSuggestFacts.MetadataKeys.ENGAGEMENT_ABANDONED) as? Boolean
-                ?: false
+        -> recordFxSuggestImpression(metadata)
 
-            // Record an event for this impression in the `events` ping. These events include the `client_id`, and
-            // we record them for engaged and abandoned search sessions.
-            when (impressionInfo) {
-                is FxSuggestInteractionInfo.Amp -> {
-                    Awesomebar.sponsoredSuggestionImpressed.record(
-                        Awesomebar.SponsoredSuggestionImpressedExtra(
-                            provider = "amp",
-                        ),
-                    )
-                }
-                is FxSuggestInteractionInfo.Wikipedia -> {
-                    Awesomebar.nonSponsoredSuggestionImpressed.record(
-                        Awesomebar.NonSponsoredSuggestionImpressedExtra(
-                            provider = "wikipedia",
-                        ),
-                    )
-                }
+        Component.FEATURE_FXSUGGEST to FxSuggestFacts.Items.SUGGESTION_QUERY_COUNT -> {
+            FxSuggest.pingType.set("fxsuggest-query")
+            (metadata?.get("query_count") as? Long)?.let {
+                FxSuggest.queryCount.set(it)
             }
-
-            // Submit a separate `fx-suggest` ping for this impression. These pings do not include the `client_id`,
-            // and we submit them for engaged search sessions only.
-            if (!engagementAbandoned) {
-                FxSuggest.pingType.set("fxsuggest-impression")
-                (metadata?.get(FxSuggestFacts.MetadataKeys.IS_CLICKED) as? Boolean)?.let {
-                    FxSuggest.isClicked.set(it)
-                }
-                (metadata?.get(FxSuggestFacts.MetadataKeys.POSITION) as? Long)?.let {
-                    FxSuggest.position.set(it)
-                }
-                when (impressionInfo) {
-                    is FxSuggestInteractionInfo.Amp -> {
-                        FxSuggest.blockId.set(impressionInfo.blockId)
-                        FxSuggest.advertiser.set(impressionInfo.advertiser)
-                        FxSuggest.reportingUrl.set(impressionInfo.reportingUrl)
-                        FxSuggest.iabCategory.set(impressionInfo.iabCategory)
-                        FxSuggest.contextId.set(UUID.fromString(impressionInfo.contextId))
-                    }
-                    is FxSuggestInteractionInfo.Wikipedia -> {
-                        FxSuggest.advertiser.set("wikipedia")
-                        FxSuggest.contextId.set(UUID.fromString(impressionInfo.contextId))
-                    }
-                }
-                Pings.fxSuggest.submit()
-            }
-
-            Unit
+            Pings.fxSuggestApi.submit()
         }
 
         Component.FEATURE_PWA to ProgressiveWebAppFacts.Items.HOMESCREEN_ICON_TAP -> {
@@ -397,14 +426,14 @@ internal class ReleaseMetricController(
 
         Component.FEATURE_SEARCH to AdsTelemetry.SERP_ADD_CLICKED -> {
             BrowserSearch.adClicks[value!!].add()
-            track(Event.GrowthData.SerpAdClicked)
+            track(Event.GrowthData.ConversionEvent5)
         }
         Component.FEATURE_SEARCH to AdsTelemetry.SERP_SHOWN_WITH_ADDS -> {
             BrowserSearch.withAds[value!!].add()
         }
         Component.FEATURE_SEARCH to InContentTelemetry.IN_CONTENT_SEARCH -> {
             BrowserSearch.inContent[value!!].add()
-            track(Event.GrowthData.UserActivated(fromSearch = true))
+            track(Event.GrowthData.ConversionEvent7(fromSearch = true))
         }
         Component.SUPPORT_WEBEXTENSIONS to WebExtensionFacts.Items.WEB_EXTENSIONS_INITIALIZED -> {
             metadata?.get("installed")?.let { installedAddons ->
@@ -419,8 +448,7 @@ internal class ReleaseMetricController(
                     settings.enabledAddonsCount = enabledAddons.size
                     settings.enabledAddonsList = enabledAddons.joinToString(",")
                 }
-            }
-            Unit
+            } ?: Unit
         }
         Component.COMPOSE_AWESOMEBAR to ComposeAwesomeBarFacts.Items.PROVIDER_DURATION -> {
             metadata?.get(ComposeAwesomeBarFacts.MetadataKeys.DURATION_PAIR)
@@ -432,15 +460,13 @@ internal class ReleaseMetricController(
                         is SessionSuggestionProvider -> PerfAwesomebar.sessionSuggestions
                         is SearchSuggestionProvider -> PerfAwesomebar.searchEngineSuggestions
                         is ClipboardSuggestionProvider -> PerfAwesomebar.clipboardSuggestions
-                        is ShortcutsSuggestionProvider -> PerfAwesomebar.shortcutsSuggestions
                         // NB: add PerfAwesomebar.syncedTabsSuggestions once we're using SyncedTabsSuggestionProvider
                         else -> {
                             Logger("Metrics").error("Unknown suggestion provider: $provider")
                             null
                         }
                     }?.accumulateSamples(listOf(providerTiming.second as Long))
-                }
-            Unit
+                } ?: Unit
         }
         Component.FEATURE_TOP_SITES to TopSitesFacts.Items.COUNT -> {
             value?.let {
@@ -452,8 +478,7 @@ internal class ReleaseMetricController(
                 }
 
                 settings.topSitesSize = count
-            }
-            Unit
+            } ?: Unit
         }
         Component.FEATURE_SITEPERMISSIONS to SitePermissionsFacts.Items.PERMISSIONS -> {
             when (action) {
@@ -530,11 +555,66 @@ internal class ReleaseMetricController(
             }
     }
 
+    private fun recordFxSuggestImpression(metadata: Map<String, Any>?) {
+        val impressionInfo = metadata?.get(FxSuggestFacts.MetadataKeys.INTERACTION_INFO)
+        val engagementAbandoned = metadata?.get(FxSuggestFacts.MetadataKeys.ENGAGEMENT_ABANDONED) as? Boolean
+            ?: false
+
+        // Record an event for this impression in the `events` ping. These events include the `client_id`, and
+        // we record them for engaged and abandoned search sessions.
+        when (impressionInfo) {
+            is FxSuggestInteractionInfo.Amp -> {
+                Awesomebar.sponsoredSuggestionImpressed.record(
+                    Awesomebar.SponsoredSuggestionImpressedExtra(
+                        provider = "amp",
+                    ),
+                )
+            }
+            is FxSuggestInteractionInfo.Wikipedia -> {
+                Awesomebar.nonSponsoredSuggestionImpressed.record(
+                    Awesomebar.NonSponsoredSuggestionImpressedExtra(
+                        provider = "wikipedia",
+                    ),
+                )
+            }
+        }
+
+        // Submit a separate `fx-suggest` ping for this impression. These pings do not include the `client_id`,
+        // and we submit them for engaged search sessions only.
+        if (engagementAbandoned) return
+
+        FxSuggest.pingType.set("fxsuggest-impression")
+        (metadata?.get(FxSuggestFacts.MetadataKeys.CLIENT_COUNTRY) as? String)?.let {
+            FxSuggest.country.set(it)
+        }
+        (metadata?.get(FxSuggestFacts.MetadataKeys.IS_CLICKED) as? Boolean)?.let {
+            FxSuggest.isClicked.set(it)
+        }
+        (metadata?.get(FxSuggestFacts.MetadataKeys.POSITION) as? Long)?.let {
+            FxSuggest.position.set(it)
+        }
+        when (impressionInfo) {
+            is FxSuggestInteractionInfo.Amp -> {
+                FxSuggest.blockId.set(impressionInfo.blockId)
+                FxSuggest.advertiser.set(impressionInfo.advertiser)
+                FxSuggest.reportingUrl.set(impressionInfo.reportingUrl)
+                FxSuggest.iabCategory.set(impressionInfo.iabCategory)
+                FxSuggest.contextId.set(UUID.fromString(impressionInfo.contextId))
+            }
+            is FxSuggestInteractionInfo.Wikipedia -> {
+                FxSuggest.advertiser.set("wikipedia")
+                FxSuggest.contextId.set(UUID.fromString(impressionInfo.contextId))
+            }
+        }
+        Pings.fxSuggest.submit()
+    }
+
     private fun isInitialized(type: MetricServiceType): Boolean = initialized.contains(type)
 
     private fun isTelemetryEnabled(type: MetricServiceType): Boolean = when (type) {
         MetricServiceType.Data -> isDataTelemetryEnabled()
         MetricServiceType.Marketing -> isMarketingDataTelemetryEnabled()
+        MetricServiceType.UsageReporting -> isUsageTelemetryEnabled()
     }
 
     companion object {

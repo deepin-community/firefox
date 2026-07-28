@@ -59,10 +59,7 @@ history-section-label = História
 item-history-and-downloads =
     .label = História prehliadania a zoznam stiahnutých súborov
     .accesskey = H
-item-history-form-data-downloads =
-    .label = História
-    .accesskey = H
-item-history-form-data-downloads-description = Vymaže históriu stránok a sťahovania, uložené informácie z formulárov a vyhľadávania
+item-history-and-downloads-description2 = Vymaže históriu stránok a sťahovania
 item-cookies =
     .label = Cookies
     .accesskey = C
@@ -98,7 +95,11 @@ item-form-search-history =
 item-site-prefs =
     .label = Nastavenia stránok
     .accesskey = N
-item-site-prefs-description = Obnoví vaše prístupové práva a predvoľby stránok na pôvodné nastavenia
+item-formdata-prefs =
+    .label = Uložené údaje zadané do formulárov
+    .accesskey = f
+item-formdata-description = Vymaže veci, ako sú mená, e‑mailové adresy a ďalšie položky, ktoré zadávate do formulárov
+item-site-prefs-description = Obnoví oprávnenia a predvoľby stránok na pôvodné nastavenia
 data-section-label = Údaje
 item-site-settings =
     .label = Nastavenia stránok
@@ -127,3 +128,6 @@ sanitize-everything-warning = Vymazaná bude celá história.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Vymazané budú všetky označené položky.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Vypočítava sa…

@@ -2,29 +2,32 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+use crash_helper_client::report_external_exception;
 use ini::Ini;
 use libc::time;
-use process_reader::ProcessReader;
 use serde::Serialize;
 use serde_json::ser::to_writer;
 use std::convert::TryInto;
 use std::ffi::{c_void, OsString};
 use std::fs::{read_to_string, DirBuilder, File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
-use std::mem::{size_of, transmute, zeroed};
+use std::mem::{size_of, zeroed};
 use std::os::windows::ffi::{OsStrExt, OsStringExt};
-use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle, RawHandle};
+use std::os::windows::io::{
+    AsHandle, AsRawHandle, BorrowedHandle, FromRawHandle, OwnedHandle, RawHandle,
+};
 use std::path::{Path, PathBuf};
-use std::ptr::{addr_of, null, null_mut};
+use std::ptr::{null, null_mut};
 use std::slice::from_raw_parts;
 use uuid::Uuid;
 use windows_sys::core::{HRESULT, PWSTR};
 use windows_sys::Wdk::System::Threading::{NtQueryInformationProcess, ProcessBasicInformation};
+use windows_sys::Win32::Foundation::WIN32_ERROR;
 use windows_sys::Win32::{
     Foundation::{
         CloseHandle, GetLastError, SetLastError, BOOL, ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS,
         EXCEPTION_BREAKPOINT, E_UNEXPECTED, FALSE, FILETIME, HANDLE, HWND, LPARAM, MAX_PATH,
-        STATUS_SUCCESS, S_OK, TRUE, WAIT_OBJECT_0,
+        STATUS_SUCCESS, S_OK, TRUE,
     },
     Security::{
         GetSidSubAuthority, GetSidSubAuthorityCount, GetTokenInformation, IsTokenRestricted,
@@ -34,12 +37,9 @@ use windows_sys::Win32::{
     System::Diagnostics::Debug::{
         GetThreadContext, MiniDumpWithFullMemoryInfo, MiniDumpWithIndirectlyReferencedMemory,
         MiniDumpWithProcessThreadData, MiniDumpWithUnloadedModules, MiniDumpWriteDump,
-        WriteProcessMemory, EXCEPTION_POINTERS, MINIDUMP_EXCEPTION_INFORMATION, MINIDUMP_TYPE,
+        EXCEPTION_POINTERS, MINIDUMP_EXCEPTION_INFORMATION, MINIDUMP_TYPE,
     },
     System::ErrorReporting::WER_RUNTIME_EXCEPTION_INFORMATION,
-    System::Memory::{
-        VirtualAllocEx, VirtualFreeEx, MEM_COMMIT, MEM_RELEASE, MEM_RESERVE, PAGE_READWRITE,
-    },
     System::ProcessStatus::K32GetModuleFileNameExW,
     System::SystemInformation::{
         VerSetConditionMask, VerifyVersionInfoW, OSVERSIONINFOEXW, VER_MAJORVERSION,
@@ -47,9 +47,8 @@ use windows_sys::Win32::{
     },
     System::SystemServices::{SECURITY_MANDATORY_MEDIUM_RID, VER_GREATER_EQUAL},
     System::Threading::{
-        CreateProcessW, CreateRemoteThread, GetProcessId, GetProcessTimes, GetThreadId,
-        OpenProcess, OpenProcessToken, OpenThread, TerminateProcess, WaitForSingleObject,
-        CREATE_NO_WINDOW, CREATE_UNICODE_ENVIRONMENT, LPTHREAD_START_ROUTINE,
+        CreateProcessW, GetProcessId, GetProcessTimes, GetThreadId, OpenProcess, OpenProcessToken,
+        OpenThread, TerminateProcess, CREATE_NO_WINDOW, CREATE_UNICODE_ENVIRONMENT,
         NORMAL_PRIORITY_CLASS, PROCESS_ALL_ACCESS, PROCESS_BASIC_INFORMATION, PROCESS_INFORMATION,
         STARTUPINFOW, THREAD_GET_CONTEXT,
     },
@@ -67,20 +66,15 @@ type PDWORD = *mut DWORD;
 #[allow(non_camel_case_types)]
 type PWER_RUNTIME_EXCEPTION_INFORMATION = *mut WER_RUNTIME_EXCEPTION_INFORMATION;
 
-/* The following struct must be kept in sync with the identically named one in
- * nsExceptionHandler.h. WER will use it to communicate with the main process
- * when a child process is encountered. */
-#[repr(C)]
-struct WindowsErrorReportingData {
-    child_pid: DWORD,
-    minidump_name: [u8; 40],
-}
-
 // This value comes from GeckoProcessTypes.h
 static MAIN_PROCESS_TYPE: u32 = 0;
 
+/// # Safety
+///
+/// The parameters must point to valid objects, the Windows Error Reporting
+/// service guarantees this.
 #[no_mangle]
-pub extern "C" fn OutOfProcessExceptionEventCallback(
+pub unsafe extern "C" fn OutOfProcessExceptionEventCallback(
     context: PVOID,
     exception_information: PWER_RUNTIME_EXCEPTION_INFORMATION,
     b_ownership_claimed: PBOOL,
@@ -92,6 +86,8 @@ pub extern "C" fn OutOfProcessExceptionEventCallback(
 
     match result {
         Ok(_) => {
+            // SAFETY: `b_ownership_claimed` is guaranteed to point to a valid
+            // block of memory and `hProcess` is a valid process handle.
             unsafe {
                 // Inform WER that we claim ownership of this crash
                 *b_ownership_claimed = TRUE;
@@ -117,8 +113,12 @@ pub extern "C" fn OutOfProcessExceptionEventSignatureCallback(
     S_OK
 }
 
+/// # Safety
+///
+/// The parameters must point to valid objects, the Windows Error Reporting
+/// service guarantees this.
 #[no_mangle]
-pub extern "C" fn OutOfProcessExceptionEventDebuggerLaunchCallback(
+pub unsafe extern "C" fn OutOfProcessExceptionEventDebuggerLaunchCallback(
     _context: PVOID,
     _exception_information: PWER_RUNTIME_EXCEPTION_INFORMATION,
     b_is_custom_debugger: PBOOL,
@@ -126,6 +126,8 @@ pub extern "C" fn OutOfProcessExceptionEventDebuggerLaunchCallback(
     _ch_debugger_launch: PDWORD,
     _b_is_debugger_autolaunch: PBOOL,
 ) -> HRESULT {
+    // SAFETY: `*b_is_custom_debugger` is guaranteed to point to a valid block
+    // of memory.
     unsafe {
         *b_is_custom_debugger = FALSE;
     }
@@ -139,7 +141,12 @@ fn out_of_process_exception_event_callback(
     context: PVOID,
     exception_information: PWER_RUNTIME_EXCEPTION_INFORMATION,
 ) -> Result<()> {
+    // SAFETY: `exception_information` is guaranteed to point to an object of
+    // type `WER_RUNTIME_EXCEPTION_INFORMATION`.
     let exception_information = unsafe { &mut *exception_information };
+    // SAFETY: The `hProcess` field is guaranteed to be a valid process handle
+    let process =
+        unsafe { BorrowedHandle::borrow_raw(exception_information.hProcess as RawHandle) };
     let is_fatal = exception_information.bIsFatal.to_bool();
     let mut is_ui_hang = false;
     if !is_fatal {
@@ -148,13 +155,17 @@ fn out_of_process_exception_event_callback(
             // Hangs may have an hThread/context that is unrelated to the hanging thread, so we get
             // it by searching for process windows that are hung.
             if exception_information.exceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT {
-                if let Ok(thread_id) = find_hung_window_thread(exception_information.hProcess) {
+                if let Ok(thread_id) = find_hung_window_thread(process) {
+                    // SAFETY: This is always safe to call.
+                    //
                     // In the case of a hang, change the crashing thread to be the one that created
                     // the hung window.
                     //
                     // This is all best-effort, so don't return errors (just fall through to the
                     // Ok return).
                     let thread_handle = unsafe { OpenThread(THREAD_GET_CONTEXT, FALSE, thread_id) };
+                    // SAFETY: `thread_handle` is guaranteed to be valid and the
+                    // `context` parameter points to an object on the stack.
                     if thread_handle != 0
                         && unsafe {
                             GetThreadContext(thread_handle, &mut exception_information.context)
@@ -173,15 +184,17 @@ fn out_of_process_exception_event_callback(
         is_ui_hang = true;
     }
 
-    let process = exception_information.hProcess;
-    let application_info = ApplicationInformation::from_process(process)?;
     let process_type: u32 = (context as usize).try_into().map_err(|_| ())?;
-    let startup_time = get_startup_time(process)?;
-    let crash_report = CrashReport::new(&application_info, startup_time, is_ui_hang);
-    crash_report.write_minidump(exception_information)?;
     if process_type == MAIN_PROCESS_TYPE {
         match is_sandboxed_process(process) {
-            Ok(false) => handle_main_process_crash(crash_report, &application_info),
+            Ok(false) => {
+                let application_info = ApplicationInformation::from_process(process)?;
+                let startup_time = get_startup_time(process)?;
+                let crash_report = CrashReport::new(&application_info, startup_time, is_ui_hang);
+                crash_report.write_minidump(exception_information)?;
+
+                handle_main_process_crash(crash_report, &application_info)
+            }
             _ => {
                 // The parent process should never be sandboxed, bail out so the
                 // process which is impersonating it gets killed right away. Also
@@ -190,13 +203,13 @@ fn out_of_process_exception_event_callback(
             }
         }
     } else {
-        handle_child_process_crash(crash_report, process)
+        handle_child_process_crash(exception_information)
     }
 }
 
 /// Find whether the given process has a hung window, and return the thread id related to the
 /// window.
-fn find_hung_window_thread(process: HANDLE) -> Result<DWORD> {
+fn find_hung_window_thread(process: BorrowedHandle) -> Result<DWORD> {
     let process_id = get_process_id(process)?;
 
     struct WindowSearch {
@@ -221,6 +234,10 @@ fn find_hung_window_thread(process: HANDLE) -> Result<DWORD> {
         }
     }
 
+    // SAFETY: All the pointers going into this call point to stack-allocated
+    // variables and `enum_window_callback` is guaranteed to be a valid
+    // function pointer
+    //
     // Disregard the return value, we are trying for best-effort service (it's okay if ui_thread_id
     // is never set).
     unsafe { EnumWindows(Some(enum_window_callback), &mut search as *mut _ as LPARAM) };
@@ -228,7 +245,7 @@ fn find_hung_window_thread(process: HANDLE) -> Result<DWORD> {
     search.ui_thread_id.ok_or(())
 }
 
-fn get_parent_process(process: HANDLE) -> Result<HANDLE> {
+fn get_parent_process(process: BorrowedHandle) -> Result<OwnedHandle> {
     let pbi = get_process_basic_information(process)?;
     get_process_handle(pbi.InheritedFromUniqueProcessId as u32)
 }
@@ -245,93 +262,37 @@ fn handle_main_process_crash(
     Ok(())
 }
 
-fn handle_child_process_crash(crash_report: CrashReport, child_process: HANDLE) -> Result<()> {
-    let parent_process = get_parent_process(child_process)?;
-    let process_reader = ProcessReader::new(parent_process).map_err(|_e| ())?;
-    let libxul_address = process_reader.find_module("xul.dll").map_err(|_e| ())?;
-    let wer_notify_proc = process_reader
-        .find_section(libxul_address, b"mozwerpt")
-        .map_err(|_e| ())?;
-    let wer_notify_proc = unsafe { transmute::<_, LPTHREAD_START_ROUTINE>(wer_notify_proc) };
-
-    let wer_data = WindowsErrorReportingData {
-        child_pid: get_process_id(child_process)?,
-        minidump_name: crash_report.get_minidump_name(),
-    };
-    let address = copy_object_into_process(parent_process, wer_data)?;
-    notify_main_process(parent_process, wer_notify_proc, address)
-}
-
-fn copy_object_into_process<T>(process: HANDLE, data: T) -> Result<*mut T> {
-    let address = unsafe {
-        VirtualAllocEx(
-            process,
-            null(),
-            size_of::<T>(),
-            MEM_RESERVE | MEM_COMMIT,
-            PAGE_READWRITE,
-        )
-    };
-
-    if address.is_null() {
-        return Err(());
-    }
-
-    let res = unsafe {
-        WriteProcessMemory(
-            process,
-            address,
-            addr_of!(data) as *const _,
-            size_of::<T>(),
-            null_mut(),
-        )
-    };
-
-    if res == 0 {
-        unsafe { VirtualFreeEx(process, address as *mut _, 0, MEM_RELEASE) };
-        Err(())
-    } else {
-        Ok(address as *mut T)
-    }
-}
-
-fn notify_main_process(
-    process: HANDLE,
-    wer_notify_proc: LPTHREAD_START_ROUTINE,
-    address: *mut WindowsErrorReportingData,
+fn handle_child_process_crash(
+    exception_information: PWER_RUNTIME_EXCEPTION_INFORMATION,
 ) -> Result<()> {
-    let thread = unsafe {
-        CreateRemoteThread(
+    // SAFETY: The `hProcess` field is guaranteed to contain a valid handle.
+    let process =
+        unsafe { BorrowedHandle::borrow_raw((*exception_information).hProcess as RawHandle) };
+    // SAFETY: The `hThread` field is guaranteed to contain a valid handle
+    let thread =
+        unsafe { BorrowedHandle::borrow_raw((*exception_information).hThread as RawHandle) };
+    let parent_process = get_parent_process(process)?;
+    let parent_pid = get_process_id(parent_process.as_handle())?;
+
+    let process = process.try_clone_to_owned().map_err(|_e| ())?;
+    let thread = thread.try_clone_to_owned().map_err(|_e| ())?;
+
+    // SAFETY: All the pointers going into this function are guaranteed to be
+    // valid and will only be read from.
+    unsafe {
+        report_external_exception(
+            parent_pid,
             process,
-            null_mut(),
-            0,
-            wer_notify_proc,
-            address as LPVOID,
-            0,
-            null_mut(),
-        )
-    };
-
-    if thread == 0 {
-        unsafe { VirtualFreeEx(process, address as *mut _, 0, MEM_RELEASE) };
-        return Err(());
-    }
-
-    // From this point on the memory pointed to by address is owned by the
-    // thread we've created in the main process, so we don't free it.
-
-    let thread = unsafe { OwnedHandle::from_raw_handle(thread as RawHandle) };
-
-    // Don't wait forever as we want the process to get killed eventually
-    let res = unsafe { WaitForSingleObject(thread.as_raw_handle() as HANDLE, 5000) };
-    if res != WAIT_OBJECT_0 {
-        return Err(());
+            thread,
+            &raw mut (*exception_information).exceptionRecord,
+            &raw mut (*exception_information).context,
+        );
     }
 
     Ok(())
 }
 
-fn get_startup_time(process: HANDLE) -> Result<u64> {
+fn get_startup_time(process: BorrowedHandle) -> Result<u64> {
     const ZERO_FILETIME: FILETIME = FILETIME {
         dwLowDateTime: 0,
         dwHighDateTime: 0,
@@ -340,9 +301,12 @@ fn get_startup_time(process: HANDLE) -> Result<u64> {
     let mut exit_time: FILETIME = ZERO_FILETIME;
     let mut kernel_time: FILETIME = ZERO_FILETIME;
     let mut user_time: FILETIME = ZERO_FILETIME;
+
+    // SAFETY: All the pointers going into this call point to stack-allocated
+    // variables and `process` is guaranteed to be a valid handle.
     unsafe {
         if GetProcessTimes(
-            process,
+            process.as_raw_handle() as HANDLE,
             &mut create_time as *mut _,
             &mut exit_time as *mut _,
             &mut kernel_time as *mut _,
@@ -359,17 +323,20 @@ fn get_startup_time(process: HANDLE) -> Result<u64> {
     Ok((start_time_in_ticks / windows_tick) - sec_to_unix_epoch)
 }
 
-fn get_process_id(process: HANDLE) -> Result<DWORD> {
-    match unsafe { GetProcessId(process) } {
+fn get_process_id(process: BorrowedHandle) -> Result<DWORD> {
+    // SAFETY: `process` is guaranteed to be a valid handle.
+    match unsafe { GetProcessId(process.as_raw_handle() as HANDLE) } {
         0 => Err(()),
         pid => Ok(pid),
     }
 }
 
-fn get_process_handle(pid: DWORD) -> Result<HANDLE> {
+fn get_process_handle(pid: DWORD) -> Result<OwnedHandle> {
+    // SAFETY: This is always safe to call.
     let handle = unsafe { OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid) };
     if handle != 0 {
-        Ok(handle)
+        // SAFETY: `handle` is guaranteed to contain a valid handle here
+        Ok(unsafe { OwnedHandle::from_raw_handle(handle as RawHandle) })
     } else {
         Err(())
     }
@@ -386,12 +353,19 @@ fn launch_crash_reporter_client(install_path: &Path, crash_report: &CrashReport)
     cmd_line.push("\"\0");
     let mut cmd_line: Vec<u16> = cmd_line.encode_wide().collect();
 
+    // SAFETY: A zero-initialized `PROCESS_INFORMATION` structure is valid.
     let mut pi = unsafe { zeroed::<PROCESS_INFORMATION>() };
-    let mut si = STARTUPINFOW {
+    let si = STARTUPINFOW {
         cb: size_of::<STARTUPINFOW>().try_into().unwrap(),
+        // SAFETY: A zero-initialized `STARTUPINFOW` structure is valid.
         ..unsafe { zeroed() }
     };
 
+    // SAFETY: `cmd_line` is guaranteed to point to a valid command-line
+    // buffer which will be kept alive for the duration of the call.
+    // `si` and `pi` point to stack-allocated objects. After a successful
+    // call `pi.hProcess and pi.hThread` are guaranteed to contain valid
+    // handles.
     unsafe {
         if CreateProcessW(
             null_mut(),
@@ -402,7 +376,7 @@ fn launch_crash_reporter_client(install_path: &Path, crash_report: &CrashReport)
             NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
             null_mut(),
             null_mut(),
-            &mut si,
+            &si,
             &mut pi,
         ) != 0
         {
@@ -516,7 +490,7 @@ struct ApplicationInformation {
 }
 
 impl ApplicationInformation {
-    fn from_process(process: HANDLE) -> Result<ApplicationInformation> {
+    fn from_process(process: BorrowedHandle) -> Result<ApplicationInformation> {
         let mut install_path = ApplicationInformation::get_application_path(process)?;
         install_path.pop();
         let application_data = ApplicationData::load_from_disk(install_path.as_ref())?;
@@ -536,13 +510,15 @@ impl ApplicationInformation {
         })
     }
 
-    fn get_application_path(process: HANDLE) -> Result<PathBuf> {
+    fn get_application_path(process: BorrowedHandle) -> Result<PathBuf> {
         let mut path: [u16; MAX_PATH as usize + 1] = [0; MAX_PATH as usize + 1];
+        // SAFETY: The `process` handle is guaranteed to be valid and the
+        // `path` pointer is allocated on the stack just above.
         unsafe {
             let res = K32GetModuleFileNameExW(
-                process,
+                process.as_raw_handle() as HANDLE,
                 0,
-                (&mut path).as_mut_ptr(),
+                path.as_mut_ptr(),
                 (MAX_PATH + 1) as DWORD,
             );
 
@@ -568,6 +544,7 @@ impl ApplicationInformation {
 
     fn get_crash_reports_dir(application_data: &ApplicationData) -> Result<PathBuf> {
         let mut psz_path: PWSTR = null_mut();
+        // SAFETY: `psz_path` points to a stack-allocated variable.
         unsafe {
             let res = SHGetKnownFolderPath(
                 &FOLDERID_RoamingAppData as *const _,
@@ -609,7 +586,7 @@ impl ApplicationInformation {
             .open(&file_path)
         {
             // SAFETY: No risks in calling `time()` with a null pointer.
-            let _ = write!(&mut file, "{}", unsafe { time(null_mut()) }.to_string());
+            let _ = write!(&mut file, "{}", unsafe { time(null_mut()) });
         }
 
         // As a last resort, if we can't read the file we fall back to the
@@ -641,6 +618,7 @@ impl CrashReport {
             .encode_lower(&mut Uuid::encode_buffer())
             .to_owned();
         let crash_reports_path = application_information.crash_reports_dir.clone();
+        // SAFETY: calling `time()` is always safe.
         let crash_time: u64 = unsafe { time(null_mut()) as u64 };
         let annotations = Annotations::from_application_data(
             &application_information.application_data,
@@ -668,14 +646,14 @@ impl CrashReport {
         if self.is_nightly() {
             // This is Nightly only because this doubles the size of minidumps based
             // on the experimental data.
-            minidump_type = minidump_type | MiniDumpWithProcessThreadData;
+            minidump_type |= MiniDumpWithProcessThreadData;
 
             // dbghelp.dll on Win7 can't handle overlapping memory regions so we only
             // enable this feature on Win8 or later.
             if is_windows8_or_later() {
                 // This allows us to examine heap objects referenced from stack objects
                 // at the cost of further doubling the size of minidumps.
-                minidump_type = minidump_type | MiniDumpWithIndirectlyReferencedMemory
+                minidump_type |= MiniDumpWithIndirectlyReferencedMemory
             }
         }
         minidump_type
@@ -693,18 +671,13 @@ impl CrashReport {
         self.get_pending_path().join(self.uuid.to_string() + ".dmp")
     }
 
-    fn get_minidump_name(&self) -> [u8; 40] {
-        let bytes = (self.uuid.to_string() + ".dmp").into_bytes();
-        bytes[0..40].try_into().unwrap()
-    }
-
     fn get_extra_file_path(&self) -> PathBuf {
         self.get_pending_path()
             .join(self.uuid.to_string() + ".extra")
     }
 
     fn get_event_file_path(&self) -> PathBuf {
-        self.get_events_path().join(self.uuid.to_string())
+        self.get_events_path().join(&self.uuid)
     }
 
     fn write_minidump(
@@ -720,25 +693,31 @@ impl CrashReport {
         let minidump_path = self.get_minidump_path();
         let minidump_file = File::create(minidump_path).map_err(|_e| ())?;
         let minidump_type: MINIDUMP_TYPE = self.get_minidump_type();
+        // SAFETY: The `hProcess` field is guaranteed to contain a valid handle.
+        let process =
+            unsafe { BorrowedHandle::borrow_raw((*exception_information).hProcess as RawHandle) };
 
+        // SAFETY: We control all the pointers going into the
+        // `MiniDumpWriteDump()` call and all the handles involved are also
+        // guaranteed to be valid.
         unsafe {
             let mut exception_pointers = EXCEPTION_POINTERS {
                 ExceptionRecord: &mut ((*exception_information).exceptionRecord),
                 ContextRecord: &mut ((*exception_information).context),
             };
 
-            let mut exception = MINIDUMP_EXCEPTION_INFORMATION {
+            let exception = MINIDUMP_EXCEPTION_INFORMATION {
                 ThreadId: GetThreadId((*exception_information).hThread),
                 ExceptionPointers: &mut exception_pointers,
                 ClientPointers: FALSE,
             };
 
             MiniDumpWriteDump(
-                (*exception_information).hProcess,
-                get_process_id((*exception_information).hProcess)?,
+                process.as_raw_handle() as HANDLE,
+                get_process_id(process)?,
                 minidump_file.as_raw_handle() as _,
                 minidump_type,
-                &mut exception,
+                &exception,
                 /* userStream */ null(),
                 /* callback */ null(),
             )
@@ -771,9 +750,12 @@ fn is_windows8_or_later() -> bool {
         dwOSVersionInfoSize: size_of::<OSVERSIONINFOEXW>().try_into().unwrap(),
         dwMajorVersion: 6,
         dwMinorVersion: 2,
+        // SAFETY: Zero-initialized fields are fine.
         ..unsafe { zeroed() }
     };
 
+    // SAFETY: The pointer going into the `VerifyVersionInfoW()` call points
+    // to a stack-allocated variable.
     unsafe {
         let mut mask: DWORDLONG = 0;
         let ge: u8 = VER_GREATER_EQUAL.try_into().unwrap();
@@ -807,19 +789,20 @@ trait WinBool: Sized {
 
 impl WinBool for BOOL {
     fn to_bool(self) -> bool {
-        match self {
-            FALSE => false,
-            _ => true,
-        }
+        !matches!(self, FALSE)
     }
 }
 
-fn get_process_basic_information(process: HANDLE) -> Result<PROCESS_BASIC_INFORMATION> {
+fn get_process_basic_information(process: BorrowedHandle) -> Result<PROCESS_BASIC_INFORMATION> {
+    // SAFETY: A zero-initialized `PROCESS_BASIC_INFORMATION` structure is
+    // considered valid.
     let mut pbi: PROCESS_BASIC_INFORMATION = unsafe { zeroed() };
     let mut length: ULONG = 0;
+    // SAFETY: All the pointers going into this call point to stack-allocated
+    // variables and `process` is guaranteed to be a valid handle.
     let result = unsafe {
         NtQueryInformationProcess(
-            process,
+            process.as_raw_handle() as HANDLE,
             ProcessBasicInformation,
             &mut pbi as *mut _ as _,
             size_of::<PROCESS_BASIC_INFORMATION>().try_into().unwrap(),
@@ -834,21 +817,34 @@ fn get_process_basic_information(process: HANDLE) -> Result<PROCESS_BASIC_INFORM
     Ok(pbi)
 }
 
-fn is_sandboxed_process(process: HANDLE) -> Result<bool> {
+fn is_sandboxed_process(process: BorrowedHandle) -> Result<bool> {
     let mut token: HANDLE = 0;
-    let res = unsafe { OpenProcessToken(process, TOKEN_QUERY, &mut token as *mut _) };
+    // SAFETY: All the pointers going into this call point to stack-allocated
+    // variables and `process` is guaranteed to be a valid handle.
+    let res = unsafe {
+        OpenProcessToken(
+            process.as_raw_handle() as HANDLE,
+            TOKEN_QUERY,
+            &mut token as *mut _,
+        )
+    };
 
     if res != TRUE {
         return Err(());
     }
 
-    let is_restricted = unsafe { IsTokenRestricted(token) } != FALSE;
+    // SAFETY: We've just checked that `OpenProcessToken` returned a valid token handle.
+    let token = unsafe { OwnedHandle::from_raw_handle(token as RawHandle) };
+    // SAFETY: `token` is guaranteed to be a valid handle.
+    let is_restricted = unsafe { IsTokenRestricted(token.as_raw_handle() as HANDLE) } != FALSE;
 
-    unsafe { SetLastError(ERROR_SUCCESS) };
+    set_last_error(ERROR_SUCCESS);
     let mut buffer_size: DWORD = 0;
+    // SAFETY: All the pointers going into this call point to stack-allocated
+    // variables and `token` is guaranteed to be a valid handle.
     let res = unsafe {
         GetTokenInformation(
-            token,
+            token.as_raw_handle() as HANDLE,
             TokenIntegrityLevel,
             null_mut(),
             0,
@@ -856,14 +852,16 @@ fn is_sandboxed_process(process: HANDLE) -> Result<bool> {
         )
     };
 
-    if (res != FALSE) || (unsafe { GetLastError() } != ERROR_INSUFFICIENT_BUFFER) {
+    if (res != FALSE) || (get_last_error() != ERROR_INSUFFICIENT_BUFFER) {
         return Err(());
     }
 
     let mut buffer: Vec<u8> = vec![Default::default(); buffer_size as usize];
+    // SAFETY: All the pointers going into this call point to memory blocks we
+    // own and `token` is guaranteed to be a valid handle.
     let res = unsafe {
         GetTokenInformation(
-            token,
+            token.as_raw_handle() as HANDLE,
             TokenIntegrityLevel,
             buffer.as_mut_ptr() as *mut _,
             buffer_size,
@@ -875,13 +873,29 @@ fn is_sandboxed_process(process: HANDLE) -> Result<bool> {
         return Err(());
     }
 
+    // SAFETY: `buffer` is guaranteed to be valid and point to an object of the
+    // appropriate size.
     let token_mandatory_label = &unsafe { *(buffer.as_ptr() as *const TOKEN_MANDATORY_LABEL) };
     let sid = token_mandatory_label.Label.Sid;
+
     // We're not checking for errors in the following two calls because these
     // functions can only fail if provided with an invalid SID and we know the
     // one we obtained from `GetTokenInformation()` is valid.
+
+    // SAFETY: `sid` is a valid pointer
     let sid_subauthority_count = unsafe { *GetSidSubAuthorityCount(sid) - 1u8 };
+    // SAFETY: `sid` is a valid pointer
     let integrity_level = unsafe { *GetSidSubAuthority(sid, sid_subauthority_count.into()) };
 
     Ok((integrity_level < SECURITY_MANDATORY_MEDIUM_RID as u32) || is_restricted)
+}
+
+fn get_last_error() -> WIN32_ERROR {
+    // SAFETY: This is always safe to call
+    unsafe { GetLastError() }
+}
+
+fn set_last_error(error: WIN32_ERROR) {
+    // SAFETY: This is always safe to call
+    unsafe { SetLastError(error) }
 }

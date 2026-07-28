@@ -15,7 +15,6 @@ psmerr-hostreusedissuerandserial =
     As retzidu unu tzertificadu non vàlidu. Cuntata s'amministratzione de su serbidore o s'indiritzu de posta eletrònica chi ddi currispondet e fruni·ddi is informatziones chi sighint:
     
     Su tzertificadu tuo cuntenet su pròpiu nùmeru de sèrie de un'àteru tzertificadu emìtidu dae s'autoridade de tzertificatzione. Procura·ti unu tzertificadu nou cun unu nùmeru de sèrie ùnicu.
-
 ssl-error-export-only-server = Impossìbile comunicare in manera segura. S'àtera parte no ammitet tzifradu de gradu artu.
 ssl-error-us-only-server = Impossìbile comunicare in manera segura. S'àtera parte rechedet unu tzifradu de gradu artu chi no est a disponimentu.
 ssl-error-no-cypher-overlap = Impossìbile comunicare in manera segura cun s'àtera parte: no ddoe at algoritmos comunos de tzifradu.
@@ -101,7 +100,7 @@ ssl-error-token-insertion-removal = Su token PKCS#11 est istadu agiuntu o bogadu
 ssl-error-token-slot-not-found = Nissunu token PKCS#11 agatadu pro realizare un'operatzione rechesta.
 ssl-error-no-compression-overlap = Impossìbile comunicare in manera segura cun s'àtera parte: non ddoe at un'algoritmu de cumpressione comunu.
 ssl-error-handshake-not-completed = Impossìbile incumentzare un'àteru istabilimentu de connessione (handshake) SSL fintzas a cando no siat cumpletu cussu chi est in cursu.
-ssl-error-bad-handshake-hash-value = Retzidu dae s'àtera parte unu balore de hash de istabilimentu de connessione non bàlidu.
+ssl-error-bad-handshake-hash-value = Retzidu dae s’àtera parte unu valore de hash de istabilimentu de connessione non bàlidu.
 ssl-error-cert-kea-mismatch = Su tzertificadu frunidu non podet èssere impreadu cun s'algoritmu de iscàmbiu de crae seberadu.
 ssl-error-no-trusted-ssl-client-ca = Nissuna autoridade de tzertificatzione est fidada pro s'autenticatzione de cliente SSL.
 ssl-error-session-not-found = S'ID de sessione SSL de su cliente non s'agatat in sa cache de sessione de su serbidore.
@@ -152,7 +151,6 @@ ssl-error-no-supported-signature-algorithm = No est istadu cunfiguradu nissunu a
 ssl-error-unsupported-signature-algorithm = S'àtera parte at impreadu una cumbinatzione chi no est cumpatìbile de algoritmu de firma e de hash.
 ssl-error-missing-extended-master-secret = S'àtera parte at proadu a sighire chena un’estensione curreta extended_master_secret.
 ssl-error-unexpected-extended-master-secret = S'àtera parte at proadu a sighire cun un’estensione extended_master_secret imprevista.
-
 sec-error-io = Faddina de I/O in s’autorizatzione de seguresa.
 sec-error-library-failure = faddina in sa biblioteca de seguresa.
 sec-error-bad-data = biblioteca de seguresa: retzidos datos non curretos.
@@ -191,7 +189,7 @@ sec-error-extension-not-found = Impossìbile agatare s'estensione de su tzertifi
 sec-error-ca-cert-invalid = Su tzertificadu de s'autoridade de emissione no est vàlidu.
 sec-error-path-len-constraint-invalid = Sa restritzione de longària de su percursu de tzertificadu no est vàlida.
 sec-error-cert-usages-invalid = Su campu “impreos” de su tzertificadu no est vàlidu.
-sec-internal-only = **Mollu ISCETI internu**
+sec-internal-only = **Mòdulu ISCETI internu**
 sec-error-invalid-key = Sa crae non permitit s'operatzione rechesta.
 sec-error-unknown-critical-extension = Su tzertificadu cuntenet un'estensione crìtica disconnota.
 sec-error-old-crl = Sa data de iscadèntzia de s'elencu de tzertificados revocados (CRL) no est prus noa de cussa atuale.
@@ -275,7 +273,7 @@ sec-error-ocsp-future-response = Sa risposta OCSP no est vàlida ancora (tenet u
 sec-error-ocsp-old-response = Sa risposta OCSP cuntenet informatzione chi no est atualizada.
 sec-error-digest-not-found = Impossìbile agatare CMS o PKCS #7 in su messàgiu firmadu.
 sec-error-unsupported-message-type = CMS o genia de messàgiu PKCS #7 non cumpatìbile.
-sec-error-module-stuck = Impossìbile bogare su mòdulu PKCS #11 ca est ancora impreadu.
+sec-error-module-stuck = Impossìbile bogare su mòdulu PKCS #11 ca est galu impreadu.
 sec-error-bad-template = Impossìbile decodificare is datos ASN.1. Su mollu ispetzificadu no est vàlidu.
 sec-error-crl-not-found = Impossìbile agatare unu CRL chi currispondet.
 sec-error-busy = Impossìbile essire dae NSS. Is ogetos si sunt ancora impreende.
@@ -292,9 +290,9 @@ sec-error-token-not-logged-in = Faddina in s’operatzione ca su PKCS#11 no s'es
 sec-error-bad-http-response = Su serbidore at torradu una risposta HTTP non vàlida
 sec-error-bad-ldap-response = Su serbidore at torradu una risposta LDAP non vàlida
 sec-error-libpkix-internal = Faddina interna in libpkix durante sa validatzione de su tzertificadu.
-sec-error-pkcs11-general-error = Unu mollu PKCS #11 at torradu su valore CKR_GENERAL_ERROR: custu bolet nàrrere chi est acontèssidu una faddina chi non si podet isòrvere.
-sec-error-pkcs11-function-failed = Unu mollu PKCS #11 at torradu su valore CKR_FUNCTION_FAILED: custu bolet nàrrere ca sa funtzione rechesta non s'est acumprida. Unu tentativu nou diat pòdere rènessere.
-sec-error-pkcs11-device-error = Unu mollu PKCS #11 at torradu su valore CKR_DEVICE_ERROR: custu bolet nàrrere ca est acontèssidu unu problema cun su token o su slot.
+sec-error-pkcs11-general-error = Unu mòdulu PKCS #11 at torradu su valore CKR_GENERAL_ERROR: custu bolet nàrrere chi est acontèssidu una faddina chi non si podet isòrvere.
+sec-error-pkcs11-function-failed = Unu mòdulu PKCS #11 at torradu su valore CKR_FUNCTION_FAILED: custu bolet nàrrere ca sa funtzione rechesta non s’est acumprida. Unu tentativu nou diat pòdere renèssere.
+sec-error-pkcs11-device-error = Unu mòdulu PKCS #11 at torradu su valore CKR_DEVICE_ERROR: custu bolet nàrrere ca est acontèssidu unu problema cun su token o su slot.
 sec-error-bad-info-access-method = Informatziones subra de su mètodu de atzessu in s’estensione de su tzertificadu.
 sec-error-crl-import-failed = Faddina in s’importatzione de una CRL.
 sec-error-expired-password = Sa crae est iscadida.
@@ -302,7 +300,6 @@ sec-error-locked-password = Sa crae est blocada.
 sec-error-unknown-pkcs11-error = Faddina PKCS #11 disconnota.
 sec-error-bad-crl-dp-url = URL non vàlidu o non suportadu in su nòmine de su puntu de distributzione CRL.
 sec-error-cert-signature-algorithm-disabled = Su tzertificadu est istadu firmadu cun un’algoritmu de firma disativadu ca non seguru.
-
 mozilla-pkix-error-key-pinning-failure = Su serbidore impreat unu mecanismu de “key pinning” ma non est possìbile creare una cadena de certificados de afidamentu chi currispondant a su pinset. No est possìbile inniorare violatziones in contu a su “key pinning”.
 mozilla-pkix-error-ca-cert-used-as-end-entity = Su serbidore impreat unu tzertificadu cun un’estensione de is barrancos de base chi dd’identìficant comente autoridade de tzertificatzione. Custu non diat dèpere acontèssere pro unu tzertificadu emitidu in manera curreta.
 mozilla-pkix-error-inadequate-key-size = Su tzertificadu imbiadu dae su serbidore impreat una crae tropu curtza pro istabilire una connessione segura.
@@ -317,11 +314,9 @@ mozilla-pkix-error-invalid-integer-encoding = Su serbidore at frunidu unu tzerti
 mozilla-pkix-error-empty-issuer-name = Su serbidore at frunidu unu tzertificadu ue su nòmine nòdidu de s’autoridade de emissione est bòidu.
 mozilla-pkix-error-additional-policy-constraint-failed = Unu vìnculu de àteras règulas at faddidu averguende custu tzertificadu.
 mozilla-pkix-error-self-signed-cert = Su tzertificadu no est atendìbile ca est firmadu dae isse etotu.
-
 xp-java-remove-principal-error = Impossìbile cantzellare su printzipale
 xp-java-delete-privilege-error = Impossìbile cantzellare su privilègiu
 xp-java-cert-not-exists-error = Custu printzipale non tenet tzertificadu
-
 xp-sec-fortezza-bad-card = Sa carta Fortezza no est istada aviada in manera curreta. Boga·dda e torra·dda a s'autoridade de emissione.
 xp-sec-fortezza-no-card = Nissuna carta Fortezza agatada
 xp-sec-fortezza-none-selected = Nissuna carta Fortezza seberada

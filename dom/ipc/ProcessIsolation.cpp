@@ -1,20 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/ProcessIsolation.h"
 
+#include "mozilla/AppShutdown.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/dom/BrowsingContextGroup.h"
-#include "mozilla/dom/CanonicalBrowsingContext.h"
-#include "mozilla/dom/ContentChild.h"
-#include "mozilla/dom/ContentParent.h"
-#include "mozilla/dom/Element.h"
-#include "mozilla/dom/RemoteType.h"
-#include "mozilla/dom/WindowGlobalParent.h"
-#include "mozilla/extensions/WebExtensionPolicy.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/ContentPrincipal.h"
@@ -27,17 +18,26 @@
 #include "mozilla/StaticPrefs_browser.h"
 #include "mozilla/StaticPrefs_fission.h"
 #include "mozilla/StaticPtr.h"
+#include "mozilla/dom/BrowsingContextGroup.h"
+#include "mozilla/dom/CanonicalBrowsingContext.h"
+#include "mozilla/dom/ContentChild.h"
+#include "mozilla/dom/ContentParent.h"
+#include "mozilla/dom/Element.h"
+#include "mozilla/dom/RemoteType.h"
+#include "mozilla/dom/WindowGlobalParent.h"
+#include "mozilla/extensions/WebExtensionPolicy.h"
 #include "nsAboutProtocolUtils.h"
 #include "nsDocShell.h"
 #include "nsError.h"
 #include "nsIChromeRegistry.h"
+#include "nsIEnterprisePolicies.h"
 #include "nsIHttpChannel.h"
 #include "nsIHttpChannelInternal.h"
 #include "nsIProtocolHandler.h"
 #include "nsIXULRuntime.h"
 #include "nsNetUtil.h"
-#include "nsServiceManagerUtils.h"
 #include "nsSHistory.h"
+#include "nsServiceManagerUtils.h"
 #include "nsURLHelper.h"
 
 namespace mozilla::dom {
@@ -115,6 +115,47 @@ struct CommaSeparatedPref {
 
 CommaSeparatedPref sSeparatedMozillaDomains{
     "browser.tabs.remote.separatedMozillaDomains"_ns};
+
+bool AllowJITForSiteOrigin(const nsACString& aSiteOriginNoSuffix,
+                           WindowGlobalParent* aParentWindow) {
+  nsresult rv;
+
+  nsCOMPtr<nsIEnterprisePolicies> policyService =
+      do_GetService("@mozilla.org/enterprisepolicies;1");
+  if (!policyService) {
+    return true;
+  }
+
+  nsAutoCString topSiteOriginNoSuffix(aSiteOriginNoSuffix);
+
+  // If this is a subframe then use the principal of the top window.
+  if (aParentWindow) {
+    rv = aParentWindow->TopWindowContext()
+             ->DocumentPrincipal()
+             ->GetSiteOriginNoSuffix(topSiteOriginNoSuffix);
+    if (NS_FAILED(rv)) {
+      topSiteOriginNoSuffix = aSiteOriginNoSuffix;
+    }
+  }
+
+  nsCOMPtr<nsIURI> topSite;
+  rv = NS_NewURI(getter_AddRefs(topSite), topSiteOriginNoSuffix);
+  NS_ENSURE_SUCCESS(rv, true);
+
+  bool isJitAllowed = true;
+  if (NS_FAILED(
+          policyService->IsAllowedForURI("jit"_ns, topSite, &isJitAllowed))) {
+    return true;
+  }
+
+  if (!isJitAllowed) {
+    MOZ_LOG(gProcessIsolationLog, LogLevel::Debug,
+            ("JIT is disabled for site %s by enterprise policy",
+             topSiteOriginNoSuffix.get()));
+  }
+
+  return isJitAllowed;
+}
 
 /**
  * Certain URIs have special isolation behaviour, and need to be loaded within
@@ -212,6 +253,8 @@ static const char* WorkerKindName(WorkerKind aWorkerKind) {
  */
 static IsolationBehavior IsolationBehaviorForURI(nsIURI* aURI, bool aIsSubframe,
                                                  bool aForChannelCreationURI) {
+  MOZ_ASSERT(NS_IsMainThread());
+
   nsAutoCString scheme;
   MOZ_ALWAYS_SUCCEEDS(aURI->GetScheme(scheme));
 
@@ -317,7 +360,8 @@ static IsolationBehavior IsolationBehaviorForURI(nsIURI* aURI, bool aIsSubframe,
 
   // Protocols used by Thunderbird to display email messages.
   if (scheme == "imap"_ns || scheme == "mailbox"_ns || scheme == "news"_ns ||
-      scheme == "nntp"_ns || scheme == "snews"_ns || scheme == "x-moz-ews"_ns) {
+      scheme == "nntp"_ns || scheme == "snews"_ns || scheme == "x-moz-ews"_ns ||
+      scheme == "x-moz-graph"_ns) {
     return IsolationBehavior::Parent;
   }
 
@@ -381,12 +425,22 @@ static nsAutoCString OriginString(nsIPrincipal* aPrincipal) {
  * Trim the OriginAttributes from aPrincipal, and use it to create a
  * OriginSuffix string appropriate to use within a remoteType string.
  */
-static nsAutoCString OriginSuffixForRemoteType(nsIPrincipal* aPrincipal) {
+static nsAutoCString OriginSuffixForRemoteType(nsIPrincipal* aPrincipal,
+                                               bool aDisableJit) {
   nsAutoCString originSuffix;
   OriginAttributes attrs = aPrincipal->OriginAttributesRef();
   attrs.StripAttributes(OriginAttributes::STRIP_FIRST_PARTY_DOMAIN |
                         OriginAttributes::STRIP_PARITION_KEY);
   attrs.CreateSuffix(originSuffix);
+
+  if (aDisableJit) {
+    if (originSuffix.IsEmpty()) {
+      originSuffix = "^"_ns + DISABLE_JIT_REMOTE_TYPE_SUFFIX;
+    } else {
+      originSuffix += "&"_ns + DISABLE_JIT_REMOTE_TYPE_SUFFIX;
+    }
+  }
+
   return originSuffix;
 }
 
@@ -642,13 +696,8 @@ Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
     // If loading an about:reader page in a BrowsingContext which shares a
     // BrowsingContextGroup with other toplevel documents, replace the
     // BrowsingContext to destroy any references.
-    //
-    // With SHIP we can apply this to all about:reader loads, but otherwise
-    // do it at least where there are opener/group relationships.
-    if (mozilla::SessionHistoryInParent() ||
-        aTopBC->Group()->Toplevels().Length() > 1) {
-      options.mReplaceBrowsingContext = true;
-    }
+    // With SHIP we can apply this to all about:reader loads.
+    options.mReplaceBrowsingContext = true;
   }
 
   // If we're running in a test which is requesting that system-triggered
@@ -791,8 +840,7 @@ Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
 
   // If the load has any special remote type handling, do so at this point.
   if (behavior != IsolationBehavior::WebContent) {
-    MOZ_TRY_VAR(
-        options.mRemoteType,
+    options.mRemoteType = MOZ_TRY(
         SpecialBehaviorRemoteType(behavior, aCurrentRemoteType, aParentWindow));
 
     if (options.mRemoteType != aCurrentRemoteType &&
@@ -815,6 +863,17 @@ Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
     MOZ_ASSERT(!aParentWindow);
     options.mReplaceBrowsingContext = true;
   }
+
+  // NOTE: Currently we always perform process isolation based on the
+  // siteOrigin, not based on the full origin, even if the
+  // `Origin-Agent-Cluster` header is provided and we are keying DocGroups
+  // by-origin.
+  //
+  // If in the future we want to start keying based on full origin in some
+  // cases, the logic below will need to be updated to handle this. Note that
+  // the UseOriginAgentCluster bit may not have been set on the
+  // BrowsingContextGroup when this check is being evaluated (as it is set after
+  // process selection, which may cause a BrowsingContextGroup switch).
 
   nsAutoCString siteOriginNoSuffix;
   MOZ_TRY(resultOrPrecursor->GetSiteOriginNoSuffix(siteOriginNoSuffix));
@@ -884,7 +943,9 @@ Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
     }
   }
 
-  nsAutoCString originSuffix = OriginSuffixForRemoteType(resultOrPrecursor);
+  bool isJitAllowed = AllowJITForSiteOrigin(siteOriginNoSuffix, aParentWindow);
+  nsAutoCString originSuffix =
+      OriginSuffixForRemoteType(resultOrPrecursor, !isJitAllowed);
 
   WebProcessType webProcessType = WebProcessType::Web;
   if (ShouldIsolateSite(resultOrPrecursor, aTopBC->UseRemoteSubframes())) {
@@ -1023,8 +1084,7 @@ Result<WorkerIsolationOptions, nsresult> IsolationOptionsForWorker(
   }
 
   if (behavior != IsolationBehavior::WebContent) {
-    MOZ_TRY_VAR(
-        options.mRemoteType,
+    options.mRemoteType = MOZ_TRY(
         SpecialBehaviorRemoteType(behavior, preferredRemoteType, nullptr));
 
     MOZ_LOG(
@@ -1041,7 +1101,11 @@ Result<WorkerIsolationOptions, nsresult> IsolationOptionsForWorker(
   if (ShouldIsolateSite(resultOrPrecursor, aUseRemoteSubframes)) {
     nsAutoCString siteOriginNoSuffix;
     MOZ_TRY(resultOrPrecursor->GetSiteOriginNoSuffix(siteOriginNoSuffix));
-    nsAutoCString originSuffix = OriginSuffixForRemoteType(resultOrPrecursor);
+
+    bool isJitAllowed = AllowJITForSiteOrigin(siteOriginNoSuffix, nullptr);
+
+    nsAutoCString originSuffix =
+        OriginSuffixForRemoteType(resultOrPrecursor, !isJitAllowed);
 
     nsCString prefix = aWorkerKind == WorkerKindService
                            ? SERVICEWORKER_REMOTE_TYPE
@@ -1093,8 +1157,8 @@ void AddHighValuePermission(nsIPrincipal* aResultPrincipal,
   }
 
   MOZ_LOG(dom::gProcessIsolationLog, LogLevel::Verbose,
-          ("Adding %s Permission for site '%s'", aPermissionType.BeginReading(),
-           siteOrigin.get()));
+          ("Adding %s Permission for site '%s'",
+           PromiseFlatCString(aPermissionType).get(), siteOrigin.get()));
 
   uint32_t expiration = 0;
   if (aPermissionType.Equals(mozilla::dom::kHighValueCOOPPermission)) {
@@ -1113,7 +1177,7 @@ void AddHighValuePermission(nsIPrincipal* aResultPrincipal,
   // unix epoch from `TimeStamp`.
   int64_t expirationTime =
       (PR_Now() / PR_USEC_PER_MSEC) + (int64_t(expiration) * PR_MSEC_PER_SEC);
-  Unused << perms->AddFromPrincipal(
+  (void)perms->AddFromPrincipal(
       sitePrincipal, aPermissionType, nsIPermissionManager::ALLOW_ACTION,
       nsIPermissionManager::EXPIRE_TIME, expirationTime);
 }
@@ -1136,6 +1200,175 @@ bool IsIsolateHighValueSiteEnabled() {
          WebContentIsolationStrategy(
              StaticPrefs::fission_webContentIsolationStrategy()) ==
              WebContentIsolationStrategy::IsolateHighValue;
+}
+
+bool ValidatePrincipalCouldPotentiallyBeLoadedBy(
+    nsIPrincipal* aPrincipal, const nsACString& aRemoteType,
+    const EnumSet<ValidatePrincipalOptions>& aOptions) {
+  // Don't bother validating principals from the parent process.
+  if (aRemoteType == NOT_REMOTE_TYPE) {
+    return true;
+  }
+
+  // If there is no principal, only allow it if AllowNullPtr is specified.
+  if (!aPrincipal) {
+    return aOptions.contains(ValidatePrincipalOptions::AllowNullPtr);
+  }
+
+  // We currently do not track relationships between specific null principals
+  // and content processes, so we can not validate much here.
+  if (aPrincipal->GetIsNullPrincipal()) {
+    return true;
+  }
+
+  // If we have a system principal, only allow it if AllowSystem is passed.
+  if (aPrincipal->IsSystemPrincipal()) {
+    return aOptions.contains(ValidatePrincipalOptions::AllowSystem);
+  }
+
+  // Performing checks against the remote type requires the IOService and
+  // ThirdPartyService to be available, check we're not late in shutdown.
+  if (AppShutdown::IsInOrBeyond(ShutdownPhase::XPCOMShutdownFinal)) {
+    return true;
+  }
+
+  // Only allow expanded principals if AllowExpanded is passed. Each
+  // sub-principal will be validated independently.
+  if (aPrincipal->GetIsExpandedPrincipal()) {
+    if (!aOptions.contains(ValidatePrincipalOptions::AllowExpanded)) {
+      return false;
+    }
+    // FIXME: There are more constraints on expanded principals in-practice,
+    // such as the structure of extension expanded principals. This may need
+    // to be investigated more in the future.
+    nsCOMPtr<nsIExpandedPrincipal> expandedPrincipal =
+        do_QueryInterface(aPrincipal);
+    const auto& allowList = expandedPrincipal->AllowList();
+    for (const auto& innerPrincipal : allowList) {
+      if (!ValidatePrincipalCouldPotentiallyBeLoadedBy(innerPrincipal,
+                                                       aRemoteType, aOptions)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // At this point we know we're working with a content principal.
+  MOZ_ASSERT(aPrincipal->GetIsContentPrincipal());
+  nsAutoCString originNoSuffix;
+  MOZ_ALWAYS_SUCCEEDS(aPrincipal->GetOriginNoSuffix(originNoSuffix));
+
+  // NOTE: We intentionally do scheme checks against the origin here, rather
+  // than the principal's URI. This is because nested URIs like `view-source:`
+  // are preserved in the principal, but do not impact the origin.
+  nsAutoCString originScheme;
+  MOZ_ALWAYS_SUCCEEDS(net_ExtractURLScheme(originNoSuffix, originScheme));
+
+  // We can load a `resource://` URI in any process. This usually comes up due
+  // to pdf.js and the JSON viewer. See bug 1686200.
+  if (originScheme == "resource"_ns) {
+    return true;
+  }
+
+  // A URI with a file:// scheme can never load in a non-file content process
+  // due to sandboxing.
+  if (originScheme == "file"_ns) {
+    // If we don't support a separate 'file' process, then we can return here.
+    if (!StaticPrefs::browser_tabs_remote_separateFileUriProcess()) {
+      return true;
+    }
+    return aRemoteType == FILE_REMOTE_TYPE;
+  }
+
+  if (originScheme == "about"_ns) {
+    nsCOMPtr<nsIURI> aboutURI;
+    if (NS_FAILED(NS_NewURI(getter_AddRefs(aboutURI), originNoSuffix))) {
+      MOZ_DIAGNOSTIC_ASSERT(false, "The originNoSuffix isn't a valid URI?");
+      return false;
+    }
+    MOZ_ASSERT(aboutURI->SchemeIs("about"));
+
+    // We cannot validate about module flags off-main-thread, as about modules
+    // are not threadsafe, and can be implemented in JS.
+    if (!NS_IsMainThread()) {
+      return true;
+    }
+
+    // NOTE: The logic for about URIs is somewhat complex, so we lean on
+    // IsolationBehaviorForURI to ensure it matches.
+    switch (IsolationBehaviorForURI(aboutURI, /* aIsSubframe */ false,
+                                    /* aForChannelCreationURI */ true)) {
+      case IsolationBehavior::Parent:
+        return false;
+      case IsolationBehavior::Anywhere:
+        return true;
+      case IsolationBehavior::AboutReader:
+        // Allow about:reader to load anywhere, as it is process-allocated based
+        // on the content it displays, and which content is being displayed is
+        // unfortunately not part of the principal.
+        return true;
+      case IsolationBehavior::Extension:
+        return aRemoteType == EXTENSION_REMOTE_TYPE;
+      case IsolationBehavior::PrivilegedAbout:
+        return aRemoteType == PRIVILEGEDABOUT_REMOTE_TYPE;
+      case IsolationBehavior::ForceWebRemoteType:
+        return aRemoteType == WEB_REMOTE_TYPE;
+      case IsolationBehavior::WebContent:
+      case IsolationBehavior::Error:
+        // NOTE: We can encounter races around about: pages being unregistered.
+        // To avoid false positives, we fail open if no about module is present.
+        return true;
+      default:
+        MOZ_CRASH("Unexpected IsolationBehaviorForURI for about: URI");
+        return false;
+    }
+  }
+
+  // Web content can contain extension content frames, so any content process
+  // may send us an extension's principal.
+  // NOTE: We don't check AddonPolicy here, as that can disappear if the add-on
+  // is disabled or uninstalled. As this is a lax check, looking at the scheme
+  // should be sufficient.
+  if (originScheme == "moz-extension"_ns) {
+    return true;
+  }
+
+  // If the remote type doesn't have an origin suffix, we can do no further
+  // principal validation with it.
+  int32_t equalIdx = aRemoteType.FindChar('=');
+  if (equalIdx == kNotFound) {
+    return true;
+  }
+
+  // Split out the remote type prefix and the origin suffix.
+  nsDependentCSubstring typePrefix(aRemoteType, 0, equalIdx);
+  nsDependentCSubstring typeOrigin(aRemoteType, equalIdx + 1);
+
+  // Only validate webIsolated and webServiceWorker remote types for now. This
+  // should be expanded in the future.
+  if (typePrefix != FISSION_WEB_REMOTE_TYPE &&
+      typePrefix != SERVICEWORKER_REMOTE_TYPE) {
+    return true;
+  }
+
+  // Trim any OriginAttributes from the origin, as those will not be validated.
+  int32_t suffixIdx = typeOrigin.RFindChar('^');
+  nsDependentCSubstring typeOriginNoSuffix(typeOrigin, 0, suffixIdx);
+
+  // If the origin perfectly matches, we can skip computing the site origin.
+  if (typeOriginNoSuffix == originNoSuffix) {
+    return true;
+  }
+
+  // NOTE: Currently every webIsolated remote type is site-origin keyed, meaning
+  // we can unconditionally compare site origins. If this changes in the future,
+  // this logic will need to be updated to reflect that.
+  nsAutoCString siteOriginNoSuffix;
+  if (NS_FAILED(aPrincipal->GetSiteOriginNoSuffix(siteOriginNoSuffix))) {
+    MOZ_ASSERT_UNREACHABLE("Failed when not late in shutdown?");
+    return false;
+  }
+  return siteOriginNoSuffix == typeOriginNoSuffix;
 }
 
 }  // namespace mozilla::dom

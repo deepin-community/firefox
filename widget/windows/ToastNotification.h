@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ToastNotification_h__
-#define ToastNotification_h__
+#ifndef ToastNotification_h_
+#define ToastNotification_h_
 
 #include "mozilla/Maybe.h"
 #include "mozilla/MozPromise.h"
@@ -33,18 +32,16 @@ class WindowsAlertNotification final : public AlertNotification,
 
  protected:
   virtual ~WindowsAlertNotification() = default;
-  bool mHandleActions = false;
   nsIWindowsAlertNotification::ImagePlacement mImagePlacement = eInline;
+  nsString mImagePathUnchecked;
 };
 
 class ToastNotification final : public nsIWindowsAlertsService,
-                                public nsIAlertsDoNotDisturb,
-                                public nsIObserver {
+                                public nsIAlertsDoNotDisturb {
  public:
   NS_DECL_NSIALERTSSERVICE
   NS_DECL_NSIWINDOWSALERTSSERVICE
   NS_DECL_NSIALERTSDONOTDISTURB
-  NS_DECL_NSIOBSERVER
   NS_DECL_ISUPPORTS
 
   ToastNotification();

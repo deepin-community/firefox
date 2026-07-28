@@ -2,24 +2,33 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const lazy = {};
+// eslint-disable-next-line mozilla/use-static-import
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
+);
 
-ChromeUtils.defineESModuleGetters(lazy, {
+const lazy = XPCOMUtils.declareLazy({
   AboutReaderParent: "resource:///actors/AboutReaderParent.sys.mjs",
   BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
   EveryWindow: "resource:///modules/EveryWindow.sys.mjs",
   FeatureCalloutBroker:
     "resource:///modules/asrouter/FeatureCalloutBroker.sys.mjs",
+  PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
-});
 
-ChromeUtils.defineLazyGetter(lazy, "log", () => {
-  const { Logger } = ChromeUtils.importESModule(
-    "resource://messaging-system/lib/Logger.sys.mjs"
-  );
-  return new Logger("ASRouterTriggerListeners");
+  log: () => {
+    const { Logger } = ChromeUtils.importESModule(
+      "resource://messaging-system/lib/Logger.sys.mjs"
+    );
+    return new Logger("ASRouterTriggerListeners");
+  },
+
+  newtabPageEnabled: {
+    pref: "browser.newtabpage.enabled",
+    default: true,
+  },
 });
 
 const FEW_MINUTES = 15 * 60 * 1000; // 15 mins
@@ -39,7 +48,11 @@ function isPrivateWindow(win) {
  *
  * @returns {object} - {host, url} pair that matched the list of allowed hosts
  */
-function checkURLMatch(aLocationURI, { hosts, matchPatternSet }, aRequest) {
+function checkURLMatch(
+  aLocationURI,
+  { hosts, matchPatternSet, regexPatterns },
+  aRequest
+) {
   // If checks pass we return a match
   let match;
   try {
@@ -60,6 +73,15 @@ function checkURLMatch(aLocationURI, { hosts, matchPatternSet }, aRequest) {
     }
   }
 
+  // Check against regex patterns
+  if (regexPatterns) {
+    for (const regex of regexPatterns) {
+      if (regex.test(match.url)) {
+        return match;
+      }
+    }
+  }
+
   // Nothing else to check, return early
   if (!aRequest) {
     return false;
@@ -69,12 +91,23 @@ function checkURLMatch(aLocationURI, { hosts, matchPatternSet }, aRequest) {
   const originalLocation = aRequest.QueryInterface(Ci.nsIChannel).originalURI;
   // We have been redirected
   if (originalLocation.spec !== aLocationURI.spec) {
-    return (
-      hosts.has(originalLocation.host) && {
+    if (hosts.has(originalLocation.host)) {
+      return {
         host: originalLocation.host,
         url: originalLocation.spec,
+      };
+    }
+
+    if (regexPatterns) {
+      for (const regex of regexPatterns) {
+        if (regex.test(originalLocation.spec)) {
+          return {
+            host: originalLocation.host,
+            url: originalLocation.spec,
+          };
+        }
       }
-    );
+    }
   }
 
   return false;
@@ -95,6 +128,85 @@ function createMatchPatternSet(patterns, flags) {
  */
 export const ASRouterTriggerListeners = new Map([
   [
+    "selectableProfilesUpdated",
+    {
+      id: "selectableProfilesUpdated",
+      _initialized: false,
+      _triggerHandler: null,
+      // Preferences that manage the "Data Collection and Use" section in
+      // about:preferences#privacy. Changes to these are shared across profiles
+      // in a profile group and should show an infobar in other profiles.
+      _trackedPrefs: [
+        "datareporting.healthreport.uploadEnabled",
+        "datareporting.usage.uploadEnabled",
+        "datareporting.policy.dataSubmissionEnabled",
+        "app.shield.optoutstudies.enabled",
+        "browser.crashReports.unsubmittedCheck.autoSubmit2",
+        "browser.discovery.enabled",
+      ],
+      _lastValues: null,
+
+      init(triggerHandler) {
+        if (!this._initialized) {
+          Services.obs.addObserver(this, "sps-profiles-updated");
+          this._initialized = true;
+          this._lastValues = new Map();
+          for (const pref of this._trackedPrefs) {
+            const value = Services.prefs.getBoolPref(pref, false);
+            this._lastValues.set(pref, value);
+          }
+        }
+        this._triggerHandler = triggerHandler;
+      },
+
+      observe(_aSubject, aTopic, aData) {
+        if (aTopic !== "sps-profiles-updated") {
+          return;
+        }
+        // We only react to changes made by another running instance (other profiles open)
+        if (aData !== "remote") {
+          return;
+        }
+        // Diff the tracked prefs and if any changed, fire the trigger
+        let anyChanged = false;
+        for (const pref of this._trackedPrefs) {
+          const current = Services.prefs.getBoolPref(pref, false);
+          const previous = this._lastValues.get(pref);
+          if (current !== previous) {
+            anyChanged = true;
+            this._lastValues.set(pref, current);
+          }
+        }
+        if (!anyChanged) {
+          return;
+        }
+
+        const browser =
+          Services.wm.getMostRecentBrowserWindow()?.gBrowser?.selectedBrowser;
+        if (browser) {
+          this._triggerHandler(browser, {
+            id: this.id,
+            param: { type: aData },
+          });
+        }
+      },
+
+      uninit() {
+        if (this._initialized) {
+          Services.obs.removeObserver(this, "sps-profiles-updated");
+          this._initialized = false;
+          this._triggerHandler = null;
+          this._lastValues = null;
+        }
+      },
+
+      QueryInterface: ChromeUtils.generateQI([
+        "nsIObserver",
+        "nsISupportsWeakReference",
+      ]),
+    },
+  ],
+  [
     "openArticleURL",
     {
       id: "openArticleURL",
@@ -103,8 +215,9 @@ export const ASRouterTriggerListeners = new Map([
       _hosts: new Set(),
       _matchPatternSet: null,
       readerModeEvent: "Reader:UpdateReaderButton",
+      _regexPatterns: null,
 
-      init(triggerHandler, hosts, patterns) {
+      init(triggerHandler, hosts, patterns, regexPatterns) {
         if (!this._initialized) {
           this.receiveMessage = this.receiveMessage.bind(this);
           lazy.AboutReaderParent.addMessageListener(this.readerModeEvent, this);
@@ -120,6 +233,13 @@ export const ASRouterTriggerListeners = new Map([
         if (hosts) {
           hosts.forEach(h => this._hosts.add(h));
         }
+
+        if (regexPatterns) {
+          this._regexPatterns = [
+            ...(this._regexPatterns || []),
+            ...regexPatterns.map(pattern => new RegExp(pattern)),
+          ];
+        }
       },
 
       receiveMessage({ data, target }) {
@@ -127,6 +247,7 @@ export const ASRouterTriggerListeners = new Map([
           const match = checkURLMatch(target.currentURI, {
             hosts: this._hosts,
             matchPatternSet: this._matchPatternSet,
+            regexPatterns: this._regexPatterns,
           });
           if (match) {
             this._triggerHandler(target, { id: this.id, param: match });
@@ -144,6 +265,7 @@ export const ASRouterTriggerListeners = new Map([
           this._triggerHandler = null;
           this._hosts = new Set();
           this._matchPatternSet = null;
+          this._regexPatterns = null;
         }
       },
     },
@@ -195,8 +317,9 @@ export const ASRouterTriggerListeners = new Map([
       _hosts: null,
       _matchPatternSet: null,
       _visits: null,
+      regexPatterns: null,
 
-      init(triggerHandler, hosts = [], patterns) {
+      init(triggerHandler, hosts = [], patterns, regexPatterns) {
         if (!this._initialized) {
           this.onTabSwitch = this.onTabSwitch.bind(this);
           lazy.EveryWindow.registerCallback(
@@ -229,10 +352,19 @@ export const ASRouterTriggerListeners = new Map([
         } else {
           this._hosts = new Set(hosts); // Clone the hosts to avoid unexpected behaviour
         }
+
+        if (regexPatterns) {
+          this._regexPatterns = [
+            ...(this._regexPatterns || []),
+            ...regexPatterns.map(pattern => new RegExp(pattern)),
+          ];
+        }
       },
 
-      /* _updateVisits - Record visit timestamps for websites that match `this._hosts` and only
+      /**
+       * _updateVisits - Record visit timestamps for websites that match `this._hosts` and only
        * if it's been more than FEW_MINUTES since the last visit.
+       *
        * @param {string} host - Location host of current selected tab
        * @returns {boolean} - If the new visit has been recorded
        */
@@ -252,14 +384,15 @@ export const ASRouterTriggerListeners = new Map([
       },
 
       onTabSwitch(event) {
-        if (!event.target.ownerGlobal.gBrowser) {
+        if (!event.target.documentGlobal.gBrowser) {
           return;
         }
 
-        const { gBrowser } = event.target.ownerGlobal;
+        const { gBrowser } = event.target.documentGlobal;
         const match = checkURLMatch(gBrowser.currentURI, {
           hosts: this._hosts,
           matchPatternSet: this._matchPatternSet,
+          regexPatterns: this._regexPatterns,
         });
         if (match) {
           this.triggerHandler(gBrowser.selectedBrowser, match);
@@ -298,7 +431,11 @@ export const ASRouterTriggerListeners = new Map([
         if (aWebProgress.isTopLevel && !isSameDocument) {
           const match = checkURLMatch(
             aLocationURI,
-            { hosts: this._hosts, matchPatternSet: this._matchPatternSet },
+            {
+              hosts: this._hosts,
+              matchPatternSet: this._matchPatternSet,
+              regexPatterns: this._regexPatterns,
+            },
             aRequest
           );
           if (match) {
@@ -316,6 +453,7 @@ export const ASRouterTriggerListeners = new Map([
           this._hosts = null;
           this._matchPatternSet = null;
           this._visits = null;
+          this._regexPatterns = null;
         }
       },
     },
@@ -335,12 +473,13 @@ export const ASRouterTriggerListeners = new Map([
       _hosts: null,
       _matchPatternSet: null,
       _visits: null,
+      _regexPatterns: null,
 
       /*
        * If the listener is already initialised, `init` will replace the trigger
        * handler and add any new hosts to `this._hosts`.
        */
-      init(triggerHandler, hosts = [], patterns) {
+      init(triggerHandler, hosts = [], patterns, regexPatterns) {
         if (!this._initialized) {
           this.onLocationChange = this.onLocationChange.bind(this);
           lazy.EveryWindow.registerCallback(
@@ -372,6 +511,13 @@ export const ASRouterTriggerListeners = new Map([
         } else {
           this._hosts = new Set(hosts); // Clone the hosts to avoid unexpected behaviour
         }
+
+        if (regexPatterns) {
+          this._regexPatterns = [
+            ...(this._regexPatterns || []),
+            ...regexPatterns.map(pattern => new RegExp(pattern)),
+          ];
+        }
       },
 
       uninit() {
@@ -383,6 +529,7 @@ export const ASRouterTriggerListeners = new Map([
           this._hosts = null;
           this._matchPatternSet = null;
           this._visits = null;
+          this._regexPatterns = null;
         }
       },
 
@@ -396,7 +543,11 @@ export const ASRouterTriggerListeners = new Map([
         if (aWebProgress.isTopLevel && !isSameDocument) {
           const match = checkURLMatch(
             aLocationURI,
-            { hosts: this._hosts, matchPatternSet: this._matchPatternSet },
+            {
+              hosts: this._hosts,
+              matchPatternSet: this._matchPatternSet,
+              regexPatterns: this._regexPatterns,
+            },
             aRequest
           );
           if (match) {
@@ -407,6 +558,92 @@ export const ASRouterTriggerListeners = new Map([
               param: match,
               context: { visitsCount },
             });
+          }
+        }
+      },
+    },
+  ],
+
+  /**
+   * Add a Places listener to notify the trigger handler whenever the user
+   * either creates a bookmark folder or saves a bookmark in a user-created
+   * folder. We don't need to differentiate between the two for targeting
+   * purposes.
+   *
+   * Only fires once per Places notification. Does not fire if the active
+   * browser window is a a private window (relevant if the user is managing
+   * bookmarks in the Library window).
+   */
+  [
+    "userBookmarkFolderActivity",
+    {
+      _initialized: false,
+      _triggerHandler: null,
+
+      init(triggerHandler) {
+        if (!this._initialized) {
+          this.handlePlacesEvents = this.handlePlacesEvents.bind(this);
+          lazy.PlacesUtils.observers.addListener(
+            ["bookmark-added"],
+            this.handlePlacesEvents
+          );
+          this._initialized = true;
+        }
+        this._triggerHandler = triggerHandler;
+      },
+
+      uninit() {
+        if (this._initialized) {
+          lazy.PlacesUtils.observers.removeListener(
+            ["bookmark-added"],
+            this.handlePlacesEvents
+          );
+          this._initialized = false;
+          this._triggerHandler = null;
+        }
+      },
+
+      handlePlacesEvents(aEvents) {
+        const builtInFolders = [
+          lazy.PlacesUtils.bookmarks.rootGuid,
+          lazy.PlacesUtils.bookmarks.menuGuid,
+          lazy.PlacesUtils.bookmarks.toolbarGuid,
+          lazy.PlacesUtils.bookmarks.unfiledGuid,
+          lazy.PlacesUtils.bookmarks.mobileGuid,
+        ];
+
+        // We only care about manually created bookmarks.
+        const sourcesToIgnore = [
+          lazy.PlacesUtils.bookmarks.SOURCES.IMPORT,
+          lazy.PlacesUtils.bookmarks.SOURCES.RESTORE,
+          lazy.PlacesUtils.bookmarks.SOURCES.RESTORE_ON_STARTUP,
+          lazy.PlacesUtils.bookmarks.SOURCES.SYNC,
+          lazy.PlacesUtils.bookmarks.SOURCES
+            .SYNC_REPARENT_REMOVED_FOLDER_CHILDREN,
+        ];
+
+        const window = Services.wm.getMostRecentBrowserWindow();
+        if (!window || isPrivateWindow(window)) {
+          return;
+        }
+        const browser = window.gBrowser.selectedBrowser;
+
+        for (let ev of aEvents) {
+          if (ev.isTagging || sourcesToIgnore.includes(ev.source)) {
+            continue;
+          }
+
+          if (
+            ev.itemType === lazy.PlacesUtils.bookmarks.TYPE_FOLDER ||
+            (ev.itemType === lazy.PlacesUtils.bookmarks.TYPE_BOOKMARK &&
+              !builtInFolders.includes(ev.parentGuid))
+          ) {
+            this._triggerHandler(browser, {
+              id: "userBookmarkFolderActivity",
+            });
+
+            // NB: Don't fire more than once per Places notification.
+            break;
           }
         }
       },
@@ -612,7 +849,7 @@ export const ASRouterTriggerListeners = new Map([
 
       observe(aSubject, aTopic) {
         switch (aTopic) {
-          case "SiteProtection:ContentBlockingEvent":
+          case "SiteProtection:ContentBlockingEvent": {
             const { browser, host, event } = aSubject.wrappedJSObject;
             if (this._events.filter(e => (e & event) === e).length) {
               this._triggerHandler(browser, {
@@ -627,6 +864,7 @@ export const ASRouterTriggerListeners = new Map([
               });
             }
             break;
+          }
           case "SiteProtection:ContentBlockingMilestone":
             if (this._events.includes(aSubject.wrappedJSObject.event)) {
               this._triggerHandler(
@@ -692,7 +930,7 @@ export const ASRouterTriggerListeners = new Map([
 
       observe(aSubject, aTopic) {
         switch (aTopic) {
-          case "captive-portal-login-success":
+          case "captive-portal-login-success": {
             const browser = Services.wm.getMostRecentBrowserWindow();
             // The check is here rather than in init because some
             // folks leave their browsers running for a long time,
@@ -705,6 +943,7 @@ export const ASRouterTriggerListeners = new Map([
               });
             }
             break;
+          }
         }
       },
 
@@ -739,7 +978,7 @@ export const ASRouterTriggerListeners = new Map([
 
       observe(aSubject, aTopic, aData) {
         switch (aTopic) {
-          case "nsPref:changed":
+          case "nsPref:changed": {
             const browser = Services.wm.getMostRecentBrowserWindow();
             if (browser && this._observedPrefs.includes(aData)) {
               this._triggerHandler(browser.gBrowser.selectedBrowser, {
@@ -750,6 +989,7 @@ export const ASRouterTriggerListeners = new Map([
               });
             }
             break;
+          }
         }
       },
 
@@ -791,14 +1031,26 @@ export const ASRouterTriggerListeners = new Map([
       },
       handleEvent(event) {
         if (this._initialized) {
-          if (!event.target.ownerGlobal.gBrowser) {
+          if (!event.target.documentGlobal.gBrowser) {
             return;
           }
-          const { gBrowser } = event.target.ownerGlobal;
+          const { gBrowser } = event.target.documentGlobal;
+          // Programmatic tab closures (e.g., the 'close_current_tab'
+          // Smart Window NL toolcall in Bug 2037624) may set
+          // tab.smartWindowActionSource on the tab before removeTab()
+          // to attribute the close. Callouts can target this via the
+          // top-level 'actionSource' identifier in JEXL targeting.
+          const tab = event.target;
           this._closedTabs++;
           this._triggerHandler(gBrowser.selectedBrowser, {
             id: this.id,
-            context: { tabsClosedCount: this._closedTabs },
+            context: {
+              tabsClosedCount: this._closedTabs,
+              currentTabsOpen: gBrowser.tabs.length,
+              ...(tab.smartWindowActionSource && {
+                actionSource: tab.smartWindowActionSource,
+              }),
+            },
           });
         }
       },
@@ -808,6 +1060,203 @@ export const ASRouterTriggerListeners = new Map([
           this._initialized = false;
           this._triggerHandler = null;
           this._closedTabs = 0;
+        }
+      },
+    },
+  ],
+  [
+    "nthTabOpened",
+    {
+      id: "nthTabOpened",
+      _initialized: false,
+      _triggerHandler: null,
+      // Number of tabs the user opened this session
+      _openTabs: 0,
+
+      init(triggerHandler) {
+        this._triggerHandler = triggerHandler;
+        if (!this._initialized) {
+          lazy.EveryWindow.registerCallback(
+            this.id,
+            win => {
+              win.addEventListener("TabOpen", this);
+            },
+            win => {
+              win.removeEventListener("TabOpen", this);
+            }
+          );
+          this._initialized = true;
+        }
+      },
+      handleEvent(event) {
+        if (this._initialized) {
+          if (!event.target.documentGlobal.gBrowser) {
+            return;
+          }
+          const { gBrowser } = event.target.documentGlobal;
+          this._openTabs++;
+          this._triggerHandler(gBrowser.selectedBrowser, {
+            id: this.id,
+            context: {
+              tabsOpenedCount: this._openTabs,
+              currentTabsOpen: gBrowser.tabs.length,
+            },
+          });
+        }
+      },
+      uninit() {
+        if (this._initialized) {
+          lazy.EveryWindow.unregisterCallback(this.id);
+          this._initialized = false;
+          this._triggerHandler = null;
+          this._openTabs = 0;
+        }
+      },
+    },
+  ],
+  [
+    "tabGroupCreated",
+    {
+      id: "tabGroupCreated",
+      _initialized: false,
+      _triggerHandler: null,
+      // Number of tab groups the user created this session
+      _tabGroupsCreated: 0,
+
+      init(triggerHandler) {
+        this._triggerHandler = triggerHandler;
+        if (!this._initialized) {
+          lazy.EveryWindow.registerCallback(
+            this.id,
+            win => {
+              win.addEventListener("TabGroupCreateDone", this);
+            },
+            win => {
+              win.removeEventListener("TabGroupCreateDone", this);
+            }
+          );
+          this._initialized = true;
+        }
+      },
+      handleEvent(event) {
+        if (this._initialized) {
+          if (!event.target.documentGlobal.gBrowser) {
+            return;
+          }
+          const { gBrowser } = event.target.documentGlobal;
+          this._tabGroupsCreated++;
+          this._triggerHandler(gBrowser.selectedBrowser, {
+            id: this.id,
+            context: {
+              tabGroupsCreatedCount: this._tabGroupsCreated,
+            },
+          });
+        }
+      },
+      uninit() {
+        if (this._initialized) {
+          lazy.EveryWindow.unregisterCallback(this.id);
+          this._initialized = false;
+          this._triggerHandler = null;
+          this._tabGroupsCreated = 0;
+        }
+      },
+    },
+  ],
+  [
+    "tabGroupSaved",
+    {
+      id: "tabGroupSaved",
+      _initialized: false,
+      _triggerHandler: null,
+      // Number of tab groups the user saved and closed this session
+      _tabGroupsSaved: 0,
+
+      init(triggerHandler) {
+        this._triggerHandler = triggerHandler;
+        if (!this._initialized) {
+          lazy.EveryWindow.registerCallback(
+            this.id,
+            win => {
+              win.addEventListener("TabGroupSaved", this);
+            },
+            win => {
+              win.removeEventListener("TabGroupSaved", this);
+            }
+          );
+          this._initialized = true;
+        }
+      },
+      handleEvent(event) {
+        if (this._initialized) {
+          if (!event.target.documentGlobal.gBrowser) {
+            return;
+          }
+          const { gBrowser } = event.target.documentGlobal;
+          this._tabGroupsSaved++;
+          this._triggerHandler(gBrowser.selectedBrowser, {
+            id: this.id,
+            context: {
+              tabGroupsSavedCount: this._tabGroupsSaved,
+            },
+          });
+        }
+      },
+      uninit() {
+        if (this._initialized) {
+          lazy.EveryWindow.unregisterCallback(this.id);
+          this._initialized = false;
+          this._triggerHandler = null;
+          this._tabGroupsSaved = 0;
+        }
+      },
+    },
+  ],
+  [
+    "tabGroupCollapsed",
+    {
+      id: "tabGroupCollapsed",
+      _initialized: false,
+      _triggerHandler: null,
+      // Number of times the user collapsed a tab group this session
+      _tabGroupsCollapsed: 0,
+
+      init(triggerHandler) {
+        this._triggerHandler = triggerHandler;
+        if (!this._initialized) {
+          lazy.EveryWindow.registerCallback(
+            this.id,
+            win => {
+              win.addEventListener("TabGroupCollapse", this);
+            },
+            win => {
+              win.removeEventListener("TabGroupCollapse", this);
+            }
+          );
+          this._initialized = true;
+        }
+      },
+      handleEvent(event) {
+        if (this._initialized) {
+          if (!event.target.documentGlobal.gBrowser) {
+            return;
+          }
+          const { gBrowser } = event.target.documentGlobal;
+          this._tabGroupsCollapsed++;
+          this._triggerHandler(gBrowser.selectedBrowser, {
+            id: this.id,
+            context: {
+              tabGroupsCollapsedCount: this._tabGroupsCollapsed,
+            },
+          });
+        }
+      },
+      uninit() {
+        if (this._initialized) {
+          lazy.EveryWindow.unregisterCallback(this.id);
+          this._initialized = false;
+          this._triggerHandler = null;
+          this._tabGroupsCollapsed = 0;
         }
       },
     },
@@ -913,8 +1362,17 @@ export const ASRouterTriggerListeners = new Map([
             lastWakeTime: this._lastWakeTime,
           });
           switch (topic) {
-            case "idle":
+            case "idle": {
               const now = Date.now();
+              // Use the data (idle time in seconds) that nsUserIdleService is
+              // supposed to give us (reading subject.idleTime may trigger a
+              // new system call with different results).
+              const idleTimeSec = parseInt(data, 10);
+              if (isNaN(idleTimeSec)) {
+                throw new Error(
+                  `Idle observer notification received with invalid data: ${data}`
+                );
+              }
               // If the idle notification is within 1 second of the last wake
               // notification, ignore it. We do this to avoid counting time the
               // computer spent asleep as "idle time"
@@ -922,9 +1380,10 @@ export const ASRouterTriggerListeners = new Map([
                 this._lastWakeTime &&
                 now - this._lastWakeTime < this._wakeDelay;
               if (!isImmediatelyAfterWake) {
-                this._idleSince = now - subject.idleTime;
+                this._idleSince = now - idleTimeSec * 1000;
               }
               break;
+            }
             case "active":
               // Trigger when user returns from being idle.
               if (this._isVisible) {
@@ -1101,7 +1560,7 @@ export const ASRouterTriggerListeners = new Map([
         if (this._initialized) {
           const browser =
             event.detail.windowContext.rootFrameLoader?.ownerElement;
-          const win = browser?.ownerGlobal;
+          const win = browser?.documentGlobal;
           // We only want to show messages in the active browser window.
           if (
             win === Services.wm.getMostRecentBrowserWindow() &&
@@ -1207,7 +1666,7 @@ export const ASRouterTriggerListeners = new Map([
         if (browser !== tabbrowser.selectedBrowser) {
           return;
         }
-        const win = tabbrowser.ownerGlobal;
+        const win = tabbrowser.documentGlobal;
         const tab = tabbrowser.selectedTab;
         const existingCallout = this._callouts.get(win);
         const isPDFJS =
@@ -1228,7 +1687,7 @@ export const ASRouterTriggerListeners = new Map([
 
       handleEvent(event) {
         const tab = event.target;
-        const win = tab.ownerGlobal;
+        const win = tab.documentGlobal;
         const { gBrowser } = win;
         if (!gBrowser) {
           return;
@@ -1364,12 +1823,13 @@ export const ASRouterTriggerListeners = new Map([
         if (browser !== tabbrowser.selectedBrowser) {
           return;
         }
-        const win = tabbrowser.ownerGlobal;
+        const win = tabbrowser.documentGlobal;
         const tab = tabbrowser.selectedTab;
         const existingCallout = this._callouts.get(win);
         const isNewtabOrHome =
           browser.currentURI.spec.startsWith("about:home") ||
-          browser.currentURI.spec.startsWith("about:newtab");
+          (browser.currentURI.spec.startsWith("about:newtab") &&
+            lazy.newtabPageEnabled);
         if (
           existingCallout &&
           (existingCallout.panelId !== tab.linkedPanel || !isNewtabOrHome)
@@ -1386,7 +1846,7 @@ export const ASRouterTriggerListeners = new Map([
 
       handleEvent(event) {
         const tab = event.target;
-        const win = tab.ownerGlobal;
+        const win = tab.documentGlobal;
         const { gBrowser } = win;
         if (!gBrowser) {
           return;
@@ -1402,7 +1862,8 @@ export const ASRouterTriggerListeners = new Map([
             const existingCallout = this._callouts.get(win);
             const isNewtabOrHome =
               browser.currentURI.spec.startsWith("about:home") ||
-              browser.currentURI.spec.startsWith("about:newtab");
+              (browser.currentURI.spec.startsWith("about:newtab") &&
+                lazy.newtabPageEnabled);
             if (
               existingCallout &&
               (existingCallout.panelId !== tab.linkedPanel || !isNewtabOrHome)
@@ -1433,6 +1894,106 @@ export const ASRouterTriggerListeners = new Map([
 
       onBrowserWindow(win) {
         this.onLocationChange(win.gBrowser.selectedBrowser);
+      },
+    },
+  ],
+  [
+    "elementClicked",
+    {
+      id: "elementClicked",
+      _initialized: false,
+      _triggerHandler: null,
+      _elementIds: [],
+
+      init(triggerHandler, elementIds) {
+        elementIds.forEach(elementId => this._elementIds.push(elementId));
+        if (!this._initialized) {
+          this._triggerHandler = triggerHandler;
+          this._initialized = true;
+
+          const eventTypes = ["click", "keypress"];
+
+          lazy.EveryWindow.registerCallback(
+            this.id,
+            win => {
+              eventTypes.forEach(eventType => {
+                win.document.addEventListener(eventType, this, true);
+              });
+            },
+            win => {
+              eventTypes.forEach(eventType => {
+                win.document.removeEventListener(eventType, this, true);
+              });
+            }
+          );
+        }
+      },
+
+      handleEvent(event) {
+        if (event.type === "click" && event.button !== 0) {
+          // exit early if this is a right click
+          return;
+        } else if (
+          event.type === "keypress" &&
+          event.key !== " " &&
+          event.key !== "Enter"
+        ) {
+          // exit early if this is a keypress and the keypress is not with enter or space
+          return;
+        }
+
+        const clickedElement = event.target;
+        const win = event.target.documentGlobal;
+
+        // only fire if the element ID is in the params of the trigger in one of our messages
+        if (
+          clickedElement?.id &&
+          this._elementIds.includes(clickedElement.id)
+        ) {
+          // don't proceed if the event didn't happen in the active window
+          const isCurrentWindow =
+            win === Services.wm.getMostRecentBrowserWindow();
+          if (isCurrentWindow) {
+            this._triggerHandler(win.gBrowser.selectedBrowser, {
+              id: this.id,
+              context: {
+                elementId: clickedElement.id,
+              },
+              param: {
+                type: clickedElement.id,
+              },
+            });
+          }
+        }
+      },
+
+      uninit() {
+        if (this._initialized) {
+          lazy.EveryWindow.unregisterCallback(this.id);
+          this._initialized = false;
+          this._triggerHandler = null;
+          this._elementIds = [];
+        }
+      },
+    },
+  ],
+  [
+    "messagesLoaded",
+    {
+      /**
+       * This trigger does not actually listen for any events. It's triggered
+       * imperatively by ASRouter when messages are loaded. It is mainly
+       * intended to provide a baseline for reach experiments, since almost
+       * everyone will trigger it very quickly. We track its state here, because
+       * we don't want it to fire if there aren't any messages using it.
+       */
+      id: "messagesLoaded",
+      initialized: false,
+      init() {
+        this.initialized = true;
+      },
+      uninit() {
+        this.initialized = false;
       },
     },
   ],

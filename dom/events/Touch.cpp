@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -70,13 +68,13 @@ Touch::Touch(int32_t aIdentifier, LayoutDeviceIntPoint aPoint,
              LayoutDeviceIntPoint aRadius, float aRotationAngle, float aForce,
              int32_t aTiltX, int32_t aTiltY, int32_t aTwist)
     : Touch(aIdentifier, aPoint, aRadius, aRotationAngle, aForce) {
-  tiltX = aTiltX;
-  tiltY = aTiltY;
+  mTilt.emplace(aTiltX, aTiltY);
   twist = aTwist;
 }
 
 Touch::Touch(const Touch& aOther)
-    : mOriginalTarget(aOther.mOriginalTarget),
+    : WidgetPointerHelper(aOther),
+      mOriginalTarget(aOther.mOriginalTarget),
       mTarget(aOther.mTarget),
       mRefPoint(aOther.mRefPoint),
       mChanged(aOther.mChanged),
@@ -187,12 +185,12 @@ void Touch::InitializePoints(nsPresContext* aPresContext, WidgetEvent* aEvent) {
   if (mPointsInitialized) {
     return;
   }
-  mClientPoint =
-      Event::GetClientCoords(aPresContext, aEvent, mRefPoint, mClientPoint);
-  mPagePoint =
-      Event::GetPageCoords(aPresContext, aEvent, mRefPoint, mClientPoint);
-  mScreenPoint =
-      Event::GetScreenCoords(aPresContext, aEvent, mRefPoint).extract();
+  mClientPoint = RoundedToInt(
+      Event::GetClientCoords(aPresContext, aEvent, mRefPoint, mClientPoint));
+  mPagePoint = RoundedToInt(
+      Event::GetPageCoords(aPresContext, aEvent, mRefPoint, mClientPoint));
+  mScreenPoint = RoundedToInt(
+      Event::GetScreenCoords(aPresContext, aEvent, mRefPoint).extract());
   mPointsInitialized = true;
 }
 
@@ -226,7 +224,7 @@ nsIGlobalObject* Touch::GetParentObject() const {
   if (!mOriginalTarget) {
     return nullptr;
   }
-  return mOriginalTarget->GetOwnerGlobal();
+  return mOriginalTarget->GetRelevantGlobal();
 }
 
 }  // namespace mozilla::dom

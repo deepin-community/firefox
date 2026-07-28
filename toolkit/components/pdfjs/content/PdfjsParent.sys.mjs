@@ -15,15 +15,17 @@
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { PdfJsTelemetry } from "resource://pdf.js/PdfJsTelemetry.sys.mjs";
+import { playSound } from "resource://gre/modules/FinderSound.sys.mjs";
 
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
   createEngine: "chrome://global/content/ml/EngineProcess.sys.mjs",
-  EngineProcess: "chrome://global/content/ml/EngineProcess.sys.mjs",
-  IndexedDBCache: "chrome://global/content/ml/ModelHub.sys.mjs",
+  IndexedDB: "resource://gre/modules/IndexedDB.sys.mjs",
+  MLUninstallService: "chrome://global/content/ml/Utils.sys.mjs",
   MultiProgressAggregator: "chrome://global/content/ml/Utils.sys.mjs",
+  PdfJsGuessAltTextFeature: "resource://pdf.js/PdfJsAIFeature.sys.mjs",
   Progress: "chrome://global/content/ml/Utils.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
@@ -32,16 +34,11 @@ ChromeUtils.defineESModuleGetters(lazy, {
 });
 
 const IMAGE_TO_TEXT_TASK = "moz-image-to-text";
-const ML_ENGINE_ID = "pdfjs";
 const ML_ENGINE_MAX_TIMEOUT = 60000;
-
-var Svc = {};
-XPCOMUtils.defineLazyServiceGetter(
-  Svc,
-  "mime",
-  "@mozilla.org/mime;1",
-  "nsIMIMEService"
-);
+const PDFJS_DB_NAME = "pdfjs";
+const PDFJS_DB_VERSION = 1;
+const PDFJS_STORE_NAME = "signatures";
+const PDFJS_SIGNATURE_STORAGE_CHANGED_TOPIC = "pdfjs:storedSignaturesChanged";
 
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
@@ -59,22 +56,49 @@ let gFindTypes = [
 ];
 
 export class PdfjsParent extends JSWindowActorParent {
+  #signatureStorageChangedObserver = null;
+
   #mutablePreferences = new Set([
     "enableGuessAltText",
     "enableAltTextModelDownload",
     "enableNewAltTextWhenAddingImage",
   ]);
 
+  #nextTextRequestId = 0;
+
+  /**
+   * Holds the Promise resolves for getTextContent requests.
+   *
+   * @type {Map<number, (text: string) => void>}
+   */
+  #textRequests = new Map();
+
   constructor() {
     super();
     this._boundToFindbar = null;
     this._findFailedString = null;
+    this._lastNotFoundStringLength = 0;
+
+    if (
+      !Services.prefs.prefHasUserValue("pdfjs.enableAltText") &&
+      !Services.locale.appLocaleAsBCP47.startsWith("en") &&
+      Services.prefs.getBoolPref("pdfjs.enableAltText", true)
+    ) {
+      Services.prefs.setBoolPref("pdfjs.enableAltText", false);
+    }
 
     this._updatedPreference();
   }
 
   didDestroy() {
     this._removeEventListener();
+    if (this.#signatureStorageChangedObserver) {
+      Services.obs.removeObserver(
+        this.#signatureStorageChangedObserver,
+        PDFJS_SIGNATURE_STORAGE_CHANGED_TOPIC
+      );
+      this.#signatureStorageChangedObserver = null;
+    }
   }
 
   receiveMessage(aMsg) {
@@ -87,6 +111,8 @@ export class PdfjsParent extends JSWindowActorParent {
         return this._addEventListener();
       case "PDFJS:Parent:saveURL":
         return this._saveURL(aMsg);
+      case "PDFJS:Parent:reportText":
+        return this._reportText(aMsg);
       case "PDFJS:Parent:recordExposure":
         return this._recordExposure();
       case "PDFJS:Parent:reportTelemetry":
@@ -101,6 +127,8 @@ export class PdfjsParent extends JSWindowActorParent {
         return this._mlDelete(aMsg);
       case "PDFJS:Parent:updatedPreference":
         return this._updatedPreference(aMsg);
+      case "PDFJS:Parent:handleSignature":
+        return this._handleSignature(aMsg);
     }
     return undefined;
   }
@@ -111,6 +139,128 @@ export class PdfjsParent extends JSWindowActorParent {
 
   get browser() {
     return this.browsingContext.top.embedderElement;
+  }
+
+  /**
+   * Extracts the text content from a PDF.
+   *
+   * @returns {Promise<string>}
+   */
+  getTextContent() {
+    const { promise, resolve } = Promise.withResolvers();
+    const requestId = this.#nextTextRequestId++;
+    this.#textRequests.set(requestId, resolve);
+    this.sendAsyncMessage("PDFJS:Child:handleEvent", {
+      type: "requestTextContent",
+      detail: { requestId },
+    });
+    return promise;
+  }
+
+  async #openDatabase() {
+    return lazy.IndexedDB.open(PDFJS_DB_NAME, PDFJS_DB_VERSION, db => {
+      db.createObjectStore(PDFJS_STORE_NAME, {
+        keyPath: "uuid",
+      });
+    });
+  }
+
+  async _handleSignature({ data }) {
+    switch (data.action) {
+      case "create":
+        return this.#createSignature(data);
+      case "get":
+        return this.#getSignatures(data);
+      case "delete":
+        return this.#deleteSignature(data);
+      default:
+        return null;
+    }
+  }
+
+  async #getSignatures() {
+    if (!this.#signatureStorageChangedObserver) {
+      const self = this;
+      this.#signatureStorageChangedObserver = {
+        observe(aSubject, aTopic) {
+          if (
+            aTopic === PDFJS_SIGNATURE_STORAGE_CHANGED_TOPIC &&
+            // No need to send an event to the viewer which triggered the
+            // change because it already knows about it.
+            (aSubject !== self || Cu.isInAutomation)
+          ) {
+            // The child will dispatch an event in the pdf.js window.
+            // This way the viewer is able to update the UI (add/remove some
+            // signatures).
+            self.sendAsyncMessage("PDFJS:Child:handleEvent", {
+              type: "storedSignaturesChanged",
+              detail: null,
+            });
+          }
+        },
+      };
+      Services.obs.addObserver(
+        this.#signatureStorageChangedObserver,
+        PDFJS_SIGNATURE_STORAGE_CHANGED_TOPIC
+      );
+    }
+
+    let db;
+    try {
+      db = await this.#openDatabase();
+      const store = await db.objectStore(PDFJS_STORE_NAME, "readonly");
+      const signatures = await store.getAll();
+
+      return signatures.sort((a, b) => a.timestamp - b.timestamp);
+    } catch (e) {
+      console.error("PDF.js", e);
+      return null;
+    } finally {
+      await db?.close();
+    }
+  }
+
+  async #createSignature({ description, signatureData }) {
+    let db;
+    try {
+      db = await this.#openDatabase();
+      const store = await db.objectStore(PDFJS_STORE_NAME, "readwrite");
+      const uuid = Services.uuid.generateUUID().toString().replace(/[{}]/g, "");
+
+      await store.put({
+        uuid,
+        description,
+        signatureData,
+        timestamp: Date.now(),
+      });
+
+      Services.obs.notifyObservers(this, PDFJS_SIGNATURE_STORAGE_CHANGED_TOPIC);
+
+      return uuid;
+    } catch (e) {
+      console.error("PDF.js", e);
+      return null;
+    } finally {
+      await db?.close();
+    }
+  }
+
+  async #deleteSignature({ uuid }) {
+    let db;
+    try {
+      db = await this.#openDatabase();
+      const store = await db.objectStore(PDFJS_STORE_NAME, "readwrite");
+      await store.delete(uuid);
+
+      Services.obs.notifyObservers(this, PDFJS_SIGNATURE_STORAGE_CHANGED_TOPIC);
+
+      return true;
+    } catch (e) {
+      console.error("PDF.js", e);
+      return false;
+    } finally {
+      await db?.close();
+    }
   }
 
   _updatedPreference() {
@@ -181,7 +331,7 @@ export class PdfjsParent extends JSWindowActorParent {
       return null;
     }
     try {
-      const now = Cu.now();
+      const now = ChromeUtils.now();
 
       let response;
       if (Cu.isInAutomation) {
@@ -191,7 +341,7 @@ export class PdfjsParent extends JSWindowActorParent {
         response = await engine.run(request);
       }
 
-      const time = Cu.now() - now;
+      const time = ChromeUtils.now() - now;
       const length = response?.output.length ?? 0;
       PdfJsTelemetry.report({
         type: "editing",
@@ -338,12 +488,10 @@ export class PdfjsParent extends JSWindowActorParent {
       return null;
     }
     try {
-      // TODO: Temporary workaround to delete the model from the cache.
-      //       See bug 1908941.
-      await lazy.EngineProcess.destroyMLEngine();
-      const cache = await lazy.IndexedDBCache.init();
-      await cache.deleteModels({
-        taskName: service,
+      await lazy.MLUninstallService.uninstall({
+        engineIds: [lazy.PdfJsGuessAltTextFeature.engineId],
+        // Used only for attribution/telemetry; the specific value is not significant.
+        actor: "pdfjs",
       });
     } catch (e) {
       console.error("Failed to delete AI model", e);
@@ -355,7 +503,12 @@ export class PdfjsParent extends JSWindowActorParent {
   async #createAIEngine(taskName, aggregator) {
     try {
       return await lazy.createEngine(
-        { engineId: ML_ENGINE_ID, taskName },
+        {
+          engineId: lazy.PdfJsGuessAltTextFeature.engineId,
+          featureId: lazy.PdfJsGuessAltTextFeature.id,
+          taskName,
+          backend: "onnx-native",
+        },
         aggregator?.aggregateCallback.bind(aggregator) || null
       );
     } catch (e) {
@@ -366,7 +519,7 @@ export class PdfjsParent extends JSWindowActorParent {
 
   _saveURL(aMsg) {
     const { blobUrl, originalUrl, filename } = aMsg.data;
-    this.browser.ownerGlobal.saveURL(
+    this.browser.documentGlobal.saveURL(
       blobUrl /* aURL */,
       originalUrl /* aOriginalURL */,
       filename /* aFileName */,
@@ -414,9 +567,48 @@ export class PdfjsParent extends JSWindowActorParent {
         lazy.SetClipboardSearchString(data.rawQuery);
       }
 
+      let searchLengthened;
+      switch (data.result) {
+        case Ci.nsITypeAheadFind.FIND_NOTFOUND:
+          searchLengthened =
+            data.rawQuery.length > this._lastNotFoundStringLength;
+          this._lastNotFoundStringLength = data.rawQuery.length;
+
+          if (searchLengthened && !data.entireWord) {
+            playSound("not-found");
+          }
+          break;
+        case Ci.nsITypeAheadFind.FIND_WRAPPED:
+          playSound("wrapped");
+          break;
+        case Ci.nsITypeAheadFind.FIND_PENDING:
+          break;
+        default:
+          this._lastNotFoundStringLength = 0;
+      }
+
       const matchesCount = this._requestMatchesCount(data.matchesCount);
       fb.onMatchesCountResult(matchesCount);
     });
+  }
+
+  /**
+   * Handle the response for extracting text.
+   *
+   * @param {{ data: { text: string, requestId: number } }}
+   */
+  _reportText({ data }) {
+    const resolve = this.#textRequests.get(data.requestId);
+    this.#textRequests.delete(data.requestId);
+    if (!resolve) {
+      console.error(
+        "Unable to find the text content request",
+        data.requestId,
+        this.#textRequests
+      );
+      return;
+    }
+    resolve(data.text);
   }
 
   _updateMatchesCount(aMsg) {

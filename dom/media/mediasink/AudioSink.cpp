@@ -1,22 +1,21 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "AudioSink.h"
+
 #include "AudioConverter.h"
 #include "AudioDeviceInfo.h"
 #include "MediaQueue.h"
+#include "Tracing.h"
 #include "VideoUtils.h"
 #include "mozilla/CheckedInt.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/ProfilerMarkerTypes.h"
-#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "nsPrintfCString.h"
-#include "Tracing.h"
 
 namespace mozilla {
 
@@ -98,7 +97,7 @@ AudioSink::~AudioSink() {
 }
 
 nsresult AudioSink::InitializeAudioStream(
-    const PlaybackParams& aParams, const RefPtr<AudioDeviceInfo>& aAudioDevice,
+    const RefPtr<AudioDeviceInfo>& aAudioDevice,
     AudioSink::InitializationType aInitializationType) {
   if (aInitializationType == AudioSink::InitializationType::UNMUTING) {
     // Consider the stream to be audible immediately, before initialization
@@ -133,18 +132,18 @@ nsresult AudioSink::InitializeAudioStream(
     return rv;
   }
 
+  return NS_OK;
+}
+
+RefPtr<MediaSink::EndedPromise> AudioSink::Start(
+    const PlaybackParams& aParams, const media::TimeUnit& aStartTime) {
+  MOZ_ASSERT(mOwnerThread->IsCurrentThreadIn());
+
   // Set playback params before calling Start() so they can take effect
   // as soon as the 1st DataCallback of the AudioStream fires.
   mAudioStream->SetVolume(aParams.mVolume);
   mAudioStream->SetPlaybackRate(aParams.mPlaybackRate);
   mAudioStream->SetPreservesPitch(aParams.mPreservesPitch);
-
-  return NS_OK;
-}
-
-RefPtr<MediaSink::EndedPromise> AudioSink::Start(
-    const media::TimeUnit& aStartTime) {
-  MOZ_ASSERT(mOwnerThread->IsCurrentThreadIn());
 
   mAudioQueueListener = mAudioQueue.PushEvent().Connect(
       mOwnerThread, this, &AudioSink::OnAudioPushed);
@@ -521,9 +520,14 @@ void AudioSink::NotifyAudioNeeded() {
       SINK_LOG("Sample time %" PRId64 " > frames parsed %" PRId64,
                sampleTime.value(), mFramesParsed);
 
-      missingFrames = std::min<int64_t>(
-          std::min<int64_t>(INT32_MAX, missingFrames.value()),
-          SampleToFrame(mProcessedSPSCQueue->AvailableWrite()));
+      // Convert available output frames to input frames to correctly bound the
+      // silence buffer size when input and output sample rates differ.
+      int64_t inputFramesAvail = static_cast<int64_t>(SampleToFrame(
+                                     mProcessedSPSCQueue->AvailableWrite())) *
+                                 data->mRate / mOutputRate;
+      missingFrames =
+          std::min<int64_t>(std::min<int64_t>(INT32_MAX, missingFrames.value()),
+                            inputFramesAvail);
       mFramesParsed += missingFrames.value();
 
       SINK_LOG("Gap in the audio input, push %" PRId64 " frames of silence",

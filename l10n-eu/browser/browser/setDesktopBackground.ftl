@@ -4,37 +4,31 @@
 
 set-desktop-background-window =
     .title = Ezarri mahaigaineko atzeko planoa
-
 set-desktop-background-accept =
     .label = Ezarri mahaigaineko atzeko planoa
-
 open-desktop-prefs =
     .label = Ireki mahaigaineko hobespenak
-
+set-desktop-background-downloading =
+    .label = Irudia gordetzen…
 set-background-preview-unavailable = Aurrebista ez dago erabilgarri
-
+# Name of the file that will be used as the desktop background. The
+# extension ".bmp" is added by the system.
+set-desktop-background-filename = Idazmahaiaren atzeko planoa
 # This refers to the wallpaper "spanning" multiple monitors when the
 # user has more than one. Only some of the entire image will be on
 # each monitor. This should ideally match the wording in Windows' own
 # Desktop Background settings page.
 set-background-span =
     .label = Hedadura
-
 set-background-color = Kolorea:
-
 set-background-position = Kokalekua:
-
 set-background-tile =
     .label = Mosaikoa
-
 set-background-center =
     .label = Erdiratua
-
 set-background-stretch =
     .label = Zabaldu
-
 set-background-fill =
     .label = Bete
-
 set-background-fit =
     .label = Doitu

@@ -25,11 +25,8 @@ Visualize the stack
 
 .. code-block:: shell
 
-    # Mercurial
-    $ hg wip
-
-    # Git
     $ git log
+    $ git log --graph --oneline --all
 
 
 Merge two patches
@@ -40,12 +37,6 @@ created on Phabricator. For this, merge the patches locally:
 
 .. code-block:: shell
 
-    # Mercurial
-    # Mark the patch to be merged with "roll" (key: "r")
-    # or "fold" (key: "f")
-    $ hg histedit
-
-    # Git
     # Replace "pick" by "squash" or "fixup"
     $ git rebase -i
 
@@ -61,7 +52,15 @@ just want to submit the first one. For this, you can use:
 .. code-block:: shell
 
     $ moz-phab submit .
+    # or
+    $ moz-phab submit -s HEAD
 
+To submit the last X patches:
+
+.. code-block:: shell
+
+    # This example will submit the last 3 patches
+    $ moz-phab submit HEAD~3
 
 Reorder the stack
 -----------------
@@ -71,13 +70,6 @@ Fortunately, VCS support this easily.
 
 .. code-block:: shell
 
-    # Mercurial
-    # Just change the order of the patches. The tool should highlight
-    # potential risks of conflicts.
-    # Note that ctrl+c works well if used.
-    $ hg histedit
-
-    # Git
     # In the editor, just move the patches to the line below/above to
     # reorder commits.
     # Remove everything if you want to cancel the operation.
@@ -88,21 +80,12 @@ Make a change on a patch at the beginning of the stack
 ------------------------------------------------------
 
 In some cases, the reviewer is asking for a change at the bottom of the stack (ie not at the top).
-So, a simple `hg/git commit --amend` would not work.
+So, a simple `git commit --amend` would not work.
 
 In such case, the following approach can be used:
 
 .. code-block:: shell
 
-    # Mercurial
-    # hg will try to guess in which an unambiguous prior commit
-    $ hg absorb
-
-    # if this doesn't work, create a temporary commit
-    # and merge it using "fold" or "roll"
-    $ hg histedit
-
-    # Git
     $ git commit --fixup <hash of the commit>
 
 
@@ -113,11 +96,6 @@ To remove a patch in the stack:
 
 .. code-block:: shell
 
-    # Mercurial
-    # select "drop" (letter "d")
-    $ hg histedit
-
-    # Git
     # Replace "pick" by "drop"
     # Or simply remove the line for this commit
     $ git rebase -i
@@ -131,18 +109,8 @@ mozilla-central before landing the changes.
 
 .. code-block:: shell
 
-    # Mercurial
-    # First, see where your patches are in the stack
-    $ hg wip
-    # Then, rebase it:
-    # If you are a beginner, don't hesitate to add "--dry-run"
-    $ hg pull
-    $ hg rebase -b . -d central
-
-
-    # Git
     $ git remote update
-    $ git rebase mozilla/central
+    $ git rebase origin/main
 
 
 Reorganizing the stack in Phabricator

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,8 +5,7 @@
 #ifndef DOM_SVG_SVGDATAPARSER_H_
 #define DOM_SVG_SVGDATAPARSER_H_
 
-#include "mozilla/RangedPtr.h"
-#include "nsStringFwd.h"
+#include "nsAString.h"
 
 namespace mozilla {
 
@@ -27,8 +24,8 @@ class SVGDataParser {
   // Returns true if there are more characters to read, false otherwise.
   bool SkipWsp();
 
-  mozilla::RangedPtr<const char16_t> mIter;
-  const mozilla::RangedPtr<const char16_t> mEnd;
+  nsAString::const_iterator mIter;
+  nsAString::const_iterator mEnd;
 };
 
 }  // namespace mozilla

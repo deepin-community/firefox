@@ -5,62 +5,50 @@
 permissions-window2 =
     .title = अपवाद
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = संकेतस्थळाचा पत्ता
     .accesskey = d
-
 permissions-block =
     .label = अडवा
     .accesskey = B
-
 permissions-session =
     .label = सत्रकरिता सहमती द्या
     .accesskey = S
-
 permissions-allow =
     .label = परवानगी द्या
     .accesskey = A
-
 permissions-site-name =
     .label = संकेतस्थळ
-
 permissions-status =
     .label = परीस्थिती
-
 permissions-remove =
     .label = संकेतस्थळ काढून टाका
     .accesskey = R
-
 permissions-remove-all =
     .label = सर्व साईट्स काढून टाका
     .accesskey = e
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = बदल जतन करा
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = बदल जतन करा
     .buttonaccesskeyaccept = S
-
 permissions-autoplay-menu = सर्व वेबसाइटसाठी डीफॉल्टः
-
 permissions-searchbox =
     .placeholder = वेबसाईट शोधा
-
 permissions-capabilities-autoplay-allow =
     .label = ऑडिओ आणि व्हिडिओला अनुमती द्या
 permissions-capabilities-autoplay-block =
     .label = ऑडिओ अवरोधित करा
 permissions-capabilities-autoplay-blockall =
     .label = ऑडिओ आणि व्हिडिओ अवरोधित करा
-
 permissions-capabilities-allow =
     .label = परवानगी द्या
 permissions-capabilities-block =
     .label = अडवा
 permissions-capabilities-prompt =
     .label = नेहमी विचारा
-
 permissions-capabilities-listitem-allow =
     .value = परवानगी द्या
 permissions-capabilities-listitem-block =
@@ -73,17 +61,12 @@ permissions-capabilities-listitem-allow-session =
 permissions-invalid-uri-title = भरलेले यजमान नाम अवैध आहे
 permissions-invalid-uri-label = कृपया वैध यजमान नाम भरा
 
-## Exceptions - Tracking Protection
-
 ## Exceptions - Cookies
 
 permissions-exceptions-cookie-window2 =
     .title = अपवाद - कुकीज व साईट माहिती
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = कोणत्या संकेतस्थळांनी कुकीज आणि साईट माहिती वापरायची किंवा कोणीच वापरू नये  हे आपण ठरवू शकता. अशा संकेतस्थळांचा पत्ता प्रविष्ट करा आणि आडवा, सत्रासाठी परवानगी द्या किंवा परवानगी द्या क्लीक करा.
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -132,9 +115,6 @@ permissions-site-location-disable-label =
     .label = आपले स्थान पाहू इच्छिणाऱ्या नवीन विनंत्या नाकारा
 permissions-site-location-disable-desc = वर नमूद न केलेल्या कोणत्याही संकेतस्थळाकडून स्थानाच्या परवानगीच्या विनंतीस यामुळे आळा बसेल. आपल्या स्थानाची माहिती अडवल्यास संकेतस्थळाच्या काही सुविधा मोडकळीस येतील.
 
-## Site Permissions - Virtual Reality
-
-
 ## Site Permissions - Camera
 
 permissions-site-camera-window2 =
@@ -154,8 +134,3 @@ permissions-site-microphone-desc = खालील वेबसाइटने �
 permissions-site-microphone-disable-label =
     .label = आपला मायक्रोफोन वापरायची परवानगी मागणाऱ्या नवीन विनंत्यांना अडवा
 permissions-site-microphone-disable-desc = उपरोक्त सूचीबद्ध केलेली कोणतीही वेबसाइट आपल्या मायक्रोफोनवर प्रवेश करण्याच्या परवानगीशिवाय विनंती करणार नाही. आपल्या मायक्रोफोनवर प्रवेश अवरोधित करणे काही वेबसाइट वैशिष्ट्ये खंडित करू शकते.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

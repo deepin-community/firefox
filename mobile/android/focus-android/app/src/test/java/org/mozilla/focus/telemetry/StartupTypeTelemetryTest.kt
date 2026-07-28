@@ -5,13 +5,13 @@
 package org.mozilla.focus.telemetry
 
 import androidx.lifecycle.Lifecycle
-import kotlinx.coroutines.test.advanceUntilIdle
+import androidx.lifecycle.LifecycleOwner
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import mozilla.components.support.ktx.kotlin.crossProduct
 import mozilla.components.support.test.any
 import mozilla.components.support.test.mock
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.components.support.test.rule.MainCoroutineRule
-import mozilla.components.support.test.rule.runTestOnMain
 import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -49,9 +49,7 @@ class StartupTypeTelemetryTest {
     private lateinit var callbacks: StartupTypeLifecycleObserver
     private var stateProvider: StartupStateProvider = mock()
     private var pathProvider: StartupPathProvider = mock()
-
-    @get:Rule
-    val coroutinesTestRule = MainCoroutineRule()
+    private var lifecycleOwner: LifecycleOwner = mock()
 
     @get:Rule
     val gleanTestRule = GleanTestRule(testContext)
@@ -63,7 +61,9 @@ class StartupTypeTelemetryTest {
     }
 
     @Test
-    fun `WHEN attach is called THEN it is registered to the lifecycle`() {
+    fun `WHEN attach is called THEN it is registered to the lifecycle`() = runTest {
+        doReturn(this).`when`(telemetry).getScope(any())
+
         val lifecycle = mock<Lifecycle>()
 
         telemetry.attachOnMainActivityOnCreate(lifecycle)
@@ -72,7 +72,9 @@ class StartupTypeTelemetryTest {
     }
 
     @Test
-    fun `GIVEN all possible path and state combinations WHEN record telemetry THEN the labels are incremented the appropriate number of times`() = runTestOnMain {
+    fun `GIVEN all possible path and state combinations WHEN record telemetry THEN the labels are incremented the appropriate number of times`() = runTest {
+        doReturn(this).`when`(telemetry).getScope(any())
+
         val allPossibleInputArgs = StartupState.entries.crossProduct(
             StartupPath.entries,
         ) { state, path ->
@@ -83,8 +85,8 @@ class StartupTypeTelemetryTest {
             doReturn(state).`when`(stateProvider).getStartupStateForStartedActivity(activityClass)
             doReturn(path).`when`(pathProvider).startupPathForActivity
 
-            telemetry.record(coroutinesTestRule.testDispatcher)
-            advanceUntilIdle()
+            telemetry.recordStartupTelemetry(lifecycleOwner, StandardTestDispatcher(this.testScheduler))
+            testScheduler.advanceUntilIdle()
         }
 
         validTelemetryLabels.forEach { label ->
@@ -98,46 +100,59 @@ class StartupTypeTelemetryTest {
     }
 
     @Test
-    fun `WHEN record is called THEN telemetry is recorded with the appropriate label`() = runTestOnMain {
+    fun `WHEN record is called THEN telemetry is recorded with the appropriate label`() = runTest {
+        doReturn(this).`when`(telemetry).getScope(any())
+
         doReturn(StartupState.COLD).`when`(stateProvider).getStartupStateForStartedActivity(activityClass)
         doReturn(StartupPath.MAIN).`when`(pathProvider).startupPathForActivity
 
-        telemetry.record(coroutinesTestRule.testDispatcher)
-        advanceUntilIdle()
+        telemetry.recordStartupTelemetry(lifecycleOwner, StandardTestDispatcher(this.testScheduler))
+        testScheduler.advanceUntilIdle()
 
         assertEquals(1, PerfStartup.startupType["cold_main"].testGetValue())
     }
 
     @Test
-    fun `GIVEN the activity is launched WHEN onResume is called THEN we record the telemetry`() {
+    fun `GIVEN the activity is launched WHEN onResume is called THEN we record the telemetry`() = runTest {
+        doReturn(this).`when`(telemetry).getScope(any())
+
         launchApp()
-        verify(telemetry).record(any())
+        this.testScheduler.advanceUntilIdle() // Ensure coroutine from onResume completes
+        verify(telemetry).recordStartupTelemetry(any(), any())
     }
 
     @Test
-    fun `GIVEN the activity is launched WHEN the activity is paused and resumed THEN record is not called`() {
+    fun `GIVEN the activity is launched WHEN the activity is paused and resumed THEN record is not called`() = runTest {
+        doReturn(this).`when`(telemetry).getScope(any())
+
         // This part of the test duplicates another test but it's needed to initialize the state of this test.
         launchApp()
-        verify(telemetry).record(any())
+        this.testScheduler.advanceUntilIdle() // Ensure coroutine from initial onResume completes
+        verify(telemetry).recordStartupTelemetry(any(), any())
 
         callbacks.onPause(mock())
-        callbacks.onResume(mock())
+        callbacks.onResume(mock()) // This onResume will not record due to hasRecordedOnce flag
+        this.testScheduler.advanceUntilIdle() // Ensure any potential coroutine from second onResume completes
 
-        verify(telemetry).record(any()) // i.e. this shouldn't be called again.
+        verify(telemetry).recordStartupTelemetry(any(), any()) // i.e. this shouldn't be called again.
     }
 
     @Test
-    fun `GIVEN the activity is launched WHEN the activity is stopped and resumed THEN record is called again`() {
+    fun `GIVEN the activity is launched WHEN the activity is stopped and resumed THEN record is called again`() = runTest {
+        doReturn(this).`when`(telemetry).getScope(any())
+
         // This part of the test duplicates another test but it's needed to initialize the state of this test.
         launchApp()
-        verify(telemetry).record(any())
+        this.testScheduler.advanceUntilIdle() // Ensure coroutine from initial onResume completes
+        verify(telemetry).recordStartupTelemetry(any(), any())
 
         callbacks.onPause(mock())
-        callbacks.onStop(mock())
+        callbacks.onStop(mock()) // This resets hasRecordedOnce
         callbacks.onStart(mock())
-        callbacks.onResume(mock())
+        callbacks.onResume(mock()) // This onResume will record again
+        this.testScheduler.advanceUntilIdle() // Ensure coroutine from second onResume completes
 
-        verify(telemetry, times(2)).record(any())
+        verify(telemetry, times(2)).recordStartupTelemetry(any(), any())
     }
 
     private fun launchApp() {

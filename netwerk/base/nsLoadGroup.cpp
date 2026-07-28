@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=4 sts=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,7 +13,7 @@
 #include "mozilla/Logging.h"
 #include "nsString.h"
 #include "nsTArray.h"
-#include "mozilla/Telemetry.h"
+#include "nsIHttpChannel.h"
 #include "nsIHttpChannelInternal.h"
 #include "nsITimedChannel.h"
 #include "nsIInterfaceRequestor.h"
@@ -23,9 +21,9 @@
 #include "CacheObserver.h"
 #include "MainThreadUtils.h"
 #include "RequestContextService.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/NetwerkMetrics.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 #include "mozilla/StoragePrincipalHelper.h"
-#include "mozilla/Unused.h"
 #include "mozilla/net/NeckoCommon.h"
 #include "mozilla/net/NeckoChild.h"
 #include "mozilla/StaticPrefs_network.h"
@@ -50,49 +48,12 @@ static LazyLogModule gLoadGroupLog("LoadGroup");
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class RequestMapEntry : public PLDHashEntryHdr {
- public:
-  explicit RequestMapEntry(nsIRequest* aRequest) : mKey(aRequest) {}
-
-  nsCOMPtr<nsIRequest> mKey;
-};
-
-static bool RequestHashMatchEntry(const PLDHashEntryHdr* entry,
-                                  const void* key) {
-  const RequestMapEntry* e = static_cast<const RequestMapEntry*>(entry);
-  const nsIRequest* request = static_cast<const nsIRequest*>(key);
-
-  return e->mKey == request;
-}
-
-static void RequestHashClearEntry(PLDHashTable* table, PLDHashEntryHdr* entry) {
-  RequestMapEntry* e = static_cast<RequestMapEntry*>(entry);
-
-  // An entry is being cleared, let the entry do its own cleanup.
-  e->~RequestMapEntry();
-}
-
-static void RequestHashInitEntry(PLDHashEntryHdr* entry, const void* key) {
-  const nsIRequest* const_request = static_cast<const nsIRequest*>(key);
-  nsIRequest* request = const_cast<nsIRequest*>(const_request);
-
-  // Initialize the entry with placement new
-  new (entry) RequestMapEntry(request);
-}
-
-static const PLDHashTableOps sRequestHashOps = {
-    PLDHashTable::HashVoidPtrKeyStub, RequestHashMatchEntry,
-    PLDHashTable::MoveEntryStub, RequestHashClearEntry, RequestHashInitEntry};
-
 static void RescheduleRequest(nsIRequest* aRequest, int32_t delta) {
   nsCOMPtr<nsISupportsPriority> p = do_QueryInterface(aRequest);
   if (p) p->AdjustPriority(delta);
 }
 
-nsLoadGroup::nsLoadGroup()
-    : mRequests(&sRequestHashOps, sizeof(RequestMapEntry)) {
-  LOG(("LOADGROUP [%p]: Created.\n", this));
-}
+nsLoadGroup::nsLoadGroup() { LOG(("LOADGROUP [%p]: Created.\n", this)); }
 
 nsLoadGroup::~nsLoadGroup() {
   DebugOnly<nsresult> rv =
@@ -110,7 +71,15 @@ nsLoadGroup::~nsLoadGroup() {
 
   nsCOMPtr<nsIObserverService> os = mozilla::services::GetObserverService();
   if (os) {
-    Unused << os->RemoveObserver(this, "last-pb-context-exited");
+    (void)os->RemoveObserver(this, "last-pb-context-exited");
+  }
+
+  if (mPageSize) {
+    glean::network::page_load_size.Get("page"_ns).Accumulate(mPageSize);
+  }
+  if (mTotalSubresourcesSize) {
+    glean::network::page_load_size.Get("subresources"_ns)
+        .Accumulate(mTotalSubresourcesSize);
   }
 
   LOG(("LOADGROUP [%p]: Destroyed.\n", this));
@@ -153,28 +122,6 @@ nsLoadGroup::GetStatus(nsresult* status) {
   return NS_OK;
 }
 
-static bool AppendRequestsToArray(PLDHashTable* aTable,
-                                  nsTArray<nsIRequest*>* aArray) {
-  for (auto iter = aTable->Iter(); !iter.Done(); iter.Next()) {
-    auto* e = static_cast<RequestMapEntry*>(iter.Get());
-    nsIRequest* request = e->mKey;
-    MOZ_DIAGNOSTIC_ASSERT(request, "Null key in mRequests PLDHashTable entry");
-
-    // XXX(Bug 1631371) Check if this should use a fallible operation as it
-    // pretended earlier.
-    aArray->AppendElement(request);
-    NS_ADDREF(request);
-  }
-
-  if (aArray->Length() != aTable->EntryCount()) {
-    for (uint32_t i = 0, len = aArray->Length(); i < len; ++i) {
-      NS_RELEASE((*aArray)[i]);
-    }
-    return false;
-  }
-  return true;
-}
-
 NS_IMETHODIMP nsLoadGroup::SetCanceledReason(const nsACString& aReason) {
   return SetCanceledReasonImpl(aReason);
 }
@@ -194,13 +141,10 @@ nsLoadGroup::Cancel(nsresult status) {
 
   NS_ASSERTION(NS_FAILED(status), "shouldn't cancel with a success code");
   nsresult rv;
-  uint32_t count = mRequests.EntryCount();
+  uint32_t count = mRequests.Count();
 
-  AutoTArray<nsIRequest*, 8> requests;
-
-  if (!AppendRequestsToArray(&mRequests, &requests)) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
+  auto requests = ToTArray<AutoTArray<nsCOMPtr<nsIRequest>, 8>>(mRequests);
+  MOZ_ASSERT(requests.Length() == count);
 
   // set the load group status to our cancel status while we cancel
   // all our requests...once the cancel is done, we'll reset it...
@@ -218,11 +162,10 @@ nsLoadGroup::Cancel(nsresult status) {
 
     NS_ASSERTION(request, "NULL request found in list.");
 
-    if (!mRequests.Search(request)) {
+    if (!mRequests.Contains(request)) {
       // |request| was removed already
       // We need to null out the entry in the request array so we don't try
       // to notify the observers for this request.
-      nsCOMPtr<nsIRequest> request = dont_AddRef(requests.ElementAt(count));
       requests.ElementAt(count) = nullptr;
 
       continue;
@@ -246,7 +189,6 @@ nsLoadGroup::Cancel(nsresult status) {
       // from the loadgroup causing RemoveRequestFromHashtable to fail.
       // In that case we shouldn't call NotifyRemovalObservers or decrement
       // mForegroundCount since that has already happened.
-      nsCOMPtr<nsIRequest> request = dont_AddRef(requests.ElementAt(count));
       requests.ElementAt(count) = nullptr;
 
       continue;
@@ -254,21 +196,22 @@ nsLoadGroup::Cancel(nsresult status) {
   }
 
   for (count = requests.Length(); count > 0;) {
-    nsCOMPtr<nsIRequest> request = dont_AddRef(requests.ElementAt(--count));
+    nsCOMPtr<nsIRequest> request = requests.ElementAt(--count).forget();
     (void)NotifyRemovalObservers(request, status);
   }
 
   if (mRequestContext) {
-    Unused << mRequestContext->CancelTailPendingRequests(status);
+    (void)mRequestContext->CancelTailPendingRequests(status);
   }
 
 #if defined(DEBUG)
-  NS_ASSERTION(mRequests.EntryCount() == 0, "Request list is not empty.");
+  NS_ASSERTION(mRequests.IsEmpty(), "Request list is not empty.");
   NS_ASSERTION(mForegroundCount == 0, "Foreground URLs are active.");
 #endif
 
   mStatus = NS_OK;
   mIsCanceling = false;
+  mCanceledReason.Truncate();
 
   return firstError;
 }
@@ -276,13 +219,9 @@ nsLoadGroup::Cancel(nsresult status) {
 NS_IMETHODIMP
 nsLoadGroup::Suspend() {
   nsresult rv, firstError;
-  uint32_t count = mRequests.EntryCount();
+  uint32_t count = mRequests.Count();
 
-  AutoTArray<nsIRequest*, 8> requests;
-
-  if (!AppendRequestsToArray(&mRequests, &requests)) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
+  auto requests = ToTArray<AutoTArray<nsCOMPtr<nsIRequest>, 8>>(mRequests);
 
   firstError = NS_OK;
   //
@@ -290,7 +229,7 @@ nsLoadGroup::Suspend() {
   // get removed from the list it won't affect our iteration
   //
   while (count > 0) {
-    nsCOMPtr<nsIRequest> request = dont_AddRef(requests.ElementAt(--count));
+    nsCOMPtr<nsIRequest> request = requests.ElementAt(--count).forget();
 
     NS_ASSERTION(request, "NULL request found in list.");
     if (!request) continue;
@@ -315,13 +254,9 @@ nsLoadGroup::Suspend() {
 NS_IMETHODIMP
 nsLoadGroup::Resume() {
   nsresult rv, firstError;
-  uint32_t count = mRequests.EntryCount();
+  uint32_t count = mRequests.Count();
 
-  AutoTArray<nsIRequest*, 8> requests;
-
-  if (!AppendRequestsToArray(&mRequests, &requests)) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
+  auto requests = ToTArray<AutoTArray<nsCOMPtr<nsIRequest>, 8>>(mRequests);
 
   firstError = NS_OK;
   //
@@ -329,7 +264,7 @@ nsLoadGroup::Resume() {
   // get removed from the list it won't affect our iteration
   //
   while (count > 0) {
-    nsCOMPtr<nsIRequest> request = dont_AddRef(requests.ElementAt(--count));
+    nsCOMPtr<nsIRequest> request = requests.ElementAt(--count).forget();
 
     NS_ASSERTION(request, "NULL request found in list.");
     if (!request) continue;
@@ -409,13 +344,12 @@ nsLoadGroup::SetDefaultLoadRequest(nsIRequest* aRequest) {
     // Mask off any bits that are not part of the nsIRequest flags.
     // in particular, nsIChannel::LOAD_DOCUMENT_URI...
     //
-    mLoadFlags &= nsIRequest::LOAD_REQUESTMASK;
+    mLoadFlags &= nsIRequest::LOAD_INHERIT_MASK;
 
     nsCOMPtr<nsITimedChannel> timedChannel = do_QueryInterface(aRequest);
     mDefaultLoadIsTimed = timedChannel != nullptr;
     if (mDefaultLoadIsTimed) {
       timedChannel->GetChannelCreation(&mDefaultRequestCreationTime);
-      timedChannel->SetTimingEnabled(true);
     }
   }
   // Else, do not change the group's load flags (see bug 95981)
@@ -430,10 +364,10 @@ nsLoadGroup::AddRequest(nsIRequest* request, nsISupports* ctxt) {
     nsAutoCString nameStr;
     request->GetName(nameStr);
     LOG(("LOADGROUP [%p]: Adding request %p %s (count=%d).\n", this, request,
-         nameStr.get(), mRequests.EntryCount()));
+         nameStr.get(), mRequests.Count()));
   }
 
-  NS_ASSERTION(!mRequests.Search(request),
+  NS_ASSERTION(!mRequests.Contains(request),
                "Entry added to loadgroup twice, don't do that");
 
   //
@@ -463,15 +397,9 @@ nsLoadGroup::AddRequest(nsIRequest* request, nsISupports* ctxt) {
   // Add the request to the list of active requests...
   //
 
-  auto* entry = static_cast<RequestMapEntry*>(mRequests.Add(request, fallible));
-  if (!entry) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
+  mRequests.Insert(request);
 
   if (mPriority != 0) RescheduleRequest(request, mPriority);
-
-  nsCOMPtr<nsITimedChannel> timedChannel = do_QueryInterface(request);
-  if (timedChannel) timedChannel->SetTimingEnabled(true);
 
   bool foreground = !(flags & nsIRequest::LOAD_BACKGROUND);
   if (foreground) {
@@ -487,6 +415,7 @@ nsLoadGroup::AddRequest(nsIRequest* request, nsISupports* ctxt) {
     // the load group.
     //
     nsCOMPtr<nsIRequestObserver> observer = do_QueryReferent(mObserver);
+    RefPtr<nsLoadGroup> self{this};
     if (observer) {
       LOG(
           ("LOADGROUP [%p]: Firing OnStartRequest for request %p."
@@ -536,6 +465,16 @@ nsLoadGroup::RemoveRequest(nsIRequest* request, nsISupports* ctxt,
   return NotifyRemovalObservers(request, aStatus);
 }
 
+static uint64_t GetTransferSize(nsITimedChannel* aTimedChannel) {
+  if (nsCOMPtr<nsIHttpChannel> channel = do_QueryInterface(aTimedChannel)) {
+    uint64_t size = 0;
+    (void)channel->GetTransferSize(&size);
+    return size;
+  }
+
+  return 0;
+}
+
 nsresult nsLoadGroup::RemoveRequestFromHashtable(nsIRequest* request,
                                                  nsresult aStatus) {
   NS_ENSURE_ARG_POINTER(request);
@@ -547,7 +486,7 @@ nsresult nsLoadGroup::RemoveRequestFromHashtable(nsIRequest* request,
     LOG(("LOADGROUP [%p]: Removing request %p %s status %" PRIx32
          " (count=%d).\n",
          this, request, nameStr.get(), static_cast<uint32_t>(aStatus),
-         mRequests.EntryCount() - 1));
+         mRequests.Count() - 1));
   }
 
   //
@@ -555,16 +494,20 @@ nsresult nsLoadGroup::RemoveRequestFromHashtable(nsIRequest* request,
   // the request was *not* in the group so do not update the foreground
   // count or it will get messed up...
   //
-  auto* entry = static_cast<RequestMapEntry*>(mRequests.Search(request));
+  bool found = mRequests.EnsureRemoved(request);
 
-  if (!entry) {
+  if (!found) {
     LOG(("LOADGROUP [%p]: Unable to remove request %p. Not in group!\n", this,
          request));
 
     return NS_ERROR_FAILURE;
   }
 
-  mRequests.RemoveEntry(entry);
+  // Cache the status of mDefaultLoadRequest, It'll be used later in
+  // TelemetryReport.
+  if (request == mDefaultLoadRequest) {
+    mDefaultStatus = aStatus;
+  }
 
   // Collect telemetry stats only when default request is a timed channel.
   // Don't include failed requests in the timing statistics.
@@ -579,25 +522,29 @@ nsresult nsLoadGroup::RemoveRequestFromHashtable(nsIRequest* request,
         ++mCachedRequests;
       }
 
-      rv = timedChannel->GetAsyncOpen(&timeStamp);
-      if (NS_SUCCEEDED(rv) && !timeStamp.IsNull()) {
-        Telemetry::AccumulateTimeDelta(
-            Telemetry::HTTP_SUBITEM_OPEN_LATENCY_TIME,
-            mDefaultRequestCreationTime, timeStamp);
-      }
+      if (request == mDefaultLoadRequest) {
+        TelemetryReportChannel(timedChannel, true);
+        mPageSize = GetTransferSize(timedChannel);
+      } else {
+        rv = timedChannel->GetAsyncOpen(&timeStamp);
+        if (NS_SUCCEEDED(rv) && !timeStamp.IsNull()) {
+          glean::http::subitem_open_latency_time.AccumulateRawDuration(
+              timeStamp - mDefaultRequestCreationTime);
+        }
 
-      rv = timedChannel->GetResponseStart(&timeStamp);
-      if (NS_SUCCEEDED(rv) && !timeStamp.IsNull()) {
-        Telemetry::AccumulateTimeDelta(
-            Telemetry::HTTP_SUBITEM_FIRST_BYTE_LATENCY_TIME,
-            mDefaultRequestCreationTime, timeStamp);
-      }
+        rv = timedChannel->GetResponseStart(&timeStamp);
+        if (NS_SUCCEEDED(rv) && !timeStamp.IsNull()) {
+          glean::http::subitem_first_byte_latency_time.AccumulateRawDuration(
+              timeStamp - mDefaultRequestCreationTime);
+        }
 
-      TelemetryReportChannel(timedChannel, false);
+        TelemetryReportChannel(timedChannel, false);
+        mTotalSubresourcesSize += GetTransferSize(timedChannel);
+      }
     }
   }
 
-  if (mRequests.EntryCount() == 0) {
+  if (mRequests.Count() == 0) {
     TelemetryReport();
   }
 
@@ -623,6 +570,7 @@ nsresult nsLoadGroup::NotifyRemovalObservers(nsIRequest* request,
   if (foreground || mNotifyObserverAboutBackgroundRequests) {
     // Fire the OnStopRequest out to the observer...
     nsCOMPtr<nsIRequestObserver> observer = do_QueryReferent(mObserver);
+    RefPtr<nsLoadGroup> self{this};
     if (observer) {
       LOG(
           ("LOADGROUP [%p]: Firing OnStopRequest for request %p."
@@ -649,11 +597,10 @@ nsresult nsLoadGroup::NotifyRemovalObservers(nsIRequest* request,
 NS_IMETHODIMP
 nsLoadGroup::GetRequests(nsISimpleEnumerator** aRequests) {
   nsCOMArray<nsIRequest> requests;
-  requests.SetCapacity(mRequests.EntryCount());
+  requests.SetCapacity(mRequests.Count());
 
-  for (auto iter = mRequests.Iter(); !iter.Done(); iter.Next()) {
-    auto* e = static_cast<RequestMapEntry*>(iter.Get());
-    requests.AppendObject(e->mKey);
+  for (nsIRequest* request : mRequests) {
+    requests.AppendObject(request);
   }
 
   return NS_NewArrayEnumerator(aRequests, requests, NS_GET_IID(nsIRequest));
@@ -778,9 +725,8 @@ nsLoadGroup::AdjustPriority(int32_t aDelta) {
   // Update the priority for each request that supports nsISupportsPriority
   if (aDelta != 0) {
     mPriority += aDelta;
-    for (auto iter = mRequests.Iter(); !iter.Done(); iter.Next()) {
-      auto* e = static_cast<RequestMapEntry*>(iter.Get());
-      RescheduleRequest(e->mKey, aDelta);
+    for (nsIRequest* request : mRequests) {
+      RescheduleRequest(request, aDelta);
     }
   }
   return NS_OK;
@@ -801,22 +747,14 @@ nsLoadGroup::SetDefaultLoadFlags(uint32_t aFlags) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void nsLoadGroup::TelemetryReport() {
-  nsresult defaultStatus = NS_ERROR_INVALID_ARG;
   // We should only report HTTP_PAGE_* telemetry if the defaultRequest was
   // actually successful.
-  if (mDefaultLoadRequest) {
-    mDefaultLoadRequest->GetStatus(&defaultStatus);
-  }
-  if (mDefaultLoadIsTimed && NS_SUCCEEDED(defaultStatus)) {
-    Telemetry::Accumulate(Telemetry::HTTP_REQUEST_PER_PAGE, mTimedRequests);
+  if (mDefaultLoadIsTimed && NS_SUCCEEDED(mDefaultStatus)) {
+    glean::http::request_per_page.AccumulateSingleSample(mTimedRequests);
     if (mTimedRequests) {
-      Telemetry::Accumulate(Telemetry::HTTP_REQUEST_PER_PAGE_FROM_CACHE,
-                            mCachedRequests * 100 / mTimedRequests);
+      glean::http::request_per_page_from_cache.AccumulateSingleSample(
+          mCachedRequests * 100 / mTimedRequests);
     }
-
-    nsCOMPtr<nsITimedChannel> timedChannel =
-        do_QueryInterface(mDefaultLoadRequest);
-    if (timedChannel) TelemetryReportChannel(timedChannel, true);
   }
 
   mTimedRequests = 0;
@@ -827,9 +765,6 @@ void nsLoadGroup::TelemetryReport() {
 void nsLoadGroup::TelemetryReportChannel(nsITimedChannel* aTimedChannel,
                                          bool aDefaultRequest) {
   nsresult rv;
-  bool timingEnabled;
-  rv = aTimedChannel->GetTimingEnabled(&timingEnabled);
-  if (NS_FAILED(rv) || !timingEnabled) return;
 
   TimeStamp asyncOpen;
   rv = aTimedChannel->GetAsyncOpen(&asyncOpen);
@@ -875,8 +810,9 @@ void nsLoadGroup::TelemetryReportChannel(nsITimedChannel* aTimedChannel,
   TimeStamp responseEnd;
   rv = aTimedChannel->GetResponseEnd(&responseEnd);
   if (NS_FAILED(rv)) return;
-
+#ifndef ANDROID
   bool useHttp3 = false;
+#endif
   bool supportHttp3 = false;
   nsCOMPtr<nsIHttpChannelInternal> httpChannel =
       do_QueryInterface(aTimedChannel);
@@ -884,7 +820,9 @@ void nsLoadGroup::TelemetryReportChannel(nsITimedChannel* aTimedChannel,
     uint32_t major;
     uint32_t minor;
     if (NS_SUCCEEDED(httpChannel->GetResponseVersion(&major, &minor))) {
+#ifndef ANDROID
       useHttp3 = major == 3;
+#endif
       if (major == 2) {
         if (NS_FAILED(httpChannel->GetSupportsHTTP3(&supportHttp3))) {
           supportHttp3 = false;
@@ -893,91 +831,10 @@ void nsLoadGroup::TelemetryReportChannel(nsITimedChannel* aTimedChannel,
     }
   }
 
-#define HTTP_REQUEST_HISTOGRAMS(prefix)                                        \
-  if (!domainLookupStart.IsNull()) {                                           \
-    Telemetry::AccumulateTimeDelta(Telemetry::HTTP_##prefix##_DNS_ISSUE_TIME,  \
-                                   asyncOpen, domainLookupStart);              \
-  }                                                                            \
-                                                                               \
-  if (!domainLookupStart.IsNull() && !domainLookupEnd.IsNull()) {              \
-    Telemetry::AccumulateTimeDelta(Telemetry::HTTP_##prefix##_DNS_LOOKUP_TIME, \
-                                   domainLookupStart, domainLookupEnd);        \
-  }                                                                            \
-                                                                               \
-  if (!secureConnectionStart.IsNull() && !connectEnd.IsNull()) {               \
-    Telemetry::AccumulateTimeDelta(Telemetry::HTTP_##prefix##_TLS_HANDSHAKE,   \
-                                   secureConnectionStart, connectEnd);         \
-  }                                                                            \
-                                                                               \
-  if (!connectStart.IsNull() && !connectEnd.IsNull()) {                        \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_TCP_CONNECTION_2, connectStart,             \
-        connectEnd);                                                           \
-  }                                                                            \
-                                                                               \
-  if (!requestStart.IsNull() && !responseEnd.IsNull()) {                       \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_OPEN_TO_FIRST_SENT, asyncOpen,              \
-        requestStart);                                                         \
-                                                                               \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_FIRST_SENT_TO_LAST_RECEIVED, requestStart,  \
-        responseEnd);                                                          \
-                                                                               \
-    if (cacheReadStart.IsNull() && !responseStart.IsNull()) {                  \
-      Telemetry::AccumulateTimeDelta(                                          \
-          Telemetry::HTTP_##prefix##_OPEN_TO_FIRST_RECEIVED, asyncOpen,        \
-          responseStart);                                                      \
-    }                                                                          \
-  }                                                                            \
-                                                                               \
-  if (!cacheReadStart.IsNull() && !cacheReadEnd.IsNull()) {                    \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_OPEN_TO_FIRST_FROM_CACHE_V2, asyncOpen,     \
-        cacheReadStart);                                                       \
-                                                                               \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_CACHE_READ_TIME_V2, cacheReadStart,         \
-        cacheReadEnd);                                                         \
-                                                                               \
-    if (!requestStart.IsNull() && !responseEnd.IsNull()) {                     \
-      Telemetry::AccumulateTimeDelta(Telemetry::HTTP_##prefix##_REVALIDATION,  \
-                                     requestStart, responseEnd);               \
-    }                                                                          \
-  }                                                                            \
-                                                                               \
-  if (!cacheReadEnd.IsNull()) {                                                \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_COMPLETE_LOAD_V2, asyncOpen, cacheReadEnd); \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_COMPLETE_LOAD_CACHED_V2, asyncOpen,         \
-        cacheReadEnd);                                                         \
-  } else if (!responseEnd.IsNull()) {                                          \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_COMPLETE_LOAD_V2, asyncOpen, responseEnd);  \
-    Telemetry::AccumulateTimeDelta(                                            \
-        Telemetry::HTTP_##prefix##_COMPLETE_LOAD_NET_V2, asyncOpen,            \
-        responseEnd);                                                          \
-  }
-
   // Glean instrumentation of metrics previously collected via Geckoview
   // Streaming.
-  if (aDefaultRequest) {
-    if (!cacheReadStart.IsNull() && !cacheReadEnd.IsNull()) {
-      mozilla::glean::network::first_from_cache.AccumulateRawDuration(
-          cacheReadStart - asyncOpen);
-    }
-    if (!connectEnd.IsNull()) {
-      if (!connectStart.IsNull()) {
-        mozilla::glean::network::tcp_connection.AccumulateRawDuration(
-            connectEnd - connectStart);
-      }
-      if (!secureConnectionStart.IsNull()) {
-        mozilla::glean::network::tls_handshake.AccumulateRawDuration(
-            connectEnd - secureConnectionStart);
-      }
-    }
-    if (!domainLookupStart.IsNull()) {
+  if (!domainLookupStart.IsNull()) {
+    if (aDefaultRequest) {
       mozilla::glean::network::dns_start.AccumulateRawDuration(
           domainLookupStart - asyncOpen);
       if (!domainLookupEnd.IsNull()) {
@@ -985,14 +842,123 @@ void nsLoadGroup::TelemetryReportChannel(nsITimedChannel* aTimedChannel,
             domainLookupEnd - domainLookupStart);
       }
     }
+#ifndef ANDROID
+    else {
+      mozilla::glean::network::sub_dns_start.AccumulateRawDuration(
+          domainLookupStart - asyncOpen);
+      if (!domainLookupEnd.IsNull()) {
+        mozilla::glean::network::sub_dns_end.AccumulateRawDuration(
+            domainLookupEnd - domainLookupStart);
+      }
+    }
+#endif
   }
-
-  if (aDefaultRequest) {
-    HTTP_REQUEST_HISTOGRAMS(PAGE)
-  } else {
-    HTTP_REQUEST_HISTOGRAMS(SUB)
+  if (!connectEnd.IsNull()) {
+    if (!connectStart.IsNull()) {
+      if (aDefaultRequest) {
+        mozilla::glean::network::tcp_connection.AccumulateRawDuration(
+            connectEnd - connectStart);
+      }
+#ifndef ANDROID
+      else {
+        mozilla::glean::network::sub_tcp_connection.AccumulateRawDuration(
+            connectEnd - connectStart);
+      }
+#endif
+    }
+    if (!secureConnectionStart.IsNull()) {
+      if (aDefaultRequest) {
+        mozilla::glean::network::tls_handshake.AccumulateRawDuration(
+            connectEnd - secureConnectionStart);
+      }
+#ifndef ANDROID
+      else {
+        mozilla::glean::network::sub_tls_handshake.AccumulateRawDuration(
+            connectEnd - secureConnectionStart);
+      }
+#endif
+    }
   }
+  if (!requestStart.IsNull() && !responseEnd.IsNull()) {
+    if (aDefaultRequest) {
+      mozilla::glean::network::open_to_first_sent.AccumulateRawDuration(
+          requestStart - asyncOpen);
+      mozilla::glean::network::first_sent_to_last_received
+          .AccumulateRawDuration(responseEnd - requestStart);
 
+      if (cacheReadStart.IsNull() && !responseStart.IsNull()) {
+        mozilla::glean::network::open_to_first_received.AccumulateRawDuration(
+            responseStart - asyncOpen);
+      }
+    }
+#ifndef ANDROID
+    else {
+      mozilla::glean::network::sub_open_to_first_sent.AccumulateRawDuration(
+          requestStart - asyncOpen);
+      mozilla::glean::network::sub_first_sent_to_last_received
+          .AccumulateRawDuration(responseEnd - requestStart);
+      if (cacheReadStart.IsNull() && !responseStart.IsNull()) {
+        mozilla::glean::network::sub_open_to_first_received
+            .AccumulateRawDuration(responseStart - asyncOpen);
+      }
+    }
+#endif
+  }
+  if (!cacheReadStart.IsNull() && !cacheReadEnd.IsNull()) {
+    if (aDefaultRequest) {
+      mozilla::glean::network::first_from_cache.AccumulateRawDuration(
+          cacheReadStart - asyncOpen);
+#ifndef ANDROID
+      mozilla::glean::network::cache_read_time.AccumulateRawDuration(
+          cacheReadEnd - cacheReadStart);
+      if (!requestStart.IsNull() && !responseEnd.IsNull()) {
+        mozilla::glean::network::http_revalidation.AccumulateRawDuration(
+            responseEnd - requestStart);
+      }
+#endif
+    }
+#ifndef ANDROID
+    else {
+      mozilla::glean::network::sub_first_from_cache.AccumulateRawDuration(
+          cacheReadStart - asyncOpen);
+      mozilla::glean::network::sub_cache_read_time.AccumulateRawDuration(
+          cacheReadEnd - cacheReadStart);
+      if (!requestStart.IsNull() && !responseEnd.IsNull()) {
+        mozilla::glean::network::sub_http_revalidation.AccumulateRawDuration(
+            responseEnd - requestStart);
+      }
+    }
+#endif
+  }
+#ifndef ANDROID
+  if (!cacheReadEnd.IsNull()) {
+    if (aDefaultRequest) {
+      mozilla::glean::network::complete_load.AccumulateRawDuration(
+          cacheReadEnd - asyncOpen);
+      mozilla::glean::network::complete_load_cached.AccumulateRawDuration(
+          cacheReadEnd - asyncOpen);
+    } else {
+      mozilla::glean::network::sub_complete_load.AccumulateRawDuration(
+          cacheReadEnd - asyncOpen);
+      mozilla::glean::network::sub_complete_load_cached.AccumulateRawDuration(
+          cacheReadEnd - asyncOpen);
+    }
+  } else if (!responseEnd.IsNull()) {
+    if (aDefaultRequest) {
+      mozilla::glean::network::complete_load.AccumulateRawDuration(responseEnd -
+                                                                   asyncOpen);
+      mozilla::glean::network::complete_load_net.AccumulateRawDuration(
+          responseEnd - asyncOpen);
+    } else {
+      mozilla::glean::network::sub_complete_load.AccumulateRawDuration(
+          responseEnd - asyncOpen);
+      mozilla::glean::network::sub_complete_load_net.AccumulateRawDuration(
+          responseEnd - asyncOpen);
+    }
+  }
+#endif
+
+#ifndef ANDROID
   if ((useHttp3 || supportHttp3) && cacheReadStart.IsNull() &&
       cacheReadEnd.IsNull()) {
     nsCString key = (useHttp3) ? ((aDefaultRequest) ? "uses_http3_page"_ns
@@ -1001,34 +967,34 @@ void nsLoadGroup::TelemetryReportChannel(nsITimedChannel* aTimedChannel,
                                                     : "supports_http3_sub"_ns);
 
     if (!secureConnectionStart.IsNull() && !connectEnd.IsNull()) {
-      Telemetry::AccumulateTimeDelta(Telemetry::HTTP3_TLS_HANDSHAKE, key,
-                                     secureConnectionStart, connectEnd);
+      mozilla::glean::network::http3_tls_handshake.Get(key)
+          .AccumulateRawDuration(connectEnd - secureConnectionStart);
     }
 
     if (supportHttp3 && !connectStart.IsNull() && !connectEnd.IsNull()) {
-      Telemetry::AccumulateTimeDelta(Telemetry::SUP_HTTP3_TCP_CONNECTION, key,
-                                     connectStart, connectEnd);
+      mozilla::glean::network::sup_http3_tcp_connection.Get(key)
+          .AccumulateRawDuration(connectEnd - connectStart);
     }
 
     if (!requestStart.IsNull() && !responseEnd.IsNull()) {
-      Telemetry::AccumulateTimeDelta(Telemetry::HTTP3_OPEN_TO_FIRST_SENT, key,
-                                     asyncOpen, requestStart);
+      mozilla::glean::network::http3_open_to_first_sent.Get(key)
+          .AccumulateRawDuration(requestStart - asyncOpen);
 
-      Telemetry::AccumulateTimeDelta(
-          Telemetry::HTTP3_FIRST_SENT_TO_LAST_RECEIVED, key, requestStart,
-          responseEnd);
+      mozilla::glean::network::http3_first_sent_to_last_received.Get(key)
+          .AccumulateRawDuration(responseEnd - requestStart);
 
       if (!responseStart.IsNull()) {
-        Telemetry::AccumulateTimeDelta(Telemetry::HTTP3_OPEN_TO_FIRST_RECEIVED,
-                                       key, asyncOpen, responseStart);
+        mozilla::glean::network::http3_open_to_first_received.Get(key)
+            .AccumulateRawDuration(responseStart - asyncOpen);
       }
 
       if (!responseEnd.IsNull()) {
-        Telemetry::AccumulateTimeDelta(Telemetry::HTTP3_COMPLETE_LOAD, key,
-                                       asyncOpen, responseEnd);
+        mozilla::glean::network::http3_complete_load.Get(key)
+            .AccumulateRawDuration(responseEnd - asyncOpen);
       }
     }
   }
+#endif
 
   bool hasHTTPSRR = false;
   if (httpChannel && NS_SUCCEEDED(httpChannel->GetHasHTTPSRR(&hasHTTPSRR)) &&
@@ -1053,8 +1019,6 @@ void nsLoadGroup::TelemetryReportChannel(nsITimedChannel* aTimedChannel,
       }
     }
   }
-
-#undef HTTP_REQUEST_HISTOGRAMS
 }
 
 nsresult nsLoadGroup::MergeLoadFlags(nsIRequest* aRequest,
@@ -1069,10 +1033,8 @@ nsresult nsLoadGroup::MergeLoadFlags(nsIRequest* aRequest,
 
   oldFlags = flags;
 
-  // Inherit the following bits...
-  flags |= (mLoadFlags &
-            (LOAD_BACKGROUND | LOAD_BYPASS_CACHE | LOAD_FROM_CACHE |
-             VALIDATE_ALWAYS | VALIDATE_ONCE_PER_SESSION | VALIDATE_NEVER));
+  // Inherit some bits...
+  flags |= mLoadFlags & kInheritedLoadFlags;
 
   // ... and force the default flags.
   flags |= mDefaultLoadFlags;
@@ -1109,14 +1071,14 @@ nsresult nsLoadGroup::MergeDefaultLoadFlags(nsIRequest* aRequest,
 nsresult nsLoadGroup::Init() {
   mRequestContextService = RequestContextService::GetOrCreate();
   if (mRequestContextService) {
-    Unused << mRequestContextService->NewRequestContext(
+    (void)mRequestContextService->NewRequestContext(
         getter_AddRefs(mRequestContext));
   }
 
   nsCOMPtr<nsIObserverService> os = mozilla::services::GetObserverService();
   NS_ENSURE_STATE(os);
 
-  Unused << os->AddObserver(this, "last-pb-context-exited", true);
+  (void)os->AddObserver(this, "last-pb-context-exited", true);
 
   return NS_OK;
 }
@@ -1125,7 +1087,7 @@ nsresult nsLoadGroup::InitWithRequestContextId(
     const uint64_t& aRequestContextId) {
   mRequestContextService = RequestContextService::GetOrCreate();
   if (mRequestContextService) {
-    Unused << mRequestContextService->GetRequestContext(
+    (void)mRequestContextService->GetRequestContext(
         aRequestContextId, getter_AddRefs(mRequestContext));
   }
   mExternalRequestContext = true;
@@ -1133,7 +1095,7 @@ nsresult nsLoadGroup::InitWithRequestContextId(
   nsCOMPtr<nsIObserverService> os = mozilla::services::GetObserverService();
   NS_ENSURE_STATE(os);
 
-  Unused << os->AddObserver(this, "last-pb-context-exited", true);
+  (void)os->AddObserver(this, "last-pb-context-exited", true);
 
   return NS_OK;
 }

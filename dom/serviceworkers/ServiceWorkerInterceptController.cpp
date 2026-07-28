@@ -1,11 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ServiceWorkerInterceptController.h"
 
+#include "ServiceWorkerManager.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StaticPrefs_privacy.h"
@@ -18,7 +17,6 @@
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
 #include "nsICookieJarSettings.h"
-#include "ServiceWorkerManager.h"
 #include "nsIPrincipal.h"
 #include "nsQueryObject.h"
 
@@ -133,20 +131,18 @@ ServiceWorkerInterceptController::ShouldPrepareForIntercept(
   // to avoid showing warnings about the use of third-party cookies in the UI
   // unnecessarily when no service worker is being accessed.
   auto storageAccess = StorageAllowedForChannel(aChannel);
-  if (storageAccess != StorageAccess::eAllow) {
-    if (!StaticPrefs::privacy_partition_serviceWorkers()) {
-      return NS_OK;
-    }
+  nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
+  loadInfo->GetCookieJarSettings(getter_AddRefs(cookieJarSettings));
 
-    nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
-    loadInfo->GetCookieJarSettings(getter_AddRefs(cookieJarSettings));
-
-    if (!StoragePartitioningEnabled(storageAccess, cookieJarSettings)) {
-      return NS_OK;
-    }
-  }
-
-  *aShouldIntercept = true;
+  *aShouldIntercept =
+      storageAccess == StorageAccess::eAllow ||
+      (storageAccess == StorageAccess::ePrivateBrowsing &&
+       StaticPrefs::dom_serviceWorkers_privateBrowsing_enabled()) ||
+      (ShouldPartitionStorage(storageAccess) &&
+       StaticPrefs::privacy_partition_serviceWorkers() &&
+       StoragePartitioningEnabled(storageAccess, cookieJarSettings) &&
+       (!principal->GetIsInPrivateBrowsing() ||
+        StaticPrefs::dom_serviceWorkers_privateBrowsing_enabled()));
   return NS_OK;
 }
 

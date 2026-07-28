@@ -40,14 +40,14 @@ const INVALID_COUNTERS = 7;
 // It is CRUCIAL that we register metrics in the same order in the parent and
 // in the child or their metric ids will not line up and ALL WILL EXPLODE.
 const METRICS = [
-  ["counter", "jog_ipc", "jog_counter", ["test-only"], `"ping"`, false],
-  ["string_list", "jog_ipc", "jog_string_list", ["test-only"], `"ping"`, false],
-  ["event", "jog_ipc", "jog_event_no_extra", ["test-only"], `"ping"`, false],
+  ["counter", "jog_ipc", "jog_counter", ["test-ping"], `"ping"`, false],
+  ["string_list", "jog_ipc", "jog_string_list", ["test-ping"], `"ping"`, false],
+  ["event", "jog_ipc", "jog_event_no_extra", ["test-ping"], `"ping"`, false],
   [
     "event",
     "jog_ipc",
     "jog_event",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({ allowed_extra_keys: ["extra1"] }),
@@ -56,7 +56,7 @@ const METRICS = [
     "memory_distribution",
     "jog_ipc",
     "jog_memory_dist",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({ memory_unit: "megabyte" }),
@@ -65,7 +65,7 @@ const METRICS = [
     "timing_distribution",
     "jog_ipc",
     "jog_timing_dist",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({ time_unit: "nanosecond" }),
@@ -74,7 +74,7 @@ const METRICS = [
     "custom_distribution",
     "jog_ipc",
     "jog_custom_dist",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({
@@ -88,7 +88,7 @@ const METRICS = [
     "labeled_counter",
     "jog_ipc",
     "jog_labeled_counter",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
   ],
@@ -96,7 +96,7 @@ const METRICS = [
     "labeled_counter",
     "jog_ipc",
     "jog_labeled_counter_err",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
   ],
@@ -104,7 +104,7 @@ const METRICS = [
     "labeled_counter",
     "jog_ipc",
     "jog_labeled_counter_with_labels",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({ ordered_labels: ["label_1", "label_2"] }),
@@ -113,17 +113,17 @@ const METRICS = [
     "labeled_counter",
     "jog_ipc",
     "jog_labeled_counter_with_labels_err",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({ ordered_labels: ["label_1", "label_2"] }),
   ],
-  ["rate", "jog_ipc", "jog_rate", ["test-only"], `"ping"`, false],
+  ["rate", "jog_ipc", "jog_rate", ["test-ping"], `"ping"`, false],
   [
     "labeled_custom_distribution",
     "jog_ipc",
     "jog_labeled_custom_dist",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({
@@ -137,7 +137,7 @@ const METRICS = [
     "labeled_memory_distribution",
     "jog_ipc",
     "jog_labeled_memory_dist",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({ memory_unit: "megabyte" }),
@@ -146,10 +146,46 @@ const METRICS = [
     "labeled_timing_distribution",
     "jog_ipc",
     "jog_labeled_timing_dist",
-    ["test-only"],
+    ["test-ping"],
     `"ping"`,
     false,
     JSON.stringify({ time_unit: "nanosecond" }),
+  ],
+  [
+    "boolean",
+    "jog_ipc",
+    "jog_unordered_bool",
+    ["test-ping"],
+    `"ping"`,
+    false,
+    JSON.stringify({ permit_non_commutative_operations_over_ipc: true }),
+  ],
+  [
+    "labeled_boolean",
+    "jog_ipc",
+    "jog_unordered_labeled_bool",
+    ["test-ping"],
+    `"ping"`,
+    false,
+    JSON.stringify({ permit_non_commutative_operations_over_ipc: true }),
+  ],
+  [
+    "quantity",
+    "jog_ipc",
+    "jog_unordered_quantity",
+    ["test-ping"],
+    `"ping"`,
+    false,
+    JSON.stringify({ permit_non_commutative_operations_over_ipc: true }),
+  ],
+  [
+    "dual_labeled_counter",
+    "jog_ipc",
+    "jog_dual_labeled_counter",
+    ["test-ping"],
+    `"ping"`,
+    false,
+    JSON.stringify({ ordered_categories: ["cat1", "cat2"] }),
   ],
 ];
 
@@ -189,12 +225,12 @@ add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
   Glean.jogIpc.jogLabeledCounter.label_1.add(COUNTERS_1);
   Glean.jogIpc.jogLabeledCounter.label_2.add(COUNTERS_2);
 
-  Glean.jogIpc.jogLabeledCounterErr["1".repeat(72)].add(INVALID_COUNTERS);
+  Glean.jogIpc.jogLabeledCounterErr["1".repeat(112)].add(INVALID_COUNTERS);
 
   Glean.jogIpc.jogLabeledCounterWithLabels.label_1.add(COUNTERS_1);
   Glean.jogIpc.jogLabeledCounterWithLabels.label_2.add(COUNTERS_2);
 
-  Glean.jogIpc.jogLabeledCounterWithLabelsErr["1".repeat(72)].add(
+  Glean.jogIpc.jogLabeledCounterWithLabelsErr["1".repeat(112)].add(
     INVALID_COUNTERS
   );
 
@@ -219,6 +255,17 @@ add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
 
   Glean.jogIpc.jogLabeledTimingDist.label1.stopAndAccumulate(l2); // 10ms
   Glean.jogIpc.jogLabeledTimingDist.label1.stopAndAccumulate(l3); // 5ms
+
+  Glean.jogIpc.jogUnorderedBool.set(true);
+
+  Glean.jogIpc.jogUnorderedLabeledBool.aLabel.set(true);
+
+  Glean.jogIpc.jogUnorderedQuantity.set(42);
+
+  Glean.jogIpc.jogDualLabeledCounter.get("somekey", "cat1").add(6);
+  Glean.jogIpc.jogDualLabeledCounter.get("otherkey", "cat1").add(36);
+  Glean.jogIpc.jogDualLabeledCounter.get("otherkey", "cat2").add(216);
+  Glean.jogIpc.jogDualLabeledCounter.get("otherkey", "unexpectedcat").add(1296);
 });
 
 add_task(
@@ -346,6 +393,31 @@ add_task(
         (acc, [, count]) => acc + count,
         0
       )
+    );
+
+    Assert.ok(Glean.jogIpc.jogUnorderedBool.testGetValue());
+
+    Assert.ok(Glean.jogIpc.jogUnorderedLabeledBool.aLabel.testGetValue());
+
+    Assert.equal(42, Glean.jogIpc.jogUnorderedQuantity.testGetValue());
+
+    Assert.equal(
+      6,
+      Glean.jogIpc.jogDualLabeledCounter.get("somekey", "cat1").testGetValue()
+    );
+    Assert.equal(
+      36,
+      Glean.jogIpc.jogDualLabeledCounter.get("otherkey", "cat1").testGetValue()
+    );
+    Assert.equal(
+      216,
+      Glean.jogIpc.jogDualLabeledCounter.get("otherkey", "cat2").testGetValue()
+    );
+    Assert.equal(
+      1296,
+      Glean.jogIpc.jogDualLabeledCounter
+        .get("otherkey", "__other__")
+        .testGetValue()
     );
   }
 );

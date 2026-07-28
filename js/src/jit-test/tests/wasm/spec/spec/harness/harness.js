@@ -19,6 +19,13 @@ if (!wasmIsSupported()) {
   quit();
 }
 
+function partialOobWriteMayWritePartialData() {
+  let arm_native = getBuildConfiguration("arm") && !getBuildConfiguration("arm-simulator");
+  let arm64_native = getBuildConfiguration("arm64") && !getBuildConfiguration("arm64-simulator");
+  let riscv64_native = getBuildConfiguration("riscv64") && !getBuildConfiguration("riscv64-simulator");
+  return arm_native || arm64_native || riscv64_native;
+}
+
 function bytes(type, bytes) {
   var typedBuffer = new Uint8Array(bytes);
   return wasmGlobalFromArrayBuffer(type, typedBuffer.buffer);
@@ -103,18 +110,6 @@ let externsym = Symbol("externref");
 function externref(s) {
   return { [externsym]: s };
 }
-function is_externref(x) {
-  return (x !== null && externsym in x) ? 1 : 0;
-}
-function is_funcref(x) {
-  return typeof x === "function" ? 1 : 0;
-}
-function eq_externref(x, y) {
-  return x === y ? 1 : 0;
-}
-function eq_funcref(x, y) {
-  return x === y ? 1 : 0;
-}
 
 class ExternRefResult {
   constructor(n) {
@@ -138,10 +133,6 @@ class ExternRefResult {
 // ref.host values created by spectests will be whatever the JS API does to
 // convert the given value to anyref. It should implicitly be like any.convert_extern.
 function hostref(v) {
-  if (!wasmGcEnabled()) {
-    throw new Error("ref.host only works when wasm GC is enabled");
-  }
-
   const { internalizeNum } = new WebAssembly.Instance(
     new WebAssembly.Module(wasmTextToBinary(`(module
       (func (import "test" "coerce") (param i32) (result anyref))
@@ -169,44 +160,42 @@ class HostRefResult {
   }
 }
 
-let spectest = {
-  externref: externref,
-  is_externref: is_externref,
-  is_funcref: is_funcref,
-  eq_externref: eq_externref,
-  eq_funcref: eq_funcref,
-  print: console.log.bind(console),
-  print_i32: console.log.bind(console),
-  print_i32_f32: console.log.bind(console),
-  print_f64_f64: console.log.bind(console),
-  print_f32: console.log.bind(console),
-  print_f64: console.log.bind(console),
-  global_i32: 666,
-  global_i64: 666n,
-  global_f32: 666,
-  global_f64: 666,
-  table: new WebAssembly.Table({
-    initial: 10,
-    maximum: 20,
-    element: "anyfunc",
-  }),
-  memory: new WebAssembly.Memory({ initial: 1, maximum: 2 }),
-};
-
+// https://github.com/WebAssembly/spec/blob/main/interpreter/README.md#spectest-host-module
 let linkage = {
-  spectest,
+  "spectest": {
+    global_i32: 666,
+    global_i64: 666n,
+    global_f32: 666.6,
+    global_f64: 666.6,
+
+    table: new WebAssembly.Table({
+      initial: 10,
+      maximum: 20,
+      element: "anyfunc",
+    }),
+    table64: new WebAssembly.Table({
+      address: "i64",
+      initial: 10n,
+      maximum: 20n,
+      element: "anyfunc",
+    }),
+
+    memory: new WebAssembly.Memory({ initial: 1, maximum: 2 }),
+
+    print: console.log.bind(console),
+    print_i32: console.log.bind(console),
+    print_i64: console.log.bind(console),
+    print_f32: console.log.bind(console),
+    print_f64: console.log.bind(console),
+    print_i32_f32: console.log.bind(console),
+    print_f64_f64: console.log.bind(console),
+  },
 };
 
-function getInstance(instanceish) {
-  if (typeof instanceish === "string") {
-    assertEq(
-      instanceish in linkage,
-      true,
-      `'${instanceish}'' must be registered`,
-    );
-    return linkage[instanceish];
-  }
-  return instanceish;
+function module(source) {
+  let bytecode = wasmTextToBinary(source);
+  let module = new WebAssembly.Module(bytecode);
+  return module;
 }
 
 function instantiate(source) {
@@ -216,18 +205,23 @@ function instantiate(source) {
   return instance.exports;
 }
 
-function register(instanceish, name) {
-  linkage[name] = getInstance(instanceish);
+function instantiateFromModule(module) {
+  let instance = new WebAssembly.Instance(module, linkage);
+  return instance.exports;
 }
 
-function invoke(instanceish, field, params) {
-  let func = getInstance(instanceish)[field];
+function register(instance, name) {
+  linkage[name] = instance;
+}
+
+function invoke(instance, field, params) {
+  let func = instance[field];
   assertEq(func instanceof Function, true, "expected a function");
   return wasmLosslessInvoke(func, ...params);
 }
 
-function get(instanceish, field) {
-  let global = getInstance(instanceish)[field];
+function get(instance, field) {
+  let global = instance[field];
   assertEq(
     global instanceof WebAssembly.Global,
     true,
@@ -239,7 +233,7 @@ function get(instanceish, field) {
 function assert_trap(thunk, message) {
   try {
     thunk();
-    throw new Error(`expected trap but got no error (${message})`);
+    throw new Error(`got no error`);
   } catch (err) {
     if (err instanceof WebAssembly.RuntimeError) {
       return;
@@ -247,6 +241,12 @@ function assert_trap(thunk, message) {
     err.message = `expected trap (${message}): ${err.message}`;
     throw err;
   }
+}
+
+function assert_suspension(thunk, message) {
+  // TODO: basically a duplicate of assert_trap, not sure what this actually
+  // is supposed to be.
+  assert_trap(thunk, message);
 }
 
 let StackOverflow;
@@ -260,7 +260,7 @@ try {
 function assert_exhaustion(thunk, message) {
   try {
     thunk();
-    throw new Error(`expected exhaustion but got no error (${message})`);
+    throw new Error(`got no error`);
   } catch (err) {
     if (err instanceof StackOverflow) {
       return;
@@ -273,7 +273,7 @@ function assert_exhaustion(thunk, message) {
 function assert_invalid(thunk, message) {
   try {
     thunk();
-    throw new Error(`expected invalid module but got no error (${message})`);
+    throw new Error(`got no error`);
   } catch (err) {
     if (err instanceof WebAssembly.LinkError || err instanceof WebAssembly.CompileError) {
       return;
@@ -286,11 +286,19 @@ function assert_invalid(thunk, message) {
 function assert_unlinkable(thunk, message) {
   try {
     thunk();
-    throw new Error(`expected an unlinkable module (${message})`);
+    throw new Error(`got no error`);
   } catch (err) {
+    // Allow type errors only when they pertain to imports
+    if (err instanceof TypeError && err.message.match(/import object field.*is not a/)) {
+      return;
+    }
+
+    // Allow link errors and compile errors generally (we do not really care
+    // about the specifics)
     if (err instanceof WebAssembly.LinkError || err instanceof WebAssembly.CompileError) {
       return;
     }
+
     err.message = `expected an unlinkable module (${message}): ${err.message}`;
     throw err;
   }
@@ -299,13 +307,11 @@ function assert_unlinkable(thunk, message) {
 function assert_malformed(thunk, message) {
   try {
     thunk();
-    throw new Error(`expected a malformed module (${message})`);
+    throw new Error(`got no error`);
   } catch (err) {
     if (
-      err instanceof TypeError ||
       err instanceof SyntaxError ||
-      err instanceof WebAssembly.CompileError ||
-      err instanceof WebAssembly.LinkError
+      err instanceof WebAssembly.CompileError
     ) {
       return;
     }
@@ -357,10 +363,8 @@ function formatResult(result) {
 
 function formatExpected(expected) {
   if (
-    expected === `f32_canonical_nan` ||
-    expected === `f32_arithmetic_nan` ||
-    expected === `f64_canonical_nan` ||
-    expected === `f64_arithmetic_nan`
+    expected === `canonical_nan` ||
+    expected === `arithmetic_nan`
   ) {
     return expected;
   } else if (expected instanceof F32x4Pattern) {
@@ -445,5 +449,94 @@ function compareResult(result, expected) {
     return wasmGlobalsEqual(result, expected);
   } else {
     throw new Error("unknown expected result");
+  }
+}
+
+class Thread {
+  LOC_STATE = 0;
+  LOC_DID_ERROR = 1;
+
+  STATE_WORKER_READY = 0x60; // "GO"
+  STATE_SENDING_VALUE = 0xF00D; // feed me values
+  STATE_GOT_VALUE = 0x600DF00D; // mm delicious values
+  STATE_RUN_CODE = 0xC0DE;
+  STATE_DONE = 0xDEAD;
+
+  constructor(sharedModule, sharedModuleName, code) {
+    this._coord = new Int32Array(new SharedArrayBuffer(4*2));
+
+    setSharedObject(this._coord.buffer);
+    evalInWorker(`
+      const _coord = new Int32Array(getSharedObject());
+
+      ${readRelativeToScript("harness.js")}
+
+      function setState(state) {
+        Atomics.store(_coord, ${this.LOC_STATE}, state);
+      }
+      function waitForState(expected) {
+        while (Atomics.load(_coord, ${this.LOC_STATE}) !== expected) {}
+      }
+      function receive() {
+        waitForState(${this.STATE_SENDING_VALUE});
+        const x = getSharedObject();
+        setState(${this.STATE_GOT_VALUE});
+        return x;
+      }
+
+      // Tell main thread we are ready
+      setState(${this.STATE_WORKER_READY});
+
+      // Get shared module's exports from main thread. (We do this one at a
+      // time for reasons explained below.)
+      const ${sharedModuleName} = {};
+      ${Object.keys(sharedModule ?? {}).map(name =>
+        `${sharedModuleName}["${name}"] = receive();`
+      )}
+      waitForState(${this.STATE_RUN_CODE});
+
+      try {
+        ${code}
+      } catch (e) {
+        Atomics.store(_coord, ${this.LOC_DID_ERROR}, 1);
+        throw e;
+      } finally {
+        setState(${this.STATE_DONE});
+      }
+    `);
+
+    // Wait for worker to spawn
+    this.waitForState(this.STATE_WORKER_READY);
+
+    // Send shared module exports to worker. We send values one at a time
+    // because setGlobalObject can only take very specific objects, like wasm
+    // memories, not generic objects like the whole exports object.
+    for (const exportedValue of Object.values(sharedModule ?? {})) {
+      this.send(exportedValue);
+    }
+
+    // Give the worker the all-clear to execute its workload
+    this.setState(this.STATE_RUN_CODE);
+  }
+
+  setState(state) {
+    Atomics.store(this._coord, this.LOC_STATE, state);
+  }
+
+  waitForState(expected) {
+    while (Atomics.load(this._coord, this.LOC_STATE) !== expected) {}
+  }
+
+  send(val) {
+    setSharedObject(val);
+    this.setState(this.STATE_SENDING_VALUE);
+    this.waitForState(this.STATE_GOT_VALUE);
+  }
+
+  wait() {
+    this.waitForState(this.STATE_DONE);
+    if (Atomics.load(this._coord, this.LOC_DID_ERROR)) {
+      throw new Error("Error in worker code. Note that line numbers will not be helpful because of how the harness is loaded.");
+    }
   }
 }

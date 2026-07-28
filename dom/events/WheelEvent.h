@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,9 @@
 #ifndef mozilla_dom_WheelEvent_h_
 #define mozilla_dom_WheelEvent_h_
 
+#include "mozilla/EventForwards.h"
 #include "mozilla/dom/MouseEvent.h"
 #include "mozilla/dom/WheelEventBinding.h"
-#include "mozilla/EventForwards.h"
 
 namespace mozilla::dom {
 
@@ -61,10 +59,24 @@ class WheelEvent : public MouseEvent {
                       int32_t aClientY, uint16_t aButton,
                       EventTarget* aRelatedTarget,
                       const nsAString& aModifiersList, double aDeltaX,
-                      double aDeltaY, double aDeltaZ, uint32_t aDeltaMode);
+                      double aDeltaY, double aDeltaZ, uint32_t aDeltaMode) {
+    InitWheelEventInternal(aType, aCanBubble, aCancelable, aView, aDetail,
+                           aScreenX, aScreenY, aClientX, aClientY, aButton,
+                           aRelatedTarget, aModifiersList, aDeltaX, aDeltaY,
+                           aDeltaZ, aDeltaMode);
+  }
 
  protected:
   ~WheelEvent() = default;
+
+  void InitWheelEventInternal(const nsAString& aType, bool aCanBubble,
+                              bool aCancelable, nsGlobalWindowInner* aView,
+                              int32_t aDetail, double aScreenX, double aScreenY,
+                              double aClientX, double aClientY,
+                              uint16_t aButton, EventTarget* aRelatedTarget,
+                              const nsAString& aModifiersList, double aDeltaX,
+                              double aDeltaY, double aDeltaZ,
+                              uint32_t aDeltaMode);
 
   double ToWebExposedDelta(WidgetWheelEvent&, double aDelta,
                            nscoord aLineOrPageAmount, CallerType);

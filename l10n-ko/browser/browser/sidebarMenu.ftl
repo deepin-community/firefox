@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = 북마크
+sidebar-menu-bookmarks-2 = 북마크
 sidebar-menu-history =
     .label = 기록
 sidebar-menu-synced-tabs =
     .label = 동기화된 탭
-sidebar-menu-megalist =
-    .label = 비밀번호
 sidebar-menu-close =
     .label = 사이드바 닫기
 sidebar-close-button =

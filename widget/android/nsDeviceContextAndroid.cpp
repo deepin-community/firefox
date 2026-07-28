@@ -66,6 +66,7 @@ nsDeviceContextSpecAndroid::Init(nsIPrintSettings* aPS, bool aIsPrintPreview) {
 NS_IMETHODIMP
 nsDeviceContextSpecAndroid::BeginDocument(const nsAString& aTitle,
                                           const nsAString& aPrintToFileName,
+                                          uint64_t aBrowsingContextId,
                                           int32_t aStartPage,
                                           int32_t aEndPage) {
   return NS_OK;
@@ -84,7 +85,7 @@ nsDeviceContextSpecAndroid::DoEndDocument() {
     nsAutoString targetPath;
     mPrintSettings->GetToFileName(targetPath);
     nsCOMPtr<nsIFile> destFile;
-    MOZ_TRY(NS_NewLocalFile(targetPath, false, getter_AddRefs(destFile)));
+    MOZ_TRY(NS_NewLocalFile(targetPath, getter_AddRefs(destFile)));
     nsAutoString destLeafName;
     MOZ_TRY(destFile->GetLeafName(destLeafName));
 

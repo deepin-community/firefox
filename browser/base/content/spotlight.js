@@ -3,10 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const browser = window.docShell.chromeEventHandler;
-const { document: gDoc, XPCOMUtils } = browser.ownerGlobal;
+const { document: gDoc, XPCOMUtils } = browser.documentGlobal;
 
 ChromeUtils.defineESModuleGetters(this, {
   AboutWelcomeParent: "resource:///actors/AboutWelcomeParent.sys.mjs",
+  E10SUtils: "resource://gre/modules/E10SUtils.sys.mjs",
 });
 
 const CONFIG = window.arguments[0];
@@ -15,6 +16,15 @@ function addStylesheet(href) {
   const link = document.head.appendChild(document.createElement("link"));
   link.rel = "stylesheet";
   link.href = href;
+}
+
+function disableEscClose() {
+  addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
 }
 
 /**
@@ -30,10 +40,37 @@ function renderMultistage(ready) {
   window.AWGetSelectedTheme = receive("GET_SELECTED_THEME");
   window.AWGetInstalledAddons = receive("GET_INSTALLED_ADDONS");
   window.AWSelectTheme = data => receive("SELECT_THEME")(data?.toUpperCase());
-  // Do not send telemetry if message (e.g. spotlight in PBM) config sets metrics as 'block'.
-  if (CONFIG?.metrics !== "block") {
-    window.AWSendEventTelemetry = receive("TELEMETRY_EVENT");
-  }
+  // Allow disabling telemetry with `metrics: 'block'`
+  const telemetryMessageHandler = receive("TELEMETRY_EVENT");
+  window.AWSendEventTelemetry = data => {
+    if (CONFIG?.metrics === "block") {
+      return null;
+    }
+    if (CONFIG?.write_in_microsurvey) {
+      if (!data.event_context) {
+        data.event_context = {};
+      }
+      data.event_context.write_in_microsurvey = true;
+      if (
+        CONFIG?.feedbackData &&
+        data.event === "CLICK_BUTTON" &&
+        data.event_context.source === "primary_button"
+      ) {
+        // Strip chatWithoutPageContent; if the toggle is unchecked it
+        // replaces chat so only the user's chosen version is sent.
+        const { chatWithoutPageContent, ...feedbackDataToSend } =
+          CONFIG.feedbackData;
+        if (
+          chatWithoutPageContent &&
+          data.event_context.contentToggleState === false
+        ) {
+          feedbackDataToSend.chat = chatWithoutPageContent;
+        }
+        data.event_context.smart_window_user_feedback_data = feedbackDataToSend;
+      }
+    }
+    return telemetryMessageHandler(data);
+  };
   window.AWSendToDeviceEmailsSupported = receive(
     "SEND_TO_DEVICE_EMAILS_SUPPORTED"
   );
@@ -43,7 +80,26 @@ function renderMultistage(ready) {
     window.close();
   };
   window.AWWaitForMigrationClose = receive("WAIT_FOR_MIGRATION_CLOSE");
+  window.AWWaitForNimbus = receive("WAIT_FOR_NIMBUS");
   window.AWEvaluateScreenTargeting = receive("EVALUATE_SCREEN_TARGETING");
+  window.AWEvaluateAttributeTargeting = receive("EVALUATE_ATTRIBUTE_TARGETING");
+  window.AWPredictRemoteType = ({ browserEl, url }) => {
+    const originAttributes = E10SUtils.predictOriginAttributes({
+      browser: browserEl,
+    });
+    const loadContext = window.docShell.QueryInterface(Ci.nsILoadContext);
+    const useRemoteTabs = loadContext.useRemoteTabs;
+    const useRemoteSubframes = loadContext.useRemoteSubframes;
+
+    return E10SUtils.getRemoteTypeForURI(
+      url,
+      useRemoteTabs,
+      useRemoteSubframes,
+      E10SUtils.DEFAULT_REMOTE_TYPE,
+      null,
+      originAttributes
+    );
+  };
 
   // Update styling to be compatible with about:welcome.
   addStylesheet("chrome://browser/content/aboutwelcome/aboutwelcome.css");
@@ -61,11 +117,38 @@ function renderMultistage(ready) {
   dialog?.classList.add("spotlight");
   // Prevent SubDialog methods from manually setting dialog size.
   box.setAttribute("sizeto", "available");
+  box.setAttribute("fixedsize", "false");
   addEventListener("pagehide", () => {
     box.classList.remove("spotlightBox");
     dialog?.classList.remove("spotlight");
     box.removeAttribute("sizeto");
   });
+
+  if (CONFIG?.disableEscClose) {
+    disableEscClose();
+
+    // Prevent ESC key from closing the Spotlight when focus is on the dialog frame. SubDialog has a system group handler that closes dialogs on ESC, so we need to stop propagation at the parent window level
+    const preventEscape = event => {
+      if (
+        event.key === "Escape" &&
+        (dialog?.contains(event.target) || box.contains(event.target))
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    browser.documentGlobal.addEventListener("keydown", preventEscape, {
+      capture: true,
+      mozSystemGroup: true,
+    });
+
+    addEventListener("pagehide", () => {
+      browser.documentGlobal.removeEventListener("keydown", preventEscape, {
+        capture: true,
+        mozSystemGroup: true,
+      });
+    });
+  }
 
   // Load the bundle to render the content as configured.
   document.head.appendChild(document.createElement("script")).src =

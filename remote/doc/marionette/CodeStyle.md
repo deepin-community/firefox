@@ -34,19 +34,19 @@ you may find they have different techniques for exporting symbols,
 varying indentation and code style, as well as varying linting
 requirements.
 
-To export symbols to other Marionette modules, remember to assign
-your exported symbols to the shared global `this`:
+Modules with _.sys.mjs_ file extensions follow the regular ECMAScript module,
+and you can export symbols with `export` declarations.
 
 ```javascript
-const EXPORTED_SYMBOLS = ["PollPromise", "TimedPromise"];
+export function TimedPromise() {}
 ```
 
 When importing symbols in Marionette code, try to be specific about
 what you need:
 
 ```javascript
-const { TimedPromise } = ChromeUtils.import(
-  "chrome://remote/content/marionette/sync.js"
+const { TimedPromise } = ChromeUtils.importESModule(
+  "chrome://remote/content/shared/Sync.sys.mjs"
 );
 ```
 
@@ -139,7 +139,7 @@ When we can, we try to extract the relevant object properties in
 the arguments to an event handler or a function:
 
 ```javascript
-const responseListener = ({name, target, json, data}) => { … };
+const responseListener = ({name, target, json, data}) => { // ... };
 ```
 
 Instead of:
@@ -150,7 +150,7 @@ const responseListener = msg => {
   let target = msg.target;
   let json = msg.json;
   let data = msg.data;
-  …
+  // ...
 };
 ```
 
@@ -181,8 +181,8 @@ is remote/components/Marionette.sys.mjs, which does require
 a re-build.
 
 [strict mode]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Strict_mode
-[Mozilla eslint rules]: https://searchfox.org/mozilla-central/source/.eslintrc.js
-[our own specialisations]: https://searchfox.org/mozilla-central/source/remote/marionette/.eslintrc.js
+[Mozilla eslint rules]: https://searchfox.org/firefox-main/source/.eslintrc.js
+[our own specialisations]: https://searchfox.org/firefox-main/source/remote/marionette/.eslintrc.js
 [linter]: #linting
 [copying header]: https://www.mozilla.org/en-US/MPL/headers/
 [public domain]: https://creativecommons.org/publicdomain/zero/1.0/
@@ -212,8 +212,8 @@ These include public functions—or command implementations—on
 the `GeckoDriver` class, as well as all exported symbols from
 other modules.  Documentation for non-exported symbols is not required.
 
-[remote/doc/marionette]: https://searchfox.org/mozilla-central/source/remote/marionette/doc
-[testing/geckodriver/doc]: https://searchfox.org/mozilla-central/source/testing/geckodriver/doc
+[remote/doc/marionette]: https://searchfox.org/firefox-main/source/remote/marionette/doc
+[testing/geckodriver/doc]: https://searchfox.org/firefox-main/source/testing/geckodriver/doc
 
 ## Linting
 

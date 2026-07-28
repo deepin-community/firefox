@@ -29,6 +29,9 @@ const XPC_MSG_GRAMMAR = `
   NL = @$[ ]* '\\n'
 `;
 
+// JSDoc doesn't support keyof, so we export values separately.
+const nsIXPCComponents_JSDoc = `type nsIXPCComponents_Values = nsIXPCComponents_Results[keyof nsIXPCComponents_Results];\n`;
+
 function main(lib_dts, xpc_msg, errors_json) {
   let parser = peggy.generate(XPC_MSG_GRAMMAR);
 
@@ -40,7 +43,8 @@ function main(lib_dts, xpc_msg, errors_json) {
       return line ? `  // ${line.trim()}` : "";
     }
     let [name, msg] = line;
-    return `\n  /** ${msg} */\n  ${name}: 0x${errors[name].toString(16)};`;
+    let type = name in errors ? "0x" + errors[name].toString(16) : "number";
+    return `\n  /** ${msg} */\n  ${name}: ${type};`;
   });
 
   let dts = [
@@ -48,6 +52,7 @@ function main(lib_dts, xpc_msg, errors_json) {
     "interface nsIXPCComponents_Results {",
     lines.join("\n").replaceAll("\n\n\n", "\n\n"),
     "}\n",
+    nsIXPCComponents_JSDoc,
   ].join("\n");
 
   console.log(`[INFO] ${lib_dts} (${dts.length.toLocaleString()} bytes)`);

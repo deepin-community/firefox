@@ -7,6 +7,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" dir="">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src chrome: resource:; img-src chrome: data:; style-src chrome: 'unsafe-inline';"
+    />
 
     <link rel="stylesheet" href="chrome://devtools/skin/breadcrumbs.css" />
     <link rel="stylesheet" href="chrome://devtools/skin/inspector.css" />
@@ -59,24 +63,8 @@
     />
 
     <script src="chrome://devtools/content/shared/theme-switching.js"></script>
-    <script>
-      /* eslint-disable */
-      var isInChrome = window.location.href.includes("chrome:");
-      if (isInChrome) {
-        var exports = {};
-        var { require, loader } = ChromeUtils.importESModule(
-          "resource://devtools/shared/loader/Loader.sys.mjs"
-        );
-        var { BrowserLoader } = ChromeUtils.importESModule(
-          "resource://devtools/shared/loader/browser-loader.sys.mjs"
-        );
-      }
-    </script>
-
-    <script
-      src="resource://devtools/client/inspector/inspector.js"
-      defer="true"
-    ></script>
+    <script src="chrome://devtools/content/inspector/index.js"></script>
+    <link rel="localization" href="devtools/client/inspector.ftl" />
   </head>
   <body class="theme-body" role="application">
     <div
@@ -84,16 +72,11 @@
       data-localization-bundle="devtools/client/locales/inspector.properties"
     >
       <!-- Main Panel Content -->
-      <div
-        id="inspector-main-content"
-        class="devtools-main-content"
-        style="visibility: hidden"
-      >
+      <div id="inspector-main-content" class="devtools-main-content">
         <!-- Toolbar -->
         <div
           id="inspector-toolbar"
           class="devtools-toolbar devtools-input-toolbar"
-          nowindowdrag="true"
         >
           <div id="inspector-search" class="devtools-searchbox">
             <input
@@ -102,16 +85,28 @@
               type="search"
               data-localization="placeholder=inspectorSearchHTML.label3"
             />
+            <div id="inspector-searchlabel-container" hidden="">
+              <span id="inspector-searchlabel"></span>
+              <div id="inspector-searchnavigation-container" hidden="">
+                <button
+                  class="inspector-searchnavigation-buttons devtools-button"
+                  id="inspector-searchnavigation-button-prev"
+                  data-localization="title=inspectorSearchHTML.prevButton.title"
+                ></button>
+                <button
+                  class="inspector-searchnavigation-buttons devtools-button"
+                  id="inspector-searchnavigation-button-next"
+                  data-localization="title=inspectorSearchHTML.nextButton.title"
+                ></button>
+              </div>
+              <div class="devtools-separator"></div>
+            </div>
             <button
               id="inspector-searchinput-clear"
               class="devtools-searchinput-clear"
               hidden=""
-              tabindex="-1"
+              data-localization="title=inspectorSearchHTML.clearButton.title"
             ></button>
-          </div>
-          <div id="inspector-searchlabel-container" hidden="">
-            <div class="devtools-separator"></div>
-            <span id="inspector-searchlabel"></span>
           </div>
           <div class="devtools-separator"></div>
           <button
@@ -152,7 +147,7 @@
       </div>
 
       <!-- Sidebar Panel Definitions -->
-      <div id="tabpanels" style="visibility: collapse">
+      <div id="tabpanels">
         <div
           id="sidebar-panel-ruleview"
           class="theme-sidebar inspector-tabpanel"
@@ -222,9 +217,19 @@
             <div
               id="pseudo-class-panel"
               class="theme-toolbar ruleview-reveal-panel"
+              inert=""
               hidden=""
             >
-              <!-- Populated with checkbox inputs once the Rules view is instantiated -->
+              <div id="pseudo-classes-standard" class="pseudo-classes"></div>
+              <h3
+                id="pseudo-classes-element-specific-heading"
+                class="pseudo-classes-element-specific"
+                data-l10n-id="inspector-element-specific-pseudo-classes-heading"
+              ></h3>
+              <div
+                id="pseudo-classes-element-specific"
+                class="pseudo-classes"
+              ></div>
             </div>
             <div
               id="ruleview-class-panel"

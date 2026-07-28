@@ -12,9 +12,8 @@ add_task(async function () {
 
   const tab = await addTab(TEST_URI);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Add messages as existing resources");
   const messages = ["a", "b", "c"];
@@ -58,9 +57,8 @@ add_task(async function () {
 
   const tab = await addTab(TEST_URI);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Add messages as existing resources");
   const existingMessages = ["a", "b", "c"];
@@ -118,9 +116,8 @@ add_task(async function () {
 
   const tab = await addTab(TEST_URI);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Add messages as existing resources");
   const existingMessages = ["a", "b", "c"];
@@ -157,9 +154,8 @@ add_task(async function () {
 
   const tab = await addTab(TEST_URI);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Register first listener to get all available resources");
   const availableResources = [];
@@ -219,9 +215,8 @@ add_task(async function () {
 async function testIgnoreExistingResources(isFirstListenerIgnoreExisting) {
   const tab = await addTab(TEST_URI);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Add messages as existing resources");
   const existingMessages = ["a", "b", "c"];
@@ -284,9 +279,8 @@ add_task(async function () {
 
   const tab = await addTab(TEST_URI);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   info("Register first listener to get all available resources");
   const availableResources = [];
@@ -360,7 +354,7 @@ function assertResources(resources, expectedResources) {
 }
 
 function logMessages(browser, messages) {
-  return ContentTask.spawn(browser, { messages }, args => {
+  return SpecialPowers.spawn(browser, [{ messages }], args => {
     for (const message of args.messages) {
       content.console.log(message);
     }
@@ -369,7 +363,7 @@ function logMessages(browser, messages) {
 
 async function triggerErrors(browser, errorScripts) {
   for (const errorScript of errorScripts) {
-    await ContentTask.spawn(browser, errorScript, expr => {
+    await SpecialPowers.spawn(browser, [errorScript], expr => {
       const document = content.document;
       const container = document.createElement("script");
       document.body.appendChild(container);

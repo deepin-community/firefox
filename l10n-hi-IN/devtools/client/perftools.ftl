@@ -9,12 +9,6 @@
 
 perftools-intro-title = प्रोफाइलर सेटिंग
 
-## All of the headings for the various sections.
-
-
-##
-
-
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
@@ -22,12 +16,6 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 ##
 
 perftools-devtools-settings-label = सेटिंग
-
-## Various statuses that affect the current state of profiling, not typically displayed.
-
-
-## These are shown briefly when the user is waiting for the profiler to respond.
-
 
 ##
 
@@ -40,31 +28,19 @@ perftools-button-save-settings = सेटिंग सहेजें और �
 perftools-thread-render-backend =
     .title = WebRender RenderBackend थ्रेड
 
-##
-
-
-## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## devtools.performance.new-panel-onboarding preference is true.
-
-
 ## Profiler presets
 
-
-# Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
-# The same labels and descriptions are also defined in appmenu.ftl.
 
 # Presets and their l10n IDs are defined in the file
 # devtools/client/performance-new/shared/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = वेब डेवलपर
-
 perftools-presets-firefox-label = { -brand-shorter-name }
-
 perftools-presets-graphics-label = ग्राफिक्स
-
 perftools-presets-media-label = मीडिया
-
-##
-

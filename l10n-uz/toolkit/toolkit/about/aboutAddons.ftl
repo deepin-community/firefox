@@ -4,10 +4,6 @@
 
 addons-page-title = Qoʻshimcha dasturlar boshqaruvchisi
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -166,9 +162,6 @@ addon-install-from-file-filter-name = Qoʻshimcha dasturlar
 addon-open-about-debugging = Qo‘shimcha dasturlarni tuzatish
     .accesskey = t
 
-## Extension shortcut management
-
-
 ## Recommended add-ons page
 
 # Explanatory introduction to the list of recommended add-ons. The action word
@@ -191,20 +184,6 @@ discopane-notice-recommendations2 =
         Ayrim tavsiyalar aynan siz uchun moslashtirilgan. Ular siz oʻrnatgan boshqa 
         kengaytmalar, profil sozlamalari va foydalanish statistikasi asosida tavsiya etiladi.
 
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
 ##
 
 recommended-themes-heading = Tavsiya etilgan mavzular
@@ -221,7 +200,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name }  - { -brand-short-name } { $version } bilan mos emas.
 # Variables:
 #   $version (string) - Application version.
@@ -236,12 +215,8 @@ details-notification-unsigned2 =
     .message = { $name } qo‘shimcha dasturi { -brand-short-name } brauzerida foydalanish uchun tasdiqdan o‘tmadi. Jarayonni ehtiyotkorlik bilan davom ettiring.
 details-notification-unsigned-link = Batafsil ma’lumot
 details-notification-blocked = { $name } xavfsizlik va ishonchlilik sabablariga koʻra oʻchirib qoʻyildi.
-details-notification-blocked2 =
-    .message = { $name } xavfsizlik va ishonchlilik sabablariga koʻra oʻchirib qoʻyildi.
 details-notification-blocked-link = Koʻproq ma`lumot
 details-notification-softblocked = { $name } xavfsizlik va mustahkamlikka ta`sir qilishi aniqlangan.
-details-notification-softblocked2 =
-    .message = { $name } xavfsizlik va mustahkamlikka ta`sir qilishi aniqlangan.
 details-notification-softblocked-link = Koʻproq ma`lumot
 details-notification-gmp-pending = { $name } tezda o‘rnatiladi.
 details-notification-gmp-pending2 =

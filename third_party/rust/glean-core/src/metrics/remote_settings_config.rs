@@ -4,18 +4,21 @@
 
 use std::collections::HashMap;
 
+use malloc_size_of_derive::MallocSizeOf;
 use serde::{Deserialize, Serialize};
 
 /// Represents a list of metrics and an associated boolean property
-/// indicating if the metric is enabledfrom the remote-settings
-/// configuration store. The expected format of this data is stringified JSON
-/// in the following format:
+/// indicating if the metric is enabled from the remote-settings
+/// configuration store.
+///
+/// The expected format of this data is stringified JSON in the following format:
+///
 /// ```json
 /// {
 ///     "category.metric_name": true
 /// }
 /// ```
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, MallocSizeOf)]
 pub struct RemoteSettingsConfig {
     /// This is a `HashMap` consisting of base_identifiers as keys
     /// and bool values representing an override for the `disabled`
@@ -23,19 +26,19 @@ pub struct RemoteSettingsConfig {
     /// If a particular metric has a value of `true` here, it means
     /// the default of the metric will be overriden and set to the
     /// enabled state.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub metrics_enabled: HashMap<String, bool>,
 
     /// This is a `HashMap` consisting of ping names as keys and
     /// boolean values representing on override for the default
     /// enabled state of the ping of the same name.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub pings_enabled: HashMap<String, bool>,
 
     /// The threshold of events that will be buffered before an events ping is
     /// collected and submitted.
     /// It overrides the value configured at initialization time.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub event_threshold: Option<u32>,
 }
 

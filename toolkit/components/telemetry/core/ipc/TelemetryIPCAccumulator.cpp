@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,7 +15,6 @@
 #include "mozilla/StaticMutex.h"
 #include "mozilla/StaticPrefs_toolkit.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/Unused.h"
 #include "nsITimer.h"
 #include "nsThreadUtils.h"
 
@@ -89,8 +86,10 @@ void DoArmIPCTimerMainThread(const StaticMutexAutoLock& lock) {
         TelemetryIPCAccumulator::IPCTimerFired, nullptr,
         mozilla::StaticPrefs::toolkit_telemetry_ipcBatchTimeout(),
         nsITimer::TYPE_ONE_SHOT_LOW_PRIORITY,
-        "TelemetryIPCAccumulator::IPCTimerFired");
+        "TelemetryIPCAccumulator::IPCTimerFired"_ns);
     gIPCTimerArmed = true;
+    PROFILER_MARKER_UNTYPED("IPC Accumulator", TELEMETRY,
+                            mozilla::MarkerTiming::IntervalStart());
   }
 }
 
@@ -203,9 +202,9 @@ void TelemetryIPCAccumulator::RecordChildKeyedScalarAction(
     DispatchIPCTimerFired();
   }
   // Store the action. The ProcessID will be determined by the receiver.
-  gChildKeyedScalarsActions->AppendElement(
-      KeyedScalarAction{aId, aDynamic, aAction, NS_ConvertUTF16toUTF8(aKey),
-                        Some(aValue), Telemetry::ProcessID::Count});
+  gChildKeyedScalarsActions->AppendElement(KeyedScalarAction{
+      {aId, aDynamic, aAction, Some(aValue), Telemetry::ProcessID::Count},
+      NS_ConvertUTF16toUTF8(aKey)});
   ArmIPCTimer(locker);
 }
 
@@ -274,27 +273,24 @@ static void SendAccumulatedData(TActor* ipcActor) {
   // Send the accumulated data to the parent process.
   MOZ_ASSERT(ipcActor);
   if (histogramsToSend.Length()) {
-    mozilla::Unused << NS_WARN_IF(
+    (void)NS_WARN_IF(
         !ipcActor->SendAccumulateChildHistograms(histogramsToSend));
   }
   if (keyedHistogramsToSend.Length()) {
-    mozilla::Unused << NS_WARN_IF(
+    (void)NS_WARN_IF(
         !ipcActor->SendAccumulateChildKeyedHistograms(keyedHistogramsToSend));
   }
   if (scalarsToSend.Length()) {
-    mozilla::Unused << NS_WARN_IF(
-        !ipcActor->SendUpdateChildScalars(scalarsToSend));
+    (void)NS_WARN_IF(!ipcActor->SendUpdateChildScalars(scalarsToSend));
   }
   if (keyedScalarsToSend.Length()) {
-    mozilla::Unused << NS_WARN_IF(
+    (void)NS_WARN_IF(
         !ipcActor->SendUpdateChildKeyedScalars(keyedScalarsToSend));
   }
   if (eventsToSend.Length()) {
-    mozilla::Unused << NS_WARN_IF(
-        !ipcActor->SendRecordChildEvents(eventsToSend));
+    (void)NS_WARN_IF(!ipcActor->SendRecordChildEvents(eventsToSend));
   }
-  mozilla::Unused << NS_WARN_IF(
-      !ipcActor->SendRecordDiscardedData(discardedData));
+  (void)NS_WARN_IF(!ipcActor->SendRecordDiscardedData(discardedData));
 }
 
 // To ensure we don't loop IPCTimerFired->AccumulateChild->arm timer, we don't
@@ -327,6 +323,8 @@ void TelemetryIPCAccumulator::IPCTimerFired(nsITimer* aTimer, void* aClosure) {
       break;
   }
 
+  PROFILER_MARKER_UNTYPED("IPC Accumulator", TELEMETRY,
+                          mozilla::MarkerTiming::IntervalEnd());
   gIPCTimerArmed = false;
 }
 

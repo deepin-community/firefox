@@ -1,21 +1,18 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/ResponsiveImageSelector.h"
+
 #include "mozilla/PresShell.h"
 #include "mozilla/PresShellInlines.h"
 #include "mozilla/ServoStyleSetInlines.h"
-#include "mozilla/TextUtils.h"
-#include "nsIURI.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/DocumentInlines.h"
-#include "nsContentUtils.h"
-#include "nsPresContext.h"
-
 #include "nsCSSProps.h"
+#include "nsContentUtils.h"
+#include "nsIURI.h"
+#include "nsPresContext.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -31,65 +28,6 @@ static bool ParseInteger(const nsAString& aString, int32_t& aInt) {
            (nsContentUtils::eParseHTMLInteger_Error |
             nsContentUtils::eParseHTMLInteger_DidNotConsumeAllInput |
             nsContentUtils::eParseHTMLInteger_NonStandard));
-}
-
-static bool ParseFloat(const nsAString& aString, double& aDouble) {
-  // Check if it is a valid floating-point number first since the result of
-  // nsString.ToDouble() is more lenient than the spec,
-  // https://html.spec.whatwg.org/#valid-floating-point-number
-  nsAString::const_iterator iter, end;
-  aString.BeginReading(iter);
-  aString.EndReading(end);
-
-  if (iter == end) {
-    return false;
-  }
-
-  if (*iter == char16_t('-') && ++iter == end) {
-    return false;
-  }
-
-  if (IsAsciiDigit(*iter)) {
-    for (; iter != end && IsAsciiDigit(*iter); ++iter);
-  } else if (*iter == char16_t('.')) {
-    // Do nothing, jumps to fraction part
-  } else {
-    return false;
-  }
-
-  // Fraction
-  if (*iter == char16_t('.')) {
-    ++iter;
-    if (iter == end || !IsAsciiDigit(*iter)) {
-      // U+002E FULL STOP character (.) must be followed by one or more ASCII
-      // digits
-      return false;
-    }
-
-    for (; iter != end && IsAsciiDigit(*iter); ++iter);
-  }
-
-  if (iter != end && (*iter == char16_t('e') || *iter == char16_t('E'))) {
-    ++iter;
-    if (*iter == char16_t('-') || *iter == char16_t('+')) {
-      ++iter;
-    }
-
-    if (iter == end || !IsAsciiDigit(*iter)) {
-      // Should have one or more ASCII digits
-      return false;
-    }
-
-    for (; iter != end && IsAsciiDigit(*iter); ++iter);
-  }
-
-  if (iter != end) {
-    return false;
-  }
-
-  nsresult rv;
-  aDouble = PromiseFlatString(aString).ToDouble(&rv);
-  return NS_SUCCEEDED(rv);
 }
 
 ResponsiveImageSelector::ResponsiveImageSelector(nsIContent* aContent)
@@ -351,6 +289,9 @@ bool ResponsiveImageSelector::SelectImage(bool aReselect) {
   if (overrideDPPX > 0) {
     displayDensity = overrideDPPX;
   }
+  if (doc->ShouldResistFingerprinting(RFPTarget::WindowDevicePixelRatio)) {
+    displayDensity = nsRFPService::GetDevicePixelRatioAtZoom(1);
+  }
 
   // Per spec, "In a UA-specific manner, choose one image source"
   // - For now, select the lowest density greater than displayDensity, otherwise
@@ -419,6 +360,9 @@ bool ResponsiveImageSelector::ComputeFinalWidthForCurrentViewport(
   }
   nscoord effectiveWidth =
       presShell->StyleSet()->EvaluateSourceSizeList(mServoSourceSizeList.get());
+  if (mAutoWidth != -1) {
+    effectiveWidth = mAutoWidth;
+  }
 
   *aWidth =
       nsPresContext::AppUnitsToDoubleCSSPixels(std::max(effectiveWidth, 0));
@@ -541,11 +485,11 @@ void ResponsiveImageDescriptors::AddDescriptor(const nsAString& aDescriptor) {
   } else if (*descType == char16_t('x')) {
     // If the value is not a valid floating point number, it doesn't match this
     // descriptor, fall through.
-    double possibleDensity = 0.0;
-    if (ParseFloat(valueStr, possibleDensity)) {
-      if (possibleDensity >= 0.0 && mWidth.isNothing() &&
+    if (auto possibleDensity =
+            nsContentUtils::ParseHTMLFloatingPointNumber(valueStr)) {
+      if (*possibleDensity >= 0.0 && mWidth.isNothing() &&
           mDensity.isNothing() && mFutureCompatHeight.isNothing()) {
-        mDensity.emplace(possibleDensity);
+        mDensity = std::move(possibleDensity);
       } else {
         // Valid density descriptor, but height or width or density were already
         // seen, or it parsed to less than zero, which is an error per spec

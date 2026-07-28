@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -54,17 +52,29 @@ void XMLStylesheetProcessingInstruction::UnbindFromTree(
   nsCOMPtr<Document> oldDoc = GetUncomposedDoc();
 
   ProcessingInstruction::UnbindFromTree(aContext);
-  Unused << UpdateStyleSheetInternal(oldDoc, nullptr);
+  (void)UpdateStyleSheetInternal(oldDoc, nullptr);
 }
 
 // nsINode
 
 void XMLStylesheetProcessingInstruction::SetNodeValueInternal(
-    const nsAString& aNodeValue, ErrorResult& aError) {
-  CharacterData::SetNodeValueInternal(aNodeValue, aError);
+    const nsAString& aNodeValue, ErrorResult& aError,
+    MutationEffectOnScript aMutationEffectOnScript) {
+  CharacterData::SetNodeValueInternal(aNodeValue, aError,
+                                      aMutationEffectOnScript);
   if (!aError.Failed()) {
-    Unused << UpdateStyleSheetInternal(nullptr, nullptr, ForceUpdate::Yes);
+    (void)UpdateStyleSheetInternal(nullptr, nullptr, ForceUpdate::Yes);
   }
+}
+
+void XMLStylesheetProcessingInstruction::SetDataInternal(
+    const nsAString& aData, MutationEffectOnScript aMutationEffectOnScript,
+    ErrorResult& rv) {
+  CharacterData::SetDataInternal(aData, aMutationEffectOnScript, rv);
+  if (rv.Failed()) {
+    return;
+  }
+  (void)UpdateStyleSheetInternal(nullptr, nullptr, ForceUpdate::Yes);
 }
 
 // LinkStyle
@@ -153,8 +163,11 @@ XMLStylesheetProcessingInstruction::CloneDataNode(
   GetData(data);
   RefPtr<mozilla::dom::NodeInfo> ni = aNodeInfo;
   auto* nim = ni->NodeInfoManager();
-  return do_AddRef(new (nim)
-                       XMLStylesheetProcessingInstruction(ni.forget(), data));
+  auto* doc = ni->GetDocument();
+  RefPtr<XMLStylesheetProcessingInstruction> it = do_AddRef(
+      new (nim) XMLStylesheetProcessingInstruction(ni.forget(), data));
+  MaybeStartCopyStyleSheetTo(it.get(), doc);
+  return it.forget();
 }
 
 }  // namespace mozilla::dom

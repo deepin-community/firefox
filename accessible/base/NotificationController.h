@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -40,17 +39,16 @@ class Notification {
    */
   virtual void Process() = 0;
 
+  Notification(const Notification&) = delete;
+  Notification& operator=(const Notification&) = delete;
+
  protected:
-  Notification() {}
+  Notification() = default;
 
   /**
    * Protected destructor, to discourage deletion outside of Release():
    */
-  virtual ~Notification() {}
-
- private:
-  Notification(const Notification&);
-  Notification& operator=(const Notification&);
+  virtual ~Notification() = default;
 };
 
 /**
@@ -69,14 +67,14 @@ class TNotification : public Notification {
       : mInstance(aInstance), mCallback(aCallback), mArgs(aArgs...) {}
   virtual ~TNotification() { mInstance = nullptr; }
 
+  TNotification(const TNotification&) = delete;
+  TNotification& operator=(const TNotification&) = delete;
+
   virtual void Process() override {
     ProcessHelper(std::index_sequence_for<Args...>{});
   }
 
  private:
-  TNotification(const TNotification&);
-  TNotification& operator=(const TNotification&);
-
   template <size_t... Indices>
   void ProcessHelper(std::index_sequence<Indices...>) {
     (mInstance->*mCallback)(std::get<Indices>(mArgs)...);
@@ -94,6 +92,9 @@ class NotificationController final : public EventQueue,
                                      public nsARefreshObserver {
  public:
   NotificationController(DocAccessible* aDocument, PresShell* aPresShell);
+
+  NotificationController(const NotificationController&) = delete;
+  NotificationController& operator=(const NotificationController&) = delete;
 
   NS_IMETHOD_(MozExternalRefCountType) AddRef(void) override;
   NS_IMETHOD_(MozExternalRefCountType) Release(void) override;
@@ -244,6 +245,13 @@ class NotificationController final : public EventQueue,
   }
 #endif
 
+  /**
+   * Return true if the accessible tree state update is pending.
+   */
+  bool IsUpdatePending() const;
+
+  void ProcessRelocations();
+
  protected:
   virtual ~NotificationController();
 
@@ -251,20 +259,12 @@ class NotificationController final : public EventQueue,
   NS_DECL_OWNINGTHREAD
 
   /**
-   * Return true if the accessible tree state update is pending.
-   */
-  bool IsUpdatePending();
-
-  /**
    * Return true if we should wait for processing from the parent before we can
    * process our own queue.
    */
-  bool WaitingForParent();
+  bool WaitingForParent() const;
 
  private:
-  NotificationController(const NotificationController&);
-  NotificationController& operator=(const NotificationController&);
-
   // nsARefreshObserver
   virtual void WillRefresh(mozilla::TimeStamp aTime) override;
 
@@ -280,7 +280,13 @@ class NotificationController final : public EventQueue,
   void DropMutationEvent(AccTreeMutationEvent* aEvent);
 
   /**
-   * Fire all necessary mutation events.
+   * For content process documents:
+   *   Assess and queue all necessary mutation events. This function queues the
+   *   events on DocAccessibleChild. To fire the queued events, call
+   *   DocAccessibleChild::SendQueuedMutationEvents. This function may fire
+   *   events that must occur before mutation events.
+   * For parent process documents:
+   *   Fire all necessary mutation events immediately.
    */
   void ProcessMutationEvents();
 
@@ -322,7 +328,7 @@ class NotificationController final : public EventQueue,
     explicit nsCOMPtrHashKey(const T* aKey) : mKey(const_cast<T*>(aKey)) {}
     nsCOMPtrHashKey(nsCOMPtrHashKey<T>&& aOther)
         : PLDHashEntryHdr(std::move(aOther)), mKey(std::move(aOther.mKey)) {}
-    ~nsCOMPtrHashKey() {}
+    ~nsCOMPtrHashKey() = default;
 
     KeyType GetKey() const { return mKey; }
     bool KeyEquals(KeyTypePointer aKey) const { return aKey == mKey; }

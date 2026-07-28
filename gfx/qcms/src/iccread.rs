@@ -1158,6 +1158,13 @@ impl ColourPrimaries {
         }
         .into()
     }
+
+    fn is_usable(self) -> bool {
+        match self {
+            Self::Reserved | Self::Unspecified => false,
+            _ => true
+        }
+    }
 }
 
 /// See [Rec. ITU-T H.273 (12/2016)](https://www.itu.int/rec/T-REC-H.273-201612-I/en) Table 3
@@ -1270,7 +1277,7 @@ impl TryFrom<TransferCharacteristics> for curveType {
                 //
                 // Inverting gives the electro-optical transfer characteristic
                 // function (EOTF) which can be represented as ICC
-                // parametricCurveType with 4 parameters (ICC.1:2010 Table 5).
+                // parametricCurveType with 4 parameters (ICC.1:2010 Table 65).
                 // Converting between the two (Lc ↔︎ Y, V ↔︎ X):
                 //
                 // Y = (a * X + b)^g  for (X >= d)
@@ -1280,7 +1287,7 @@ impl TryFrom<TransferCharacteristics> for curveType {
                 //
                 // g = 1 / 0.45
                 // a = 1 / α
-                // b = 1 - α
+                // b = 1 - a
                 // c = 1 / 4.500
                 // d = 4.500 * β
                 //
@@ -1397,6 +1404,15 @@ impl TryFrom<TransferCharacteristics> for curveType {
     }
 }
 
+impl TransferCharacteristics {
+    fn is_usable(self) -> bool {
+        match self {
+            Self::Reserved | Self::Unspecified => false,
+            _ => true
+        }
+    }
+}
+
 #[cfg(test)]
 fn check_transfer_characteristics(cicp: TransferCharacteristics, icc_path: &str) {
     let mut cicp_out = [0u8; crate::transform::PRECACHE_OUTPUT_SIZE];
@@ -1487,6 +1503,10 @@ impl Profile {
         self.is_srgb
     }
 
+    pub fn rendering_intent(&self) -> Intent {
+        self.rendering_intent
+    }
+
     pub(crate) fn new_sRGB_parametric() -> Box<Profile> {
         let primaries = qcms_CIE_xyYTRIPLE::from(ColourPrimaries::Bt709);
         let white_point = qcms_white_point_sRGB();
@@ -1560,6 +1580,9 @@ impl Profile {
 
     pub fn new_cicp(cp: ColourPrimaries, tc: TransferCharacteristics) -> Option<Box<Profile>> {
         let mut profile = profile_create();
+        if !cp.is_usable() || !tc.is_usable() {
+            return None;
+        }
         //XXX: should store the whitepoint
         if !set_rgb_colorants(&mut profile, cp.white_point(), qcms_CIE_xyYTRIPLE::from(cp)) {
             return None;

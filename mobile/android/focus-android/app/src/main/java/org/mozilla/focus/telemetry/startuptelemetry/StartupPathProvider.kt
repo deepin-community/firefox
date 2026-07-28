@@ -19,6 +19,9 @@ import androidx.lifecycle.LifecycleOwner
  */
 class StartupPathProvider {
 
+    /**
+     * Possible paths why the application was started.
+     */
     enum class StartupPath {
         MAIN,
         VIEW,
@@ -45,6 +48,9 @@ class StartupPathProvider {
 
     private var wasResumedSinceStartedState = false
 
+    /**
+     * Attaches the startup path provider to the activity lifecycle and processes the initial [intent].
+     */
     fun attachOnActivityOnCreate(lifecycle: Lifecycle, intent: Intent?) {
         lifecycle.addObserver(StartupPathLifecycleObserver())
         onIntentReceived(intent)
@@ -75,14 +81,19 @@ class StartupPathProvider {
         // the foreground so we can't say <= STARTED
         // - onIntentReceived can be called from the CREATED or STARTED state so we can't say == CREATED
         // So we're forced to track this state ourselves.
-        if (!wasResumedSinceStartedState && intent != null) {
-            startupPathForActivity = getStartupPathFromIntent(intent)
-        }
+        if (wasResumedSinceStartedState || intent == null) return
+        startupPathForActivity = getStartupPathFromIntent(intent)
     }
 
+    /**
+     * Returns the lifecycle observer for testing.
+     */
     @VisibleForTesting(otherwise = NONE)
     fun getTestCallbacks() = StartupPathLifecycleObserver()
 
+    /**
+     * [DefaultLifecycleObserver] that updates the startup path based on activity lifecycle.
+     */
     @VisibleForTesting(otherwise = PRIVATE)
     inner class StartupPathLifecycleObserver : DefaultLifecycleObserver {
         override fun onResume(owner: LifecycleOwner) {

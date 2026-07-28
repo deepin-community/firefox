@@ -1,5 +1,3 @@
-# -*- Mode: python; c-basic-offset: 4; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -12,8 +10,8 @@ import subprocess
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "eslint"))
-from eslint import setup_helper
-from mozbuild.nodeutil import find_node_executable
+from eslint import prettier_utils, setup_helper
+from mozbuild.nodeutil import check_node_executables_valid, find_node_executable
 from mozlint import result
 
 STYLELINT_ERROR_MESSAGE = """
@@ -38,7 +36,7 @@ FILE_EXT_REGEX = re.compile(r"\.[a-z0-9_]{2,10}$", re.IGNORECASE)
 def setup(root, **lintargs):
     setup_helper.set_project_root(root)
 
-    if not setup_helper.check_node_executables_valid():
+    if not check_node_executables_valid():
         return 1
 
     return setup_helper.eslint_maybe_setup()
@@ -59,7 +57,7 @@ def lint(paths, config, binary=None, fix=None, rules=[], setup=None, **lintargs)
             modified_paths += [path]
         else:
             joined_path = os.path.join(path, "**", exts)
-            if is_windows():
+            if prettier_utils.is_windows():
                 joined_path = joined_path.replace("\\", "/")
             modified_paths.append(joined_path)
 
@@ -76,83 +74,120 @@ def lint(paths, config, binary=None, fix=None, rules=[], setup=None, **lintargs)
         return 1
 
     extra_args = lintargs.get("extra_args") or []
-    exclude_args = []
-    for path in config.get("exclude", []):
-        exclude_args.extend(
-            ["--ignore-pattern", os.path.relpath(path, lintargs["root"])]
+    result = {"results": [], "fixed": 0}
+
+    # If something passes formatonly, avoid running stylelint and only run prettier.
+    # This allows ./mach format and similar mechanisms to work correctly.
+    if not lintargs.get("formatonly", False):
+        exclude_args = []
+        for path in config.get("exclude", []):
+            exclude_args.extend([
+                "--ignore-pattern",
+                os.path.relpath(path, lintargs["root"]),
+            ])
+
+        # Default to $topsrcdir/.stylelintrc.js, but allow override in stylelint.yml
+        stylelint_rc = config.get("stylelint-rc", ".stylelintrc.js")
+
+        # First run Stylelint
+        cmd_args = (
+            [
+                binary,
+                os.path.join(
+                    module_path, "node_modules", "stylelint", "bin", "stylelint.mjs"
+                ),
+                "--formatter",
+                "json",
+                "--allow-empty-input",
+                "--config",
+                os.path.join(lintargs["root"], stylelint_rc),
+            ]
+            + extra_args
+            + exclude_args
+            + modified_paths
         )
 
-    # Default to $topsrcdir/.stylelintrc.js, but allow override in stylelint.yml
-    stylelint_rc = config.get("stylelint-rc", ".stylelintrc.js")
+        if fix:
+            cmd_args.append("--fix")
 
-    # First run Stylelint
+        log.debug("Stylelint command: {}".format(" ".join(cmd_args)))
+
+        # Set up environment for stylelint subprocess
+        env = os.environ.copy()
+        if lintargs.get("skip_rollouts", False):
+            env["STYLELINT_SKIP_ROLLOUTS"] = "1"
+
+        result = run(cmd_args, config, fix, env)
+        if result == 1:
+            return result
+
+    # Then run Prettier
     cmd_args = (
         [
             binary,
             os.path.join(
-                module_path, "node_modules", "stylelint", "bin", "stylelint.mjs"
+                module_path, "node_modules", "prettier", "bin", "prettier.cjs"
             ),
-            "--formatter",
-            "json",
-            "--allow-empty-input",
-            "--config",
-            os.path.join(lintargs["root"], stylelint_rc),
+            "--list-different",
+            "--no-error-on-unmatched-pattern",
+            "--ignore-path=.prettierignore",
+            "--ignore-path=.prettierignore-non-css",
         ]
-        + extra_args
-        + exclude_args
-        + modified_paths
+        # Prettier does not support exclude arguments.
+        # + exclude_args
+        + paths
     )
+    log.debug("Prettier command: {}".format(" ".join(cmd_args)))
 
     if fix:
-        cmd_args.append("--fix")
+        cmd_args.append("--write")
 
-    log.debug("Stylelint command: {}".format(" ".join(cmd_args)))
+    prettier_result = prettier_utils.run_prettier(cmd_args, config, fix)
+    if prettier_result == 1:
+        return prettier_result
 
-    result = run(cmd_args, config, fix)
-    if result == 1:
-        return result
-
+    result["results"].extend(prettier_result["results"])
+    result["fixed"] = result["fixed"] + prettier_result["fixed"]
     return result
 
 
-def run(cmd_args, config, fix):
+def run(cmd_args, config, fix, env):
     shell = False
-    if is_windows():
+    if prettier_utils.is_windows():
         # The stylelint binary needs to be run from a shell with msys
         shell = True
     encoding = "utf-8"
 
     orig = signal.signal(signal.SIGINT, signal.SIG_IGN)
     proc = subprocess.Popen(
-        cmd_args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        cmd_args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
     )
     signal.signal(signal.SIGINT, orig)
 
     try:
-        output, errors = proc.communicate()
+        _, errors = proc.communicate()
     except KeyboardInterrupt:
         proc.kill()
         return {"results": [], "fixed": 0}
 
     if errors:
         errors = errors.decode(encoding, "replace")
-        print(STYLELINT_ERROR_MESSAGE.format(errors))
 
     # 0 is success, 2 is there was at least 1 rule violation. Anything else
     # is more serious.
-    if proc.returncode != 0 and proc.returncode != 2:
+    if proc.returncode not in {0, 2}:
         if proc.returncode == 78:
             print("Stylelint reported an issue with its configuration file.")
-            print(output)
+            print(errors)
         return 1
 
-    if not output:
-        return {"results": [], "fixed": 0}  # no output means success
-    output = output.decode(encoding, "replace")
+    if not errors:
+        return {"results": [], "fixed": 0}
+
     try:
-        jsonresult = json.loads(output)
+        jsonresult = json.loads(errors)
     except ValueError:
-        print(STYLELINT_ERROR_MESSAGE.format(output))
+        print(STYLELINT_ERROR_MESSAGE.format(errors))
         return 1
 
     results = []
@@ -174,22 +209,13 @@ def run(cmd_args, config, fix):
                 # All mozlint formatters that include the error message also already
                 # separately include the rule id, so that leads to duplication. Fix:
                 msg = msg.replace("(" + err.get("rule") + ")", "").strip()
-            err.update(
-                {
-                    "message": msg,
-                    "level": err.get("severity") or "error",
-                    "lineno": err.get("line") or 0,
-                    "path": obj["source"],
-                    "rule": err.get("rule") or "parseError",
-                }
-            )
+            err.update({
+                "message": msg,
+                "level": err.get("severity") or "error",
+                "lineno": err.get("line") or 0,
+                "path": obj["source"],
+                "rule": err.get("rule") or "parseError",
+            })
             results.append(result.from_config(config, **err))
 
     return {"results": results, "fixed": fixed}
-
-
-def is_windows():
-    return (
-        os.environ.get("MSYSTEM") in ("MINGW32", "MINGW64")
-        or "MOZILLABUILD" in os.environ
-    )

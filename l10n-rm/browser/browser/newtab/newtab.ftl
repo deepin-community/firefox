@@ -8,11 +8,121 @@
 newtab-page-title = Nov tab
 newtab-settings-button =
     .title = Persunalisar tia pagina per novs tabs
+#  (developer note): @nova-cleanup(remove-string): Remove newtab-customize-panel-icon-button once Nova lands, will be using newtab-customize-panel-label instead
+newtab-customize-panel-icon-button =
+    .title = Persunalisescha questa pagina
+#  (developer note): @nova-cleanup(remove-string): Remove newtab-customize-panel-icon-button-label once Nova lands, will be using newtab-customize-panel-label instead
+newtab-customize-panel-icon-button-label = Persunalisar
+newtab-customize-panel-label =
+    .label = Persunalisar
+newtab-personalize-settings-icon-label =
+    .title = Persunalisar novs tabs
+    .aria-label = Parameters
+newtab-settings-dialog-label =
+    .aria-label = Parameters
 newtab-personalize-icon-label =
     .title = Persunalisar novs tabs
     .aria-label = Persunalisar novs tabs
 newtab-personalize-dialog-label =
     .aria-label = Persunalisar
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = Novs tabs
+
+## Custom URLs subpage
+
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = Adressa(s) da website(s)
+home-custom-homepage-address =
+    .placeholder = Endatar in’adressa
+home-custom-homepage-address-button =
+    .label = Agiuntar in’adressa
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = Anc n’agiuntà naginas websites.
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with-prompt =
+    .label = Remplazzar cun
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with-prompt)
+home-custom-homepage-current-pages-button =
+    .label = Paginas avertas actualmain
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with-prompt)
+home-custom-homepage-bookmarks-button =
+    .label = Segnapaginas…
+
+## Firefox Home content
+
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
+home-prefs-search-header2 =
+    .label = Tschertgar
+home-prefs-stories-header2 =
+    .label = Artitgels
+    .description = Cuntegn excepziunal tschernì da la glieud da { -brand-product-name }
+home-prefs-widgets-header =
+    .label = Widgets
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = Glistas
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = Svegliarin
+home-prefs-mission-message2 =
+    .message = Noss sponsurs sustegnan noss engaschi per crear in meglier web.
+home-prefs-firefox-logo-header =
+    .label = Logo da { -brand-short-name }
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } lingia
+           *[other] { $num } lingias
+        }
+# Dropdown option shown when an extension replaces the contents of new windows or tabs.
+# Variables:
+#   $extension (string) - Name of the extension
+home-prefs-homepage-extension-option =
+    .label = Extensiun ({ $extension })
+home-restore-defaults-srd =
+    .label = Restaurar il standard
+    .accesskey = R
+home-mode-choice-default-fx-srd =
+    .label = { -firefox-home-brand-name } (predefinì)
+home-mode-choice-custom-srd =
+    .label = Adressas d'internet persunalisadas…
+home-mode-choice-blank-srd =
+    .label = Pagina vida
+home-prefs-shortcuts-header-srd =
+    .label = Scursanidas
+home-prefs-shortcuts-select =
+    .aria-label = Scursanidas
+home-prefs-shortcuts-by-option-sponsored-srd =
+    .label = Scursanidas sponsuradas
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Artitgels sponsurads
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Paginas visitadas
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Segnapaginas
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = L'ultima telechargiada
+home-prefs-recent-activity-header-srd =
+    .label = Activitad recenta
+home-prefs-recent-activity-select =
+    .aria-label = Activitad recenta
+home-prefs-weather-header-srd =
+    .label = Aura
+home-prefs-support-firefox-header-srd =
+    .label = Sustegnair { -brand-product-name }
+home-prefs-mission-message-learn-more-link-srd = Vegnir a savair co quai va
 
 ## Search box component.
 
@@ -39,19 +149,22 @@ newtab-search-box-input =
     .placeholder = Tschertgar en il web
     .aria-label = Tschertgar en il web
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Agiuntar maschina da tschertgar
 newtab-topsites-add-shortcut-header = Nova scursanida
 newtab-topsites-edit-topsites-header = Modifitgar la pagina principala
 newtab-topsites-edit-shortcut-header = Modifitgar la scursanida
 newtab-topsites-add-shortcut-label = Agiuntar ina scursanida
+newtab-topsites-add-shortcut-title =
+    .title = Agiuntar ina scursanida
+    .aria-label = Agiuntar ina scursanida
 newtab-topsites-title-label = Titel
 newtab-topsites-title-input =
     .placeholder = Endatar in titel
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
-    .placeholder = Tippar u encollar ina URL
+    .placeholder = Tippar u encollar in URL
 newtab-topsites-url-validation = In URL valid è necessari
 newtab-topsites-image-url-label = URL dal maletg persunalisà
 newtab-topsites-use-image-link = Utilisar in maletg persunalisà…
@@ -74,6 +187,14 @@ newtab-confirm-delete-history-p2 = Questa acziun na po betg vegnir revocada.
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = Sponsurisà
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (fixà)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -109,6 +230,23 @@ newtab-menu-save-to-pocket = Memorisar en { -pocket-brand-name }
 newtab-menu-delete-pocket = Stizzar da { -pocket-brand-name }
 newtab-menu-archive-pocket = Archivar en { -pocket-brand-name }
 newtab-menu-show-privacy-info = Noss sponsurs & tia sfera privata
+newtab-menu-about-fakespot = Davart { -fakespot-brand-name }
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Rapportar
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bloccar
+# Context menu option to open a support page explaining the New Tab personalization features and privacy controls.
+newtab-menu-section-learn-more = Ulteriuras infurmaziuns
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Betg pli suandar il tema
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Administrar cuntegn sponsurisà
+newtab-menu-our-sponsors-and-your-privacy = Noss sponsurs e tia sfera privata
+newtab-menu-report-this-ad = Rapportar questa reclama
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,6 +308,8 @@ newtab-label-sponsored-by = Sponsurisà da { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Sponsurisà
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -232,7 +372,6 @@ newtab-pocket-learn-more = Ulteriuras infurmaziuns
 newtab-pocket-cta-button = Obtegnair { -pocket-brand-name }
 newtab-pocket-cta-text = Memorisescha ils artitgels che ta plaschan en { -pocket-brand-name } e procura per inspiraziun cuntinuanta cun lectura fascinanta.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } fa part da la paletta da products { -brand-product-name }
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Memorisar
 newtab-pocket-saved = Memorisà
 
@@ -244,7 +383,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Na m’interessescha betg
-newtab-toast-thumbs-up-or-down = Grazia. Tes resun ans vegn a gidar a meglierar tes pavel.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Grazia. Tes resun ans vegn a gidar a meglierar tes pavel.
 newtab-toast-dismiss-button =
     .title = Serrar
     .aria-label = Serrar
@@ -264,9 +405,21 @@ newtab-error-fallback-refresh-link = Rechargia la pagina per reempruvar.
 
 newtab-custom-shortcuts-title = Scursanidas
 newtab-custom-shortcuts-subtitle = Websites che ti memoriseschas u visitas
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Scursanidas
     .description = Websites che ti memoriseschas u visitas
+newtab-custom-shortcuts-nova =
+    .label = Scursanidas
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } lingia
+           *[other] { $num } lingias
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -277,19 +430,38 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Scursanidas sponsuradas
 newtab-custom-pocket-title = Recumandà da { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Cuntegn excepziunal, tschernì da { -pocket-brand-name }, in product da { -brand-product-name }
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
 newtab-custom-stories-toggle =
     .label = Istorgias recumandadas
     .description = Cuntegn excepziunal curà da { -brand-product-name }
+newtab-recommended-stories-toggle =
+    .label = Istorgias recumandadas
+newtab-custom-stories-personalized-toggle =
+    .label = Artitgels
+newtab-custom-stories-personalized-checkbox =
+    .label = Artitgels persunalisads a basa da tia activitad
+newtab-custom-stories-personalized-checkbox-label = Artitgels persunalisads a basa da tia activitad
 newtab-custom-pocket-sponsored = Artitgels sponsurads
 newtab-custom-pocket-show-recent-saves = Mussar ils elements memorisads dacurt
 newtab-custom-recent-title = Activitad recenta
 newtab-custom-recent-subtitle = Ina selecziun da websites e cuntegn visità dacurt
-newtab-custom-recent-toggle =
-    .label = Activitad recenta
-    .description = Ina selecziun da websites e cuntegn visità dacurt
 newtab-custom-weather-toggle =
     .label = Aura
     .description = La previsiun da l’aura actuala en in’egliada
+newtab-custom-widget-weather-toggle =
+    .label = Aura
+newtab-custom-widget-lists-toggle =
+    .label = Glistas
+newtab-custom-widget-timer-toggle =
+    .label = Svegliarin
+newtab-custom-widget-section-title = Widgets
+newtab-custom-widget-section-toggle =
+    .label = Widgets
+newtab-widget-manage-title = Widgets
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Serrar
+    .aria-label = Serrar il menu
 newtab-custom-close-button = Serrar
 newtab-custom-settings = Administrar ulteriurs parameters
 
@@ -297,6 +469,16 @@ newtab-custom-settings = Administrar ulteriurs parameters
 
 newtab-wallpaper-title = Maletgs dal fund davos
 newtab-wallpaper-reset = Restaurar il standard
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
+newtab-wallpaper-upload-image = Transferir in maletg
+newtab-wallpaper-custom-color = Tscherner ina colur
+newtab-wallpaper-toggle-title =
+    .label = Maletgs dal fund davos
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Il maletg surpassa la grondezza maximala permessa da { $file_size } MB. Emprova per plaschair da transferir ina datoteca pli pitschna.
+newtab-wallpaper-error-upload-file-type = I n’è betg reussì da transferir tia datoteca. Emprova per plaschair anc ina giada cun ina datoteca grafica.
+newtab-wallpaper-error-file-type = I n’è betg reussì da transferir tia datoteca. Emprova per plaschair anc ina giada cun in auter tip da datoteca.
 newtab-wallpaper-light-red-panda = Panda cotschen
 newtab-wallpaper-light-mountain = Muntogna alva
 newtab-wallpaper-light-sky = Tschiel cun nivels violets e rosas
@@ -309,9 +491,12 @@ newtab-wallpaper-dark-panda = Panda cotschen zuppà en il guaud
 newtab-wallpaper-dark-sky = Cuntrada da citad cun tschiel nocturn
 newtab-wallpaper-dark-mountain = Cuntrada da muntognas
 newtab-wallpaper-dark-city = Cuntrada da citad violetta
+newtab-wallpaper-dark-fox-anniversary = Ina vulp sin la sulada datiers dad in guaud
+newtab-wallpaper-light-fox-anniversary = Ina vulp sin in prà en ina cuntrada muntagnarda cun brentina
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Colurs uni
 newtab-wallpaper-blue = Blau
 newtab-wallpaper-light-blue = Blau cler
@@ -338,8 +523,12 @@ newtab-wallpaper-abstract-purple = Furmas violetas
 newtab-wallpaper-abstract-orange = Furmas oranschas
 newtab-wallpaper-gradient-orange = Dissoluziun dad oransch e rosa
 newtab-wallpaper-abstract-blue-purple = Furmas blauas e violetas
+newtab-wallpaper-abstract-white-curves = Alv cun curvas nianzadas
+newtab-wallpaper-abstract-purple-green = Dissoluziun da glisch violetta e verda
+newtab-wallpaper-abstract-blue-purple-waves = Furmas undegiadas blauas e violettas
+newtab-wallpaper-abstract-black-waves = Furmas nairas undegiadas
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Fotografias
 newtab-wallpaper-beach-at-sunrise = Splagia sin il far di
@@ -348,6 +537,12 @@ newtab-wallpaper-storm-sky = Tschiel stemprà
 newtab-wallpaper-sky-with-pink-clouds = Tschiel cun nivels rosa
 newtab-wallpaper-red-panda-yawns-in-a-tree = Panda cotschen che susda sin ina planta
 newtab-wallpaper-white-mountains = Muntognas alvas
+newtab-wallpaper-hot-air-balloons = Balluns ad aria chauda en colurs assortidas da di
+newtab-wallpaper-starry-canyon = Notg blaua stailida
+newtab-wallpaper-suspension-bridge = Fotografia d’ina punt pendenta grischa da di
+newtab-wallpaper-sand-dunes = Dunas da sablun alvas
+newtab-wallpaper-palm-trees = Siluetta da palmas da cocos sin il far notg
+newtab-wallpaper-blue-flowers = Flurs cun petals blaus en fluriziun fotografads da datiers
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +558,23 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Firefox
+
+newtab-wallpaper-category-title-firefox = { -brand-product-name }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Astronomic
+newtab-wallpaper-celestial-lunar-eclipse = Stgiradetgna da la glina
+newtab-wallpaper-celestial-earth-night = Fotografia nocturna da l’orbit terrester bass
+newtab-wallpaper-celestial-starry-sky = Firmament
+newtab-wallpaper-celestial-eclipse-time-lapse = Stgiradetgna da la glina a temp accelerà
+newtab-wallpaper-celestial-black-hole = Illustraziun dad ina galaxia cun rusna naira
+newtab-wallpaper-celestial-river = Maletg da satellit dad in flum
+
 ## New Tab Weather
 
 # Variables:
@@ -373,7 +585,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsurà
 newtab-weather-menu-change-location = Midar la posiziun
-newtab-weather-change-location-search-input = Tschertgar in lieu
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Tschertgar in lieu
+    .aria-label = Tschertgar in lieu
 newtab-weather-menu-weather-display = Visualisaziun da l’aura
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
@@ -389,8 +603,21 @@ newtab-weather-menu-change-temperature-units-fahrenheit = Midar a fahrenheit
 newtab-weather-menu-change-temperature-units-celsius = Midar a celsius
 newtab-weather-menu-hide-weather = Zuppentar l’aura sin ils novs tabs
 newtab-weather-menu-learn-more = Ulteriuras infurmaziuns
+newtab-weather-menu-detect-my-location = Detectar mia posiziun
 # This message is shown if user is working offline
 newtab-weather-error-not-available = Datas meteorologicas n’èn actualmain betg disponiblas.
+newtab-weather-opt-in-see-weather = Vuls ti vesair l’aura per tes lieu?
+newtab-weather-opt-in-not-now =
+    .label = Betg ussa
+newtab-weather-opt-in-yes =
+    .label = Gea
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = New York
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = Mussar la previsiun da l’aura en { $provider }
+    .aria-description = { $provider } ∙ Sponsurà
 
 ## Topic Labels
 
@@ -431,3 +658,172 @@ newtab-topic-selection-button-maybe-later = Forsa pli tard
 newtab-topic-selection-privacy-link = Ve a savair co nus protegin e gestin las datas
 newtab-topic-selection-button-update-interests = Actualisescha tes interess
 newtab-topic-selection-button-pick-interests = Tscherna tes interess
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Suandar
+newtab-section-following-button = Ti suondas
+newtab-section-unfollow-button = Chalar da suandar
+# A modal may appear next to the Follow button, directing users to try out the feature
+newtab-section-follow-highlight-title = Optimescha tes feed
+newtab-section-follow-highlight-subtitle = Suonda tes interess per vesair dapli da quai che ta plascha.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Bloccar
+newtab-section-blocked-button = Bloccà
+newtab-section-unblock-button = Debloccar
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Betg ussa
+newtab-section-confirm-block-topic-p1 = Vuls ti propi bloccar quest tema?
+newtab-section-confirm-block-topic-p2 = Temas bloccads na vegnan betg pli a cumparair en tes feed.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Bloccar { $topic }
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-title = Temas
+newtab-section-manage-topics-button-v2 =
+    .label = Administrar ils temas
+newtab-section-mangage-topics-followed-topics = Suandà
+newtab-section-mangage-topics-followed-topics-empty-state = Ti na suondas anc nagins temas.
+newtab-section-mangage-topics-blocked-topics = Bloccà
+newtab-section-mangage-topics-blocked-topics-empty-state = Ti n’has anc bloccà nagins temas.
+newtab-custom-wallpaper-title = Ussa pos ti utilisar funds davos persunalisads
+# 'Make firefox yours" means to customize or personalize
+newtab-custom-wallpaper-subtitle = Transferescha tes agen maletg per il fund davos u tscherna ina colur tenor giavisch per persunalisar tes { -brand-product-name }.
+newtab-custom-wallpaper-cta = Empruvar
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-title = Tscherna in maletg dal fund davos per persunalisar { -brand-product-name }
+newtab-new-user-custom-wallpaper-subtitle = Persunalisescha novs tabs cun tscherner tes agen maletg dal fund davos ed atgnas colurs.
+newtab-new-user-custom-wallpaper-cta = Ussa empruvar
+
+## Strings for download mobile highlight
+
+newtab-download-mobile-highlight-title = Telechargia { -brand-product-name } per apparats mobils
+# "Scan the code" refers to scanning the QR code that appears above the body text that leads to Firefox for mobile download.
+newtab-download-mobile-highlight-body-variant-a = Scannescha il code per navigar a moda segira durant che ti es en gir.
+newtab-download-mobile-highlight-body-variant-b = Cuntinuescha là nua che ti has chalà sche ti sincroniseschas tes tabs, pleds-clav e dapli.
+newtab-download-mobile-highlight-body-variant-c = Has ti savì che ti pos prender { -brand-product-name } cun tai? Il medem navigatur. En tia giaglioffa.
+newtab-download-mobile-highlight-image =
+    .aria-label = Code QR per telechargiar { -brand-product-name } per apparats mobils
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-title = Tes favurits adina per mauns
+newtab-shortcuts-highlight-subtitle = Agiuntescha ina nova scursanida per acceder a tias websites preferidas cun in singul clic.
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-why-reporting-this =
+    .label = Pertge annunzias ti quai?
+newtab-report-ads-reason-not-interested =
+    .label = Quai na m’interessa betg
+newtab-report-ads-reason-inappropriate =
+    .label = Igl è deplazzà
+newtab-report-ads-reason-seen-it-too-many-times =
+    .label = Jau hai vis quai memia savens
+newtab-report-content-wrong-category =
+    .label = Categoria sbagliada
+newtab-report-content-outdated =
+    .label = Obsolet
+newtab-report-content-inappropriate-offensive =
+    .label = Deplazzà u offendent
+newtab-report-content-spam-misleading =
+    .label = Spam u engianus
+newtab-report-cancel = Interrumper
+newtab-report-submit = Trametter
+newtab-toast-thanks-for-reporting =
+    .message = Grazia per l’annunzia.
+
+## Strings for task / to-do list productivity widget
+
+# "Add one" means adding a new task to the list (e.g., "Walk the dog")
+newtab-widget-lists-empty-cta = Las pussaivladads èn infinitas. Agiuntescha anc ina.
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Nov
+newtab-widget-lists-label-beta =
+    .label = Beta
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = Cumplettadas ({ $number })
+newtab-widget-task-list-menu-copy = Copiar
+newtab-widget-lists-menu-edit = Modifitgar il num da la glista
+newtab-widget-lists-menu-edit2 =
+    .aria-label = Modifitgar il num da la glista
+newtab-widget-lists-menu-create = Crear ina nova glista
+newtab-widget-lists-menu-delete = Stizzar questa glista
+newtab-widget-lists-menu-copy = Copiar la glista en l’archiv provisoric
+newtab-widget-lists-menu-learn-more = Ulteriuras infurmaziuns
+newtab-widget-lists-button-add-item = Agiuntar in element
+newtab-widget-lists-input-add-an-item2 =
+    .placeholder = Agiuntar in element
+    .aria-label = Agiuntar in element
+newtab-widget-lists-input-error = Endatescha per plaschair text per agiuntar in element.
+newtab-widget-lists-input-menu-open-link = Avrir la colliaziun
+newtab-widget-lists-input-menu-move-up = Spustar ensi
+newtab-widget-lists-input-menu-move-down = Spustar engiu
+newtab-widget-lists-input-menu-delete = Stizzar
+newtab-widget-lists-input-menu-edit = Modifitgar
+# the + symbol emphasises the functionality of adding a new list
+newtab-widget-lists-dropdown-create =
+    .label = + Crear ina nova glista
+newtab-widget-lists-name-label-default =
+    .label = Glista d’incumbensas
+newtab-widget-lists-name-placeholder-default =
+    .placeholder = Glista d’incumbensas
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new2 =
+    .placeholder = Nova glista
+    .aria-label = Modifitgar il num da la glista
+newtab-widget-section-title = Widgets
+# Tooltip for hide all widgets button
+newtab-widget-section-hide-all-button =
+    .title = Zuppentar ils widgets
+    .aria-label = Zuppentar tut ils widgets
+newtab-widget-section-maximize =
+    .title = Extender ils widgets
+    .aria-label = Extender tut ils widgets a la grondezza entira
+newtab-widget-section-minimize =
+    .title = Reducir ils widgets
+    .aria-label = Reducir tut ils widgets a la grondezza cumpacta
+
+## Strings introduced by the Nova redesign of the Timer widget
+
+newtab-widget-timer-notification-title = Svegliarin
+newtab-widget-timer-notification-focus = L’interval da concentraziun è a fin. Buna lavur. Dovras ina pausa?
+newtab-widget-timer-notification-break = Tia pausa è a fin. Pront per ta concentrar?
+newtab-widget-timer-notification-warning = Notificaziuns èn deactivadas
+newtab-widget-timer-mode-focus =
+    .label = Concentraziun
+newtab-widget-timer-mode-break =
+    .label = Pausa
+newtab-widget-timer-label-play =
+    .label = Far ir
+newtab-widget-timer-label-pause =
+    .label = Pausa
+newtab-widget-timer-reset =
+    .title = Reinizialisar
+newtab-widget-timer-menu-notifications = Deactivar las notificaziuns
+newtab-widget-timer-menu-notifications-on = Activar las notificaziuns
+newtab-widget-timer-menu-learn-more = Ulteriuras infurmaziuns
+newtab-widget-message-title = Mantegna la concentraziun cun agid da glistas ed in svegliarin integrà
+# to-dos stands for "things to do".
+newtab-widget-message-copy = Cun agid da promemorias ed incumbensas quotidianas, intervals da concentraziun e pausas per relaxar – na perda ni il fil ni il temp.
+newtab-promo-card-title = Sustegnair { -brand-product-name }
+newtab-promo-card-body = Noss sponsurs sustegnan noss engaschi per crear in meglier web
+newtab-promo-card-cta = Ulteriuras infurmaziuns
+newtab-promo-card-dismiss-button =
+    .title = Serrar
+    .aria-label = Serrar

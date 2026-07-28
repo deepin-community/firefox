@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = Ndaikatúi embohekopyahu — ndojokupytýi apopyvusu
 appmenuitem-banner-update-restart =
     .label = Eiporukuaáma ñembohekopyahu — Emoñepyrũjey ko’ág̃a
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Ehupyty { -brand-short-name } pyahu. Eñongatu opaite ne rendayke.
+appmenu-nova-update-link = Emoñepyrũjey embohekopyahu hag̃ua
+appmenu-nova-fxa-sign-in = Eñepyrũ tembiapo
+appmenu-nova-switch-device-promo =
+    .message = ¿Oĩtama mba’e’oka pyahu? ¡Eraha { -brand-short-name } nendive!
+appmenu-nova-switch-device-link = Mba’éicha erováta mba’ekuaarãita
 appmenuitem-new-tab =
     .label = Tendayke pyahu
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Ovetã ñemi pyahu
 appmenuitem-history =
     .label = Tembiasakue
+appmenuitem-tab-groups =
+    .label = Tendayke aty
 appmenuitem-downloads =
     .label = Ñemboguejy
 appmenuitem-passwords =
     .label = Ñe’ẽñemi
+appmenuitem-extensions-and-themes =
+    .label = Jepysokue ha téma
+appmenuitem-extensions =
+    .label = Jepysokue
 appmenuitem-addons-and-themes =
     .label = Moĩmbaha ha Téma
 appmenuitem-print =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Embojuehe ha eñongatu mba’ekuaarã
 appmenu-fxa-signed-in-label = Tembiapo ñepyrũ
 appmenu-fxa-setup-sync =
     .label = Emyandy ñembojuehe…
+appmenu-fxa-setup-sync-new = Myandy
 appmenuitem-save-page =
     .label = Ñongatu pyahu…
+appmenuitem-fxa-sync-off-title = Ñembojuehe oñemboguéma
+appmenuitem-fxa-sync-off-description = Emo’ã ha eike nde rechaukaha, ñe’ẽñemi ha hetavépe oimeraẽva mba’e’oka guive.
 
 ## What's New panel in App menu.
 
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Embojuruja mbohapeha rupa
+    .tooltiptext = Embojuruja mbohapeha rupa
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,9 +209,14 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Oñemoĩva ohapykuerereka hag̃ua mba’epu ha ta’ãngamýi { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Momaranduha
+profiler-popup-presets-ml-description = Oĩva ohapykuereka hag̃ua kuaarã ijeheguíva jejavy { -brand-shorter-name } ndive.
+profiler-popup-presets-ml-label =
+    .label = Kuaarã Ijeheguíva
 profiler-popup-presets-networking-description = Oñemoĩva ohapykuereka hag̃ua pyha apañuái { -brand-shorter-name }-pe.
 profiler-popup-presets-networking-label =
     .label = Pyha
+profiler-popup-presets-networking-with-logs-label =
+    .label = Pyha haipy ndive
 profiler-popup-presets-power-description = Oñemoĩva ohapykuerereka hag̃ua tendyry ndoikóirõ eiporukuévo { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
@@ -199,6 +224,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Oĩva oñemopotĩ hag̃uáicha { -brand-shorter-name } ndive. Ojehechaiterei, ani eiporu oiko porãve hag̃ua katu eikumby hag̃ua mba’éichapa omba’apo kundahára.
 profiler-popup-presets-debug-label =
     .label = Mopotĩ
+profiler-popup-presets-web-compat-description = Moĩporã ypygua oñemopotĩ hag̃ua ñanduti jokupytyha apañuái ñanduti roguépe, ehapykuehorangue hembiapo rapykuere.
+profiler-popup-presets-web-compat-label =
+    .label = Ñandutirogue jokupyty
 profiler-popup-presets-custom-label =
     .label = Mboavapyre
 
@@ -264,6 +292,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Emboava tembiporu renda…
+appmenu-abouttranslations =
+    .label = Moñe’ẽasa…
+appmenu-edit-pdf =
+    .label = Embosako’i PDF…
 appmenu-developer-tools-subheader = Kundahára Rembiporu
 appmenu-developer-tools-extensions =
     .label = Jepysokue mboguatahárape g̃uarã
@@ -273,9 +305,50 @@ appmenuitem-report-broken-site =
 ## Panel for privacy and security products
 
 appmenuitem-sign-in-account = Eñepyrũ tembiapo ne mba’etépe
+appmenuitem-monitor-title2 = Eñemotenonde teratee ñemodáre
+appmenuitem-monitor-description2 = Og̃uahẽta kyhyjerã mba’ekuaarã ñembogua rehegua
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Ejapyhy mongyhyje mba’ekuaarã ñembogua rehe
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = Ereko ne ñanduti veve ñemíme
+appmenuitem-relay-description2 = Emboyke spam ne ñe’ẽmondo guahẽhágui
 appmenuitem-relay-description = Ehovamo’ã ne ñanduti veve ha pumbyry
+appmenuitem-services-relay-description = Emoñepyrũ ñanduti veve rovara’ãnga rupa
+appmenuitem-vpn-title2 = Eñomi ne rendaite { -mozilla-vpn-brand-name } ndive
+appmenuitem-vpn-description3 = Embohasy ani ojehapykueho ne ñeikundaha
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Eheka ñemo’ã mba’e’okápe g̃uarã
 appmenuitem-vpn-description = Emo’ã ne rekoñemi ñandutípe
+appmenu-services-header = Mba’epytyvõrã
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = Tembiporu ñemiguáva
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Eiporu ambue tembiporu ñemo’ãha Mozilla mba’éva:
+appmenu-other-protection-header = Eiporu ambue tembiporu ñemo’ãrã { -vendor-short-name } rehegua:
+
+## Profiles panel
+
+appmenu-other-profiles = Ambue mba’etekuéra
+appmenu-manage-profiles =
+    .label = Mba’etekuéra ñangareko
+appmenu-copy-profile =
+    .label = Ekopia ko mba’ete
+appmenu-create-profile2 =
+    .label = Emoheñói mba’ete pyahu
+appmenu-create-profile =
+    .label = Mba’ete pyahu
+appmenu-edit-profile =
+    .aria-label = Embosako’i mba’ete
+appmenu-edit-this-profile =
+    .label = Embosako’i ko Mba’ete
+appmenu-profile-current-in-use = Mba’ete ag̃agua ojeporu
+appmenu-profiles-2 =
+    .label = Mba’etekuéra
+appmenu-profiles-header = Mba’eteita
+appmenu-all-profiles =
+    .label = Opaite Mba’ete
+appmenu-secure-sync-header = Ñembojuehe hekorosãva

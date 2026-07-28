@@ -4,14 +4,18 @@ const { getAddonAndLocalAPIsMocker } = ChromeUtils.importESModule(
   "resource://testing-common/LangPackMatcherTestUtils.sys.mjs"
 );
 
-const { AWScreenUtils } = ChromeUtils.importESModule(
-  "resource:///modules/aboutwelcome/AWScreenUtils.sys.mjs"
+const { ASRouterScreenUtils } = ChromeUtils.importESModule(
+  "resource:///modules/asrouter/ASRouterScreenUtils.sys.mjs"
 );
 
 const sandbox = sinon.createSandbox();
 const mockAddonAndLocaleAPIs = getAddonAndLocalAPIsMocker(this, sandbox);
 add_task(function initSandbox() {
   registerCleanupFunction(() => {
+    Services.prefs.clearUserPref(
+      "messaging-system-action.showRestoreFromBackup"
+    );
+    Services.prefs.clearUserPref("messaging-system-action.showEmbeddedImport");
     sandbox.restore();
   });
 });
@@ -52,23 +56,29 @@ async function openAboutWelcome() {
   await setAboutWelcomePref(true);
 
   sandbox
-    .stub(AWScreenUtils, "evaluateScreenTargeting")
-    .resolves(true)
-    // Renders easy setup import screen as first screen to prevent pin/default dialog boxes breaking tests
-    .withArgs(
-      "doesAppNeedPin && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser"
-    )
-    .resolves(false)
-    .withArgs(
-      "!doesAppNeedPin && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser"
-    )
-    .resolves(false)
-    .withArgs(
-      "doesAppNeedPin && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser)"
-    )
-    .resolves(false)
-    .withArgs("isDeviceMigration")
-    .resolves(false);
+    .stub(ASRouterScreenUtils, "evaluateScreenTargeting")
+    .callsFake(args => {
+      info(`evaluateScreenTargeting called with args: ${args}`);
+      // Renders easy setup import screen as first screen to prevent pin/default dialog boxes breaking tests
+      const falseTargeting = [
+        "isRTAMO",
+        `isSmartWindowOnboarding && doesAppNeedPin && (unhandledCampaignAction != 'SET_DEFAULT_BROWSER') && (unhandledCampaignAction != 'PIN_FIREFOX_TO_TASKBAR') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser`,
+        `isSmartWindowOnboarding && (!doesAppNeedPin || (unhandledCampaignAction == 'PIN_FIREFOX_TO_TASKBAR')) && (unhandledCampaignAction != 'SET_DEFAULT_BROWSER') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser`,
+        `isSmartWindowOnboarding && doesAppNeedPin && (unhandledCampaignAction != 'PIN_FIREFOX_TO_TASKBAR') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser || (unhandledCampaignAction == 'SET_DEFAULT_BROWSER'))`,
+        `isSmartWindowOnboarding && (!doesAppNeedPin || (unhandledCampaignAction == 'PIN_FIREFOX_TO_TASKBAR') || (unhandledCampaignAction == 'PIN_AND_DEFAULT')) && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser || (unhandledCampaignAction == 'SET_DEFAULT_BROWSER') || (unhandledCampaignAction == 'PIN_AND_DEFAULT'))`,
+        "doesAppNeedPin && (unhandledCampaignAction != 'SET_DEFAULT_BROWSER') && (unhandledCampaignAction != 'PIN_FIREFOX_TO_TASKBAR') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser",
+        "!doesAppNeedPin && (unhandledCampaignAction != 'SET_DEFAULT_BROWSER') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser",
+        "(unhandledCampaignAction != 'PIN_FIREFOX_TO_TASKBAR') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && doesAppNeedPin && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser || (unhandledCampaignAction == 'SET_DEFAULT_BROWSER'))",
+        "isDeviceMigration",
+        "backupRestoreEnabled && 'messaging-system-action.showRestoreFromBackup' |preferenceValue == true",
+        "backupRestoreEnabled && !hasSelectableProfiles && (backupsInfo.found && !backupsInfo.multipleBackupsFound)",
+        "backupRestoreEnabled && !hasSelectableProfiles && backupsInfo.multipleBackupsFound",
+      ];
+      if (falseTargeting.includes(args)) {
+        return Promise.resolve(false);
+      }
+      return Promise.resolve(true);
+    });
 
   info("Opening about:welcome");
   let tab = await BrowserTestUtils.openNewForegroundTab(
@@ -77,8 +87,21 @@ async function openAboutWelcome() {
     true
   );
 
-  registerCleanupFunction(async () => {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async () => {
+    await ContentTaskUtils.waitForCondition(
+      () => content.document.querySelector(".AW_EASY_SETUP_ONLY_IMPORT"),
+      `Should render AW_EASY_SETUP_ONLY_IMPORT when opening about:welcome, current screen is: ${
+        content.document.querySelector(".screen")?.classList?.[1]
+      }`
+    );
+  });
+
+  registerCleanupFunction(() => {
     BrowserTestUtils.removeTab(tab);
+    Services.prefs.clearUserPref("browser.aboutwelcome.transitions");
+    Services.prefs.clearUserPref(
+      "intl.multilingual.aboutWelcome.languageMismatchEnabled"
+    );
   });
 
   return {
@@ -89,7 +112,7 @@ async function openAboutWelcome() {
 
 async function clickVisibleButton(browser, selector) {
   // eslint-disable-next-line no-shadow
-  await ContentTask.spawn(browser, { selector }, async ({ selector }) => {
+  await SpecialPowers.spawn(browser, [{ selector }], async ({ selector }) => {
     function getVisibleElement() {
       for (const el of content.document.querySelectorAll(selector)) {
         if (el.offsetParent !== null) {
@@ -118,9 +141,9 @@ async function testScreenContent(
   expectedSelectors = [],
   unexpectedSelectors = []
 ) {
-  await ContentTask.spawn(
+  await SpecialPowers.spawn(
     browser,
-    { expectedSelectors, name, unexpectedSelectors },
+    [{ expectedSelectors, name, unexpectedSelectors }],
     async ({
       expectedSelectors: expected,
       name: experimentName,
@@ -135,7 +158,9 @@ async function testScreenContent(
       for (let selector of expected) {
         await ContentTaskUtils.waitForCondition(
           () => selectorIsVisible(selector),
-          `Should render ${selector} in ${experimentName}`
+          `Should render ${selector} in ${experimentName}, current screen is: ${
+            content.document.querySelector(".screen")?.classList?.[1]
+          }`
         );
       }
       for (let selector of unexpected) {
@@ -224,7 +249,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_accept() {
   // Ignore the telemetry of the initial welcome screen.
   flushClickTelemetry();
 
-  resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
+  await resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
 
   await testScreenContent(
     browser,
@@ -343,8 +368,8 @@ add_task(async function test_aboutwelcome_languageSwitcher_decline() {
   // Ignore the telemetry of the initial welcome screen.
   flushClickTelemetry();
 
-  resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
-  resolveInstaller();
+  await resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
+  await resolveInstaller();
 
   await testScreenContent(
     browser,
@@ -411,7 +436,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_asyncCalls() {
   );
   ok(mockable.installLangPack.notCalled);
 
-  resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
+  await resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
 
   await TestUtils.waitForCondition(
     () => mockable.installLangPack.called,
@@ -419,7 +444,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_asyncCalls() {
   );
   ok(mockable.getAvailableLangpacks.called);
 
-  resolveInstaller();
+  await resolveInstaller();
 });
 
 /**
@@ -443,7 +468,7 @@ add_task(async function test_aboutwelcome_fallback_locale() {
   );
   ok(mockable.installLangPack.notCalled);
 
-  resolveLangPacks(["en-US"]);
+  await resolveLangPacks(["en-US"]);
 
   await TestUtils.waitForCondition(
     () => mockable.installLangPack.called,
@@ -451,7 +476,7 @@ add_task(async function test_aboutwelcome_fallback_locale() {
   );
   ok(mockable.getAvailableLangpacks.called);
 
-  resolveInstaller();
+  await resolveInstaller();
 });
 
 /**
@@ -470,7 +495,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_noMatch() {
   await clickVisibleButton(browser, `button.primary[value="primary_button"]`);
 
   // Klingon is not supported.
-  resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
+  await resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
 
   await testScreenContent(
     browser,
@@ -516,6 +541,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_bidiNotSupported() {
   );
 
   sinon.assert.notCalled(mockable.setRequestedAppLocales);
+  Services.prefs.clearUserPref("intl.multilingual.liveReloadBidirectional");
 });
 
 /**
@@ -530,7 +556,7 @@ add_task(
       systemLocale: "ar-EG", // Arabic (Egypt)
       appLocale: "en-US",
     });
-    resolveLangPacks([]);
+    await resolveLangPacks([]);
 
     const { browser } = await openAboutWelcome();
 
@@ -550,6 +576,7 @@ add_task(
     );
 
     sinon.assert.notCalled(mockable.setRequestedAppLocales);
+    Services.prefs.clearUserPref("intl.multilingual.liveReloadBidirectional");
   }
 );
 
@@ -570,7 +597,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_bidiNotSupported() {
   info("Clicking the primary button to start installing the langpack.");
   await clickVisibleButton(browser, `button.primary[value="primary_button"]`);
 
-  resolveLangPacks(["ar-EG", "es-ES", "fr-FR"]);
+  await resolveLangPacks(["ar-EG", "es-ES", "fr-FR"]);
 
   await testScreenContent(
     browser,
@@ -582,6 +609,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_bidiNotSupported() {
   );
 
   sinon.assert.notCalled(mockable.setRequestedAppLocales);
+  Services.prefs.clearUserPref("intl.multilingual.liveReloadBidirectional");
 });
 
 /**
@@ -599,7 +627,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_cancelWaiting() {
 
   info("Clicking the primary button to start the onboarding process.");
   await clickVisibleButton(browser, `button.primary[value="primary_button"]`);
-  resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
+  await resolveLangPacks(["es-MX", "es-ES", "fr-FR"]);
 
   await testScreenContent(
     browser,
@@ -676,7 +704,7 @@ add_task(async function test_aboutwelcome_languageSwitcher_MR() {
   info("Clicking the primary button to view language switching screen.");
   await clickVisibleButton(browser, `button.primary[value="primary_button"]`);
 
-  resolveLangPacks(["es-AR"]);
+  await resolveLangPacks(["es-AR"]);
   await testScreenContent(
     browser,
     "Live language switching, asking for a language",

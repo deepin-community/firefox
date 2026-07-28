@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -220,7 +218,7 @@ function callLater(msecs, callback) {
   do_timeout(msecs, callback);
 }
 
-/** *****************************************************
+/*******************************************************
  * SIMPLE SUPPORT FOR LOADING/TESTING A SERIES OF URLS *
  *******************************************************/
 
@@ -319,7 +317,7 @@ function runHttpTests(testArray, done) {
     _data: [],
 
     onStartRequest(request) {
-      Assert.ok(request === this._channel);
+      Assert.strictEqual(request, this._channel);
       var ch = request
         .QueryInterface(Ci.nsIHttpChannel)
         .QueryInterface(Ci.nsIHttpChannelInternal);
@@ -385,7 +383,7 @@ function runHttpTests(testArray, done) {
   performNextTest();
 }
 
-/** **************************************
+/****************************************
  * RAW REQUEST FORMAT TESTING FUNCTIONS *
  ****************************************/
 
@@ -528,7 +526,7 @@ function runRawTests(testArray, done, beforeTestCallback) {
   /** Reads data from the socket. */
   var reader = {
     onInputStreamReady(stream) {
-      Assert.ok(stream === this.stream);
+      Assert.strictEqual(stream, this.stream);
       try {
         var bis = new BinaryInputStream(stream);
 

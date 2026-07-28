@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -212,28 +210,6 @@ static void WriteInstallationRegistryEntry() {
   }
 }
 
-// Returns false (without setting aResult) if reading last run time failed.
-static bool CheckIfAppRanRecently(bool* aResult) {
-  const ULONGLONG kTaskExpirationDays = 90;
-  const ULONGLONG kTaskExpirationSeconds = kTaskExpirationDays * 24 * 60 * 60;
-
-  MaybeQwordResult lastRunTimeResult =
-      RegistryGetValueQword(IsPrefixed::Prefixed, L"AppLastRunTime");
-  if (lastRunTimeResult.isErr()) {
-    return false;
-  }
-  mozilla::Maybe<ULONGLONG> lastRunTimeMaybe = lastRunTimeResult.unwrap();
-  if (!lastRunTimeMaybe.isSome()) {
-    return false;
-  }
-
-  ULONGLONG secondsSinceLastRunTime =
-      SecondsPassedSince(lastRunTimeMaybe.value());
-
-  *aResult = secondsSinceLastRunTime < kTaskExpirationSeconds;
-  return true;
-}
-
 // Use the macro to inject all of the definitions for nsISupports.
 NS_IMPL_ISUPPORTS(DefaultAgent, nsIDefaultAgent)
 
@@ -300,11 +276,28 @@ DefaultAgent::Uninstall(const nsAString& aUniqueToken) {
   return NS_OK;
 }
 
+nsresult getSecondsSinceLastAppRun(int64_t* secondsElapsed) {
+  MaybeQwordResult lastRunTimeResult =
+      RegistryGetValueQword(IsPrefixed::Prefixed, L"AppLastRunTime");
+  if (!lastRunTimeResult.isErr()) {
+    mozilla::Maybe<ULONGLONG> lastRunTimeMaybe = lastRunTimeResult.unwrap();
+    if (lastRunTimeMaybe.isSome()) {
+      ULONGLONG lastRunTimestamp = lastRunTimeMaybe.value();
+      ULONGLONG now = GetCurrentTimestamp();
+      *secondsElapsed = (int64_t)SecondsPassedSince(lastRunTimestamp, now);
+      return NS_OK;
+    } else {
+      *secondsElapsed = -1;
+      return NS_ERROR_NOT_AVAILABLE;
+    }
+  } else {
+    return NS_ERROR_FAILURE;
+  }
+}
+
 NS_IMETHODIMP
-DefaultAgent::AppRanRecently(bool* aRanRecently) {
-  bool ranRecently = false;
-  *aRanRecently = CheckIfAppRanRecently(&ranRecently) && ranRecently;
-  return NS_OK;
+DefaultAgent::SecondsSinceLastAppRun(int64_t* secondsElapsed) {
+  return getSecondsSinceLastAppRun(secondsElapsed);
 }
 
 NS_IMETHODIMP
@@ -340,7 +333,8 @@ DefaultAgent::SendPing(const nsAString& aDefaultBrowser,
                        const nsAString& aPreviousDefaultBrowser,
                        const nsAString& aDefaultPdfHandler,
                        const nsAString& aNotificationShown,
-                       const nsAString& aNotificationAction) {
+                       const nsAString& aNotificationAction,
+                       uint32_t daysSinceLastAppLaunch) {
   DefaultBrowserInfo browserInfo = {
       GetBrowserFromString(std::string(NS_ConvertUTF16toUTF8(aDefaultBrowser))),
       GetBrowserFromString(
@@ -357,7 +351,8 @@ DefaultAgent::SendPing(const nsAString& aDefaultBrowser,
   NotificationActivities activitiesPerformed = {NotificationType::Initial,
                                                 shown, action};
 
-  HRESULT hr = SendDefaultAgentPing(browserInfo, pdfInfo, activitiesPerformed);
+  HRESULT hr = SendDefaultAgentPing(browserInfo, pdfInfo, activitiesPerformed,
+                                    daysSinceLastAppLaunch);
   return SUCCEEDED(hr) ? NS_OK : NS_ERROR_FAILURE;
 }
 

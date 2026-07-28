@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <windows.h>
 #include <unknwn.h>
-#include <stdio.h>
 #include "nsISupports.h"
 #include "nsCOMPtr.h"
 #include "mozilla/gtest/MozAssertions.h"
@@ -17,20 +15,14 @@
 #include "gtest/gtest.h"
 
 // {5846BA30-B856-11d1-A98A-00805F8A7AC4}
-#define NS_ITEST_COM_IID                            \
-  {                                                 \
-    0x5846ba30, 0xb856, 0x11d1, {                   \
-      0xa9, 0x8a, 0x0, 0x80, 0x5f, 0x8a, 0x7a, 0xc4 \
-    }                                               \
-  }
+#define NS_ITEST_COM_IID \
+  {0x5846ba30, 0xb856, 0x11d1, {0xa9, 0x8a, 0x0, 0x80, 0x5f, 0x8a, 0x7a, 0xc4}}
 
 class nsITestCom : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_ITEST_COM_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_ITEST_COM_IID)
   NS_IMETHOD Test() = 0;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsITestCom, NS_ITEST_COM_IID)
 
 /*
  * nsTestCom

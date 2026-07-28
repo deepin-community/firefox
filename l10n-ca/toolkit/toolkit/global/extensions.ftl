@@ -15,7 +15,23 @@ webext-perms-header-with-perms = Voleu afegir { $extension }? Aquesta extensió 
 webext-perms-header-unsigned = Voleu afegir { $extension }? Aquesta extensió no està verificada. Les extensions malicioses podrien robar informació privada o posar l'ordinador en risc. Instal·leu-la únicament si confieu en la font.
 webext-perms-header-unsigned-with-perms = Voleu afegir { $extension }? Aquesta extensió no està verificada. Les extensions malicioses podrien robar informació privada o posar l'ordinador en risc. Instal·leu-la únicament si confieu en la font. Aquesta extensió tindrà permís per:
 webext-perms-sideload-header = S'ha afegit { $extension }
+webext-perms-optional-perms-header2 = { $extension } sol·licita permisos addicionals.
 webext-perms-optional-perms-header = { $extension } sol·licita permisos addicionals.
+webext-perms-header2 = Afegeix { $extension }
+
+## Headers used in the webextension permissions dialog, inside the content.
+
+webext-perms-header-required-perms = Permisos necessaris:
+webext-perms-header-optional-settings = Paràmetres opcionals:
+webext-perms-header-update-required-perms = Permisos necessaris nous:
+webext-perms-header-optional-required-perms = Permisos nous:
+webext-perms-header-data-collection-is-none = Recollida de dades:
+# This is a header used in the add-ons "update" prompt, shown when the new
+# version requires new data collection permissions.
+webext-perms-header-update-data-collection-perms = Recollida de dades necessàries nova:
+# This is a header used in the add-ons "optional" prompt, shown when the
+# extension requests new data collection permissions programmatically.
+webext-perms-header-optional-data-collection-perms = Recollida de dades nova:
 
 ##
 
@@ -25,7 +41,6 @@ webext-perms-add =
 webext-perms-cancel =
     .label = Cancel·la
     .accesskey = C
-
 webext-perms-sideload-text = Un altre programa del vostre ordinador ha instal·lat un complement que pot afectar el navegador. Reviseu els permisos que se sol·liciten i trieu Habilita o Cancel·la (per deixar-lo inhabilitat).
 webext-perms-sideload-text-no-perms = Un altre programa del vostre ordinador ha instal·lat un complement que pot afectar el navegador. Reviseu els permisos que se sol·liciten i trieu Habilita o Cancel·la (per deixar-lo inhabilitat).
 webext-perms-sideload-enable =
@@ -34,14 +49,15 @@ webext-perms-sideload-enable =
 webext-perms-sideload-cancel =
     .label = Cancel·la
     .accesskey = C
-
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text2 = { $extension } s'ha actualitzat. Heu d'aprovar els permisos nous per instal·lar la versió actualitzada. Feu clic a «Cancel·la» per mantenir la versió actual.
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
 webext-perms-update-text = «{ $extension }» s'ha actualitzat. Heu d'aprovar els permisos nous per instal·lar la versió actualitzada. Feu clic a «Cancel·la» per mantenir la versió actual de l'extensió. Aquesta extensió tindrà permís per:
 webext-perms-update-accept =
     .label = Actualitza
     .accesskey = A
-
 webext-perms-optional-perms-list-intro = Vol:
 webext-perms-optional-perms-allow =
     .label = Permet
@@ -49,13 +65,10 @@ webext-perms-optional-perms-allow =
 webext-perms-optional-perms-deny =
     .label = Denega
     .accesskey = D
-
 webext-perms-host-description-all-urls = Accedir a les dades de tots els llocs web
-
 # Variables:
 #   $domain (String): will be replaced by the DNS domain for which a webextension is requesting access (e.g., mozilla.org)
 webext-perms-host-description-wildcard = Accedir a les dades web del domini { $domain }
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -67,7 +80,6 @@ webext-perms-host-description-too-many-wildcards =
 # Variables:
 #   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., www.mozilla.org)
 webext-perms-host-description-one-site = Accedir a les dades de { $domain }
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -76,6 +88,39 @@ webext-perms-host-description-too-many-sites =
         [one] Accedir a les dades en { $domainCount } altre domini
        *[other] Accedir a les dades en { $domainCount } altres dominis
     }
+# Variables:
+#   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., mozilla.org),
+#     $domain should be treated as plural (because it may also include all subdomains, e.g www.mozilla.org, ftp.mozilla.org).
+webext-perms-host-description-one-domain = Accedir a les dades dels llocs web dels dominis { $domain }
+# Permission string used for webextensions requesting access to 2 or more domains (and so $domainCount is expected to always
+# be >= 2, for webextensions requesting access to only one domain the `webext-perms-host-description-one-domain` string is
+# used instead).
+# Variables:
+#   $domainCount (Number): Integer indicating the number of websites domains for which this webextension is requesting permission
+#     (the list of domains will follow this string).
+webext-perms-host-description-multiple-domains =
+    { $domainCount ->
+       *[other] Accedir a les dades dels llocs web de { $domainCount } dominis
+    }
+
+## Strings for data collection permissions in the permission prompt.
+
+webext-perms-description-data-none = El desenvolupador diu que aquesta extensió no recopila cap dada.
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some = El desenvolupador diu que aquesta extensió recopila: { $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-update = El desenvolupador diu que aquesta extensió recopilarà: { $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-optional = El desenvolupador diu que aquesta extensió vol recopilar: { $permissions }
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection = { $extension } sol·licita paràmetres addicionals
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection-only = { $extension } sol·licita la recopilació de dades addicionals
 
 ## Headers used in the webextension permissions dialog for synthetic add-ons.
 ## The part of the string describing what privileges the extension gives should be consistent

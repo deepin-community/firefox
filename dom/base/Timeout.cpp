@@ -1,13 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "Timeout.h"
 
-#include "mozilla/dom/TimeoutManager.h"
 #include "GeckoProfiler.h"
+#include "mozilla/dom/TimeoutHandler.h"
+#include "mozilla/dom/TimeoutManager.h"
 
 namespace mozilla::dom {
 
@@ -25,10 +24,12 @@ Timeout::Timeout()
       mIsInterval(false) {
 }
 
+Timeout::~Timeout() { SetTimeoutContainer(nullptr); }
+
 NS_IMPL_CYCLE_COLLECTION_CLASS(Timeout)
 
 NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(Timeout)
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mWindow)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mGlobal)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mScriptHandler)
   if (tmp->isInList()) {
     tmp->remove();
@@ -36,13 +37,13 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(Timeout)
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(Timeout)
-  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mWindow)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mGlobal)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mScriptHandler)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 void Timeout::SetWhenOrTimeRemaining(const TimeStamp& aBaseTime,
                                      const TimeDuration& aDelay) {
-  MOZ_DIAGNOSTIC_ASSERT(mWindow);
+  MOZ_DIAGNOSTIC_ASSERT(mGlobal);
   mSubmitTime = aBaseTime;
 
   mSubmitTime = aBaseTime;
@@ -54,7 +55,7 @@ void Timeout::SetWhenOrTimeRemaining(const TimeStamp& aBaseTime,
   // the timeout (i.e., the interval itself).  This will be used to create a
   // new mWhen time when the window is thawed.  The end effect is that time does
   // not appear to pass for frozen windows.
-  if (mWindow->IsFrozen()) {
+  if (mGlobal->IsFrozen()) {
     mWhen = TimeStamp();
     mTimeRemaining = aDelay;
     return;
@@ -69,7 +70,7 @@ void Timeout::SetWhenOrTimeRemaining(const TimeStamp& aBaseTime,
 
 const TimeStamp& Timeout::When() const {
   MOZ_DIAGNOSTIC_ASSERT(!mWhen.IsNull());
-  // Note, mWindow->IsFrozen() can be true here.  The Freeze() method calls
+  // Note, mGlobal->IsFrozen() can be true here.  The Freeze() method calls
   // When() to calculate the delay to populate mTimeRemaining.
   return mWhen;
 }
@@ -78,7 +79,7 @@ const TimeStamp& Timeout::SubmitTime() const { return mSubmitTime; }
 
 const TimeDuration& Timeout::TimeRemaining() const {
   MOZ_DIAGNOSTIC_ASSERT(mWhen.IsNull());
-  // Note, mWindow->IsFrozen() can be false here.  The Thaw() method calls
+  // Note, mGlobal->IsFrozen() can be false here.  The Thaw() method calls
   // TimeRemaining() to calculate the new When() value.
   return mTimeRemaining;
 }

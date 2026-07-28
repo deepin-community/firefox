@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -158,6 +156,7 @@ enum class WebRenderCompositor : int8_t {
   D3D11,
   OPENGL,
   WAYLAND,
+  Unknown,
   LAST
 };
 
@@ -173,8 +172,6 @@ enum class TextureType : int8_t {
   EGLImage,
   Last
 };
-
-enum class BufferMode : int8_t { BUFFER_NONE, BUFFERED };
 
 enum class DrawRegionClip : int8_t { DRAW, NONE };
 
@@ -464,24 +461,22 @@ struct GpuProcessTextureId {
   };
 };
 
-// QueryId allocated in GPU process
-struct GpuProcessQueryId {
+// FencesHolderId allocated in GPU process
+struct CompositeProcessFencesHolderId {
   uint64_t mId = 0;
-  // Workaround for Bug 1910990.
-  bool mOnlyForOverlay = false;
 
-  static GpuProcessQueryId GetNext();
+  static CompositeProcessFencesHolderId GetNext();
 
   bool IsValid() const { return mId != 0; }
 
   // Allow explicit cast to a uint64_t for now
   explicit operator uint64_t() const { return mId; }
 
-  bool operator==(const GpuProcessQueryId& aOther) const {
+  bool operator==(const CompositeProcessFencesHolderId& aOther) const {
     return mId == aOther.mId;
   }
 
-  bool operator!=(const GpuProcessQueryId& aOther) const {
+  bool operator!=(const CompositeProcessFencesHolderId& aOther) const {
     return !(*this == aOther);
   }
 
@@ -490,7 +485,7 @@ struct GpuProcessQueryId {
   //   std::unordered_map<GpuProcessQueryId, ValueType,
   //   GpuProcessQueryId::HashFn> myMap;
   struct HashFn {
-    std::size_t operator()(const GpuProcessQueryId aKey) const {
+    std::size_t operator()(const CompositeProcessFencesHolderId aKey) const {
       return std::hash<uint64_t>{}(aKey.mId);
     }
   };

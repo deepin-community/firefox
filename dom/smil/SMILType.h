@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #ifndef DOM_SMIL_SMILTYPE_H_
 #define DOM_SMIL_SMILTYPE_H_
 
-#include "mozilla/Attributes.h"
 #include "nscore.h"
 
 namespace mozilla {
@@ -61,7 +58,7 @@ class SMILType {
    * @pre  aValue.IsNull()
    * @post aValue.mType == this
    */
-  virtual void Init(SMILValue& aValue) const = 0;
+  virtual void InitValue(SMILValue& aValue) const = 0;
 
   /**
    * Destroys any data associated with a value of this type.
@@ -69,7 +66,7 @@ class SMILType {
    * @pre  aValue.mType == this
    * @post aValue.IsNull()
    */
-  virtual void Destroy(SMILValue& aValue) const = 0;
+  virtual void DestroyValue(SMILValue& aValue) const = 0;
 
   /**
    * Assign this object the value of another. Think of this as the assignment

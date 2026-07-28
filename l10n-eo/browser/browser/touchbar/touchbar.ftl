@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Strings in this file are used to localize button titles displayed on the 
+# Strings in this file are used to localize button titles displayed on the
 # MacBook Touch Bar.
 back = Reen
 forward = Antaŭen
@@ -16,10 +16,9 @@ add-bookmark = Aldoni legosignon
 reader-view = Legila vido
 # Meant to match the string displayed in an empty URL bar.
 open-location = Serĉu ion aŭ tajpu adreson
-share = Kundividi
+share = Dividi
 close-window = Fermi fenestron
 open-sidebar = Flankaj strioj
-
 # This string describes shortcuts for search.
 search-popover = Ŝparvojoj serĉaj
 # Describes searches limited to a specific scope
@@ -33,6 +32,3 @@ search-history = Historio
 search-opentabs = Malfermitaj langetoj
 search-tags = Etikedoj
 search-titles = Titoloj
-
-##
-

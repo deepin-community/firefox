@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Penjelajahan Pribadi { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Meramban Privat { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Meramban Privat { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Meramban Privat { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Meramban Privat { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Meramban Privat
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Meramban Privat { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Meramban Privat
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Meramban Privat
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Meramban Privat
+       *[other] Meramban Privat { -brand-full-name }
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Penjelajahan Pribadi
+popups-infobar-dont-show-message2 =
+    .label = Jangan tampilkan pesan ini saat pop-up atau pengalihan pihak ketiga diblokir
+    .accesskey = d
+edit-popup-settings2 =
+    .label = Kelola pengaturan pop-up dan pengalihan pihak ketiga…
+    .accesskey = n
 
 ##
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Buka panel pesan
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Buka panel permintaan lokasi
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Kelola akses perangkat lokal untuk situs ini
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Kelola berbagi akses jaringan lokal Anda dengan situs ini
 urlbar-xr-notification-anchor =
     .tooltiptext = Buka panel perizinan realitas virtual
 urlbar-storage-access-anchor =
@@ -114,6 +193,24 @@ urlbar-result-menu-button =
     .title = Buka menu
 urlbar-result-menu-button-feedback = Umpan Balik
     .title = Buka menu
+urlbar-result-menu-learn-more2 = Pelajari lebih lanjut
+    .accesskey = P
+urlbar-result-menu-remove-from-history2 = Hapus dari riwayat
+    .accesskey = r
+urlbar-result-menu-tip-get-help2 = Dapatkan bantuan
+    .accesskey = b
+urlbar-result-menu-dismiss-suggestion2 = Abaikan saran ini
+    .accesskey = b
+urlbar-result-menu-manage-firefox-suggest2 = Kelola { -firefox-suggest-brand-name }
+    .accesskey = K
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location2 = Laporkan lokasi yang tidak akurat
+urlbar-result-menu-show-less-frequently2 = Tampilkan lebih jarang
+urlbar-result-menu-dont-show-weather-suggestions2 = Jangan tampilkan saran cuaca
 urlbar-result-menu-learn-more =
     .label = Pelajari lebih lanjut
     .accesskey = P
@@ -123,6 +220,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Dapatkan bantuan
     .accesskey = b
+urlbar-result-menu-dismiss-suggestion =
+    .label = Abaikan saran ini
+    .accesskey = b
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Pelajari lebih lanjut tentang { -firefox-suggest-brand-name }
+    .accesskey = l
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Kelola { -firefox-suggest-brand-name }
+    .accesskey = K
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Laporkan lokasi yang tidak akurat
+urlbar-result-menu-show-less-frequently =
+    .label = Tampilkan lebih jarang
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Jangan tampilkan saran cuaca
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Buka menu
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Terima kasih atas masukan Anda
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Terima kasih atas masukan Anda. Anda tidak akan melihat saran cuaca lagi.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +274,10 @@ urlbar-search-mode-actions = Aksi
 
 urlbar-geolocation-blocked =
     .tooltiptext = Anda telah memblokir informasi lokasi untuk situs web ini.
+urlbar-localhost-blocked =
+    .tooltiptext = Anda telah memblokir sambungan perangkat lokal untuk situs web ini.
+urlbar-local-network-blocked =
+    .tooltiptext = Anda telah memblokir koneksi jaringan lokal untuk situs web ini.
 urlbar-xr-blocked =
     .tooltiptext = Anda telah memblokir akses perangkat realitas virtual untuk situs web ini.
 urlbar-web-notifications-blocked =
@@ -160,6 +290,8 @@ urlbar-screen-blocked =
     .tooltiptext = Anda telah memblokir situs ini untuk berbagi layar Anda.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Anda telah memblokir penyimpanan tetap untuk situs web ini.
+urlbar-popup-blocked2 =
+    .tooltiptext = Anda telah memblokir pop-up dan pengalihan pihak ketiga untuk situs web ini.
 urlbar-popup-blocked =
     .tooltiptext = Anda telah memblokir pop-up untuk situs web ini.
 urlbar-autoplay-media-blocked =
@@ -178,6 +310,15 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Markahi laman ini ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = Tampilan belah
+    .aria-label = Tampilan belah
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = Hapus Riwayat Pencarian
+    .accesskey = s
 
 ## Page Action Context Menu
 
@@ -250,14 +391,21 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Tampilkan Pengaya
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = ekstensi, tema, pengaya
 quickactions-cmd-addons2 = pengaya
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Kelola markah
 quickactions-cmd-bookmarks = markah
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Bersihkan riwayat terakhir
+quickactions-cmd-clearrecenthistory = bersihkan riwayat terkini, riwayat
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Bersihkan Riwayat
 quickactions-cmd-clearhistory = bersihkan riwayat
@@ -266,9 +414,20 @@ quickactions-downloads2 = Tampilkan unduhan
 quickactions-cmd-downloads = unduhan
 # Opens about:addons page in the extensions section
 quickactions-extensions = Kelola ekstensi
+quickactions-cmd-extensions2 = ekstensi, pengaya
 quickactions-cmd-extensions = ekstensi
+# Opens Firefox View
+quickactions-firefoxview = Buka { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = buka { -firefoxview-brand-name }, { -firefoxview-brand-name }, buka tampilan, lihat
+# Opens SUMO home page
+quickactions-help = Bantuan { -brand-product-name }
+quickactions-cmd-help = bantuan, dukungan
 # Opens the devtools web inspector
 quickactions-inspector2 = Buka Perangkat Pengembang
+quickactions-cmd-inspector2 = inspector, inspektur, devtools, dev tools, perkakas pengembang
 quickactions-cmd-inspector = inspektur, perangkat pengembang
 # Opens about:logins
 quickactions-logins2 = Kelola sandi
@@ -281,7 +440,7 @@ quickactions-print2 = Cetak halaman
 quickactions-cmd-print = cetak
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Simpan laman sebagai PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, simpan halaman
 # Opens a new private browsing window
 quickactions-private2 = Buka jendela pribadi
 quickactions-cmd-private = penjelajahan pribadi
@@ -293,22 +452,37 @@ quickactions-restart = Mulai Ulang { -brand-short-name }
 quickactions-cmd-restart = mulai ulang
 # Opens the screenshot tool
 quickactions-screenshot3 = Ambil tangkapan layar
+quickactions-cmd-screenshot2 = tangkapan layar, ambil tangkapan layar
+# Opens about:translations
+quickactions-translate = Terjemahkan
+quickactions-cmd-translate = terjemahkan
 quickactions-cmd-screenshot = tangkapan layar
 # Opens about:preferences
 quickactions-settings2 = Kelola pengaturan
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = pengaturan, preferensi, opsi, kelola
 quickactions-cmd-settings = pengaturan, preferensi, pilihan
 # Opens about:addons page in the themes section
 quickactions-themes = Kelola tema
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = tema, pengaya
 quickactions-cmd-themes = tema;themes;
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = Perbarui { -brand-short-name }
 quickactions-cmd-update = versi baru
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Lihat Kode Sumber Laman
+quickactions-cmd-viewsource2 = lihat sumber, sumber, sumber laman
 quickactions-cmd-viewsource = lihat kode sumber, sumber
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Pelajari lebih lanjut tentang Tindakan Cepat
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Tekan tab untuk memilih:
 
 ## Bookmark Panel
 
@@ -491,6 +665,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Cari atau masukkan alamat
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Masukkan alamat
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -539,15 +717,18 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Ekstensi:
+urlbar-go-button2 =
+    .title = Pindah ke alamat di Bilah Lokasi
 urlbar-go-button =
     .tooltiptext = Pindah ke alamat di Bilah Lokasi
 urlbar-page-action-button =
     .tooltiptext = Tindakan laman
-urlbar-show-page-actions-button =
-    .tooltiptext = Tampilkan semua tindakan laman
+urlbar-revert-button =
+    .tooltiptext = Tampilkan alamat di Bilah Lokasi
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -570,6 +751,8 @@ urlbar-result-action-visit = Kunjungi
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Pindah ke Tab · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Grup tanpa nama
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Kunjungi dari papan klip
 # Directs a user to press the Tab key to perform a search with the specified
@@ -599,12 +782,195 @@ urlbar-result-action-copy-to-clipboard = Salin
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = tidak terdefinisi
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> di { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> di { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> di { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Disponsori
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Dapatkan data pasar saham langsung di bilah pencarian Anda
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Tampilkan pembaruan pasar dan lainnya dari mitra kami saat Anda membagikan data kuiri pencarian dengan { -vendor-short-name }. <a data-l10n-name="learn-more-link">Pelajari lebih lanjut</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Tampilkan saran
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Jangan sekarang
+urlbar-result-realtime-opt-in-dismiss = Tutup
+urlbar-result-realtime-opt-in-dismiss-all2 = Jangan tampilkan saran ini
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market2 = Jangan tampilkan saran pasar
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Jangan tampilkan saran ini
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Jangan tampilkan saran pasar
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Terima kasih atas tanggapan Anda. Anda tidak akan melihat saran pasar lagi.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = Saran pasar saham
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Terima kasih atas tanggapan Anda. Anda tidak akan melihat saran ini lagi.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown = { $name } · Dalam { $daysUntilStart } hari
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range = { $name } · Dimulai dalam { $daysUntilStart } hari
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing = { $name } · Berakhir dalam { $daysUntilEnd } hari
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Hari ini
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Berakhir hari ini
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Cari lewat { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Cari { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Cari dengan { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Pilih Mesin Pencari
+urlbar-searchmode-bookmarks =
+    .label = Markah
+urlbar-searchmode-tabs =
+    .label = Tab
+urlbar-searchmode-history =
+    .label = Riwayat
+urlbar-searchmode-actions =
+    .label = Aksi
+urlbar-searchmode-exit-button =
+    .tooltiptext = Tutup
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Kali ini, cari dengan:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Setelan Pencarian
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, pilih mesin pencari
+    .tooltiptext = { $engine }, pilih mesin pencari
+urlbar-searchmode-button-no-engine =
+    .label = Tidak ada pintasan yang dipilih, pilih pintasan
+    .tooltiptext = Tidak ada pintasan yang dipilih, pilih pintasan
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button3 =
+    .title = { $engine }, pilih mesin pencari
+urlbar-searchmode-button-no-engine2 =
+    .title = Tidak ada pintasan yang dipilih, pilih pintasan
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword2 =
+    .title = Pencarian kata kunci dinonaktifkan
+urlbar-searchmode-dropmarker2 =
+    .title = Pilih Mesin Pencari
+urlbar-searchmode-bookmarks2 = Markah
+urlbar-searchmode-tabs2 = Tab
+urlbar-searchmode-history2 = Riwayat
+urlbar-searchmode-actions2 = Aksi
+urlbar-searchmode-exit-button2 =
+    .title = Tutup
+urlbar-searchmode-default2 =
+    .title = Mesin pencari baku
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = Tambahkan "{ $engineName }"
+    .title = Tambahkan mesin pencari "{ $engineName }"
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-one-off-header = Kali ini, cari dengan:
+urlbar-searchmode-popup-search-settings-panelitem = Setelan Pencarian
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -614,6 +980,12 @@ urlbar-result-action-search-bookmarks = Cari Markah
 urlbar-result-action-search-history = Cari di Riwayat
 urlbar-result-action-search-tabs = Cari Tab
 urlbar-result-action-search-actions = Cari Tindakan
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Beralih ke { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Buka { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -640,6 +1012,12 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Ngetren di { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show2 = Jangan tampilkan penelusuran ngetren
+    .accesskey = J
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Disponsori
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = Jangan tampilkan penelusuran ngetren
@@ -779,7 +1157,7 @@ repair-text-encoding-button =
     .label = Memperbaiki pengodean teks
     .tooltiptext = Menebak pengkodean teks yang benar dari isi halaman
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -830,12 +1208,19 @@ eme-notifications-drm-content-playing-dismiss-accesskey = T
 
 panel-save-update-username = Nama Pengguna
 panel-save-update-password = Kata Sandi
+panel-save-update-username-2 =
+    .label = Nama Pengguna
+panel-save-update-password-2 =
+    .label = Kata Sandi
 
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
     .label = Lainnya…
+menu-share-copy-link =
+    .label = Salin Tautan
+    .accesskey = S
 ui-tour-info-panel-close =
     .tooltiptext = Tutup
 
@@ -848,6 +1233,9 @@ popups-infobar-allow =
 popups-infobar-block =
     .label = Blokir pop-up untuk { $uriHost }
     .accesskey = i
+popups-infobar-allow2 =
+    .label = Izinkan pop-up dan pengalihan pihak ketiga untuk { $uriHost }
+    .accesskey = p
 
 ##
 
@@ -883,6 +1271,8 @@ navbar-accessible =
     .aria-label = Navigasi
 navbar-downloads =
     .label = Unduhan
+navbar-overflow-2 =
+    .tooltiptext = Alat lainnya
 navbar-overflow =
     .tooltiptext = Alat lainnya…
 # Variables:
@@ -909,6 +1299,10 @@ tabs-toolbar-list-all-tabs =
     .label = Daftar tab
     .tooltiptext = Daftar tab
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Jatuhkan tab di sini untuk menyematkan
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -927,6 +1321,9 @@ data-reporting-notification-button =
     .accesskey = P
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Penjelajahan pribadi
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Penjelajahan pribadi
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -935,7 +1332,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Perlindungan data
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Organisasi Anda menggunakan { $agentName } untuk melindungi dari kehilangan data. <a data-l10n-name="info">Pelajari lebih lanjut</a>
+content-analysis-panel-text-styled = Organisasi Anda menggunakan <b>{ $agentName }</b> untuk melindungi dari kehilangan data. <a data-l10n-name="info">Pelajari lebih lanjut</a>
 
 ## Unified extensions (toolbar) button
 
@@ -958,6 +1355,15 @@ unified-extensions-button-permissions-needed =
 unified-extensions-button-quarantined =
     .label = Ekstensi
     .tooltiptext = Ekstensi
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Ekstensi
+    .tooltiptext =
+        Ekstensi
+        Beberapa ekstensi telah dinonaktifkan
 
 ## Private browsing reset button
 
@@ -992,26 +1398,44 @@ firefox-relay-offer-why-to-use-relay = Topeng aman dan mudah digunakan dari kami
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Semua surel yang dikirim ke topeng surel Anda akan diteruskan ke <strong>{ $useremail }</strong> (kecuali jika Anda memutuskan untuk memblokir mereka).
 firefox-relay-offer-legal-notice = Dengan mengklik “Gunakan masker surel”, Anda setuju dengan <label data-l10n-name="tos-url">Ketentuan Layanan</label> dan <label data-l10n-name="privacy-url">Pernyataan Privasi</label>.
+firefox-relay-offer-legal-notice-1 = Dengan mendaftar dan membuat topeng surel, Anda menyetujui <label data-l10n-name="tos-url">Ketentuan Layanan</label> dan <label data-l10n-name="privacy-url">Pernyataan Privasi</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Belum Diverifikasi)
 popup-notification-xpinstall-prompt-learn-more = Pelajari lebih lanjut tentang memasang pengaya dengan aman
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Jalankan di Jendela Pribadi
-    .accesskey = P
+popup-notification-xpinstall-prompt-block-url = Lihat detail
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Izinkan ekstensi berjalan di jendela pribadi
+    .accesskey = p
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Bagikan data teknis dan interaksi dengan pengembang ekstensi
+    .accesskey = s
 
 ## Pop-up warning
 
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-message = { -brand-short-name } telah mencegah situs ini untuk membuka { $popupCount } jendela pop-up.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } mencegah situs ini mengalihkan.
+        [1] { -brand-short-name } mencegah situs ini membuka jendela pop-up dan mengalihkan.
+       *[other] { -brand-short-name } mencegah situs ini membuka { $popupCount } jendela pop-up  dan mengalihkan.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-exceeded-message = { -brand-short-name } mencegah situs ini membuka lebih dari { $popupCount } jendela pop-up.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message = { -brand-short-name } mencegah situs ini membuka lebih dari { $popupCount } jendela pop-up dan mengalihkan.
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1027,6 +1451,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Tampilkan “{ $popupURI }”
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = Tampilkan “{ $redirectURI }”
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1048,3 +1476,88 @@ file-picker-crashed-save-nowhere = Dialog berkas Windows mogok. Tidak ada folder
 file-picker-crashed-show-in-folder =
     .label = Tampilkan di Folder
     .accessKey = F
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Selesaikan penyiapan
+onboarding-aw-finish-setup-button =
+    .label = Selesaikan penyiapan
+    .tooltiptext = Selesaikan menyiapkan { -brand-short-name }
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Perlindungan Pelacakan yang Ditingkatkan aktif
+trustpanel-etp-label-disabled = Perlindungan Pelacakan yang Ditingkatkan tidak aktif
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Perlindungan Pelacakan yang Ditingkatkan: Aktif untuk { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Perlindungan Pelacakan yang Ditingkatkan: Nonaktif untuk { $host }
+trustpanel-etp-description-enabled = Jika ada yang tampak rusak di situs ini, coba matikan perlindungan.
+trustpanel-etp-description-disabled = { -brand-product-name } berpikir perusahaan harus lebih sedikit mengikuti Anda. Kami memblokir sebanyak mungkin pelacak saat Anda mengaktifkan perlindungan.
+trustpanel-connection-label-secure = Sambungan aman
+trustpanel-connection-label-insecure = Sambungan tidak aman
+trustpanel-header-enabled = { -brand-product-name } berjaga-jaga
+trustpanel-description-enabled2 = Anda terlindungi. Jika kami menemukan sesuatu, kami akan memberi tahu Anda
+trustpanel-header-enabled-insecure = Hati-hati di situs ini
+trustpanel-description-enabled-insecure = { -brand-product-name } melihat sesuatu yang mencurigakan.
+trustpanel-header-disabled = Anda mematikan perlindungan
+trustpanel-description-disabled = { -brand-product-name } sedang tidak bertugas. Kami menyarankan untuk mengaktifkan kembali perlindungan.
+trustpanel-clear-cookies-button = Bersihkan kuki dan data situs
+trustpanel-privacy-link = Pengaturan Privasi
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Bersihkan kuki dan data situs untuk { $host }
+trustpanel-clear-cookies-description = Menghapus kuki dan data situs mungkin mengeluarkan Anda dari situs web dan menghapus keranjang belanja.
+trustpanel-clear-cookies-subview-button-clear = Bersihkan
+trustpanel-clear-cookies-subview-button-cancel = Batal
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Perlindungan sambungan untuk { $host }
+trustpanel-siteinformation-morelink = Informasi situs lebih lanjut
+trustpanel-blocker-see-all = Lihat Semua
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Perlindungan pelacakan untuk { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Tidak Aman
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-description = { -brand-product-name } berpikir perusahaan harus lebih sedikit mengikuti Anda. Jadi kami memblokir sebanyak yang kami bisa.
+trustpanel-blocked-header = { -brand-product-name } memblokir hal-hal berikut untuk Anda:
+trustpanel-tracking-header = { -brand-product-name } mengizinkan hal ini agar situs tidak rusak:
+trustpanel-tracking-description = Tanpa pelacak, beberapa tombol, formulir, dan bidang info masuk mungkin tidak berfungsi.
+trustpanel-insecure-section-header = Sambungan Anda tidak aman
+trustpanel-insecure-description = Data yang Anda kirim ke situs ini tidak dienkripsi. Itu bisa dilihat, dicuri, atau diubah.
+trustpanel-list-label-tracking-cookies = { $count } Kuki pelacak lintas situs
+trustpanel-list-label-tracking-content = Melacak konten
+trustpanel-list-label-fingerprinter = { $count } Penyidik Jari
+trustpanel-list-label-social-tracking = { $count } Pelacak media sosial
+trustpanel-list-label-cryptominer = { $count } Penambang Mata Uang Kripto
+trustpanel-social-tracking-blocking-tab-header = { -brand-product-name } memblokir { $count } pelacak media sosial
+trustpanel-social-tracking-not-blocking-tab-header = { -brand-product-name } mengizinkan { $count } pelacak media sosial
+trustpanel-tracking-cookies-blocking-tab-header = { -brand-product-name } memblokir { $count } kuki pelacakan lintas situs
+trustpanel-tracking-cookies-not-blocking-tab-header = { -brand-product-name } mengizinkan { $count } kuki pelacakan lintas situs
+trustpanel-tracking-content-blocking-tab-header = { -brand-product-name } memblokir { $count } pelacak
+trustpanel-tracking-content-not-blocking-tab-header = { -brand-product-name } mengizinkan { $count } pelacak
+trustpanel-tracking-content-tab-list-header = Situs berikut mencoba melacak Anda:
+trustpanel-fingerprinter-blocking-tab-header = { -brand-product-name } memblokir { $count } penyidik jari
+trustpanel-fingerprinter-not-blocking-tab-header = { -brand-product-name } mengizinkan { $count } penyidik jari
+trustpanel-fingerprinter-list-header = Situs-situs berikut mencoba menyidik jari Anda:
+trustpanel-cryptominer-blocking-tab-header = { -brand-product-name } memblokir { $count } penambang mata uang kripto
+trustpanel-cryptominer-not-blocking-tab-header = { -brand-product-name } mengizinkan { $count } penambang mata uang kripto
+trustpanel-cryptominer-tab-list-header = Situs-situs berikut mencoba untuk melakukan penambangan kripto:
+trustpanel-blocker-section-header2 = <span data-l10n-name="count">{ $count }</span> Pelacak diblokir di situs ini

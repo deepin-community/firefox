@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -42,7 +41,7 @@ function checkCertNotInNameSpace(cert) {
     certdb,
     cert,
     SEC_ERROR_CERT_NOT_IN_NAME_SPACE,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 }
 
@@ -51,7 +50,7 @@ function checkCertInNameSpace(cert) {
     certdb,
     cert,
     PRErrorCodeSuccess,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 }
 
@@ -68,4 +67,13 @@ add_task(async function () {
   loadCertWithTrust("dciss", "CTu,,");
   await checkCertInNameSpace(certFromFile("NameConstraints.dcissallowed"));
   await checkCertNotInNameSpace(certFromFile("NameConstraints.dcissblocked"));
+});
+
+add_task(async function () {
+  // Test that a wildcard SAN (*.example.com) is rejected when an intermediate
+  // has an excluded name constraint for bar.example.com, since the wildcard
+  // could match the excluded name.
+  loadCertWithTrust("ca-no-constraints", "CTu,,");
+  loadCertWithTrust("int-bar-example-com-excluded", ",,");
+  await checkCertNotInNameSpace(certFromFile("ee-wildcard-example-com"));
 });

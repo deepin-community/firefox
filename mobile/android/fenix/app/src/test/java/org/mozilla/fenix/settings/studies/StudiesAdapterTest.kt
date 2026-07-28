@@ -26,12 +26,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.experiments.nimbus.internal.EnrolledExperiment
 import org.mozilla.fenix.R
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.settings.studies.CustomViewHolder.SectionViewHolder
 import org.mozilla.fenix.settings.studies.CustomViewHolder.StudyViewHolder
 import org.mozilla.fenix.settings.studies.StudiesAdapter.Section
+import org.robolectric.RobolectricTestRunner
+import kotlin.test.assertIs
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class StudiesAdapterTest {
     @RelaxedMockK
     private lateinit var delegate: StudiesAdapterDelegate
@@ -81,8 +82,6 @@ class StudiesAdapterTest {
 
         adapter = spyk(StudiesAdapter(delegate, listOf(study), false))
 
-        every { adapter.showDeleteDialog(any(), any()) } returns mockk()
-
         adapter.bindStudy(holder, study)
 
         verify {
@@ -93,7 +92,7 @@ class StudiesAdapterTest {
         deleteButton.performClick()
 
         verify {
-            adapter.showDeleteDialog(any(), any())
+            delegate.onRemoveButtonClicked(any())
         }
     }
 
@@ -130,8 +129,8 @@ class StudiesAdapterTest {
         val list = adapter.createListWithSections(listOf(study))
 
         assertEquals(2, list.size)
-        assertTrue(list[0] is Section)
-        assertTrue(list[1] is EnrolledExperiment)
+        assertIs<Section>(list[0])
+        assertIs<EnrolledExperiment>(list[1])
     }
 
     @Test
@@ -149,7 +148,7 @@ class StudiesAdapterTest {
         val list = adapter.createListWithSections(listOf(study))
 
         assertEquals(2, list.size)
-        assertTrue(list[0] is Section)
-        assertTrue(list[1] is EnrolledExperiment)
+        assertIs<Section>(list[0])
+        assertIs<EnrolledExperiment>(list[1])
     }
 }

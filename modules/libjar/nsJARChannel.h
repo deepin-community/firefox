@@ -1,12 +1,10 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsJARChannel_h__
-#define nsJARChannel_h__
+#ifndef nsJARChannel_h_
+#define nsJARChannel_h_
 
-#include "mozilla/net/MemoryDownloader.h"
 #include "nsIJARChannel.h"
 #include "nsIJARURI.h"
 #include "nsIEventTarget.h"
@@ -72,8 +70,8 @@ class nsJARChannel final : public nsIJARChannel,
 
   nsCString mSpec;
 
-  bool mOpened;
-  mozilla::Atomic<bool, mozilla::ReleaseAcquire> mCanceled;
+  bool mOpened = false;
+  mozilla::Atomic<bool, mozilla::ReleaseAcquire> mCanceled{false};
   bool mOnDataCalled = false;
 
   RefPtr<nsJARProtocolHandler> mJarHandler;
@@ -87,16 +85,15 @@ class nsJARChannel final : public nsIJARChannel,
   nsCOMPtr<nsIStreamListener> mListener;
   nsCString mContentType;
   nsCString mContentCharset;
-  int64_t mContentLength;
-  uint32_t mLoadFlags;
-  mozilla::Atomic<nsresult, mozilla::ReleaseAcquire> mStatus;
-  bool mIsPending;  // the AsyncOpen is in progress.
-
-  bool mEnableOMT;
+  int64_t mContentLength = -1;
+  uint32_t mLoadFlags = LOAD_NORMAL;
+  mozilla::Atomic<nsresult, mozilla::ReleaseAcquire> mStatus{NS_OK};
+  bool mIsPending = false;  // the AsyncOpen is in progress.
+  bool mEnableOMT = true;
   // |Cancel()|, |Suspend()|, and |Resume()| might be called during AsyncOpen.
   struct {
-    bool isCanceled;
-    mozilla::Atomic<uint32_t> suspendCount;
+    bool isCanceled = false;
+    mozilla::Atomic<uint32_t> suspendCount{0};
   } mPendingEvent;
 
   nsCOMPtr<nsIInputStreamPump> mPump;
@@ -114,4 +111,4 @@ class nsJARChannel final : public nsIJARChannel,
   nsCOMPtr<nsIEventTarget> mWorker;
 };
 
-#endif  // nsJARChannel_h__
+#endif  // nsJARChannel_h_

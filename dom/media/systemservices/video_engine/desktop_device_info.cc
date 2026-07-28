@@ -3,6 +3,12 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "desktop_device_info.h"
+
+#include <cstddef>
+#include <cstring>
+#include <map>
+#include <memory>
+
 #include "VideoEngine.h"
 #include "modules/desktop_capture/desktop_capture_options.h"
 #include "modules/desktop_capture/desktop_capturer.h"
@@ -10,13 +16,7 @@
 #include "mozilla/SyncRunnable.h"
 #include "nsIBrowserWindowTracker.h"
 #include "nsImportModule.h"
-
-#include <cstddef>
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <map>
-#include <memory>
+#include "nsPrintfCString.h"
 
 using mozilla::camera::CaptureDeviceType;
 
@@ -107,7 +107,8 @@ static std::map<intptr_t, TabSource> InitializeTabList() {
       int64_t browserId;
       browserTab->GetBrowserId(&browserId);
 
-      auto result = tabList.try_emplace(static_cast<intptr_t>(browserId));
+      auto result =
+          tabList.try_emplace(mozilla::AssertedCast<intptr_t>(browserId));
       auto& [iter, inserted] = result;
       if (!inserted) {
         MOZ_ASSERT_UNREACHABLE("Duplicate browser ids");
@@ -133,46 +134,19 @@ void DesktopDeviceInfoImpl<Type, Device>::Refresh() {
 
   mDeviceList.clear();
 
-#if defined(WEBRTC_USE_PIPEWIRE)
-  if (mOptions.allow_pipewire() &&
-      webrtc::DesktopCapturer::IsRunningUnderWayland()) {
-    // Wayland is special and we will not get any information about screens or
-    // windows without going through xdg-desktop-portal. We add a single screen
-    // placeholder here.
-    if constexpr (Type == CaptureDeviceType::Screen) {
-      // With PipeWire we can't select which system resource is shared so
-      // we don't create a window/screen list. Instead we place these constants
-      // as window name/id so frontend code can identify PipeWire backend
-      // and does not try to create screen/window preview.
-      constexpr ScreenId PIPEWIRE_ID = 0xaffffff;
-      constexpr const char* PIPEWIRE_NAME = "####_PIPEWIRE_PORTAL_####";
-
-      auto result = mDeviceList.try_emplace(PIPEWIRE_ID);
-      auto& [iter, inserted] = result;
-      if (!inserted) {
-        MOZ_CRASH("Device list was supposed to be empty");
-      }
-      auto& [key, device] = *iter;
-
-      device.setScreenId(PIPEWIRE_ID);
-      device.setUniqueId(nsPrintfCString("%" PRIdPTR, PIPEWIRE_ID));
-      device.setName(nsCString(PIPEWIRE_NAME));
-      return;
-    } else if constexpr (Type == CaptureDeviceType::Window) {
-      // Wayland is special and we will not get any information about windows
-      // without going through xdg-desktop-portal. We will already have
-      // a screen placeholder so there is no reason to build windows list.
-      return;
-    }
-  }
-#endif
-
   std::unique_ptr<DesktopCapturer> cap;
   if constexpr (Type == CaptureDeviceType::Screen ||
                 Type == CaptureDeviceType::Window) {
+    cap = DesktopCapturer::CreateGenericCapturer(mOptions);
     if constexpr (Type == CaptureDeviceType::Screen) {
-      cap = DesktopCapturer::CreateScreenCapturer(mOptions);
+      if (!cap) {
+        cap = DesktopCapturer::CreateScreenCapturer(mOptions);
+      }
     } else if constexpr (Type == CaptureDeviceType::Window) {
+      if (cap) {
+        // We only use the screen side of a generic capturer for enumeration.
+        return;
+      }
       cap = DesktopCapturer::CreateWindowCapturer(mOptions);
     }
 
@@ -236,8 +210,8 @@ std::unique_ptr<TabCaptureInfo> CreateTabCaptureInfo() {
 template <typename Source>
 class DesktopCaptureDeviceInfo final : public VideoCaptureModule::DeviceInfo {
  public:
-  DesktopCaptureDeviceInfo(int32_t aId,
-                           std::unique_ptr<CaptureInfo<Source>>&& aSourceInfo);
+  explicit DesktopCaptureDeviceInfo(
+      std::unique_ptr<CaptureInfo<Source>>&& aSourceInfo);
 
   int32_t Refresh() override;
 
@@ -266,7 +240,6 @@ class DesktopCaptureDeviceInfo final : public VideoCaptureModule::DeviceInfo {
                          VideoRotation& aOrientation) override;
 
  protected:
-  int32_t mId;
   std::unique_ptr<CaptureInfo<Source>> mDeviceInfo;
 };
 
@@ -275,8 +248,8 @@ using TabDeviceInfo = DesktopCaptureDeviceInfo<TabSource>;
 
 template <typename Source>
 DesktopCaptureDeviceInfo<Source>::DesktopCaptureDeviceInfo(
-    int32_t aId, std::unique_ptr<CaptureInfo<Source>>&& aSourceInfo)
-    : mId(aId), mDeviceInfo(std::move(aSourceInfo)) {}
+    std::unique_ptr<CaptureInfo<Source>>&& aSourceInfo)
+    : mDeviceInfo(std::move(aSourceInfo)) {}
 
 template <typename Source>
 int32_t DesktopCaptureDeviceInfo<Source>::Refresh() {
@@ -402,12 +375,12 @@ int32_t DesktopCaptureDeviceInfo<Source>::GetOrientation(
 }
 
 std::shared_ptr<VideoCaptureModule::DeviceInfo> CreateDesktopDeviceInfo(
-    int32_t aId, std::unique_ptr<DesktopCaptureInfo>&& aInfo) {
-  return std::make_shared<DesktopDeviceInfo>(aId, std::move(aInfo));
+    std::unique_ptr<DesktopCaptureInfo>&& aInfo) {
+  return std::make_shared<DesktopDeviceInfo>(std::move(aInfo));
 }
 
 std::shared_ptr<VideoCaptureModule::DeviceInfo> CreateTabDeviceInfo(
-    int32_t aId, std::unique_ptr<TabCaptureInfo>&& aInfo) {
-  return std::make_shared<TabDeviceInfo>(aId, std::move(aInfo));
+    std::unique_ptr<TabCaptureInfo>&& aInfo) {
+  return std::make_shared<TabDeviceInfo>(std::move(aInfo));
 }
 }  // namespace webrtc

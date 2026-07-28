@@ -25,7 +25,6 @@ webext-perms-add =
 webext-perms-cancel =
     .label = Loobu
     .accesskey = L
-
 webext-perms-sideload-text = Mingi teine rakendus sinu arvutis paigaldas lisa, mis võib mõjutada sinu brauseri käitumist. Palun vaata üle selle lisa õiguste nõue ja vali kas Luba või Loobu (et jätta see keelatud olekusse).
 webext-perms-sideload-text-no-perms = Mingi teine rakendus sinu arvutis paigaldas lisa, mis võib mõjutada sinu brauseri käitumist. Palun vali kas Luba või Loobu (et jätta see keelatud olekusse).
 webext-perms-sideload-enable =
@@ -34,28 +33,23 @@ webext-perms-sideload-enable =
 webext-perms-sideload-cancel =
     .label = Loobu
     .accesskey = o
-
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
 webext-perms-update-text = Laiendus { $extension } on uuendatud. Uuendatud versiooni paigaldamiseks pead nõustuma uute õigustega. Kui valid “Loobu”, siis säilitatakse lisa praegusel kujul. Sel laiendusel on järgmised õigused:
 webext-perms-update-accept =
     .label = Uuenda
     .accesskey = U
-
-webext-perms-optional-perms-list-intro = Nõutavad õigused:
+webext-perms-optional-perms-list-intro = Nõutud õigused:
 webext-perms-optional-perms-allow =
     .label = Luba
     .accesskey = L
 webext-perms-optional-perms-deny =
     .label = Keeldu
     .accesskey = K
-
 webext-perms-host-description-all-urls = ligipääs kõigi saitide salvestatud andmetele
-
 # Variables:
 #   $domain (String): will be replaced by the DNS domain for which a webextension is requesting access (e.g., mozilla.org)
 webext-perms-host-description-wildcard = ligipääs aadressil { $domain } töötavate saitide andmetele
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -67,7 +61,6 @@ webext-perms-host-description-too-many-wildcards =
 # Variables:
 #   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., www.mozilla.org)
 webext-perms-host-description-one-site = ligipääs saidi { $domain } andmetele
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -76,17 +69,6 @@ webext-perms-host-description-too-many-sites =
         [one] ligipääs veel ühe saidi andmetele
        *[other] ligipääs veel { $domainCount } saidi andmetele
     }
-
-## Headers used in the webextension permissions dialog for synthetic add-ons.
-## The part of the string describing what privileges the extension gives should be consistent
-## with the value of webext-site-perms-description-gated-perms-{sitePermission}.
-## Note, this string will be used as raw markup. Avoid characters like <, >, &
-## Variables:
-##   $hostname (String): the hostname of the site the add-on is being installed from.
-
-
-##
-
 
 ## Headers used in the webextension permissions dialog.
 ## Note: This string will be used as raw markup. Avoid characters like <, >, &

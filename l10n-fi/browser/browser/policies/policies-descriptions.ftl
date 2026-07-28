@@ -11,6 +11,7 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = Aseta käytäntöjä, joita WebExtensionit voivat käyttää chrome.storage.managed-objektin kautta.
+policy-AIControls = Määritä tekoälysäätimet.
 policy-AllowedDomainsForApps = Määritä verkkotunnukset, joilla on pääsy Google Workspaceen.
 policy-AllowFileSelectionDialogs = Salli tiedostojen valintaikkunat.
 policy-AppAutoUpdate = Käytä tai poista käytöstä sovelluksen automaattiset päivitykset.
@@ -21,6 +22,7 @@ policy-AutofillAddressEnabled = Ota osoitteiden automaattinen täyttö käyttö�
 policy-AutofillCreditCardEnabled = Ota maksutapojen automaattinen täyttö käyttöön.
 policy-AutoLaunchProtocolsFromOrigins = Määritä lista ulkoisista yhteyskäytännöistä, joita voi käyttää määrätyistä lähteistä kysymättä lupaa käyttäjältä.
 policy-BackgroundAppUpdate2 = Ota käyttöön tai poista käytöstä taustalla suoritettavien päivitysten toiminnallisuus.
+policy-Backup = Poista profiilitietojen varmuuskopiointi tai palautus käytöstä.
 policy-BlockAboutAddons = Estä pääsy lisäosien hallintaan (about:addons).
 policy-BlockAboutConfig = Estä pääsy about:config-sivulle.
 policy-BlockAboutProfiles = Estä pääsy about:profiles-sivulle.
@@ -35,6 +37,7 @@ policy-Containers = Aseta eristystiloihin liittyvät käytännöt.
 policy-DisableAccounts = Poista käytöstä tilipohjaiset palvelut, mukaan lukien synkronointi.
 policy-DisabledCiphers = Poista salausalgoritmeja käytöstä.
 policy-DefaultDownloadDirectory = Aseta oletuslatauskansio.
+policy-DefaultSerialGuardSetting = Hallitse Serial API:n käyttöä.
 policy-DisableAppUpdate = Estä selainta päivittymästä.
 policy-DisableBuiltinPDFViewer = Poista käytöstä PDF.js, { -brand-short-name }in sisäänrakennettu PDF-katselin.
 policy-DisableDefaultBrowserAgent = Estä oletusselainagenttia tekemästä mitään. Tällä on vaikutusta vain Windowsissa, koska agenttia ei ole muille ympäristöille.
@@ -55,6 +58,8 @@ policy-DisablePocket2 = Poista käytöstä ominaisuus, jolla verkkosivuja voi ta
 policy-DisablePrivateBrowsing = Poista yksityinen selaus käytöstä.
 policy-DisableProfileImport = Poista käytöstä valikon komento, jolla tiedot voi tuoda toisesta selaimesta.
 policy-DisableProfileRefresh = Poista käytöstä about:support-sivulla oleva Palauta { -brand-short-name } -painike.
+policy-DisableRemoteImprovements = Estä { -brand-short-name }ia ottamasta käyttöön suorituskykyyn, vakauteen ja ominaisuuksiin liittyviä muutoksia päivitysten välillä.
+policy-DisableRemoteSettingsAndAcceptSecurityConsequences = Poista etäasetukset käytöstä.
 policy-DisableSafeMode = Poista käytöstä ominaisuus, jolla selaimen voi käynnistää vikasietotilassa. Huomaa: Vaihto-näppäimen käyttö vikasietotilaan käynnistymiseen voidaan poistaa käytöstä Windowsissa vain käyttäen ryhmäkäytäntöä.
 policy-DisableSecurityBypass = Estä käyttäjää ohittamasta tiettyjä tietoturvavaroituksia.
 policy-DisableSetAsDesktopBackground = Poista käytöstä kuville tarkoitettu valikon komento Aseta työpöydän taustakuvaksi.
@@ -79,13 +84,16 @@ policy-ExtensionSettings = Hallitse kaikkia laajennusten asennukseen liittyviä 
 policy-ExtensionUpdate = Ota käyttöön tai poista käytöstä laajennusten automaattipäivitykset.
 policy-FirefoxHome2 = Määritä { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Määritä { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Määritä generatiivisen tekoälyn ominaisuudet.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Pakota suora intranet-sivustonavigointi internethaun sijaan, kun yksittäisiä sanoja kirjoitetaan osoitepalkkiin.
 policy-Handlers = Määritä oletussovelluskäsittelijät.
 policy-HardwareAcceleration = Jos epätosi, poista laitteistokiihdytys käytöstä.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Aseta ja valinnaisesti lukitse aloitussivu.
+policy-HttpAllowlist = Alkuperät, joita ei päivitetä HTTPS:ään.
 policy-HttpsOnlyMode = Salli, että "Vain HTTPS"-tila on mahdollista ottaa käyttöön.
 policy-InstallAddonsPermission = Salli tiettyjen sivustojen asentaa lisäosia.
+policy-IPProtectionAvailable = Estä sisäänrakennetun VPN:n olevan saatavilla käyttäjille.
 policy-LegacyProfiles = Poista käytöstä ominaisuus, joka pakottaa erillisen profiilin kullekin asennukselle
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
@@ -96,6 +104,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Palaa vanhaan SameSite
 ##
 
 policy-LocalFileLinks = Salli tiettyjen sivustojen linkittää paikallisiin tiedostoihin.
+policy-LocalNetworkAccess = Ota käyttöön tai poista käytöstä paikallisverkon käyttöoikeustarkistukset.
 policy-ManagedBookmarks = Määrittää listan järjestelmänvalvojan hallinnoimista kirjanmerkeistä, joita käyttäjä ei voi muuttaa.
 policy-ManualAppUpdateOnly = Salli vain manuaaliset päivitykset, älä ilmoita käyttäjälle päivityksistä.
 policy-PrimaryPassword = Vaadi tai estä pääsalasanan käyttö.
@@ -116,11 +125,13 @@ policy-PostQuantumKeyAgreementEnabled = Ota käyttöön kvanttiturvallinen avain
 policy-PDFjs = Poista käytöstä tai määritä PDF.js, { -brand-short-name }in sisäänrakennettu PDF-katselin.
 policy-Permissions2 = Aseta kameran, mikrofonin, sijainnin, ilmoitusten ja automaattisen toiston käyttöoikeuksien asetukset.
 policy-PictureInPicture = Ota käyttöön tai poista käytöstä Kuva kuvassa -ominaisuus.
+policy-PopupBlocking2 = Salli tiettyjen verkkosivustojen näyttää ponnahdusikkunoita ja kolmansien osapuolten kehysten ohjata uudelleen.
 policy-PopupBlocking = Salli tiettyjen sivustojen näyttää ponnahdusikkunoita oletusarvoisesti.
 policy-Preferences = Aseta ja lukitse arvo asetusten osajoukolle.
 policy-PrivateBrowsingModeAvailability = Aseta yksityisen selaustilan saatavuus.
 policy-PromptForDownloadLocation = Kysy ladattaessa minne tiedostot tallennetaan.
 policy-Proxy = Määritä välityspalvelimen asetukset.
+policy-RelaunchRequired = Edellytä, että { -brand-short-name } käynnistetään uudelleen uudelleen tietyn ajan kuluessa, ja ilmoita käyttäjälle tulevasta uudelleenkäynnistyksestä.
 policy-RequestedLocales = Aseta pyydetyt sovelluksen kielet suosituimmuusjärjestyksessä.
 policy-SanitizeOnShutdown2 = Tyhjennä selaustiedot sammutuksen yhteydessä.
 policy-SearchBar = Aseta hakupalkin oletussijainti. Käyttäjä voi silti vaihtaa sitä.
@@ -129,6 +140,9 @@ policy-SearchSuggestEnabled = Ota käyttöön tai poista käytöstä hakuehdotuk
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Lisää tai poista PKCS #11 -moduuleja.
 policy-ShowHomeButton = Näytä kotipainike työkalupalkissa.
+policy-SitePolicies = Sivustokohtaiset käytännöt.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Älä näytä käyttöehtoja ja tietosuojakäytöntöä käynnistyksen yhteydessä. Vakuutat, että hyväksyt käyttöehdot ja sinulla on valtuudet hyväksyä käyttöehdot kaikkien niiden henkilöiden puolesta, joille annat pääsyn tähän selaimeen.
 policy-SSLVersionMax = Aseta SSL:n enimmäisversio.
 policy-SSLVersionMin = Aseta SSL:n vähimmäisversio.
 policy-StartDownloadsInTempDirectory = Pakota lataukset alkamaan paikallisesta väliaikaisesta sijainnista oletusarvoisen latauskansion sijaan.
@@ -136,6 +150,11 @@ policy-SupportMenu = Lisää Ohje-valikkoon oma valikkokohta tukea varten.
 policy-TranslateEnabled = Ota käyttöön verkkosivun käännös tai poista se käytöstä.
 policy-UserMessaging = Älä näytä tiettyjä viestejä käyttäjälle.
 policy-UseSystemPrintDialog = Tulosta käyttäen järjestelmän tulostusikkunaa.
+policy-VisualSearchEnabled = Ota visuaalinen haku käyttöön tai poista se käytöstä.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Estä sivustojen avaaminen. Katso ohjeista lisätietoja käyttötavasta.
 policy-Windows10SSO = Salli Windowsin kertakirjautuminen Microsoft-, työ- ja koulutileille.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Salli kertakirjautuminen Microsoft Entra -tileille.
+# Do not translate "XSLTProcessor" as it is the name of an API interface.
+policy-XSLTEnabled = Ota käyttöön tai poista käytöstä XSLTProcessor JavaScript API:n ja XSLT-käsittelykäskyn tuki.

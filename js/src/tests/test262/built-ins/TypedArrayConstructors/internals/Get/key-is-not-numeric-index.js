@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -20,8 +19,8 @@ features: [align-detached-buffer-semantics-with-web-reality, TypedArray]
 
 TypedArray.prototype.baz = "test262";
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([42, 43]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([42, 43]));
 
   assert.sameValue(
     sample.foo, undefined,
@@ -37,6 +36,6 @@ testWithTypedArrayConstructors(function(TA) {
   assert.sameValue(sample.bar, "baz", "return value from get accessor");
 
   assert.sameValue(sample.baz, "test262", "return value from inherited key");
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

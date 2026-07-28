@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,19 +5,22 @@
 #ifndef mozilla_dom_DOMParser_h_
 #define mozilla_dom_DOMParser_h_
 
-#include "nsCOMPtr.h"
-#include "mozilla/dom/Document.h"
-#include "nsWrapperCache.h"
 #include "mozilla/Span.h"
 #include "mozilla/dom/DOMParserBinding.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/TypedArray.h"
+#include "nsCOMPtr.h"
+#include "nsWrapperCache.h"
 
 class nsIGlobalObject;
+class nsIPrincipal;
 
 namespace mozilla {
 class ErrorResult;
 
 namespace dom {
+
+class TrustedHTMLOrString;
 
 class DOMParser final : public nsISupports, public nsWrapperCache {
   typedef mozilla::dom::GlobalObject GlobalObject;
@@ -34,11 +35,15 @@ class DOMParser final : public nsISupports, public nsWrapperCache {
   static already_AddRefed<DOMParser> Constructor(const GlobalObject& aOwner,
                                                  mozilla::ErrorResult& rv);
 
-  already_AddRefed<Document> ParseFromString(const nsAString& aStr,
-                                             SupportedType aType,
-                                             ErrorResult& aRv);
+  already_AddRefed<Document> ParseFromStringInternal(const nsAString& aStr,
+                                                     SupportedType aType,
+                                                     ErrorResult& aRv);
 
-  // ChromeOnly API
+  MOZ_CAN_RUN_SCRIPT already_AddRefed<Document> ParseFromString(
+      const TrustedHTMLOrString& aStr, SupportedType aType,
+      nsIPrincipal* aSubjectPrincipal, ErrorResult& aRv);
+
+  // Chrome and UI Widgets API
   already_AddRefed<Document> ParseFromSafeString(const nsAString& aStr,
                                                  SupportedType aType,
                                                  ErrorResult& aRv);
@@ -65,7 +70,7 @@ class DOMParser final : public nsISupports, public nsWrapperCache {
 
   void ForceEnableDTD() { mForceEnableDTD = true; }
 
-  nsIGlobalObject* GetParentObject() const { return mOwner; }
+  nsIGlobalObject* GetParentObject() const { return mGlobal; }
 
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override {
@@ -76,13 +81,13 @@ class DOMParser final : public nsISupports, public nsWrapperCache {
   static already_AddRefed<DOMParser> CreateWithoutGlobal(ErrorResult& aRv);
 
  private:
-  DOMParser(nsIGlobalObject* aOwner, nsIPrincipal* aDocPrincipal,
+  DOMParser(nsIGlobalObject* aGlobal, nsIPrincipal* aDocPrincipal,
             nsIURI* aDocumentURI);
 
   already_AddRefed<Document> SetUpDocument(DocumentFlavor aFlavor,
                                            ErrorResult& aRv);
 
-  nsCOMPtr<nsIGlobalObject> mOwner;
+  nsCOMPtr<nsIGlobalObject> mGlobal;
   nsCOMPtr<nsIPrincipal> mPrincipal;
   nsCOMPtr<nsIURI> mDocumentURI;
 

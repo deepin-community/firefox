@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +6,6 @@
 #ifndef mozilla_image_encoders_icon_win_nsIconChannel_h
 #define mozilla_image_encoders_icon_win_nsIconChannel_h
 
-#include "mozilla/Attributes.h"
 #include "mozilla/MozPromise.h"
 
 #include "nsCOMPtr.h"
@@ -38,7 +36,7 @@ class nsIconChannel final : public nsIChannel, public nsIStreamListener {
 
   nsIconChannel();
 
-  nsresult Init(nsIURI* uri);
+  nsresult Init(nsIURI* uri, nsILoadInfo* aLoadInfo);
 
   /// Obtains an icon in Windows ICO format as a ByteBuf instead
   /// of a channel. For use with IPC.

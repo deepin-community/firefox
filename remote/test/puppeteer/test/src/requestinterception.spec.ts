@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import expect from 'expect';
 import type {HTTPRequest} from 'puppeteer-core/internal/api/HTTPRequest.js';
 import type {ConsoleMessage} from 'puppeteer-core/internal/common/ConsoleMessage.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
-import {isFavicon, waitEvent} from './utils.js';
+import {html, isFavicon, waitEvent} from './utils.js';
 
 describe('request interception', function () {
   setupTestBrowserHooks();
@@ -60,9 +60,17 @@ describe('request interception', function () {
       page.on('request', request => {
         return request.continue();
       });
-      await page.setContent(`
-        <form action='/rredirect' method='post'>
-          <input type="hidden" id="foo" name="foo" value="FOOBAR">
+      await page.setContent(html`
+        <form
+          action="/rredirect"
+          method="post"
+        >
+          <input
+            type="hidden"
+            id="foo"
+            name="foo"
+            value="FOOBAR"
+          />
         </form>
       `);
       await Promise.all([
@@ -71,6 +79,49 @@ describe('request interception', function () {
         }),
         page.waitForNavigation(),
       ]);
+    });
+    it('should work with keep alive redirects', async () => {
+      const {page, server} = await getTestState();
+      server.setRoute('/rredirect', (_req, res) => {
+        res.writeHead(302, {location: '/target'});
+        res.end();
+      });
+      server.setRoute('/target', (_req, res) => {
+        res.end('Hello World');
+      });
+      await page.goto(server.EMPTY_PAGE);
+      page.on('request', request => {
+        void request.continue();
+      });
+      await page.setRequestInterception(true);
+      const redirectRequest = page.waitForRequest(
+        request => {
+          return request.url().endsWith('/rredirect');
+        },
+        {
+          timeout: 1000,
+        },
+      );
+      const targetResponse = page.waitForResponse(
+        response => {
+          return response.request().url().endsWith('/target');
+        },
+        {
+          timeout: 1000,
+        },
+      );
+      await page.evaluate(async url => {
+        void fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({test: 'test'}),
+          mode: 'no-cors',
+          keepalive: true,
+        }).then(async res => {
+          console.log(await res.text());
+        });
+      }, server.PREFIX + '/rredirect');
+      await redirectRequest;
+      await targetResponse;
     });
     // @see https://github.com/puppeteer/puppeteer/issues/3973
     it('should work when header manipulation headers with redirect', async () => {
@@ -124,6 +175,22 @@ describe('request interception', function () {
       await page.goto(server.PREFIX + '/one-style.html');
       expect(requests[1]!.url()).toContain('/one-style.css');
       expect(requests[1]!.headers()['referer']).toContain('/one-style.html');
+    });
+    it('should not allow mutating request headers', async () => {
+      const {page, server} = await getTestState();
+
+      await page.setRequestInterception(true);
+      const requests: HTTPRequest[] = [];
+      page.on('request', request => {
+        if (!isFavicon(request)) {
+          requests.push(request);
+        }
+        const headers = request.headers();
+        headers['test'] = 'test';
+        void request.continue({headers: request.headers()});
+      });
+      await page.goto(server.EMPTY_PAGE);
+      expect(Object.keys(requests[0]!.headers())).not.toContain('test');
     });
     it('should work with requests without networkId', async () => {
       const {page, server} = await getTestState();
@@ -260,7 +327,7 @@ describe('request interception', function () {
 
       expect(failedRequest).toBeTruthy();
       expect(failedRequest.failure()!.errorText).toBe(
-        'net::ERR_INTERNET_DISCONNECTED'
+        'net::ERR_INTERNET_DISCONNECTED',
       );
     });
     it('should send referer', async () => {
@@ -310,19 +377,19 @@ describe('request interception', function () {
       });
       server.setRedirect(
         '/non-existing-page.html',
-        '/non-existing-page-2.html'
+        '/non-existing-page-2.html',
       );
       server.setRedirect(
         '/non-existing-page-2.html',
-        '/non-existing-page-3.html'
+        '/non-existing-page-3.html',
       );
       server.setRedirect(
         '/non-existing-page-3.html',
-        '/non-existing-page-4.html'
+        '/non-existing-page-4.html',
       );
       server.setRedirect('/non-existing-page-4.html', '/empty.html');
       const response = (await page.goto(
-        server.PREFIX + '/non-existing-page.html'
+        server.PREFIX + '/non-existing-page.html',
       ))!;
       expect(response.status()).toBe(200);
       expect(response.url()).toContain('empty.html');
@@ -492,9 +559,9 @@ describe('request interception', function () {
       });
       const response = (await page.goto(server.EMPTY_PAGE + '#hash'))!;
       expect(response.status()).toBe(200);
-      expect(response.url()).toBe(server.EMPTY_PAGE);
+      expect(response.url()).toBe(server.EMPTY_PAGE + '#hash');
       expect(requests).toHaveLength(1);
-      expect(requests[0]!.url()).toBe(server.EMPTY_PAGE);
+      expect(requests[0]!.url()).toBe(server.EMPTY_PAGE + '#hash');
     });
     it('should work with encoded server', async () => {
       const {page, server} = await getTestState();
@@ -506,7 +573,7 @@ describe('request interception', function () {
         return request.continue();
       });
       const response = (await page.goto(
-        server.PREFIX + '/some nonexisting page'
+        server.PREFIX + '/some nonexisting page',
       ))!;
       expect(response.status()).toBe(404);
     });
@@ -514,14 +581,14 @@ describe('request interception', function () {
       const {page, server} = await getTestState();
 
       await page.setRequestInterception(true);
-      server.setRoute('/malformed?rnd=%911', (_req, res) => {
+      server.setRoute('/malformed', (_req, res) => {
         return res.end();
       });
       page.on('request', request => {
         return request.continue();
       });
       const response = (await page.goto(
-        server.PREFIX + '/malformed?rnd=%911'
+        server.PREFIX + '/malformed?rnd=%911',
       ))!;
       expect(response.status()).toBe(200);
     });
@@ -546,7 +613,7 @@ describe('request interception', function () {
     it('should not throw "Invalid Interception Id" if the request was cancelled', async () => {
       const {page, server} = await getTestState();
 
-      await page.setContent('<iframe></iframe>');
+      await page.setContent(html`<iframe></iframe>`);
       await page.setRequestInterception(true);
       let request!: HTTPRequest;
       page.on('request', async r => {
@@ -557,7 +624,7 @@ describe('request interception', function () {
         (frame, url) => {
           return (frame.src = url);
         },
-        server.EMPTY_PAGE
+        server.EMPTY_PAGE,
       ),
       // Wait for request interception.
       await waitEvent(page, 'request'));
@@ -583,6 +650,7 @@ describe('request interception', function () {
         }
       });
       await page.goto(server.EMPTY_PAGE);
+      expect(error).toBeDefined();
       expect(error.message).toContain('Request Interception is not enabled');
     });
     it('should work with file URLs', async () => {
@@ -595,16 +663,26 @@ describe('request interception', function () {
         void request.continue();
       });
       await page.goto(
-        pathToFileURL(path.join(__dirname, '../assets', 'one-style.html'))
+        pathToFileURL(
+          path.join(import.meta.dirname, '../assets', 'one-style.html'),
+        ),
       );
       expect(urls.size).toBe(2);
       expect(urls.has('one-style.html')).toBe(true);
       expect(urls.has('one-style.css')).toBe(true);
     });
 
-    for (const {resourceType, url} of [
-      {url: '/cached/one-style.html', resourceType: 'stylesheet'},
-      {url: '/cached/one-script.html', resourceType: 'script'},
+    for (const {resourceType, url, cachedResourceUrl} of [
+      {
+        url: '/cached/one-style.html',
+        cachedResourceUrl: '/cached/one-style.css',
+        resourceType: 'stylesheet',
+      },
+      {
+        url: '/cached/one-script.html',
+        cachedResourceUrl: '/cached/one-script.js',
+        resourceType: 'script',
+      },
     ]) {
       it(`should not cache ${resourceType} if cache disabled`, async () => {
         const {page, server} = await getTestState();
@@ -634,17 +712,25 @@ describe('request interception', function () {
 
         await page.setRequestInterception(true);
         await page.setCacheEnabled(true);
-        page.on('request', request => {
-          return request.continue();
+        let error: Error | undefined;
+        page.on('request', async request => {
+          await request.continue().catch(_error => {
+            error = _error;
+          });
         });
 
         const cached: HTTPRequest[] = [];
         page.on('requestservedfromcache', r => {
+          if (isFavicon(r)) {
+            return;
+          }
           return cached.push(r);
         });
 
         await page.reload();
+        expect(error).toBeUndefined();
         expect(cached).toHaveLength(1);
+        expect(cached[0]!.url()).toBe(server.PREFIX + cachedResourceUrl);
       });
     }
     it('should load fonts if cache enabled', async () => {
@@ -661,6 +747,16 @@ describe('request interception', function () {
       });
       await page.goto(server.PREFIX + '/cached/one-style-font.html');
       await responsePromise;
+    });
+    it('should work with worker', async () => {
+      const {page, server} = await getTestState();
+
+      await Promise.all([
+        waitEvent(page, 'workercreated'),
+        page.goto(server.PREFIX + '/worker/worker.html'),
+      ]);
+
+      await page.setRequestInterception(true);
     });
   });
 
@@ -776,7 +872,7 @@ describe('request interception', function () {
       });
       await page.goto(server.PREFIX + '/empty.html');
       expect(error.message).toMatch(
-        /Invalid header|Expected "header"|invalid argument/
+        /Invalid header|Expected "header"|invalid argument/,
       );
     });
   });
@@ -801,7 +897,7 @@ describe('request interception', function () {
       expect(
         await page.evaluate(() => {
           return document.body.textContent;
-        })
+        }),
       ).toBe('Yo, page!');
     });
     it('should work with status code 422', async () => {
@@ -820,7 +916,7 @@ describe('request interception', function () {
       expect(
         await page.evaluate(() => {
           return document.body.textContent;
-        })
+        }),
       ).toBe('Yo, page!');
     });
     it('should redirect', async () => {
@@ -842,7 +938,7 @@ describe('request interception', function () {
       const response = (await page.goto(server.PREFIX + '/rrredirect'))!;
       expect(response.request().redirectChain()).toHaveLength(1);
       expect(response.request().redirectChain()[0]!.url()).toBe(
-        server.PREFIX + '/rrredirect'
+        server.PREFIX + '/rrredirect',
       );
       expect(response.url()).toBe(server.EMPTY_PAGE);
     });
@@ -896,7 +992,7 @@ describe('request interception', function () {
       await page.setRequestInterception(true);
       page.on('request', request => {
         const imageBuffer = fs.readFileSync(
-          path.join(__dirname, '../assets', 'pptr.png')
+          path.join(import.meta.dirname, '../assets', 'pptr.png'),
         );
         void request.respond({
           contentType: 'image/png',
@@ -934,7 +1030,7 @@ describe('request interception', function () {
       expect(
         await page.evaluate(() => {
           return document.body.textContent;
-        })
+        }),
       ).toBe('Yo, page!');
     });
     it('should fail if the header value is invalid', async () => {
@@ -959,7 +1055,7 @@ describe('request interception', function () {
       });
       await page.goto(server.PREFIX + '/empty.html');
       expect(error.message).toMatch(
-        /Invalid header|Expected "header"|invalid argument/
+        /Invalid header|Expected "header"|invalid argument/,
       );
     });
 
@@ -978,7 +1074,7 @@ describe('request interception', function () {
       expect(headers['content-length']).toBe('20');
     });
 
-    it('should report correct content-length header with string', async () => {
+    it('should report correct content-length header with buffer', async () => {
       const {page, server} = await getTestState();
 
       await page.setRequestInterception(true);
@@ -991,6 +1087,28 @@ describe('request interception', function () {
       const response = (await page.goto(server.EMPTY_PAGE))!;
       const headers = response.headers();
       expect(headers['content-length']).toBe('20');
+    });
+
+    it('should report correct encoding from page when content-type is set', async () => {
+      const {page, server} = await getTestState();
+
+      await page.setRequestInterception(true);
+      page.on('request', request => {
+        void request.respond({
+          status: 200,
+          body: Buffer.from('Correct length 📏?'),
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+          },
+        });
+      });
+      await page.goto(server.EMPTY_PAGE);
+
+      const content = await page.evaluate(() => {
+        return document.documentElement.innerText;
+      });
+
+      expect(content).toBe('Correct length 📏?');
     });
   });
 

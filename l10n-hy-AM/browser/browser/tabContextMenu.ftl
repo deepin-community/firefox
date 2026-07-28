@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Նոր ներդիր
     .accesskey = w
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Փակել ներդիրները՝ ձախից
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = Փակեք վերևի ներդիրները
+    .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Փակել ներդիրները՝ աջից
     .accesskey = ջ
+close-tabs-to-the-end-vertical =
+    .label = Փակել ներքևի ներդիրները
+    .accesskey = i
 close-other-tabs =
     .label = Փակել մյուս ներդիրները
     .accesskey = կ
@@ -78,6 +88,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Համօգտագործել
     .accesskey = h
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Նոր ներդիր աջից
+    .accesskey = w
+tab-context-new-tab-open-vertical =
+    .label = Նոր ներդիր ներքևում
+    .accesskey = w
+tab-context-new-group =
+    .label = Նոր խումբ
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -106,6 +126,15 @@ tab-context-move-tabs =
            *[other] Տեղափոխել ներդիրները
         }
     .accesskey = v
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Ուղարկել սարքի
+            [one] Ուղարկել { $tabCount } ներդիրներ սարքի
+           *[other] Ուղարկել { $tabCount } ներդիրներ սարքի
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -113,3 +142,11 @@ tab-context-send-tabs-to-device =
            *[other] Ուղարկել { $tabCount } ներդիրները սարքին
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Ապաբեռնել ներդիրը
+            [one] Ապաբեռնել { $tabCount } ներդիրները
+           *[other] Ապաբեռնել { $tabCount } ներդիրները
+        }
+    .accesskey = U

@@ -1,16 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#if !defined(__nsHTTPCompressConv__h__)
-#  define __nsHTTPCompressConv__h__ 1
+#if !defined(_nsHTTPCompressConv_h_)
+#  define _nsHTTPCompressConv_h_ 1
 
 #  include "nsIStreamConverter.h"
 #  include "nsICompressConvStats.h"
 #  include "nsIThreadRetargetableStreamListener.h"
 #  include "nsCOMPtr.h"
+#  include "nsString.h"
 #  include "mozilla/Atomics.h"
 #  include "mozilla/Mutex.h"
 
@@ -18,13 +17,12 @@
 
 class nsIStringInputStream;
 
-#  define NS_HTTPCOMPRESSCONVERTER_CID                 \
-    {                                                  \
-      /* 66230b2b-17fa-4bd3-abf4-07986151022d */       \
-      0x66230b2b, 0x17fa, 0x4bd3, {                    \
-        0xab, 0xf4, 0x07, 0x98, 0x61, 0x51, 0x02, 0x2d \
-      }                                                \
-    }
+#  define NS_HTTPCOMPRESSCONVERTER_CID          \
+    {/* 66230b2b-17fa-4bd3-abf4-07986151022d */ \
+     0x66230b2b,                                \
+     0x17fa,                                    \
+     0x4bd3,                                    \
+     {0xab, 0xf4, 0x07, 0x98, 0x61, 0x51, 0x02, 0x2d}}
 
 #  define HTTP_DEFLATE_TYPE "deflate"
 #  define HTTP_GZIP_TYPE "gzip"
@@ -36,6 +34,20 @@ class nsIStringInputStream;
 #  define HTTP_UNCOMPRESSED_TYPE "uncompressed"
 #  define HTTP_ZSTD_TYPE "zstd"
 #  define HTTP_ZST_TYPE "zst"
+#  define HTTP_BROTLI_DICTIONARY_TYPE "dcb"
+#  define HTTP_ZSTD_DICTIONARY_TYPE "dcz"
+
+#  define GZIP_MAGIC_0 0x1f
+#  define GZIP_MAGIC_1 0x8b
+
+#  define ZSTD_MAGIC_0 0x28
+#  define ZSTD_MAGIC_1 0xb5
+#  define ZSTD_MAGIC_2 0x2f
+#  define ZSTD_MAGIC_3 0xfd
+
+// Not magic bytes, but common brotli first bytes
+#  define BROTLI_BYTE_0 0xce
+#  define BROTLI_BYTE_1 0xb2
 
 namespace mozilla {
 namespace net {
@@ -65,13 +77,15 @@ class nsHTTPCompressConv : public nsIStreamConverter,
     HTTP_COMPRESS_BROTLI,
     HTTP_COMPRESS_IDENTITY,
     HTTP_COMPRESS_ZSTD,
+    HTTP_COMPRESS_BROTLI_DICTIONARY,
+    HTTP_COMPRESS_ZSTD_DICTIONARY,
   };
 
  private:
   virtual ~nsHTTPCompressConv();
 
-  nsCOMPtr<nsIStreamListener>
-      mListener;  // this guy gets the converted data via his OnDataAvailable ()
+  nsCOMPtr<nsIStreamListener> mListener
+      MOZ_GUARDED_BY(mMutex);  // gets converted data via OnDataAvailable()
   Atomic<CompressMode, Relaxed> mMode{HTTP_COMPRESS_IDENTITY};
 
   unsigned char* mOutBuffer{nullptr};
@@ -101,16 +115,21 @@ class nsHTTPCompressConv : public nsIStreamConverter,
   bool mStreamInitialized{false};
   bool mDummyStreamInitialised{false};
   bool mFailUncleanStops;
-  bool mDispatchToMainThread{false};
+  Atomic<bool> mDispatchToMainThread{false};
 
   z_stream d_stream{};
   unsigned mLen{0}, hMode{0}, mSkipCount{0}, mFlags{0};
 
   uint32_t check_header(nsIInputStream* iStr, uint32_t streamLen, nsresult* rs);
 
+  void ReportDecodingErrorWithSite(const nsACString& aLabel);
   Atomic<uint32_t, Relaxed> mDecodedDataLength{0};
 
-  mutable mozilla::Mutex mMutex MOZ_UNANNOTATED{"nsHTTPCompressConv"};
+  // Cached on main thread in OnStartRequest; read from any thread thereafter.
+  Atomic<bool, Relaxed> mIsPrivateBrowsing{false};
+  nsCString mSite;
+
+  mutable mozilla::Mutex mMutex{"nsHTTPCompressConv"};
 };
 
 }  // namespace net

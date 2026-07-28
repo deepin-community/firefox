@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 The V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -18,6 +17,6 @@ includes: [testTypedArray.js]
 
 testWithTypedArrayConstructors(function(ctor) {
   assert.sameValue(ArrayBuffer.isView(ctor), false);
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

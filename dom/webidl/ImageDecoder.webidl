@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,8 +6,7 @@
  * https://w3c.github.io/webcodecs/#image-decoding
  */
 
-// Bug 1696216: Should be AllowSharedBufferSource or ReadableStream
-typedef ([AllowShared] ArrayBufferView or [AllowShared] ArrayBuffer or ReadableStream) ImageBufferSource;
+typedef (AllowSharedBufferSource or ReadableStream) ImageBufferSource;
 dictionary ImageDecoderInit {
   required DOMString type;
   required ImageBufferSource data;
@@ -29,19 +27,28 @@ dictionary ImageDecodeResult {
   required boolean complete;
 };
 
+dictionary ImageSize {
+  required unsigned long width;
+  required unsigned long height;
+};
+
 [Exposed=(Window,DedicatedWorker),
  SecureContext,
- Func="mozilla::dom::ImageDecoder::PrefEnabled"]
+ Func="nsRFPService::ExposeWebCodecsAPIImageDecoder"]
 interface ImageTrack {
   readonly attribute boolean animated;
   readonly attribute unsigned long frameCount;
   readonly attribute unrestricted float repetitionCount;
   attribute boolean selected;
+
+  // Mozilla-internal-only addition
+  [ChromeOnly]
+  sequence<ImageSize> getSizes();
 };
 
 [Exposed=(Window,DedicatedWorker),
  SecureContext,
- Func="mozilla::dom::ImageDecoder::PrefEnabled"]
+ Func="nsRFPService::ExposeWebCodecsAPIImageDecoder"]
 interface ImageTrackList {
   getter ImageTrack (unsigned long index);
 
@@ -53,7 +60,7 @@ interface ImageTrackList {
 
 [Exposed=(Window,DedicatedWorker),
  SecureContext,
- Func="mozilla::dom::ImageDecoder::PrefEnabled"]
+ Func="nsRFPService::ExposeWebCodecsAPIImageDecoder"]
 interface ImageDecoder {
   [Throws]
   constructor(ImageDecoderInit init);

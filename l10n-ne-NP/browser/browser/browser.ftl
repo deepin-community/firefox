@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -114,6 +111,12 @@ urlbar-result-menu-button =
     .title = मेनु खाेल्नुहोस्
 urlbar-result-menu-button-feedback = प्रतिक्रिया
     .title = मेनु खोल्नुहोस्
+urlbar-result-menu-learn-more2 = थप जान्नुहोस्
+    .accesskey = L
+urlbar-result-menu-remove-from-history2 = इतिहासबाट हटाउनुहोस्
+    .accesskey = R
+urlbar-result-menu-tip-get-help2 = मद्दत प्राप्त गर्नुहोस्
+    .accesskey = h
 urlbar-result-menu-learn-more =
     .label = थप जान्नुहोस्
     .accesskey = L
@@ -178,6 +181,12 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = यो पृष्ठ बुकमार्क गर्नुहोस् ({ $shortcut })
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = खोजी इतिहास मेटाउनुहोस्
+    .accesskey = H
 
 ## Page Action Context Menu
 
@@ -250,7 +259,7 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = एड-अनहरू हेर्नुहोस्
@@ -281,7 +290,6 @@ quickactions-print2 = पृष्ठ छाप्नुहोस्
 quickactions-cmd-print = छाप्नुहोस्
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = पृष्ठ PDF को रूपमा बचत गर्नुहोस्
-quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = निजी सञ्झ्याल खोल्नुहोस्
 quickactions-cmd-private = निजी ब्राउजिङ्ग
@@ -547,6 +555,8 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = एक्सटेन्सन:
+urlbar-go-button2 =
+    .title = लोकेसन बारमा भएको स्थानमा जानुहोस्
 urlbar-go-button =
     .tooltiptext = लोकेसन बारमा भएको स्थानमा जानुहोस्
 urlbar-page-action-button =
@@ -554,8 +564,9 @@ urlbar-page-action-button =
 urlbar-revert-button =
     .tooltiptext = लोकेशन बारमा ठेगाना देखाउनुहोस्
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -613,6 +624,23 @@ urlbar-result-action-calculator-result = ={ $result }
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = { $engine } मार्फत खोज्नुहोस्
+urlbar-searchmode-bookmarks =
+    .label = बुकमार्कहरु
+urlbar-searchmode-tabs =
+    .label = ट्याबहरू
+urlbar-searchmode-history =
+    .label = इतिहास
+urlbar-searchmode-actions =
+    .label = कार्य
+urlbar-searchmode-bookmarks2 = बुकमार्कहरु
+urlbar-searchmode-tabs2 = ट्याबहरू
+urlbar-searchmode-history2 = इतिहास
+urlbar-searchmode-actions2 = कार्य
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = "{ $engineName }" थप्नुहोस्
+    .title = "{ $engineName }" थप्नुहोस्
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -648,6 +676,9 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = { $engine } मा ट्रेन्डिङ
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show2 = ट्रेन्डिङ खोजहरू नदेखाउनुहोस्
+    .accesskey = D
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = ट्रेन्डिङ खोजहरू नदेखाउनुहोस्
@@ -787,7 +818,7 @@ repair-text-encoding-button =
     .label = पाठ एन्कोडिङ मर्मत गर्नुहोस्
     .tooltiptext = पृष्ठ सामग्रीबाट सही पाठ इन्कोडिङ अनुमान गर्नुहोस्
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -838,6 +869,10 @@ eme-notifications-drm-content-playing-dismiss-accesskey = D
 
 panel-save-update-username = प्रयोगकर्ताको नाम
 panel-save-update-password = पासवर्ड
+panel-save-update-username-2 =
+    .label = प्रयोगकर्ताको नाम
+panel-save-update-password-2 =
+    .label = पासवर्ड
 
 ##
 
@@ -941,9 +976,6 @@ private-browsing-indicator-label = निजी ब्राउजिङ्ग
 content-analysis-indicator-tooltip =
     .tooltiptext = { $agentName } द्वारा डेटा हानि रोकथाम (DLP)। थप जानकारीको लागि क्लिक गर्नुहोस्।
 content-analysis-panel-title = डाटा संरक्षण
-# Variables:
-#   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = तपाईंको संस्थाले डाटा हराउनबाट जोगाउन { $agentName } प्रयोग गर्छ। <a data-l10n-name="info">थप जान्नुहोस्</a>
 
 ## Unified extensions (toolbar) button
 
@@ -1004,10 +1036,6 @@ firefox-relay-offer-legal-notice = "इमेल मास्क प्रयो
 popup-notification-addon-install-unsigned =
     .value = (अप्रमाणित)
 popup-notification-xpinstall-prompt-learn-more = एड-अनहरू सुरक्षित रूपमा स्थापना गर्ने बारे थप जान्नुहोस्
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = निजी विन्डोजमा चलाउनुहोस्
-    .accesskey = P
 
 ## Pop-up warning
 

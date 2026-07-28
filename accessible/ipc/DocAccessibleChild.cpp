@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,9 @@
 #include "mozilla/a11y/DocAccessibleChild.h"
 #include "mozilla/a11y/CacheConstants.h"
 #include "mozilla/a11y/FocusManager.h"
-#include "mozilla/ipc/ProcessChild.h"
+#include "mozilla/AppShutdown.h"
+#include "mozilla/PerfStats.h"
+#include "mozilla/ProfilerMarkers.h"
 #include "nsAccessibilityService.h"
 
 #include "LocalAccessible-inl.h"
@@ -19,6 +19,12 @@
 
 namespace mozilla {
 namespace a11y {
+
+// Exceeding the IPDL maximum message size will cause a crash. Try to avoid
+// this by only including kMaxAccsPerMessage Accessibles in a single IPDL
+// call. If there are Accessibles beyond this, they will be split across
+// multiple calls.
+static constexpr uint32_t kMaxAccsPerMessage = 1000;
 
 /* static */
 void DocAccessibleChild::FlattenTree(LocalAccessible* aRoot,
@@ -38,40 +44,28 @@ void DocAccessibleChild::FlattenTree(LocalAccessible* aRoot,
 
 /* static */
 AccessibleData DocAccessibleChild::SerializeAcc(LocalAccessible* aAcc) {
-  uint32_t genericTypes = aAcc->mGenericTypes;
+  AccGenericType genericTypes = aAcc->GenericTypes();
   if (aAcc->ARIAHasNumericValue()) {
     // XXX: We need to do this because this requires a state check.
     genericTypes |= eNumericValue;
-  }
-  if (aAcc->IsTextLeaf() || aAcc->IsImage()) {
-    // Ideally, we'd set eActionable for any Accessible with an ancedstor
-    // action. However, that requires an ancestor walk which is too expensive
-    // here. eActionable is only used by ATK. For now, we only expose ancestor
-    // actions on text leaf and image Accessibles. This means that we don't
-    // support "clickAncestor" for ATK.
-    if (aAcc->ActionCount()) {
-      genericTypes |= eActionable;
-    }
-  } else if (aAcc->HasPrimaryAction()) {
-    genericTypes |= eActionable;
   }
 
   RefPtr<AccAttributes> fields;
   // Even though we send moves as a hide and a show, we don't want to
   // push the cache again for moves.
   if (!aAcc->Document()->IsAccessibleBeingMoved(aAcc)) {
-    fields =
-        aAcc->BundleFieldsForCache(CacheDomain::All, CacheUpdateType::Initial);
+    fields = aAcc->BundleFieldsForCache(
+        nsAccessibilityService::GetActiveCacheDomains(),
+        CacheUpdateType::Initial);
     if (fields->Count() == 0) {
       fields = nullptr;
     }
   }
 
-  return AccessibleData(aAcc->ID(), aAcc->Role(), aAcc->LocalParent()->ID(),
-                        static_cast<int32_t>(aAcc->IndexInParent()),
-                        static_cast<AccType>(aAcc->mType),
-                        static_cast<AccGenericType>(genericTypes),
-                        aAcc->mRoleMapEntryIndex, fields);
+  return AccessibleData(aAcc->ID(), aAcc->NativeRole(),
+                        aAcc->LocalParent()->ID(), aAcc->IndexInParent(),
+                        aAcc->mType, genericTypes, aAcc->mRoleMapEntryIndex,
+                        fields);
 }
 
 void DocAccessibleChild::InsertIntoIpcTree(LocalAccessible* aChild,
@@ -79,34 +73,72 @@ void DocAccessibleChild::InsertIntoIpcTree(LocalAccessible* aChild,
   nsTArray<LocalAccessible*> shownTree;
   FlattenTree(aChild, shownTree);
   uint32_t totalAccs = shownTree.Length();
-  // Exceeding the IPDL maximum message size will cause a crash. Try to avoid
-  // this by only including kMaxAccsPerMessage Accessibels in a single IPDL
-  // call. If there are Accessibles beyond this, they will be split across
-  // multiple calls.
-  constexpr uint32_t kMaxAccsPerMessage =
-      IPC::Channel::kMaximumMessageSize / (2 * 1024);
-  nsTArray<AccessibleData> data(std::min(kMaxAccsPerMessage, totalAccs));
-  for (LocalAccessible* child : shownTree) {
-    if (data.Length() == kMaxAccsPerMessage) {
-      if (ipc::ProcessChild::ExpectingShutdown()) {
+  nsTArray<AccessibleData> data(std::min(
+      kMaxAccsPerMessage - mMutationEventBatcher.AccCount(), totalAccs));
+
+  for (uint32_t accIndex = 0; accIndex < totalAccs; ++accIndex) {
+    // This batch of mutation events has no more room left without exceeding our
+    // limit. Write the show event data to the queue.
+    if (data.Length() + mMutationEventBatcher.AccCount() ==
+        kMaxAccsPerMessage) {
+      if (AppShutdown::IsShutdownImpending()) {
         return;
       }
-      SendShowEvent(data, aSuppressShowEvent, false, false);
-      data.ClearAndRetainStorage();
+      // Note: bool(...) used on aSuppressShowEvent to force selection of the
+      // ShowEventData constructor that takes all rvalue reference arguments.
+      const uint32_t accCount = data.Length();
+      PushMutationEventData(
+          ShowEventData{std::move(data), bool(aSuppressShowEvent), false,
+                        false},
+          accCount);
+
+      // Reset data to avoid relying on state of moved-from object.
+      // Preallocate an appropriate capacity to avoid resizing.
+      data = nsTArray<AccessibleData>(
+          std::min(kMaxAccsPerMessage, totalAccs - accIndex));
     }
+    LocalAccessible* child = shownTree[accIndex];
     data.AppendElement(SerializeAcc(child));
   }
-  if (ipc::ProcessChild::ExpectingShutdown()) {
+  if (AppShutdown::IsShutdownImpending()) {
     return;
   }
   if (!data.IsEmpty()) {
-    SendShowEvent(data, aSuppressShowEvent, true, false);
+    const uint32_t accCount = data.Length();
+    PushMutationEventData(
+        ShowEventData{std::move(data), std::move(aSuppressShowEvent), true,
+                      false},
+        accCount);
   }
 }
 
 void DocAccessibleChild::ShowEvent(AccShowEvent* aShowEvent) {
+  AUTO_PROFILER_MARKER_TEXT("DocAccessibleChild::ShowEvent", A11Y, {}, ""_ns);
+  PerfStats::AutoMetricRecording<PerfStats::Metric::A11Y_ShowEvent>
+      autoRecording;
+  // DO NOT ADD CODE ABOVE THIS BLOCK: THIS CODE IS MEASURING TIMINGS.
+
   LocalAccessible* child = aShowEvent->GetAccessible();
-  InsertIntoIpcTree(child, false);
+  InsertIntoIpcTree(child, /* aSuppressShowEvent */ false);
+}
+
+void DocAccessibleChild::PushMutationEventData(MutationEventData aData,
+                                               uint32_t aAccCount) {
+  mMutationEventBatcher.PushMutationEventData(std::move(aData), aAccCount,
+                                              *this);
+  // Once all mutation events for this tick are sent, we defer all updates
+  // until the parent process sends us a single ACK. We set that flag here, but
+  // we request that ACK in NotificationController::WillRefresh once all
+  // mutation events have been sent.
+  mHasUnackedMutationEvents = true;
+}
+
+void DocAccessibleChild::SendQueuedMutationEvents() {
+  mMutationEventBatcher.SendQueuedMutationEvents(*this);
+}
+
+size_t DocAccessibleChild::MutationEventQueueLength() const {
+  return mMutationEventBatcher.EventCount();
 }
 
 mozilla::ipc::IPCResult DocAccessibleChild::RecvTakeFocus(const uint64_t& aID) {
@@ -208,29 +240,20 @@ mozilla::ipc::IPCResult DocAccessibleChild::RecvVerifyCache(
 mozilla::ipc::IPCResult DocAccessibleChild::RecvDoActionAsync(
     const uint64_t& aID, const uint8_t& aIndex) {
   if (LocalAccessible* acc = IdToAccessible(aID)) {
-    Unused << acc->DoAction(aIndex);
+    (void)acc->DoAction(aIndex);
   }
 
-  return IPC_OK();
-}
-
-mozilla::ipc::IPCResult DocAccessibleChild::RecvSetCaretOffset(
-    const uint64_t& aID, const int32_t& aOffset) {
-  HyperTextAccessible* acc = IdToHyperTextAccessible(aID);
-  if (acc && acc->IsTextRole() && acc->IsValidOffset(aOffset)) {
-    acc->SetCaretOffset(aOffset);
-  }
   return IPC_OK();
 }
 
 mozilla::ipc::IPCResult DocAccessibleChild::RecvSetTextSelection(
     const uint64_t& aStartID, const int32_t& aStartOffset,
     const uint64_t& aEndID, const int32_t& aEndOffset,
-    const int32_t& aSelectionNum) {
+    const int32_t& aSelectionNum, const bool& aSetFocus) {
   TextLeafRange range(TextLeafPoint(IdToAccessible(aStartID), aStartOffset),
                       TextLeafPoint(IdToAccessible(aEndID), aEndOffset));
   if (range) {
-    range.SetSelection(aSelectionNum);
+    range.SetSelection(aSelectionNum, aSetFocus);
   }
 
   return IPC_OK();
@@ -347,60 +370,6 @@ mozilla::ipc::IPCResult DocAccessibleChild::RecvScrollToPoint(
   return IPC_OK();
 }
 
-LayoutDeviceIntRect DocAccessibleChild::GetCaretRectFor(const uint64_t& aID) {
-#if defined(XP_WIN)
-  LocalAccessible* target;
-
-  if (aID) {
-    target = reinterpret_cast<LocalAccessible*>(aID);
-  } else {
-    target = mDoc;
-  }
-
-  MOZ_ASSERT(target);
-
-  HyperTextAccessible* text = target->AsHyperText();
-  if (!text) {
-    return LayoutDeviceIntRect();
-  }
-
-  nsIWidget* widget = nullptr;
-  return text->GetCaretRect(&widget);
-#else
-  // The caret rect is only used on Windows, so just return an empty rect
-  // on other platforms.
-  return LayoutDeviceIntRect();
-#endif  // defined(XP_WIN)
-}
-
-bool DocAccessibleChild::SendFocusEvent(const uint64_t& aID) {
-  return PDocAccessibleChild::SendFocusEvent(aID, GetCaretRectFor(aID));
-}
-
-bool DocAccessibleChild::SendCaretMoveEvent(const uint64_t& aID,
-                                            const int32_t& aOffset,
-                                            const bool& aIsSelectionCollapsed,
-                                            const bool& aIsAtEndOfLine,
-                                            const int32_t& aGranularity,
-                                            bool aFromUser) {
-  return PDocAccessibleChild::SendCaretMoveEvent(
-      aID, GetCaretRectFor(aID), aOffset, aIsSelectionCollapsed, aIsAtEndOfLine,
-      aGranularity, aFromUser);
-}
-
-#if !defined(XP_WIN)
-mozilla::ipc::IPCResult DocAccessibleChild::RecvAnnounce(
-    const uint64_t& aID, const nsAString& aAnnouncement,
-    const uint16_t& aPriority) {
-  LocalAccessible* acc = IdToAccessible(aID);
-  if (acc) {
-    acc->Announce(aAnnouncement, aPriority);
-  }
-
-  return IPC_OK();
-}
-#endif  // !defined(XP_WIN)
-
 mozilla::ipc::IPCResult DocAccessibleChild::RecvScrollSubstringToPoint(
     const uint64_t& aID, const int32_t& aStartOffset, const int32_t& aEndOffset,
     const uint32_t& aCoordinateType, const int32_t& aX, const int32_t& aY) {
@@ -411,6 +380,25 @@ mozilla::ipc::IPCResult DocAccessibleChild::RecvScrollSubstringToPoint(
   }
 
   return IPC_OK();
+}
+
+mozilla::ipc::IPCResult DocAccessibleChild::RecvAckMutationEvents() {
+  mHasUnackedMutationEvents = false;
+  return IPC_OK();
+}
+
+/* static */
+mozilla::LayoutDeviceIntRect DocAccessibleChild::GetCaretRectForIPCEvent(
+    LocalAccessible* aAcc) {
+  HyperTextAccessible* ht = aAcc->AsHyperText();
+  if (ht) {
+    auto [rect, widget] = ht->GetCaretRect();
+    // Remove doc offset and reapply in parent.
+    LayoutDeviceIntRect docBounds = ht->Document()->Bounds();
+    rect.MoveBy(-docBounds.X(), -docBounds.Y());
+    return rect;
+  }
+  return LayoutDeviceIntRect();
 }
 
 LocalAccessible* DocAccessibleChild::IdToAccessible(const uint64_t& aID) const {
@@ -425,6 +413,50 @@ HyperTextAccessible* DocAccessibleChild::IdToHyperTextAccessible(
     const uint64_t& aID) const {
   LocalAccessible* acc = IdToAccessible(aID);
   return acc && acc->IsHyperText() ? acc->AsHyperText() : nullptr;
+}
+
+void DocAccessibleChild::MutationEventBatcher::PushMutationEventData(
+    MutationEventData aData, uint32_t aAccCount, DocAccessibleChild& aDocAcc) {
+  // We want to send the mutation events in batches. The number of events in a
+  // batch is unscientific. The goal is to avoid sending more data than would
+  // overwhelm the IPC mechanism (see IPC::Channel::kMaximumMessageSize), but we
+  // stop short of measuring actual message size here. We also don't want to
+  // send too many events in one message, since that could choke up the parent
+  // process as it tries to fire all the events synchronously. To address these
+  // constraints, we construct batches of mutation event data, limiting our
+  // events by number of Accessibles touched.
+  MOZ_ASSERT(aAccCount <= kMaxAccsPerMessage,
+             "More Accessibles given than can fit in a single batch");
+  MOZ_ASSERT(aAccCount > 0, "Attempting to send an empty mutation event.");
+
+  // If we hit the exact limit of max Accessibles per message, send the queued
+  // mutation events. This happens somewhat often due to the logic in
+  // InsertIntoIpcTree that attempts to generate perfectly-sized ShowEventData.
+  if (mAccCount + aAccCount == kMaxAccsPerMessage) {
+    mMutationEventData.AppendElement(std::move(aData));
+    SendQueuedMutationEvents(aDocAcc);
+    return;
+  }
+
+  // If the batch cannot accommodate the number of new Accessibles, send the
+  // queued events, then append the event data.
+  if (mAccCount + aAccCount > kMaxAccsPerMessage) {
+    SendQueuedMutationEvents(aDocAcc);
+  }
+  mMutationEventData.AppendElement(std::move(aData));
+  mAccCount += aAccCount;
+}
+
+void DocAccessibleChild::MutationEventBatcher::SendQueuedMutationEvents(
+    DocAccessibleChild& aDocAcc) {
+  if (AppShutdown::IsShutdownImpending()) {
+    return;
+  }
+  aDocAcc.SendMutationEvents(mMutationEventData);
+
+  // Reset the batcher state.
+  mMutationEventData.Clear();
+  mAccCount = 0;
 }
 
 }  // namespace a11y

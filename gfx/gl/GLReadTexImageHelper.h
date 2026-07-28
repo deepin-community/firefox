@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,9 +6,9 @@
 #define GLREADTEXIMAGEHELPER_H_
 
 #include "GLContextTypes.h"
-#include "mozilla/Attributes.h"
 #include "nsSize.h"
-#include "mozilla/RefPtr.h"
+#include "mozilla/AlreadyAddRefed.h"
+#include "mozilla/gfx/MatrixFwd.h"
 #include "mozilla/gfx/Types.h"
 
 namespace mozilla {
@@ -72,11 +70,13 @@ class GLReadTexImageHelper final {
    */
   already_AddRefed<gfx::DataSourceSurface> ReadTexImage(
       GLuint aTextureId, GLenum aTextureTarget, const gfx::IntSize& aSize,
+      const gfx::Matrix4x4& aTexMatrix,
       /* ShaderProgramType */ int aShaderProgram, bool aYInvert = false);
 
   bool ReadTexImage(gfx::DataSourceSurface* aDest, GLuint aTextureId,
                     GLenum aTextureTarget, const gfx::IntSize& aSize,
-                    int aShaderProgram, bool aYInvert = false);
+                    const gfx::Matrix4x4& aTexMatrix, int aShaderProgram,
+                    bool aYInvert = false);
 };
 
 }  // namespace gl

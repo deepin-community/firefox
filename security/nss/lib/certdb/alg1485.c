@@ -403,7 +403,7 @@ ParseRFC1485AVA(PLArenaPool* arena, const char** pbp, const char* endptr)
     }
 
     /* is this a dotted decimal OID attribute type ? */
-    if (!PL_strncasecmp("oid.", tagBuf, 4) || isdigit(tagBuf[0])) {
+    if (!PL_strncasecmp("oid.", tagBuf, 4) || isdigit((unsigned char)tagBuf[0])) {
         rv = SEC_StringToOID(arena, &derOid, tagBuf, strlen(tagBuf));
         isDottedOid = (PRBool)(rv == SECSuccess);
     } else {
@@ -845,6 +845,11 @@ get_hex_string(SECItem* data)
     static const char hex[] = { "0123456789ABCDEF" };
 
     /* '#' + 2 chars per octet + terminator */
+    /* Reject lengths that would overflow data->len * 2 + 2 in unsigned int. */
+    if (data->len > (UINT_MAX - 2) / 2) {
+        PORT_SetError(SEC_ERROR_INPUT_LEN);
+        return NULL;
+    }
     rv = SECITEM_AllocItem(NULL, NULL, data->len * 2 + 2);
     if (!rv) {
         return NULL;
@@ -942,9 +947,9 @@ AppendAVA(stringBuf* bufp, CERTAVA* ava, CertStrictnessLevel strict)
 #define vt n2k.valueType
 
     /* READABLE mode recognizes more names from the name2kinds table
-   * than do STRICT or INVERTIBLE modes.  This assignment chooses the
-   * point in the table where the attribute type name scanning stops.
-   */
+     * than do STRICT or INVERTIBLE modes.  This assignment chooses the
+     * point in the table where the attribute type name scanning stops.
+     */
     endKind = (strict == CERT_N2A_READABLE) ? SEC_OID_UNKNOWN
                                             : SEC_OID_AVA_POSTAL_ADDRESS;
     tag = CERT_GetAVATag(ava);
@@ -1046,8 +1051,8 @@ AppendAVA(stringBuf* bufp, CERTAVA* ava, CertStrictnessLevel strict)
     memcpy(encodedAVA, tagName, nameLen);
     if (truncateName) {
         /* If tag name is too long, we know it is an OID form that was
-     * allocated from the heap, so we can modify it in place
-     */
+         * allocated from the heap, so we can modify it in place
+         */
         encodedAVA[nameLen - 1] = '.';
         encodedAVA[nameLen - 2] = '.';
         encodedAVA[nameLen - 3] = '.';
@@ -1133,16 +1138,16 @@ CERT_NameToAsciiInvertible(CERTName* name, CertStrictnessLevel strict)
     lastRdn--;
 
     /*
-   * Loop over name contents in _reverse_ RDN order appending to string
-   */
+     * Loop over name contents in _reverse_ RDN order appending to string
+     */
     for (rdn = lastRdn; rdn >= rdns; rdn--) {
         CERTAVA** avas = (*rdn)->avas;
         CERTAVA* ava;
         PRBool newRDN = PR_TRUE;
 
         /*
-     * XXX Do we need to traverse the AVAs in reverse order, too?
-     */
+         * XXX Do we need to traverse the AVAs in reverse order, too?
+         */
         while (avas && (ava = *avas++) != NULL) {
             SECStatus rv;
             /* Put in comma or plus separator */
@@ -1357,7 +1362,7 @@ CERT_GetCertificateEmailAddress(CERTCertificate* cert)
     }
     if (rawEmailAddr) {
         for (i = 0; i <= (int)PORT_Strlen(rawEmailAddr); i++) {
-            rawEmailAddr[i] = tolower(rawEmailAddr[i]);
+            rawEmailAddr[i] = tolower((unsigned char)rawEmailAddr[i]);
         }
     }
 
@@ -1383,7 +1388,7 @@ appendStringToBuf(char* dest, char* src, PRUint32* pRemaining)
     if (dest && src && src[0] && *pRemaining > (len = PL_strlen(src))) {
         PRUint32 i;
         for (i = 0; i < len; ++i)
-            dest[i] = tolower(src[i]);
+            dest[i] = tolower((unsigned char)src[i]);
         dest[len] = 0;
         dest += len + 1;
         *pRemaining -= len + 1;
@@ -1400,13 +1405,13 @@ appendItemToBuf(char* dest, SECItem* src, PRUint32* pRemaining)
     if (dest && src && src->data && src->len && src->data[0]) {
         PRUint32 len = src->len;
         PRUint32 i;
-        PRUint32 reqLen = len + 1;
+        PRUint64 reqLen = (PRUint64)len + 1;
         /* are there any embedded control characters ? */
         for (i = 0; i < len; i++) {
             if (NEEDS_HEX_ESCAPE(src->data[i]))
                 reqLen += 2;
         }
-        if (*pRemaining > reqLen) {
+        if (*pRemaining >= reqLen) {
             for (i = 0; i < len; ++i) {
                 PRUint8 c = src->data[i];
                 if (NEEDS_HEX_ESCAPE(c)) {
@@ -1422,7 +1427,7 @@ appendItemToBuf(char* dest, SECItem* src, PRUint32* pRemaining)
                 }
             }
             *dest++ = '\0';
-            *pRemaining -= reqLen;
+            *pRemaining -= (PRUint32)reqLen;
         }
     }
     return dest;
@@ -1440,7 +1445,7 @@ cert_GetCertificateEmailAddresses(CERTCertificate* cert)
     char* pBuf = NULL;
     PORTCheapArenaPool tmpArena;
     PRUint32 maxLen = 0;
-    PRInt32 finalLen = 0;
+    PRUint32 finalLen = 0;
     SECStatus rv;
     SECItem subAltName;
 

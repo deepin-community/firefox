@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Wótkaz w nowem rejtariku wócyniś
     .accesskey = r
+main-context-menu-open-link-split-view =
+    .label = Wótkaz w rozdźělonem naglěźe wócyniś
+    .accesskey = W
 main-context-menu-open-link-container-tab =
     .label = Wótkaz w nowem kontejnerowem rejtariku wócyniś
     .accesskey = t
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Wótkaz do { -pocket-brand-name } składowaś
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = E-mailowu adresu kopěrowaś
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Wótkaz kopěrowaś
     .accesskey = z
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Wótkaz bźez slědowanja sedła kopěrowaś
-    .accesskey = k
+main-context-menu-preview-link =
+    .label = Pśeglěd wótkaza
+    .accesskey = P
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Cysty wótkaz kopěrowaś
+    .accesskey = a
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Wóźeńske elementy schowaś
     .accesskey = w
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Połna wobrazowka
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Wopisanje pokazaś
     .accesskey = o
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Wobraz z { $engine } pytaś
+    .accesskey = b
 main-context-menu-video-save-as =
     .label = Wideo składować ako…
     .accesskey = d
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Awdiodataju e-mailowaś…
     .accesskey = i
+main-context-menu-send-to-device-2 =
+    .label = Na rěd pósłaś
+    .accesskey = s
+main-context-menu-send-to-mobile-2 =
+    .label = Na mobilny rěd pósłaś
+    .accesskey = m
+main-context-menu-send-to-mobile-sign-in = Pśizjawśo se, aby rejtariki pósłał
+main-context-menu-send-to-mobile-enable-sync2 = Zmóžniśo synchronizaciju, aby rejtarik pósłał
+main-context-menu-send-to-mobile-connect-phone2 = Zwěžćo swój telefon
+main-context-menu-send-to-mobile-device-missing2 = Njewiźiśo swój rěd?
+main-context-menu-send-to-mobile-sign-in-from-link = Pśizjawśo se, aby wótkaz pósłał
+main-context-menu-send-to-mobile-sign-in-from-page = Pśizjawśo se, aby bok pósłał
+main-context-menu-send-to-mobile-enable-sync3 = Zmóžniśo synchronizaciju, aby rejtariki pósłał
+main-context-menu-send-to-mobile-enable-sync-from-link = Zmóžniśo synchronizaciju, aby wótkaz pósłał
+main-context-menu-send-to-mobile-enable-sync-from-page = Zmóžniśo synchronizaciju, aby bok pósłał
+main-context-menu-send-to-mobile-connect-phone3 = Zwěžćo rěd, aby rejtariki pósłał
+main-context-menu-send-to-mobile-connect-phone-from-link = Zwěžćo rěd, aby wótkaz pósłał
+main-context-menu-send-to-mobile-connect-phone-from-page = Zwěžćo rěd, aby bok pósłał
 main-context-menu-save-to-pocket =
     .label = Bok do { -pocket-brand-name } składowaś
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Bok na rěd pósłaś
     .accesskey = B
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Skłaźone pśizjawjenje wužywaś
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Gronidło za toś to pytanje pśidaś…
     .accesskey = G
+main-context-menu-add-engine =
+    .label = Pytnicu pśidaś
+    .accesskey = P
 main-context-menu-link-send-to-device =
     .label = Wótkaz na rěd pósłaś
     .accesskey = W
+main-context-menu-link-send-to-mobile =
+    .label = Wótkaz na mobilny rěd pósłaś
+    .accesskey = k
 main-context-menu-frame =
     .label = Toś ten wobłuk
     .accesskey = T
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Gronidło pokazaś
     .accesskey = r
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nowy
+main-context-menu-pdfjs-copy-page =
+    .label = Bok kopěrowaś
+main-context-menu-pdfjs-cut-page =
+    .label = Bok wurězaś
+main-context-menu-pdfjs-delete-page =
+    .label = Bok lašowaś
+main-context-menu-pdfjs-save-page =
+    .label = Wuběrk składowaś ako…

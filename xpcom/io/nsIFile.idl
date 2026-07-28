@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,10 +12,30 @@ struct PRLibrary;
 #include "mozilla/Path.h"
 #include "nsCOMPtr.h"
 #include "nsStringFwd.h"
+
+// Platform-native path string types.
 namespace mozilla {
-using PathString = nsTString<filesystem::Path::value_type>;
 using PathSubstring = nsTSubstring<filesystem::Path::value_type>;
-} // namespace mozilla
+using PathString = nsTString<filesystem::Path::value_type>;
+using AutoPathString = nsTAutoString<filesystem::Path::value_type>;
+using DependentPathString = nsTDependentString<filesystem::Path::value_type>;
+}  // namespace mozilla
+
+/**
+ * Public method to create an instance of a nsIFile. This function may be called
+ * prior to NS_InitXPCOM.
+ *
+ * @param aPath A string which specifies a full file path to a location.
+ * Relative paths will be treated as an error (NS_ERROR_FILE_UNRECOGNIZED_PATH).
+ * Path must be in the platform's native path encoding.
+ *
+ * @param aResult Interface pointer to a new instance of an nsIFile
+ *
+ * @return NS_OK for success; other error codes indicate a failure.
+ */
+XPCOM_API([[nodiscard]] nsresult)
+NS_NewPathStringLocalFile(const mozilla::PathSubstring& aPath,
+                          nsIFile** aResult);
 %}
 
 [ptr] native PRFileDescStar(PRFileDesc);
@@ -283,12 +302,6 @@ interface nsIFile : nsISupports
     readonly attribute PRTime creationTime;
     readonly attribute PRTime creationTimeOfLink;
 
-    /**
-     *  WARNING!  On the Mac, getting/setting the file size with nsIFile
-     *  only deals with the size of the data fork.  If you need to
-     *  know the size of the combined data and resource forks use the
-     *  GetFileSizeWithResFork() method defined on nsILocalFileMac.
-     */
     attribute int64_t fileSize;
     readonly attribute int64_t fileSizeOfLink;
 
@@ -431,8 +444,10 @@ interface nsIFile : nsISupports
      *       initWithNativePath, the filePath must be in the native
      *       filesystem charset.
      */
+    [must_use]
     void initWithPath(in AString filePath);
-    [noscript] void initWithNativePath(in ACString filePath);
+    [noscript, must_use]
+    void initWithNativePath(in ACString filePath);
 
     /**
      *  initWithFile

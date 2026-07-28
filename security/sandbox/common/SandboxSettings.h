@@ -1,11 +1,13 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef mozilla_SandboxSettings_h
 #define mozilla_SandboxSettings_h
-#include <cinttypes>
+
+#if defined(MOZ_PROFILE_GENERATE)
+#  include <string>
+#endif
 
 #include "nsIXULRuntime.h"
 
@@ -24,8 +26,18 @@ int GetEffectiveContentSandboxLevel();
 int GetEffectiveSocketProcessSandboxLevel();
 int GetEffectiveGpuSandboxLevel();
 
+#if defined(MOZ_PROFILE_GENERATE)
+#  if defined(XP_WIN)
+bool GetLlvmProfileDir(std::wstring& parentPath);
+#  else
+bool GetLlvmProfileDir(std::string& parentPath);
+#  endif
+#endif
+
 // Checks whether the effective content sandbox level is > 0.
 bool IsContentSandboxEnabled();
+
+bool IsGPUSandboxEnabled();
 
 const char* ContentWin32kLockdownStateToString(
     nsIXULRuntime::ContentWin32kLockdownState aValue);

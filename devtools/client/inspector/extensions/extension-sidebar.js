@@ -7,7 +7,7 @@
 const {
   createElement,
   createFactory,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const EventEmitter = require("resource://devtools/shared/event-emitter.js");
 const {
   Provider,
@@ -17,10 +17,6 @@ const extensionsSidebarReducer = require("resource://devtools/client/inspector/e
 const {
   default: objectInspectorReducer,
 } = require("resource://devtools/client/shared/components/object-inspector/reducer.js");
-
-const ExtensionSidebarComponent = createFactory(
-  require("resource://devtools/client/inspector/extensions/components/ExtensionSidebar.js")
-);
 
 const {
   updateExtensionPage,
@@ -40,15 +36,15 @@ const {
  *
  * @param {Inspector} inspector
  *        The inspector where the sidebar should be hooked to.
- * @param {Object} options
- * @param {String} options.id
+ * @param {object} options
+ * @param {string} options.id
  *        The unique id of the sidebar.
- * @param {String} options.title
+ * @param {string} options.title
  *        The title of the sidebar.
  */
-class ExtensionSidebar {
+class ExtensionSidebar extends EventEmitter {
   constructor(inspector, { id, title }) {
-    EventEmitter.decorate(this);
+    super();
     this.inspector = inspector;
     this.store = inspector.store;
     this.id = id;
@@ -64,6 +60,13 @@ class ExtensionSidebar {
    */
   get provider() {
     if (!this._provider) {
+      // Load the ExtensionSidebar component via the Browser Loader as it ultimately loads Reps and Object Inspector,
+      // which are expected to be loaded in a document scope.
+      const ExtensionSidebarComponent = createFactory(
+        this.inspector.browserRequire(
+          "resource://devtools/client/inspector/extensions/components/ExtensionSidebar.js"
+        )
+      );
       this._provider = createElement(
         Provider,
         {
@@ -125,16 +128,21 @@ class ExtensionSidebar {
    *
    * This method is called by the inspector when the ExtensionSidebar is being removed
    * (or when the inspector is being destroyed).
+   *
+   * @param {object} options
+   * @param {boolean} options.fromInspectorDestroy
    */
-  destroy() {
+  destroy({ fromInspectorDestroy } = {}) {
     if (this.destroyed) {
       throw new Error(
         `ExtensionSidebar instances cannot be destroyed more than once`
       );
     }
 
-    // Remove the data related to this extension from the inspector store.
-    this.store.dispatch(removeExtensionSidebar(this.id));
+    if (fromInspectorDestroy !== true) {
+      // Remove the data related to this extension from the inspector store
+      this.store.dispatch(removeExtensionSidebar(this.id));
+    }
 
     this.inspector = null;
     this.store = null;

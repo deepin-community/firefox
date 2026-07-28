@@ -7,7 +7,6 @@ page-subtitle =
     Ова страница садржи техничке податке који могу бити корисни када
     покушавате да решите неки проблем. Ако вам требају одговори на често постављана питања
     о програму { -brand-short-name }, прегледајте наш <a data-l10n-name="support-link">веб сајт за подршку</a>.
-
 crashes-title = Извештаји о отказивању
 crashes-id = ID извештаја
 crashes-send-date = Послато
@@ -19,6 +18,14 @@ support-addons-type = Тип
 support-addons-enabled = Омогућено
 support-addons-version = Верзија
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Локација
+legacy-user-stylesheets-title = Застарели кориснички стилови
+legacy-user-stylesheets-enabled = Активно
+legacy-user-stylesheets-stylesheet-types = Стилови
+legacy-user-stylesheets-no-stylesheets-found = Нису пронађени стилови
 security-software-title = Безбедносни софтвер
 security-software-type = Тип
 security-software-name = Назив
@@ -26,11 +33,11 @@ security-software-antivirus = Антивирус
 security-software-antispyware = Антиспајвер
 security-software-firewall = Заштитни зид
 features-title =
-    Функције { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "gen") }
-        [feminine] { -brand-short-name(case: "gen") }
-        [neuter] { -brand-short-name(case: "gen") }
-       *[other] програма { -brand-short-name }
+    { -brand-short-name.gender ->
+        [masculine] Функције { -brand-short-name(case: "gen") }
+        [feminine] Функције { -brand-short-name(case: "gen") }
+        [neuter] Функције { -brand-short-name(case: "gen") }
+       *[other] Функције програма { -brand-short-name }
     }
 features-name = Назив
 features-version = Верзија
@@ -76,12 +83,11 @@ app-basics-key-mozilla = Кључ Mozilla сервиса за локацију
 app-basics-safe-mode = Безбедни режим
 app-basics-memory-size = Величина меморије (RAM)
 app-basics-disk-available = Доступан простор на диску
-
+app-basics-pointing-devices = Показивачки уређаји
 # Variables:
 #   $value (number) - Amount of data being stored
 #   $unit (string) - The unit of data being stored (e.g. MB)
 app-basics-data-size = { $value } { $unit }
-
 show-dir-label = Прикажи у фасцикли
 environment-variables-title = Варијабле окружења
 environment-variables-name = Назив
@@ -123,6 +129,10 @@ place-database-stats-efficiency-perc = Ефикасност (%)
 place-database-stats-sequentiality-perc = Секвенцијалност (%)
 place-database-integrity = Интегритет
 place-database-verify-integrity = Потврди интегритет
+place-database-last-idle-maintenance-data = Датум последњег одржавања у мировању
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Датум последњег чишћења
+place-database-last-integrity-corruption-date = Датум последње корупције интегритета
 a11y-title = Приступачност
 a11y-activated = Активирана
 a11y-force-disabled = Спречи приступачност
@@ -175,9 +185,30 @@ media-capabilities-enumerate = Попис уноса базе података
 
 media-codec-support-sw-decoding = Софтверско декодирање
 media-codec-support-hw-decoding = Хардверско декодирање
+media-codec-support-sw-encoding = Софтверско кодирање
+media-codec-support-hw-encoding = Хардверско кодирање
 media-codec-support-codec-name = Име кодека
 media-codec-support-supported = Подржано
 media-codec-support-unsupported = Није подржано
+media-codec-support-error = Информације о подршци за кодеке нису доступне. Покушајте поново након пуштања медијске датотеке.
+media-codec-support-lack-of-extension = Инсталирај додатак
+
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-content-decryption-modules-title = Информације о модулима за дешифровање садржаја
+media-key-system-name = Назив система кључева
+media-video-robustness = Робусност видеа
+media-audio-robustness = Робусност звука
+media-cdm-capabilities = Могућности
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Чист почетак (Clear Lead)
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = HDCP 2.2 компатибилно
 
 ##
 
@@ -214,7 +245,6 @@ report-crash-for-days =
         [few] Извештаји о отказивању за протекла { $days } дана
        *[other] Извештаји о отказивању за протеклих { $days } дана
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -223,7 +253,6 @@ crashes-time-minutes =
         [few] Пре { $minutes } минута
        *[other] Пре { $minutes } минута
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -232,7 +261,6 @@ crashes-time-hours =
         [few] Пре { $hours } сата
        *[other] Пре { $hours } сати
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -241,7 +269,6 @@ crashes-time-days =
         [few] Пре { $days } дана
        *[other] Пре { $days } дана
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -250,7 +277,6 @@ pending-reports =
         [few] Сви извештаји о отказивању (укључујући { $reports } нерешена случаја у датом периоду)
        *[other] Сви извештаји о отказивању (укључујући { $reports } нерешених случаја у датом периоду)
     }
-
 raw-data-copied = Подаци копирани у бележницу
 text-copied = Текст копиран у бележницу
 
@@ -263,12 +289,11 @@ blocked-mismatched-version = Блокирана верзија драјвера 
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Блокирано за верзију драјвера графике коју имате. Покушајте да ажурирате управљачки програм на верзију { $driverVersion } или новију.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType параметри
-
 compositing = Састављање
+support-font-determination = Информације за решавање проблема са видљивошћу фонтова
 hardware-h264 = Hardware H264 декодирање
 main-thread-no-omtc = главна нит, без OMTC
 yes = да
@@ -282,7 +307,6 @@ virtual-monitor-disp = Приказ виртуелног монитора
 
 found = Пронађено
 missing = Недостаје
-
 gpu-process-pid = GPUProcessPid
 gpu-process = GPUProcess
 gpu-description = Опис
@@ -307,19 +331,15 @@ webgl2-driver-extensions = WebGL 2 – проширења драјвера
 webgl2-extensions = WebGL 2 – проширења
 webgpu-default-adapter = Подразумевани WebGPU адаптер
 webgpu-fallback-adapter = Резервни WebGPU адаптер
-
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Блокирано због познатих проблема: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = На црној листи; код грешке { $failureCode }
-
 d3d11layers-crash-guard = D3D11 композитор
 glcontext-crash-guard = OpenGL
 wmfvpxvideo-crash-guard = WMF VPX видео декодер
-
 reset-on-next-restart = Ресетуј при следећем покретању
 gpu-process-kill-button = Угаси GPU процес
 gpu-device-reset = Поновно покретање уређаја
@@ -329,14 +349,15 @@ content-uses-tiling = Користи плочице (садржај)
 off-main-thread-paint-enabled = Нит за сликање омогућена
 off-main-thread-paint-worker-count = Thread Painting Worker бројач
 target-frame-rate = Циљана брзина освежавања тј. Framerate
-
 min-lib-versions = Очекивана минимална верзија
 loaded-lib-versions = Верзија у употреби
-
 has-seccomp-bpf = Seccomp-BPF (Системско филтрирање позива)
 has-seccomp-tsync = Seccomp синхронизација нити
 has-user-namespaces = Именски простори корисника
 has-privileged-user-namespaces = Именски простори корисника за привилеговане процесе
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Ова функција није дозвољена од стране вашег система. Ово може ограничити безбедносне функције { -brand-short-name }-а.
 can-sandbox-content = Sandboxing процеса садржаја
 can-sandbox-media = Медијска компонента Sandboxing
 content-sandbox-level = Ниво Sandbox процеса садржаја
@@ -347,18 +368,15 @@ sandbox-proc-type-content = садржај
 sandbox-proc-type-file = садржај дадотеке
 sandbox-proc-type-media-plugin = медијска компонента
 sandbox-proc-type-data-decoder = декодер података
-
 startup-cache-title = Кеш покретања
 startup-cache-disk-cache-path = Путања до дисковног кеша
 startup-cache-ignore-disk-cache = Игноришите дисковни кеш
 startup-cache-found-disk-cache-on-init = Дисковни кеш пронађен током иницијализације
 startup-cache-wrote-to-disk-cache = Записано у дисковни кеш
-
 launcher-process-status-0 = Омогућено
 launcher-process-status-1 = Онемогућено због грешке
 launcher-process-status-2 = Онемогућен силом
 launcher-process-status-unknown = Непознат статус
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
@@ -378,7 +396,6 @@ fission-status-enabled-by-user-pref = Омогућио корисник
 fission-status-disabled-by-user-pref = Онемогућио корисник
 fission-status-disabled-by-e10s-other = E10s онемогућен
 fission-status-enabled-by-rollout = Омогућено фазним распоређивањем
-
 async-pan-zoom = Асинхроно кретање/увеличавање
 apz-none = нема
 wheel-enabled = унос точкића омогућен
@@ -409,13 +426,45 @@ support-printing-modified-settings = Измењена подешавања шт�
 support-printing-prefs-name = Назив
 support-printing-prefs-value = Вредност
 
+## Remote Settings sections
+
+support-remote-settings-title = Удаљена подешавања
+support-remote-settings-status = Стање
+support-remote-settings-status-ok = У реду
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Не ради
+support-remote-settings-last-check = Последња провера
+support-remote-settings-local-timestamp = Локална временска ознака
+support-remote-settings-sync-history = Историјат
+support-remote-settings-sync-history-status = Стање
+support-remote-settings-sync-history-datetime = Датум
+support-remote-settings-sync-history-infos = Информације
+
 ## Normandy sections
 
 support-remote-experiments-title = Удаљени експерименти
 support-remote-experiments-name = Назив
 support-remote-experiments-branch = Експериментална грана
 support-remote-experiments-see-about-studies = За више информација погледајте <a data-l10n-name="support-about-studies-link">about:studies</a>, укључујући како онемогућити појединачне експерименте или како да забранитите да их { -brand-short-name } покреће у будућности.
-
 support-remote-features-title = Удаљене функције
 support-remote-features-name = Назив
 support-remote-features-status = Статус
+
+## Pointing devices
+
+pointing-device-mouse = Миш
+pointing-device-touchscreen = Екран на додир
+pointing-device-pen-digitizer = Дигитализатор оловке
+pointing-device-none = Нема показивачких уређаја
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Анализа садржаја (DLP)
+content-analysis-active = Активно
+content-analysis-connected-to-agent = Повезан са агентом
+content-analysis-agent-path = Путања агента
+content-analysis-agent-failed-signature-verification = Верификација потписа агента није успела
+content-analysis-request-count = Број захтева

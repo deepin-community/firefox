@@ -75,7 +75,7 @@ async function showFeatureCallout(browser, message) {
     resolveClosed = resolve;
   });
   const config = {
-    win: browser.ownerGlobal,
+    win: browser.documentGlobal,
     location: "chrome",
     context: "chrome",
     browser,
@@ -133,32 +133,6 @@ add_task(async function feature_callout_closes_on_dismiss() {
     message_id: sinon.match(messageID),
   });
   sandbox.restore();
-  await BrowserTestUtils.closeWindow(win);
-});
-
-add_task(async function feature_callout_respects_cfr_features_pref() {
-  await SpecialPowers.pushPrefEnv({
-    set: [
-      [
-        "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features",
-        false,
-      ],
-    ],
-  });
-
-  const testMessage = getTestMessage();
-
-  const win = await BrowserTestUtils.openNewBrowserWindow();
-  const doc = win.document;
-  const browser = win.gBrowser.selectedBrowser;
-
-  await showFeatureCallout(browser, testMessage);
-  ok(
-    !doc.querySelector(calloutSelector),
-    "Feature Callout element was not created because CFR pref was disabled"
-  );
-
-  await SpecialPowers.popPrefEnv();
   await BrowserTestUtils.closeWindow(win);
 });
 
@@ -269,6 +243,8 @@ add_task(async function feature_callout_dismiss_on_escape() {
   const win = await BrowserTestUtils.openNewBrowserWindow();
   const doc = win.document;
   const browser = win.gBrowser.selectedBrowser;
+  // Ensure the browser is focused
+  win.gBrowser.selectedBrowser.focus();
 
   const { closed } = await showFeatureCallout(browser, testMessage);
 
@@ -289,6 +265,7 @@ add_task(async function feature_callout_dismiss_on_escape() {
     },
     message_id: "TEST_CALLOUT",
   });
+  sandbox.restore();
   await BrowserTestUtils.closeWindow(win);
 });
 
@@ -300,6 +277,9 @@ add_task(async function feature_callout_returns_default_focus_to_top() {
   const win = await BrowserTestUtils.openNewBrowserWindow();
   const doc = win.document;
   const browser = win.gBrowser.selectedBrowser;
+  // Ensure the browser is focused
+  win.gBrowser.selectedBrowser.focus();
+  let focusedElement = doc.activeElement;
 
   const { closed } = await showFeatureCallout(browser, testMessage);
 
@@ -313,8 +293,8 @@ add_task(async function feature_callout_returns_default_focus_to_top() {
 
   Assert.strictEqual(
     doc.activeElement.localName,
-    "body",
-    `by default focus returns to the document body after callout closes`
+    focusedElement.localName,
+    `by default focus returns to the browser after callout closes`
   );
   await BrowserTestUtils.closeWindow(win);
 });
@@ -422,4 +402,142 @@ add_task(async function feature_callout_pdfjs_theme() {
     theme: { preset: "pdfjs", simulateContent: true },
   });
   await BrowserTestUtils.closeWindow(win);
+});
+
+add_task(async function page_event_listeners_every_window() {
+  const testMessage2 = getTestMessage();
+  testMessage2.content.screens[0].content.page_event_listeners = [
+    {
+      params: {
+        type: "TabPinned",
+        selectors: "#main-window",
+        options: {
+          every_window: true,
+        },
+      },
+      action: {
+        dismiss: true,
+      },
+    },
+  ];
+  const sandbox = sinon.createSandbox();
+  const spy = new TelemetrySpy(sandbox);
+
+  const win = await BrowserTestUtils.openNewBrowserWindow();
+  const doc = win.document;
+  const browser = win.gBrowser.selectedBrowser;
+
+  await showFeatureCallout(browser, testMessage2);
+  info("Waiting for callout to render");
+
+  const newWin = await BrowserTestUtils.openNewBrowserWindow();
+  const newTab = await BrowserTestUtils.openNewForegroundTab(
+    newWin.gBrowser,
+    "about:mozilla"
+  );
+
+  info("Waiting to pin tab in new window");
+  let newTabPinned = BrowserTestUtils.waitForEvent(newTab, "TabPinned");
+  newWin.gBrowser.pinTab(newTab);
+  await newTabPinned;
+
+  ok(newTab.pinned, "Tab should be pinned");
+
+  info("Waiting to dismiss callout");
+  await waitForCalloutRemoved(doc);
+  ok(
+    !doc.querySelector(calloutSelector),
+    "Callout is removed from screen on page_event"
+  );
+
+  //Check dismiss telemetry
+  spy.assertCalledWith({
+    event: "DISMISS",
+    event_context: {
+      source: sinon.match("tab.tabbrowser-tab"),
+      page: "chrome",
+    },
+    message_id: "TEST_CALLOUT",
+  });
+  await BrowserTestUtils.closeWindow(newWin);
+  await BrowserTestUtils.closeWindow(win);
+  sandbox.restore();
+});
+
+add_task(async function multiple_page_event_listeners_every_window() {
+  const testMessage2 = getTestMessage();
+  testMessage2.content.screens[0].content.page_event_listeners = [
+    {
+      params: {
+        type: "click",
+        selectors: "#PanelUI-menu-button",
+        options: {
+          every_window: true,
+        },
+      },
+      action: {
+        dismiss: true,
+      },
+    },
+    {
+      params: {
+        type: "click",
+        selectors: "#unified-extensions-button",
+        options: {
+          every_window: true,
+        },
+      },
+      action: {
+        dismiss: true,
+      },
+    },
+    {
+      params: {
+        type: "click",
+        selectors: "#fxa-toolbar-menu-button",
+        options: {
+          every_window: true,
+        },
+      },
+      action: {
+        dismiss: true,
+      },
+    },
+  ];
+  const sandbox = sinon.createSandbox();
+  const spy = new TelemetrySpy(sandbox);
+
+  const win = await BrowserTestUtils.openNewBrowserWindow();
+  const doc = win.document;
+  const browser = win.gBrowser.selectedBrowser;
+
+  await showFeatureCallout(browser, testMessage2);
+  info("Waiting for callout to render");
+
+  const newWin = await BrowserTestUtils.openNewBrowserWindow();
+  const doc2 = newWin.document;
+
+  info("Clicking on button - second page event listener");
+  doc2.querySelector("#unified-extensions-button").click();
+
+  info("Waiting to dismiss callout");
+  await waitForCalloutRemoved(doc);
+  ok(
+    !doc.querySelector(calloutSelector),
+    "Callout is removed from screen on page_event"
+  );
+
+  //Check dismiss telemetry
+  spy.assertCalledWith({
+    event: "DISMISS",
+    event_context: {
+      source: sinon.match("#unified-extensions-button"),
+      page: "chrome",
+    },
+    message_id: "TEST_CALLOUT",
+  });
+
+  await BrowserTestUtils.closeWindow(newWin);
+  await BrowserTestUtils.closeWindow(win);
+  sandbox.restore();
 });

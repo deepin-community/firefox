@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -37,7 +36,6 @@ class ExpandedPrincipal : public nsIExpandedPrincipal,
     return nsJSPrincipals::Release();
   };
   NS_IMETHOD QueryInterface(REFNSIID aIID, void** aInstancePtr) override;
-  uint32_t GetHashValue() override;
   NS_IMETHOD GetURI(nsIURI** aURI) override;
   NS_IMETHOD GetDomain(nsIURI** aDomain) override;
   NS_IMETHOD SetDomain(nsIURI* aDomain) override;
@@ -91,11 +89,7 @@ class ExpandedPrincipal : public nsIExpandedPrincipal,
       MOZ_GUARDED_BY(mozilla::sMainThreadCapability);
 };
 
-#define NS_EXPANDEDPRINCIPAL_CID                     \
-  {                                                  \
-    0xe8ee88b0, 0x5571, 0x4086, {                    \
-      0xa4, 0x5b, 0x39, 0xa7, 0x16, 0x90, 0x6b, 0xdb \
-    }                                                \
-  }
+#define NS_EXPANDEDPRINCIPAL_CID \
+  {0xe8ee88b0, 0x5571, 0x4086, {0xa4, 0x5b, 0x39, 0xa7, 0x16, 0x90, 0x6b, 0xdb}}
 
 #endif  // ExpandedPrincipal_h

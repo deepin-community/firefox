@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,14 +10,13 @@
 #include "DOMSVGAnimatedAngle.h"
 #include "SVGAttrTearoffTable.h"
 #include "SVGOrientSMILType.h"
-#include "mozilla/ArrayUtils.h"
+#include "mozAutoDocUpdate.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/SMILValue.h"
 #include "mozilla/dom/SVGMarkerElement.h"
-#include "mozAutoDocUpdate.h"
 #include "nsContentUtils.h"
-#include "nsTextFormatter.h"
 #include "nsPrintfCString.h"
+#include "nsTextFormatter.h"
 
 using namespace mozilla::dom;
 using namespace mozilla::dom::SVGAngle_Binding;
@@ -27,13 +24,14 @@ using namespace mozilla::dom::SVGMarkerElement_Binding;
 
 namespace mozilla {
 
-static SVGAttrTearoffTable<SVGAnimatedOrient, DOMSVGAnimatedEnumeration>
-    sSVGAnimatedEnumTearoffTable;
-static SVGAttrTearoffTable<SVGAnimatedOrient, DOMSVGAnimatedAngle>
+constinit static SVGAttrTearoffTable<SVGAnimatedOrient,
+                                     DOMSVGAnimatedEnumeration>
+    sSVGAnimatedOrientEnumTearoffTable;
+constinit static SVGAttrTearoffTable<SVGAnimatedOrient, DOMSVGAnimatedAngle>
     sSVGAnimatedAngleTearoffTable;
-static SVGAttrTearoffTable<SVGAnimatedOrient, DOMSVGAngle>
+constinit static SVGAttrTearoffTable<SVGAnimatedOrient, DOMSVGAngle>
     sBaseSVGAngleTearoffTable;
-static SVGAttrTearoffTable<SVGAnimatedOrient, DOMSVGAngle>
+constinit static SVGAttrTearoffTable<SVGAnimatedOrient, DOMSVGAngle>
     sAnimSVGAngleTearoffTable;
 
 /* Helper functions */
@@ -50,14 +48,14 @@ class MOZ_RAII AutoChangeOrientNotifier {
     MOZ_ASSERT(mOrient, "Expecting non-null orient");
     if (mSVGElement && mDoSetAttr) {
       mUpdateBatch.emplace(mSVGElement->GetComposedDoc(), true);
-      mEmptyOrOldValue = mSVGElement->WillChangeOrient(mUpdateBatch.ref());
+      mSVGElement->WillChangeOrient(mUpdateBatch.ref());
     }
   }
 
   ~AutoChangeOrientNotifier() {
     if (mSVGElement) {
       if (mDoSetAttr) {
-        mSVGElement->DidChangeOrient(mEmptyOrOldValue, mUpdateBatch.ref());
+        mSVGElement->DidChangeOrient(mUpdateBatch.ref());
       }
       if (mOrient->mIsAnimated) {
         mSVGElement->AnimationNeedsResample();
@@ -69,11 +67,10 @@ class MOZ_RAII AutoChangeOrientNotifier {
   Maybe<mozAutoDocUpdate> mUpdateBatch;
   SVGAnimatedOrient* const mOrient;
   SVGElement* const mSVGElement;
-  nsAttrValue mEmptyOrOldValue;
   bool mDoSetAttr;
 };
 
-const unsigned short SVG_ANGLETYPE_TURN = 5;
+constexpr uint16_t SVG_ANGLETYPE_TURN = 5;
 
 static void GetAngleUnitString(nsAString& aUnit, uint16_t aUnitType) {
   switch (aUnitType) {
@@ -140,20 +137,21 @@ bool SVGAnimatedOrient::GetValueFromString(const nsAString& aString,
     return false;
   }
 
-  RangedPtr<const char16_t> iter = SVGContentUtils::GetStartRangedPtr(token);
-  const RangedPtr<const char16_t> end = SVGContentUtils::GetEndRangedPtr(token);
+  nsAString::const_iterator iter, end;
+  token.BeginReading(iter);
+  token.EndReading(end);
 
   if (!SVGContentUtils::ParseNumber(iter, end, aValue)) {
     return false;
   }
 
-  const nsAString& units = Substring(iter.get(), end.get());
+  const nsAString& units = Substring(iter, end);
   *aUnitType = GetAngleUnitTypeForString(units);
   return *aUnitType != SVG_ANGLETYPE_UNKNOWN;
 }
 
 /* static */
-float SVGAnimatedOrient::GetDegreesPerUnit(uint8_t aUnit) {
+float SVGAnimatedOrient::GetDegreesPerUnit(uint16_t aUnit) {
   switch (aUnit) {
     case SVG_ANGLETYPE_UNSPECIFIED:
     case SVG_ANGLETYPE_DEG:
@@ -186,36 +184,27 @@ void SVGAnimatedOrient::SetBaseValueInSpecifiedUnits(float aValue,
   }
 }
 
-nsresult SVGAnimatedOrient::ConvertToSpecifiedUnits(uint16_t unitType,
-                                                    SVGElement* aSVGElement) {
-  if (!IsValidUnitType(unitType)) {
-    return NS_ERROR_DOM_NOT_SUPPORTED_ERR;
-  }
-
+void SVGAnimatedOrient::ConvertToSpecifiedUnits(uint16_t unitType,
+                                                SVGElement* aSVGElement) {
   if (mBaseValUnit == uint8_t(unitType) &&
       mBaseType == SVG_MARKER_ORIENT_ANGLE) {
-    return NS_OK;
+    return;
   }
 
   float valueInUserUnits = mBaseVal * GetDegreesPerUnit(mBaseValUnit);
   SetBaseValue(valueInUserUnits, unitType, aSVGElement, true);
-
-  return NS_OK;
 }
 
-nsresult SVGAnimatedOrient::NewValueSpecifiedUnits(uint16_t aUnitType,
-                                                   float aValueInSpecifiedUnits,
-                                                   SVGElement* aSVGElement) {
-  NS_ENSURE_FINITE(aValueInSpecifiedUnits, NS_ERROR_ILLEGAL_VALUE);
-
-  if (!IsValidUnitType(aUnitType)) {
-    return NS_ERROR_DOM_NOT_SUPPORTED_ERR;
-  }
+void SVGAnimatedOrient::NewValueSpecifiedUnits(uint16_t aUnitType,
+                                               float aValueInSpecifiedUnits,
+                                               SVGElement* aSVGElement) {
+  MOZ_ASSERT(IsValidUnitType(aUnitType), "Unexpected unit type");
 
   if (mBaseVal == aValueInSpecifiedUnits &&
       mBaseValUnit == uint8_t(aUnitType) &&
-      mBaseType == SVG_MARKER_ORIENT_ANGLE)
-    return NS_OK;
+      mBaseType == SVG_MARKER_ORIENT_ANGLE) {
+    return;
+  }
 
   AutoChangeOrientNotifier notifier(this, aSVGElement);
 
@@ -227,7 +216,6 @@ nsresult SVGAnimatedOrient::NewValueSpecifiedUnits(uint16_t aUnitType,
     mAnimValUnit = mBaseValUnit;
     mAnimType = mBaseType;
   }
-  return NS_OK;
 }
 
 already_AddRefed<DOMSVGAngle> SVGAnimatedOrient::ToDOMBaseVal(
@@ -341,7 +329,7 @@ void SVGAnimatedOrient::GetAnimAngleValueString(
   GetAngleValueString(aValueAsString, mAnimVal, mAnimValUnit);
 }
 
-void SVGAnimatedOrient::SetBaseValue(float aValue, uint8_t aUnit,
+void SVGAnimatedOrient::SetBaseValue(float aValue, uint16_t aUnit,
                                      SVGElement* aSVGElement, bool aDoSetAttr) {
   float valueInSpecifiedUnits = aValue / GetDegreesPerUnit(aUnit);
   if (aUnit == mBaseValUnit && mBaseVal == valueInSpecifiedUnits &&
@@ -384,7 +372,7 @@ void SVGAnimatedOrient::SetBaseType(SVGEnumValue aValue,
   aRv.ThrowTypeError(err);
 }
 
-void SVGAnimatedOrient::SetAnimValue(float aValue, uint8_t aUnit,
+void SVGAnimatedOrient::SetAnimValue(float aValue, uint16_t aUnit,
                                      SVGElement* aSVGElement) {
   if (mIsAnimated && mAnimVal == aValue && mAnimValUnit == aUnit &&
       mAnimType == SVG_MARKER_ORIENT_ANGLE) {
@@ -424,10 +412,10 @@ already_AddRefed<DOMSVGAnimatedAngle> SVGAnimatedOrient::ToDOMAnimatedAngle(
 already_AddRefed<DOMSVGAnimatedEnumeration>
 SVGAnimatedOrient::ToDOMAnimatedEnum(SVGElement* aSVGElement) {
   RefPtr<DOMSVGAnimatedEnumeration> domAnimatedEnum =
-      sSVGAnimatedEnumTearoffTable.GetTearoff(this);
+      sSVGAnimatedOrientEnumTearoffTable.GetTearoff(this);
   if (!domAnimatedEnum) {
     domAnimatedEnum = new DOMAnimatedEnum(this, aSVGElement);
-    sSVGAnimatedEnumTearoffTable.AddTearoff(this, domAnimatedEnum);
+    sSVGAnimatedOrientEnumTearoffTable.AddTearoff(this, domAnimatedEnum);
   }
 
   return domAnimatedEnum.forget();
@@ -438,12 +426,13 @@ DOMSVGAnimatedAngle::~DOMSVGAnimatedAngle() {
 }
 
 SVGAnimatedOrient::DOMAnimatedEnum::~DOMAnimatedEnum() {
-  sSVGAnimatedEnumTearoffTable.RemoveTearoff(mVal);
+  sSVGAnimatedOrientEnumTearoffTable.RemoveTearoff(mVal);
 }
 
-UniquePtr<SMILAttr> SVGAnimatedOrient::ToSMILAttr(SVGElement* aSVGElement) {
+std::unique_ptr<SMILAttr> SVGAnimatedOrient::ToSMILAttr(
+    SVGElement* aSVGElement) {
   if (aSVGElement->IsSVGElement(nsGkAtoms::marker)) {
-    return MakeUnique<SMILOrient>(this, aSVGElement);
+    return std::make_unique<SMILOrient>(this, aSVGElement);
   }
   // SMILOrient would not be useful for general angle attributes (also,
   // "orient" is the only animatable <angle>-valued attribute in SVG 1.1).

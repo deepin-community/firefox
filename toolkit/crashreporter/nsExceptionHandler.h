@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,10 +8,9 @@
 // from this header you must update both implementations otherwise you'll break
 // builds that disable the crash reporter.
 
-#ifndef nsExceptionHandler_h__
-#define nsExceptionHandler_h__
+#ifndef nsExceptionHandler_h_
+#define nsExceptionHandler_h_
 
-#include "mozilla/Assertions.h"
 #include "mozilla/EnumeratedArray.h"
 #include "mozilla/Maybe.h"
 
@@ -21,26 +19,25 @@
 #include "nsError.h"
 #include "nsString.h"
 #include "nsXULAppAPI.h"
-#include "prio.h"
 #include <stddef.h>
 #include <stdint.h>
 
 #if defined(XP_WIN)
-#  ifdef WIN32_LEAN_AND_MEAN
-#    undef WIN32_LEAN_AND_MEAN
-#  endif
-#  include <windows.h>
-#endif
-
-#if defined(XP_MACOSX)
+#  include <handleapi.h>
+#elif defined(XP_MACOSX)
 #  include <mach/mach.h>
-#endif
-
-#if defined(XP_LINUX)
+#elif defined(XP_LINUX)
 #  include <signal.h>
-#endif
+#  if defined(MOZ_OXIDIZED_BREAKPAD)
+struct DirectAuxvDumpInfo;
+#  endif  // defined(MOZ_OXIDIZED_BREAKPAD)
+#endif    // defined(XP_LINUX)
 
 class nsIFile;
+
+namespace mozilla::geckoargs {
+struct ChildProcessArgs;
+}
 
 namespace CrashReporter {
 
@@ -49,23 +46,27 @@ using mozilla::Nothing;
 
 #if defined(XP_WIN)
 typedef HANDLE ProcessHandle;
-typedef DWORD ProcessId;
 typedef DWORD ThreadId;
 typedef HANDLE FileHandle;
 const FileHandle kInvalidFileHandle = INVALID_HANDLE_VALUE;
 #elif defined(XP_MACOSX)
 typedef task_t ProcessHandle;
-typedef pid_t ProcessId;
 typedef mach_port_t ThreadId;
 typedef int FileHandle;
 const FileHandle kInvalidFileHandle = -1;
 #else
 typedef int ProcessHandle;
-typedef pid_t ProcessId;
 typedef int ThreadId;
 typedef int FileHandle;
 const FileHandle kInvalidFileHandle = -1;
 #endif
+
+#if defined(XP_LINUX) && defined(MOZ_OXIDIZED_BREAKPAD)
+void GetCurrentProcessAuxvInfo(DirectAuxvDumpInfo* aAuxvInfo);
+void RegisterChildAuxvInfo(pid_t aChildPid,
+                           const DirectAuxvDumpInfo& aAuxvInfo);
+void UnregisterChildAuxvInfo(pid_t aChildPid);
+#endif  // defined(XP_LINUX) && defined(MOZ_OXIDIZED_BREAKPAD)
 
 /**
  * Returns true if the crash reporter is using the dummy implementation.
@@ -78,6 +79,8 @@ static inline bool IsDummy() {
 #endif
 }
 
+nsresult OOPInit(nsIFile* aXREDirectory);
+void OOPDeinit();
 nsresult SetExceptionHandler(nsIFile* aXREDirectory, bool force = false);
 nsresult UnsetExceptionHandler();
 
@@ -171,9 +174,6 @@ nsresult UnregisterAppMemory(void* ptr);
 // Include heap regions of the crash context.
 void SetIncludeContextHeap(bool aValue);
 
-void GetAnnotation(ProcessId childPid, Annotation annotation,
-                   nsACString& outStr);
-
 // Functions for working with minidumps and .extras
 typedef mozilla::EnumeratedArray<Annotation, nsCString,
                                  size_t(Annotation::Count)>
@@ -206,45 +206,27 @@ nsresult AppendObjCExceptionInfoToAppNotes(void* inException);
 nsresult GetSubmitReports(bool* aSubmitReport);
 nsresult SetSubmitReports(bool aSubmitReport);
 
-#ifdef XP_WIN
-// This data is stored in the parent process, there is one copy for each child
-// process. The mChildPid and mMinidumpFile fields are filled by the WER runtime
-// exception module when the associated child process crashes.
-struct WindowsErrorReportingData {
-  // PID of the child process that crashed.
-  DWORD mChildPid;
-  // Filename of the generated minidump; this is not a 0-terminated string
-  char mMinidumpFile[40];
-};
-#endif  // XP_WIN
-
 // Out-of-process crash reporter API.
 
-// Initializes out-of-process crash reporting. This method must be called
-// before the platform-specific notification pipe APIs are called. If called
-// from off the main thread, this method will synchronously proxy to the main
-// thread.
-void OOPInit();
-
-// Return true if a dump was found for |childPid|, and return the
+// Return true if a dump was found for |aChildID|, and return the
 // path in |dump|.  The caller owns the last reference to |dump| if it
 // is non-nullptr. The annotations for the crash will be stored in
 // |aAnnotations|.
-bool TakeMinidumpForChild(ProcessId childPid, nsIFile** dump,
+bool TakeMinidumpForChild(GeckoChildID aChildID, nsIFile** dump,
                           AnnotationTable& aAnnotations);
 
 /**
- * If a dump was found for |childPid| then write a minimal .extra file to
+ * If a dump was found for |aChildID| then write a minimal .extra file to
  * complete it and remove it from the list of pending crash dumps. It's
  * required to call this method after a non-main process crash if the crash
  * report could not be finalized via the CrashReporterHost (for example because
  * it wasn't instanced yet).
  *
- * @param aChildPid The pid of the crashed child process
+ * @param aChildID The id of the crashed child process
  * @param aType The type of the crashed process
  * @param aDumpId A string that will be filled with the dump ID
  */
-[[nodiscard]] bool FinalizeOrphanedMinidump(ProcessId aChildPid,
+[[nodiscard]] bool FinalizeOrphanedMinidump(GeckoChildID aChildID,
                                             GeckoProcessType aType,
                                             nsString* aDumpId = nullptr);
 
@@ -278,35 +260,20 @@ bool CreateMinidumpsAndPair(ProcessHandle aTargetPid,
                             AnnotationTable& aTargetAnnotations,
                             nsIFile** aTargetDumpOut);
 
-#if defined(XP_WIN) || defined(XP_MACOSX)
 // Parent-side API for children
-const char* GetChildNotificationPipe();
-
-#else
-// Parent-side API for children
-
-// Set the outparams for crash reporter server's fd (|childCrashFd|)
-// and the magic fd number it should be remapped to
-// (|childCrashRemapFd|) before exec() in the child process.
-// |SetRemoteExceptionHandler()| in the child process expects to find
-// the server at |childCrashRemapFd|.  Return true if successful.
-//
-// If crash reporting is disabled, both outparams will be set to -1
-// and |true| will be returned.
-bool CreateNotificationPipeForChild(int* childCrashFd, int* childCrashRemapFd);
-
-#endif  // XP_WIN
+#if defined(MOZ_WIDGET_ANDROID)
+void SetCrashHelperPipes(FileHandle breakpadFd, FileHandle crashHelperFd);
+#endif
+bool RegisterChildIPCChannel(mozilla::geckoargs::ChildProcessArgs& aArgs,
+                             GeckoChildID aID);
+#if defined(XP_WIN)
+bool ChildProcessProxyRendezvous(GeckoChildID aID, DWORD aPid, HANDLE aHandle);
+#endif  // defined(XP_WIN)
 
 // Child-side API
-bool SetRemoteExceptionHandler(const char* aCrashPipe = nullptr);
+MOZ_EXPORT bool SetRemoteExceptionHandler(int& aArgc, char** aArgv);
 bool UnsetRemoteExceptionHandler(bool wasSet = true);
-
-#if defined(MOZ_WIDGET_ANDROID)
-// Android creates child process as services so we must explicitly set
-// the handle for the pipe since it can't get remapped to a default value.
-void SetNotificationPipeForChild(FileHandle childCrashFd);
-#endif
 
 }  // namespace CrashReporter
 
-#endif /* nsExceptionHandler_h__ */
+#endif /* nsExceptionHandler_h_ */

@@ -30,10 +30,18 @@ options-context-inspector = Inspektor
 options-show-user-agent-styles-label = Stile wobglědowaka pokazaś
 options-show-user-agent-styles-tooltip =
     .title = Gaž to zašaltujośo, standardne stile se pokažu, kótarež wobglědowak zacytujo.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Shadow DOM wobglědowaka pokazaś
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Gaž to zmóžnjaśo, buźo waš wobglědowak elementy Shadow DOM wužywaś.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM-atributy wótrězaś
 options-collapse-attrs-tooltip =
     .title = Dłujke atributy w Inspektorje wótrězaś
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Komentary pokazaś
+options-show-comments-tooltip =
+    .title = Komentarowe suki w inspektorje pokazaś
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Klikniśo a śěgniśo, aby gódnoty wjelikosćow wobźěłował
 options-inspector-draggable-properties-tooltip =
@@ -42,7 +50,7 @@ options-inspector-draggable-properties-tooltip =
 # within the inspector for users who enabled prefers-reduced-motion = reduce
 options-inspector-simplified-highlighters-label = Jadnorjejše wuzwigowaki z prefers-reduced-motion wužywaś
 options-inspector-simplified-highlighters-tooltip =
-    .title = Zmóžnja zjadnorjone wuzwigowaki, gaž prefers-reduced-motion jo zmóžnjony. Śěga linije město wupołnjone pšawokuty wó wuzwignjone elementy, aby se blinkajucych efektow wobinuli.
+    .title = Zmóžnja zjadnorjone wuzwigowaki, gaž prefers-reduced-motion jo zmóžnjony. Śěga linije město wupołnjone pšawokuty wokoło wuzwignjonych elementow, aby se blinkajucych efektow wobinuli.
 # The label for the checkbox option to make the Enter key move the focus to the next input
 # when editing a property name or value in the Inspector rules view
 options-inspector-rules-focus-next-on-enter-label = Z <kbd>Enter</kbd> fokus na pśiduce zapódaśe stajiś
@@ -68,6 +76,18 @@ options-webconsole-split-console-label = Rozdźělonu konsolu zmóžniś
 options-webconsole-split-console-tooltip =
     .title = Rozdźělonu konsolu z tastu Esc wócyniś
 
+## Network Monitor section
+
+# The heading
+options-netmonitor-label = Seśowy monitor
+# Text shown in the input when there is no limitation (instead of showing "0")
+options-netmonitor-body-limit-unlimited-label = Njewobgranicowany
+
+## Experimental section
+
+# The heading
+options-experimental-label = Eksperimentelne funkcije
+
 ## Style Editor section
 
 # The heading
@@ -88,7 +108,7 @@ options-screenshot-clipboard-tooltip2 =
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = Zapušćeński zuk kamery wótgraś
 options-screenshot-audio-tooltip =
-    .title = Zmóžnja awdiozuk kamery, gaž foto wobrazowki so cyni
+    .title = Zmóžnja awdiozuk kamery, gaž foto wobrazowki se cyni
 
 ## Editor section
 
@@ -107,6 +127,40 @@ options-sourceeditor-tabsize-label = Wjelikosć tabulatora
 options-sourceeditor-keybinding-label = Tastowe wězanja
 options-sourceeditor-keybinding-default-label = Standard
 
+## Local Mode section
+
+# The heading
+options-local-mode-label = Lokalny modus
+options-local-mode-only-work-locally = Lokalny modus lokalnje funkcioněrujo a znjemóžnja se, gaž se zdalone konteksty za zmólkami pśepytuju
+options-local-mode-behavior = Lokalny modus wam zmóžnja, lokalne dataje pśez URL https bźez eksterneje wótwisnosći zacytaś. URL daju se jano z rejtarikow zacytaś, gaž wuwijańske rědy su wócynjone.
+options-local-mode-domain-label = Swójska domena:
+options-local-mode-origin-input =
+    .placeholder = Póchad za lokalne pśirědowanje
+# Errors shown when the origin input has an error
+options-local-mode-origin-conflict = Toś ten póchad jo w konflikśe z drugim eksistěrujucym pśirědowanim
+options-local-mode-origin-invalid = Toś ten póchad jo njepłaśiwy
+options-local-mode-folder-label = Lokalny zarědnik:
+options-local-mode-choose-folder = Pśepytaś…
+    .title = Wubjeŕśo lokalny zarědnik za pśirědowanje
+# Dialog's title when picking a folder for a mapping
+# Variables:
+#   $url (String): The url for the mapping being configured
+options-local-mode-choose-folder-picker-title = Zarědnik lokalnego modusa wubraś za: { $url }
+# Error shown when the folder is invalid
+# (can easily be triggered when using about:config and changing underlying mappings prefs)
+options-local-mode-folder-invalid = Toś ten zarědnik njeeksistěrujo abo jo njepłaśiwy.
+options-local-mode-toggle =
+    .title = Toś to lokalne pśirědowanje pśešaltowaś
+options-local-mode-toggle-enable = Zmóžniś
+options-local-mode-toggle-disable = Znjemóžniś
+options-local-mode-navigate-to =
+    .title = K URL pśirědowanja nawigěrowaś
+# Dialog message prompted when clicking on the Delete button
+# Variables:
+#   $mappingOrigin (String): The origin for the mapping
+options-local-mode-confirm-deletion = Cośo pśirědowanje “{ $mappingOrigin }” wótwónoźeś?
+options-local-mode-new-mapping = Nowe lokalne pśirědowanje pśidaś
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
@@ -115,6 +169,8 @@ options-context-advanced-settings = Rozšyrjone nastajenja
 options-disable-http-cache-label = HTTP-Cache znjemóžniś (gaž rědy su wócynjone)
 options-disable-http-cache-tooltip =
     .title = Gaž se toś to nastajenje zmóžnja, se HTTP-cache za wšykne rejtariki znjemóžnijo, kótarež maju rědy wócynjone. Service workers njejsu pśez toś te nastajenje pótrjefjone.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript znjemóžniś
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript znjemóžniś *
 options-disable-javascript-tooltip =
@@ -142,6 +198,22 @@ options-enable-service-workers-http-tooltip =
 # The label for the checkbox that toggles source maps in all tools.
 options-source-maps-label = Žrědłowe kórty zmóžniś
 options-source-maps-tooltip =
-    .title = Joliv toś to nastajenje zmóžnjaśo, se žrědła w rědach kartěruju.
-# The message shown for settings that trigger page reload
+    .title = Jolic toś to nastajenje zmóžnjaśo, se žrědła w rědach kartěruju.
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (jano aktualne pósejźenje, bok se znowego zacytujo)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Jano aktualne pósejźenje, bok zacytujo se znowego
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (zacytajo bok znowego)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Awtomatiski
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Zestarjony. Dalšne informacije…

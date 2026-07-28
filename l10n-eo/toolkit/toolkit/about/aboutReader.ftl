@@ -35,7 +35,7 @@ about-reader-estimated-read-time =
        *[other] { $range } minutoj
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Etigi tiparan grandon
@@ -74,20 +74,24 @@ about-reader-customtheme-tab = Personecigita
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Teksto
-    .title = Modifi koloron
-about-reader-custom-colors-background = Fono
-    .title = Modifi koloron
-about-reader-custom-colors-unvisited-links = Nevizititaj ligiloj
-    .title = Modifi koloron
-about-reader-custom-colors-visited-links = Vizititaj ligiloj
-    .title = Modifi koloron
-about-reader-custom-colors-selection-highlight = Elstarigilo por laŭtlegado
-    .title = Modifi koloron
-about-reader-custom-colors-reset-button = Remeti normajn valorojn
 about-reader-reset-button = Remeti normajn valorojn
+about-reader-custom-colors-foreground2 =
+    .label = Teksto
+    .title = Modifi koloron
+about-reader-custom-colors-background2 =
+    .label = Fono
+    .title = Modifi koloron
+about-reader-custom-colors-unvisited-links2 =
+    .label = Nevizititaj ligiloj
+    .title = Modifi koloron
+about-reader-custom-colors-visited-links2 =
+    .label = Vizititaj ligiloj
+    .title = Modifi koloron
+about-reader-custom-colors-selection-highlight2 =
+    .label = Elstarigilo por laŭtlegado
+    .title = Modifi koloron
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Teksto
 about-reader-text-size-label = Grando de teksto
@@ -104,9 +108,6 @@ about-reader-content-width-label =
 about-reader-line-spacing-label =
     .label = Spaco interlinia
 about-reader-advanced-layout-header = Spertula
-about-reader-slider-label-width-narrow = Mallarĝa
-about-reader-slider-label-width-wide = Larĝa
-about-reader-slider-label-spacing-narrow = Mallarĝa
 about-reader-character-spacing-label =
     .label = Spaco intersigna
 about-reader-word-spacing-label =
@@ -118,3 +119,5 @@ about-reader-text-alignment-center =
     .title = Liniigi tekston centre
 about-reader-text-alignment-right =
     .title = Liniigi tekston dekstre
+about-reader-text-alignment-justify =
+    .title = Ĝisrandigi tekston

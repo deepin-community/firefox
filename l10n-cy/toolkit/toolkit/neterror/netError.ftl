@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = Tudalen wedi'i Rhwystro
 neterror-captive-portal-page-title = Mewngofnodi i'r rhwydwaith
 neterror-dns-not-found-title = Heb Ganfod Gweinydd
 neterror-malformed-uri-page-title = URL annilys
+general-body-title = Byddwch yn ofalus. Mae rhywbeth i weld o'i le.
+problem-with-this-site-title = Mae'n ymddangos bod problem gyda'r wefan hon
 
 ## Error page actions
 
@@ -23,6 +25,8 @@ neterror-override-exception-button = Derbyn y Perygl a Pharhau
 neterror-pref-reset-button = Adfer y gosodiadau rhagosodedig
 neterror-return-to-previous-page-button = Mynd Nôl
 neterror-return-to-previous-page-recommended-button = Ewch Nôl (Argymell)
+neterror-try-again-button-2 = Ceisio eto
+    .accesskey = C
 neterror-try-again-button = Ceisiwch eto
 neterror-add-exception-button = Parhau bob tro ar gyfer y wefan hon
 neterror-settings-button = Newid gosodiadau DNS
@@ -41,6 +45,13 @@ neterror-generic-error = Nid yw { -brand-short-name } yn gallu llwytho'r dudalen
 neterror-load-error-try-again = Efallai bod y wefan yn brysur neu nad yw ar gael dros dro. Ceisiwch eto ymhen ychydig.
 neterror-load-error-connection = Os nad ydych yn gallu llwytho unrhyw dudalennau, gwiriwch gysylltiad rhwydwaith eich cyfrifiadur.
 neterror-load-error-firewall = Os yw eich cyfrifiadur neu rwydwaith wedi ei ddiogelu gan fur cadarn neu ddirprwy, gwnewch yn siŵr fod gan { -brand-short-name } hawl i fynediad i'r we.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Os ydych chi'n ceisio llwytho tudalen rhwydwaith lleol, gwiriwch fod { -brand-short-name } wedi cael caniatâd Rhwydwaith Lleol yng ngosodiadau Preifatrwydd a Diogelwch macOS.
+neterror-http-error-page = Gwiriwch i wneud yn siŵr eich bod wedi teipio cyfeiriad y wefan yn gywir.
+neterror-http-empty-response = Gwiriwch i wneud yn siŵr eich bod wedi teipio cyfeiriad y wefan yn gywir a cheisiwch eto ymhen ychydig funudau.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = Anfonodd { $hostname } dudalen wag yn ôl.
 neterror-captive-portal = Rhaid i chi fewngofnodi i'r rhwydwaith hwn cyn i chi gael mynediad i'r Rhyngrwyd.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +60,12 @@ neterror-dns-not-found-hint-header = <strong>Os ydych chi wedi rhoi'r cyfeiriad 
 neterror-dns-not-found-hint-try-again = Ceisiwch eto yn nes ymlaen
 neterror-dns-not-found-hint-check-network = Gwiriwch eich cysylltiad rhwydwaith
 neterror-dns-not-found-hint-firewall = Gwiriwch fod gan { -brand-short-name } ganiatâd i gael mynediad i'r we (efallai eich bod wedi'ch cysylltu ond tu ôl i fur cadarn)
+neterror-dns-not-found-hint-check-network-2 = Gwiriwch eich cysylltiad rhwydwaith.
+neterror-dns-not-found-hint-firewall-2 = Gwiriwch fod gan { -brand-short-name } ganiatâd i gael mynediad i'r we (efallai eich bod wedi'ch cysylltu ond y tu ôl i fur cadarn).
+neterror-dns-not-found-offline-hint-header = <strong>Beth allwch chi ei wneud amdano?</strong>
+neterror-dns-not-found-offline-hint-different-device = Ceisiwch gysylltu ar ddyfais wahanol.
+neterror-dns-not-found-offline-hint-modem = Gwiriwch eich modem neu lwybrydd.
+neterror-dns-not-found-offline-hint-reconnect = Datgysylltwch ac ailgysylltu â'r Wi-Fi.
 
 ## TRR-only specific messages
 ## Variables:
@@ -72,7 +89,6 @@ neterror-dns-not-found-trr-unknown-problem = Anhawster annisgwyl.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = Nid yw { -brand-short-name } yn gallu diogelu eich cais am gyfeiriad y wefan hon trwy ein datryswr DNS dibynadwy. Dyma pam:
-neterror-dns-not-found-native-fallback-reason2 = Nid yw { -brand-short-name } yn gallu diogelu eich cais am gyfeiriad y wefan hon trwy ein darparwr DNS dibynadwy. Dyma pam:
 neterror-dns-not-found-native-fallback-heuristic = Mae DNS dros HTTPS wedi'i analluogi ar eich rhwydwaith.
 neterror-dns-not-found-native-fallback-not-confirmed2 = Nid oedd modd i { -brand-short-name } gysylltu â { $trrDomain }.
 
@@ -80,9 +96,14 @@ neterror-dns-not-found-native-fallback-not-confirmed2 = Nid oedd modd i { -brand
 
 neterror-file-not-found-filename = Gwiriwch yr enw ffeil am brif lythrennu neu wallau teipio eraill.
 neterror-file-not-found-moved = Gwiriwch i weld os yw'r ffeil wedi symud, ailenwi neu ei dileu.
+# Variables:
+#   $path (String) - Path of the local file that could not be found.
+neterror-file-not-found-intro = Dyw { -brand-short-name } ddim yn gallu dod o hyd i'r ffeil yn <strong>{ $path }</strong>. Naill ai dyw e ddim yn bodoli neu mae'r llwybr yn anghywir.
+neterror-file-not-found-what-can-you-do = Os ydych chi  wedi teipio'r cyfeiriad â llaw, gwiriwch am gamgymeriadau priflythrennu  neu gamgymeriadau teipio yn enw'r ffeil neu'r llwybr. Os ydych wedi dilyn nod tudalen neu ddolen wedi'u cadw, mae'n bosibl bod y ffeil wedi'i symud, ei hailenwi neu ei dileu ers iddi gael ei chadw. Ceisiwch ddod o hyd iddo gan ddefnyddio'ch rheolwr ffeiliau neu chwilio diweddar.
 neterror-access-denied = Gall ei fod wedi ei dynnu, symud neu fod caniatâd ffeiliau yn rhwystro mynediad.
 neterror-unknown-protocol = Efallai bydd angen i chi osod meddalwedd arall i agor y cyfeiriad yma.
 neterror-redirect-loop = Gall y broblem yma fod wedi ei hachosi drwy analluogi neu wrthod cwci.
+neterror-unknown-socket-type-client-config = Galla hyn fod oherwydd gwall ffurfweddu gyda'ch rhaglen.
 neterror-unknown-socket-type-psm-installed = Gwiriwch fod gan eich system Reolwr Diogelwch Personol wedi ei osod.
 neterror-unknown-socket-type-server-config = Gall hyn fod oherwydd ffurfweddiad ansafonol ar y gweinydd.
 neterror-not-cached-intro = Nid yw'r ddogfen gofynnwyd amdani ar gael yn storfa dros dro { -brand-short-name }.
@@ -96,6 +117,9 @@ neterror-proxy-connect-failure-settings = Gwiriwch osodiadau'r dirprwy i wneud y
 neterror-proxy-connect-failure-contact-admin = Cysylltwch â'ch gweinyddwr system i wneud yn siŵr fod y gweinydd dirprwyol yn gweithio.
 neterror-content-encoding-error = Cysylltwch â pherchnogion y wefan i'w hysbysu o'r anhawster.
 neterror-unsafe-content-type = Cysylltwch â pherchnogion y wefan i'w hysbysu o'r anhawster.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = Nid yw { -brand-short-name } yn ymddiried yn { $hostname } oherwydd nad yw'r cysylltiad yn ddiogel. Ceisiwch newid yr URL i HTTPS.
 neterror-nss-failure-not-verified = Nid oes modd dangos y dudalen rydych yn ceisio ei darllen am nad oes modd dilysu'r data rydych wedi ei dderbyn.
 neterror-nss-failure-contact-website = Cysylltwch â pherchnogion y wefan i'w hysbysu o'r anhawster.
 # Variables:
@@ -148,3 +172,50 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Os nad ydych yn gyfarwydd �
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = Mae gan <b>{ $hostname }</b> bolisi diogelwch o'r enw HTTP Strict Transport Security (HSTS), sy'n golygu mai dim ond yn ddiogel mae modd i { -brand-short-name } gysylltu. Nid oes modd gosod eithriad er mwyn ymweld â'r wefan.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Dim byd yn ôl pob tebyg, gan ei bod hi'n debygol bod problem gyda'r wefan ei hun.
+certerror-blocked-by-corp-headers-description = Weithiau mae gwefannau yn gosod amddiffyniadau iddyn nhw eu hunain a phobl fel chi rhag rhyngweithio digroeso â gwefannau eraill.
+certerror-coop-learn-more = Dysgwch ragor am Bolisïau Agorwr Traws Darddiad (COOP)
+certerror-coep-learn-more = Dysgwch ragor am Bolisïau Mewnblannu Traws Darddiad (COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Cod gwall: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Mae'n ymddangos bod problem gyda'ch cysylltiad rhyngrwyd
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = Dyw { -brand-short-name } ddim yn gallu creu cysylltiad diogel i'r gweinydd yn { $hostname } .
+fp-neterror-offline-intro = Does dim modd i { -brand-short-name } gysylltu â'r gweinydd yn <strong>{ $hostname }</strong>
+fp-neterror-offline-intro-2 = Dyw { -brand-short-name } ddim yn gallu cysylltu â'r gweinydd yn <strong>{ $hostname }</strong>.
+fp-neterror-net-timeout-intro = Mae'r gweinydd yn <strong>{ $hostname }</strong> yn cymryd gormod o amser i ymateb.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $responsestatus (Number) - HTTP response status code (e.g., 404).
+#   $responsestatustext (String) - HTTP response status text (e.g., "Not Found", always in English).
+fp-neterror-http-error-intro = Anfonodd y gweinydd yn <strong>{ $hostname }</strong> wall yn ôl: { $responsestatus } { $responsestatustext }
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-neterror-invalid-header-value-intro = Anfonodd <strong>{ $hostname }</strong> bennyn yn ôl gyda nodau gwag sy ddim yn cael eu caniatáu gan safonau diogelwch gwe.
+fp-neterror-content-encoding-intro = Methu dangos y dudalen rydych yn ceisio ei darllen am ei bod yn defnyddio math annilys o gywasgu sydd ddim yn cael ei gynnal.
+fp-neterror-coop-coep-intro = Nid yw { -brand-short-name } wedi llwytho'r dudalen hon oherwydd mae'n edrych yn debyg nad yw'r ffurfweddiad diogelwch yn cyfateb i'r dudalen flaenorol.
+fp-neterror-blocked-by-policy-intro = Mae eich sefydliad wedi rhwystro mynediad i'r dudalen neu'r wefan hon.
+fp-neterror-http-auth-disabled-intro = Gallai rhywun sy'n cymryd arno fod ar y wefan geisio dwyn pethau fel eich enw defnyddiwr, cyfrinair neu e-bost.
+fp-neterror-http-auth-disabled-secure-connection = Mae angen cysylltiad diogel ar y wefan hon, a does dim modd i chi ychwanegu eithriad i ymweld â hi.
+fp-neterror-why-did-this-happen = Pam digwyddodd hyn?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = Mae'n edrych fel bod y wefan hon yn defnyddio hen feddalwedd gyda gwendidau diogelwch hysbys.
+fp-neterror-http-auth-disabled-why-dangerous-body = Dyw { -brand-short-name } ddim yn ymddiried yn { $hostname } achos dydy’r cysylltiad ddim yn ddiogel.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = Gwnewch yn siŵr eich bod yn defnyddio'r fersiwn diweddaraf o { -brand-short-name }. Ewch i Cymorth > Ynghylch { -brand-short-name } yn y ddewislen. Os ydych chi'n defnyddio'r { -brand-short-name } diweddaraf, mae'r broblem yn fwyaf tebygol gyda'r wefan ei hun.
+fp-neterror-offline-what-can-you-do-body = Ceisiwch gysylltu ar ddyfais wahanol. Gwiriwch eich modem neu lwybrydd. Datgysylltwch ac ailgysylltwch â'r Wi-Fi.
+fp-neterror-http-auth-disabled-what-can-you-do-body = Ceisiwch newid yr URL i HTTPS. Ond mae'n debygol bod problem gyda'r wefan ei hun.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Weithiau mae gwefannau yn gosod diogeleddau iddyn nhw eu hunain rhag rhyngweithio digroeso â gwefannau eraill.
+fp-learn-more-about-https-connections = Dysgu am gysylltiadau HTTPS
+fp-neterror-vpn-error-title = Methu cysylltu â'r VPN
+fp-neterror-vpn-error-description = Ceisiwch eto mewn ychydig funudau.
+fp-neterror-denied-port-access = Mae'r cyfeiriad yn defnyddio porth rhwydwaith sy'n cael ei ddefnyddio fel arfer i ddibenion heblaw pori'r We. Mae { -brand-short-name } wedi gwrthod y cais er eich lles.

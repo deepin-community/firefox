@@ -14,7 +14,9 @@ default-browser-notification-button =
 
 default-browser-prompt-title-pin = A bheil thu airson { -brand-short-name } a chleachdadh ’na phrìomh-bhrabhsair agad?
 default-browser-prompt-message-pin = Cùm { -brand-short-name } ri làimh dhut – dèan am prìomh-bhrabhsair agad dheth agus prìnich e ri bàr nan saothair.
+default-browser-prompt-message-pin-msix = Cùm { -brand-short-name } ri làimh dhut – dèan am prìomh-bhrabhsair agad dheth agus prìnich e ri bàr nan saothair is ris a’ chlàr-taice “Tòisich”.
 default-browser-prompt-message-pin-mac = Cùm { -brand-short-name } ri làimh dhut – dèan am prìomh-bhrabhsair agad dheth agus cùm e san doca.
+default-browser-prompt-button-primary-set = Suidhich mar am prìomh-bhrabhsair
 default-browser-prompt-button-primary-pin = Dèan am prìomh-bhrabhsair agad dheth
 default-browser-prompt-title-alt = A bheil thu airson { -brand-short-name } a chleachdadh ’na bhrabhsair bunaiteach agad?
 default-browser-prompt-message-alt = Faigh luaths, sàbhailteachd is prìobhaideachd gach turas a nì thu brabhsadh.
@@ -38,3 +40,6 @@ default-browser-guidance-notification-body-instruction-win11 =
     Ceum 2: Tagh “Suidhich { -brand-short-name } mar a’ bhun-roghainn”
 default-browser-guidance-notification-info-page = Seall dhomh
 default-browser-guidance-notification-dismiss = Deiseil
+default-browser-guidance-notification-v2-title = Làn-suidhich { -brand-short-name } mar am brabhsair bunaiteach agad
+default-browser-guidance-notification-v2-body = Sna roghainnean, tagh “Suidhich mar a’ bhun-roghainn” airson { -brand-short-name }.
+default-browser-guidance-notification-v2-title-only = Làn-suidhich { -brand-short-name } mar am brabhsair bunaiteach agad sna roghainnean

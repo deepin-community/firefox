@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -66,8 +65,10 @@ dictionary RTCReceivedRtpStreamStats: RTCRtpStreamStats {
 
 dictionary RTCInboundRtpStreamStats : RTCReceivedRtpStreamStats {
   required DOMString trackIdentifier;
+  DOMString mid;
   DOMString remoteId;
   unsigned long framesDecoded;
+  unsigned long keyFramesDecoded;
   unsigned long framesDropped;
   unsigned long frameWidth;
   unsigned long frameHeight;
@@ -76,6 +77,10 @@ dictionary RTCInboundRtpStreamStats : RTCReceivedRtpStreamStats {
   double totalDecodeTime;
   double totalInterFrameDelay;
   double totalSquaredInterFrameDelay;
+  unsigned long pauseCount;
+  double totalPausesDuration;
+  unsigned long freezeCount;
+  double totalFreezesDuration;
   DOMHighResTimeStamp lastPacketReceivedTimestamp;
   unsigned long long headerBytesReceived;
   unsigned long long fecPacketsReceived;
@@ -85,10 +90,11 @@ dictionary RTCInboundRtpStreamStats : RTCReceivedRtpStreamStats {
   unsigned long firCount;
   unsigned long pliCount;
   double totalProcessingDelay;
-  // Always missing from libwebrtc
-  // DOMHighResTimeStamp  estimatedPlayoutTimestamp;
+  DOMHighResTimeStamp estimatedPlayoutTimestamp;
   double jitterBufferDelay;
   unsigned long long jitterBufferEmittedCount;
+  double jitterBufferTargetDelay;
+  double jitterBufferMinimumDelay;
   unsigned long long totalSamplesReceived;
   unsigned long long concealedSamples;
   unsigned long long silentConcealedSamples;
@@ -99,6 +105,8 @@ dictionary RTCInboundRtpStreamStats : RTCReceivedRtpStreamStats {
   double totalAudioEnergy;
   double totalSamplesDuration;
   unsigned long framesReceived;
+  unsigned long framesAssembledFromMultiplePackets;
+  double totalAssemblyTime;
 };
 
 dictionary RTCRemoteInboundRtpStreamStats : RTCReceivedRtpStreamStats {
@@ -115,7 +123,9 @@ dictionary RTCSentRtpStreamStats : RTCRtpStreamStats {
 };
 
 dictionary RTCOutboundRtpStreamStats : RTCSentRtpStreamStats {
+  DOMString mid;
   DOMString remoteId;
+  DOMString rid;
   unsigned long framesEncoded;
   unsigned long long qpSum;
   unsigned long nackCount;
@@ -176,7 +186,7 @@ dictionary RTCDataChannelStats : RTCStats {
 enum RTCStatsIceCandidatePairState {
   "frozen",
   "waiting",
-  "inprogress",
+  "in-progress",
   "failed",
   "succeeded",
   "cancelled"
@@ -196,6 +206,9 @@ dictionary RTCIceCandidatePairStats : RTCStats {
   DOMHighResTimeStamp lastPacketSentTimestamp;
   DOMHighResTimeStamp lastPacketReceivedTimestamp;
   boolean selected;
+  double totalRoundTripTime;
+  double currentRoundTripTime;
+  unsigned long long responsesReceived;
   [ChromeOnly]
   unsigned long componentId; // moz
 };

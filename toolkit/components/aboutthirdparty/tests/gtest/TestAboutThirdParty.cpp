@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -8,7 +7,6 @@
 
 #include "../../AboutThirdPartyUtils.h"
 #include "mozilla/AboutThirdParty.h"
-#include "mozilla/ArrayUtils.h"
 #include "nsTArray.h"
 
 using namespace mozilla;
@@ -103,8 +101,8 @@ TEST(AboutThirdParty, InstallLocations)
       {u"C:\\duplicate\\sub\\file.dll"_ns, u""_ns},
   };
 
-  nsTArray<InstallLocationT> locations(ArrayLength(kDirectoriesUnsorted));
-  for (size_t i = 0; i < ArrayLength(kDirectoriesUnsorted); ++i) {
+  nsTArray<InstallLocationT> locations(std::size(kDirectoriesUnsorted));
+  for (size_t i = 0; i < std::size(kDirectoriesUnsorted); ++i) {
     locations.EmplaceBack(kDirectoriesUnsorted[i], new InstalledApplication());
   }
 

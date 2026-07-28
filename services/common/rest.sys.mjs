@@ -11,7 +11,7 @@ import { CommonUtils } from "resource://services-common/utils.sys.mjs";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  CryptoUtils: "resource://services-crypto/utils.sys.mjs",
+  CryptoUtils: "moz-src:///services/crypto/modules/utils.sys.mjs",
 });
 
 function decodeString(data, charset) {
@@ -24,7 +24,7 @@ function decodeString(data, charset) {
   let stringStream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  stringStream.setData(data, data.length);
+  stringStream.setByteStringData(data);
 
   let converterStream = Cc[
     "@mozilla.org/intl/converter-input-stream;1"
@@ -99,7 +99,7 @@ RESTRequest.prototype = {
     "nsIChannelEventSink",
   ]),
 
-  /** Public API: **/
+  /** Public API: */
 
   /**
    * URI for the request (an nsIURI object).
@@ -249,7 +249,7 @@ RESTRequest.prototype = {
     }
   },
 
-  /** Implementation stuff **/
+  /** Implementation stuff */
 
   async dispatch(method, data) {
     if (this.status != this.NOT_SENT) {
@@ -326,7 +326,7 @@ RESTRequest.prototype = {
       let stream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
         Ci.nsIStringInputStream
       );
-      stream.setData(data, data.length);
+      stream.setByteStringData(data);
 
       channel.QueryInterface(Ci.nsIUploadChannel);
       channel.setUploadStream(stream, contentType, data.length);
@@ -378,7 +378,7 @@ RESTRequest.prototype = {
     );
   },
 
-  /** nsIStreamListener **/
+  /** nsIStreamListener */
 
   onStartRequest(channel) {
     if (this.status == this.ABORTED) {
@@ -524,7 +524,7 @@ RESTRequest.prototype = {
     this.delayTimeout();
   },
 
-  /** nsIInterfaceRequestor **/
+  /** nsIInterfaceRequestor */
 
   getInterface(aIID) {
     return this.QueryInterface(aIID);
@@ -549,7 +549,7 @@ RESTRequest.prototype = {
     return isInternal && isSameURI;
   },
 
-  /** nsIChannelEventSink **/
+  /** nsIChannelEventSink */
   asyncOnChannelRedirect(oldChannel, newChannel, flags, callback) {
     let oldSpec =
       oldChannel && oldChannel.URI ? oldChannel.URI.spec : "<undefined>";

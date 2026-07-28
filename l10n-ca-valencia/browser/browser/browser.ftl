@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -121,8 +118,11 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = Afig la pàgina a les adreces d'interés ({ $shortcut })
 
-## Page Action Context Menu
+## Searchbar context menu
 
+clear-search-history =
+    .label = Neteja l'historial de cerques
+    .accesskey = c
 
 ## Auto-hide Context Menu
 
@@ -181,11 +181,6 @@ search-one-offs-tabs =
     .tooltiptext = Pestanyes ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Historial ({ $restrict })
-
-## QuickActions are shown in the urlbar as the user types a matching string
-## The -cmd- strings are comma separated list of keywords that will match
-## the action.
-
 
 ## Bookmark Panel
 
@@ -355,9 +350,6 @@ sharing-warning-proceed-to-tab =
 sharing-warning-disable-for-session =
     .label = Desactiva la protecció de compartició durant esta sessió
 
-## DevTools F12 popup
-
-
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
@@ -411,13 +403,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Extensió:
+urlbar-go-button2 =
+    .title = Vés a l'adreça de la barra d'ubicació
 urlbar-go-button =
     .tooltiptext = Vés a l'adreça de la barra d'ubicació
 urlbar-page-action-button =
     .tooltiptext = Accions de la pàgina
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -463,6 +458,23 @@ urlbar-result-action-copy-to-clipboard = Copia
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Adreces d'interés
+urlbar-searchmode-tabs =
+    .label = Pestanyes
+urlbar-searchmode-history =
+    .label = Historial
+urlbar-searchmode-bookmarks2 = Adreces d'interés
+urlbar-searchmode-tabs2 = Pestanyes
+urlbar-searchmode-history2 = Historial
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = Afig «{ $engineName }»
+    .title = Afig el motor de cerca «{ $engineName }»
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -478,7 +490,7 @@ urlbar-result-action-search-tabs = Cerca en les pestanyes
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
 # A label shown above the search suggestions group in the urlbar results. It
-# should use title case.
+# should use sentence case.
 # Variables
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
@@ -492,11 +504,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Tanca la vista de lectura
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -598,7 +605,7 @@ repair-text-encoding-button =
     .label = Repara la codificació del text
     .tooltiptext = Detecta la codificació del text correcta a partir del contingut de la pàgina
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -646,6 +653,10 @@ eme-notifications-drm-content-playing-dismiss-accesskey = D
 
 panel-save-update-username = Nom d'usuari
 panel-save-update-password = Contrasenya
+panel-save-update-username-2 =
+    .label = Nom d'usuari
+panel-save-update-password-2 =
+    .label = Contrasenya
 
 ##
 
@@ -738,20 +749,6 @@ data-reporting-notification-button =
     .label = Deixa'm triar què vull compartir
     .accesskey = c
 
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
-
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = El { -brand-short-name } ha evitat que la pàgina s'actualitze automàticament.
@@ -759,9 +756,6 @@ refresh-blocked-redirect-label = El { -brand-short-name } ha evitat que la pàgi
 refresh-blocked-allow =
     .label = Permet
     .accesskey = P
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

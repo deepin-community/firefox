@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,14 +5,14 @@
 
 #include "MediaDataDecoderProxy.h"
 #include "PDMFactory.h"
-#include "RemoteDecoderManagerChild.h"
-#include "RemoteDecoderManagerParent.h"
-#include "mozilla/PodOperations.h"
+#include "RemoteCDMParent.h"
+#include "RemoteMediaManagerChild.h"
+#include "RemoteMediaManagerParent.h"
 #include "mozilla/StaticPrefs_media.h"
 
 namespace mozilla {
 
-RemoteAudioDecoderChild::RemoteAudioDecoderChild(RemoteDecodeIn aLocation)
+RemoteAudioDecoderChild::RemoteAudioDecoderChild(RemoteMediaIn aLocation)
     : RemoteDecoderChild(aLocation) {}
 
 MediaResult RemoteAudioDecoderChild::ProcessOutput(
@@ -38,43 +36,67 @@ MediaResult RemoteAudioDecoderChild::ProcessOutput(
 
 MediaResult RemoteAudioDecoderChild::InitIPDL(
     const AudioInfo& aAudioInfo, const CreateDecoderParams::OptionSet& aOptions,
-    const Maybe<uint64_t>& aMediaEngineId) {
-  RefPtr<RemoteDecoderManagerChild> manager =
-      RemoteDecoderManagerChild::GetSingleton(mLocation);
+    const Maybe<uint64_t>& aMediaEngineId, PRemoteCDMActor* aCDM) {
+  RefPtr<RemoteMediaManagerChild> manager =
+      RemoteMediaManagerChild::GetSingleton(mLocation);
 
-  // The manager isn't available because RemoteDecoderManagerChild has been
+  // The manager isn't available because RemoteMediaManagerChild has been
   // initialized with null end points and we don't want to decode video on RDD
   // process anymore. Return false here so that we can fallback to other PDMs.
   if (!manager) {
     return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
-                       RESULT_DETAIL("RemoteDecoderManager is not available."));
+                       RESULT_DETAIL("RemoteMediaManager is not available."));
   }
 
   if (!manager->CanSend()) {
     return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
-                       RESULT_DETAIL("RemoteDecoderManager unable to send."));
+                       RESULT_DETAIL("RemoteMediaManager unable to send."));
+  }
+
+  // If we are given a remote CDM, we need to make sure that it has been remoted
+  // into the same process as the decoder.
+  PRemoteCDMChild* cdm = nullptr;
+  if (aCDM) {
+    if (aCDM->GetLocation() != mLocation) {
+      return MediaResult(
+          NS_ERROR_DOM_MEDIA_FATAL_ERR,
+          RESULT_DETAIL("PRemoteCDMActor is not in same process."));
+    }
+
+    cdm = aCDM->AsPRemoteCDMChild();
+    if (!cdm) {
+      return MediaResult(
+          NS_ERROR_DOM_MEDIA_FATAL_ERR,
+          RESULT_DETAIL("PRemoteCDMActor is not PRemoteCDMChild."));
+    }
   }
 
   mIPDLSelfRef = this;
   MOZ_ALWAYS_TRUE(manager->SendPRemoteDecoderConstructor(
-      this, aAudioInfo, aOptions, Nothing(), aMediaEngineId, Nothing()));
+      this, aAudioInfo, aOptions, Nothing(), aMediaEngineId, Nothing(), cdm));
   return NS_OK;
 }
 
 RemoteAudioDecoderParent::RemoteAudioDecoderParent(
-    RemoteDecoderManagerParent* aParent, const AudioInfo& aAudioInfo,
+    RemoteMediaManagerParent* aParent, const AudioInfo& aAudioInfo,
     const CreateDecoderParams::OptionSet& aOptions,
     nsISerialEventTarget* aManagerThread, TaskQueue* aDecodeTaskQueue,
-    Maybe<uint64_t> aMediaEngineId)
+    Maybe<uint64_t> aMediaEngineId, RemoteCDMParent* aCDM)
     : RemoteDecoderParent(aParent, aOptions, aManagerThread, aDecodeTaskQueue,
-                          aMediaEngineId, Nothing()),
+                          aMediaEngineId, Nothing(), aCDM),
       mAudioInfo(aAudioInfo) {}
 
 IPCResult RemoteAudioDecoderParent::RecvConstruct(
     ConstructResolver&& aResolver) {
-  auto params = CreateDecoderParams{mAudioInfo, mOptions,
-                                    CreateDecoderParams::NoWrapper(true),
-                                    mMediaEngineId, mTrackingId};
+  if (mDecoder || mShutdown) {
+    aResolver(MediaResult(NS_ERROR_ALREADY_INITIALIZED, __func__));
+    return IPC_OK();
+  }
+
+  auto params = CreateDecoderParams{
+      mAudioInfo,     static_cast<PRemoteCDMActor*>(mCDM.get()),
+      mOptions,       CreateDecoderParams::WrapperSet({/* No wrapper */}),
+      mMediaEngineId, mTrackingId};
 
   mParent->EnsurePDMFactory().CreateDecoder(params)->Then(
       GetCurrentSerialEventTarget(), __func__,
@@ -86,6 +108,11 @@ IPCResult RemoteAudioDecoderParent::RecvConstruct(
           return;
         }
         MOZ_ASSERT(aValue.ResolveValue());
+        if (self->mDecoder || self->mShutdown) {
+          aValue.ResolveValue()->Shutdown();
+          resolver(MediaResult(NS_ERROR_ALREADY_INITIALIZED, __func__));
+          return;
+        }
         self->mDecoder =
             new MediaDataDecoderProxy(aValue.ResolveValue().forget(),
                                       do_AddRef(self->mDecodeTaskQueue.get()));

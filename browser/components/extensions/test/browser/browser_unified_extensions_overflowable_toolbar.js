@@ -10,17 +10,24 @@
 
 loadTestSubscript("head_unified_extensions.js");
 
-requestLongerTimeout(2);
+requestLongerTimeout(3);
 
-const NUM_EXTENSIONS = 5;
-const OVERFLOW_WINDOW_WIDTH_PX = 450;
+const NUM_EXTENSIONS = 7;
+const OVERFLOW_WINDOW_WIDTH_PX = 500;
 const DEFAULT_WIDGET_IDS = [
   "home-button",
   "library-button",
   "zoom-controls",
   "search-container",
-  "sidebar-button",
+  "print-button",
 ];
+// Since bug 1960002, not all the default widgets overflow at the min-width (and
+// the following is the number of elements from the DEFAULT_WIDGET_IDS array
+// to stay in the toolbar).
+const NUM_NONOVERFLOWED_DEFAULT_WIDGETS = 2;
+const OVERFLOWED_DEFAULT_WIDGET_IDS = DEFAULT_WIDGET_IDS.slice(
+  NUM_NONOVERFLOWED_DEFAULT_WIDGETS
+);
 const OVERFLOWED_EXTENSIONS_LIST_ID = "overflowed-extensions-list";
 
 add_setup(async function () {
@@ -119,12 +126,16 @@ async function withWindowOverflowed(
 
   await ensureMaximizedWindow(win);
 
+  info(`Window maximized`);
+
   // The OverflowableToolbar operates asynchronously at times, so we will
   // poll a widget's overflowedItem attribute to detect whether or not the
   // widgets have finished being moved. We'll use the first widget that
   // we added to the nav-bar, as this should be the left-most item in the
   // set that we added.
-  const signpostWidgetID = "home-button";
+  const signpostWidgetID =
+    DEFAULT_WIDGET_IDS[NUM_NONOVERFLOWED_DEFAULT_WIDGETS];
+
   // We'll also force the signpost widget to be extra-wide to ensure that it
   // overflows after we shrink the window.
   CustomizableUI.getWidget(signpostWidgetID).forWindow(win).node.style =
@@ -227,13 +238,16 @@ async function withWindowOverflowed(
   };
   CustomizableUI.addListener(listener);
   // Start all the extensions sequentially.
+  info(`starting extensions...`);
   for (const extension of extensions) {
     await extension.startup();
   }
+  info(`waiting for menu-created messages`);
   await Promise.all([
     extWithMenuBrowserAction.awaitMessage("menu-created"),
     extWithSubMenuBrowserAction.awaitMessage("menu-created"),
   ]);
+  info(`waiting for browser action widgets`);
   await listener.promise;
   CustomizableUI.removeListener(listener);
 
@@ -243,6 +257,7 @@ async function withWindowOverflowed(
     info("Running beforeOverflowed task");
     await beforeOverflowed(extensionIDs);
   } finally {
+    info(`beforeOverflowed finished`);
     // The beforeOverflowed task may have moved some items out from the navbar,
     // so only listen for overflows for items still in there.
     const browserActionIDs = extensionIDs.map(id =>
@@ -255,23 +270,42 @@ async function withWindowOverflowed(
 
     let widgetOverflowListener = {
       _remainingOverflowables:
-        browserActionsInNavBar.length + DEFAULT_WIDGET_IDS.length,
+        browserActionsInNavBar.length + OVERFLOWED_DEFAULT_WIDGET_IDS.length,
       _deferred: Promise.withResolvers(),
 
       get promise() {
         return this._deferred.promise;
       },
 
-      onWidgetOverflow() {
+      onWidgetOverflow(widget) {
         this._remainingOverflowables--;
+        info(
+          `onWidgetOverflow: ${this._remainingOverflowables} remaining after ${widget.id}`
+        );
+        if (this._remainingOverflowables < 0) {
+          ok(false, `Unexpected widget overflowed: ${widget.id}`);
+          return;
+        }
         if (!this._remainingOverflowables) {
-          this._deferred.resolve();
+          // Wait for an arbitrary 500 millisecond to increase the chances to hit
+          // a failure from the assertion right above, or whenOverflowed callback
+          // assertions, if more widgete have been overflowed then the ones
+          // actually expected.
+          //
+          // eslint-disable-next-line mozilla/no-arbitrary-setTimeout
+          setTimeout(() => {
+            this._deferred.resolve();
+          }, 500);
         }
       },
     };
     CustomizableUI.addListener(widgetOverflowListener);
 
-    win.resizeTo(OVERFLOW_WINDOW_WIDTH_PX, win.outerHeight);
+    info(
+      `Resizing to overflow window width (current width: ${win.innerWidth})`
+    );
+    await ensureWindowInnerDimensions(win, OVERFLOW_WINDOW_WIDTH_PX, null);
+    info("Waiting for widget to overflow");
     await widgetOverflowListener.promise;
     CustomizableUI.removeListener(widgetOverflowListener);
 
@@ -291,7 +325,11 @@ async function withWindowOverflowed(
     try {
       info("Running whenOverflowed task");
       await whenOverflowed(defaultList, unifiedExtensionList, extensionIDs);
+    } catch (err) {
+      console.error(err);
+      ok(false, `whenOverflowed raised an unexpected error: ${err}`);
     } finally {
+      info("whenOverflowed finished, maximizing again");
       await ensureMaximizedWindow(win);
 
       // Notably, we don't wait for the nav-bar to not have the "overflowing"
@@ -307,6 +345,9 @@ async function withWindowOverflowed(
       try {
         info("Running afterUnderflowed task");
         await afterUnderflowed();
+      } catch (err) {
+        console.error(err);
+        ok(false, `afterUnderflowed raised an unexpected error: ${err}`);
       } finally {
         await Promise.all(extensions.map(extension => extension.unload()));
       }
@@ -333,11 +374,7 @@ async function verifyExtensionWidget(widget, win = window) {
     "expected no .toolbarbutton-1 CSS class on the action button in the panel"
   );
 
-  let menuButton = widget.lastElementChild;
-  Assert.ok(
-    menuButton.classList.contains("unified-extensions-item-menu-button"),
-    "expected class on the button"
-  );
+  let menuButton = widget.querySelector(".unified-extensions-item-menu-button");
   ok(
     menuButton.classList.contains("subviewbutton"),
     "expected the .subviewbutton CSS class on the menu button in the panel"
@@ -409,8 +446,9 @@ async function verifyExtensionWidget(widget, win = window) {
       .args.extensionName.startsWith("Extension "),
     "expected l10n args attribute to start with the correct name"
   );
-  Assert.ok(
-    menuButton.getAttribute("aria-label") !== "",
+  Assert.notStrictEqual(
+    menuButton.getAttribute("aria-label"),
+    "",
     "expected menu button to have non-empty localized content"
   );
 }
@@ -426,18 +464,17 @@ add_task(async function test_overflowable_toolbar() {
 
   await withWindowOverflowed(win, {
     whenOverflowed: async (defaultList, unifiedExtensionList, extensionIDs) => {
-      // Ensure that there are 5 items in the Unified Extensions overflow
-      // list, and the default widgets should all be in the default overflow
+      // Ensure that there are NUM_EXTENSIONS items in the Unified Extensions overflow
+      // list, and the expected default widgets moved into the default overflow
       // list (though there might be more items from the nav-bar in there that
       // already existed in the nav-bar before we put the default widgets in
       // there as well).
       let defaultListIDs = getChildrenIDs(defaultList);
-      for (const widgetID of DEFAULT_WIDGET_IDS) {
-        Assert.ok(
-          defaultListIDs.includes(widgetID),
-          `Default overflow list should have ${widgetID}`
-        );
-      }
+      Assert.deepEqual(
+        defaultListIDs,
+        OVERFLOWED_DEFAULT_WIDGET_IDS,
+        "Got the expected list of default widgets overflowed"
+      );
 
       Assert.ok(
         unifiedExtensionList.children.length,
@@ -641,8 +678,9 @@ add_task(async function test_message_deck() {
             { id: "origin-controls-state-when-clicked", args: null },
             "expected correct l10n attributes for the default message"
           );
-          Assert.ok(
-            defaultMessage.textContent !== "",
+          Assert.notStrictEqual(
+            defaultMessage.textContent,
+            "",
             "expected default message to not be empty"
           );
 
@@ -654,8 +692,9 @@ add_task(async function test_message_deck() {
             { id: "origin-controls-state-hover-run-visit-only", args: null },
             "expected correct l10n attributes for the hover message"
           );
-          Assert.ok(
-            hoverMessage.textContent !== "",
+          Assert.notStrictEqual(
+            hoverMessage.textContent,
+            "",
             "expected hover message to not be empty"
           );
 
@@ -667,8 +706,9 @@ add_task(async function test_message_deck() {
             { id: "unified-extensions-item-message-manage", args: null },
             "expected correct l10n attributes for the message when hovering the menu button"
           );
-          Assert.ok(
-            hoverMenuButtonMessage.textContent !== "",
+          Assert.notStrictEqual(
+            hoverMenuButtonMessage.textContent,
+            "",
             "expected message for when the menu button is hovered to not be empty"
           );
 
@@ -950,9 +990,8 @@ add_task(async function test_unpin_overflowed_widget() {
         !pinToToolbar.hidden,
         "expected 'Pin to Toolbar' to be visible"
       );
-      Assert.equal(
-        pinToToolbar.getAttribute("checked"),
-        "true",
+      Assert.ok(
+        pinToToolbar.hasAttribute("checked"),
         "expected 'Pin to Toolbar' to be checked"
       );
 
@@ -1033,21 +1072,10 @@ add_task(async function test_overflow_with_a_second_window() {
   );
 
   // Make sure the first window is the active window.
-  let windowActivePromise = new Promise(resolve => {
-    if (Services.focus.activeWindow == win) {
-      resolve();
-    } else {
-      win.addEventListener(
-        "activate",
-        () => {
-          resolve();
-        },
-        { once: true }
-      );
-    }
-  });
-  win.focus();
-  await windowActivePromise;
+  info("second window is maximized, trying to make first window active");
+  await SimpleTest.promiseFocus(win);
+
+  info("first window focused");
 
   let extensionWidgetID;
   let aNode;

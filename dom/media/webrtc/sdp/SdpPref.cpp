@@ -1,21 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "sdp/SdpPref.h"
+
 #include "sdp/RsdparsaSdpParser.h"
 #include "sdp/SipccSdpParser.h"
 
 namespace mozilla {
-
-const std::string SdpPref::PRIMARY_PREF = "media.peerconnection.sdp.parser";
-const std::string SdpPref::ALTERNATE_PREF =
-    "media.peerconnection.sdp.alternate_parse_mode";
-const std::string SdpPref::STRICT_SUCCESS_PREF =
-    "media.peerconnection.sdp.strict_success";
-const std::string SdpPref::DEFAULT = "default";
 
 auto SdpPref::Parser() -> Parsers {
   static const auto values = std::unordered_map<std::string, Parsers>{
@@ -77,7 +69,7 @@ auto SdpPref::Failover() -> Maybe<UniquePtr<SdpParser>> {
 }
 
 auto SdpPref::StrictSuccess() -> bool {
-  return Preferences::GetBool(STRICT_SUCCESS_PREF.c_str(), false);
+  return Preferences::GetBool(STRICT_SUCCESS_PREF, false);
 }
 
 }  // namespace mozilla

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2020 Rick Waldron. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -44,6 +43,6 @@ testWithTypedArrayConstructors(function(TA) {
   };
 
   assert.sameValue(sample.lastIndexOf(0, fromIndex), -1);
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

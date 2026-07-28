@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -26,9 +25,6 @@ typedef unsigned long long UniFFIPointerId;
 
 // Identifies a callback interface
 typedef unsigned long UniFFICallbackInterfaceId;
-
-// Identifies a method of a callback interface
-typedef unsigned long UniFFICallbackMethodId;
 
 // Handle for a callback interface instance
 typedef unsigned long long UniFFICallbackObjectHandle;
@@ -59,24 +55,49 @@ dictionary UniFFIScaffoldingCallResult {
     UniFFIScaffoldingValue data;
 };
 
-// JS handler for calling a CallbackInterface method.
-// The arguments and return value are always packed into an ArrayBuffer
-callback UniFFICallbackHandler = undefined (UniFFICallbackObjectHandle objectId, UniFFICallbackMethodId methodId, ArrayBuffer aArgs);
+// JS handler for a callback interface
+//
+// These are responsible for invoking callback interface calls.  Internally, these map handles to
+// objects that implement the callback interface.
+//
+// Before the JS code returns a callback-interface-implementing object Rust, it first sends the
+// object to a UniFFICallbackHandler, which adds an entry in the map.  The handle is then what's
+// sent to Rust.
+//
+// When the Rust code wants to invoke a method, it calls into the C++ layer and passes the handle
+// along with all arguments.  The C++ layer then calls `UniFFICallbackHandler.call()` which then
+// looks up the object in the map and invokes the actual method.
+//
+// Finally, when the Rust code frees the object, it calls into the C++ layer, which then calls
+// `UniFFICallbackHandler.release()` to remove the entry in the map.
+[Exposed=Window]
+callback interface UniFFICallbackHandler {
+    Promise<UniFFIScaffoldingCallResult> callAsync(UniFFICallbackObjectHandle objectHandle, unsigned long methodIndex, UniFFIScaffoldingValue... args);
+    UniFFIScaffoldingCallResult callSync(UniFFICallbackObjectHandle objectHandle, unsigned long methodIndex, UniFFIScaffoldingValue... args);
+    undefined destroy(UniFFICallbackObjectHandle objectHandle);
+};
 
 // Functions to facilitate UniFFI scaffolding calls
 [ChromeOnly, Exposed=Window]
 namespace UniFFIScaffolding {
-  // Call a scaffolding function on the worker thread.
+  // Call a sync Rust function
+  //
+  // id is a unique identifier for the function, known to both the C++ and JS code
+  [Throws]
+  UniFFIScaffoldingCallResult callSync(UniFFIFunctionId id, UniFFIScaffoldingValue... args);
+
+  // Call an async Rust function
   //
   // id is a unique identifier for the function, known to both the C++ and JS code
   [Throws]
   Promise<UniFFIScaffoldingCallResult> callAsync(UniFFIFunctionId id, UniFFIScaffoldingValue... args);
 
-  // Call a scaffolding function on the main thread
+  // Call a sync Rust function, but wrap it to so that it behaves in JS as an async function
   //
   // id is a unique identifier for the function, known to both the C++ and JS code
   [Throws]
-  UniFFIScaffoldingCallResult callSync(UniFFIFunctionId id, UniFFIScaffoldingValue... args);
+  Promise<UniFFIScaffoldingCallResult> callAsyncWrapper(UniFFIFunctionId id, UniFFIScaffoldingValue... args);
+
 
   // Read a UniFFIPointer from an ArrayBuffer
   //
@@ -102,4 +123,23 @@ namespace UniFFIScaffolding {
   // This is called at shutdown to clear out the reference to the JS function.
   [Throws]
   undefined deregisterCallbackHandler(UniFFICallbackInterfaceId interfaceId);
+
+  // Create a new handle for a callback interface object
+  //
+  // This is called by the JS code before lowering a callback interface object.  The returned handle
+  // is used as a key for the JS callback interface map and also returned to Rust.
+  unsigned long long callbackHandleCreate();
+
+  // Decrease the reference count for a callback interface handle
+  //
+  // The JS code calls this before lifting a callback interface object.  It returns the new
+  // reference count.  If `0`, then the map entry for the JS object is removed.
+  unsigned long callbackHandleRelease(unsigned long long handle);
+
+  // Free a callback interface handle
+  //
+  // This frees the underlying memory for the callback interface handle.  It should only be called
+  // when there's no chance of using the handle anymore.  In particular, only call it once the JS
+  // map entry is removed.
+  undefined callbackHandleFree(unsigned long long handle);
 };

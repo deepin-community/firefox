@@ -244,10 +244,10 @@ places-view-sortby-tags =
 places-cmd-find-key =
     .key = f
 places-back-button =
-    .tooltiptext = Iet atpakaļ
+    .tooltiptext = Doties atpakaļ
 places-forward-button =
     .tooltiptext = Iet uz priekšu
-places-details-pane-select-an-item-description = Izvēlieties elementu, ko aplūkot vai rediģēt
+places-details-pane-select-an-item-description = Atlasiet vienumu, lai skatītu un rediģētu tā īpašības
 places-details-pane-no-items =
     .value = Nav nevienas vienības
 # Variables:
@@ -273,3 +273,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = Grāmatzīmju un pārlūkošanas vēstures funkcijas nebūs pieejamas, jo { -brand-short-name } datnes izmanto kāda cita programma. Dažas drošības programmas var radīt šo problēmu.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Kopīgot mapi
+    .badge = Jauns

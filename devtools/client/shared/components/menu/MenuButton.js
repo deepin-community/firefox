@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env browser */
 "use strict";
 
 // A button that toggles a doorhanger menu.
@@ -11,9 +10,12 @@ const flags = require("resource://devtools/shared/flags.js");
 const {
   createRef,
   PureComponent,
-} = require("resource://devtools/client/shared/vendor/react.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const {
+  createPortal,
+} = require("resource://devtools/client/shared/vendor/react-dom.mjs");
 const { button } = dom;
 
 const isMacOS = Services.appinfo.OS === "Darwin";
@@ -25,19 +27,10 @@ loader.lazyRequireGetter(
   true
 );
 
-loader.lazyRequireGetter(
-  this,
-  "focusableSelector",
-  "resource://devtools/client/shared/focus.js",
-  true
-);
-
-loader.lazyRequireGetter(
-  this,
-  "createPortal",
-  "resource://devtools/client/shared/vendor/react-dom.js",
-  true
-);
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  focusableSelector: "resource://devtools/client/shared/focus.mjs",
+});
 
 // Return a copy of |obj| minus |fields|.
 const omit = (obj, fields) => {
@@ -57,9 +50,12 @@ class MenuButton extends PureComponent {
       // A text content for the button.
       label: PropTypes.string,
 
-      // URL of the icon to associate with the MenuButton. (Optional)
-      // e.g. chrome://devtools/skin/image/foo.svg
-      icon: PropTypes.string,
+      // Optional, either:
+      // - false or missing if no icon should be displayed
+      // - true if an icon should be displayed and is set via CSS
+      // - a string set to the URL of the icon to associate with the MenuButton
+      //   e.g. chrome://devtools/skin/image/foo.svg
+      icon: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
 
       // An optional ID to assign to the menu's container tooltip object.
       menuId: PropTypes.string,
@@ -353,7 +349,7 @@ class MenuButton extends PureComponent {
     } else if (
       this.state.expanded &&
       !e.defaultPrevented &&
-      e.target.matches(focusableSelector)
+      e.target.matches(lazy.focusableSelector)
     ) {
       this.hideMenu();
     }

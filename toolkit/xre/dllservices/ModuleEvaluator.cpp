@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -12,15 +10,14 @@
 #include <windows.h>
 #include <shlobj.h>
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/ModuleVersionInfo.h"
 #include "mozilla/UniquePtr.h"
-#include "mozilla/Unused.h"
 #include "mozilla/WinDllServices.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
 #include "nsReadableUtils.h"
 #include "nsWindowsHelpers.h"
 #include "nsXULAppAPI.h"
+#include "prenv.h"
 
 namespace mozilla {
 
@@ -42,7 +39,7 @@ static Vector<nsString> GetKeyboardLayoutDlls() {
   DWORD iKey = 0;
   wchar_t strTemp[MAX_PATH] = {};
   while (true) {
-    DWORD strTempSize = ArrayLength(strTemp);
+    DWORD strTempSize = std::size(strTemp);
     if (RegEnumKeyExW(rawKey, iKey, strTemp, &strTempSize, nullptr, nullptr,
                       nullptr, nullptr) != ERROR_SUCCESS) {
       // ERROR_NO_MORE_ITEMS or a real error: bail with what we have.
@@ -56,7 +53,7 @@ static Vector<nsString> GetKeyboardLayoutDlls() {
         strTempSize) {
       nsString ws(strTemp, ((strTempSize + 1) / sizeof(wchar_t)) - 1);
       ToLowerCase(ws);  // To facilitate case-insensitive searches
-      Unused << result.emplaceBack(std::move(ws));
+      (void)result.emplaceBack(std::move(ws));
     }
   }
 }
@@ -83,7 +80,7 @@ bool ModuleEvaluator::ResolveKnownFolder(REFKNOWNFOLDERID aFolderId,
 
   ShellStringUniquePtr path(rawPath);
 
-  nsresult rv = NS_NewLocalFile(nsDependentString(path.get()), false, aOutFile);
+  nsresult rv = NS_NewLocalFile(nsDependentString(path.get()), aOutFile);
   return NS_SUCCEEDED(rv);
 }
 
@@ -197,7 +194,11 @@ Maybe<ModuleTrustFlags> ModuleEvaluator::GetTrust(
   // The JIT profiling module doesn't really have any other practical way to
   // match; hard-code it as being trusted.
   if (dllLeafLower.EqualsLiteral("jitpi.dll")) {
-    return Some(ModuleTrustFlags::JitPI);
+    if (PR_GetEnvSecure("JS_LOAD_VTUNE_LIB")) {
+      return Some(ModuleTrustFlags::JitPI);
+    } else {
+      return Some(ModuleTrustFlags::None);
+    }
   }
 
   ModuleTrustFlags result = ModuleTrustFlags::None;

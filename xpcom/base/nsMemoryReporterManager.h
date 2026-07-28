@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsMemoryReporterManager_h__
-#define nsMemoryReporterManager_h__
+#ifndef nsMemoryReporterManager_h_
+#define nsMemoryReporterManager_h_
 
 #include "mozilla/Mutex.h"
 #include "nsTHashMap.h"
@@ -54,6 +52,8 @@ class nsMemoryReporterManager final : public nsIMemoryReporterManager,
         do_GetService("@mozilla.org/memory-reporter-manager;1");
     return imgr.forget().downcast<nsMemoryReporterManager>();
   }
+
+  typedef AutoTArray<nsCOMPtr<nsIMemoryReporter>, 32> StrongReportersArray;
 
   typedef nsTHashMap<nsRefPtrHashKey<nsIMemoryReporter>, bool>
       StrongReportersTable;
@@ -229,19 +229,29 @@ class nsMemoryReporterManager final : public nsIMemoryReporterManager,
                         nsISupports* aHandleReportData, bool aAnonymize);
 
   static void TimeoutCallback(nsITimer* aTimer, void* aData);
-  // Note: this timeout needs to be long enough to allow for the
-  // possibility of DMD reports and/or running on a low-end phone.
-  static const uint32_t kTimeoutLengthMS = 180000;
 
   mozilla::Mutex mMutex;
   bool mIsRegistrationBlocked MOZ_GUARDED_BY(mMutex);
 
-  StrongReportersTable* mStrongReporters MOZ_GUARDED_BY(mMutex);
-  WeakReportersTable* mWeakReporters MOZ_GUARDED_BY(mMutex);
+  // This array is used for strong reporters that are not supposed to ever be
+  // unregistered before the manager goes away. Currently this is only used
+  // for reporters the manager defines itself. These reporters must be sync!
+  mozilla::UniquePtr<StrongReportersArray> mStrongEternalReporters
+      MOZ_GUARDED_BY(mMutex);
 
-  // These two are only used for testing purposes.
-  StrongReportersTable* mSavedStrongReporters MOZ_GUARDED_BY(mMutex);
-  WeakReportersTable* mSavedWeakReporters MOZ_GUARDED_BY(mMutex);
+  // These hash tables are used for all additional reporters registered via
+  // our nsIMemoryReporterManager interface.
+  mozilla::UniquePtr<StrongReportersTable> mStrongReporters
+      MOZ_GUARDED_BY(mMutex);
+  mozilla::UniquePtr<WeakReportersTable> mWeakReporters MOZ_GUARDED_BY(mMutex);
+
+  // These three are only used for testing purposes.
+  mozilla::UniquePtr<StrongReportersArray> mSavedStrongEternalReporters
+      MOZ_GUARDED_BY(mMutex);
+  mozilla::UniquePtr<StrongReportersTable> mSavedStrongReporters
+      MOZ_GUARDED_BY(mMutex);
+  mozilla::UniquePtr<WeakReportersTable> mSavedWeakReporters
+      MOZ_GUARDED_BY(mMutex);
 
   uint32_t mNextGeneration;  // MainThread only
 
@@ -311,11 +321,7 @@ class nsMemoryReporterManager final : public nsIMemoryReporterManager,
       const PendingProcessesState* aState);
 };
 
-#define NS_MEMORY_REPORTER_MANAGER_CID              \
-  {                                                 \
-    0xfb97e4f5, 0x32dd, 0x497a, {                   \
-      0xba, 0xa2, 0x7d, 0x1e, 0x55, 0x7, 0x99, 0x10 \
-    }                                               \
-  }
+#define NS_MEMORY_REPORTER_MANAGER_CID \
+  {0xfb97e4f5, 0x32dd, 0x497a, {0xba, 0xa2, 0x7d, 0x1e, 0x55, 0x7, 0x99, 0x10}}
 
-#endif  // nsMemoryReporterManager_h__
+#endif  // nsMemoryReporterManager_h_

@@ -1,16 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/HTMLDetailsElement.h"
 
+#include "mozilla/BuiltInStyleSheets.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/HTMLDetailsElementBinding.h"
+#include "mozilla/dom/HTMLSlotElement.h"
 #include "mozilla/dom/HTMLSummaryElement.h"
 #include "mozilla/dom/ShadowRoot.h"
-#include "mozilla/ScopeExit.h"
-#include "mozilla/StaticPrefs_dom.h"
 #include "nsContentUtils.h"
 #include "nsTextNode.h"
 
@@ -60,8 +59,9 @@ void HTMLDetailsElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
         } else {
           oldState.Assign(stringForState(wasOpen));
         }
-        RefPtr<ToggleEvent> toggleEvent = CreateToggleEvent(
-            u"toggle"_ns, oldState, stringForState(isOpen), Cancelable::eNo);
+        RefPtr<ToggleEvent> toggleEvent =
+            CreateToggleEvent(u"toggle"_ns, oldState, stringForState(isOpen),
+                              Cancelable::eNo, nullptr);
         mToggleEventDispatcher =
             new AsyncEventDispatcher(this, toggleEvent.forget());
         mToggleEventDispatcher->PostDOMEvent();
@@ -69,6 +69,7 @@ void HTMLDetailsElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
         if (isOpen) {
           CloseOtherElementsIfNeeded();
         }
+        SetStates(ElementState::OPEN, isOpen);
       }
     } else if (aName == nsGkAtoms::name) {
       CloseElementIfNeeded();
@@ -91,29 +92,17 @@ nsresult HTMLDetailsElement::BindToTree(BindContext& aContext,
 
 void HTMLDetailsElement::SetupShadowTree() {
   const bool kNotify = false;
-  AttachAndSetUAShadowRoot(NotifyUAWidgetSetup::No);
+  AttachAndSetUAShadowRoot(NotifyUAWidget::No, DelegatesFocus::No,
+                           CustomSlotDispatch::Yes);
   RefPtr<ShadowRoot> sr = GetShadowRoot();
   if (NS_WARN_IF(!sr)) {
     return;
   }
 
-  nsNodeInfoManager* nim = OwnerDoc()->NodeInfoManager();
+  nsNodeInfoManager* nim = NodeInfoManager();
   RefPtr<NodeInfo> slotNodeInfo = nim->GetNodeInfo(
       nsGkAtoms::slot, nullptr, kNameSpaceID_XHTML, nsINode::ELEMENT_NODE);
-  {
-    RefPtr<NodeInfo> linkNodeInfo = nim->GetNodeInfo(
-        nsGkAtoms::link, nullptr, kNameSpaceID_XHTML, nsINode::ELEMENT_NODE);
-    RefPtr<nsGenericHTMLElement> link =
-        NS_NewHTMLLinkElement(linkNodeInfo.forget());
-    if (NS_WARN_IF(!link)) {
-      return;
-    }
-    link->SetAttr(nsGkAtoms::rel, u"stylesheet"_ns, IgnoreErrors());
-    link->SetAttr(nsGkAtoms::href,
-                  u"resource://content-accessible/details.css"_ns,
-                  IgnoreErrors());
-    sr->AppendChildTo(link, kNotify, IgnoreErrors());
-  }
+  sr->AppendBuiltInStyleSheet(BuiltInStyleSheet::Details);
   {
     RefPtr<nsGenericHTMLElement> slot =
         NS_NewHTMLSlotElement(do_AddRef(slotNodeInfo));
@@ -133,7 +122,7 @@ void HTMLDetailsElement::SetupShadowTree() {
     }
 
     nsAutoString defaultSummaryText;
-    nsContentUtils::GetMaybeLocalizedString(nsContentUtils::eFORMS_PROPERTIES,
+    nsContentUtils::GetMaybeLocalizedString(PropertiesFile::FORMS_PROPERTIES,
                                             "DefaultSummary", OwnerDoc(),
                                             defaultSummaryText);
     RefPtr<nsTextNode> description = new (nim) nsTextNode(nim);
@@ -148,7 +137,46 @@ void HTMLDetailsElement::SetupShadowTree() {
     if (NS_WARN_IF(!slot)) {
       return;
     }
+    if (StaticPrefs::layout_css_details_content_enabled()) {
+      slot->SetPseudoElementType(PseudoStyleType::DetailsContent);
+    }
     sr->AppendChildTo(slot, kNotify, IgnoreErrors());
+  }
+}
+
+void HTMLDetailsElement::GetSlotNameFor(const ShadowRoot&,
+                                        const nsIContent& aContent,
+                                        nsAString& aName) const {
+  const auto* summary = HTMLSummaryElement::FromNode(aContent);
+  if (summary && summary->IsMainSummary()) {
+    aName.AssignLiteral("internal-main-summary");
+  }
+}
+
+void HTMLDetailsElement::OnChildBeforeSlotted(ShadowRoot& aShadow,
+                                              nsIContent& aChild) {
+  if (!aChild.IsHTMLElement(nsGkAtoms::summary)) {
+    return;
+  }
+  HTMLSlotElement* slot =
+      aShadow.GetFirstNamedSlot(u"internal-main-summary"_ns);
+  MOZ_RELEASE_ASSERT(slot);
+  const auto& assigned = slot->AssignedNodes();
+  if (assigned.IsEmpty()) {
+    return;
+  }
+  if (auto* summary = HTMLSummaryElement::FromNode(assigned[0])) {
+    aShadow.MaybeReassignContent(*summary);
+  }
+}
+
+void HTMLDetailsElement::OnChildUnslotted(ShadowRoot& aShadow,
+                                          nsIContent& aChild) {
+  if (!aChild.IsHTMLElement(nsGkAtoms::summary)) {
+    return;
+  }
+  if (HTMLSummaryElement* newMainSummary = GetFirstSummary()) {
+    aShadow.MaybeReassignContent(*newMainSummary);
   }
 }
 
@@ -163,28 +191,35 @@ JSObject* HTMLDetailsElement::WrapNode(JSContext* aCx,
   return HTMLDetailsElement_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-bool HTMLDetailsElement::IsValidInvokeAction(InvokeAction aAction) const {
-  return nsGenericHTMLElement::IsValidInvokeAction(aAction) ||
-         aAction == InvokeAction::Toggle || aAction == InvokeAction::Close ||
-         aAction == InvokeAction::Open;
+bool HTMLDetailsElement::IsValidCommandAction(Command aCommand) const {
+  return nsGenericHTMLElement::IsValidCommandAction(aCommand) ||
+         (StaticPrefs::dom_element_commandfor_on_details_enabled() &&
+          (aCommand == Command::Toggle || aCommand == Command::Close ||
+           aCommand == Command::Open));
 }
 
-bool HTMLDetailsElement::HandleInvokeInternal(Element* aInvoker,
-                                              InvokeAction aAction,
-                                              ErrorResult& aRv) {
-  if (nsGenericHTMLElement::HandleInvokeInternal(aInvoker, aAction, aRv)) {
+bool HTMLDetailsElement::HandleCommandInternal(Element* aSource,
+                                               Command aCommand,
+                                               ErrorResult& aRv) {
+  if (nsGenericHTMLElement::HandleCommandInternal(aSource, aCommand, aRv)) {
     return true;
   }
 
-  if (aAction == InvokeAction::Auto || aAction == InvokeAction::Toggle) {
+  if (!StaticPrefs::dom_element_commandfor_on_details_enabled()) {
+    return false;
+  }
+
+  if (aCommand == Command::Toggle) {
     ToggleOpen();
     return true;
-  } else if (aAction == InvokeAction::Close) {
+  }
+  if (aCommand == Command::Close) {
     if (Open()) {
       SetOpen(false, IgnoreErrors());
     }
     return true;
-  } else if (aAction == InvokeAction::Open) {
+  }
+  if (aCommand == Command::Open) {
     if (!Open()) {
       SetOpen(true, IgnoreErrors());
     }
@@ -207,13 +242,8 @@ void HTMLDetailsElement::CloseElementIfNeeded() {
     return;
   }
 
-  RefPtr<nsAtom> name = GetParsedAttr(nsGkAtoms::name)->GetAsAtom();
-
-  RefPtr<Document> doc = OwnerDoc();
-  bool oldFlag = doc->FireMutationEvents();
-  doc->SetFireMutationEvents(false);
-
-  nsINode* root = SubtreeRoot();
+  const RefPtr<nsAtom> name = GetParsedAttr(nsGkAtoms::name)->GetAsAtom();
+  nsINode* const root = SubtreeRoot();
   for (nsINode* cur = root; cur; cur = cur->GetNextNode(root)) {
     if (!cur->HasName()) {
       continue;
@@ -227,8 +257,6 @@ void HTMLDetailsElement::CloseElementIfNeeded() {
       }
     }
   }
-
-  doc->SetFireMutationEvents(oldFlag);
 }
 
 void HTMLDetailsElement::CloseOtherElementsIfNeeded() {
@@ -242,13 +270,8 @@ void HTMLDetailsElement::CloseOtherElementsIfNeeded() {
     return;
   }
 
-  RefPtr<nsAtom> name = GetParsedAttr(nsGkAtoms::name)->GetAsAtom();
-
-  RefPtr<Document> doc = OwnerDoc();
-  bool oldFlag = doc->FireMutationEvents();
-  doc->SetFireMutationEvents(false);
-
-  nsINode* root = SubtreeRoot();
+  const RefPtr<nsAtom> name = GetParsedAttr(nsGkAtoms::name)->GetAsAtom();
+  nsINode* const root = SubtreeRoot();
   for (nsINode* cur = root; cur; cur = cur->GetNextNode(root)) {
     if (!cur->HasName()) {
       continue;
@@ -263,8 +286,6 @@ void HTMLDetailsElement::CloseOtherElementsIfNeeded() {
       }
     }
   }
-
-  doc->SetFireMutationEvents(oldFlag);
 }
 
 }  // namespace mozilla::dom

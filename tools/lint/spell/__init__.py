@@ -17,33 +17,21 @@ from mozlint import result
 from mozlint.util.implementation import LintProcess
 
 here = os.path.abspath(os.path.dirname(__file__))
-CODESPELL_REQUIREMENTS_PATH = os.path.join(here, "codespell_requirements.txt")
 
 CODESPELL_NOT_FOUND = """
-Could not find codespell! Install codespell and try again.
+Could not find codespell!
+""".strip()
 
-    $ pip install -U --require-hashes -r {}
-""".strip().format(
-    CODESPELL_REQUIREMENTS_PATH
-)
-
-
-CODESPELL_INSTALL_ERROR = """
-Unable to install correct version of codespell
-Try to install it manually with:
-    $ pip install -U --require-hashes -r {}
-""".strip().format(
-    CODESPELL_REQUIREMENTS_PATH
-)
-
-results = []
 
 CODESPELL_FORMAT_REGEX = re.compile(r"(.*):(.*): (.*) ==> (.*)$")
 
 
 class CodespellProcess(LintProcess):
-    fixed = 0
-    _fix = None
+    def __init__(self, config, cmd, results, fix=False):
+        super().__init__(config, cmd)
+        self.results = results
+        self.fix = fix
+        self.fixed = 0
 
     def process_line(self, line):
         try:
@@ -51,11 +39,11 @@ class CodespellProcess(LintProcess):
             abspath, line, typo, correct = match.groups()
         except AttributeError:
             if "FIXED: " not in line:
-                print("Unable to match regex against output: {}".format(line))
+                print(f"Unable to match regex against output: {line}")
             return
 
-        if CodespellProcess._fix:
-            CodespellProcess.fixed += 1
+        if self.fix:
+            self.fixed += 1
 
         # Ignore false positive like aParent (which would be fixed to apparent)
         # See https://github.com/lucasdemarchi/codespell/issues/314
@@ -68,16 +56,17 @@ class CodespellProcess(LintProcess):
             "level": "error",
             "lineno": line,
         }
-        results.append(result.from_config(self.config, **res))
+        self.results.append(result.from_config(self.config, **res))
 
 
-def run_process(config, cmd):
-    proc = CodespellProcess(config, cmd)
+def run_process(config, cmd, results, fix=False):
+    proc = CodespellProcess(config, cmd, results, fix)
     proc.run()
     try:
         proc.wait()
     except KeyboardInterrupt:
         proc.kill()
+    return proc
 
 
 def get_codespell_binary():
@@ -90,17 +79,6 @@ def get_codespell_binary():
         return binary
 
     return which("codespell")
-
-
-def setup(root, **lintargs):
-    virtualenv_manager = lintargs["virtualenv_manager"]
-    try:
-        virtualenv_manager.install_pip_requirements(
-            CODESPELL_REQUIREMENTS_PATH, quiet=True
-        )
-    except subprocess.CalledProcessError:
-        print(CODESPELL_INSTALL_ERROR)
-        return 1
 
 
 def get_codespell_version(binary):
@@ -145,24 +123,22 @@ def lint(paths, config, fix=None, **lintargs):
         cmd_args.append("--skip=*.dic,{}".format(",".join(config["exclude"])))
 
     log.debug("Command: {}".format(" ".join(cmd_args)))
-    log.debug("Version: {}".format(get_codespell_version(binary)))
+    log.debug(f"Version: {get_codespell_version(binary)}")
 
-    if fix:
-        CodespellProcess._fix = True
+    results = []
+    fixed = 0
 
     base_command = cmd_args + paths
-    run_process(config, base_command)
+    proc = run_process(config, base_command, results, fix=bool(fix))
 
     if fix:
-        global results
-        results = []
+        fixed = proc.fixed
+        results.clear()
         cmd_args.append("--write-changes")
         log.debug("Command: {}".format(" ".join(cmd_args)))
-        log.debug("Version: {}".format(get_codespell_version(binary)))
+        log.debug(f"Version: {get_codespell_version(binary)}")
         base_command = cmd_args + paths
-        run_process(config, base_command)
-        CodespellProcess.fixed = CodespellProcess.fixed - len(results)
-    else:
-        CodespellProcess.fixed = 0
+        proc = run_process(config, base_command, results, fix=True)
+        fixed += proc.fixed - len(results)
 
-    return {"results": results, "fixed": CodespellProcess.fixed}
+    return {"results": results, "fixed": fixed}

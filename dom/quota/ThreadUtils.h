@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +7,8 @@
 
 #include <cstdint>
 #include <functional>
+
+#include "mozilla/StaticPrefsBase.h"
 
 enum class nsresult : uint32_t;
 
@@ -40,6 +40,17 @@ namespace mozilla::dom::quota {
  * the "AfterProcessNextEvent".
  */
 nsresult RunAfterProcessingCurrentEvent(std::function<void()>&& aCallback);
+
+/**
+ * Causes the current thread to yield for a specified amount of milliseconds if
+ * a mirrored preference value is not zero.
+ *
+ * @param aMirroredPrefValue
+ *   A mirrored preference value. If this value is greater than zero, the
+ *   function will cause the current thread to sleep for that number of
+ *   milliseconds.
+ */
+void SleepIfEnabled(StripAtomic<RelaxedAtomicUint32> aMirroredPrefValue);
 
 }  // namespace mozilla::dom::quota
 

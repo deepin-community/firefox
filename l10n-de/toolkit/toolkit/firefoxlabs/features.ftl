@@ -1,0 +1,105 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# The title of the experiment should be kept in English as it may be referenced
+# by various online articles and is technical in nature.
+experimental-features-media-jxl =
+    .label = Media: JPEG XL
+experimental-features-media-jxl-description = Wenn diese Funktion aktiviert ist, unterstützt { -brand-short-name } das JPEG-XL-Format (JXL). Dies ist ein erweitertes Bilddateiformat, das einen verlustfreien Übergang von traditionellen JPEG-Dateien unterstützt. Weitere Informationen erhalten Sie im <a data-l10n-name="bugzilla">Bug 1539075</a>.
+# JS JIT Warp project
+experimental-features-js-warp =
+    .label = JavaScript JIT: Warp
+experimental-features-js-warp-description = Warp aktivieren: ein Projekt zur Verbesserung der Leistung und des Speicherverbrauchs von JavaScript.
+# Search during IME
+experimental-features-ime-search =
+    .label = Adressleiste: Ergebnisse während der IME-Komposition anzeigen
+experimental-features-ime-search-description = Ein IME (Input Method Editor) ist ein Werkzeug, mit dem Sie komplexe Symbole, wie sie in ostasiatischen oder indischen Schriftsprachen verwendet werden, über eine Standardtastatur eingeben können. Durch Aktivieren dieses Experiments bleibt die Adressleisten-Ansicht geöffnet, wodurch Suchergebnisse und Vorschläge angezeigt werden, während IME zur Texteingabe verwendet wird. Beachten Sie, dass der IME möglicherweise ein Fenster anzeigt, das die Ergebnisse der Adressleiste verdeckt. Daher wird diese Einstellung nur für IME empfohlen, die diese Art von Fenster nicht verwenden.
+# Auto Picture-in-Picture
+experimental-features-auto-pip =
+    .label = Bild-im-Bild: Beim Tab-Wechsel automatisch öffnen
+experimental-features-auto-pip-description = Bild-im-Bild (PiP) für aktive Videos beim Wechseln von Tabs aktivieren
+experimental-features-group-developer-tools =
+    .label = Entwicklerwerkzeuge
+experimental-features-group-webpage-display =
+    .label = Anzeige von Webseiten
+experimental-features-group-customize-browsing =
+    .label = Passen Sie Ihr Surfen an
+experimental-features-group-productivity =
+    .label = Produktivität
+experimental-features-group-newtab-widgets =
+    .label = Widgets auf { -firefox-home-brand-name }
+# Contextual Password Manager in sidebar
+experimental-features-contextual-password-manager =
+    .label = Passwörter in der Sidebar
+experimental-features-contextual-password-manager-description = Greifen Sie direkt aus der Sidebar auf Ihre Passwörter zu. Kein Suchen oder Zurücksetzen von Passwörtern mehr bei der Anmeldung. Um diese Funktion zu nutzen, wählen Sie in der Sidebar Passwörter aus. Gehen Sie dann zu den allgemeinen Einstellungen und wählen Sie unter Browser-Layout die Option "Sidebar anzeigen". Passen Sie dann die Sidebar an, indem Sie Passwörter auswählen. Wenn Sie es ausprobieren, <a data-l10n-name="connect">sagen Sie uns Ihre Meinung</a>.
+# New Tab Custom Wallpapers
+experimental-features-custom-wallpaper =
+    .label = Ein benutzerdefiniertes Hintergrundbild oder eine Farbe für die Firefox-Startseite wählen
+experimental-features-custom-wallpaper-description = Laden Sie Ihr eigenes Hintergrundbild hoch oder wählen Sie eine benutzerdefinierte Farbe für den Hintergrund Ihrer Firefox-Startseite.
+# Link Previews with AI
+experimental-features-link-previews =
+    .label = Link-Vorschau
+experimental-features-link-previews-description =
+    { PLATFORM() ->
+        [macos] Um mehr über eine Webseite zu erfahren, bevor Sie sie anklicken, bewegen Sie die Maus über einen Link und drücken Sie Umschalt (⇧) plus Option (⌥) oder Alt. Vorschauen können Details wie Titel und Lesezeit enthalten. Bei einigen Webseiten kann KI auch den Seitentext lesen und wichtige Punkte erzeugen. Die KI ist optimiert, um englische Texte zu lesen und zu erzeugen. Um Ihre Privatsphäre zu schützen, wird die KI lokal auf Ihrem Computer ausgeführt. <a data-l10n-name="connect">Feedback teilen</a>
+       *[other] Um mehr über eine Webseite zu erfahren, bevor Sie sie anklicken, bewegen Sie die Maus über einen Link und drücken Sie Umschalt + Alt. Vorschauen können Details wie Titel und Lesezeit enthalten. Bei einigen Webseiten kann KI auch den Seitentext lesen und wichtige Punkte erzeugen. Die KI ist optimiert, um englische Texte zu lesen und zu erzeugen. Um Ihre Privatsphäre zu schützen, wird die KI lokal auf Ihrem Computer ausgeführt. <a data-l10n-name="connect">Feedback teilen</a>
+    }
+# This version of the link previews description does not mention AI.
+experimental-features-link-previews-description-no-ai =
+    { PLATFORM() ->
+        [macos] Um mehr über eine Webseite zu erfahren, bevor Sie sie anklicken, bewegen Sie die Maus über einen Link und drücken Sie Umschalt (⇧) plus Option (⌥) oder Alt. Vorschauen können Details wie Titel und Lesezeit enthalten. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+       *[other] Um mehr über eine Webseite zu erfahren, bevor Sie sie anklicken, bewegen Sie die Maus über einen Link und drücken Sie Umschalt + Alt. Vorschauen können Details wie Titel und Lesezeit enthalten. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+    }
+# New Tab Sections with follow and block
+experimental-features-newtab-sections-follow-block =
+    .label = Themenbereiche und Folgen/Blockieren für Artikel auf der Firefox-Startseite
+experimental-features-newtab-sections-follow-block-description = Gliedern Sie die Artikel auf Ihrer Firefox-Startseite in Themenbereiche (Sport, Essen, Unterhaltung, etc.), für ein strukturierteres und übersichtlicheres Erlebnis. Verwenden Sie unsere neuen Einstellungsmöglichkeiten "Folgen" und "Blockieren", um anzupassen, welche Inhalte Sie sehen. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Firefox Web Apps
+experimental-features-fx-web-apps =
+    .label = Websites zur Taskleiste hinzufügen
+# “Add tab to taskbar” is found in the tooltip text of `-taskbar-tab-urlbar-button-open`.
+experimental-features-fx-web-apps-description = Öffnen Sie Websites, die Sie häufig besuchen, als Web-App aus Ihrer Taskleiste. Suchen Sie nach dem Symbol "Tab zur Taskleiste hinzufügen" rechts von der Adressleiste, um die Website in einem optimierten Fenster und mit allen Schutzmaßnahmen von { -brand-product-name } zu öffnen. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+
+## New Tab Productivity Widgets
+
+# Lists Widget
+experimental-features-newtab-widget-lists =
+    .label = Listen auf { -firefox-home-brand-name }
+experimental-features-newtab-widget-lists-new =
+    .label = Listen
+experimental-features-newtab-widget-lists-description = Rufen Sie sich Ihre Aufgabenliste ins Gedächtnis, jedes Mal wenn Sie die Firefox-Startseite öffnen. Von Checklisten bis hin zu Einkaufslisten: Machen Sie ihre Pläne in { -brand-product-name }. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Timer Widget
+experimental-features-newtab-widget-timer =
+    .label = Timer bei { -firefox-home-brand-name }
+experimental-features-newtab-widget-timer-new =
+    .label = Timer
+experimental-features-newtab-widget-timer-description = Stellen Sie einen Timer ein, damit Sie konzentriert bleiben, auf Kurs bleiben oder daran erinnert werden, neue Energie zu tanken.<a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Lists and Timer Widget (Combined)
+experimental-features-newtab-widget-lists-and-timer =
+    .label = Listen und Timer auf { -firefox-home-brand-name }
+experimental-features-newtab-widget-lists-and-timer-description = Rufen Sie sich Ihre Aufgabenliste ins Gedächtnis, jedes Mal wenn Sie die Firefox-Startseite öffnen. Von Checklisten bis hin zu Einkaufslisten: Machen Sie ihre Pläne in { -brand-product-name }. Stellen Sie sich einen Wecker, um am Ball zu bleiben, konzentriert zu arbeiten, oder um regelmäßig neue Energie zu tanken. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Weather Widget
+experimental-features-newtab-widget-weather =
+    .label = Wettervorhersagen
+experimental-features-newtab-widget-weather-description = Verschaffen Sie sich mit stündlichen Vorhersagen einen Überblick über das heutige Wetter. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Picture of the Day Widget
+experimental-features-newtab-widget-picture-of-the-day =
+    .label = Bild des Tages
+experimental-features-newtab-widget-picture-of-the-day-description = Fügen Sie Ihrem Tag ein kleines tägliches Wunder hinzu. Sehen Sie ein neues Bild, erfahren Sie etwas Interessantes und legen Sie im Handumdrehen ein neues Hintergrundbild fest. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Clocks Widget
+experimental-features-newtab-widget-clocks =
+    .label = Uhren
+experimental-features-newtab-widget-clocks-description = Fügen Sie bis zu vier Uhren mit benutzerdefinierten Namen hinzu, um die Zeit an Orten anzuzeigen, die für Sie wichtig sind. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Semantic History Search
+experimental-features-semantic-history-search =
+    .label = Semantische Chroniksuche
+experimental-features-semantic-history-search-description = Verwenden Sie ein lokales Machine-Learning-Modell, um Einträge aus der Chronik, die sich auf Ihre Suchanfragen beziehen, basierend auf dem Verständnis natürlicher Sprache in der { -brand-product-name }-Adressleiste vorzuschlagen. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Tab Notes
+experimental-features-tab-notes =
+    .label = Tab-Notizen
+experimental-features-tab-notes-description = Tab-Notizen sind eine experimentelle Funktion, mit der Sie Ihren Browser-Tabs Notizen hinzufügen können. Notieren Sie den Kontext, Erinnerungen oder die nächsten Schritte, damit Sie wiederkommen und sich merken können, warum Sie sie geöffnet haben. Wir würden uns über Ihr Feedback freuen, da wir diese Funktion weiter verbessern. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>
+# Streamlined Tab Context Menu
+experimental-features-tab-context-menu =
+    .label = Optimiertes Tab-Menü
+experimental-features-tab-context-menu-description = Sehen Sie ein einfacheres Kontextmenü nach einem Rechtsklick auf einen Tab. Es wurde entwickelt, um häufige Aktionen einfacher zu finden. <a data-l10n-name="connect">Sagen Sie uns Ihre Meinung</a>

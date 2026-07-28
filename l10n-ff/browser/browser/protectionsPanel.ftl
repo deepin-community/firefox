@@ -22,12 +22,6 @@ protections-panel-etp-more-info =
 protections-panel-etp-on-header = Ndeenka Dewindol Ƴellitaaka ko ko huɓɓaa ngam ndee lowre
 protections-panel-etp-off-header = Ndeenka Dewindol Ƴellitaaka ko ko ñifaa ngam ndee lowre
 
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
-
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
 

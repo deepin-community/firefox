@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Ko‘rinishi
 download-cert-view-text = CA sertifikatini sinovdan o‘tkazish
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -64,8 +61,6 @@ client-auth-cert-details-issued-by = Muallifi: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Joylashgan manzili: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Qaror eslab qolinsin
 
 ## Set password (p12) dialog
 
@@ -77,6 +72,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Sertifikat zahira paroli (yana):
 set-password-reminder = Muhim: agar siz sertifikat zahira parolini unutsangiz, ushbu zahiralashni keyinroq tiklay olmaysiz. Uni xavfsiz joyga yozib qo‘ying.
-
-## Protected authentication alert
-

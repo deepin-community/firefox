@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Povoliť
     .accesskey = P
+permissions-add =
+    .label = Pridať
+    .accesskey = r
 permissions-button-off =
     .label = Vypnúť
     .accesskey = V
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Odstrániť všetky stránky
     .accesskey = e
+permissions-save-changes-2 =
+    .buttonlabelaccept = Uložiť zmeny
+    .buttonaccesskeyaccept = U
 permission-dialog =
     .buttonlabelaccept = Uložiť zmeny
     .buttonaccesskeyaccept = U
@@ -85,6 +91,13 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Na tomto mieste môžete určiť, ktoré stránky môžu alebo nemôžu využívať cookies a údaje stránok. Zadajte presnú adresu stránky, potom kliknite na tlačidlo Zakázať, Povoliť pre reláciu alebo na Povoliť.
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = Výnimky – Vymazať históriu pri vypnutí
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = Môžete určiť, ktoré webové stránky si uchovajú svoje údaje, keď { -brand-short-name } vymaže históriu pri zatvorení. Zadajte presnú adresu stránky, ktorú chcete spravovať, a potom kliknite na tlačidlo Povoliť.
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
@@ -92,6 +105,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Pre konkrétne webové stránky môžete vypnúť režim "Len HTTPS". Pre tieto stránky sa { -brand-short-name } nebude snažiť inovovať pripojenie na zabezpečené HTTPS. Výnimky sa nevzťahujú na súkromné okná.
 permissions-exceptions-https-only-desc2 = Pre konkrétne webové stránky môžete vypnúť režim "Len HTTPS". Pre tieto stránky sa { -brand-short-name } nebude snažiť inovovať pripojenie na zabezpečené HTTPS.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Povolené webové stránky – vyskakovacie okná a presmerovania tretích strán
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Môžete určiť, ktoré webové stránky môžu otvárať vyskakovacie okná a byť presmerované rámcami tretích strán.
 
 ## Exceptions - Pop-ups
 
@@ -133,10 +153,10 @@ permissions-site-autoplay-desc = Na tomto mieste môžete spravovať stránky, k
 permissions-site-notification-window2 =
     .title = Nastavenia - Posielanie upozornení
     .style = { permissions-window2.style }
-permissions-site-notification-desc = Nasledujúce webové stránky požiadali o povolenie posielať vám upozornenia. Na tomto mieste môžete určiť, ktoré webové stránky majú povolené posielať vám upozornenia. Môžete taktiež zablokovať nové žiadosti o posielanie upozornení.
+permissions-site-notification-desc = Nasledujúce webové stránky požiadali o oprávnenie odosielať vám upozornenia. Na tomto mieste môžete určiť, ktoré webové stránky majú povolené odosielať vám upozornenia. Môžete taktiež zablokovať nové žiadosti o odosielanie upozornení.
 permissions-site-notification-disable-label =
     .label = Blokovať nové žiadosti o posielanie upozornení
-permissions-site-notification-disable-desc = Týmto zakážete webovým stránkam, ktoré nie sú uvedené v zozname vyššie, požiadať o povolenie posielať vám upozornenia. Blokovanie upozornení môže rozbiť niektoré funkcie stránok.
+permissions-site-notification-disable-desc = Týmto zakážete webovým stránkam, ktoré nie sú uvedené v zozname vyššie, požiadať o oprávnenie odosielať vám upozornenia. Blokovanie upozornení môže rozbiť niektoré funkcie stránok.
 
 ## Site Permissions - Location
 
@@ -167,6 +187,26 @@ permissions-site-camera-desc = Nasledujúce webové stránky požiadali o príst
 permissions-site-camera-disable-label =
     .label = Blokovať nové žiadosti o prístup ku kamere
 permissions-site-camera-disable-desc = Týmto zakážete webovým stránkam, ktoré nie sú uvedené v zozname vyššie, požiadať o prístup ku vašej kamere. Blokovanie prístupu ku kamere môže rozbiť niektoré funkcie stránok.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Nastavenia – Aplikácie a služby v zariadení
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Tieto webové stránky si vyžiadali prístup k aplikáciám a službám v tomto zariadení. Môžete sa rozhodnúť, či im to povoliť alebo zablokovať.
+permissions-site-localhost-disable-label =
+    .label = Blokovať nové žiadosti o prístup k aplikáciám a službám na tomto zariadení
+permissions-site-localhost-disable-desc = Týmto sa zabráni všetkým webovým stránkam, ktoré nie sú uvedené vyššie, v požadovaní prístupu k aplikáciám a službám na tomto zariadení. Môže to znefunkčniť niektoré funkcie webových stránok.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Nastavenia – Zariadenia v lokálnej sieti
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Tieto webové stránky si vyžiadali prístup k aplikáciám a službám na zariadeniach pripojených k vašej sieti Wi‑Fi alebo lokálnej sieti. Môžete sa rozhodnúť, či to webovým stránkam povoliť alebo zablokovať.
+permissions-site-local-network-disable-label =
+    .label = Blokovať nové požiadavky na prístup k aplikáciám a službám na zariadeniach pripojených k vašej sieti Wi‑Fi alebo lokálnej sieti.
+permissions-site-local-network-disable-desc = Týmto sa zabráni akýmkoľvek webovým stránkam, ktoré nie sú uvedené vyššie, aby požadovali prístup k aplikáciám a službám na zariadeniach pripojených k vašej sieti Wi‑Fi alebo lokálnym sieťam. Môže to znefunkčniť niektoré funkcie webových stránok.
 
 ## Site Permissions - Microphone
 

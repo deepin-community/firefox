@@ -13,9 +13,8 @@ const TEST_URI = "data:text/html;charset=utf-8,";
 add_task(async function () {
   const tab = await addTab(TEST_URI);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
   const { CONSOLE_MESSAGE, ROOT_NODE } = resourceCommand.TYPES;
 
   info("Use console.log in the content page");
@@ -88,7 +87,7 @@ add_task(async function () {
 });
 
 function logInTab(tab, message) {
-  return ContentTask.spawn(tab.linkedBrowser, message, function (_message) {
+  return SpecialPowers.spawn(tab.linkedBrowser, [message], function (_message) {
     content.console.log(_message);
   });
 }

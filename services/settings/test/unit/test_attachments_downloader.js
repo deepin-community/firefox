@@ -28,14 +28,6 @@ const RECORD_OF_DUMP = {
 let downloader;
 let server;
 
-function pathFromURL(url) {
-  const uri = Services.io.newURI(url);
-  const file = uri.QueryInterface(Ci.nsIFileURL).file;
-  return file.path;
-}
-
-const PROFILE_URL = PathUtils.toFileURI(PathUtils.localProfileDir);
-
 add_setup(() => {
   server = new HttpServer();
   server.start(-1);
@@ -71,8 +63,14 @@ async function clear_state() {
     set: async (id, obj) => {
       downloader.cache[id] = obj;
     },
+    setMultiple: async idsObjs => {
+      idsObjs.forEach(([id, obj]) => (downloader.cache[id] = obj));
+    },
     delete: async id => {
       delete downloader.cache[id];
+    },
+    deleteMultiple: async ids => {
+      ids.forEach(id => delete downloader.cache[id]);
     },
     hasData: async () => {
       return !!Object.keys(downloader.cache).length;
@@ -100,6 +98,11 @@ async function clear_state() {
     response.setHeader("Content-Type", "application/json; charset=UTF-8");
     response.setStatusLine(null, 200, "OK");
   });
+
+  // For tests that use a real client and DB cache, clear the local DB too.
+  const client = RemoteSettings("some-collection");
+  await client.db.clear();
+  await client.db.pruneAttachments([]);
 }
 add_task(clear_state);
 
@@ -121,58 +124,6 @@ add_task(
     Assert.ok(error instanceof Downloader.ServerInfoError);
   }
 );
-add_task(clear_state);
-
-add_task(async function test_download_writes_file_in_profile() {
-  const fileURL = await downloader.downloadToDisk(RECORD);
-  const localFilePath = pathFromURL(fileURL);
-
-  Assert.equal(
-    fileURL,
-    PROFILE_URL + "/settings/main/some-collection/test_file.pem"
-  );
-  Assert.ok(await IOUtils.exists(localFilePath));
-  const stat = await IOUtils.stat(localFilePath);
-  Assert.equal(stat.size, 1597);
-});
-add_task(clear_state);
-
-add_task(async function test_download_as_bytes() {
-  const bytes = await downloader.downloadAsBytes(RECORD);
-
-  // See *.pem file in tests data.
-  Assert.ok(bytes.byteLength > 1500, `Wrong bytes size: ${bytes.byteLength}`);
-});
-add_task(clear_state);
-
-add_task(async function test_file_is_redownloaded_if_size_does_not_match() {
-  const fileURL = await downloader.downloadToDisk(RECORD);
-  const localFilePath = pathFromURL(fileURL);
-  await IOUtils.writeUTF8(localFilePath, "bad-content");
-  let stat = await IOUtils.stat(localFilePath);
-  Assert.notEqual(stat.size, 1597);
-
-  await downloader.downloadToDisk(RECORD);
-
-  stat = await IOUtils.stat(localFilePath);
-  Assert.equal(stat.size, 1597);
-});
-add_task(clear_state);
-
-add_task(async function test_file_is_redownloaded_if_corrupted() {
-  const fileURL = await downloader.downloadToDisk(RECORD);
-  const localFilePath = pathFromURL(fileURL);
-  const byteArray = await IOUtils.read(localFilePath);
-  byteArray[0] = 42;
-  await IOUtils.write(localFilePath, byteArray);
-  let content = await IOUtils.readUTF8(localFilePath);
-  Assert.notEqual(content.slice(0, 5), "-----");
-
-  await downloader.downloadToDisk(RECORD);
-
-  content = await IOUtils.readUTF8(localFilePath);
-  Assert.equal(content.slice(0, 5), "-----");
-});
 add_task(clear_state);
 
 add_task(async function test_download_is_retried_3_times_if_download_fails() {
@@ -203,6 +154,18 @@ add_task(async function test_download_is_retried_3_times_if_download_fails() {
 });
 add_task(clear_state);
 
+add_task(async function test_download_as_bytes() {
+  const bytes = await downloader.downloadAsBytes(RECORD);
+
+  // See *.pem file in tests data.
+  Assert.greater(
+    bytes.byteLength,
+    1500,
+    `Wrong bytes size: ${bytes.byteLength}`
+  );
+});
+add_task(clear_state);
+
 add_task(async function test_download_is_retried_3_times_if_content_fails() {
   const record = {
     id: "abc",
@@ -229,67 +192,66 @@ add_task(async function test_download_is_retried_3_times_if_content_fails() {
 });
 add_task(clear_state);
 
-add_task(async function test_delete_removes_local_file() {
-  const fileURL = await downloader.downloadToDisk(RECORD);
-  const localFilePath = pathFromURL(fileURL);
-  Assert.ok(await IOUtils.exists(localFilePath));
-
-  await downloader.deleteFromDisk(RECORD);
-
-  Assert.ok(!(await IOUtils.exists(localFilePath)));
-  // And removes parent folders.
-  const parentFolder = PathUtils.join(
-    PathUtils.localProfileDir,
-    ...downloader.folders
-  );
-  Assert.ok(!(await IOUtils.exists(parentFolder)));
-});
-add_task(clear_state);
-
 add_task(async function test_delete_all() {
   const client = RemoteSettings("some-collection");
   await client.db.create(RECORD);
   await downloader.download(RECORD);
-  const fileURL = await downloader.downloadToDisk(RECORD);
-  const localFilePath = pathFromURL(fileURL);
-  Assert.ok(await IOUtils.exists(localFilePath));
 
   await client.attachments.deleteAll();
 
-  Assert.ok(!(await IOUtils.exists(localFilePath)));
   Assert.ok(!(await client.attachments.cacheImpl.get(RECORD.id)));
 });
 add_task(clear_state);
 
-add_task(async function test_downloader_is_accessible_via_client() {
+add_task(async function test_downloader_reports_download_errors() {
   const client = RemoteSettings("some-collection");
 
-  const fileURL = await client.attachments.downloadToDisk(RECORD);
+  const record = {
+    attachment: {
+      ...RECORD.attachment,
+      location: "404-error.pem",
+    },
+  };
 
-  Assert.equal(
-    fileURL,
+  try {
+    await client.attachments.download(record, { retry: 0 });
+  } catch (e) {}
+
+  TelemetryTestUtils.assertEvents([
     [
-      PROFILE_URL,
-      "settings",
-      client.bucketName,
-      client.collectionName,
-      RECORD.attachment.filename,
-    ].join("/")
-  );
+      "uptake.remotecontent.result",
+      "uptake",
+      "remotesettings",
+      UptakeTelemetry.STATUS.DOWNLOAD_START,
+      {
+        source: client.identifier,
+      },
+    ],
+    [
+      "uptake.remotecontent.result",
+      "uptake",
+      "remotesettings",
+      UptakeTelemetry.STATUS.DOWNLOAD_ERROR,
+      {
+        source: client.identifier,
+      },
+    ],
+  ]);
 });
 add_task(clear_state);
 
-add_task(async function test_downloader_reports_download_errors() {
-  await withFakeChannel("nightly", async () => {
-    const client = RemoteSettings("some-collection");
+add_task(async function test_downloader_reports_offline_error() {
+  const backupOffline = Services.io.offline;
+  Services.io.offline = true;
 
+  try {
+    const client = RemoteSettings("some-collection");
     const record = {
       attachment: {
         ...RECORD.attachment,
-        location: "404-error.pem",
+        location: "will-try-and-fail.pem",
       },
     };
-
     try {
       await client.attachments.download(record, { retry: 0 });
     } catch (e) {}
@@ -299,53 +261,34 @@ add_task(async function test_downloader_reports_download_errors() {
         "uptake.remotecontent.result",
         "uptake",
         "remotesettings",
-        UptakeTelemetry.STATUS.DOWNLOAD_ERROR,
+        UptakeTelemetry.STATUS.DOWNLOAD_START,
+        {
+          source: client.identifier,
+        },
+      ],
+      [
+        "uptake.remotecontent.result",
+        "uptake",
+        "remotesettings",
+        UptakeTelemetry.STATUS.NETWORK_OFFLINE_ERROR,
         {
           source: client.identifier,
         },
       ],
     ]);
-  });
-});
-add_task(clear_state);
-
-add_task(async function test_downloader_reports_offline_error() {
-  const backupOffline = Services.io.offline;
-  Services.io.offline = true;
-
-  await withFakeChannel("nightly", async () => {
-    try {
-      const client = RemoteSettings("some-collection");
-      const record = {
-        attachment: {
-          ...RECORD.attachment,
-          location: "will-try-and-fail.pem",
-        },
-      };
-      try {
-        await client.attachments.download(record, { retry: 0 });
-      } catch (e) {}
-
-      TelemetryTestUtils.assertEvents([
-        [
-          "uptake.remotecontent.result",
-          "uptake",
-          "remotesettings",
-          UptakeTelemetry.STATUS.NETWORK_OFFLINE_ERROR,
-          {
-            source: client.identifier,
-          },
-        ],
-      ]);
-    } finally {
-      Services.io.offline = backupOffline;
-    }
-  });
+  } finally {
+    Services.io.offline = backupOffline;
+  }
 });
 add_task(clear_state);
 
 // Common code for test_download_cache_hit and test_download_cache_corruption.
-async function doTestDownloadCacheImpl({ simulateCorruption }) {
+async function doTestDownloadCacheImpl({
+  simulateCorruption,
+  expectedReads = 1,
+  expectedWrites = 1,
+  downloadOptions = {},
+}) {
   let readCount = 0;
   let writeCount = 0;
   const cacheImpl = {
@@ -368,11 +311,11 @@ async function doTestDownloadCacheImpl({ simulateCorruption }) {
   };
   Object.defineProperty(downloader, "cacheImpl", { value: cacheImpl });
 
-  let downloadResult = await downloader.download(RECORD);
+  let downloadResult = await downloader.download(RECORD, downloadOptions);
   Assert.equal(downloadResult._source, "remote_match", "expected source");
   Assert.equal(downloadResult.buffer.byteLength, 1597, "expected result");
-  Assert.equal(readCount, 1, "expected cache read attempts");
-  Assert.equal(writeCount, 1, "expected cache write attempts");
+  Assert.equal(readCount, expectedReads, "expected cache read attempts");
+  Assert.equal(writeCount, expectedWrites, "expected cache write attempts");
 }
 
 add_task(async function test_download_cache_hit() {
@@ -383,6 +326,27 @@ add_task(clear_state);
 // Verify that the downloader works despite a broken cache implementation.
 add_task(async function test_download_cache_corruption() {
   await doTestDownloadCacheImpl({ simulateCorruption: true });
+});
+add_task(clear_state);
+
+add_task(async function test_download_with_cache_enabled() {
+  await doTestDownloadCacheImpl({
+    simulateCorruption: false,
+    downloadOptions: {
+      cacheResult: true,
+    },
+  });
+});
+add_task(clear_state);
+
+add_task(async function test_download_with_cache_disabled() {
+  await doTestDownloadCacheImpl({
+    simulateCorruption: false,
+    expectedWrites: 0,
+    downloadOptions: {
+      cacheResult: false,
+    },
+  });
 });
 add_task(clear_state);
 
@@ -829,14 +793,6 @@ add_task(async function test_cacheAll_happy_path() {
     "Attachments cacheAll succesfully downloaded a bundle and saved all attachments"
   );
 
-  // verify no temp zip file is left behind
-  const tempFiles = await IOUtils.getChildren(PathUtils.tempDir);
-  Assert.equal(
-    tempFiles.find(x => x.endsWith(".zip")),
-    undefined,
-    "No zip file is left behind."
-  );
-
   // verify accuracy of attachments downloaded
   Assert.equal(
     downloader.cache["1"].record.title,
@@ -859,6 +815,30 @@ add_task(async function test_cacheAll_happy_path() {
     "Test file 2 content is accurate."
   );
 });
+
+add_task(async function test_cacheAll_using_real_db() {
+  const client = RemoteSettings("some-collection");
+
+  const allSuccess = await client.attachments.cacheAll();
+
+  Assert.ok(
+    allSuccess,
+    "Attachments cacheAll succesfully downloaded a bundle and saved all attachments"
+  );
+
+  Assert.equal(
+    (await client.attachments.cacheImpl.get("2")).record.title,
+    "test2",
+    "Test record 2 meta content appears accurate."
+  );
+  Assert.equal(
+    await (await client.attachments.cacheImpl.get("2")).blob.text(),
+    "test2\n",
+    "Test file 2 content is accurate."
+  );
+});
+
+add_task(clear_state);
 
 add_task(async function test_cacheAll_skips_with_existing_data() {
   downloader.cache = {
@@ -908,14 +888,26 @@ add_task(async function test_cacheAll_failed_unzip() {
     false,
     "Attachments cacheAll request failed to extract a bundle and returned false"
   );
+});
 
-  // verify no temp zip file is left behind
-  const tempFiles = await IOUtils.getChildren(PathUtils.tempDir);
+add_task(clear_state);
+
+add_task(async function test_cacheAll_failed_save() {
+  const client = RemoteSettings("some-collection");
+
+  const backup = client.db.saveAttachments;
+  client.db.saveAttachments = () => {
+    throw new Error("boom");
+  };
+
+  const allSuccess = await client.attachments.cacheAll();
+
   Assert.equal(
-    tempFiles.find(x => x.endsWith(".zip")),
-    undefined,
-    "No zip file is left behind."
+    allSuccess,
+    false,
+    "Attachments cacheAll failed to save entries in DB and returned false"
   );
+  client.db.saveAttachments = backup;
 });
 
 add_task(clear_state);

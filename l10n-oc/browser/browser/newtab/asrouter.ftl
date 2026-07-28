@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } utilizaires
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Sincronizatz vòstres marcapaginas pertot.
 cfr-doorhanger-bookmark-fxa-body = Genial ! Ara, contunhetz pas sens aqueste marcapagina suls vòstres periferics mobils. Començatz amb { -fxaccount-brand-name }.
@@ -266,4 +266,41 @@ launch-on-login-infobar-final-reject-button = Non, mercé
 
 ## Tail Fox Set Default Spotlight
 
+tail-fox-spotlight-primary-button = Dobrir mos ligams amb { -brand-short-name }
 tail-fox-spotlight-secondary-button = Pas ara
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-primary-button =
+    .label = Metre a jorn ara
+    .accesskey = M
+root-certificate-succession-infobar-secondary-button =
+    .label = Mai tard
+    .accesskey = a
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Tampar
+    .aria-label = Tampar
+fxa-menu-message-backup-sync-primary-text = Gardatz e sincronizatz vòstras donadas
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Urós de vos tornar veire !
+multi-cta-fox-doodle-set-default-checkbox = Definir { -brand-short-name } coma navegador per defaut
+multi-cta-fox-doodle-start-browsing-primary-button-label = Començar de navegar
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Los onglets verticals e los grops d’onglets son arribats !
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-not-now = Pas ara
+    .accesskey = P

@@ -33,6 +33,7 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
 use crate::std::sync::Arc;
+#[cfg(not(test))]
 use anyhow::Context;
 use config::Config;
 
@@ -58,6 +59,7 @@ macro_rules! ekey {
     };
 }
 
+mod analyze;
 mod async_task;
 mod config;
 mod data;
@@ -65,8 +67,11 @@ mod glean;
 mod lang;
 mod logging;
 mod logic;
+mod memory_test;
 mod net;
+mod prefs_parser;
 mod process;
+mod send_ping;
 mod settings;
 mod std;
 mod thread_bound;
@@ -75,38 +80,59 @@ mod ui;
 #[cfg(test)]
 mod test;
 
-#[cfg(not(mock))]
 fn main() {
+    // Determine the mode in which to run. This is very simplistic, but need not be more permissive
+    // nor flexible since we control how the program is invoked. We don't use the mocked version
+    // because we want the actual args.
+    match ::std::env::args_os().nth(1) {
+        Some(s) if s == "--analyze" => analyze::main(),
+        Some(s) if s == "--memtest" => memory_test::main(),
+        Some(s) if s == "--send-ping" => send_ping::main(),
+        Some(s) if s == "--ping-cleanup" => send_ping::cleanup_main(),
+        _ => report_main(),
+    }
+}
+
+#[cfg(not(mock))]
+fn report_main() {
+    // Close unused fds before doing anything else, which might open some.
+    #[cfg(unix)]
+    let fd_cleanup_error = fd_cleanup::cleanup_unused_fds();
+
     let log_target = logging::init();
 
     let mut config = Config::new();
-    let config_result = config.read_from_environment();
     config.log_target = Some(log_target);
+    config.read_from_environment();
+
+    #[cfg(unix)]
+    if let Err(e) = fd_cleanup_error {
+        log::warn!("fd cleanup failed: {e}");
+    }
 
     let mut config = Arc::new(config);
 
-    let result = config_result.and_then(|()| {
-        let attempted_send = try_run(&mut config)?;
-        if !attempted_send {
-            // Exited without attempting to send the crash report; delete files.
-            config.delete_files();
+    match try_run(&mut config) {
+        Ok(attempted_send) => {
+            if !attempted_send {
+                // Exited without attempting to send the crash report; delete files.
+                config.delete_files();
+            }
         }
-        Ok(())
-    });
-
-    if let Err(message) = result {
-        // TODO maybe errors should also delete files?
-        log::error!("exiting with error: {message}");
-        if !config.auto_submit {
-            // Only show a dialog if auto_submit is disabled.
-            ui::error_dialog(&config, message);
+        Err(message) => {
+            // TODO maybe errors should also delete files?
+            log::error!("exiting with error: {message:#}");
+            if !config.auto_submit {
+                // Only show a dialog if auto_submit is disabled.
+                ui::error_dialog(config, message);
+            }
+            std::process::exit(1);
         }
-        std::process::exit(1);
     }
 }
 
 #[cfg(mock)]
-fn main() {
+fn report_main() {
     // TODO it'd be nice to be able to set these values at runtime in some way when running the
     // mock application.
 
@@ -120,9 +146,7 @@ fn main() {
                             "ProductName": "Bar",
                             "ReleaseChannel": "release",
                             "BuildID": "1234",
-                            "StackTraces": {
-                                "status": "OK"
-                            },
+                            "StackTraces": "{}",
                             "Version": "100.0",
                             "ServerURL": "https://reports.example",
                             "TelemetryServerURL": "https://telemetry.example",
@@ -135,7 +159,6 @@ fn main() {
     // Actual content doesn't matter, aside from the hash that is generated.
     const MOCK_MINIDUMP_FILE: &[u8] = &[1, 2, 3, 4];
     const MOCK_CURRENT_TIME: &str = "2004-11-09T12:34:56Z";
-    const MOCK_PING_UUID: uuid::Uuid = uuid::Uuid::nil();
     const MOCK_REMOTE_CRASH_ID: &str = "8cbb847c-def2-4f68-be9e-000000000000";
 
     // Initialize logging but don't set it in the configuration, so that it won't be redirected to
@@ -151,10 +174,6 @@ fn main() {
     // Create a default mock environment which allows successful operation.
     let mut mock = mock::builder();
     mock.set(
-        Command::mock("work_dir/minidump-analyzer"),
-        Box::new(|_| Ok(crate::std::process::success_output())),
-    )
-    .set(
         Command::mock("work_dir/pingsender"),
         Box::new(|_| Ok(crate::std::process::success_output())),
     )
@@ -173,6 +192,7 @@ fn main() {
         crate::std::env::MockCurrentExe,
         "work_dir/crashreporter".into(),
     )
+    .set(crate::std::env::MockTempDir, "tmp".into())
     .set(
         crate::std::time::MockCurrentTime,
         time::OffsetDateTime::parse(
@@ -182,16 +202,15 @@ fn main() {
         .unwrap()
         .into(),
     )
-    .set(mock::MockHook::new("ping_uuid"), MOCK_PING_UUID);
+    .set(mock::MockHook::new("enable_glean_pings"), false);
 
     let result = mock.run(|| {
         let mut cfg = Config::new();
         cfg.data_dir = Some("data_dir".into());
         cfg.events_dir = Some("events_dir".into());
-        cfg.ping_dir = Some("ping_dir".into());
         cfg.dump_file = Some("minidump.dmp".into());
         cfg.restart_command = Some("mockfox".into());
-        cfg.strings = Some(lang::load().unwrap());
+        cfg.strings = Some(lang::load());
 
         let mut cfg = Arc::new(cfg);
         try_run(&mut cfg)
@@ -210,25 +229,24 @@ fn try_run(config: &mut Arc<Config>) -> anyhow::Result<bool> {
         } else {
             Ok(false)
         }
+    } else if !config.dump_file().exists() {
+        // Bug 1959875: If the minidump file doesn't exist, it indicates that an error occurred
+        // when generating the minidump, and we should return a specific error message to make
+        // things clear to the user.
+        Err(anyhow::anyhow!(
+            config.string("crashreporter-error-failed-to-generate-minidump")
+        ))
     } else {
-        // Run minidump-analyzer to gather stack traces.
+        // Use minidump-analyzer to gather stack traces.
+        #[cfg(not(mock))]
         {
-            let analyzer_path = config.sibling_program_path("minidump-analyzer");
-            let mut cmd = crate::process::background_command(&analyzer_path);
-            if config.dump_all_threads {
-                cmd.arg("--full");
-            }
-            cmd.arg(config.dump_file());
-            let output = cmd
-                .output()
-                .with_context(|| config.string("crashreporter-error-minidump-analyzer"))?;
-            if !output.status.success() {
-                log::warn!(
-                    "minidump-analyzer failed to run ({});\n\nstderr: {}\n\nstdout: {}",
-                    output.status,
-                    String::from_utf8_lossy(&output.stderr),
-                    String::from_utf8_lossy(&output.stdout),
-                );
+            if let Err(e) = minidump_analyzer::MinidumpAnalyzer::new(config.dump_file())
+                .all_threads(config.dump_all_threads)
+                .analyze()
+            {
+                // Minidump analysis gives optional additional information; if it fails, we should
+                // still proceed.
+                log::warn!("minidump analyzer failed: {e}");
             }
         }
 
@@ -247,8 +265,86 @@ fn try_run(config: &mut Arc<Config>) -> anyhow::Result<bool> {
         //
         // When we are testing, glean will already be initialized (if needed).
         #[cfg(not(test))]
-        glean::init(&config);
+        let _glean_handle = glean::InitOptions::from_config(&config)
+            .init()
+            .context("failed to acquire Glean store")?;
 
         logic::ReportCrash::new(config.clone(), extra)?.run()
     }
 }
+
+/// Close inherited fds which we don't need.
+///
+/// This is important since we may re-launch Firefox (which may crash again, accumulating open fds
+/// all the while). See bug 1986095.
+///
+/// The `close_fds` crate does this in a more comprehensive way, so we may consider vendoring that in
+/// the future.
+#[cfg(all(unix, not(mock)))]
+mod fd_cleanup {
+    unsafe extern "C" {
+        fn close(fd: std::ffi::c_int) -> std::ffi::c_int;
+    }
+
+    pub fn cleanup_unused_fds() -> anyhow::Result<()> {
+        use anyhow::Context;
+
+        let fd_dir: &str = match std::env::consts::OS {
+            "linux" => "/proc/self/fd",
+            "macos" => "/dev/fd",
+            os => anyhow::bail!("unimplemented for target os {os}"),
+        };
+
+        let dir =
+            std::fs::read_dir(fd_dir).with_context(|| format!("failed to enumerate {fd_dir}"))?;
+
+        // Aggregate the fds to close so that we don't close the ReadDir fd (we could get this fd by
+        // using libc/nix, but at the time of this writing those crates aren't dependencies, and the
+        // workaround is simple enough).
+        let mut fds_to_close = Vec::new();
+        for entry_result in dir {
+            let entry = match entry_result {
+                Ok(entry) => entry,
+                Err(e) => {
+                    log::warn!("failed to enumerate {fd_dir}: {e}");
+                    continue;
+                }
+            };
+            let filename = entry.file_name();
+            // These should all be valid utf-8
+            let Some(filename) = filename.to_str() else {
+                continue;
+            };
+            let fd: std::os::fd::RawFd = match filename.parse() {
+                Ok(n) => n,
+                Err(e) => {
+                    log::warn!("failed to parse {filename} as an fd: {e}");
+                    continue;
+                }
+            };
+            // Ignore negative, stdin (0), stdout (1), or stderr(2) fds.
+            if fd >= 3 {
+                fds_to_close.push(fd);
+            }
+        }
+
+        for fd in fds_to_close {
+            // We can ignore errors (e.g. inevitably there will be at least one error from closing the
+            // ReadDir fd which is now closed). We use libc `close` directly since OwnedFd has the
+            // invariant that the fd is open (and has a debug assert checking this).
+            unsafe { close(fd) };
+        }
+
+        Ok(())
+    }
+}
+
+// `std` uses `raw-dylib` to link this dll, but that doesn't work properly on x86 MinGW, so we explicitly
+// have to link it.
+#[cfg(all(target_os = "windows", target_env = "gnu"))]
+#[link(name = "bcryptprimitives")]
+extern "C" {}
+
+#[cfg(windows)]
+#[link(name = "rpcrt4")]
+extern "C" {}

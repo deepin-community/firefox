@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,6 +12,7 @@
 #include "mozilla/MmapFaultHandler.h"
 #include "prio.h"
 #include "mozilla/Attributes.h"
+#include "mozilla/CheckedInt.h"
 #include "mozilla/Logging.h"
 #include "mozilla/MemUtils.h"
 #include "mozilla/UniquePtrExtensions.h"
@@ -97,8 +97,8 @@ class ZipArchiveLogger {
 
     if (!mFd) {
       nsCOMPtr<nsIFile> logFile;
-      nsresult rv = NS_NewLocalFile(NS_ConvertUTF8toUTF16(env), false,
-                                    getter_AddRefs(logFile));
+      nsresult rv =
+          NS_NewLocalFile(NS_ConvertUTF8toUTF16(env), getter_AddRefs(logFile));
       if (NS_FAILED(rv)) return;
 
       // Create the log file and its parent directory (in case it doesn't exist)
@@ -215,6 +215,16 @@ nsresult nsZipHandle::Init(nsIFile* file, nsZipHandle** ret, PRFileDesc** aFd) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
 
+#if defined(XP_UNIX)
+  // Prefetch the archive into the page cache ahead of the ZIP directory scan
+  // and entry reads at startup.
+  madvise(buf, (size_t)size, MADV_WILLNEED);
+#  if defined(XP_LINUX)
+  // Exclude large archive mappings from core dumps; the file is on disk.
+  madvise(buf, (size_t)size, MADV_DONTDUMP);
+#  endif
+#endif
+
 #if defined(XP_WIN)
   if (aFd) {
     *aFd = fd.release();
@@ -237,12 +247,12 @@ nsresult nsZipHandle::Init(nsIFile* file, nsZipHandle** ret, PRFileDesc** aFd) {
   return NS_OK;
 }
 
-nsresult nsZipHandle::Init(nsZipArchive* zip, const char* entry,
+nsresult nsZipHandle::Init(nsZipArchive* zip, const nsACString& entry,
                            nsZipHandle** ret) {
   RefPtr<nsZipHandle> handle = new nsZipHandle();
   if (!handle) return NS_ERROR_OUT_OF_MEMORY;
 
-  LOG(("ZipHandle::Init entry %s", entry));
+  LOG(("ZipHandle::Init entry %s", PromiseFlatCString(entry).get()));
 
   nsZipItem* item = zip->GetItem(entry);
   if (item && item->Compression() == DEFLATED &&
@@ -322,18 +332,25 @@ nsresult nsZipHandle::findDataStart() {
     headerData += CRXIntSize;  // Skip magic number
     uint32_t version = xtolong(headerData);
     headerData += CRXIntSize;  // Skip version
-    uint32_t headerSize = CRXIntSize * 2;
+    mozilla::CheckedInt<uint32_t> checkedHeaderSize = CRXIntSize * 2;
     if (version == 3) {
       uint32_t subHeaderSize = xtolong(headerData);
-      headerSize += CRXIntSize + subHeaderSize;
+      checkedHeaderSize += CRXIntSize;
+      checkedHeaderSize += subHeaderSize;
     } else if (version < 3) {
       uint32_t pubKeyLength = xtolong(headerData);
       headerData += CRXIntSize;
       uint32_t sigLength = xtolong(headerData);
-      headerSize += CRXIntSize * 2 + pubKeyLength + sigLength;
+      checkedHeaderSize += CRXIntSize * 2;
+      checkedHeaderSize += pubKeyLength;
+      checkedHeaderSize += sigLength;
     } else {
       return NS_ERROR_FILE_CORRUPTED;
     }
+    if (!checkedHeaderSize.isValid()) {
+      return NS_ERROR_FILE_CORRUPTED;
+    }
+    uint32_t headerSize = checkedHeaderSize.value();
     if (mTotalLen > headerSize) {
       mLen = mTotalLen - headerSize;
       mFileData = mFileStart + headerSize;
@@ -414,10 +431,10 @@ already_AddRefed<nsZipArchive> nsZipArchive::OpenArchive(nsIFile* aFile) {
 //---------------------------------------------
 //  nsZipArchive::Test
 //---------------------------------------------
-nsresult nsZipArchive::Test(const char* aEntryName) {
+nsresult nsZipArchive::Test(const nsACString& aEntryName) {
   nsZipItem* currItem;
 
-  if (aEntryName)  // only test specified item
+  if (aEntryName.Length())  // only test specified item
   {
     currItem = GetItem(aEntryName);
     if (!currItem) return NS_ERROR_FILE_NOT_FOUND;
@@ -442,12 +459,13 @@ nsresult nsZipArchive::Test(const char* aEntryName) {
 //---------------------------------------------
 // nsZipArchive::GetItem
 //---------------------------------------------
-nsZipItem* nsZipArchive::GetItem(const char* aEntryName) {
+nsZipItem* nsZipArchive::GetItem(const nsACString& aEntryName) {
   MutexAutoLock lock(mLock);
 
-  LOG(("ZipHandle::GetItem[%p] %s", this, aEntryName));
-  if (aEntryName) {
-    uint32_t len = strlen(aEntryName);
+  LOG(("ZipHandle::GetItem[%p] %s", this,
+       PromiseFlatCString(aEntryName).get()));
+  if (aEntryName.Length()) {
+    uint32_t len = aEntryName.Length();
     //-- If the request is for a directory, make sure that synthetic entries
     //-- are created for the directories without their own entry.
     if (!mBuiltSynthetics) {
@@ -456,14 +474,14 @@ nsZipItem* nsZipArchive::GetItem(const char* aEntryName) {
       }
     }
     MMAP_FAULT_HANDLER_BEGIN_HANDLE(mFd)
-    nsZipItem* item = mFiles[HashName(aEntryName, len)];
+    nsZipItem* item = mFiles[HashName(aEntryName.BeginReading(), len)];
     while (item) {
       if ((len == item->nameLength) &&
-          (!memcmp(aEntryName, item->Name(), len))) {
+          (!memcmp(aEntryName.BeginReading(), item->Name(), len))) {
         // Successful GetItem() is a good indicator that the file is about to be
         // read
         if (mUseZipLog && mURI.Length()) {
-          zipLog.Write(mURI, aEntryName);
+          zipLog.Write(mURI, PromiseFlatCString(aEntryName).get());
         }
         return item;  //-- found it
       }
@@ -581,7 +599,8 @@ nsresult nsZipArchive::FindInit(const char* aPattern, nsZipFind** aFind) {
 // nsZipFind::FindNext
 //---------------------------------------------
 nsresult nsZipFind::FindNext(const char** aResult, uint16_t* aNameLen) {
-  if (!mArchive || !aResult || !aNameLen) return NS_ERROR_ILLEGAL_VALUE;
+  if (!aResult || !aNameLen) return NS_ERROR_ILLEGAL_VALUE;
+  NS_ENSURE_TRUE(mArchive, NS_ERROR_FILE_NOT_FOUND);
 
   MutexAutoLock lock(mArchive->mLock);
   *aResult = 0;
@@ -615,6 +634,9 @@ nsresult nsZipFind::FindNext(const char** aResult, uint16_t* aNameLen) {
   }
   MMAP_FAULT_HANDLER_CATCH(NS_ERROR_FAILURE)
   LOG(("ZipHandle::FindNext[%p] not found %s", this, mPattern));
+  // Release the archive.
+  mArchive = nullptr;
+  mItem = nullptr;
   return NS_ERROR_FILE_NOT_FOUND;
 }
 
@@ -966,6 +988,7 @@ nsZipFind::nsZipFind(nsZipArchive* aZip, char* aPattern, bool aRegExp)
       mSlot(0),
       mRegExp(aRegExp) {
   MOZ_COUNT_CTOR(nsZipFind);
+  MOZ_ASSERT(mArchive);
 }
 
 nsZipFind::~nsZipFind() {
@@ -1202,8 +1225,8 @@ uint8_t* nsZipCursor::ReadOrCopy(uint32_t* aBytesRead, bool aCopy) {
   return buf;
 }
 
-nsZipItemPtr_base::nsZipItemPtr_base(nsZipArchive* aZip, const char* aEntryName,
-                                     bool doCRC)
+nsZipItemPtr_base::nsZipItemPtr_base(nsZipArchive* aZip,
+                                     const nsACString& aEntryName, bool doCRC)
     : mReturnBuf(nullptr), mReadlen(0) {
   // make sure the ziparchive hangs around
   mZipHandle = aZip->GetFD();

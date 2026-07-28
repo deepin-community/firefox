@@ -4,10 +4,6 @@
 
 addons-page-title = Byvoegingbestuurder
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -157,29 +153,6 @@ addon-install-from-file-filter-name = Byvoegings
 addon-open-about-debugging = Ontfout byvoegings
     .accesskey = b
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addon-page-options-button =
@@ -190,7 +163,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } is onversoenbaar met { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -205,12 +178,8 @@ details-notification-unsigned2 =
     .message = { $name } kon nie vir gebruik in { -brand-short-name } geverifieer word nie. Wees versigtig.
 details-notification-unsigned-link = Meer inligting
 details-notification-blocked = { $name } is gedeaktiveer weens sekuriteit- of stabiliteitprobleme.
-details-notification-blocked2 =
-    .message = { $name } is gedeaktiveer weens sekuriteit- of stabiliteitprobleme.
 details-notification-blocked-link = Meer inligting
 details-notification-softblocked = { $name } is bekend daarvoor dat dit sekuriteit- of stabiliteitprobleme oplewer.
-details-notification-softblocked2 =
-    .message = { $name } is bekend daarvoor dat dit sekuriteit- of stabiliteitprobleme oplewer.
 details-notification-softblocked-link = Meer inligting
 details-notification-gmp-pending = { $name } sal binnekort geïnstalleer word.
 details-notification-gmp-pending2 =

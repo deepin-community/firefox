@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -31,8 +30,7 @@
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/HeapSnapshotBinding.h"
 #include "mozilla/RangedPtr.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
+#include "mozilla/glean/DevtoolsSharedHeapsnapshotMetrics.h"
 
 #include "jsapi.h"
 #include "jsfriendapi.h"
@@ -1154,7 +1152,7 @@ class MOZ_STACK_CLASS StreamWriter : public CoreDumpWriter {
         stream(stream),
         compartments(compartments) {}
 
-  ~StreamWriter() override {}
+  ~StreamWriter() override = default;
 
   bool writeMetadata(uint64_t timestamp) final {
     protobuf::Metadata metadata;
@@ -1387,10 +1385,10 @@ already_AddRefed<nsIFile> HeapSnapshot::CreateUniqueCoreDumpFile(
 // Deletion policy for cleaning up PHeapSnapshotTempFileHelperChild pointers.
 class DeleteHeapSnapshotTempFileHelperChild {
  public:
-  constexpr DeleteHeapSnapshotTempFileHelperChild() {}
+  constexpr DeleteHeapSnapshotTempFileHelperChild() = default;
 
   void operator()(PHeapSnapshotTempFileHelperChild* ptr) const {
-    Unused << NS_WARN_IF(!HeapSnapshotTempFileHelperChild::Send__delete__(ptr));
+    (void)NS_WARN_IF(!HeapSnapshotTempFileHelperChild::Send__delete__(ptr));
   }
 };
 
@@ -1513,12 +1511,10 @@ void ChromeUtils::SaveHeapSnapshotShared(
     }
   }
 
-  Telemetry::AccumulateTimeDelta(Telemetry::DEVTOOLS_SAVE_HEAP_SNAPSHOT_MS,
-                                 start);
-  Telemetry::Accumulate(Telemetry::DEVTOOLS_HEAP_SNAPSHOT_NODE_COUNT,
-                        nodeCount);
-  Telemetry::Accumulate(Telemetry::DEVTOOLS_HEAP_SNAPSHOT_EDGE_COUNT,
-                        edgeCount);
+  glean::devtools::save_heap_snapshot.AccumulateRawDuration(TimeStamp::Now() -
+                                                            start);
+  glean::devtools::heap_snapshot_node_count.AccumulateSingleSample(nodeCount);
+  glean::devtools::heap_snapshot_edge_count.AccumulateSingleSample(edgeCount);
 }
 
 /* static */
@@ -1551,16 +1547,8 @@ already_AddRefed<HeapSnapshot> ChromeUtils::ReadHeapSnapshot(
     GlobalObject& global, const nsAString& filePath, ErrorResult& rv) {
   auto start = TimeStamp::Now();
 
-  nsresult nsrv;
-  nsCOMPtr<nsIFile> snapshotFile =
-      do_CreateInstance("@mozilla.org/file/local;1", &nsrv);
-
-  if (NS_FAILED(nsrv)) {
-    rv = nsrv;
-    return nullptr;
-  }
-
-  rv = snapshotFile->InitWithPath(filePath);
+  nsCOMPtr<nsIFile> snapshotFile;
+  rv = NS_NewLocalFile(filePath, getter_AddRefs(snapshotFile));
   if (rv.Failed()) {
     return nullptr;
   }
@@ -1574,8 +1562,8 @@ already_AddRefed<HeapSnapshot> ChromeUtils::ReadHeapSnapshot(
       mm.size(), rv);
 
   if (!rv.Failed())
-    Telemetry::AccumulateTimeDelta(Telemetry::DEVTOOLS_READ_HEAP_SNAPSHOT_MS,
-                                   start);
+    glean::devtools::read_heap_snapshot.AccumulateRawDuration(TimeStamp::Now() -
+                                                              start);
 
   return snapshot.forget();
 }

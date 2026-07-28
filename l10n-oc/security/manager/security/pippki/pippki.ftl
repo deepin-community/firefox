@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Veire
 download-cert-view-text = Examinar lo certificat d'AC
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -82,8 +79,6 @@ client-auth-cert-details-issued-by = Emés per : { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Emmagazinat dins : { $storedOn }
-client-auth-cert-remember-box =
-    .label = Memorizar aquesta decision
 
 ## Set password (p12) dialog
 

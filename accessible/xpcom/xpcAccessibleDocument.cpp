@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,6 +9,8 @@
 
 #include "nsAccUtils.h"
 #include "DocAccessible-inl.h"
+#include "mozilla/a11y/DocAccessibleParent.h"
+#include "mozilla/dom/CanonicalBrowsingContext.h"
 
 using namespace mozilla;
 using namespace mozilla::a11y;
@@ -129,6 +129,24 @@ xpcAccessibleDocument::GetChildDocumentAt(uint32_t aIndex,
 
   NS_IF_ADDREF(*aDocument = ToXPCDocument(Intl()->GetChildDocumentAt(aIndex)));
   return *aDocument ? NS_OK : NS_ERROR_INVALID_ARG;
+}
+
+NS_IMETHODIMP
+xpcAccessibleDocument::GetBrowsingContext(
+    dom::BrowsingContext** aBrowsingContext) {
+  NS_ENSURE_ARG_POINTER(aBrowsingContext);
+  *aBrowsingContext = nullptr;
+  if (!mIntl) {
+    return NS_ERROR_FAILURE;
+  }
+  if (LocalAccessible* local = mIntl->AsLocal()) {
+    NS_IF_ADDREF(*aBrowsingContext =
+                     local->AsDoc()->DocumentNode()->GetBrowsingContext());
+  } else {
+    NS_IF_ADDREF(*aBrowsingContext =
+                     mIntl->AsRemote()->AsDoc()->GetBrowsingContext());
+  }
+  return NS_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

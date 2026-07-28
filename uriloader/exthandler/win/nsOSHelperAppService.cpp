@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 3; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim:set ts=2 sts=2 sw=2 et cin:
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,7 +14,6 @@
 #include "nsLocalFile.h"
 #include "nsIWindowsRegKey.h"
 #include "nsXULAppAPI.h"
-#include "mozilla/UniquePtrExtensions.h"
 
 // shellapi.h is needed to build with WIN32_LEAN_AND_MEAN
 #include <shellapi.h>
@@ -322,6 +319,10 @@ nsresult nsOSHelperAppService::GetDefaultAppInfo(
         NS_ENSURE_SUCCESS(rv, rv);
       }
     }
+
+    LOG("AppInfo \"%s\" - Determined handler command: %s\n",
+        NS_ConvertUTF16toUTF8(aAppInfo).get(),
+        NS_ConvertUTF16toUTF8(handlerCommand).get());
   }
 
   // XXX FIXME: If this fails, the UI will display the full command
@@ -341,6 +342,18 @@ nsresult nsOSHelperAppService::GetDefaultAppInfo(
                                 friendlyName, &friendlyNameSize);
   if (SUCCEEDED(hr) && friendlyNameSize > 1) {
     aDefaultDescription.Assign(friendlyName, friendlyNameSize - 1);
+  }
+
+  if (MOZ_LOG_TEST(sLog, mozilla::LogLevel::Debug)) {
+    nsAutoString path;
+    if (*aDefaultApplication) {
+      (*aDefaultApplication)->GetPath(path);
+    }
+
+    LOG("AppInfo \"%s\" - default application (name: %s ; path: %s)\n",
+        NS_ConvertUTF16toUTF8(aAppInfo).get(),
+        NS_ConvertUTF16toUTF8(aDefaultDescription).get(),
+        NS_ConvertUTF16toUTF8(path).get());
   }
 
   return NS_OK;

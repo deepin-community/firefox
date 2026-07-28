@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,11 +6,11 @@
 #define mozilla_dom_AnimationEffect_h
 
 #include "mozilla/ComputedTiming.h"
+#include "mozilla/TimeStamp.h"
+#include "mozilla/TimingParams.h"
 #include "mozilla/dom/Animation.h"
 #include "mozilla/dom/Nullable.h"
 #include "mozilla/dom/ScrollTimeline.h"
-#include "mozilla/TimeStamp.h"
-#include "mozilla/TimingParams.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsWrapperCache.h"
 
@@ -80,10 +78,13 @@ class AnimationEffect : public nsISupports, public nsWrapperCache {
   static ComputedTiming GetComputedTimingAt(
       const Nullable<TimeDuration>& aLocalTime, const TimingParams& aTiming,
       double aPlaybackRate,
-      Animation::ProgressTimelinePosition aProgressTimelinePosition);
+      Animation::ProgressTimelinePosition aProgressTimelinePosition,
+      EndpointBehavior aEndpointBehavior = EndpointBehavior::Exclusive);
   // Shortcut that gets the computed timing using the current local time as
   // calculated from the timeline time.
-  ComputedTiming GetComputedTiming(const TimingParams* aTiming = nullptr) const;
+  ComputedTiming GetComputedTiming(
+      const TimingParams* aTiming = nullptr,
+      EndpointBehavior aEndpointBehavior = EndpointBehavior::Exclusive) const;
 
   virtual void SetAnimation(Animation* aAnimation) = 0;
   Animation* GetAnimation() const { return mAnimation; };

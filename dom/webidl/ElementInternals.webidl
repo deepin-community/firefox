@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,8 +16,8 @@ interface ElementInternals {
   undefined setFormValue((File or USVString or FormData)? value,
                          optional (File or USVString or FormData)? state);
 
-  [Throws]
-  readonly attribute HTMLFormElement? form;
+  [Throws, BinaryName=formForBindings]
+  readonly attribute Element? form;
 
   [Throws]
   undefined setValidity(optional ValidityStateFlags flags = {},
@@ -38,10 +37,10 @@ interface ElementInternals {
   [Throws]
   readonly attribute NodeList labels;
 
-  [Pref="dom.element.customstateset.enabled", SameObject] readonly attribute CustomStateSet states;
+  [SameObject] readonly attribute CustomStateSet states;
 };
 
-[Pref="dom.element.customstateset.enabled", Exposed=Window]
+[Exposed=Window]
 interface CustomStateSet {
   setlike<DOMString>;
 };

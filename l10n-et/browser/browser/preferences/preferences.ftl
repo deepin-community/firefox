@@ -9,6 +9,8 @@ do-not-track-option-default-content-blocking-known =
 do-not-track-option-always =
     .label = alati
 settings-page-title = Sätted
+category-nav-heading =
+    .heading = Sätted
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
 #
@@ -21,23 +23,33 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Otsi sätetest
 managed-notice = Brauserit haldab sinu organisatsioon.
+managed-notice-nav =
+    .label = Brauserit haldab sinu organisatsioon.
 category-list =
     .aria-label = Kategooriad
 pane-general-title = Üldine
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = Avaleht
+pane-search-title2 = Otsing
+    .title = Otsing
+pane-privacy-title3 = Privaatsus ja turvalisus
+    .title = Privaatsus ja turvalisus
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = Otsing
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = Privaatsus ja turvalisus
 pane-privacy-title = Privaatsus ja turvalisus
 category-privacy =
     .tooltiptext = { pane-privacy-title }
 pane-sync-title3 = Sync
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 pane-experimental-title = { -brand-short-name }i katsetused
 category-experimental =
     .tooltiptext = { -brand-short-name }i katsetused
@@ -50,12 +62,18 @@ settings-category-labs =
 pane-experimental-reset =
     .label = Taasta vaikeväärtused
     .accesskey = T
+help-button-label2 = { -brand-short-name }i abi
+    .title = { -brand-short-name }i abi
+addons-button-label2 = Laiendused ja teemad
+    .title = Laiendused ja teemad
 help-button-label = { -brand-short-name }i abi
 addons-button-label = Laiendused ja teemad
 focus-search =
     .key = f
 close-button =
     .aria-label = Sulge
+applications-setting-new-file-types =
+    .label = Mida peaks { -brand-short-name } tegema teiste failidega?
 
 ## Browser Restart Dialog
 
@@ -127,6 +145,8 @@ startup-restore-warn-on-quit =
     .label = Brauserist väljumisel hoiatatakse
 disable-extension =
     .label = Keela see laiendus
+tabs-group-header2 =
+    .label = Kaardid
 tabs-group-header = Kaardid
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab liigub kaartide vahel viimase kasutamise järjekorras
@@ -162,6 +182,8 @@ browser-containers-settings =
     .label = Sätted…
     .accesskey = d
 containers-disable-alert-title = Konteinerkaartide sulgemine
+startup-group =
+    .label = Käivitamine
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -196,6 +218,12 @@ containers-remove-cancel-button = Ära eemalda seda konteinerit
 language-and-appearance-header = Keel ja välimus
 preferences-web-appearance-header = Veebilehe välimus
 preferences-web-appearance-description = Mõned saidid kohandavad oma värviskeemi vastavalt sinu sätetele. Vali, millist värviskeemi soovite nende saitide jaoks kasutada.
+preferences-web-appearance-choice-light2 =
+    .label = Hele
+    .title = Kasutatakse heledat teemat saidi tausta ja sisu jaoks.
+preferences-web-appearance-choice-dark2 =
+    .label = Tume
+    .title = Kasutatakse tumedat teemat saidi tausta ja sisu jaoks.
 preferences-web-appearance-choice-light = Hele
 preferences-web-appearance-choice-dark = Tume
 preferences-web-appearance-choice-tooltip-light =
@@ -206,21 +234,24 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = Halda { -brand-short-name }i teemasid sektsioonis Laiendused ja teemad
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Sinu värvivalik on saidi välimusele ülemuslik. <a data-l10n-name="colors-link">Halda värve</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Sinu värvivalik on saidi välimusele ülemuslik.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Halda { -brand-short-name }i teemasid sektsioonis <a data-l10n-name="themes-link">Laiendused ja teemad</a>
+preferences-colors-manage-button2 =
+    .label = Halda värve
+    .accesskey = H
 preferences-colors-header = Värvid
 preferences-colors-description = Kasutatakse { -brand-short-name }i vaikevärve teksti, saidi taustade ja linkide jaoks.
 preferences-colors-manage-button =
     .label = Halda värve…
     .accesskey = H
+preferences-fonts-header2 =
+    .label = Fondid
 preferences-fonts-header = Fondid
 default-font = Vaikefont
     .accesskey = V
@@ -229,6 +260,9 @@ default-font-size = Suurus
 advanced-fonts =
     .label = Täpsemalt…
     .accesskey = l
+preferences-default-zoom-label =
+    .label = Vaikimisi suurendamine
+    .accesskey = u
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Suurendamine
 preferences-default-zoom = Vaikimisi suurendamine
@@ -251,6 +285,8 @@ manage-browser-languages-button =
     .accesskey = r
 confirm-browser-language-change-description = Muudatuste rakendamiseks taaskäivita { -brand-short-name }
 confirm-browser-language-change-button = Rakenda ja taaskäivita
+browser-language-install-error =
+    .message = { -brand-short-name }il pole võimalik praegu keeli uuendada. Kontrolli, et on olemas toimiv internetiühendus ja proovi siis uuesti.
 translate-web-pages =
     .label = Lubatakse veebisisu tõlkimine
     .accesskey = t
@@ -272,6 +308,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Failid ja rakendused
+download-save-files-header =
+    .label = Failid salvestatakse asukohta
+download-save-where-3 =
+    .aria-label = Failid salvestatakse asukohta
 download-header = Allalaadimised
 download-save-where = Failid salvestatakse asukohta
     .accesskey = v
@@ -296,9 +336,11 @@ applications-filter =
 applications-type-column =
     .label = Sisu tüüp
     .accesskey = S
+applications-type-heading = Sisu tüüp
 applications-action-column =
     .label = Tegevus
     .accesskey = T
+applications-action-heading = Tegevus
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = { $extension } fail
@@ -362,7 +404,7 @@ applications-use-other-label =
 applications-use-os-default-label =
     .value = { applications-use-os-default.label }
 
-##
+## Firefox updates
 
 applications-handle-new-file-types-description = Mida peaks { -brand-short-name } tegema teiste failidega?
 applications-save-for-new-types =
@@ -371,6 +413,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Küsitakse, kas failid peaks avama või salvestama
     .accesskey = K
+drm-group =
+    .label = Autoriõiguse digitaalkaitsega (DRM) sisu
 drm-content-header = Autoriõiguse digitaalkaitsega (DRM) sisu
 play-drm-content =
     .label = DRMiga kaitstud sisu esitamine lubatakse
@@ -381,6 +425,9 @@ update-application-description = Hoia { -brand-short-name } värske, et saada os
 # Variables:
 # $version (string) - Firefox version
 update-application-version = Versioon { $version } <a data-l10n-name="learn-more">Uuendused</a>
+update-history-2 =
+    .label = Näita uuenduste ajalugu
+    .accesskey = N
 update-history =
     .label = Näita uuenduste ajalugu…
     .accesskey = N
@@ -397,6 +444,8 @@ update-application-manual =
 update-application-background-enabled =
     .label = Uuendatakse siis, kui { -brand-short-name } ei tööta
     .accesskey = k
+update-application-warning-cross-user-setting-2 =
+    .message = See säte rakendub kõigile Windowsi kontodele ja { -brand-short-name }i profiilidele, mis kasutavad seda { -brand-short-name }i paigaldust.
 update-application-warning-cross-user-setting = See säte rakendub kõigile Windowsi kontodele ja { -brand-short-name }i profiilidele, mis kasutavad seda { -brand-short-name }i paigaldust.
 update-application-use-service =
     .label = Uuenduste paigaldamiseks kasutatakse taustateenust
@@ -439,8 +488,10 @@ performance-limit-content-process-blocked-desc = Sisu protsesside arvu muutmine 
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (vaikimisi)
+performance-group =
+    .label = Jõudlus
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = Lehitsemine
 browsing-use-autoscroll =
@@ -476,6 +527,8 @@ browsing-cfr-features =
     .label = Veebilehitsemise ajal soovitatakse funktsionaalsusi
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Rohkem teavet
+browsing-group =
+    .label = Lehitsemine
 
 ## General Section - Proxy
 
@@ -491,10 +544,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = Uued aknad ja kaardid
 home-new-windows-tabs-description2 = Vali avalehe, uute akende ja uute kaartide avamisel kuvatavad asjad.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Määra vaikebrauseriks
+    .accesskey = M
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Avaleht ja uued aknad
 home-newtabs-mode-label = Uued kaardid
+home-homepage-new-tabs =
+    .label = Uued kaardid
 home-restore-defaults =
     .label = Taasta vaikeväärtused
     .accesskey = T
@@ -526,11 +587,12 @@ home-prefs-search-header =
 home-prefs-shortcuts-header =
     .label = Otseteed
 home-prefs-shortcuts-description = Saidid, mida oled külastanud või mille oled salvestanud
+home-prefs-shortcuts-select =
+    .aria-label = Otseteed
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsitud otseteed
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } soovitab
@@ -554,6 +616,8 @@ home-prefs-highlights-option-saved-to-pocket =
 home-prefs-recent-activity-header =
     .label = Hiljutine tegevus
 home-prefs-recent-activity-description = Valik hiljutisi saite ja sisu
+home-prefs-recent-activity-select =
+    .aria-label = Hiljutine tegevus
 # For the "Snippets" feature traditionally on about:home.
 # Alternative translation options: "Small Note" or something that
 # expresses the idea of "a small message, shortened from something else,
@@ -591,6 +655,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Aadressiriba tulemustes kuvatakse otsingusoovitusi
     .accesskey = k
+search-suggestions-cant-show-2 =
+    .message = Otsingusoovitusi asukohariba tulemuste seas ei kuvata, sest { -brand-short-name } ei ole häälestatud ajalugu säilitama.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -625,12 +691,18 @@ search-keyword-warning-title = Korduv võtmesõna
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Sa valisid võtmesõna, mis on kasutusel juba otsingumootori "{ $name }" juures. Palun vali mõni muu.
 search-keyword-warning-bookmark = Sa valisid võtmesõna, mis on kasutusel järjehoidja juures. Palun vali mõni muu.
+search-engine-group =
+    .label = Vaikeotsingumootor
+search-default-engine =
+    .aria-label = Vaikeotsingumootor
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Tagasi sätetesse
 containers-header = Konteinerkaardid
+containers-section-header =
+    .heading = Konteinerkaardid
 containers-add-button =
     .label = Lisa uus konteiner
     .accesskey = L
@@ -641,6 +713,11 @@ containers-settings-button =
     .label = Sätted
 containers-remove-button =
     .label = Eemalda
+
+## Account and sync
+
+sync-group-label =
+    .label = Sync
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -670,11 +747,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = Logi välja…
     .accesskey = o
+sync-sign-out2 =
+    .label = Logi välja
+    .accesskey = o
 sync-manage-account = Halda kontot
+    .accesskey = o
+sync-manage-account2 =
+    .label = Halda kontot
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } pole kinnitatud.
 sync-signedin-login-failure = Konto { $email } taasühendamiseks logi sisse
@@ -698,6 +782,9 @@ prefs-syncing-off = Sünkroniseerimine: VÄLJAS
 prefs-sync-turn-on-syncing =
     .label = Lülita sünkroniseerimine sisse…
     .accesskey = L
+prefs-sync-turn-on-syncing-2 =
+    .label = Lülita sünkroniseerimine sisse
+    .accesskey = L
 prefs-sync-offer-setup-label2 = Sünkroniseeri oma järjehoidjad, ajalugu, kaardid, paroolid, lisad ja sätted kõigis oma seadmetes.
 prefs-sync-now =
     .labelnotsyncing = Sünkroniseeri kohe
@@ -706,8 +793,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sünkroniseeri kohe
     .accesskey = S
+prefs-sync-now-button-2 =
+    .label = Sünkroniseeri kohe
+    .accesskey = S
 prefs-syncing-button =
     .label = Sünkroniseerimine…
+prefs-syncing-button-2 =
+    .label = Sünkroniseerimine…
+    .title = Sünkroniseeri kohe
 
 ## The list of things currently syncing.
 
@@ -766,6 +859,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Seadme nimi
+sync-device-name-header-2 =
+    .label = Seadme nimi
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Seadme nimi
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Muuda seadme nime
+    .accesskey = M
 sync-device-name-change =
     .label = Muuda seadme nime…
     .accesskey = M
@@ -776,6 +879,8 @@ sync-device-name-save =
     .label = Salvesta
     .accesskey = v
 sync-connect-another-device = Ühenda teine seade
+sync-connect-another-device-2 =
+    .label = Ühenda teine seade
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -801,7 +906,7 @@ forms-ask-to-save-logins =
     .label = Küsitakse saitide kasutajatunnuste meelespidamise nõusolekut
     .accesskey = i
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = Erandid…
@@ -855,9 +960,6 @@ primary-password-os-auth-dialog-message-win = Ülemparooli loomiseks sisesta Win
 primary-password-os-auth-dialog-message-macosx = create a Primary Password
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Ajalugu
@@ -878,6 +980,12 @@ history-remember-option-never =
     .label = ei säilita ajalugu
 history-remember-option-custom =
     .label = kasutab ajaloo säilitamiseks kohandatud sätteid
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } peab meeles sinu veebilehitsemise ajaloo, allalaadimised ning vormide ja otsingu ajaloo.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } kasutab samu sätteid, mida kasutatakse privaatse veebilehitsemise korral, veebilehitsemise ajalugu ei säilitata.
 history-remember-description = { -brand-short-name } peab meeles sinu veebilehitsemise ajaloo, allalaadimised ning vormide ja otsingu ajaloo.
 history-dontremember-description = { -brand-short-name } kasutab samu sätteid, mida kasutatakse privaatse veebilehitsemise korral, veebilehitsemise ajalugu ei säilitata.
 history-private-browsing-permanent =
@@ -898,6 +1006,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Ajaloo kustutamine…
     .accesskey = j
+history-group =
+    .label = Ajalugu
 
 ## Privacy Section - Site Data
 
@@ -941,14 +1051,10 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Halda erandeid…
     .accesskey = H
+cookies-site-data-group =
+    .label = Küpsised ja saidi andmed
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Aadressiriba
 addressbar-suggest = Aadressiriba kasutamisel otsitakse soovitusi
@@ -1005,7 +1111,7 @@ content-blocking-cross-site-cookies-in-all-windows2 = saitideülesed küpsised k
 content-blocking-cross-site-tracking-cookies = saitideülesed jälitamisküpsised
 content-blocking-all-cross-site-cookies-private-windows = saitideülesed küpsised privaatsetes akendes
 content-blocking-cross-site-tracking-cookies-plus-isolate = saitideülesed jälitavad küpsised, ülejäänud küpsised isoleeritakse
-content-blocking-social-media-trackers = Sotsiaalmeedia jälitajad
+content-blocking-social-media-trackers = sotsiaalmeedia jälitajad
 content-blocking-all-cookies = Kõik küpsised
 content-blocking-unvisited-cookies = küpsised külastamata saitidelt
 content-blocking-all-windows-tracking-content = Jälitav sisu kõigis akendes
@@ -1083,6 +1189,8 @@ permissions-notification-link = Rohkem teavet
 permissions-notification-pause =
     .label = Pane teavitused { -brand-short-name }i taaskäivitumiseni pausile
     .accesskey = P
+permissions-autoplay2 =
+    .label = Automaatne esitamine
 permissions-autoplay = Automaatne esitamine
 permissions-autoplay-settings =
     .label = Sätted…
@@ -1102,6 +1210,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Erandid…
     .accesskey = E
+permissions-location2 =
+    .label = Asukoht
+permissions-xr2 =
+    .label = Virtuaalreaalsus
+permissions-camera2 =
+    .label = Kaamera
+permissions-microphone2 =
+    .label = Mikrofon
+permissions-notification2 =
+    .label = Teavitused
 
 ## Privacy Section - Data Collection
 
@@ -1125,11 +1243,10 @@ addon-recommendations-link = Rohkem teavet
 collection-health-report-disabled = Selle kompileerimise konfiguratsiooniga on andmete raporteerimine keelatud
 collection-backlogged-crash-reports-with-link = Luba { -brand-short-name }il sinu eest saata varasemad vearaportid <a data-l10n-name="crash-reports-link">Rohkem teavet</a>
     .accesskey = L
-collection-backlogged-crash-reports = Luba { -brand-short-name }il sinu eest saata varasemad vearaportid
-    .accesskey = L
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-health-report-telemetry-disabled =
+    .message = Sa ei luba enam { -vendor-short-name }il koguda tehnilisi andmeid. Kõik varasemad andmed kustutatakse 30 päeva jooksul.
+data-collection-studies-link =
+    .label = Vaata { -brand-short-name }i uuringuid
 
 ## Privacy Section - Security
 ##
@@ -1161,6 +1278,7 @@ certs-view =
 certs-devices =
     .label = Turvaseadmed…
     .accesskey = T
+certs-devices-enable-fips = Luba FIPS
 space-alert-over-5gb-settings-button =
     .label = Ava sätted
     .accesskey = v
@@ -1178,9 +1296,6 @@ httpsonly-radio-enabled-pbm =
     .label = Ainult HTTPS-režiimi kasutatakse ainult privaatsetes akendes
 httpsonly-radio-disabled =
     .label = Ainult HTTPS-režiimi ei lubata
-
-## DoH Section
-
 
 ## The following strings are used in the Download section of settings
 

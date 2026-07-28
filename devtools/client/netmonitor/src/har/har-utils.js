@@ -32,12 +32,12 @@ function formatDate(date) {
  * Helper API for HAR export features.
  */
 var HarUtils = {
-  getHarFileName(defaultFileName, jsonp, compress, hostname) {
+  getHarFileName(defaultFileName, jsonp, compress, hostname, pathname = "") {
     const extension = jsonp ? ".harp" : ".har";
 
     const now = new Date();
     let name = defaultFileName.replace(/%date/g, formatDate(now));
-    name = name.replace(/%hostname/g, hostname);
+    name = name.replace(/%hostname/g, hostname + pathname);
     name = name.replace(/\:/gm, "-", "");
     name = name.replace(/\//gm, "_", "");
 
@@ -57,8 +57,8 @@ var HarUtils = {
    *
    * @param {File} file Target file where the HAR string (JSON)
    * should be stored.
-   * @param {String} jsonString HAR data (JSON or JSONP)
-   * @param {Boolean} compress The result file is zipped if set to true.
+   * @param {string} jsonString HAR data (JSON or JSONP)
+   * @param {boolean} compress The result file is zipped if set to true.
    */
   saveToFile(file, jsonString, compress) {
     const openFlags =

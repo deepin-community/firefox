@@ -12,20 +12,6 @@ about-reader-color-scheme-sepia = ซีเปีย
     .title = แบบแผนชุดสีซีเปีย
 about-reader-color-scheme-auto = อัตโนมัติ
     .title = แบบแผนชุดสีอัตโนมัติ
-about-reader-color-theme-light = สว่าง
-    .title = ชุดตกแต่งสีสว่าง
-about-reader-color-theme-dark = มืด
-    .title = ชุดตกแต่งสีมืด
-about-reader-color-theme-sepia = ซีเปีย
-    .title = ชุดตกแต่งสีซีเปีย
-about-reader-color-theme-auto = อัตโนมัติ
-    .title = ชุดตกแต่งสีอัตโนมัติ
-about-reader-color-theme-gray = เทา
-    .title = ชุดตกแต่งสีเทา
-about-reader-color-theme-contrast = เปรียบต่าง
-    .title = ชุดตกแต่งสีเปรียบต่าง
-about-reader-color-theme-custom = สีกำหนดเอง
-    .title = ชุดตกแต่งสีกำหนดเอง
 about-reader-color-light-theme = สว่าง
     .title = ชุดตกแต่งสว่าง
 about-reader-color-dark-theme = มืด
@@ -45,7 +31,7 @@ about-reader-color-contrast-theme = เปรียบต่าง
 #   $range (String): The range of minutes as a localised string. Examples: "3-7", "~1".
 about-reader-estimated-read-time = { $range } นาที
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = ลดขนาดแบบอักษร
@@ -70,7 +56,6 @@ about-reader-font-type-monospace = ความกว้างคงที่
 
 about-reader-toolbar-close = ปิดมุมมองผู้อ่าน
 about-reader-toolbar-type-controls = ปุ่มควบคุมชนิด
-about-reader-toolbar-color-controls = สี
 about-reader-toolbar-text-layout-controls = ข้อความและเค้าโครง
 about-reader-toolbar-theme-controls = ชุดตกแต่ง
 about-reader-toolbar-savetopocket = บันทึกไปยัง { -pocket-brand-name }
@@ -85,20 +70,24 @@ about-reader-customtheme-tab = กำหนดเอง
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = ข้อความ
-    .title = แก้ไขสี
-about-reader-custom-colors-background = พื้นหลัง
-    .title = แก้ไขสี
-about-reader-custom-colors-unvisited-links = ลิงก์ที่ยังไม่เคยเยี่ยมชม
-    .title = แก้ไขสี
-about-reader-custom-colors-visited-links = ลิงก์ที่เคยเยี่ยมชมแล้ว
-    .title = แก้ไขสี
-about-reader-custom-colors-selection-highlight = ตัวเน้นข้อความสำหรับการอ่านออกเสียง
-    .title = แก้ไขสี
-about-reader-custom-colors-reset-button = กลับเป็นค่าเริ่มต้น
 about-reader-reset-button = กลับเป็นค่าเริ่มต้น
+about-reader-custom-colors-foreground2 =
+    .label = ข้อความ
+    .title = แก้ไขสี
+about-reader-custom-colors-background2 =
+    .label = พื้นหลัง
+    .title = แก้ไขสี
+about-reader-custom-colors-unvisited-links2 =
+    .label = ลิงก์ที่ยังไม่เคยเยี่ยมชม
+    .title = แก้ไขสี
+about-reader-custom-colors-visited-links2 =
+    .label = ลิงก์ที่เคยเยี่ยมชมแล้ว
+    .title = แก้ไขสี
+about-reader-custom-colors-selection-highlight2 =
+    .label = ตัวเน้นข้อความสำหรับการอ่านออกเสียง
+    .title = แก้ไขสี
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = ข้อความ
 about-reader-text-size-label = ขนาดตัวอักษร
@@ -115,9 +104,6 @@ about-reader-content-width-label =
 about-reader-line-spacing-label =
     .label = ระยะห่างระหว่างบรรทัด
 about-reader-advanced-layout-header = ขั้นสูง
-about-reader-slider-label-width-narrow = แคบ
-about-reader-slider-label-width-wide = กว้าง
-about-reader-slider-label-spacing-narrow = แคบ
 about-reader-character-spacing-label =
     .label = ช่องไฟระหว่างอักขระ
 about-reader-word-spacing-label =
@@ -129,3 +115,5 @@ about-reader-text-alignment-center =
     .title = จัดข้อความอยู่กึ่งกลาง
 about-reader-text-alignment-right =
     .title = จัดข้อความชิดขวา
+about-reader-text-alignment-justify =
+    .title = จัดข้อความให้ชิดขอบ

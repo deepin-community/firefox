@@ -22,15 +22,17 @@ add_task(async function () {
 
   for (let i = 0; i < 2; ++i) {
     let bm = await PlacesUtils.bookmarks.insert({
-      url: `http://www.test${i}.me/`,
+      url: `https://www.test${i}.me/`,
       parentGuid: PlacesUtils.bookmarks.unfiledGuid,
     });
 
     let node = library.ContentTree.view.view.nodeForTreeIndex(i);
     is(node.bookmarkGuid, bm.guid, "Found the expected bookmark");
+    // Ensure the tree is focused so the "select" event triggers updateDetailsPane.
+    library.ContentTree.view.focus();
     // Select the bookmark.
     library.ContentTree.view.selectNode(node);
-    synthesizeClickOnSelectedTreeCell(library.ContentTree.view);
+    await synthesizeClickOnSelectedTreeCell(library.ContentTree.view);
 
     is(
       library.document.getElementById("editBMPanel_keywordField").value,
@@ -53,12 +55,12 @@ add_task(async function () {
 
   for (let i = 0; i < 2; ++i) {
     let entry = await PlacesUtils.keywords.fetch({
-      url: `http://www.test${i}.me/`,
+      url: `https://www.test${i}.me/`,
     });
     is(
       entry.keyword,
       `kw${i}`,
-      `The keyword for http://www.test${i}.me/ is correct`
+      `The keyword for https://www.test${i}.me/ is correct`
     );
   }
 });

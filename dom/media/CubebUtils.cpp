@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,39 +5,52 @@
 #include "CubebUtils.h"
 
 #include "audio_thread_priority.h"
+#include "base/process_util.h"
 #include "mozilla/AbstractThread.h"
-#include "mozilla/dom/ContentChild.h"
-#include "mozilla/glean/GleanMetrics.h"
-#include "mozilla/ipc/FileDescriptor.h"
+#include "mozilla/Components.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Preferences.h"
-#include "mozilla/Components.h"
 #include "mozilla/SharedThreadPool.h"
 #include "mozilla/Sprintf.h"
 #include "mozilla/StaticMutex.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/UnderrunHandler.h"
+#include "mozilla/dom/ContentChild.h"
+#include "mozilla/glean/DomMediaMetrics.h"
+#include "mozilla/ipc/FileDescriptor.h"
+#if defined(MOZ_SANDBOX)
+#  include "mozilla/SandboxSettings.h"
+#endif
+#include <stdint.h>
+
+#include <algorithm>
+
+#include "nsAppRunner.h"
 #include "nsContentUtils.h"
 #include "nsDebug.h"
 #include "nsIStringBundle.h"
 #include "nsString.h"
 #include "nsThreadUtils.h"
 #include "prdtoa.h"
-#include <algorithm>
-#include <stdint.h>
 #ifdef MOZ_WIDGET_ANDROID
 #  include "mozilla/java/GeckoAppShellWrappers.h"
 #endif
 #ifdef XP_WIN
 #  include "mozilla/mscom/EnsureMTA.h"
 #endif
-#include "audioipc2_server_ffi_generated.h"
-#include "audioipc2_client_ffi_generated.h"
 #include <cmath>
 #include <thread>
+
 #include "CallbackThreadRegistry.h"
+#include "CubebDeviceEnumerator.h"
+#include "audioipc2_client_ffi_generated.h"
+#include "audioipc2_server_ffi_generated.h"
 #include "mozilla/StaticPrefs_media.h"
+
+#if defined(ENABLE_TESTS) || defined(FUZZING)
+#  define ENABLE_MOCK_CUBEB 1
+#  include "MockCubeb.h"
+#endif
 
 #define AUDIOIPC_STACK_SIZE_DEFAULT (64 * 4096)
 
@@ -54,6 +65,7 @@
 #define PREF_CUBEB_LOGGING_LEVEL "logging.cubeb"
 // Hidden pref used by tests to force failure to obtain cubeb context
 #define PREF_CUBEB_FORCE_NULL_CONTEXT "media.cubeb.force_null_context"
+#define PREF_CUBEB_FORCE_MOCK_CONTEXT "media.cubeb.force_mock_context"
 #define PREF_CUBEB_OUTPUT_VOICE_ROUTING "media.cubeb.output_voice_routing"
 #define PREF_CUBEB_SANDBOX "media.cubeb.sandbox"
 #define PREF_AUDIOIPC_STACK_SIZE "media.audioipc.stack_size"
@@ -67,8 +79,7 @@ namespace mozilla {
 
 namespace {
 
-using Telemetry::LABELS_MEDIA_AUDIO_BACKEND;
-using Telemetry::LABELS_MEDIA_AUDIO_INIT_FAILURE;
+using glean::media_audio::BackendLabel;
 
 LazyLogModule gCubebLog("cubeb");
 
@@ -121,21 +132,21 @@ int sInCommunicationCount = 0;
 
 const char kBrandBundleURL[] = "chrome://branding/locale/brand.properties";
 
-std::unordered_map<std::string, LABELS_MEDIA_AUDIO_BACKEND>
+MOZ_RUNINIT std::unordered_map<std::string, BackendLabel>
     kTelemetryBackendLabel = {
-        {"audiounit", LABELS_MEDIA_AUDIO_BACKEND::audiounit},
-        {"audiounit-rust", LABELS_MEDIA_AUDIO_BACKEND::audiounit_rust},
-        {"aaudio", LABELS_MEDIA_AUDIO_BACKEND::aaudio},
-        {"opensl", LABELS_MEDIA_AUDIO_BACKEND::opensl},
-        {"wasapi", LABELS_MEDIA_AUDIO_BACKEND::wasapi},
-        {"winmm", LABELS_MEDIA_AUDIO_BACKEND::winmm},
-        {"alsa", LABELS_MEDIA_AUDIO_BACKEND::alsa},
-        {"jack", LABELS_MEDIA_AUDIO_BACKEND::jack},
-        {"oss", LABELS_MEDIA_AUDIO_BACKEND::oss},
-        {"pulse", LABELS_MEDIA_AUDIO_BACKEND::pulse},
-        {"pulse-rust", LABELS_MEDIA_AUDIO_BACKEND::pulse_rust},
-        {"sndio", LABELS_MEDIA_AUDIO_BACKEND::sndio},
-        {"sun", LABELS_MEDIA_AUDIO_BACKEND::sunaudio},
+        {"audiounit", BackendLabel::eAudiounit},
+        {"audiounit-rust", BackendLabel::eAudiounitRust},
+        {"aaudio", BackendLabel::eAaudio},
+        {"opensl", BackendLabel::eOpensl},
+        {"wasapi", BackendLabel::eWasapi},
+        {"winmm", BackendLabel::eWinmm},
+        {"alsa", BackendLabel::eAlsa},
+        {"jack", BackendLabel::eJack},
+        {"oss", BackendLabel::eOss},
+        {"pulse", BackendLabel::ePulse},
+        {"pulse-rust", BackendLabel::ePulseRust},
+        {"sndio", BackendLabel::eSndio},
+        {"sun", BackendLabel::eSunaudio},
 };
 
 // Prefered samplerate, in Hz (characteristic of the hardware, mixer, platform,
@@ -293,12 +304,91 @@ void PrefChanged(const char* aPref, void* aClosure) {
             ("%s: %s", PREF_CUBEB_FORCE_NULL_CONTEXT,
              sCubebForceNullContext ? "true" : "false"));
   }
+#ifdef ENABLE_MOCK_CUBEB
+  else if (strcmp(aPref, PREF_CUBEB_FORCE_MOCK_CONTEXT) == 0) {
+    if (Preferences::GetBool(aPref, false)) {
+      MockCubeb* mock = new MockCubeb();
+      constexpr const char* kGroupIds[] = {"group_id_1", "group_id_2",
+                                           "group_id_3"};
+      {
+        constexpr size_t kNumDevices = 3;
+        constexpr const char* kDeviceIds[] = {"mock_input_1", "mock_input_2",
+                                              "mock_input_3"};
+        constexpr const char* kDeviceNames[] = {
+            "Fake Audio Input 1", "Fake Audio Input 2 (PREFERRED)",
+            "Fake Audio Input 3"};
+        for (size_t i = 0; i < kNumDevices; ++i) {
+          cubeb_device_info devinfo{
+              .devid = (cubeb_devid)(i + 1),
+              .device_id = kDeviceIds[i],
+              .friendly_name = kDeviceNames[i],
+              .group_id = kGroupIds[i],
+              .vendor_name = "Mozilla",
+              .type = CUBEB_DEVICE_TYPE_INPUT,
+              .state = CUBEB_DEVICE_STATE_ENABLED,
+              .preferred =
+                  i == 1 ? CUBEB_DEVICE_PREF_ALL : CUBEB_DEVICE_PREF_NONE,
+              .format = CUBEB_DEVICE_FMT_F32NE,
+              .default_format = CUBEB_DEVICE_FMT_F32NE,
+              .max_channels = 2,
+              .default_rate = 44100,
+              .max_rate = 44100,
+              .min_rate = 16000,
+              .latency_lo = 256,
+              .latency_hi = 1024,
+          };
+          mock->AddDevice(devinfo);
+        }
+      }
+
+      {
+        constexpr size_t kNumDevices = 2;
+        constexpr const char* kDeviceIds[] = {"mock_output_0", "mock_output_1"};
+        constexpr const char* kDeviceNames[] = {
+            "Fake Audio Output 1 (PREFERRED)", "Fake Audio Output 2"};
+        for (size_t i = 0; i < kNumDevices; ++i) {
+          cubeb_device_info devinfo{
+              .devid = (cubeb_devid)(i + 1),
+              .device_id = kDeviceIds[i],
+              .friendly_name = kDeviceNames[i],
+              .group_id = kGroupIds[i],
+              .vendor_name = "Mozilla",
+              .type = CUBEB_DEVICE_TYPE_OUTPUT,
+              .state = CUBEB_DEVICE_STATE_ENABLED,
+              .preferred =
+                  i == 0 ? CUBEB_DEVICE_PREF_ALL : CUBEB_DEVICE_PREF_NONE,
+              .format = CUBEB_DEVICE_FMT_F32NE,
+              .default_format = CUBEB_DEVICE_FMT_F32NE,
+              .max_channels = 2,
+              .default_rate = 44100,
+              .max_rate = 44100,
+              .min_rate = 16000,
+              .latency_lo = 256,
+              .latency_hi = 1024,
+          };
+          mock->AddDevice(devinfo);
+        }
+      }
+      ForceSetCubebContext(mock->AsCubebContext());
+    } else {
+      ForceUnsetCubebContext();
+    }
+  }
+#endif
 #ifdef MOZ_CUBEB_REMOTING
   else if (strcmp(aPref, PREF_CUBEB_SANDBOX) == 0) {
     StaticMutexAutoLock lock(sMutex);
     sCubebSandbox = Preferences::GetBool(aPref);
     MOZ_LOG(gCubebLog, LogLevel::Verbose,
             ("%s: %s", PREF_CUBEB_SANDBOX, sCubebSandbox ? "true" : "false"));
+#  if defined(MOZ_SANDBOX)
+    if (!sCubebSandbox && IsContentSandboxEnabled()) {
+      sCubebSandbox = true;
+      MOZ_LOG(gCubebLog, LogLevel::Error,
+              ("%s: false, but content sandbox enabled - forcing true",
+               PREF_CUBEB_SANDBOX));
+    }
+#  endif
   } else if (strcmp(aPref, PREF_AUDIOIPC_STACK_SIZE) == 0) {
     StaticMutexAutoLock lock(sMutex);
     sAudioIPCStackSize = Preferences::GetUint(PREF_AUDIOIPC_STACK_SIZE,
@@ -336,14 +426,26 @@ RefPtr<CubebHandle> GetCubeb() {
   return GetCubebUnlocked();
 }
 
+#ifdef ENABLE_MOCK_CUBEB
 // This is only exported when running tests.
 void ForceSetCubebContext(cubeb* aCubebContext) {
   RefPtr<CubebHandle> oldHandle;  // For release without sMutex
+  {
+    StaticMutexAutoLock lock(sMutex);
+    oldHandle = sCubebHandle.forget();
+    sCubebHandle = aCubebContext ? new CubebHandle(aCubebContext) : nullptr;
+    sCubebState = CubebState::Initialized;
+  }
+  CubebDeviceEnumerator::Shutdown();
+}
+
+void ForceUnsetCubebContext() {
+  RefPtr<CubebHandle> oldHandle;  // For release without sMutex
   StaticMutexAutoLock lock(sMutex);
   oldHandle = sCubebHandle.forget();
-  sCubebHandle = aCubebContext ? new CubebHandle(aCubebContext) : nullptr;
-  sCubebState = CubebState::Initialized;
+  sCubebState = CubebState::Uninitialized;
 }
+#endif
 
 void SetInCommunication(bool aInCommunication) {
 #ifdef MOZ_WIDGET_ANDROID
@@ -363,7 +465,7 @@ void SetInCommunication(bool aInCommunication) {
 #endif
 }
 
-bool InitPreferredSampleRate() {
+bool InitPreferredSampleRate() MOZ_REQUIRES(sMutex) {
   sMutex.AssertCurrentThreadOwns();
   if (sPreferredSampleRate != 0) {
     return true;
@@ -463,7 +565,7 @@ void InitBrandName() {
     if (NS_SUCCEEDED(rv)) {
       rv = brandBundle->GetStringFromName("brandShortName", brandName);
       NS_WARNING_ASSERTION(
-          NS_SUCCEEDED(rv),
+          NS_SUCCEEDED(rv) || mozilla::RunningGTest(),
           "Could not get the program name for a cubeb stream.");
     }
   }
@@ -498,7 +600,7 @@ void InitAudioIPCConnection() {
 #endif
 
 #ifdef MOZ_CUBEB_REMOTING
-ipc::FileDescriptor CreateAudioIPCConnectionUnlocked() {
+ipc::FileDescriptor CreateAudioIPCConnectionUnlocked(uint32_t aRemotePid) {
   MOZ_ASSERT(sCubebSandbox && XRE_IsParentProcess());
   if (!sServerHandle) {
     MOZ_LOG(gCubebLog, LogLevel::Debug, ("Starting cubeb server..."));
@@ -511,7 +613,7 @@ ipc::FileDescriptor CreateAudioIPCConnectionUnlocked() {
           ("%s: %d", PREF_AUDIOIPC_SHM_AREA_SIZE, (int)sAudioIPCShmAreaSize));
   MOZ_ASSERT(sServerHandle);
   ipc::FileDescriptor::PlatformHandleType rawFD;
-  rawFD = audioipc2::audioipc2_server_new_client(sServerHandle,
+  rawFD = audioipc2::audioipc2_server_new_client(sServerHandle, aRemotePid,
                                                  sAudioIPCShmAreaSize);
   ipc::FileDescriptor fd(rawFD);
   if (!fd.IsValid()) {
@@ -529,10 +631,10 @@ ipc::FileDescriptor CreateAudioIPCConnectionUnlocked() {
 }
 #endif
 
-ipc::FileDescriptor CreateAudioIPCConnection() {
+ipc::FileDescriptor CreateAudioIPCConnection(uint32_t aRemotePid) {
 #ifdef MOZ_CUBEB_REMOTING
   StaticMutexAutoLock lock(sMutex);
-  return CreateAudioIPCConnectionUnlocked();
+  return CreateAudioIPCConnectionUnlocked(aRemotePid);
 #else
   return ipc::FileDescriptor();
 #endif
@@ -553,14 +655,6 @@ RefPtr<CubebHandle> GetCubebUnlocked() {
     return sCubebHandle;
   }
 
-  if (!sBrandName && NS_IsMainThread()) {
-    InitBrandName();
-  } else {
-    NS_WARNING_ASSERTION(
-        sBrandName,
-        "Did not initialize sbrandName, and not on the main thread?");
-  }
-
   int rv = CUBEB_ERROR;
 #ifdef MOZ_CUBEB_REMOTING
   MOZ_LOG(gCubebLog, LogLevel::Info,
@@ -568,8 +662,11 @@ RefPtr<CubebHandle> GetCubebUnlocked() {
 
   if (sCubebSandbox) {
     if (XRE_IsParentProcess() && !sIPCConnection) {
+      if (!sBrandName && NS_IsMainThread()) {
+        InitBrandName();
+      }
       // TODO: Don't use audio IPC when within the same process.
-      auto fd = CreateAudioIPCConnectionUnlocked();
+      auto fd = CreateAudioIPCConnectionUnlocked(base::GetCurrentProcId());
       if (fd.IsValid()) {
         sIPCConnection = new ipc::FileDescriptor(fd);
       }
@@ -593,12 +690,19 @@ RefPtr<CubebHandle> GetCubebUnlocked() {
     initParams.mThreadDestroyCallback = []() { PROFILER_UNREGISTER_THREAD(); };
 
     cubeb* temp = nullptr;
-    rv = audioipc2::audioipc2_client_init(&temp, sBrandName, &initParams);
+    rv = audioipc2::audioipc2_client_init(&temp, &initParams);
     if (temp) {
       sCubebHandle = new CubebHandle(temp);
     }
   } else {
 #endif  // MOZ_CUBEB_REMOTING
+    // When not using the audio IPC sandbox, cubeb_init below consumes
+    // sBrandName directly. InitLibrary dispatches InitBrandName
+    // asynchronously, so initialize it here if we are on the main thread and
+    // it hasn't been set yet.
+    if (!sBrandName && NS_IsMainThread()) {
+      InitBrandName();
+    }
 #ifdef XP_WIN
     mozilla::mscom::EnsureMTA([&]() -> void {
 #endif
@@ -631,19 +735,14 @@ void ReportCubebBackendUsed() {
 
   MOZ_RELEASE_ASSERT(handle.get());
 
-  LABELS_MEDIA_AUDIO_BACKEND label = LABELS_MEDIA_AUDIO_BACKEND::unknown;
+  BackendLabel label = BackendLabel::eUnknown;
   auto backend =
       kTelemetryBackendLabel.find(cubeb_get_backend_id(handle->Context()));
   if (backend != kTelemetryBackendLabel.end()) {
     label = backend->second;
   }
-  AccumulateCategorical(label);
 
-  mozilla::glean::media_audio::backend
-      .Get(backend != kTelemetryBackendLabel.end()
-               ? nsDependentCString(cubeb_get_backend_id(handle->Context()))
-               : nsCString("unknown"_ns))
-      .Add();
+  mozilla::glean::media_audio::backend.EnumGet(label).Add();
 }
 
 void ReportCubebStreamInitFailure(bool aIsFirst) {
@@ -654,8 +753,6 @@ void ReportCubebStreamInitFailure(bool aIsFirst) {
     // failures to open multiple streams in a process over time.
     return;
   }
-  AccumulateCategorical(aIsFirst ? LABELS_MEDIA_AUDIO_INIT_FAILURE::first
-                                 : LABELS_MEDIA_AUDIO_INIT_FAILURE::other);
   mozilla::glean::media_audio::init_failure
       .EnumGet(aIsFirst ? mozilla::glean::media_audio::InitFailureLabel::eFirst
                         : mozilla::glean::media_audio::InitFailureLabel::eOther)
@@ -685,12 +782,11 @@ uint32_t GetCubebMTGLatencyInFrames(cubeb_stream_params* params) {
   }
 
 #ifdef MOZ_WIDGET_ANDROID
-  int frames = AndroidGetAudioOutputFramesPerBuffer();
-  if (frames > 0) {
-    return frames;
-  } else {
-    return 512;
-  }
+  int32_t frames = AndroidGetAudioOutputFramesPerBuffer();
+  // Allow extra time until audioipc threads are scheduled with higher
+  // priority (bug 1931080).  768 was not sufficient on a Samsung SM-A528B
+  // when switching to the home screen.
+  return std::max(1024, frames);
 #else
   RefPtr<CubebHandle> handle = GetCubebUnlocked();
   if (!handle) {
@@ -721,6 +817,7 @@ static const char* gInitCallbackPrefs[] = {
     PREF_CUBEB_BACKEND,
     PREF_CUBEB_FORCE_SAMPLE_RATE,
     PREF_CUBEB_FORCE_NULL_CONTEXT,
+    PREF_CUBEB_FORCE_MOCK_CONTEXT,
     PREF_CUBEB_SANDBOX,
     PREF_AUDIOIPC_STACK_SIZE,
     PREF_AUDIOIPC_SHM_AREA_SIZE,
@@ -747,14 +844,21 @@ void InitLibrary() {
   }
 
 #ifndef MOZ_WIDGET_ANDROID
-  NS_DispatchToMainThread(
-      NS_NewRunnableFunction("CubebUtils::InitLibrary", &InitBrandName));
+  if (XRE_IsParentProcess()
+#  ifdef MOZ_CUBEB_REMOTING
+      || !sCubebSandbox
+#  endif
+  ) {
+    NS_DispatchToMainThread(
+        NS_NewRunnableFunction("CubebUtils::InitLibrary", &InitBrandName));
+  }
 #endif
 #ifdef MOZ_CUBEB_REMOTING
   if (sCubebSandbox && XRE_IsContentProcess()) {
 #  if defined(XP_LINUX) && !defined(MOZ_WIDGET_ANDROID)
     if (atp_set_real_time_limit(0, 48000)) {
-      NS_WARNING("could not set real-time limit in CubebUtils::InitLibrary");
+      MOZ_LOG(gCubebLog, LogLevel::Warning,
+              ("could not set real-time limit in CubebUtils::InitLibrary"));
     }
     InstallSoftRealTimeLimitHandler();
 #  endif
@@ -764,7 +868,7 @@ void InitLibrary() {
 
   // Ensure the CallbackThreadRegistry is not created in an audio callback by
   // creating it now.
-  Unused << CallbackThreadRegistry::Get();
+  (void)CallbackThreadRegistry::Get();
 }
 
 void ShutdownLibrary() {
@@ -804,7 +908,7 @@ bool SandboxEnabled() {
 }
 
 already_AddRefed<SharedThreadPool> GetCubebOperationThread() {
-  RefPtr<SharedThreadPool> pool = SharedThreadPool::Get("CubebOperation"_ns, 1);
+  RefPtr<SharedThreadPool> pool = SharedThreadPool::Get("CubebOperation", 1);
   const uint32_t kIdleThreadTimeoutMs = 2000;
   pool->SetIdleThreadMaximumTimeout(
       PR_MillisecondsToInterval(kIdleThreadTimeoutMs));
@@ -886,6 +990,7 @@ bool EstimatedLatencyDefaultDevices(double* aMean, double* aStdDev,
   output_params.channels = 2;
   output_params.layout = CUBEB_LAYOUT_UNDEFINED;
   output_params.prefs = GetDefaultStreamPrefs(CUBEB_DEVICE_TYPE_OUTPUT);
+  output_params.input_params = CUBEB_INPUT_PROCESSING_PARAM_NONE;
 
   latencyFrames = GetCubebMTGLatencyInFrames(&output_params);
 
@@ -895,6 +1000,7 @@ bool EstimatedLatencyDefaultDevices(double* aMean, double* aStdDev,
   input_params.channels = 1;
   input_params.layout = CUBEB_LAYOUT_UNDEFINED;
   input_params.prefs = GetDefaultStreamPrefs(CUBEB_DEVICE_TYPE_INPUT);
+  input_params.input_params = CUBEB_INPUT_PROCESSING_PARAM_NONE;
 
   cubeb_stream* stm;
   rv = cubeb_stream_init(handle->Context(), &stm,
@@ -964,22 +1070,23 @@ bool EstimatedLatencyDefaultDevices(double* aMean, double* aStdDev,
 
 #ifdef MOZ_WIDGET_ANDROID
 int32_t AndroidGetAudioOutputSampleRate() {
-#  if defined(MOZ_ANDROID_CONTENT_SERVICE_ISOLATED_PROCESS)
-  return 44100;  // TODO: Remote value; will be handled in following patch.
-#  else
+  if (java::GeckoAppShell::IsIsolatedProcess()) {
+    return 44100;  // TODO: Remote value; will be handled in following patch.
+  }
+
   int32_t sample_rate = java::GeckoAppShell::GetAudioOutputSampleRate();
   return sample_rate;
-#  endif
 }
 int32_t AndroidGetAudioOutputFramesPerBuffer() {
-#  if defined(MOZ_ANDROID_CONTENT_SERVICE_ISOLATED_PROCESS)
-  return 512;  // TODO: Remote value; will be handled in following patch.
-#  else
+  if (java::GeckoAppShell::IsIsolatedProcess()) {
+    return 512;  // TODO: Remote value; will be handled in following patch.
+  }
   int32_t frames = java::GeckoAppShell::GetAudioOutputFramesPerBuffer();
   return frames;
-#  endif
 }
 #endif
 
 }  // namespace CubebUtils
 }  // namespace mozilla
+
+#undef ENABLE_MOCK_CUBEB

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +6,11 @@
  * Implementation of an XPath NodeSet
  */
 
-#ifndef txNodeSet_h__
-#define txNodeSet_h__
+#ifndef txNodeSet_h_
+#define txNodeSet_h_
 
-#include "txExprResult.h"
 #include "nsError.h"
+#include "txExprResult.h"
 #include "txXPathNode.h"
 
 class txNodeSet : public txAExprResult {
@@ -44,7 +43,8 @@ class txNodeSet : public txAExprResult {
    * @param  aNode the txXPathNode to add to the NodeSet
    * @return errorcode.
    */
-  nsresult add(const txXPathNode& aNode);
+  nsresult add(const txXPathNode& aNode) { return add(txXPathNode(aNode)); }
+  nsresult add(txXPathNode&& aNode);
 
   /**
    * Adds the nodes in specified NodeSet to this NodeSet. The resulting
@@ -72,7 +72,10 @@ class txNodeSet : public txAExprResult {
    * @param  aNode the Node to append to the NodeSet
    * @return errorcode.
    */
-  nsresult append(const txXPathNode& aNode);
+  nsresult append(const txXPathNode& aNode) {
+    return append(txXPathNode(aNode));
+  }
+  nsresult append(txXPathNode&& aNode);
 
   /**
    * Appends the nodes in the specified NodeSet to the end of this NodeSet

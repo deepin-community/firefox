@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,10 +6,10 @@
 #define mozilla_dom_Blob_h
 
 #include "mozilla/dom/BodyConsumer.h"
-#include "nsCycleCollectionParticipant.h"
 #include "nsCOMPtr.h"
-#include "nsWrapperCache.h"
+#include "nsCycleCollectionParticipant.h"
 #include "nsWeakReference.h"
+#include "nsWrapperCache.h"
 
 class nsIGlobalObject;
 class nsIInputStream;
@@ -30,23 +28,20 @@ class Promise;
 
 class ReadableStream;
 
-#define NS_DOM_BLOB_IID                              \
-  {                                                  \
-    0x648c2a83, 0xbdb1, 0x4a7d, {                    \
-      0xb5, 0x0a, 0xca, 0xcd, 0x92, 0x87, 0x45, 0xc2 \
-    }                                                \
-  }
+#define NS_DOM_BLOB_IID \
+  {0x648c2a83, 0xbdb1, 0x4a7d, {0xb5, 0x0a, 0xca, 0xcd, 0x92, 0x87, 0x45, 0xc2}}
 
 class Blob : public nsSupportsWeakReference, public nsWrapperCache {
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS_FINAL
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(Blob)
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_DOM_BLOB_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_DOM_BLOB_IID)
 
   using BlobPart = OwningArrayBufferViewOrArrayBufferOrBlobOrUTF8String;
 
   // This creates a Blob or a File based on the type of BlobImpl.
-  static Blob* Create(nsIGlobalObject* aGlobal, BlobImpl* aImpl);
+  static already_AddRefed<Blob> Create(nsIGlobalObject* aGlobal,
+                                       BlobImpl* aImpl);
 
   static already_AddRefed<Blob> CreateStringBlob(nsIGlobalObject* aGlobal,
                                                  const nsACString& aData,
@@ -59,6 +54,12 @@ class Blob : public nsSupportsWeakReference, public nsWrapperCache {
                                                  void* aMemoryBuffer,
                                                  uint64_t aLength,
                                                  const nsAString& aContentType);
+
+  // This clones the current Blob
+  already_AddRefed<Blob> Clone() const;
+
+  // Returns true if the blob's JS wrapper has user-added properties (expandos).
+  bool HasExpandos() const;
 
   BlobImpl* Impl() const { return mImpl; }
 
@@ -145,8 +146,6 @@ class Blob : public nsSupportsWeakReference, public nsWrapperCache {
  private:
   nsCOMPtr<nsIGlobalObject> mGlobal;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(Blob, NS_DOM_BLOB_IID)
 
 // Override BindingJSObjectMallocBytes for blobs to tell the JS GC how much
 // memory is held live by the binding object.

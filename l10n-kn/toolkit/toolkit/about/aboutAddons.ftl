@@ -4,10 +4,6 @@
 
 addons-page-title = ಆಡ್‌-ಆನ್‌ಗಳ ವ್ಯವಸ್ಥಾಪಕ
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -155,29 +151,6 @@ addon-install-from-file-filter-name = ಆಡ್-ಆನ್‌ಗಳು
 addon-open-about-debugging = ಆಡ್-ಆನ್‍ಗಳನ್ನು ಪರೀಕ್ಷಿಸಿ
     .accesskey = b
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addon-page-options-button =
@@ -188,7 +161,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } ಎನ್ನುವುದು { -brand-short-name } { $version } ನೊಂದಿಗೆ ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ.
 # Variables:
 #   $version (string) - Application version.
@@ -203,12 +176,8 @@ details-notification-unsigned2 =
     .message = { $name } ಅನ್ನು { -brand-short-name } ನಲ್ಲಿ ಬಳಕೆಗೆ ದೃಢಪಡಿಸಲಾಗಿಲ್ಲ. ಎಚ್ಚರಿಕೆಯಿಂದ ಮುಂದುವರೆಯಿರಿ.
 details-notification-unsigned-link = ಹೆಚ್ಚಿನ ಮಾಹಿತಿ
 details-notification-blocked = ಸುರಕ್ಷತೆ ಅಥವ ಸ್ಥಿರತೆಯ ಸಮಸ್ಯೆಗಳಿಂದಾಗಿ { $name } ಅನ್ನು ಅಶಕ್ತಗೊಳಿಸಲಾಗಿದೆ.
-details-notification-blocked2 =
-    .message = ಸುರಕ್ಷತೆ ಅಥವ ಸ್ಥಿರತೆಯ ಸಮಸ್ಯೆಗಳಿಂದಾಗಿ { $name } ಅನ್ನು ಅಶಕ್ತಗೊಳಿಸಲಾಗಿದೆ.
 details-notification-blocked-link = ಹೆಚ್ಚಿನ ಮಾಹಿತಿ
 details-notification-softblocked = { $name } ಎನ್ನುವುದು ಸುರಕ್ಷತೆ ಅಥವ ಸ್ಥಿರತೆಯ ಸಮಸ್ಯೆಗಳಿಗೆ ಕಾರಣವಾಗುತ್ತದೆ ಎಂದು ತಿಳಿದು ಬಂದಿದೆ.
-details-notification-softblocked2 =
-    .message = { $name } ಎನ್ನುವುದು ಸುರಕ್ಷತೆ ಅಥವ ಸ್ಥಿರತೆಯ ಸಮಸ್ಯೆಗಳಿಗೆ ಕಾರಣವಾಗುತ್ತದೆ ಎಂದು ತಿಳಿದು ಬಂದಿದೆ.
 details-notification-softblocked-link = ಹೆಚ್ಚಿನ ಮಾಹಿತಿ
 details-notification-gmp-pending = { $name } ಸದ್ಯದಲ್ಲಿಯೆ ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ.
 details-notification-gmp-pending2 =

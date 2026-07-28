@@ -10,15 +10,18 @@
 
 #include "pc/rtp_receiver.h"
 
-#include <stddef.h>
-
 #include <atomic>
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "api/media_stream_interface.h"
+#include "api/rtc_error.h"
 #include "api/scoped_refptr.h"
+#include "api/sequence_checker.h"
+#include "api/sframe/sframe_decrypter_interface.h"
+#include "api/sframe/sframe_types.h"
 #include "pc/media_stream.h"
 #include "pc/media_stream_proxy.h"
 #include "rtc_base/thread.h"
@@ -34,15 +37,26 @@ int RtpReceiverInternal::GenerateUniqueId() {
   return ++g_unique_id;
 }
 
-std::vector<rtc::scoped_refptr<MediaStreamInterface>>
+std::vector<scoped_refptr<MediaStreamInterface>>
 RtpReceiverInternal::CreateStreamsFromIds(std::vector<std::string> stream_ids) {
-  std::vector<rtc::scoped_refptr<MediaStreamInterface>> streams(
-      stream_ids.size());
+  std::vector<scoped_refptr<MediaStreamInterface>> streams(stream_ids.size());
   for (size_t i = 0; i < stream_ids.size(); ++i) {
     streams[i] = MediaStreamProxy::Create(
-        rtc::Thread::Current(), MediaStream::Create(std::move(stream_ids[i])));
+        Thread::Current(), MediaStream::Create(std::move(stream_ids[i])));
   }
   return streams;
+}
+
+RtpReceiverBase::RtpReceiverBase(Thread* worker_thread)
+    : worker_thread_(worker_thread) {}
+
+RTCErrorOr<scoped_refptr<SframeDecrypterInterface>>
+RtpReceiverBase::CreateSframeDecrypterOrError(SframeCipherSuite cipher_suite) {
+  RTC_DCHECK_RUN_ON(&signaling_thread_checker_);
+  // TODO(bugs.webrtc.org/479862368): Create the internal Sframe decryption
+  // pipeline and return a key management handle.
+  return RTCError(RTCErrorType::UNSUPPORTED_OPERATION,
+                  "Sframe decrypter not yet implemented");
 }
 
 }  // namespace webrtc

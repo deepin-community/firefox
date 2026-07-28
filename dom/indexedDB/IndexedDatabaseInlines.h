@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,15 +5,15 @@
 #ifndef IndexedDatabaseInlines_h
 #define IndexedDatabaseInlines_h
 
-#ifndef mozilla_dom_indexeddatabase_h__
+#ifndef mozilla_dom_indexeddatabase_h_
 #  error Must include IndexedDatabase.h first
 #endif
 
 #include "DatabaseFileInfo.h"
-#include "mozilla/dom/ToJSValue.h"
-#include "mozilla/dom/indexedDB/PBackgroundIDBSharedTypes.h"
 #include "mozilla/dom/DOMStringList.h"
 #include "mozilla/dom/File.h"
+#include "mozilla/dom/ToJSValue.h"
+#include "mozilla/dom/indexedDB/PBackgroundIDBSharedTypes.h"
 
 namespace mozilla::dom::indexedDB {
 
@@ -112,7 +110,22 @@ inline StructuredCloneReadInfo<
 
 template <typename StructuredCloneFile>
 inline size_t StructuredCloneReadInfo<StructuredCloneFile>::Size() const {
-  size_t size = Data().Size();
+  // We do not check the structured clone size against
+  // IndexedDatabaseManager::MaxStructuredCloneSize here.
+  // The size has already been validated before being sent from the content
+  // process to the parent process. At this stage, the parent process has
+  // either stored the data in the database or written it to a separate file,
+  // ensuring that size constraints are enforced elsewhere.
+  //
+  // If necessary, we could add a warning to flag oversized structured clones
+  // here. However, failing the request entirely would require additional
+  // changes, such as making these methods fallible, which would add complexity.
+
+  // Serialized structured clone size in bytes. For structured clone sizes >
+  // IPC::kMessageBufferShmemThreshold, only the size and shared memory handle
+  // are included in the IPC message. The value 16 is an estimate.
+  size_t size =
+      Data().Size() > IPC::kMessageBufferShmemThreshold ? 16 : Data().Size();
 
   for (uint32_t i = 0, count = mFiles.Length(); i < count; ++i) {
     // We don't want to calculate the size of files and so on, because are
@@ -157,7 +170,7 @@ JSObject* StructuredCloneReadCallback(
                                  StructuredCloneReadInfoChild>) {
       return static_cast<StructuredCloneReadInfoChild*>(aClosure)->Database();
     }
-    Unused << aClosure;
+    (void)aClosure;
     return nullptr;
   }();
   return CommonStructuredCloneReadCallback(

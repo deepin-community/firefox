@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -67,6 +66,7 @@ class MOZ_STACK_CLASS DocInfo final {
   bool ShouldMatchActiveTabPermission() const;
 
   uint64_t FrameID() const;
+  nsresult GetInnerWindowID(uint64_t* aInnerWindowID) const;
 
   nsPIDOMWindowOuter* GetWindow() const {
     if (mObj.is<Window>()) {
@@ -126,7 +126,11 @@ class MozDocumentMatcher : public nsISupports, public nsWrapperCache {
   bool Matches(const DocInfo& aDoc, bool aIgnorePermissions) const;
   bool Matches(const DocInfo& aDoc) const { return Matches(aDoc, false); }
 
-  bool MatchesURI(const URLInfo& aURL, bool aIgnorePermissions) const;
+  bool MatchesURI(const URLInfo& aURL, bool aIgnorePermissions,
+                  const Maybe<DocInfo>& aDoc) const;
+  bool MatchesURI(const URLInfo& aURL, bool aIgnorePermissions) const {
+    return MatchesURI(aURL, aIgnorePermissions, Nothing());
+  }
   bool MatchesURI(const URLInfo& aURL) const { return MatchesURI(aURL, false); }
 
   bool MatchesWindowGlobal(dom::WindowGlobalChild& aWindow,
@@ -148,6 +152,8 @@ class MozDocumentMatcher : public nsISupports, public nsWrapperCache {
   MatchPatternSet* GetExcludeMatches() { return mExcludeMatches; }
   const MatchPatternSet* GetExcludeMatches() const { return mExcludeMatches; }
 
+  bool IsUserScript() const { return mIsUserScript; }
+
   Nullable<uint64_t> GetFrameID() const { return mFrameID; }
 
   void GetOriginAttributesPatterns(JSContext* aCx,
@@ -167,6 +173,10 @@ class MozDocumentMatcher : public nsISupports, public nsWrapperCache {
                      const dom::MozDocumentMatcherInit& aInit, bool aRestricted,
                      ErrorResult& aRv);
 
+  void LogMozExtExecuteScriptDeprecationWarning(const URLInfo& aURL,
+                                                uint64_t aInnerWindowID,
+                                                bool aAllowed) const;
+
   RefPtr<WebExtensionPolicy> mExtension;
 
   bool mHasActiveTabPermission;
@@ -177,6 +187,7 @@ class MozDocumentMatcher : public nsISupports, public nsWrapperCache {
 
   Nullable<MatchGlobSet> mIncludeGlobs;
   Nullable<MatchGlobSet> mExcludeGlobs;
+  bool mIsUserScript;
 
   bool mAllFrames;
   bool mCheckPermissions;
@@ -190,6 +201,7 @@ class WebExtensionContentScript final : public MozDocumentMatcher {
  public:
   using RunAtEnum = dom::ContentScriptRunAt;
   using ExecutionWorld = dom::ContentScriptExecutionWorld;
+  using CSSOrigin = dom::ContentScriptCssOrigin;
 
   static already_AddRefed<WebExtensionContentScript> Constructor(
       dom::GlobalObject& aGlobal, WebExtensionPolicy& aExtension,
@@ -197,6 +209,8 @@ class WebExtensionContentScript final : public MozDocumentMatcher {
 
   RunAtEnum RunAt() const { return mRunAt; }
   ExecutionWorld World() const { return mWorld; }
+  CSSOrigin CssOrigin() const { return mCssOrigin; }
+  void GetWorldId(nsAString& aWorldId) const;
 
   void GetCssPaths(nsTArray<nsString>& aPaths) const {
     aPaths.AppendElements(mCssPaths);
@@ -223,6 +237,8 @@ class WebExtensionContentScript final : public MozDocumentMatcher {
 
   RunAtEnum mRunAt;
   ExecutionWorld mWorld;
+  Nullable<nsString> mWorldId;
+  CSSOrigin mCssOrigin;
 };
 
 }  // namespace extensions

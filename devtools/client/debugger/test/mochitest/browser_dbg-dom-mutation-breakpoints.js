@@ -15,18 +15,28 @@ Services.scriptloader.loadSubScript(
 const DMB_TEST_URL =
   "https://example.com/browser/devtools/client/debugger/test/mochitest/examples/doc-dom-mutation.html";
 
-async function enableMutationBreakpoints() {
-  await pushPref("devtools.debugger.dom-mutation-breakpoints-visible", true);
-}
-
 add_task(async function () {
   // Enable features
-  await enableMutationBreakpoints();
+  await pushPref("devtools.debugger.dom-mutation-breakpoints-visible", true);
   await pushPref("devtools.debugger.map-scopes-enabled", true);
 
-  info("Switches over to the inspector pane");
+  info("Check that the dom mutation breakpoint has the empty notice");
+  const dbg = await initDebuggerWithAbsoluteURL(DMB_TEST_URL);
 
-  const { inspector, toolbox } = await openInspectorForURL(DMB_TEST_URL);
+  const emptyNotice = await waitForElement(dbg, "domMutationEmpty");
+  info("Empty notice is displayed at first");
+
+  emptyNotice.scrollIntoView();
+
+  info(`Click the "Open Inspector" button to navigate to the inspector pane`);
+  // Loading the inspector panel at first, to make it possible to listen for
+  // new node selections
+  const inspector = await dbg.toolbox.loadTool("inspector");
+  const onInspectorUpdated = inspector.once("inspector-updated");
+  await clickElement(dbg, "domMutationEmptyOpenInspectorButton");
+  await onInspectorUpdated;
+
+  info("Inspector panel is selected");
 
   {
     info("Selecting the body node");
@@ -69,15 +79,20 @@ add_task(async function () {
   }
 
   info("Switches over to the debugger pane");
-  await toolbox.selectTool("jsdebugger");
+  await dbg.toolbox.selectTool("jsdebugger");
 
-  const dbg = createDebuggerContext(toolbox);
-
-  info("Confirms that one DOM mutation breakpoint exists");
   const mutationItem = await waitForElement(dbg, "domMutationItem");
-  ok(mutationItem, "A DOM mutation breakpoint exists");
-
   mutationItem.scrollIntoView();
+  is(
+    findElement(dbg, "domMutationEmpty"),
+    null,
+    "The empty notice isn't displayed anymore"
+  );
+  is(
+    findElement(dbg, "domMutationEmptyOpenInspectorButton"),
+    null,
+    `The "Open Inspector" button isn't displayed anymore`
+  );
 
   info("Enabling and disabling the DOM mutation breakpoint works");
   const checkbox = mutationItem.querySelector("input");
@@ -96,7 +111,7 @@ add_task(async function () {
   );
   is(
     whyPaused,
-    `Paused on DOM mutation\nDOM Mutation: 'attributeModified'\nbody`
+    `Paused on DOM mutation\nchangeAttribute - dom-mutation.original.js:3:16\nDOM Mutation: 'attributeModified'\nbody`
   );
 
   await resume(dbg);
@@ -125,7 +140,7 @@ add_task(async function () {
   );
   is(
     whyPaused,
-    `Paused on DOM mutation\nDOM Mutation: 'subtreeModified'\nbodyAdded:div#dynamic`
+    `Paused on DOM mutation\naddDivToBody - dom-mutation.js:13:16\nDOM Mutation: 'subtreeModified'\nbodyAdded:div#dynamic`
   );
 
   await resume(dbg);
@@ -140,7 +155,7 @@ add_task(async function () {
   );
   is(
     whyPaused,
-    `Paused on DOM mutation\nDOM Mutation: 'subtreeModified'\nbodyRemoved:div#dynamic`
+    `Paused on DOM mutation\nremoveDivInBody - dom-mutation.js:17:42\nDOM Mutation: 'subtreeModified'\nbodyRemoved:div#dynamic`
   );
 
   await resume(dbg);

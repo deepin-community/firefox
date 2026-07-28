@@ -64,6 +64,20 @@ about-processes-inference-process = Rhesymiad ( { $pid } )
 #    $type (String) The raw type for this process.
 about-processes-unknown-process = Arall: { $type } ({ $pid })
 
+## Properties of isolated web processes
+
+about-processes-web-isolated-property-private = preifat
+about-processes-web-isolated-property-serviceworker = gweithiwr gwasanaeth
+about-processes-web-isolated-property-jit-disabled = JIT wedi ei analluogi
+about-processes-web-isolated-property-with-coop-coep = traws-darddiad ynysig
+
+## Isolated process names
+## Variables:
+##    $origin (String) The domain name for this process.
+##    $properties (String) A formatted list of properties from the above strings.
+
+about-processes-web-isolated-process2 = { $origin } ({ $properties })
+
 ## Isolated process names
 ## Variables:
 ##    $pid (String) The process id of this process, assigned by the OS.
@@ -89,12 +103,12 @@ about-processes-with-coop-coep-process-private = { $origin } — Preifat ({ $pid
 #                   Can be an empty string if the process is idle.
 about-processes-active-threads =
     { $active ->
-        [zero] { $active } edafedd gweithredol allan o { $number }:{ $list }
-        [one] { $active } edafedd gweithredol allan o { $number }:{ $list }
-        [two] { $active } edafedd gweithredol allan o { $number }:{ $list }
-        [few] { $active } edafedd gweithredol allan o { $number }:{ $list }
-        [many] { $active } edafedd gweithredol allan o { $number }:{ $list }
-       *[other] { $active } edafedd gweithredol allan o { $number }:{ $list }
+        [zero] { $active } edafedd gweithredol allan o { $number }: { $list }
+        [one] { $active } edefyn gweithredol allan o { $number }: { $list }
+        [two] { $active } edefyn gweithredol allan o { $number }: { $list }
+        [few] { $active } edefyn gweithredol allan o { $number }: { $list }
+        [many] { $active } edefyn gweithredol allan o { $number }: { $list }
+       *[other] { $active } edefyn gweithredol allan o { $number }: { $list }
     }
 # Single-line summary of threads (idle process)
 # Variables:
@@ -143,6 +157,7 @@ about-processes-utility-actor-mf-media-engine = CDM Media Engine Windows Media F
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windows Utils
 about-processes-utility-actor-windows-file-dialog = Deialog Ffeil Windows
+about-processes-utility-actor-pkcs11-module = Cynorthwyydd Modiwl Diogelwch
 
 ## Displaying CPU (percentage and total)
 ## Variables:

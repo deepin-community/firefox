@@ -8,12 +8,8 @@
   scrollbar-color: color-mix(in srgb, currentColor 26%, transparent) transparent;
 }
 
-.subviewbutton:not([image],[targetURI],.bookmark-item) > .menu-iconic-left {
+.subviewbutton:not([image], [targetURI], .bookmark-item) > .menu-icon {
   display: none;
-}
-
-.PanelUI-remotetabs-clientcontainer > label[itemtype="client"] {
-  padding-inline-start: 10px;
 }
 
 .PanelUI-remotetabs-notabsforclient-label {
@@ -32,20 +28,22 @@
 
 .panel-button {
   appearance: none;
-  border-radius: 2px;
-  background-color: var(--arrowpanel-dimmed);
-  color: inherit;
+  border-radius: var(--border-radius-xsmall);
+  color: var(--button-text-color);
+  background-color: var(--button-background-color);
   padding: 2px 6px;
-}
 
-.panel-button:not([disabled]):hover {
-  background-color: var(--panel-item-hover-bgcolor);
-}
+  &:not([disabled]):hover {
+    color: var(--button-text-color-hover);
+    background-color: var(--button-background-color-hover);
+  }
 
-.panel-button:not([disabled]):hover:active {
-  background-color: var(--panel-item-active-bgcolor);
-}
+  &:not([disabled]):hover:active {
+    color: var(--button-text-color-active);
+    background-color: var(--button-background-color-active);
+  }
 
-.panel-button:focus-visible {
-  outline: var(--focus-outline);
+  &:focus-visible {
+    outline: var(--focus-outline);
+  }
 }

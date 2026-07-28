@@ -1,5 +1,4 @@
 /* clang-format off */
-/* -*- Mode: Objective-C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* clang-format on */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,10 +28,21 @@ DocAccessibleWrap::~DocAccessibleWrap() {}
 
 void DocAccessibleWrap::AttributeChanged(dom::Element* aElement,
                                          int32_t aNameSpaceID,
-                                         nsAtom* aAttribute, int32_t aModType,
+                                         nsAtom* aAttribute,
+                                         AttrModType aModType,
                                          const nsAttrValue* aOldValue) {
   DocAccessible::AttributeChanged(aElement, aNameSpaceID, aAttribute, aModType,
                                   aOldValue);
+  if (aAttribute == nsGkAtoms::aria_errormessage) {
+    LocalAccessible* accessible =
+        mContent != aElement ? GetAccessible(aElement) : this;
+    if (!accessible) {
+      return;
+    }
+    FireDelayedEvent(nsIAccessibleEvent::EVENT_ERRORMESSAGE_CHANGED,
+                     accessible);
+  }
+
   if (aAttribute == nsGkAtoms::aria_live) {
     LocalAccessible* accessible =
         mContent != aElement ? GetAccessible(aElement) : this;
@@ -101,5 +111,10 @@ void DocAccessibleWrap::ProcessNewLiveRegions() {
 
 void DocAccessibleWrap::DoInitialUpdate() {
   DocAccessible::DoInitialUpdate();
+  if (IsLiveRegion(mDocumentNode->GetBodyElement())) {
+    // Check if this doc's body element is a live region
+    QueueNewLiveRegion(this);
+  }
+
   ProcessNewLiveRegions();
 }

@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name }-priveenavigaasje
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name }-priveenavigaasje
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name }-priveenavigaasje
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name }-priveenavigaasje
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }-priveenavigaasje
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Priveenavigaasje
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Priveenavigaasje
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Priveenavigaasje
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Priveenavigaasje
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Priveenavigaasje
+       *[other] { -brand-full-name }-priveenavigaasje
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Priveenavigaasje
+popups-infobar-dont-show-message2 =
+    .label = Dit berjocht net toane wannear’t pop-ups of omliedingen fan tredden blokkearre wurde
+    .accesskey = n
+edit-popup-settings2 =
+    .label = Ynstellingen foar pop-ups en omliedingen fan tredden beheare…
+    .accesskey = b
 
 ##
 
@@ -65,6 +140,8 @@ urlbar-web-notification-anchor =
     .tooltiptext = Wizigje oft jo notifikaasjes fan de website ûntfange kinne
 urlbar-midi-notification-anchor =
     .tooltiptext = MIDI-paniel iepenje
+urlbar-serial-notification-anchor =
+    .tooltiptext = Paniel Serieel iepenje
 urlbar-eme-notification-anchor =
     .tooltiptext = Gebrûk fan DRM-software beheare
 urlbar-web-authn-anchor =
@@ -77,6 +154,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Berjochtpaniel iepenje
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Lokaasjefersyk-paniel iepenje
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Lokale apparaattagong foar dizze website beheare
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Dielen fan jo lokale netwurktagong mei dizze website beheare
 urlbar-xr-notification-anchor =
     .tooltiptext = Machtigingsfinster foar virtual reality iepenje
 urlbar-storage-access-anchor =
@@ -114,6 +195,24 @@ urlbar-result-menu-button =
     .title = Menu iepenje
 urlbar-result-menu-button-feedback = Kommentaar
     .title = Menu iepenje
+urlbar-result-menu-learn-more2 = Mear ynfo
+    .accesskey = M
+urlbar-result-menu-remove-from-history2 = Fuortsmite út skiednis
+    .accesskey = F
+urlbar-result-menu-tip-get-help2 = Help krije
+    .accesskey = H
+urlbar-result-menu-dismiss-suggestion2 = Dizze suggestje fuortsmite
+    .accesskey = f
+urlbar-result-menu-manage-firefox-suggest2 = { -firefox-suggest-brand-name } beheare
+    .accesskey = b
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location2 = Net sekuere lokaasje melde
+urlbar-result-menu-show-less-frequently2 = Minder faaks toane
+urlbar-result-menu-dont-show-weather-suggestions2 = Gjin waarsuggestjes toane
 urlbar-result-menu-learn-more =
     .label = Mear ynfo
     .accesskey = M
@@ -123,6 +222,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Help krije
     .accesskey = H
+urlbar-result-menu-dismiss-suggestion =
+    .label = Dizze suggestje fuortsmite
+    .accesskey = f
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Mear ynfo oer { -firefox-suggest-brand-name }
+    .accesskey = M
+urlbar-result-menu-manage-firefox-suggest =
+    .label = { -firefox-suggest-brand-name } beheare
+    .accesskey = b
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Net sekuere lokaasje melde
+urlbar-result-menu-show-less-frequently =
+    .label = Minder faaks toane
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Gjin waarsuggestjes toane
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Menu iepenje
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Tank foar jo kommentaar
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Tank foar jo kommentaar. Jo sjogge gjin waarsuggestjes mear.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +276,10 @@ urlbar-search-mode-actions = Aksjes
 
 urlbar-geolocation-blocked =
     .tooltiptext = Jo hawwe jo lokaasjeynformaasje foar dizze website blokkearre.
+urlbar-localhost-blocked =
+    .tooltiptext = Jo hawwe lokale apparaatferbiningen foar dizze website blokkearre.
+urlbar-local-network-blocked =
+    .tooltiptext = Jo hawwe lokale netwurkferbiningen foar dizze website blokkearre.
 urlbar-xr-blocked =
     .tooltiptext = Jo hawwe tagong ta virtual-reality-apparaten foar dizze website blokkearre.
 urlbar-web-notifications-blocked =
@@ -160,6 +292,8 @@ urlbar-screen-blocked =
     .tooltiptext = Jo hawwe jo it dielen fan jo skerm foar dizze website blokkearre.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Jo hawwe permaninte opslach foar dizze website blokkearre.
+urlbar-popup-blocked2 =
+    .tooltiptext = Jo hawwe pop-ups en omliedingen fan tredden foar dizze website blokkearre.
 urlbar-popup-blocked =
     .tooltiptext = Jo hawwe pop-ups foar dizze website blokkearre.
 urlbar-autoplay-media-blocked =
@@ -168,6 +302,8 @@ urlbar-canvas-blocked =
     .tooltiptext = Jo hawwe canvas-gegevensekstraksje foar dizze website blokkearre.
 urlbar-midi-blocked =
     .tooltiptext = Jo hawwe MIDI foar dizze website blokkearre.
+urlbar-serial-blocked =
+    .tooltiptext = Jo hawwe tagong ta seriële poarten foar dizze website blokkearre.
 urlbar-install-blocked =
     .tooltiptext = Jo hawwe ynstallaasje fan add-ons foar dizze website blokkearre.
 # Variables
@@ -178,6 +314,15 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Blêdwizer foar dizze side meitsje ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = Splitste werjefte
+    .aria-label = Splitste werjefte
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = Sykskiednis fuortsmite
+    .accesskey = S
 
 ## Page Action Context Menu
 
@@ -250,14 +395,25 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Add-ons besjen
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = útwreidingen, tema’s, add-ons
+# Opens preferences page at AI controls
+quickactions-manageai = AI-betsjinningseleminten beheare
+quickactions-cmd-manageai = ai útskeakelje, ai útskeakelje, ai beheare
 quickactions-cmd-addons2 = add-ons
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Blêdwizers beheare
 quickactions-cmd-bookmarks = blêdwizers
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Resinte skiednis wiskje
+quickactions-cmd-clearrecenthistory2 = cookies, cookies wiskje, buffer, buffer wiskje, navigaasjegegevens, navigaasjegegevens wiskje, skiednis, resinte skiednis wiskje
+quickactions-cmd-clearrecenthistory = resinte skiednis wiskje, skiednis
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Skiednis wiskje
 quickactions-cmd-clearhistory = skiednis wiskje
@@ -266,13 +422,36 @@ quickactions-downloads2 = Downloads besjen
 quickactions-cmd-downloads = downloads
 # Opens about:addons page in the extensions section
 quickactions-extensions = Utwreidingen beheare
+quickactions-cmd-extensions2 = útwreidingen, add-ons
 quickactions-cmd-extensions = útwreidingen
+# Opens Firefox View
+quickactions-firefoxview = { -firefoxview-brand-name } iepenje
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = { -firefoxview-brand-name } iepenje, { -firefoxview-brand-name }, byld iepenje, besjen
+# Opens SUMO home page
+quickactions-help = Help foar { -brand-product-name }
+quickactions-cmd-help = help, stipe
 # Opens the devtools web inspector
 quickactions-inspector2 = Developer Tools iepenje
+quickactions-cmd-inspector2 = inspector, devtools, ûntwikkelersark
+# Opens the devtools eyedropper to pick a color from the page
+quickactions-colorpicker = Kies in kleur
+quickactions-cmd-colorpicker = kleurkiezer, pipet, kleur kieze
+# Opens Firefox Library
+quickactions-cmd-library = biblioteek
+quickactions-library = Biblioteek iepenje
 quickactions-cmd-inspector = inspector, devtools
 # Opens about:logins
 quickactions-logins2 = Wachtwurden beheare
 quickactions-cmd-logins = oanmeldingen, wachtwurden
+# Mutes all tabs playing audio
+quickactions-mute = Ljepblêden dy’t audio ôfspylje dôvje
+# List of words that would trigger the "mute tabs" action from the address bar.
+# Replace with idiomatic expressions in your language to silence something or
+# someone.
+quickactions-cmd-mute = dôvje, stil, ssssht
 # Opens about:addons page in the plugins section
 quickactions-plugins = Ynstekkers beheare…
 quickactions-cmd-plugins = ynstekkers
@@ -281,7 +460,10 @@ quickactions-print2 = Side ôfdrukke
 quickactions-cmd-print = ôfdrukke
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Side bewarje as PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, side bewarje
+# Opens about:pdf, the PDF editor landing page
+quickactions-editpdf = PDF-bewurker iepenje
+quickactions-cmd-editpdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Priveefinster iepenje
 quickactions-cmd-private = priveenavigaasje
@@ -293,22 +475,40 @@ quickactions-restart = { -brand-short-name } opnij starte
 quickactions-cmd-restart = opnij starte
 # Opens the screenshot tool
 quickactions-screenshot3 = In skermôfbylding meitsje
+quickactions-cmd-screenshot2 = skermôfdruk, in skermôfdruk nimme
+# Opens about:translations
+quickactions-translate = Oersette
+quickactions-cmd-translate = oersette
 quickactions-cmd-screenshot = skermôfdruk
 # Opens about:preferences
 quickactions-settings2 = Ynstellingen beheare
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = ynstellingen, foarkarren, opsjes, beheare
 quickactions-cmd-settings = ynstellingen, foarkarren, opsjes
 # Opens about:addons page in the themes section
 quickactions-themes = Tema’s beheare
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = tema’s, add-ons
 quickactions-cmd-themes = tema’s
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = { -brand-short-name } bywurkje
 quickactions-cmd-update = bywurkje
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Sideboarne besjen
+quickactions-cmd-viewsource2 = boarne besjen, boarne, sideboarne
+# Opens about:preferences:experimental (Firefox Labs)
+quickactions-labs = { -firefoxlabs-brand-name } iepenje
+quickactions-cmd-labs = labs, eksperiment
 quickactions-cmd-viewsource = boarne besjen, boarne
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Mear ynfo oer Flugge aksjes
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Druk op Tab om te selektearjen:
 
 ## Bookmark Panel
 
@@ -382,7 +582,11 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Jo hawwe in ûnbefeilige ferbining mei dizze website.
 identity-connection-verified = Jo hawwe in befeilige ferbining mei dizze website.
 identity-ev-owner-label = Sertifikaat útjûn oan:
+identity-verifier-label = Ferifiearre troch:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = Kwalifisearre lykas oantsjutte yn Feroardening (EU) 2024/1183.
 identity-description-custom-root2 = Mozilla werkent dizze sertifikaatútjouwer net. Hy is mooglik fan jo bestjoeringssysteem út of troch in behearder tafoege.
+identity-cert-exception-overridden = Jo hawwe in befeiligingsútsûndering tafoege foar dizze website.
 identity-remove-cert-exception =
     .label = Utsûndering fuortsmite
     .accesskey = f
@@ -415,6 +619,9 @@ browser-window-restore-down-button =
     .tooltiptext = Omleech opnij ynstelle
 browser-window-close-button =
     .tooltiptext = Slute
+# Clicking this button closes the window and returns to the tab where it was opened from
+browser-window-return-to-opener =
+    .tooltiptext = Tebek
 
 ## Tab actions
 
@@ -485,6 +692,11 @@ sharing-warning-proceed-to-tab =
 sharing-warning-disable-for-session =
     .label = Dielbeskerming foar dizze sesje útskeakelje
 
+## WebSerial "select a port" popup
+
+webserial-select-port-label = Selektearje in seriële poarte:
+webserial-no-ports-available = Gjin seriële poarten beskikber
+
 ## DevTools F12 popup
 
 enable-devtools-popup-description2 = Iepenje earst DevTools yn it menu Ekstra om de fluchtoets F12 te brûken.
@@ -498,6 +710,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Fier in sykterm of adres yn
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Fier adres yn
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -546,17 +762,18 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Utwreiding:
+urlbar-go-button2 =
+    .title = It adres yn de lokaasjebalke iepenje
 urlbar-go-button =
     .tooltiptext = It adres yn de lokaasjebalke iepenje
 urlbar-page-action-button =
     .tooltiptext = Side-aksjes
 urlbar-revert-button =
     .tooltiptext = Adres yn de lokaasjebalke toane
-urlbar-show-page-actions-button =
-    .tooltiptext = Alle side-aksjes toane
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -573,12 +790,15 @@ urlbar-result-action-search-in-private = Sykje yn in priveefinster
 urlbar-result-action-search-w-engine = Sykje mei { $engine }
 urlbar-result-action-sponsored = Sponsore
 urlbar-result-action-switch-tab = Wikselje nei ljepblêd
+urlbar-result-action-move-tab-to-split-view = Ljepblêd nei splitste werjefte ferpleatse
 urlbar-result-action-visit = Besykje
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Wikselje nei ljepblêd · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Nammeleaze groep
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Besykje fan klamboerd ôf
 # Directs a user to press the Tab key to perform a search with the specified
@@ -608,12 +828,305 @@ urlbar-result-action-copy-to-clipboard = Kopiearje
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = net definiearre
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = { -brand-product-name }-útwreiding
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = Oanrekommandearre
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> yn { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> yn { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> yn { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Sponsore
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = Freegje
+
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
+
+# This explanation is used when the last-visited date is formatted as one of the
+# following relative dates: "yesterday", "today"
+# Variables:
+#   $date (string) - A localized relative date string
+urlbar-result-explanation-last-visited-relative = Jo lêste besite wie op { $date }
+# This explanation is used when the last-visited date is a small number of days
+# in the past.
+# Variables:
+#   $daysAgo (number) - The number of days ago
+urlbar-result-explanation-last-visited-days =
+    { $daysAgo ->
+        [one] Jo lêste besite wie { $daysAgo } dei lyn
+       *[other] Jo lêste besite wie { $daysAgo } dagen lyn
+    }
+# This explanation is used when the last-visited date is a small number of weeks
+# in the past.
+# Variables:
+#   $weeksAgo (number) - The number of weeks ago
+urlbar-result-explanation-last-visited-weeks =
+    { $weeksAgo ->
+        [one] Jo lêste besite wie { $weeksAgo } wike lyn
+       *[other] Jo lêste besite wie { $weeksAgo } wiken lyn
+    }
+# This explanation is used when the last-visited date is a small number of
+# months in the past.
+# Variables:
+#   $monthsAgo (number) - The number of months ago
+urlbar-result-explanation-last-visited-months =
+    { $monthsAgo ->
+        [one] Jo lêste besite wie { $monthsAgo } moanne lyn
+       *[other] Jo lêste besite wie { $monthsAgo } moannen lyn
+    }
+# This explanation is used when the last-visited date is further in the past.
+# The date will be formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-last-visited-absolute = Jo lêste besite wie op { $date }
+# This explanation is used when the result is bookmarked. The date will be
+# formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-bookmarked = Blêdwizer makke op { $date }
+# This explanation is used when the last-visited date is formatted as one of the
+# following relative dates: "yesterday", "today"
+# Variables:
+#   $date (string) - A localized relative date string
+urlbar-result-explanation-last-visited-relative-2 = Lêst besocht { $date }
+# This explanation is used when the last-visited date is a small number of days
+# in the past.
+# Variables:
+#   $daysAgo (number) - The number of days ago
+urlbar-result-explanation-last-visited-days-2 =
+    { $daysAgo ->
+        [one] { $daysAgo } dei lyn foar it lêst besocht
+       *[other] { $daysAgo } dagen lyn foar it lêst besocht
+    }
+# This explanation is used when the last-visited date is a small number of weeks
+# in the past.
+# Variables:
+#   $weeksAgo (number) - The number of weeks ago
+urlbar-result-explanation-last-visited-weeks-2 =
+    { $weeksAgo ->
+        [one] { $weeksAgo } wike lyn foar it lêst besocht
+       *[other] { $weeksAgo } wiken lyn foar it lêst besocht
+    }
+# This explanation is used when the last-visited date is a small number of
+# months in the past.
+# Variables:
+#   $monthsAgo (number) - The number of months ago
+urlbar-result-explanation-last-visited-months-2 =
+    { $monthsAgo ->
+        [one] { $monthsAgo } moanne lyn foar it lêst besocht
+       *[other] { $monthsAgo } moannen lyn foar it lêst besocht
+    }
+# This explanation is used when the last-visited date is further in the past.
+# The date will be formatted as an absolute date like: "11 May", "11 May 2026"
+# Variables:
+#   $date (string) - A localized absolute date string
+urlbar-result-explanation-last-visited-absolute-2 = Lêst besocht { $date }
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Untfang beursgegevens streekrjocht yn jo sykbalke
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Toan beursupdates en mear fan ús partners wannear’t jo sykopdrachtgegevens diele mei { -vendor-short-name }. <a data-l10n-name="learn-more-link">Mear ynfo</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Foarstellen toane
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = No net
+urlbar-result-realtime-opt-in-dismiss = Slute
+urlbar-result-realtime-opt-in-dismiss-all2 = Dizze foarstellen net toane
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market2 = Gjin beurssuggestjes toane
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Dizze foarstellen net toane
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Gjin beurssuggestjes toane
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Tank foar jo kommentaar. Jo sjogge gjin beurssuggestjes mear.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = Oandielmerkesuggestjes
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Tank foar jo kommentaar. Jo sjogge dizze suggestjes net mear.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · Oer { $daysUntilStart } dei
+       *[other] { $name } · Oer { $daysUntilStart } dagen
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Begjint oer { $daysUntilStart } dei
+       *[other] { $name } · Begjint oer { $daysUntilStart } dagen
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Einiget oer { $daysUntilEnd } dei
+       *[other] { $name } · Einiget oer { $daysUntilEnd } dagen
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Hjoed
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Einiget hjoed
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Sykje mei { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } – Sykje yn { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } – Sykje mei { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Kies in sykmasine
+urlbar-searchmode-bookmarks =
+    .label = Blêdwizers
+urlbar-searchmode-tabs =
+    .label = Ljepblêden
+urlbar-searchmode-history =
+    .label = Skiednis
+urlbar-searchmode-actions =
+    .label = Aksjes
+urlbar-searchmode-exit-button =
+    .tooltiptext = Slute
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Diskear sykje mei:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Sykynstellingen
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, kies in sykmasine
+    .tooltiptext = { $engine }, kies in sykmasine
+urlbar-searchmode-button-no-engine =
+    .label = Gjin fluchkeppeling selektearre, kies in fluchkeppeling
+    .tooltiptext = Gjin fluchkeppeling selektearre, kies in fluchkeppeling
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button3 =
+    .title = { $engine }, kies in sykmasine
+urlbar-searchmode-button-no-engine2 =
+    .title = Gjin fluchkeppeling selektearre, kies in fluchkeppeling
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword2 =
+    .title = Sykje nei trefwurden is útskeakele
+urlbar-searchmode-dropmarker2 =
+    .title = Kies in sykmasine
+urlbar-searchmode-bookmarks2 = Blêdwizers
+urlbar-searchmode-tabs2 = Ljepblêden
+urlbar-searchmode-history2 = Skiednis
+urlbar-searchmode-actions2 = Aksjes
+urlbar-searchmode-exit-button2 =
+    .title = Slute
+urlbar-searchmode-default2 =
+    .title = Standertsykmasine
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = “{ $engineName }” tafoegje
+    .title = Sykmasine “{ $engineName }” tafoegje
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-one-off-header = Diskear sykje mei:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-header = Sykje mei:
+urlbar-searchmode-popup-search-settings-panelitem = Sykynstellingen
+urlbar-searchmode-popup-settings-panelitem = Ynstellingen
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -623,6 +1136,27 @@ urlbar-result-action-search-bookmarks = Blêdwizers trochsykje
 urlbar-result-action-search-history = Skiednis trochsykje
 urlbar-result-action-search-tabs = Ljepblêden trochsykje
 urlbar-result-action-search-actions = Sykaksjes
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Wikselje nei { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = { $group } iepenje
+
+## Used in the context menu in urlbar view.
+
+urlbar-view-context-menu-open-in-tab =
+    .label = Iepenje yn nij ljepblêd
+    .accesskey = p
+urlbar-view-context-menu-open-in-container-tab =
+    .label = Iepenje yn nij kontenerljepblêd
+    .accesskey = i
+urlbar-view-context-menu-open-in-window =
+    .label = Iepenje yn nij finster
+    .accesskey = j
+urlbar-view-context-menu-open-in-private-window =
+    .label = Iepenje yn nij priveefinster
+    .accesskey = v
 
 ## Labels shown above groups of urlbar results
 
@@ -649,6 +1183,12 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Trending op { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show2 = Gjin trending sykopdrachten toane
+    .accesskey = G
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Sponsore
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = Gjin trending sykopdrachten toane
@@ -693,6 +1233,9 @@ fullscreen-warning-no-domain = Dit dokumint brûkt no it folsleine skerm
 fullscreen-exit-button = Folslein skerm ferlitte (Esc)
 # "esc" is lowercase on mac keyboards, but uppercase elsewhere.
 fullscreen-exit-mac-button = Folslein skerm ferlitte (esc)
+fullscreen-keyboardlock-exit-button = Folslein skerm ferlitte (Esc yndrukt hâlde)
+# "esc" is lowercase on mac keyboards, but uppercase elsewhere.
+fullscreen-keyboardlock-exit-mac-button = Folslein skerm ferlitte (esc yndrukt hâlde)
 # Please ensure that the domain stays in the `<span data-l10n-name="domain">` markup.
 # Variables
 #  $domain (String): the domain that is using pointer-lock, e.g. "mozilla.org"
@@ -722,8 +1265,8 @@ bookmarks-mobile-bookmarks-menu =
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
-            [true] Blêdwizersydbalke ferstopje
-           *[other] Blêdwizersydbalke werjaan
+            [true] Blêdwizersidebalke ferstopje
+           *[other] Blêdwizersidebalke werjaan
         }
 bookmarks-tools-toolbar-visibility-menuitem =
     .label =
@@ -788,7 +1331,7 @@ repair-text-encoding-button =
     .label = Tekstkodearring reparearje
     .tooltiptext = Betink krekte tekstkodearring fan sideynhâld út
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -808,6 +1351,29 @@ toolbar-button-email-link =
 toolbar-button-logins =
     .label = Wachtwurden
     .tooltiptext = Jo bewarre wachtwurden besjen en beheare
+qrcode-panel-error =
+    .message = Oanmeitsjen fan QR-koade is mislearre. Probearje it opnij.
+qrcode-copy-button =
+    .label = Kopiearje
+qrcode-copy-success =
+    .message = QR-koade nei klamboerd kopiearre.
+qrcode-copy-error =
+    .message = Kopiearjen fan QR-koade mislearre.
+qrcode-save-button =
+    .label = Bewarje
+qrcode-save-success =
+    .message = QR-koade bewarre.
+qrcode-save-error =
+    .message = Bewarjen fan QR-koade mislearre.
+qrcode-save-title = QR-koade bewarje
+qrcode-save-filter-png = PNG-ôfbylding
+qrcode-save-filename = qrkoade.png
+qrcode-window-title = QR-koade
+qrcode-dialog-title = QR-koade
+qrcode-image =
+    .aria-label = QR-koade
+qrcode-close-button =
+    .aria-label = Slute
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -821,11 +1387,28 @@ toolbar-button-open-file =
 toolbar-button-synced-tabs =
     .label = Syngroane ljepblêden
     .tooltiptext = Ljepblêden fan oare apparaten toane
+toolbar-button-send-tab =
+    .label = Ljepblêd ferstjoere
+    .tooltiptext = Aktuele ljepblêd nei oar apparaat ferstjoere
 # Variables
 # $shortcut (string) - Keyboard shortcut to open a new private browsing window
 toolbar-button-new-private-window =
     .label = Nij priveefinster
     .tooltiptext = Iepenje in nij priveenavigaasjefinster ({ $shortcut })
+toolbar-button-share-tab =
+    .label = Diele
+    .tooltiptext = Dizze side diele
+toolbar-button-tab-groups =
+    .label = Ljepblêdgroepen
+    .tooltiptext = Jo ljepblêdgroepen toane
+
+## Default filenames used when saving a QR code. The file extension (.png)
+## is added automatically.
+
+qrcode-save-filename-base = qrkoade
+# Variables:
+#  $domain (String): The current page's domain used in the suggested filename.
+qrcode-save-filename-with-domain-base = qrcode-{ $domain }
 
 ## EME notification panel
 
@@ -839,12 +1422,30 @@ eme-notifications-drm-content-playing-dismiss-accesskey = S
 
 panel-save-update-username = Brûkersnamme
 panel-save-update-password = Wachtwurd
+panel-save-update-username-2 =
+    .label = Brûkersnamme
+panel-save-update-password-2 =
+    .label = Wachtwurd
 
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
     .label = Mear…
+menu-share-windows =
+    .label = Mear opsjes
+# Variables:
+#   $count (Number) - The number of links that will be copied.
+menu-share-copy-links =
+    .label =
+        { $count ->
+            [one] Keppeling kopiearje
+           *[other] { $count } keppelingen kopiearje
+        }
+    .accesskey = p
+menu-share-copy-link =
+    .label = Keppeling kopiearje
+    .accesskey = K
 ui-tour-info-panel-close =
     .tooltiptext = Slute
 
@@ -856,6 +1457,9 @@ popups-infobar-allow =
     .accesskey = P
 popups-infobar-block =
     .label = Pop-upfinsters fan { $uriHost } blokkearje
+    .accesskey = P
+popups-infobar-allow2 =
+    .label = Pop-ups en omliedingen fan tredden tastean foar { $uriHost }
     .accesskey = P
 
 ##
@@ -892,6 +1496,8 @@ navbar-accessible =
     .aria-label = Navigaasje
 navbar-downloads =
     .label = Downloads
+navbar-overflow-2 =
+    .tooltiptext = Mear ark
 navbar-overflow =
     .tooltiptext = Mear ark…
 # Variables:
@@ -918,6 +1524,10 @@ tabs-toolbar-list-all-tabs =
     .label = Alle ljepblêdtitels werjaan
     .tooltiptext = Alle ljepblêdtitels werjaan
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Sleep it ljepblêd hjirhinne om it fêst te setten
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -936,6 +1546,9 @@ data-reporting-notification-button =
     .accesskey = K
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Priveenavigaasje
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Priveenavigaasje
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -944,7 +1557,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Gegevensbeskerming
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Jo organisaasje brûkt { $agentName } om jo te beskermjen tsjin gegevensferlies. <a data-l10n-name="info">Mear ynfo</a>
+content-analysis-panel-text-styled = Jo organisaasje brûkt <b>{ $agentName }</b> om jo te beskermjen tsjin gegevensferlies. <a data-l10n-name="info">Mear ynfo</a>
 
 ## Unified extensions (toolbar) button
 
@@ -970,11 +1583,22 @@ unified-extensions-button-quarantined =
         Utwreidingen
         Guon útwreidingen binne net tastien
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Extensies
+    .tooltiptext =
+        Utwreidingen
+        Guon útwreidingen binne útskeakele
+
 ## Private browsing reset button
 
 reset-pbm-toolbar-button =
     .label = Priveesesje beëinigje
     .tooltiptext = Priveesesje beëinigje
+reset-pbm-panel-heading2 = Gegevens wiskje en in nije priveesesje starte?
+reset-pbm-panel-description2 = Dit wisket skiednis, cookies en alle oare websitegegevens sûnder jo priveefinster te sluten.
 reset-pbm-panel-heading = Jo priveesesje beëinigje?
 reset-pbm-panel-description = Alle priveeljepblêden slute en skiednis, cookies en alle oare websitegegevens fuortsmite.
 reset-pbm-panel-always-ask-checkbox =
@@ -983,10 +1607,16 @@ reset-pbm-panel-always-ask-checkbox =
 reset-pbm-panel-cancel-button =
     .label = Annulearje
     .accesskey = A
+reset-pbm-panel-confirm-button2 =
+    .label = Priveesesje wiskje
+    .accesskey = w
 reset-pbm-panel-confirm-button =
     .label = Sesjegegevens fuortsmite
     .accesskey = g
 reset-pbm-panel-complete = Priveesesjegegevens fuortsmiten
+reset-pbm-toolbar-button2 =
+    .label = Priveesesje wiskje
+    .tooltiptext = Priveesesje wiskje
 
 ## Autorefresh blocker
 
@@ -1003,16 +1633,23 @@ firefox-relay-offer-why-to-use-relay = Us feilige, maklik te brûken maskers bes
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Alle e-mailberjochten dy’t nei jo e-mailmaskers ferstjoerd wurde, wurde trochstjoerd nei <strong>{ $useremail }</strong> (útsein as jo beslute se te blokkearjen).
 firefox-relay-offer-legal-notice = Troch op ‘E-mailmasker brûke’ te klikken, geane jo akkoard mei de <label data-l10n-name="tos-url">Tsjinstbetingsten</label> en <label data-l10n-name="privacy-url">Privacyferklearring</label>.
+firefox-relay-offer-legal-notice-1 = Troch te registrearjen en in e-mailmasker oan te meitsjen, geane jo akkoard mei de <label data-l10n-name="tos-url">Tsjinstbetingsten</label> en <label data-l10n-name="privacy-url">Privacyferklearring</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Net ferifiearre)
 popup-notification-xpinstall-prompt-learn-more = Mear ynfo oer it feilich ynstallearjen fan add-ons
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Utfiere yn priveefinsters
+popup-notification-xpinstall-prompt-block-url = Details besjen
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Tastean dat útwreiding yn priveefinsters útfierd wurdt
     .accesskey = p
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Technyske en ynteraksjegegevens diele mei útwreidingûntwikkeler
+    .accesskey = d
 
 ## Pop-up warning
 
@@ -1023,10 +1660,26 @@ popup-warning-message =
         [one] { -brand-short-name } hat opkeard dat dizze website in pop-upfinster iepene.
        *[other] { -brand-short-name } hat opkeard dat dizze website { $popupCount } pop-upfinsters iepene.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } hat opkeard dat dizze website trochstjoerde
+        [1] { -brand-short-name } hat opkeard dat dizze website in pop-upfinster iepene en trochstjoerde.
+        [one] { -brand-short-name } hat opkeard dat dizze website in pop-upfinster iepene en trochstjoerde.
+       *[other] { -brand-short-name } hat opkeard dat dizze website { $popupCount } pop-upfinsters iepene en trochstjoerde.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-exceeded-message = { -brand-short-name } hat opkeard dat dizze website mear as { $popupCount } pop-upfinsters iepene.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } hat opkeard dat dizze website mear as { $popupCount } pop-upfinsters iepene en trochstjoerde.
+       *[other] { -brand-short-name } hat opkeard dat dizze website mear as { $popupCount } pop-upfinsters iepene en trochstjoerde.
+    }
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1042,6 +1695,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = “{ $popupURI }” sjen litte
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = ‘{ $redirectURI }’ toane
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1063,3 +1720,162 @@ file-picker-crashed-save-nowhere = It Windows-bestânsdialoochfinster is ferûng
 file-picker-crashed-show-in-folder =
     .label = Yn map toane
     .accessKey = m
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Ynstellen foltôgje
+onboarding-aw-finish-setup-button =
+    .label = Ynstellen foltôgje
+    .tooltiptext = Ynstellen { -brand-short-name } foltôgje
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Ferbettere beskerming tsjin folgjen is ynskeakele
+trustpanel-etp-label-disabled = Ferbettere beskerming tsjin folgjen is útskeakele
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Ferbettere beskerming tsjin folgjen: oan foar { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Ferbettere beskerming tsjin folgjen: út foar { $host }
+trustpanel-etp-description-enabled = As der wat op dizze website net wurket, probearje dan beskermingen út te skeakeljen.
+trustpanel-etp-description-disabled = { -brand-product-name } fynt dat bedriuwen jo minder folgje moatte. As jo beskerming ynskeakelje, blokkearje wy safolle mooglik trackers.
+trustpanel-connection-label-secure = Ferbining befeilige
+trustpanel-connection-label-insecure = Ferbining net befeilige
+trustpanel-header-enabled = { -brand-product-name } stiet op wacht
+trustpanel-description-enabled2 = Jo binne beskerme. As wy wat fine, litte wy jo dat witte.
+trustpanel-header-enabled-insecure = Wês foarsichtich op dizze website
+trustpanel-description-enabled-insecure = { -brand-product-name } hat wat fertochts opmurken.
+trustpanel-header-disabled = Jo hawwe beskermingen útskeakele
+trustpanel-description-disabled = { -brand-product-name } hat gjin tsjinst. Wy riede jo oan beskermingen wer yn te skeakeljen.
+trustpanel-clear-cookies-button = Cookies en websitegegevens wiskje
+trustpanel-privacy-link = Privacyynstellingen
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Cookies en websitegegevens wiskje foar { $host }
+trustpanel-clear-cookies-description = It fuortsmiten fan cookies en websitegegevens kin jo by websites ôfmelde en winkelweinen wiskje.
+trustpanel-clear-cookies-subview-button-clear = Wiskje
+trustpanel-clear-cookies-subview-button-cancel = Annulearje
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Ferbiningsbeskerming foar { $host }
+trustpanel-siteinformation-morelink = Mear website-ynformaasje
+trustpanel-blocker-see-all = Alles besjen
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Beskerming tsjin folgjen foar { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Net befeilige
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-description = { -brand-product-name } fynt dat bedriuwen jo minder folgje moatte. Dus blokkearje wy der safolle as wy kinne.
+trustpanel-blocked-header = { -brand-product-name } hat it folgjende foar jo blokkearre:
+trustpanel-tracking-header = { -brand-product-name } stiet it folgjende ta, sadat websites wurkje bliuwe:
+trustpanel-tracking-description = Sûnder trackers wurkje guon knoppen, formulieren en oanmeldfjilden mooglik net.
+trustpanel-insecure-section-header = Jo ferbining is net befeilige
+trustpanel-insecure-description = De gegevens dy’t jo nei dizze side ferstjoere, binne net fersifere. Se kinne besjoen, stellen of wizige wurde.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } cross-site-trackingcookie
+       *[other] { $count } cross-site-trackingcookies
+    }
+trustpanel-list-label-tracking-content = Folchynhâld
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } fingerprinter
+       *[other] { $count } fingerprinters
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } sosjale-mediatracker
+       *[other] { $count } sosjale-mediatrackers
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } cryptominer
+       *[other] { $count } cryptominers
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } sosjale-mediatracker blokkearre
+       *[other] { -brand-product-name } hat { $count } sosjale-mediatrackers blokkearre
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } sosjale-mediatracker tastien
+       *[other] { -brand-product-name } hat { $count } sosjale-mediatrackers tastien
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } cross-site-trackingcookie blokkearre
+       *[other] { -brand-product-name } hat { $count } cross-site-trackingcookies blokkearre
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } cross-site-trackingcookie tastien
+       *[other] { -brand-product-name } hat { $count } cross-site-trackingcookies tastien
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } tracker blokkearre
+       *[other] { -brand-product-name } hat { $count } trackers blokkearre
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } tracker tastien
+       *[other] { -brand-product-name } hat { $count } trackers tastien
+    }
+trustpanel-tracking-content-tab-list-header = Dizze websites probearje jo te folgjen:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } fingerprinter blokkearre
+       *[other] { -brand-product-name } hat { $count } fingerprinters blokkearre
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } fingerprinter tastien
+       *[other] { -brand-product-name } hat { $count } fingerprinters tastien
+    }
+trustpanel-fingerprinter-list-header = Dizze websites probearje in fingerôfdruk fan jo te meitsjen:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } cryptominer blokkearre
+       *[other] { -brand-product-name } hat { $count } cryptominers blokkearre
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } hat { $count } cryptominer tastien
+       *[other] { -brand-product-name } hat { $count } cryptominers tastien
+    }
+trustpanel-cryptominer-tab-list-header = Dizze websites probearje te cryptominen:
+# "account on this site" refers to the (breached) site the user is currently visiting, not a Mozilla Monitor account.
+trustpanel-breachalerts-anonymous-breached-header = Hawwe jo in account op dizze website?
+trustpanel-breachalerts-anonymous-breached-description = { -brand-product-name } hat ûntdutsen dat dizze website yn de ôfrûne 12 moannen troch in datalek troffen is. Untdek oft jo troffen binne.
+trustpanel-breachalerts-anonymous-breached-button-dismiss = Slute
+trustpanel-breachalerts-anonymous-breached-button-check-monitor = Fergeze scan starte
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [one] <span data-l10n-name="count">{ $count }</span> tracker blokkearre op dizze website
+       *[other] <span data-l10n-name="count">{ $count }</span> trackers blokkearre op dizze website
+    }
+
+## Reduced Protection Infobar ("ReducedProtectionNotification.sys.mjs")
+
+# "temporarily lower your tracking protection" refers to temporarily decreasing the amount of tracking protection.
+reduced-protection-infobar-message = <strong>Sjocht de website der min út?</strong> Laad de side opnij om jo trackingbeskerming tydlik te ferleegjen.
+reduced-protection-infobar-reload-button = Fernije
+    .accesskey = F
+reduced-protection-infobar-never-show-button = Net mear toane
+    .accesskey = N

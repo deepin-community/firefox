@@ -29,15 +29,16 @@ keyUsage:[digitalSignature,nonRepudiation,keyEncipherment,
           dataEncipherment,keyAgreement,keyCertSign,cRLSign]
 extKeyUsage:[serverAuth,clientAuth,codeSigning,emailProtection
              nsSGC, # Netscape Server Gated Crypto
-             OCSPSigning,timeStamping]
+             OCSPSigning,timeStamping,tlsBinding]
 subjectAlternativeName:[<dNSName|directoryName|"ip4:"iPV4Address>,...]
 authorityInformationAccess:<OCSP URI>
-certificatePolicies:[<policy OID>,...]
+certificatePolicies:[<policy OID[/policy qualifier OID]>,...]
 nameConstraints:{permitted,excluded}:[<dNSName|directoryName>,...]
 nsCertType:sslServer
 TLSFeature:[<TLSFeature>,...]
-embeddedSCTList:[<key specification>:<YYYYMMDD>,...]
+embeddedSCTList:[<key specification>:<YYYYMMDD>[:<leaf index>],...]
 delegationUsage:
+qcStatements:[<statement OID[:info OID]>,...]
 
 Where:
   [] indicates an optional field or component of a field
@@ -94,10 +95,9 @@ from struct import pack
 
 import pyct
 import pykey
-import six
 from pyasn1.codec.der import decoder, encoder
 from pyasn1.type import constraint, tag, univ, useful
-from pyasn1_modules import rfc2459
+from pyasn1_modules import rfc5280, rfc8017
 
 
 class Error(Exception):
@@ -110,12 +110,12 @@ class UnknownBaseError(Error):
     """Base class for handling unexpected input in this module."""
 
     def __init__(self, value):
-        super(UnknownBaseError, self).__init__()
+        super().__init__()
         self.value = value
         self.category = "input"
 
     def __str__(self):
-        return 'Unknown %s type "%s"' % (self.category, repr(self.value))
+        return f'Unknown {self.category} type "{repr(self.value)}"'
 
 
 class UnknownAlgorithmTypeError(UnknownBaseError):
@@ -211,18 +211,18 @@ class InvalidSCTSpecification(Error):
     """Helper exception type to handle invalid SCT specifications."""
 
     def __init__(self, value):
-        super(InvalidSCTSpecification, self).__init__()
+        super().__init__()
         self.value = value
 
     def __str__(self):
-        return repr('invalid SCT specification "{}"' % self.value)
+        return f'invalid SCT specification "{self.value}"'
 
 
 class InvalidSerialNumber(Error):
     """Exception type to handle invalid serial numbers."""
 
     def __init__(self, value):
-        super(InvalidSerialNumber, self).__init__()
+        super().__init__()
         self.value = value
 
     def __str__(self):
@@ -239,8 +239,8 @@ def stringToAccessDescription(string):
     """Helper function that takes a string representing a URI
     presumably identifying an OCSP authority information access
     location. Returns an AccessDescription usable by pyasn1."""
-    accessMethod = rfc2459.id_ad_ocsp
-    accessLocation = rfc2459.GeneralName()
+    accessMethod = rfc5280.id_ad_ocsp
+    accessLocation = rfc5280.GeneralName()
     accessLocation["uniformResourceIdentifier"] = string
     sequence = univ.Sequence()
     sequence.setComponentByPosition(0, accessMethod)
@@ -255,8 +255,8 @@ def stringToDN(string, tag=None):
     optional implicit tag in cases where the Name needs to be tagged
     differently."""
     if string and "/" not in string:
-        string = "/CN=%s" % string
-    rdns = rfc2459.RDNSequence()
+        string = f"/CN={string}"
+    rdns = rfc5280.RDNSequence()
     pattern = "/(C|ST|L|O|OU|CN|emailAddress)="
     split = re.split(pattern, string)
     # split should now be [[encoding], <type>, <value>, <type>, <value>, ...]
@@ -265,45 +265,43 @@ def stringToDN(string, tag=None):
     else:
         encoding = "utf8String"
     for pos, (nameType, value) in enumerate(zip(split[1::2], split[2::2])):
-        ava = rfc2459.AttributeTypeAndValue()
+        ava = rfc5280.AttributeTypeAndValue()
         if nameType == "C":
-            ava["type"] = rfc2459.id_at_countryName
-            nameComponent = rfc2459.X520countryName(value)
+            ava["type"] = rfc5280.id_at_countryName
+            nameComponent = rfc5280.X520countryName(value)
         elif nameType == "ST":
-            ava["type"] = rfc2459.id_at_stateOrProvinceName
-            nameComponent = rfc2459.X520StateOrProvinceName()
+            ava["type"] = rfc5280.id_at_stateOrProvinceName
+            nameComponent = rfc5280.X520StateOrProvinceName()
         elif nameType == "L":
-            ava["type"] = rfc2459.id_at_localityName
-            nameComponent = rfc2459.X520LocalityName()
+            ava["type"] = rfc5280.id_at_localityName
+            nameComponent = rfc5280.X520LocalityName()
         elif nameType == "O":
-            ava["type"] = rfc2459.id_at_organizationName
-            nameComponent = rfc2459.X520OrganizationName()
+            ava["type"] = rfc5280.id_at_organizationName
+            nameComponent = rfc5280.X520OrganizationName()
         elif nameType == "OU":
-            ava["type"] = rfc2459.id_at_organizationalUnitName
-            nameComponent = rfc2459.X520OrganizationalUnitName()
+            ava["type"] = rfc5280.id_at_organizationalUnitName
+            nameComponent = rfc5280.X520OrganizationalUnitName()
         elif nameType == "CN":
-            ava["type"] = rfc2459.id_at_commonName
-            nameComponent = rfc2459.X520CommonName()
+            ava["type"] = rfc5280.id_at_commonName
+            nameComponent = rfc5280.X520CommonName()
         elif nameType == "emailAddress":
-            ava["type"] = rfc2459.emailAddress
-            nameComponent = rfc2459.Pkcs9email(value)
+            ava["type"] = rfc5280.id_emailAddress
+            nameComponent = rfc5280.EmailAddress(value)
         else:
             raise UnknownDNTypeError(nameType)
         if not nameType == "C" and not nameType == "emailAddress":
             # The value may have things like '\0' (i.e. a slash followed by
             # the number zero) that have to be decoded into the resulting
             # '\x00' (i.e. a byte with value zero).
-            nameComponent[encoding] = six.ensure_binary(value).decode(
-                encoding="unicode_escape"
-            )
+            nameComponent[encoding] = value.encode().decode(encoding="unicode_escape")
         ava["value"] = nameComponent
-        rdn = rfc2459.RelativeDistinguishedName()
+        rdn = rfc5280.RelativeDistinguishedName()
         rdn.setComponentByPosition(0, ava)
         rdns.setComponentByPosition(pos, rdn)
     if tag:
-        name = rfc2459.Name().subtype(implicitTag=tag)
+        name = rfc5280.Name().subtype(implicitTag=tag)
     else:
-        name = rfc2459.Name()
+        name = rfc5280.Name()
     name.setComponentByPosition(0, rdns)
     return name
 
@@ -312,14 +310,14 @@ def stringToAlgorithmIdentifiers(string):
     """Helper function that converts a description of an algorithm
     to a representation usable by the pyasn1 package and a hash
     algorithm constant for use by pykey."""
-    algorithmIdentifier = rfc2459.AlgorithmIdentifier()
+    algorithmIdentifier = rfc5280.AlgorithmIdentifier()
     algorithmType = None
     algorithm = None
     # We add Null parameters for RSA only
     addParameters = False
     if string == "sha1WithRSAEncryption":
         algorithmType = pykey.HASH_SHA1
-        algorithm = rfc2459.sha1WithRSAEncryption
+        algorithm = rfc8017.sha1WithRSAEncryption
         addParameters = True
     elif string == "sha256WithRSAEncryption":
         algorithmType = pykey.HASH_SHA256
@@ -327,7 +325,7 @@ def stringToAlgorithmIdentifiers(string):
         addParameters = True
     elif string == "md5WithRSAEncryption":
         algorithmType = pykey.HASH_MD5
-        algorithm = rfc2459.md5WithRSAEncryption
+        algorithm = rfc8017.md5WithRSAEncryption
         addParameters = True
     elif string == "ecdsaWithSHA256":
         algorithmType = pykey.HASH_SHA256
@@ -349,9 +347,9 @@ def stringToAlgorithmIdentifiers(string):
 
 
 def datetimeToTime(dt):
-    """Takes a datetime object and returns an rfc2459.Time object with
+    """Takes a datetime object and returns an rfc5280.Time object with
     that time as its value as a GeneralizedTime"""
-    time = rfc2459.Time()
+    time = rfc5280.Time()
     time["generalTime"] = useful.GeneralizedTime(dt.strftime("%Y%m%d%H%M%SZ"))
     return time
 
@@ -361,13 +359,13 @@ def serialBytesToString(serialBytes):
     the corresponding serial number string."""
     serialBytesLen = len(serialBytes)
     if serialBytesLen > 127:
-        raise InvalidSerialNumber("{} bytes is too long".format(serialBytesLen))
+        raise InvalidSerialNumber(f"{serialBytesLen} bytes is too long")
     # Prepend the ASN.1 INTEGER tag and length bytes.
     stringBytes = [getASN1Tag(univ.Integer), serialBytesLen] + serialBytes
     return bytes(stringBytes)
 
 
-class Certificate(object):
+class Certificate:
     """Utility class for reading a certificate specification and
     generating a signed x509 certificate"""
 
@@ -410,22 +408,22 @@ class Certificate(object):
         the build system on OS X (see the comment above main, later in
         this file)."""
         hasher = hashlib.sha256()
-        hasher.update(six.ensure_binary(str(self.versionValue)))
-        hasher.update(six.ensure_binary(self.signature))
-        hasher.update(six.ensure_binary(self.issuer))
-        hasher.update(six.ensure_binary(str(self.notBefore)))
-        hasher.update(six.ensure_binary(str(self.notAfter)))
-        hasher.update(six.ensure_binary(self.subject))
+        hasher.update(str(self.versionValue).encode())
+        hasher.update(self.signature.encode())
+        hasher.update(self.issuer.encode())
+        hasher.update(str(self.notBefore).encode())
+        hasher.update(str(self.notAfter).encode())
+        hasher.update(self.subject.encode())
         if self.extensionLines:
             for extensionLine in self.extensionLines:
-                hasher.update(six.ensure_binary(extensionLine))
+                hasher.update(extensionLine.encode())
         if self.savedEmbeddedSCTListData:
             # savedEmbeddedSCTListData is
             # (embeddedSCTListSpecification, critical), where |critical|
             # may be None
-            hasher.update(six.ensure_binary(self.savedEmbeddedSCTListData[0]))
+            hasher.update(self.savedEmbeddedSCTListData[0].encode())
             if self.savedEmbeddedSCTListData[1]:
-                hasher.update(six.ensure_binary(self.savedEmbeddedSCTListData[1]))
+                hasher.update(self.savedEmbeddedSCTListData[1].encode())
         serialBytes = [c for c in hasher.digest()[:20]]
         # Ensure that the most significant bit isn't set (which would
         # indicate a negative number, which isn't valid for serial
@@ -516,6 +514,8 @@ class Certificate(object):
             self.savedEmbeddedSCTListData = (value, critical)
         elif extensionType == "delegationUsage":
             self.addDelegationUsage(critical)
+        elif extensionType == "qcStatements":
+            self.addQCStatements(value, critical)
         else:
             raise UnknownExtensionTypeError(extensionType)
 
@@ -536,7 +536,7 @@ class Certificate(object):
         if not self.extensions:
             self.extensions = []
         encapsulated = univ.OctetString(encoder.encode(extensionValue))
-        extension = rfc2459.Extension()
+        extension = rfc5280.Extension()
         extension["extnID"] = extensionType
         # critical is either the string '[critical]' or None.
         # We only care whether or not it is truthy.
@@ -548,7 +548,7 @@ class Certificate(object):
     def addBasicConstraints(self, basicConstraints, critical):
         cA = basicConstraints.split(",")[0]
         pathLenConstraint = basicConstraints.split(",")[1]
-        basicConstraintsExtension = rfc2459.BasicConstraints()
+        basicConstraintsExtension = rfc5280.BasicConstraints()
         basicConstraintsExtension["cA"] = cA == "cA"
         if pathLenConstraint:
             pathLenConstraintValue = univ.Integer(int(pathLenConstraint)).subtype(
@@ -556,44 +556,46 @@ class Certificate(object):
             )
             basicConstraintsExtension["pathLenConstraint"] = pathLenConstraintValue
         self.addExtension(
-            rfc2459.id_ce_basicConstraints, basicConstraintsExtension, critical
+            rfc5280.id_ce_basicConstraints, basicConstraintsExtension, critical
         )
 
     def addKeyUsage(self, keyUsage, critical):
-        keyUsageExtension = rfc2459.KeyUsage(keyUsage)
-        self.addExtension(rfc2459.id_ce_keyUsage, keyUsageExtension, critical)
+        keyUsageExtension = rfc5280.KeyUsage(keyUsage)
+        self.addExtension(rfc5280.id_ce_keyUsage, keyUsageExtension, critical)
 
     def keyPurposeToOID(self, keyPurpose):
         if keyPurpose == "serverAuth":
-            return rfc2459.id_kp_serverAuth
+            return rfc5280.id_kp_serverAuth
         if keyPurpose == "clientAuth":
-            return rfc2459.id_kp_clientAuth
+            return rfc5280.id_kp_clientAuth
         if keyPurpose == "codeSigning":
-            return rfc2459.id_kp_codeSigning
+            return rfc5280.id_kp_codeSigning
         if keyPurpose == "emailProtection":
-            return rfc2459.id_kp_emailProtection
+            return rfc5280.id_kp_emailProtection
         if keyPurpose == "nsSGC":
             return univ.ObjectIdentifier("2.16.840.1.113730.4.1")
         if keyPurpose == "OCSPSigning":
             return univ.ObjectIdentifier("1.3.6.1.5.5.7.3.9")
         if keyPurpose == "timeStamping":
-            return rfc2459.id_kp_timeStamping
+            return rfc5280.id_kp_timeStamping
+        if keyPurpose == "tlsBinding":
+            return univ.ObjectIdentifier("0.4.0.194115.1.0")
         raise UnknownKeyPurposeTypeError(keyPurpose)
 
     def addExtKeyUsage(self, extKeyUsage, critical):
-        extKeyUsageExtension = rfc2459.ExtKeyUsageSyntax()
+        extKeyUsageExtension = rfc5280.ExtKeyUsageSyntax()
         for count, keyPurpose in enumerate(extKeyUsage.split(",")):
             extKeyUsageExtension.setComponentByPosition(
                 count, self.keyPurposeToOID(keyPurpose)
             )
-        self.addExtension(rfc2459.id_ce_extKeyUsage, extKeyUsageExtension, critical)
+        self.addExtension(rfc5280.id_ce_extKeyUsage, extKeyUsageExtension, critical)
 
     def addSubjectAlternativeName(self, names, critical):
         IPV4_PREFIX = "ip4:"
 
-        subjectAlternativeName = rfc2459.SubjectAltName()
+        subjectAlternativeName = rfc5280.SubjectAltName()
         for count, name in enumerate(names.split(",")):
-            generalName = rfc2459.GeneralName()
+            generalName = rfc5280.GeneralName()
             if "/" in name:
                 directoryName = stringToDN(
                     name, tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 4)
@@ -609,47 +611,58 @@ class Certificate(object):
                 # The string may have things like '\0' (i.e. a slash
                 # followed by the number zero) that have to be decoded into
                 # the resulting '\x00' (i.e. a byte with value zero).
-                generalName["dNSName"] = six.ensure_binary(name).decode(
-                    "unicode_escape"
-                )
+                generalName["dNSName"] = name.encode().decode("unicode_escape")
             subjectAlternativeName.setComponentByPosition(count, generalName)
         self.addExtension(
-            rfc2459.id_ce_subjectAltName, subjectAlternativeName, critical
+            rfc5280.id_ce_subjectAltName, subjectAlternativeName, critical
         )
 
     def addAuthorityInformationAccess(self, ocspURI, critical):
         sequence = univ.Sequence()
         accessDescription = stringToAccessDescription(ocspURI)
         sequence.setComponentByPosition(0, accessDescription)
-        self.addExtension(rfc2459.id_pe_authorityInfoAccess, sequence, critical)
+        self.addExtension(rfc5280.id_pe_authorityInfoAccess, sequence, critical)
 
-    def addCertificatePolicies(self, policyOIDs, critical):
-        policies = rfc2459.CertificatePolicies()
-        for pos, policyOID in enumerate(policyOIDs.split(",")):
-            if policyOID == "any":
-                policyOID = "2.5.29.32.0"
-            policy = rfc2459.PolicyInformation()
-            policyIdentifier = rfc2459.CertPolicyId(policyOID)
+    def addCertificatePolicies(self, policiesSpec, critical):
+        policies = rfc5280.CertificatePolicies()
+        for pos, policySpec in enumerate(policiesSpec.split(",")):
+            policyOID = policySpec
+            policyQualifierOID = None
+            if "/" in policySpec:
+                (policyOID, policyQualifierOID) = policySpec.split("/")
+            policyOIDMapped = policyOID
+            if policyOIDMapped == "any":
+                policyOIDMapped = "2.5.29.32.0"
+            policy = rfc5280.PolicyInformation()
+            policyIdentifier = rfc5280.CertPolicyId(policyOIDMapped)
             policy["policyIdentifier"] = policyIdentifier
+            if policyQualifierOID:
+                policyQualifier = rfc5280.PolicyQualifierInfo()
+                policyQualifierId = rfc5280.PolicyQualifierId(policyQualifierOID)
+                policyQualifier["policyQualifierId"] = policyQualifierId
+                policyQualifier["qualifier"] = univ.Integer(5)
+                policyQualifiers = univ.Sequence()
+                policyQualifiers.setComponentByPosition(0, policyQualifier)
+                policy["policyQualifiers"] = policyQualifiers
             policies.setComponentByPosition(pos, policy)
-        self.addExtension(rfc2459.id_ce_certificatePolicies, policies, critical)
+        self.addExtension(rfc5280.id_ce_certificatePolicies, policies, critical)
 
     def addNameConstraints(self, constraints, critical):
-        nameConstraints = rfc2459.NameConstraints()
+        nameConstraints = rfc5280.NameConstraints()
         if constraints.startswith("permitted:"):
             (subtreesType, subtreesTag) = ("permittedSubtrees", 0)
         elif constraints.startswith("excluded:"):
             (subtreesType, subtreesTag) = ("excludedSubtrees", 1)
         else:
             raise UnknownNameConstraintsSpecificationError(constraints)
-        generalSubtrees = rfc2459.GeneralSubtrees().subtype(
+        generalSubtrees = rfc5280.GeneralSubtrees().subtype(
             implicitTag=tag.Tag(
                 tag.tagClassContext, tag.tagFormatConstructed, subtreesTag
             )
         )
         subtrees = constraints[(constraints.find(":") + 1) :]
         for pos, name in enumerate(subtrees.split(",")):
-            generalName = rfc2459.GeneralName()
+            generalName = rfc5280.GeneralName()
             if "/" in name:
                 directoryName = stringToDN(
                     name, tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 4)
@@ -657,11 +670,11 @@ class Certificate(object):
                 generalName["directoryName"] = directoryName
             else:
                 generalName["dNSName"] = name
-            generalSubtree = rfc2459.GeneralSubtree()
+            generalSubtree = rfc5280.GeneralSubtree()
             generalSubtree["base"] = generalName
             generalSubtrees.setComponentByPosition(pos, generalSubtree)
         nameConstraints[subtreesType] = generalSubtrees
-        self.addExtension(rfc2459.id_ce_nameConstraints, nameConstraints, critical)
+        self.addExtension(rfc5280.id_ce_nameConstraints, nameConstraints, critical)
 
     def addNSCertType(self, certType, critical):
         if certType != "sslServer":
@@ -701,15 +714,20 @@ class Certificate(object):
         (scts, critical) = self.savedEmbeddedSCTListData
         encodedSCTs = []
         for sctSpec in scts.split(","):
-            match = re.search(r"(\w+):(\d{8})", sctSpec)
+            match = re.search(r"(\w+):(\d{8}):?(\d+)?", sctSpec)
             if not match:
                 raise InvalidSCTSpecification(sctSpec)
             keySpec = match.group(1)
+            leafIndex = match.group(3)
+            if leafIndex:
+                leafIndex = int(leafIndex)
             key = pykey.keyFromSpecification(keySpec)
             time = datetime.datetime.strptime(match.group(2), "%Y%m%d")
             tbsCertificate = self.getTBSCertificate()
             tbsDER = encoder.encode(tbsCertificate)
-            sct = pyct.SCT(key, time, pyct.PrecertEntry(tbsDER, self.issuerKey))
+            sct = pyct.SCT(
+                key, time, pyct.PrecertEntry(tbsDER, self.issuerKey), leafIndex
+            )
             signed = sct.signAndEncode()
             lengthPrefix = pack("!H", len(signed))
             encodedSCTs.append(lengthPrefix + signed)
@@ -722,8 +740,31 @@ class Certificate(object):
             critical,
         )
 
+    def addQCStatements(self, qcStatements, critical):
+        sequence = univ.Sequence()
+        for pos, qcStatement in enumerate(qcStatements.split(",")):
+            parts = qcStatement.split(":")
+            statementID = parts[0]
+            statementInfo = None
+            if len(parts) > 1:
+                statementInfo = parts[1]
+            qcStatementSequence = univ.Sequence()
+            qcStatementSequence.setComponentByPosition(
+                0, univ.ObjectIdentifier(statementID)
+            )
+            if statementInfo:
+                statementInfoSequence = univ.Sequence()
+                statementInfoSequence.setComponentByPosition(
+                    0, univ.ObjectIdentifier(statementInfo)
+                )
+                qcStatementSequence.setComponentByPosition(1, statementInfoSequence)
+            sequence.setComponentByPosition(pos, qcStatementSequence)
+        self.addExtension(
+            univ.ObjectIdentifier("1.3.6.1.5.5.7.1.3"), sequence, critical
+        )
+
     def getVersion(self):
-        return rfc2459.Version(self.versionValue).subtype(
+        return rfc5280.Version(self.versionValue).subtype(
             explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
         )
 
@@ -734,7 +775,7 @@ class Certificate(object):
         return stringToDN(self.issuer)
 
     def getValidity(self):
-        validity = rfc2459.Validity()
+        validity = rfc5280.Validity()
         validity["notBefore"] = self.getNotBefore()
         validity["notAfter"] = self.getNotAfter()
         return validity
@@ -750,18 +791,18 @@ class Certificate(object):
 
     def getTBSCertificate(self):
         (signatureOID, _) = stringToAlgorithmIdentifiers(self.signature)
-        tbsCertificate = rfc2459.TBSCertificate()
+        tbsCertificate = rfc5280.TBSCertificate()
         tbsCertificate["version"] = self.getVersion()
         tbsCertificate["serialNumber"] = self.getSerialNumber()
         tbsCertificate["signature"] = signatureOID
         tbsCertificate["issuer"] = self.getIssuer()
         tbsCertificate["validity"] = self.getValidity()
         tbsCertificate["subject"] = self.getSubject()
-        tbsCertificate[
-            "subjectPublicKeyInfo"
-        ] = self.subjectKey.asSubjectPublicKeyInfo()
+        tbsCertificate["subjectPublicKeyInfo"] = (
+            self.subjectKey.asSubjectPublicKeyInfo()
+        )
         if self.extensions:
-            extensions = rfc2459.Extensions().subtype(
+            extensions = rfc5280.Extensions().subtype(
                 explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 3)
             )
             for count, extension in enumerate(self.extensions):
@@ -771,18 +812,18 @@ class Certificate(object):
 
     def toDER(self):
         (signatureOID, hashAlgorithm) = stringToAlgorithmIdentifiers(self.signature)
-        certificate = rfc2459.Certificate()
+        certificate = rfc5280.Certificate()
         tbsCertificate = self.getTBSCertificate()
         certificate["tbsCertificate"] = tbsCertificate
         certificate["signatureAlgorithm"] = signatureOID
         tbsDER = encoder.encode(tbsCertificate)
-        certificate["signatureValue"] = self.issuerKey.sign(tbsDER, hashAlgorithm)
+        certificate["signature"] = self.issuerKey.sign(tbsDER, hashAlgorithm)
         return encoder.encode(certificate)
 
     def toPEM(self):
         output = "-----BEGIN CERTIFICATE-----"
         der = self.toDER()
-        b64 = six.ensure_text(base64.b64encode(der))
+        b64 = base64.b64encode(der).decode()
         while b64:
             output += "\n" + b64[:64]
             b64 = b64[64:]

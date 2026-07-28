@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -22,6 +21,8 @@ static const char* SameSiteToString(uint32_t aSameSite) {
       return "lax";
     case nsICookie::SAMESITE_STRICT:
       return "strict";
+    case nsICookie::SAMESITE_UNSET:
+      return "unset";
     default:
       MOZ_CRASH("Invalid nsICookie sameSite value");
       return "";
@@ -46,7 +47,7 @@ void CookieLogging::LogSuccess(bool aSetCookie, nsIURI* aHostURI,
           ("===== %s =====\n", aSetCookie ? "COOKIE ACCEPTED" : "COOKIE SENT"));
   MOZ_LOG(gCookieLog, LogLevel::Debug, ("request URL: %s\n", spec.get()));
   MOZ_LOG(gCookieLog, LogLevel::Debug,
-          ("cookie string: %s\n", aCookieString.BeginReading()));
+          ("cookie string: %s\n", PromiseFlatCString(aCookieString).get()));
   if (aSetCookie) {
     MOZ_LOG(gCookieLog, LogLevel::Debug,
             ("replaces existing cookie: %s\n", aReplacing ? "true" : "false"));
@@ -77,7 +78,7 @@ void CookieLogging::LogFailure(bool aSetCookie, nsIURI* aHostURI,
   MOZ_LOG(gCookieLog, LogLevel::Warning, ("request URL: %s\n", spec.get()));
   if (aSetCookie) {
     MOZ_LOG(gCookieLog, LogLevel::Warning,
-            ("cookie string: %s\n", aCookieString.BeginReading()));
+            ("cookie string: %s\n", PromiseFlatCString(aCookieString).get()));
   }
 
   PRExplodedTime explodedTime;
@@ -111,7 +112,7 @@ void CookieLogging::LogCookie(Cookie* aCookie) {
              aCookie->Host().get()));
     MOZ_LOG(gCookieLog, LogLevel::Debug, ("path: %s\n", aCookie->Path().get()));
 
-    PR_ExplodeTime(aCookie->Expiry() * int64_t(PR_USEC_PER_SEC),
+    PR_ExplodeTime(aCookie->ExpiryInMSec() * int64_t(PR_USEC_PER_MSEC),
                    PR_GMTParameters, &explodedTime);
     PR_FormatTimeUSEnglish(timeString, TIME_STRING_LENGTH, "%c GMT",
                            &explodedTime);
@@ -119,7 +120,14 @@ void CookieLogging::LogCookie(Cookie* aCookie) {
             ("expires: %s%s", timeString,
              aCookie->IsSession() ? " (at end of session)" : ""));
 
-    PR_ExplodeTime(aCookie->CreationTime(), PR_GMTParameters, &explodedTime);
+    PR_ExplodeTime(aCookie->CreationTimeInUSec(), PR_GMTParameters,
+                   &explodedTime);
+    PR_FormatTimeUSEnglish(timeString, TIME_STRING_LENGTH, "%c GMT",
+                           &explodedTime);
+    MOZ_LOG(gCookieLog, LogLevel::Debug, ("created: %s", timeString));
+
+    PR_ExplodeTime(aCookie->UpdateTimeInUSec(), PR_GMTParameters,
+                   &explodedTime);
     PR_FormatTimeUSEnglish(timeString, TIME_STRING_LENGTH, "%c GMT",
                            &explodedTime);
     MOZ_LOG(gCookieLog, LogLevel::Debug, ("created: %s", timeString));
@@ -129,9 +137,7 @@ void CookieLogging::LogCookie(Cookie* aCookie) {
     MOZ_LOG(gCookieLog, LogLevel::Debug,
             ("is httpOnly: %s\n", aCookie->IsHttpOnly() ? "true" : "false"));
     MOZ_LOG(gCookieLog, LogLevel::Debug,
-            ("sameSite: %s - rawSameSite: %s\n",
-             SameSiteToString(aCookie->SameSite()),
-             SameSiteToString(aCookie->RawSameSite())));
+            ("sameSite: %s\n", SameSiteToString(aCookie->SameSite())));
     MOZ_LOG(
         gCookieLog, LogLevel::Debug,
         ("schemeMap %d (http: %s | https: %s | file: %s)\n",
@@ -177,7 +183,7 @@ void CookieLogging::LogMessageToConsole(nsIConsoleReportCollector* aCRC,
   }
 
   aCRC->AddConsoleReport(aErrorFlags, aCategory,
-                         nsContentUtils::eNECKO_PROPERTIES, uri, 0, 0, aMsg,
+                         PropertiesFile::NECKO_PROPERTIES, uri, 0, 0, aMsg,
                          aParams);
 }
 

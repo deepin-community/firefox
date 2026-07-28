@@ -25,6 +25,8 @@ return-to-amo-subtitle = Oso ondo, { -brand-short-name } darabilzu
 return-to-amo-addon-title = Orain eskura dezagun zuretzat <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Gehitu hedapena
 return-to-amo-add-theme-label = Gehitu itxura
+return-to-amo-theme-install-complete-label = Itxura instalatuta
+return-to-amo-extension-install-complete-label = Hedapena instalatuta
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -41,7 +43,7 @@ mr1-return-to-amo-add-extension-label = Gehitu { $addon-name }
 #   $total (Int) - Total number of pages
 
 onboarding-welcome-steps-indicator-label =
-    .aria-label = Aurrerapena: { $total } / { $current }
+    .aria-label = Aurrerapena: { $current } / { $total }
 # This button will open system settings to turn on prefers-reduced-motion
 mr1-onboarding-reduce-motion-button-label = Desgaitu animazioak
 # String for the Firefox Accounts button
@@ -53,8 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Inportatu { $previous }
 mr1-onboarding-theme-header = Moldatu zure erara
 mr1-onboarding-theme-subtitle = Pertsonalizatu { -brand-short-name } itxura batekin.
 mr1-onboarding-theme-secondary-button-label = Une honetan ez
-newtab-wallpaper-onboarding-title = Probatu kolore ukitu bat
-newtab-wallpaper-onboarding-primary-button-label = Ezarri horma-papera
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Sistemaren itxura
 mr1-onboarding-theme-label-light = Argia
@@ -62,6 +62,15 @@ mr1-onboarding-theme-label-dark = Iluna
 # "Alpenglow" here is the name of the theme, and should be kept in English.
 mr1-onboarding-theme-label-alpenglow = Alpenglow
 onboarding-theme-primary-button-label = Eginda
+
+## Accessible labels for the icon-only play/pause toggle that controls animated
+## illustrations on the onboarding screen. The button replaces the animation
+## with a static image when clicked.
+
+onboarding-animation-pause-button =
+    .aria-label = Pausatu animazioa
+onboarding-animation-play-button =
+    .aria-label = Erreproduzitu animazioa
 
 ## Please make sure to split the content of the title attribute into lines whose
 ## width corresponds to about 40 Latin characters, to ensure that the tooltip
@@ -188,6 +197,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Mantendu { -brand-short-name } Dock-ean
        *[other] Ainguratu { -brand-short-name } ataza-barran
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Ainguratu { -brand-short-name } ataza-barran eta Hasi menuan
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -223,7 +234,9 @@ mr2022-onboarding-set-default-subtitle = Erabili irabazi-asmorik gabeko batek ba
 mr2022-onboarding-get-started-primary-subtitle = Gure azken bertsioa zure inguruan dago eraikia, inoiz baino errazagoa eginez weba arakatzea. Gure ustez oso gustuko izango dituzun hainbat eginbide ditu.
 mr2022-onboarding-get-started-primary-button-label = Konfiguratu segundotan
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Konfigurazio azkarra
 mr2022-onboarding-import-subtitle = Konfiguratu { -brand-short-name } zure gustura. Gehitu zure laster-markak, pasahitzak eta gehiago zure nabigatzaile zaharretik.
@@ -328,11 +341,18 @@ mr2022-onboarding-colorways-image-alt =
 
 ## Device migration onboarding
 
+onboarding-device-migration-image-alt =
+    .aria-label = Azeria ordenagailu eramangarri baten pantailan eskuaz agur eginez. Ordenagailu eramangarriak sagua entxufatuta dauka.
 onboarding-device-migration-title = Ongi etorri!
+onboarding-device-migration-subtitle = Hasi saioa { -fxaccount-brand-name(capitalization: "sentence") } kontuan zure laster-markak, pasahitzak eta historia alboan eramateko zure gailu berrira.
+onboarding-device-migration-subtitle2 = Hasi saioa kontuan zure laster-markak, pasahitzak eta historia alboan eramateko zure gailu berrira.
 onboarding-device-migration-primary-button-label = Hasi saioa
 
 ## Add-ons Picker screen
 
+amo-picker-title = Pertsonalizatu zure { -brand-short-name }
+amo-picker-subtitle = Hedapenak aplikazioen antzerakoak dira zure nabigatzailearentzat eta pasahitzak babesten, bideoak deskargatzen, eskaintzak aurkitzen, iragarki gogaikarriak blokeatzen, nabigatzailearen itxura aldatzen eta gehiago egiten uzten dizute.
+amo-picker-install-button-label = Gehitu { -brand-short-name }(e)ra
 amo-picker-install-complete-label = Instalatuta
 amo-picker-collection-link = Esploratu gehigarri gehiago
 
@@ -343,8 +363,237 @@ onboarding-easy-setup-security-and-privacy-title = Zu seguru mantentzea dugu xed
 onboarding-easy-setup-security-and-privacy-subtitle = Irabazi asmorik gabeko erakundeak babestutako gure nabigatzaileak laguntzen du eragozten enpresek zure webeko jarraipena sekretupean egin dezaten.
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = Mantendu zifratzea gailuen artean salto egitean
+onboarding-mobile-download-security-and-privacy-subtitle = Sinkronizatuta zaudenean, zure pasahitzak, laster-markak eta gehiago zifratzen ditu { -brand-short-name }(e)k. Eta gainera zure beste gailuetako fitxak har ditzakezu.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name }(e)n babespean zaude
+onboarding-gratitude-security-and-privacy-subtitle = Eskerrik asko Mozilla Fundazioak babesten duen { -brand-short-name } erabiltzeagatik. Zure laguntzarekin Internet denontzat seguru eta eskuragarriagoa egiteko lanean ari gara.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sinkronizatu datuak gailuen artean
+onboarding-sign-up-description = Eman izena kontu bat irekitzeko eta zure informazio garrantzitsu guztia — pasahitzak, laster-markak eta gehiago — modu seguruan gordeko da eta erabilgarri egongo da edozein gailutan saioa hasten duzunean.
+onboarding-sign-up-button = Eman izena edo hasi saioa
+onboarding-sign-up-secondary-button = Hasi nabigatzen
 
 ## New user time and familiarity survey strings
 
+onboarding-new-user-time-based-survey-title = Zenbat denboraz aritu zara { -brand-short-name } erabiltzen?
+onboarding-new-user-familiarity-based-survey-title = Zenbateraino zaizu ezaguna { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Zure iritziak { -brand-short-name } hobetzen laguntzen du.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Hurrengoa
+onboarding-new-user-survey-legal-link-label = "{ onboarding-new-user-survey-next-button-label }" hautatuz gero, { -brand-product-name }(r)en <a data-l10n-name="privacy_notice">pribatutasun-oharra</a> onartzen duzu
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Berria naiz
+onboarding-new-user-survey-time-based-option-2 = Hilabete baino gutxiago
+onboarding-new-user-survey-time-based-option-3 = Hilabete baino gutxiago, sarritan
+onboarding-new-user-survey-time-based-option-4 = Hilabete baino gutxiago, batzutan
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Berria naiz
+onboarding-new-user-survey-familiarity-based-option-2 = Batzuk erabili ditut
+onboarding-new-user-survey-familiarity-based-option-3 = Oso ondo ezagutzen dut
+onboarding-new-user-survey-familiarity-based-option-4 = Iraganean erabili izan dut, baina duela asko
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Esaiguzu non nahiago dituzun fitxak
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Alda ezazu nahi duzunean alboko barrako ezarpenetan.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Fitxak, zure erara
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Fitxa mordoa mantentzen duzu zabalik? Probatu hauek alboan jartzen ikuspegi sinplifikatu baterako. Edo mantendu modu klasikoan fitxak goian izanda. Aldatu edonoiz.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Aukeratu fitxen diseinua
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Zentratuta mantentzen lagun zaitzakeen ikuspegi sinplifikatu baterako, probatu fitxak alboan jartzen. Edo manten ezazu klasiko fitxak goian izanda. Aldatu edonoiz.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Fitxak alboan
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Fitxak goian
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Fitxa bertikalak hemen dira
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Fitxa bertikalak aurkezten
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Probatu zure fitxak alboan jartzen. Alda ezazu nahi duzunean alboko barrako ezarpenetan.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Probatu fitxa bertikalak
+onboarding-flair-text = Berria!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Mantendu fitxa horizontalak
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Nabigatzailearen leiho bat fitxak pantailaren alboan { -brand-shorter-name } alboko barraren parte gisa bistaratzen.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Nabigatzailearen leiho bat fitxak pantailaren alboan { -brand-shorter-name } alboko barraren parte gisa bistaratzen.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Nabigatzailearen leiho bat fitxak goialdean bistaratzen.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Nabigatzailearen leiho bat fitxak goialdean bistaratzen.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Probatu AA txaterako bota alboko barran
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Laburbildu web edukia, egin ideien bateratze-lana, idatzi mezuen zirriborroak — dena nabigatu ahala. Aukeratu hainbat hornitzaileren artean. Aldatu edonoiz. <a data-l10n-name="learn-more">Argibide gehiago</a>
+onboarding-genai-sidebar-primary-button = Aukeratu txaterako bota
+onboarding-genai-sidebar-secondary-button = Hasi nabigatzen
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Amaitu { -brand-short-name } konfiguratzen
+onboarding-checklist-subtitle = Osatu urrats hauek zure nabigatzaile-esperientziari zuku gehiena ateratzeko.
+onboarding-checklist-set-default = Ezarri { -brand-short-name } nabigatzaile lehenetsi gisa
+onboarding-checklist-pin = Ainguratu { -brand-short-name } ataza-barran
+onboarding-checklist-import = Inportatu aurreko nabigatzailetik
+onboarding-checklist-extension = Gehitu hedapen bat
+onboarding-checklist-sign-up = Eman izena edo hasi saioa zure kontuan
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Probatu fitxa-taldeak soberan dagoena kendu eta zentratuta izateko
+tab-groups-onboarding-feature-callout-subtitle = Antolatu goian dagoen fitxa bat beste batera arrastatuz eta zure lehen taldea sortuz.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Aurkitu zure fitxa-taldeak edonoiz 'Zerrendatu fitxa guztiak' menu-aukeran.
+tab-groups-onboarding-create-group-title-2 = Aurkitu hemen zure fitxa-taldeak edonoiz.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Aurkitu zure taldeak helbide-barran bilaketa eginez.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Fitxa-taldeak talde bat ixtean, ireki ezazu berriro 'Zerrendatu fitxa guztiak' menu-aukeran.
+tab-groups-onboarding-saved-groups-title-2 = Fitxa-talde bat ixtean, hemen berrireki dezakezu edonoiz.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Aurkitu itxitako zure taldeak helbide-barran bilaketa eginez.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Ireki berriro zure fitxa-taldeak edonoiz 'Zerrendatu fitxa guztiak' menu-aukeran.
+tab-groups-onboarding-session-restore-title = Ireki berriro hemen zure fitxa-taldeak edonoiz.
+tab-groups-onboarding-dismiss = Ados
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Esan kaixo { -brand-product-name }(r)en profilei
+multi-profile-spotlight-body = Aldatu erraz lanerako eta aisialdirako nabigazioaren artean. Profilen bidez zure nabigatzailearen informazioa, bilaketa-historia eta pasahitzak barne, erabat bereiz mantentzen dira antolatuta egon zaitezen.
+multi-profile-spotlight-cta = Sortu profil bat
+multi-profile-callout-title = Sortu profil desberdinak lanerako eta aisialdirako
+multi-profile-callout-subtitle = Profilen bidez zure nabigatze-informazioa, adibidez bilaketa-historia eta pasahitzak, erabat bereiz mantentzen da.
+multi-profile-callout-cta = Sortu profil bat
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Deskargatu, sinkronizatu eta segi!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Eskaneatu mugikorrerako { -brand-product-name } deskargatzeko QR kodea. Behin instalatuta, hautatu "Sinkronizatu mugikorrera" zure pasahitzak, laster-markak eta gehiago alboan izateko.
+dismiss-button-label = Baztertu
+sync-to-mobile-button-label = Sinkronizatu mugikorrarekin
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Mugikorrerako { -brand-product-name } deskargatzeko QR kodea
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Windows 11ra bertsio-berritzen?
+    Egin ditzagun { -brand-product-name }(e)ko zure datuen babeskopia.
+create-backup-screen-1-subtitle = Babestu automatikoki zure pasahitzak, laster-markak eta gehiago pare bat minututan.
+create-backup-screen-1-flair = Gomendatua
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Argibide gehiago</a>
+create-backup-screen-1-sync-label = Sinkronizatu { -brand-product-name } erabiliz
+create-backup-screen-1-sync-body = Saioa hasita duten gailu guztien babeskopia egiten du
+create-backup-screen-1-backup-label = Egin babeskopia ordenagailura
+create-backup-screen-1-backup-body = Zure gailura edo OneDrive-ra gordetzen du
+create-backup-select-tile-button-label = Hautatu
+create-backup-back-button-label = Atzera
+create-backup-show-fewer =
+    .label = Erakutsi horrelako gutxiago
+create-backup-screen-2-title = Aukeratu babeskopia egin beharreko { -brand-product-name }(e)ko datuak
+create-backup-screen-2-subtitle = Minutu bat behar da soilik. Zure datuen babeskopia egunean behin egiten da.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Konfigurazio erraza
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Laster-markak, historia, ezarpenak eta gehiago
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Pasahitzak eta ordainketa-metodoak ez daude barne
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Zifratu gabea
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Datu guztiak
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Pasahitzak eta ordainketa-metodoak barne
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Pasahitz bidez zifratuta
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Non nahi duzu babeskopia gordetzea?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Sortu babeskopia-fitxategiaren pasahitza
+create-backup-screen-3-subtitle = Beharrezkoa zure datuak zifratzeko. Gorde ezazu gogoratzeko moduko leku batean.
+fx-backup-opt-in-header = Aukeratu fitxategiaren kokapena
+fx-backup-opt-in-filepath-label = Aukeratu gailu berri batera transferitu nahi duzun kokapena, adibidez OneDrive.
+fx-backup-opt-in-create-password-label = Idatzi pasahitza
+fx-backup-opt-in-confirm-btn-label = Jarraitu
+fx-backup-opt-in-cancel-btn-label = Atzera
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Zure babeskopia programatuta dago
+fx-backup-confirmation-screen-close-button = Itxi
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Nabigatze-datu guztiak barne
+fx-backup-confirmation-screen-all-data-item-text-2 = Zure gailuan gordeta
+fx-backup-confirmation-screen-all-data-item-text-3 = Zifratuta eta pasahitz bidez babestuta
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Laster-markak, historia, ezarpenak eta bestelako datuak barne
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Zure gailuan gordeta
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Pasahitzak eta ordainketa-metodoak ez daude barne
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Joan <a data-l10n-name="settings">ezarpenetara</a> kontuzko datuak ere barne hartzeko.
+fx-backup-confirmation-screen-item-subtext-1 = Zure babeskopia minutu gutxi barru hasiko da eta egunean behin exekutatuko da. Aurrerapena <a data-l10n-name="settings">ezarpenetan</a> ikus dezakezu.
+fx-backup-confirmation-screen-item-subtext-2 = Berrinstalatzeko beharra baduzu, zure babeskopia bilatuko du { -brand-short-name }(e)k.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Berreskuratu babeskopiatik
+restore-from-backup-title = Presta dezagun { -brand-short-name } zuri gustatzen zaigun modura
+restore-from-backup-subtitle = Berreskuratu zure laster-markak, historia eta bestelako datu guztiak nabigatzera itzul zaitezen.
+restore-from-backup-secondary-button = Ez berreskuratu
+multiple-backups-info-tile = <strong>Hainbat fitxategi aurkitu dira.</strong> Fitxategi berriena hautatu da. Berrezarri beste profilak <a data-l10n-name="settings-label">ezarpenetan.</a>
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Bueltan gaude! Zure { -brand-short-name } datuak berreskuratu dira.
+restored-from-backup-success-with-checklist-subtitle = Pribatutasunean zentratzen den zure nabigatzaile gogokoen klik bakarrera izan nahi duzu?
+restored-from-backup-success-no-checklist-subtitle = Gailu honetarako babeskopia <a data-l10n-name="settings">ezarpenetan</a> aktiba dezakezu.
+restored-from-backup-success-with-checklist-primary-button = Gorde eta jarraitu
+restored-from-backup-success-with-checklist-secondary-button = Saltatu urrats hau
+restored-from-backup-success-no-checklist-primary-button = Jarraitu
+restored-from-backup-error-title = Kontxo, arazo bat egon da zure babeskopia-fitxategiarekin.
+restored-from-backup-error-subtitle = Beste { -brand-short-name } babeskopia-fitxategi bat baduzu, saiatu bertatik berreskuratzen. <a data-l10n-name="restore-problems">Arazoak dituzu oraindik?</a>
+restored-from-backup-error-primary-button = Itxi
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Pertsonalizatu zure { -brand-short-name } esperientzia
+onboarding-personalization-subtitle = Erantzun galdera gutxi batzuk eta { -brand-short-name } erabiltzeko modua hobetzeko eginbide eta hedapenak gomendatuko ditugu.
+onboarding-personalization-use-case-title = Zertarako erabiliko duzu { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Pertsonala
+onboarding-personalization-use-case-school-option = Eskola
+onboarding-personalization-use-case-work-option = Lana
+onboarding-personalization-motivation-title = { -brand-short-name }(r)en zein eginbide dira garrantzitsuenak zuretzat?
+onboarding-personalization-motivation-privacy-option = Pribatutasuna eta segurtasuna
+onboarding-personalization-motivation-productivity-option = Produktibitatea
+onboarding-personalization-motivation-other-option = Bestelakoa
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = Zure datuak babestu eta enpresek zure klikak espiatzetik blokeatzen ditugu — automatikoki.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = Seguru zaude Firefoxekin
+onboarding-refresh-import-subtitle = Ekarri zure pasahitzak, laster-markak, historia eta gehiago.
+onboarding-refresh-import-title = Senti zaitez { -brand-short-name }(e)kin etxean bezala.
+onboarding-refresh-onboarding-addons-subtitle = Hedapenak { -brand-short-name } pertsonalizatzen uzten dizuten aplikazio txikiak dira. Zure pribatutasuna hobetu, produktibitatea areagotu, { -brand-short-name }(e)n itxura aldatu eta gehiago ere egin dezakete.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = Emaiozu bultzada zure nabigazioari
+onboarding-refresh-sync-subtitle = Hartu laster-markak, pasahitzak eta gehiago { -brand-short-name }(e)n saioa hasita duzun toki orotatik. Gainera, zure datuak zifratuta daude eta zuk bakarrik ikus ditzakezu.
+onboarding-refresh-sync-title = Joan edonora. Sinkronizatu guztia.
+onboarding-refresh-gratitude-subtitle = Eskerrik asko { -brand-short-name } erabiltzeagatik, irabazi-asmorik gabeko batek babesten duen nabigatzaile nagusi bakarra. Zure laguntzarekin Internet denontzat seguru eta eskuragarriagoa egiteko lanean ari gara.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name }(e)n babespean zaude

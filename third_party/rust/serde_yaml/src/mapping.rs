@@ -1,17 +1,16 @@
 //! A YAML mapping and its iterator types.
 
-use crate::Value;
+use crate::{private, Value};
 use indexmap::IndexMap;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::cmp::Ordering;
 use std::collections::hash_map::DefaultHasher;
-use std::fmt;
+use std::fmt::{self, Display};
 use std::hash::{Hash, Hasher};
-use std::iter::FromIterator;
-use std::ops::{Index, IndexMut};
+use std::mem;
 
 /// A YAML mapping in which the keys and values are both `serde_yaml::Value`.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct Mapping {
     map: IndexMap<Value, Value>,
 }
@@ -60,23 +59,23 @@ impl Mapping {
 
     /// Checks if the map contains the given key.
     #[inline]
-    pub fn contains_key(&self, k: &Value) -> bool {
-        self.map.contains_key(k)
+    pub fn contains_key<I: Index>(&self, index: I) -> bool {
+        index.is_key_into(self)
     }
 
     /// Returns the value corresponding to the key in the map.
     #[inline]
-    pub fn get(&self, k: &Value) -> Option<&Value> {
-        self.map.get(k)
+    pub fn get<I: Index>(&self, index: I) -> Option<&Value> {
+        index.index_into(self)
     }
 
     /// Returns the mutable reference corresponding to the key in the map.
     #[inline]
-    pub fn get_mut(&mut self, k: &Value) -> Option<&mut Value> {
-        self.map.get_mut(k)
+    pub fn get_mut<I: Index>(&mut self, index: I) -> Option<&mut Value> {
+        index.index_into_mut(self)
     }
 
-    /// Gets the given key’s corresponding entry in the map for insertion and/or
+    /// Gets the given key's corresponding entry in the map for insertion and/or
     /// in-place manipulation.
     #[inline]
     pub fn entry(&mut self, k: Value) -> Entry {
@@ -87,9 +86,75 @@ impl Mapping {
     }
 
     /// Removes and returns the value corresponding to the key from the map.
+    ///
+    /// This is equivalent to [`.swap_remove(index)`][Self::swap_remove],
+    /// replacing this entry's position with the last element. If you need to
+    /// preserve the relative order of the keys in the map, use
+    /// [`.shift_remove(key)`][Self::shift_remove] instead.
     #[inline]
-    pub fn remove(&mut self, k: &Value) -> Option<Value> {
-        self.map.remove(k)
+    pub fn remove<I: Index>(&mut self, index: I) -> Option<Value> {
+        self.swap_remove(index)
+    }
+
+    /// Remove and return the key-value pair.
+    ///
+    /// This is equivalent to [`.swap_remove_entry(index)`][Self::swap_remove_entry],
+    /// replacing this entry's position with the last element. If you need to
+    /// preserve the relative order of the keys in the map, use
+    /// [`.shift_remove_entry(key)`][Self::shift_remove_entry] instead.
+    #[inline]
+    pub fn remove_entry<I: Index>(&mut self, index: I) -> Option<(Value, Value)> {
+        self.swap_remove_entry(index)
+    }
+
+    /// Removes and returns the value corresponding to the key from the map.
+    ///
+    /// Like [`Vec::swap_remove`], the entry is removed by swapping it with the
+    /// last element of the map and popping it off. This perturbs the position
+    /// of what used to be the last element!
+    #[inline]
+    pub fn swap_remove<I: Index>(&mut self, index: I) -> Option<Value> {
+        index.swap_remove_from(self)
+    }
+
+    /// Remove and return the key-value pair.
+    ///
+    /// Like [`Vec::swap_remove`], the entry is removed by swapping it with the
+    /// last element of the map and popping it off. This perturbs the position
+    /// of what used to be the last element!
+    #[inline]
+    pub fn swap_remove_entry<I: Index>(&mut self, index: I) -> Option<(Value, Value)> {
+        index.swap_remove_entry_from(self)
+    }
+
+    /// Removes and returns the value corresponding to the key from the map.
+    ///
+    /// Like [`Vec::remove`], the entry is removed by shifting all of the
+    /// elements that follow it, preserving their relative order. This perturbs
+    /// the index of all of those elements!
+    #[inline]
+    pub fn shift_remove<I: Index>(&mut self, index: I) -> Option<Value> {
+        index.shift_remove_from(self)
+    }
+
+    /// Remove and return the key-value pair.
+    ///
+    /// Like [`Vec::remove`], the entry is removed by shifting all of the
+    /// elements that follow it, preserving their relative order. This perturbs
+    /// the index of all of those elements!
+    #[inline]
+    pub fn shift_remove_entry<I: Index>(&mut self, index: I) -> Option<(Value, Value)> {
+        index.shift_remove_entry_from(self)
+    }
+
+    /// Scan through each key-value pair in the map and keep those where the
+    /// closure `keep` returns true.
+    #[inline]
+    pub fn retain<F>(&mut self, keep: F)
+    where
+        F: FnMut(&Value, &mut Value) -> bool,
+    {
+        self.map.retain(keep);
     }
 
     /// Returns the maximum number of key-value pairs the map can hold without
@@ -134,9 +199,191 @@ impl Mapping {
             iter: self.map.iter_mut(),
         }
     }
+
+    /// Return an iterator over the keys of the map.
+    pub fn keys(&self) -> Keys {
+        Keys {
+            iter: self.map.keys(),
+        }
+    }
+
+    /// Return an owning iterator over the keys of the map.
+    pub fn into_keys(self) -> IntoKeys {
+        IntoKeys {
+            iter: self.map.into_keys(),
+        }
+    }
+
+    /// Return an iterator over the values of the map.
+    pub fn values(&self) -> Values {
+        Values {
+            iter: self.map.values(),
+        }
+    }
+
+    /// Return an iterator over mutable references to the values of the map.
+    pub fn values_mut(&mut self) -> ValuesMut {
+        ValuesMut {
+            iter: self.map.values_mut(),
+        }
+    }
+
+    /// Return an owning iterator over the values of the map.
+    pub fn into_values(self) -> IntoValues {
+        IntoValues {
+            iter: self.map.into_values(),
+        }
+    }
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
+/// A type that can be used to index into a `serde_yaml::Mapping`. See the
+/// methods `get`, `get_mut`, `contains_key`, and `remove` of `Value`.
+///
+/// This trait is sealed and cannot be implemented for types outside of
+/// `serde_yaml`.
+pub trait Index: private::Sealed {
+    #[doc(hidden)]
+    fn is_key_into(&self, v: &Mapping) -> bool;
+
+    #[doc(hidden)]
+    fn index_into<'a>(&self, v: &'a Mapping) -> Option<&'a Value>;
+
+    #[doc(hidden)]
+    fn index_into_mut<'a>(&self, v: &'a mut Mapping) -> Option<&'a mut Value>;
+
+    #[doc(hidden)]
+    fn swap_remove_from(&self, v: &mut Mapping) -> Option<Value>;
+
+    #[doc(hidden)]
+    fn swap_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)>;
+
+    #[doc(hidden)]
+    fn shift_remove_from(&self, v: &mut Mapping) -> Option<Value>;
+
+    #[doc(hidden)]
+    fn shift_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)>;
+}
+
+struct HashLikeValue<'a>(&'a str);
+
+impl<'a> indexmap::Equivalent<Value> for HashLikeValue<'a> {
+    fn equivalent(&self, key: &Value) -> bool {
+        match key {
+            Value::String(string) => self.0 == string,
+            _ => false,
+        }
+    }
+}
+
+// NOTE: This impl must be consistent with Value's Hash impl.
+impl<'a> Hash for HashLikeValue<'a> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        const STRING: Value = Value::String(String::new());
+        mem::discriminant(&STRING).hash(state);
+        self.0.hash(state);
+    }
+}
+
+impl Index for Value {
+    fn is_key_into(&self, v: &Mapping) -> bool {
+        v.map.contains_key(self)
+    }
+    fn index_into<'a>(&self, v: &'a Mapping) -> Option<&'a Value> {
+        v.map.get(self)
+    }
+    fn index_into_mut<'a>(&self, v: &'a mut Mapping) -> Option<&'a mut Value> {
+        v.map.get_mut(self)
+    }
+    fn swap_remove_from(&self, v: &mut Mapping) -> Option<Value> {
+        v.map.swap_remove(self)
+    }
+    fn swap_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)> {
+        v.map.swap_remove_entry(self)
+    }
+    fn shift_remove_from(&self, v: &mut Mapping) -> Option<Value> {
+        v.map.shift_remove(self)
+    }
+    fn shift_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)> {
+        v.map.shift_remove_entry(self)
+    }
+}
+
+impl Index for str {
+    fn is_key_into(&self, v: &Mapping) -> bool {
+        v.map.contains_key(&HashLikeValue(self))
+    }
+    fn index_into<'a>(&self, v: &'a Mapping) -> Option<&'a Value> {
+        v.map.get(&HashLikeValue(self))
+    }
+    fn index_into_mut<'a>(&self, v: &'a mut Mapping) -> Option<&'a mut Value> {
+        v.map.get_mut(&HashLikeValue(self))
+    }
+    fn swap_remove_from(&self, v: &mut Mapping) -> Option<Value> {
+        v.map.swap_remove(&HashLikeValue(self))
+    }
+    fn swap_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)> {
+        v.map.swap_remove_entry(&HashLikeValue(self))
+    }
+    fn shift_remove_from(&self, v: &mut Mapping) -> Option<Value> {
+        v.map.shift_remove(&HashLikeValue(self))
+    }
+    fn shift_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)> {
+        v.map.shift_remove_entry(&HashLikeValue(self))
+    }
+}
+
+impl Index for String {
+    fn is_key_into(&self, v: &Mapping) -> bool {
+        self.as_str().is_key_into(v)
+    }
+    fn index_into<'a>(&self, v: &'a Mapping) -> Option<&'a Value> {
+        self.as_str().index_into(v)
+    }
+    fn index_into_mut<'a>(&self, v: &'a mut Mapping) -> Option<&'a mut Value> {
+        self.as_str().index_into_mut(v)
+    }
+    fn swap_remove_from(&self, v: &mut Mapping) -> Option<Value> {
+        self.as_str().swap_remove_from(v)
+    }
+    fn swap_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)> {
+        self.as_str().swap_remove_entry_from(v)
+    }
+    fn shift_remove_from(&self, v: &mut Mapping) -> Option<Value> {
+        self.as_str().shift_remove_from(v)
+    }
+    fn shift_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)> {
+        self.as_str().shift_remove_entry_from(v)
+    }
+}
+
+impl<T> Index for &T
+where
+    T: ?Sized + Index,
+{
+    fn is_key_into(&self, v: &Mapping) -> bool {
+        (**self).is_key_into(v)
+    }
+    fn index_into<'a>(&self, v: &'a Mapping) -> Option<&'a Value> {
+        (**self).index_into(v)
+    }
+    fn index_into_mut<'a>(&self, v: &'a mut Mapping) -> Option<&'a mut Value> {
+        (**self).index_into_mut(v)
+    }
+    fn swap_remove_from(&self, v: &mut Mapping) -> Option<Value> {
+        (**self).swap_remove_from(v)
+    }
+    fn swap_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)> {
+        (**self).swap_remove_entry_from(v)
+    }
+    fn shift_remove_from(&self, v: &mut Mapping) -> Option<Value> {
+        (**self).shift_remove_from(v)
+    }
+    fn shift_remove_entry_from(&self, v: &mut Mapping) -> Option<(Value, Value)> {
+        (**self).shift_remove_entry_from(v)
+    }
+}
+
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl Hash for Mapping {
     fn hash<H: Hasher>(&self, state: &mut H) {
         // Hash the kv pairs in a way that is not sensitive to their order.
@@ -185,6 +432,13 @@ impl PartialOrd for Mapping {
                         total_cmp(ak, bk).then_with(|| total_cmp(av, bv))
                     })
                 }
+                (Value::Mapping(_), _) => Ordering::Less,
+                (_, Value::Mapping(_)) => Ordering::Greater,
+
+                (Value::Tagged(a), Value::Tagged(b)) => a
+                    .tag
+                    .cmp(&b.tag)
+                    .then_with(|| total_cmp(&a.value, &b.value)),
             }
         }
 
@@ -230,18 +484,27 @@ impl PartialOrd for Mapping {
     }
 }
 
-impl<'a> Index<&'a Value> for Mapping {
+impl<I> std::ops::Index<I> for Mapping
+where
+    I: Index,
+{
     type Output = Value;
+
     #[inline]
-    fn index(&self, index: &'a Value) -> &Value {
-        self.map.index(index)
+    #[track_caller]
+    fn index(&self, index: I) -> &Value {
+        index.index_into(self).unwrap()
     }
 }
 
-impl<'a> IndexMut<&'a Value> for Mapping {
+impl<I> std::ops::IndexMut<I> for Mapping
+where
+    I: Index,
+{
     #[inline]
-    fn index_mut(&mut self, index: &'a Value) -> &mut Value {
-        self.map.index_mut(index)
+    #[track_caller]
+    fn index_mut(&mut self, index: I) -> &mut Value {
+        index.index_into_mut(self).unwrap()
     }
 }
 
@@ -337,6 +600,41 @@ impl IntoIterator for Mapping {
         }
     }
 }
+
+/// Iterator of the keys of a `&serde_yaml::Mapping`.
+pub struct Keys<'a> {
+    iter: indexmap::map::Keys<'a, Value, Value>,
+}
+
+delegate_iterator!((Keys<'a>) => &'a Value);
+
+/// Iterator of the keys of a `serde_yaml::Mapping`.
+pub struct IntoKeys {
+    iter: indexmap::map::IntoKeys<Value, Value>,
+}
+
+delegate_iterator!((IntoKeys) => Value);
+
+/// Iterator of the values of a `&serde_yaml::Mapping`.
+pub struct Values<'a> {
+    iter: indexmap::map::Values<'a, Value, Value>,
+}
+
+delegate_iterator!((Values<'a>) => &'a Value);
+
+/// Iterator of the values of a `&mut serde_yaml::Mapping`.
+pub struct ValuesMut<'a> {
+    iter: indexmap::map::ValuesMut<'a, Value, Value>,
+}
+
+delegate_iterator!((ValuesMut<'a>) => &'a mut Value);
+
+/// Iterator of the values of a `serde_yaml::Mapping`.
+pub struct IntoValues {
+    iter: indexmap::map::IntoValues<Value, Value>,
+}
+
+delegate_iterator!((IntoValues) => Value);
 
 /// Entry for an existing key-value pair or a vacant location to insert one.
 pub enum Entry<'a> {
@@ -442,6 +740,12 @@ impl<'a> OccupiedEntry<'a> {
     pub fn remove(self) -> Value {
         self.occupied.swap_remove()
     }
+
+    /// Remove and return the key, value pair stored in the map for this entry.
+    #[inline]
+    pub fn remove_entry(self) -> (Value, Value) {
+        self.occupied.swap_remove_entry()
+    }
 }
 
 impl<'a> VacantEntry<'a> {
@@ -450,6 +754,12 @@ impl<'a> VacantEntry<'a> {
     #[inline]
     pub fn key(&self) -> &Value {
         self.vacant.key()
+    }
+
+    /// Takes ownership of the key, leaving the entry vacant.
+    #[inline]
+    pub fn into_key(self) -> Value {
+        self.vacant.into_key()
     }
 
     /// Sets the value of the entry with the VacantEntry's key, and returns a
@@ -495,18 +805,47 @@ impl<'de> Deserialize<'de> for Mapping {
             }
 
             #[inline]
-            fn visit_map<V>(self, mut visitor: V) -> Result<Self::Value, V::Error>
+            fn visit_map<A>(self, mut data: A) -> Result<Self::Value, A::Error>
             where
-                V: serde::de::MapAccess<'de>,
+                A: serde::de::MapAccess<'de>,
             {
-                let mut values = Mapping::new();
-                while let Some((k, v)) = visitor.next_entry()? {
-                    values.insert(k, v);
+                let mut mapping = Mapping::new();
+
+                while let Some(key) = data.next_key()? {
+                    match mapping.entry(key) {
+                        Entry::Occupied(entry) => {
+                            return Err(serde::de::Error::custom(DuplicateKeyError { entry }));
+                        }
+                        Entry::Vacant(entry) => {
+                            let value = data.next_value()?;
+                            entry.insert(value);
+                        }
+                    }
                 }
-                Ok(values)
+
+                Ok(mapping)
             }
         }
 
         deserializer.deserialize_map(Visitor)
+    }
+}
+
+struct DuplicateKeyError<'a> {
+    entry: OccupiedEntry<'a>,
+}
+
+impl<'a> Display for DuplicateKeyError<'a> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("duplicate entry ")?;
+        match self.entry.key() {
+            Value::Null => formatter.write_str("with null key"),
+            Value::Bool(boolean) => write!(formatter, "with key `{}`", boolean),
+            Value::Number(number) => write!(formatter, "with key {}", number),
+            Value::String(string) => write!(formatter, "with key {:?}", string),
+            Value::Sequence(_) | Value::Mapping(_) | Value::Tagged(_) => {
+                formatter.write_str("in YAML map")
+            }
+        }
     }
 }

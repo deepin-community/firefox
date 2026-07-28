@@ -11,6 +11,12 @@ loadScripts(
   { name: "states.js", dir: MOCHITESTS_DIR }
 );
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 /**
  * Test moving Accessibles:
  * 1. A moved Accessible keeps the same Accessible.
@@ -41,6 +47,7 @@ addAccessibleTask(
     await focused;
     testStates(textbox, STATE_FOCUSED, 0, 0, EXT_STATE_DEFUNCT);
 
+    let hidden = waitForEvent(EVENT_HIDE, textbox);
     let reordered = waitForEvent(EVENT_REORDER, docAcc);
     await invokeContentTask(browser, [], () => {
       // scrollable wasn't in the a11y tree, but this will force it to be created.
@@ -48,6 +55,8 @@ addAccessibleTask(
       content.document.getElementById("scrollable").style.overflow = "scroll";
       content.document.getElementById("heading").remove();
     });
+    await hidden;
+    ok(!para.nextSibling, "para nextSibling is null during move");
     await reordered;
     // Despite the move, ensure textbox is still alive and is focused.
     testStates(textbox, STATE_FOCUSED, 0, 0, EXT_STATE_DEFUNCT);

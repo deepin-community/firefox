@@ -23,17 +23,25 @@ protections-panel-etp-more-info =
     .aria-label = اطلاعات بیشتر در مورد حفاظت پیشرفته در برابر ردیابی
 protections-panel-etp-on-header = حفاظت پیشرفته در برابر ردیابی برای این سایت روشن است
 protections-panel-etp-off-header = حفاظت پیشرفته در برابر ردیابی برای این سایت خاموش است
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = سایت کار نمی‌کند؟
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = سایت کار نمی‌کند؟
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
 ## custom element code.
 ##   $host (String): the hostname of the site that is being displayed.
 
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = سایت کار نمی‌کند؟
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = سایت کار نمی‌کند؟
+protections-panel-etp-toggle-on =
+    .label = محافظت پیشرفته در برابر ردیابی
+    .description = فعال برای این وبگاه
+    .aria-label = محافظت پیشرفته در برابر ردیابی: فعال برای { $host }
+protections-panel-etp-toggle-off =
+    .label = محافظت پیشرفته در برابر ردیابی
+    .description = غیرفعال برای این وبگاه
+    .aria-label = محافظت پیشرفته در برابر ردیابی: غیرفعال برای { $host }
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -64,6 +72,10 @@ protections-panel-blocking-label = مسدود شده
 protections-panel-not-blocking-label = مجاز
 protections-panel-not-found-label = موردی پیدا نشد
 
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } محتوای ردیابی را مسدود می‌کند، مگر این که شما اجازه دهید.
+
 ##
 
 protections-panel-settings-label = تنظیمات حفاظتی
@@ -79,7 +91,8 @@ protections-panel-site-not-working-view-issue-list-login-fields = فیلدهای
 protections-panel-site-not-working-view-issue-list-forms = فرم‌ها
 protections-panel-site-not-working-view-issue-list-payments = پرداخت‌های مالی
 protections-panel-site-not-working-view-issue-list-comments = نظرات
-protections-panel-site-not-working-view-issue-list-videos = ویدئوها
+protections-panel-site-not-working-view-issue-list-videos = ویدیوها
+protections-panel-site-not-working-view-issue-list-fonts = قلم‌ها
 protections-panel-site-not-working-view-send-report = ارسال گزارش
 
 ##
@@ -99,7 +112,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = گزارش یک سایت خراب
 protections-panel-content-blocking-breakage-report-view-description = مسدود کردن ردیاب‌های خاص می‌تواند مشکلاتی را در برخی وب سایت‌ها ایجاد کند. گزارش این مشکلات به بهتر شدن { -brand-short-name } برای همه کمک می‌کند. با ارسال این گزارش، نشانی اینترنتی و اطلاعات مربوط به تنظیمات مرورگر شما به موزیلا ارسال می‌شود. <label data-l10n-name="learn-more">بیشتر بدانید</label>
-protections-panel-content-blocking-breakage-report-view-description2 = مسدود کردن ردیاب‌های خاص می‌تواند مشکلاتی را در برخی وبگاه‌ها ایجاد کند. گزارش این مشکلات به بهتر شدن { -brand-short-name } برای همه کمک می‌کند. با ارسال این گزارش، نشانی اینترنتی و اطلاعات مربوط به تنظیمات مرورگر شما { -vendor-short-name } ارسال می‌شود.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = آدرس اینترنتی
@@ -113,6 +125,19 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 
 # Cookie Banner Handling
 
+protections-panel-cookie-banner-blocker-header = مسدودکننده برنمای کلوچک
+protections-panel-cookie-banner-handling-enabled = فعال برای این وبگاه
+protections-panel-cookie-banner-handling-disabled = غیرفعال برای این وبگاه
+protections-panel-cookie-banner-view-cancel = انصراف
+protections-panel-cookie-banner-view-turn-off = خاموش کردن
+protections-panel-cookie-banner-view-turn-on = روشن کردن
+protections-panel-cookie-banner-blocker-view-turn-on-description = روشن کنید و { -brand-short-name } سعی خواهد کرد به‌طور خودکار برنمای کلوچک را در این وبگاه رد کند.
+protections-panel-cookie-banner-view-cancel-label =
+    .label = انصراف
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = خاموش کردن
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = روشن کردن
 
 ## Protections panel info message
 

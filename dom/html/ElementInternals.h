@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,17 +5,17 @@
 #ifndef mozilla_dom_ElementInternals_h
 #define mozilla_dom_ElementInternals_h
 
+#include "AttrArray.h"
 #include "js/TypeDecls.h"
 #include "mozilla/ErrorResult.h"
+#include "mozilla/dom/CustomStateSet.h"
 #include "mozilla/dom/ElementInternalsBinding.h"
 #include "mozilla/dom/UnionTypes.h"
-#include "mozilla/dom/CustomStateSet.h"
 #include "nsCycleCollectionParticipant.h"
+#include "nsGkAtoms.h"
 #include "nsIConstraintValidation.h"
 #include "nsIFormControl.h"
 #include "nsWrapperCache.h"
-#include "AttrArray.h"
-#include "nsGkAtoms.h"
 
 #define ARIA_REFLECT_ATTR(method, attr)                             \
   void Get##method(nsAString& aValue) const {                       \
@@ -34,7 +32,17 @@
     SetAttrElement(nsGkAtoms::attr, aElement);                             \
   }
 
-class nsINodeList;
+#define ARIA_REFLECT_ATTR_ELEMENTS(method, attr)                     \
+  void Get##method(bool* aUseCachedValue,                            \
+                   Nullable<nsTArray<RefPtr<Element>>>& aElements) { \
+    GetAttrElements(nsGkAtoms::attr, aUseCachedValue, aElements);    \
+  }                                                                  \
+                                                                     \
+  void Set##method(                                                  \
+      const Nullable<Sequence<OwningNonNull<Element>>>& aElements) { \
+    SetAttrElements(nsGkAtoms::attr, aElements);                     \
+  }
+
 class nsGenericHTMLElement;
 
 namespace mozilla::dom {
@@ -43,6 +51,7 @@ class DocGroup;
 class HTMLElement;
 class HTMLFieldSetElement;
 class HTMLFormElement;
+class NodeList;
 class ShadowRoot;
 class ValidityState;
 
@@ -66,7 +75,7 @@ class ElementInternals final : public nsIFormControl,
   void SetFormValue(const Nullable<FileOrUSVStringOrFormData>& aValue,
                     const Optional<Nullable<FileOrUSVStringOrFormData>>& aState,
                     ErrorResult& aRv);
-  mozilla::dom::HTMLFormElement* GetForm(ErrorResult& aRv) const;
+  mozilla::dom::Element* GetFormForBindings(ErrorResult& aRv) const;
   void SetValidity(const ValidityStateFlags& aFlags,
                    const Optional<nsAString>& aMessage,
                    const Optional<NonNull<nsGenericHTMLElement>>& aAnchor,
@@ -77,7 +86,7 @@ class ElementInternals final : public nsIFormControl,
                             ErrorResult& aRv) const;
   bool CheckValidity(ErrorResult& aRv);
   bool ReportValidity(ErrorResult& aRv);
-  already_AddRefed<nsINodeList> GetLabels(ErrorResult& aRv) const;
+  already_AddRefed<NodeList> GetLabels(ErrorResult& aRv) const;
   nsGenericHTMLElement* GetValidationAnchor(ErrorResult& aRv) const;
   CustomStateSet* States();
 
@@ -85,7 +94,10 @@ class ElementInternals final : public nsIFormControl,
   mozilla::dom::HTMLFieldSetElement* GetFieldSet() override {
     return mFieldSet;
   }
-  mozilla::dom::HTMLFormElement* GetForm() const override { return mForm; }
+  mozilla::dom::Element* GetFormForBindings() const override;
+  mozilla::dom::HTMLFormElement* GetFormInternal() const override {
+    return mForm;
+  }
   void SetForm(mozilla::dom::HTMLFormElement* aForm) override;
   void ClearForm(bool aRemoveFromForm, bool aUnbindOrDelete) override;
   NS_IMETHOD Reset() override;
@@ -137,21 +149,28 @@ class ElementInternals final : public nsIFormControl,
   ARIA_REFLECT_ATTR(AriaColIndex, aria_colindex)
   ARIA_REFLECT_ATTR(AriaColIndexText, aria_colindextext)
   ARIA_REFLECT_ATTR(AriaColSpan, aria_colspan)
+  ARIA_REFLECT_ATTR_ELEMENTS(AriaControlsElements, aria_controls)
   ARIA_REFLECT_ATTR(AriaCurrent, aria_current)
+  ARIA_REFLECT_ATTR_ELEMENTS(AriaDescribedByElements, aria_describedby)
   ARIA_REFLECT_ATTR(AriaDescription, aria_description)
+  ARIA_REFLECT_ATTR_ELEMENTS(AriaDetailsElements, aria_details)
   ARIA_REFLECT_ATTR(AriaDisabled, aria_disabled)
+  ARIA_REFLECT_ATTR_ELEMENTS(AriaErrorMessageElements, aria_errormessage)
   ARIA_REFLECT_ATTR(AriaExpanded, aria_expanded)
+  ARIA_REFLECT_ATTR_ELEMENTS(AriaFlowToElements, aria_flowto)
   ARIA_REFLECT_ATTR(AriaHasPopup, aria_haspopup)
   ARIA_REFLECT_ATTR(AriaHidden, aria_hidden)
   ARIA_REFLECT_ATTR(AriaInvalid, aria_invalid)
   ARIA_REFLECT_ATTR(AriaKeyShortcuts, aria_keyshortcuts)
   ARIA_REFLECT_ATTR(AriaLabel, aria_label)
+  ARIA_REFLECT_ATTR_ELEMENTS(AriaLabelledByElements, aria_labelledby)
   ARIA_REFLECT_ATTR(AriaLevel, aria_level)
   ARIA_REFLECT_ATTR(AriaLive, aria_live)
   ARIA_REFLECT_ATTR(AriaModal, aria_modal)
   ARIA_REFLECT_ATTR(AriaMultiLine, aria_multiline)
   ARIA_REFLECT_ATTR(AriaMultiSelectable, aria_multiselectable)
   ARIA_REFLECT_ATTR(AriaOrientation, aria_orientation)
+  ARIA_REFLECT_ATTR_ELEMENTS(AriaOwnsElements, aria_owns)
   ARIA_REFLECT_ATTR(AriaPlaceholder, aria_placeholder)
   ARIA_REFLECT_ATTR(AriaPosInSet, aria_posinset)
   ARIA_REFLECT_ATTR(AriaPressed, aria_pressed)
@@ -175,6 +194,8 @@ class ElementInternals final : public nsIFormControl,
 
   nsresult SetAttr(nsAtom* aName, const nsAString& aValue);
 
+  Maybe<nsTArray<RefPtr<Element>>> GetAttrElements(nsAtom* aAttr);
+
   const AttrArray& GetAttrs() const { return mAttrs; }
 
   DocGroup* GetDocGroup();
@@ -193,6 +214,17 @@ class ElementInternals final : public nsIFormControl,
    * https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#explicitly-set-attr-element
    */
   void SetAttrElement(nsAtom* aAttr, Element* aElement);
+
+  void SetAttrElements(
+      nsAtom* aAttr,
+      const Nullable<Sequence<OwningNonNull<Element>>>& aElements);
+
+  void GetAttrElements(nsAtom* aAttr, bool* aUseCachedValue,
+                       Nullable<nsTArray<RefPtr<Element>>>& aElements);
+
+  nsresult SetAttrInternal(nsAtom* aName, const nsAString& aValue);
+
+  nsresult UnsetAttrInternal(nsAtom* aName);
 
   // It's a target element which is a custom element.
   RefPtr<HTMLElement> mTarget;
@@ -238,7 +270,11 @@ class ElementInternals final : public nsIFormControl,
    * Explicitly set attr-elements, see
    * https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#explicitly-set-attr-element
    */
-  nsTHashMap<RefPtr<nsAtom>, nsWeakPtr> mAttrElements;
+  nsTHashMap<RefPtr<nsAtom>, nsWeakPtr> mAttrElementMap;
+
+  nsTHashMap<RefPtr<nsAtom>,
+             std::pair<nsTArray<nsWeakPtr>, nsTArray<RefPtr<Element>>>>
+      mAttrElementsMap;
 };
 
 }  // namespace mozilla::dom

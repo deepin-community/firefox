@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = نمایش
 download-cert-view-text = بررسی گواهی مرجع صدور
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = منتشر شده توسط: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = ذخیره شده در: { $storedOn }
-client-auth-cert-remember-box =
-    .label = این تصمیم را به خاطر بسپار
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = گذرواژهٔ پشتیبان گواهی (دوباره وارد کنید):
 set-password-reminder = مهم: اگر گذرواژهٔ پشتیبان گواهی‌تان را فراموش کنید، بغداً قادر نخواهید بود از این پشتیبان برای بازگرداندن سیستم به حالت قدیم استقاده کنید. لطفاً گذرواژه را در محل امنی ضبط کنید.
-
-## Protected authentication alert
-

@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -13,7 +11,6 @@
 #ifndef vm_HelperThreadState_h
 #define vm_HelperThreadState_h
 
-#include "mozilla/AlreadyAddRefed.h"  // already_AddRefed
 #include "mozilla/Assertions.h"       // MOZ_ASSERT, MOZ_CRASH
 #include "mozilla/Attributes.h"       // MOZ_RAII
 #include "mozilla/EnumeratedArray.h"  // mozilla::EnumeratedArray
@@ -27,13 +24,13 @@
 #include <utility>   // std::move
 
 #include "ds/Fifo.h"                      // Fifo
-#include "frontend/CompilationStencil.h"  // frontend::CompilationStencil
+#include "frontend/CompilationStencil.h"  // frontend::InitialStencilAndDelazifications
 #include "gc/GCRuntime.h"                 // gc::GCRuntime
 #include "js/AllocPolicy.h"               // SystemAllocPolicy
 #include "js/CompileOptions.h"            // JS::ReadOnlyCompileOptions
-#include "js/experimental/JSStencil.h"    // JS::InstantiationStorage
-#include "js/HelperThreadAPI.h"           // JS::HelperThreadTaskCallback
-#include "js/MemoryMetrics.h"             // JS::GlobalStats
+#include "js/experimental/JSStencil.h"  // JS::InstantiationStorage
+#include "js/HelperThreadAPI.h"         // JS::HelperThreadTaskCallback
+#include "js/MemoryMetrics.h"           // JS::GlobalStats
 #include "js/ProfilingStack.h"  // JS::RegisterThreadCallback, JS::UnregisterThreadCallback
 #include "js/RootingAPI.h"                // JS::Handle
 #include "js/UniquePtr.h"                 // UniquePtr
@@ -53,12 +50,14 @@ class JSTracer;
 
 namespace js {
 
+class Compressor;
 struct DelazifyTask;
 struct FreeDelazifyTask;
 struct PromiseHelperTask;
 class PromiseObject;
 
 namespace jit {
+class BaselineCompileTask;
 class IonCompileTask;
 class IonFreeTask;
 }  // namespace jit
@@ -111,10 +110,12 @@ class GlobalHelperThreadState {
   size_t threadCount;
 
   // Thread stack quota to use when running tasks.
-  size_t stackQuota;
+  size_t stackQuota = 0;
 
   bool terminating_ = false;
 
+  using BaselineCompileTaskVector =
+      Vector<jit::BaselineCompileTask*, 1, SystemAllocPolicy>;
   using IonCompileTaskVector =
       Vector<jit::IonCompileTask*, 0, SystemAllocPolicy>;
   using IonFreeTaskVector =
@@ -143,6 +144,9 @@ class GlobalHelperThreadState {
 
  private:
   // The lists below are all protected by |lock|.
+
+  // Baseline compilation worklist and finished jobs.
+  BaselineCompileTaskVector baselineWorklist_, baselineFinishedList_;
 
   // Ion compilation worklist and finished jobs.
   IonCompileTaskVector ionWorklist_, ionFinishedList_;
@@ -173,9 +177,6 @@ class GlobalHelperThreadState {
   // the same problem, the limited scope of their actions should mitigate the
   // risk.
   FreeDelazifyTaskVector freeDelazifyTaskVector_;
-
-  // Source compression worklist of tasks that we do not yet know can start.
-  SourceCompressionTaskVector compressionPendingList_;
 
   // Source compression worklist of tasks that can start.
   SourceCompressionTaskVector compressionWorklist_;
@@ -217,6 +218,7 @@ class GlobalHelperThreadState {
   void addSizeOfIncludingThis(JS::GlobalStats* stats,
                               const AutoLockHelperThreadState& lock) const;
 
+  size_t maxBaselineCompilationThreads() const;
   size_t maxIonCompilationThreads() const;
   size_t maxIonFreeThreads() const;
   size_t maxWasmCompilationThreads() const;
@@ -279,6 +281,14 @@ class GlobalHelperThreadState {
     vector.popBack();
   }
 
+  BaselineCompileTaskVector& baselineWorklist(
+      const AutoLockHelperThreadState&) {
+    return baselineWorklist_;
+  }
+  BaselineCompileTaskVector& baselineFinishedList(
+      const AutoLockHelperThreadState&) {
+    return baselineFinishedList_;
+  }
   IonCompileTaskVector& ionWorklist(const AutoLockHelperThreadState&) {
     return ionWorklist_;
   }
@@ -338,11 +348,6 @@ class GlobalHelperThreadState {
     return freeDelazifyTaskVector_;
   }
 
-  SourceCompressionTaskVector& compressionPendingList(
-      const AutoLockHelperThreadState&) {
-    return compressionPendingList_;
-  }
-
   SourceCompressionTaskVector& compressionWorklist(
       const AutoLockHelperThreadState&) {
     return compressionWorklist_;
@@ -370,6 +375,7 @@ class GlobalHelperThreadState {
   bool canStartWasmPartialTier2CompileTask(
       const AutoLockHelperThreadState& lock);
   bool canStartPromiseHelperTask(const AutoLockHelperThreadState& lock);
+  bool canStartBaselineCompileTask(const AutoLockHelperThreadState& lock);
   bool canStartIonCompileTask(const AutoLockHelperThreadState& lock);
   bool canStartIonFreeTask(const AutoLockHelperThreadState& lock);
   bool canStartFreeDelazifyTask(const AutoLockHelperThreadState& lock);
@@ -389,6 +395,8 @@ class GlobalHelperThreadState {
   HelperThreadTask* maybeGetWasmPartialTier2CompileTask(
       const AutoLockHelperThreadState& lock);
   HelperThreadTask* maybeGetPromiseHelperTask(
+      const AutoLockHelperThreadState& lock);
+  HelperThreadTask* maybeGetBaselineCompileTask(
       const AutoLockHelperThreadState& lock);
   HelperThreadTask* maybeGetIonCompileTask(
       const AutoLockHelperThreadState& lock);
@@ -419,14 +427,12 @@ class GlobalHelperThreadState {
   bool canStartTasks(const AutoLockHelperThreadState& locked);
 
  public:
-  // Used by a major GC to signal processing enqueued compression tasks.
-  enum class ScheduleCompressionTask { GC, API };
-  void startHandlingCompressionTasks(ScheduleCompressionTask schedule,
-                                     JSRuntime* maybeRuntime,
-                                     const AutoLockHelperThreadState& lock);
+  // Used by a major GC to create and enqueue compression tasks.
+  enum class ScheduleCompressionTask { NonShrinkingGC, ShrinkingGC, API };
+  void createAndSubmitCompressionTasks(ScheduleCompressionTask schedule,
+                                       JSRuntime* rt);
 
-  void runPendingSourceCompressions(JSRuntime* runtime,
-                                    AutoLockHelperThreadState& lock);
+  void runPendingSourceCompressions(JSRuntime* runtime);
 
   void trace(JSTracer* trc);
 
@@ -437,6 +443,7 @@ class GlobalHelperThreadState {
   bool hasOffThreadIonCompile(Zone* zone, AutoLockHelperThreadState& lock);
 #endif
 
+  void cancelOffThreadBaselineCompile(const CompilationSelector& selector);
   void cancelOffThreadIonCompile(const CompilationSelector& selector);
   void cancelOffThreadWasmCompleteTier2Generator(
       AutoLockHelperThreadState& lock);
@@ -457,6 +464,8 @@ class GlobalHelperThreadState {
   bool submitTask(wasm::UniqueCompleteTier2GeneratorTask task);
   bool submitTask(wasm::UniquePartialTier2CompileTask task);
   bool submitTask(wasm::CompileTask* task, wasm::CompileState state);
+  bool submitTask(jit::BaselineCompileTask* task,
+                  const AutoLockHelperThreadState& locked);
   bool submitTask(UniquePtr<jit::IonFreeTask>&& task,
                   const AutoLockHelperThreadState& lock);
   bool submitTask(jit::IonCompileTask* task,
@@ -522,14 +531,14 @@ struct DelazifyTask : public mozilla::LinkedListElement<DelazifyTask>,
   // optimization in place.
   static UniquePtr<DelazifyTask> Create(
       JSRuntime* maybeRuntime, const JS::ReadOnlyCompileOptions& options,
-      const frontend::CompilationStencil& stencil);
+      frontend::InitialStencilAndDelazifications* stencils);
 
   DelazifyTask(JSRuntime* maybeRuntime,
                const JS::PrefableCompileOptions& initialPrefableOptions);
   ~DelazifyTask();
 
   [[nodiscard]] bool init(const JS::ReadOnlyCompileOptions& options,
-                          const frontend::CompilationStencil& stencil);
+                          frontend::InitialStencilAndDelazifications* stencils);
 
   bool runtimeMatchesOrNoRuntime(JSRuntime* rt) {
     return !maybeRuntime || maybeRuntime == rt;
@@ -566,28 +575,8 @@ struct FreeDelazifyTask : public HelperThreadTask {
   const char* getName() override { return "FreeDelazifyTask"; }
 };
 
-// It is not desirable to eagerly compress: if lazy functions that are tied to
-// the ScriptSource were to be executed relatively soon after parsing, they
-// would need to block on decompression, which hurts responsiveness.
-//
-// To this end, compression tasks are heap allocated and enqueued in a pending
-// list by ScriptSource::setSourceCopy. When a major GC occurs, we schedule
-// pending compression tasks and move the ones that are ready to be compressed
-// to the worklist. Currently, a compression task is considered ready 2 major
-// GCs after being enqueued. Completed tasks are handled during the sweeping
-// phase by AttachCompressedSourcesTask, which runs in parallel with other GC
-// sweeping tasks.
-class SourceCompressionTask : public HelperThreadTask {
-  friend class HelperThread;
-  friend class ScriptSource;
-
-  // The runtime that the ScriptSource is associated with, in the sense that
-  // it uses the runtime's immutable string cache.
-  JSRuntime* runtime_;
-
-  // The major GC number of the runtime when the task was enqueued.
-  uint64_t majorGCNumber_;
-
+// Entry for a single ScriptSource in a SourceCompressionTask.
+class SourceCompressionTaskEntry {
   // The source to be compressed.
   RefPtr<ScriptSource> source_;
 
@@ -598,24 +587,55 @@ class SourceCompressionTask : public HelperThreadTask {
   SharedImmutableString resultString_;
 
  public:
-  // The majorGCNumber is used for scheduling tasks.
-  SourceCompressionTask(JSRuntime* rt, ScriptSource* source)
-      : runtime_(rt), majorGCNumber_(rt->gc.majorGCCount()), source_(source) {
-    source->noteSourceCompressionTask();
-  }
-  virtual ~SourceCompressionTask() = default;
-
-  bool runtimeMatches(JSRuntime* runtime) const { return runtime == runtime_; }
-  bool shouldStart() const {
-    // We wait 2 major GCs to start compressing, in order to avoid
-    // immediate compression.
-    return runtime_->gc.majorGCCount() > majorGCNumber_ + 1;
-  }
+  explicit SourceCompressionTaskEntry(ScriptSource* source) : source_(source) {}
 
   bool shouldCancel() const {
     // If the refcount is exactly 1, then nothing else is holding on to the
     // ScriptSource, so no reason to compress it and we should cancel the task.
     return source_->refs == 1;
+  }
+
+  // The work algorithm, aware whether it's compressing one-byte UTF-8 source
+  // text or UTF-16, for CharT either Utf8Unit or char16_t.  Invoked by
+  // work() after doing a type-test of the ScriptSource*.
+  template <typename CharT>
+  void workEncodingSpecific(Compressor& comp);
+
+  void runTask(Compressor& comp);
+  void complete();
+
+  struct PerformTaskWork;
+  friend struct PerformTaskWork;
+};
+
+// Off-thread task for compressing one or more script sources.
+//
+// Completed tasks are handled during the sweeping phase by
+// AttachFinishedCompressions, which runs in parallel with other GC sweeping
+// tasks.
+class SourceCompressionTask final : public HelperThreadTask {
+  friend class HelperThread;
+  friend class ScriptSource;
+
+  // The runtime that the task is associated with, in the sense that it uses the
+  // runtime's immutable string cache.
+  JSRuntime* runtime_;
+
+  // The script sources to compress.
+  Vector<SourceCompressionTaskEntry, 4, SystemAllocPolicy> entries_;
+
+ public:
+  SourceCompressionTask(JSRuntime* rt, ScriptSource* source) : runtime_(rt) {
+    static_assert(decltype(entries_)::InlineLength >= 1,
+                  "Appending one entry should be infallible");
+    MOZ_ALWAYS_TRUE(entries_.emplaceBack(source));
+  }
+  virtual ~SourceCompressionTask() = default;
+
+  bool runtimeMatches(JSRuntime* runtime) const { return runtime == runtime_; }
+
+  [[nodiscard]] bool addEntry(ScriptSource* source) {
+    return entries_.emplaceBack(source);
   }
 
   void runTask();
@@ -625,16 +645,6 @@ class SourceCompressionTask : public HelperThreadTask {
   ThreadType threadType() override { return ThreadType::THREAD_TYPE_COMPRESS; }
 
   const char* getName() override { return "SourceCompressionTask"; }
-
- private:
-  struct PerformTaskWork;
-  friend struct PerformTaskWork;
-
-  // The work algorithm, aware whether it's compressing one-byte UTF-8 source
-  // text or UTF-16, for CharT either Utf8Unit or char16_t.  Invoked by
-  // work() after doing a type-test of the ScriptSource*.
-  template <typename CharT>
-  void workEncodingSpecific();
 };
 
 // A PromiseHelperTask is an OffThreadPromiseTask that executes a single job on

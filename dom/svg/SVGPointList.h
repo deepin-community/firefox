@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,16 +5,16 @@
 #ifndef DOM_SVG_SVGPOINTLIST_H_
 #define DOM_SVG_SVGPOINTLIST_H_
 
+#include <string.h>
+
+#include "SVGElement.h"
+#include "SVGPoint.h"
 #include "nsCOMPtr.h"
 #include "nsDebug.h"
 #include "nsIContent.h"
 #include "nsINode.h"
 #include "nsIWeakReferenceUtils.h"
-#include "SVGElement.h"
 #include "nsTArray.h"
-#include "SVGPoint.h"
-
-#include <string.h>
 
 namespace mozilla {
 
@@ -46,7 +44,7 @@ class SVGPointList {
   SVGPointList& operator=(const SVGPointList& aOther) {
     mItems.ClearAndRetainStorage();
     // Best-effort, really.
-    Unused << mItems.AppendElements(aOther.mItems, fallible);
+    (void)mItems.AppendElements(aOther.mItems, fallible);
     return *this;
   }
 
@@ -170,7 +168,7 @@ class SVGPointListAndInfo : public SVGPointList {
   /**
    * Returns true if this object is an "identity" value, from the perspective
    * of SMIL. In other words, returns true until the initial value set up in
-   * SVGPointListSMILType::Init() has been changed with a SetInfo() call.
+   * SVGPointListSMILType::InitValue() has been changed with a SetInfo() call.
    */
   bool IsIdentity() const {
     if (!mElement) {

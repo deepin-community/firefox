@@ -1,25 +1,30 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef nsTableCellFrame_h__
-#define nsTableCellFrame_h__
+#ifndef nsTableCellFrame_h_
+#define nsTableCellFrame_h_
 
-#include "mozilla/Attributes.h"
 #include "celldata.h"
-#include "nsITableCellLayout.h"
-#include "nscore.h"
-#include "nsContainerFrame.h"
 #include "mozilla/ComputedStyle.h"
+#include "mozilla/WritingModes.h"
+#include "nsContainerFrame.h"
 #include "nsIPercentBSizeObserver.h"
+#include "nsITableCellLayout.h"
 #include "nsTArray.h"
 #include "nsTableRowFrame.h"
-#include "mozilla/WritingModes.h"
+#include "nscore.h"
 
 namespace mozilla {
 class PresShell;
 class ScrollContainerFrame;
 }  // namespace mozilla
+
+enum class TableCellAlignment : uint8_t {
+  Top,
+  Middle,
+  Bottom,
+  Baseline,
+};
 
 /**
  * nsTableCellFrame
@@ -68,7 +73,7 @@ class nsTableCellFrame : public nsContainerFrame,
 #endif
 
   nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+                            AttrModType aModType) override;
 
   /** @see nsIFrame::DidSetComputedStyle */
   void DidSetComputedStyle(ComputedStyle* aOldComputedStyle) override;
@@ -105,7 +110,7 @@ class nsTableCellFrame : public nsContainerFrame,
                               nsDisplayListBuilder* aBuilder,
                               const nsDisplayListSet& aLists);
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
   IntrinsicSizeOffsetData IntrinsicISizeOffsets(
@@ -119,19 +124,23 @@ class nsTableCellFrame : public nsContainerFrame,
   nsresult GetFrameName(nsAString& aResult) const override;
 #endif
 
-  // Align the cell's child frame within the cell.
-  void BlockDirAlignChild(mozilla::WritingMode aWM, nscoord aMaxAscent,
-                          mozilla::ForceAlignTopForTableCell aForceAlignTop);
+  // Align the cell's anonymous-block child within the cell. This applies the
+  // CSS `vertical-align` property to position the child frame appropriately
+  // (in terms of the writing mode of the cell contents, which may be different
+  // from the table's WM).
+  // This also resets the child's inline position, which in the case of an
+  // orthogonal child may have been based on an unknown container size when
+  // it was initially reflowed.
+  void AlignChildWithinCell(nscoord aMaxAscent,
+                            mozilla::ForceAlignTopForTableCell aForceAlignTop);
 
   /*
-   * Get the value of vertical-align adjusted for CSS 2's rules for a
-   * table cell, which means the result is always
-   * StyleVerticalAlignKeyword::{Top,Middle,Bottom,Baseline}.
+   * Map the CSS vertical-align to the corresponding table cell alignment value.
    */
-  virtual mozilla::StyleVerticalAlignKeyword GetVerticalAlign() const;
+  virtual TableCellAlignment GetTableCellAlignment() const;
 
-  bool HasVerticalAlignBaseline() const {
-    return GetVerticalAlign() == mozilla::StyleVerticalAlignKeyword::Baseline &&
+  bool HasTableCellAlignmentBaseline() const {
+    return GetTableCellAlignment() == TableCellAlignment::Baseline &&
            !GetContentEmpty();
   }
 
@@ -139,7 +148,7 @@ class nsTableCellFrame : public nsContainerFrame,
    * Get the first-line baseline of the cell relative to its block-start border
    * edge, as if the cell were vertically aligned to the top of the row.
    */
-  nscoord GetCellBaseline() const;
+  Maybe<nscoord> GetCellBaseline() const;
 
   /**
    * return the cell's specified row span. this is what was specified in the

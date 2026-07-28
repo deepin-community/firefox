@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -9,7 +7,6 @@
 
 #include "mozilla/Assertions.h"
 
-#include <iterator>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -44,12 +41,7 @@ enum RegisterID : uint8_t {
 
 enum HRegisterID { ah = rsp, ch = rbp, dh = rsi, bh = rdi };
 
-enum XMMRegisterID
-// GCC < 8.0 has a bug with bitfields of enums with an underlying type.
-#if defined(__clang__) || __GNUC__ > 7
-    : uint8_t
-#endif
-{
+enum XMMRegisterID : uint8_t {
   xmm0 = 0,
   xmm1,
   xmm2,

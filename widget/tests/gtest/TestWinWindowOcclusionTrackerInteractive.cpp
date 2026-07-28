@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -36,8 +34,8 @@ class WinWindowOcclusionTrackerInteractiveTest : public ::testing::Test {
     WinWindowOcclusionTracker::Ensure();
     EXPECT_NE(nullptr, WinWindowOcclusionTracker::Get());
 
-    WinWindowOcclusionTracker::Get()->EnsureDisplayStatusObserver();
-    WinWindowOcclusionTracker::Get()->EnsureSessionChangeObserver();
+    Preferences::SetBool(PREF_DISPLAY_STATE, true);
+    Preferences::SetBool(PREF_SESSION_LOCK, true);
   }
 
   void TearDown() override {
@@ -264,19 +262,19 @@ TEST_F(WinWindowOcclusionTrackerInteractiveTest, LockScreenVisibleOcclusion) {
 
   window->SetExpectation(widget::OcclusionState::OCCLUDED);
   // Unfortunately, this relies on knowing that NativeWindowOcclusionTracker
-  // uses SessionChangeObserver to listen for WM_WTSSESSION_CHANGE messages, but
+  // uses WinEventWindow to listen for WM_WTSSESSION_CHANGE messages, but
   // actually locking the screen isn't feasible.
   DWORD currentSessionId = 0;
   ::ProcessIdToSessionId(::GetCurrentProcessId(), &currentSessionId);
-  ::PostMessage(WinEventHub::Get()->GetWnd(), WM_WTSSESSION_CHANGE,
+  ::PostMessage(WinEventWindow::GetHwndForTestingOnly(), WM_WTSSESSION_CHANGE,
                 WTS_SESSION_LOCK, currentSessionId);
 
   while (window->IsExpectingCall()) {
     WinWindowOcclusionTracker::Get()->TriggerCalculation();
 
     MSG msg;
-    bool gotMessage =
-        ::PeekMessageW(&msg, WinEventHub::Get()->GetWnd(), 0, 0, PM_REMOVE);
+    bool gotMessage = ::PeekMessageW(
+        &msg, WinEventWindow::GetHwndForTestingOnly(), 0, 0, PM_REMOVE);
     if (gotMessage) {
       ::TranslateMessage(&msg);
       ::DispatchMessageW(&msg);
@@ -305,19 +303,19 @@ TEST_F(WinWindowOcclusionTrackerInteractiveTest, LockScreenHiddenOcclusion) {
   window->SetExpectation(widget::OcclusionState::HIDDEN);
 
   // Unfortunately, this relies on knowing that NativeWindowOcclusionTracker
-  // uses SessionChangeObserver to listen for WM_WTSSESSION_CHANGE messages, but
+  // uses WinEventWindow to listen for WM_WTSSESSION_CHANGE messages, but
   // actually locking the screen isn't feasible.
   DWORD currentSessionId = 0;
   ::ProcessIdToSessionId(::GetCurrentProcessId(), &currentSessionId);
-  PostMessage(WinEventHub::Get()->GetWnd(), WM_WTSSESSION_CHANGE,
+  PostMessage(WinEventWindow::GetHwndForTestingOnly(), WM_WTSSESSION_CHANGE,
               WTS_SESSION_LOCK, currentSessionId);
 
   while (window->IsExpectingCall()) {
     WinWindowOcclusionTracker::Get()->TriggerCalculation();
 
     MSG msg;
-    bool gotMessage =
-        ::PeekMessageW(&msg, WinEventHub::Get()->GetWnd(), 0, 0, PM_REMOVE);
+    bool gotMessage = ::PeekMessageW(
+        &msg, WinEventWindow::GetHwndForTestingOnly(), 0, 0, PM_REMOVE);
     if (gotMessage) {
       ::TranslateMessage(&msg);
       ::DispatchMessageW(&msg);
@@ -347,7 +345,7 @@ TEST_F(WinWindowOcclusionTrackerInteractiveTest, LockScreenDifferentSession) {
   // currentSessionId.
   DWORD currentSessionId = 0;
   ::ProcessIdToSessionId(::GetCurrentProcessId(), &currentSessionId);
-  ::PostMessage(WinEventHub::Get()->GetWnd(), WM_WTSSESSION_CHANGE,
+  ::PostMessage(WinEventWindow::GetHwndForTestingOnly(), WM_WTSSESSION_CHANGE,
                 WTS_SESSION_LOCK, currentSessionId + 1);
 
   window->SetExpectation(widget::OcclusionState::VISIBLE);
@@ -357,8 +355,8 @@ TEST_F(WinWindowOcclusionTrackerInteractiveTest, LockScreenDifferentSession) {
     WinWindowOcclusionTracker::Get()->TriggerCalculation();
 
     MSG msg;
-    bool gotMessage =
-        ::PeekMessageW(&msg, WinEventHub::Get()->GetWnd(), 0, 0, PM_REMOVE);
+    bool gotMessage = ::PeekMessageW(
+        &msg, WinEventWindow::GetHwndForTestingOnly(), 0, 0, PM_REMOVE);
     if (gotMessage) {
       ::TranslateMessage(&msg);
       ::DispatchMessageW(&msg);

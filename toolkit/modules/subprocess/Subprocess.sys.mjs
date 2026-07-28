@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -39,7 +37,7 @@ function encodeEnvVar(name, value) {
 }
 
 function platformSupportsDisclaimedSpawn() {
-  return AppConstants.isPlatformAndVersionAtLeast("macosx", 18);
+  return AppConstants.platform === "macosx";
 }
 
 /**
@@ -187,6 +185,19 @@ export var Subprocess = {
     // pseudo-promises returned by Task.jsm.
     let path = lazy.SubprocessImpl.pathSearch(command, environment);
     return Promise.resolve(path);
+  },
+
+  /**
+   * Connect to an already-running subprocess
+   * given the file descriptors for its stdin, stdout and stderr.
+   *
+   * @param {number[]} fds
+   *        A list of three file descriptors [stdin, stdout, stderr].
+   *
+   * @returns {Promise<Process>}
+   */
+  connectRunning(fds) {
+    return lazy.SubprocessImpl.connectRunning(fds);
   },
 };
 

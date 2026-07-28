@@ -15,7 +15,7 @@ SearchTitle {
   border-bottom: thin solid black;
   padding-bottom: 6px;
   margin-bottom: 12px;
-} 
+}
 
 SearchTitle:first-line {
   font-family: Verdana, Sans-Serif;
@@ -30,7 +30,7 @@ Toolbar {
   display: block;
   border: ridge #ddddff 4px;
   width: 220px;
-  margin-right: 0px;
+  margin-right: 0;
   text-align: center;
 }
 

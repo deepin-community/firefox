@@ -14,11 +14,11 @@ const APIS = {
       ${code}
     })()`);
   },
-  SetScalar({ id, value }) {
-    browser.test.setScalar(id, value);
-  },
   GetRequestedLocales() {
     return browser.test.getRequestedLocales();
+  },
+  ClearUserPref({ pref }) {
+    return browser.test.clearUserPref(pref);
   },
   GetLinkColor({ tab, selector }) {
     return browser.test.getLinkColor(tab.id, selector);
@@ -77,6 +77,9 @@ const APIS = {
   ClearHSTSState() {
     return browser.test.clearHSTSState();
   },
+  IsFissionRunning() {
+    return browser.test.isFissionRunning();
+  },
   TriggerCookieBannerDetected({ tab }) {
     return browser.test.triggerCookieBannerDetected(tab.id);
   },
@@ -88,6 +91,30 @@ const APIS = {
   },
   TriggerLanguageStateChange({ tab, languageState }) {
     return browser.test.triggerLanguageStateChange(tab.id, languageState);
+  },
+  SetHandlingUserInput({ tab, handlingUserInput }) {
+    return browser.test.setHandlingUserInput(tab.id, handlingUserInput);
+  },
+  GetWebExtensionSchemaPermissionNames({ typeNames }) {
+    return browser.test.getWebExtensionsSchemaPermissionNames(typeNames);
+  },
+  TeardownAlertsService() {
+    return browser.test.teardownAlertsService();
+  },
+  NotifyUserGestureActivation({ tab }) {
+    return browser.test.notifyUserGestureActivation(tab.id);
+  },
+  SaveTrackingDBEvents({ log }) {
+    return browser.test.saveTrackingDBEvents(log);
+  },
+  ClearTrackingDB() {
+    return browser.test.clearTrackingDB();
+  },
+  AddVirtualAuthenticator() {
+    return browser.test.addVirtualAuthenticator();
+  },
+  RemoveVirtualAuthenticator({ authenticatorId }) {
+    return browser.test.removeVirtualAuthenticator(authenticatorId);
   },
 };
 

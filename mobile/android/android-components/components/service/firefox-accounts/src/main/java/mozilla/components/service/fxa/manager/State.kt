@@ -8,7 +8,7 @@ import mozilla.components.concept.sync.AuthType
 import mozilla.components.concept.sync.FxAEntryPoint
 import mozilla.components.service.fxa.FxaAuthData
 
-/**
+/*
  * This file is the "heart" of the accounts system. It's a finite state machine.
  * Described below are all of the possible states, transitions between them and events which can
  * trigger these transitions.
@@ -91,9 +91,14 @@ internal enum class ProgressState {
 internal sealed class Event {
     internal sealed class Account : Event() {
         internal object Start : Account()
-        data class BeginEmailFlow(val entrypoint: FxAEntryPoint, val scopes: Set<String>) : Account()
+        data class BeginEmailFlow(
+            val service: String,
+            val entrypoint: FxAEntryPoint,
+            val scopes: Set<String>,
+        ) : Account()
         data class BeginPairingFlow(
             val pairingUrl: String?,
+            val service: String,
             val entrypoint: FxAEntryPoint,
             val scopes: Set<String>,
         ) : Account()
@@ -183,6 +188,7 @@ internal sealed class State {
     }
 }
 
+@Suppress("CognitiveComplexMethod")
 internal fun State.next(event: Event): State? = when (this) {
     // Reacting to external events.
     is State.Idle -> when (this.accountState) {

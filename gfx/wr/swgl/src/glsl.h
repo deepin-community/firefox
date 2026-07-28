@@ -399,6 +399,9 @@ struct vec2_scalar {
   friend vec2_scalar operator/(vec2_scalar a, float b) {
     return vec2_scalar(a.x / b, a.y / b);
   }
+  friend vec2_scalar operator/(float a, vec2_scalar b) {
+    return vec2_scalar(a / b.x, a / b.y);
+  }
   friend vec2_scalar operator/(vec2_scalar a, vec2_scalar b) {
     return vec2_scalar(a.x / b.x, a.y / b.y);
   }
@@ -559,6 +562,7 @@ struct vec2 {
 
   friend vec2 operator/(vec2 a, vec2 b) { return vec2(a.x / b.x, a.y / b.y); }
   friend vec2 operator/(vec2 a, Float b) { return vec2(a.x / b, a.y / b); }
+  friend vec2 operator/(Float a, vec2 b) { return vec2(a / b.x, a / b.y); }
 
   friend vec2 operator-(vec2 a, vec2 b) { return vec2(a.x - b.x, a.y - b.y); }
   friend vec2 operator-(vec2 a, Float b) { return vec2(a.x - b, a.y - b); }
@@ -2020,6 +2024,14 @@ struct vec4 {
     z *= a;
     w *= a;
     return *this;
+  }
+
+  friend I32 operator==(const vec4& l, const vec4& r) {
+    return l.x == r.x && l.y == r.y && l.z == r.z && l.w == r.w;
+  }
+
+  friend I32 operator!=(const vec4& l, const vec4& r) {
+    return l.x != r.x || l.y != r.y || l.z != r.z || l.w != r.w;
   }
 
   Float x;

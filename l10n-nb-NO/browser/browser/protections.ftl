@@ -38,7 +38,7 @@ protection-report-manage-protections = Behandle innstillinger
 # capitalization for this string should match the output for your locale.
 graph-today = I dag
 # This string is used to describe the graph for screenreader users.
-graph-legend-description = En graf som inneholder det totale antallet for hver type av sporere som har blitt blokkert denne uken.
+graph-legend-description = En graf som viser det totale antallet blokkerte sporere av hver type denne uken.
 social-tab-title = Sporing via sosiale medier
 social-tab-contant = Sosiale nettverk plasserer sporere på andre nettsteder for å følge det du gjør og ser på nettet. Dette gjør at sosiale media-selskaper kan lære mer om deg utover det du deler på profilene dine på sosiale medier. <a data-l10n-name="learn-more-link">Les mer</a>
 cookie-tab-title = Sporingsinfokapsler på tvers av nettsteder
@@ -202,3 +202,56 @@ bar-tooltip-cryptominer =
             [one] { $count } kryptominer ({ $percentage }%)
            *[other] { $count } kryptoutvinnere ({ $percentage }%)
         }
+# Privacy Metrics Card
+privacy-metrics-title = Personvernbeskyttelser
+# Variables:
+#   $count (Number) - Total number of trackers blocked this week
+privacy-metrics-blocked-this-week = { $count } blokkert denne uken
+# Variables:
+#   $count (Number) - Number of trackers blocked
+privacy-metrics-trackers =
+    { $count ->
+        [one] { $count } sporer
+       *[other] { $count } sporere
+    }
+# Variables:
+#   $count (Number) - Number of fingerprinters blocked
+privacy-metrics-fingerprinters =
+    { $count ->
+        [one] { $count } nettleseravtrykksporer
+       *[other] { $count } nettleseravtrykksporere
+    }
+# Variables:
+#   $count (Number) - Number of tracking cookies blocked
+privacy-metrics-cookies =
+    { $count ->
+        [one] { $count } sporingsinfokapsel
+       *[other] { $count } sporingsinfokapsler
+    }
+# Variables:
+#   $count (Number) - Number of social trackers blocked
+privacy-metrics-social =
+    { $count ->
+        [one] { $count } sporer via sosiale medier
+       *[other] { $count } sporere via sosiale medier
+    }
+privacy-metrics-empty = Ingen sporere ble blokkert denne uken. { -brand-short-name } beskytter deg mot følgende trusler når du surfer.
+privacy-metrics-loading = Laster inn beskyttelsesstatistikk …
+privacy-metrics-error = Klarte ikke å laste inn beskyttelsesstatistikk.
+privacy-metrics-private-window = { -brand-short-name } fortsetter å blokkere sporere i private vinduer, men lagrer ikke en oversikt over hva som ble blokkert.
+
+## VPN promo card and banner
+
+protections-vpn-title = Få ekstra personvernbeskyttelse utover nettleseren
+protections-vpn-header-content = Beskytt hele enheten din med { -mozilla-vpn-brand-name }. Ett trykk krypterer all trafikk og skjuler posisjonen din.
+protections-get-vpn-link = Få { -mozilla-vpn-brand-name }
+protections-vpn-title-subscribed = VPN: Abonnerer
+# Variables
+#   $count (number): Number of devices
+protections-vpn-header-content-subscribed =
+    { $count ->
+       *[other] Ved å bruke { -mozilla-vpn-brand-name } krypteres all trafikken din, og posisjonen din skjules — på opptil { $count } enheter. Få mest mulig ut av abonnementet ditt — legg det til fra <a data-l10n-name="playstore-link">Google Play Store</a> eller <a data-l10n-name="appstore-link">Apple App Store</a>.
+    }
+protections-vpn-banner-header = Beskyttelse også utenfor nettleseren
+protections-vpn-banner-content = Prøv { -mozilla-vpn-brand-name } risikofritt, og se hvorfor TechRadar sier at «hastigheten, enkelheten og den lave månedsprisen gjør det verdt å ta en titt».
+protections-vpn-banner-link = Få { -mozilla-vpn-brand-name }

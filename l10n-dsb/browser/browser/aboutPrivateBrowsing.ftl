@@ -59,7 +59,7 @@ about-private-browsing-pin-promo-link-text =
         [macos] Na doku wobchowaś
        *[other] K nadawkowej rědce pśipěś
     }
-about-private-browsing-pin-promo-title = Žedne skłaźone cookieje abo žedna historiju, direktnje z wašogo desktopa. Pśeglědujśo ako njeby was nichten wobglědował.
+about-private-browsing-pin-promo-title = Žedne skłaźone cookieje abo žedna historija, direktnje z wašogo desktopa. Pśeglědujśo ako njeby was nichten wobglědował.
 
 ## Strings used in a promotion message for cookie banner reduction
 
@@ -70,11 +70,21 @@ about-private-browsing-cookie-banners-promo-button = Cookieje chórgoje reducěr
 about-private-browsing-cookie-banners-promo-message = Dajśo { -brand-short-name } za was awtomatiski na cookiejowe wuskokujuce wokna wótegroniś, aby wy se k pśeglědowanjeju bźez wótchylenja wrośił. { -brand-short-name } wšykne napšašowanja wótpokažo, jolic móžno.
 # Simplified version of the headline if the original text doesn't work
 # in your language: `{ -brand-short-name } will show fewer cookie requests`
-about-private-browsing-cookie-banners-promo-heading = { -brand-short-name }  se za was wó cookiejowe chórgoje stara
+about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } se za was wó cookiejowe chórgoje stara
 about-private-browsing-cookie-banners-promo-body = Něnto wjele cookiejowych chórgojow awtomatiski wótpokazujomy, aby was mjenjej slědował a aby wy se wrośił k pśeglědowanjeju bźez wótchylenja.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Na toś tom rěźe žedne slědy njezawóstajiś
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } waše cookieje, historiju a sedłowe daty wulašujo, gaž wšykne swóje priwatne wokna zacynjaśo.
 about-private-browsing-felt-privacy-v1-info-link = Chto mógał móju aktiwitu wiźeś?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Gaž swóje priwatne wokna zacynjaśo, se waše cookieje, historija a sedłowe daty wulašuju.
+about-private-browsing-nova-info-link = Chto mógał hyšći móju aktiwitu wiźeś?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Wašo pśeglědowanje se njeskładujo
+about-private-browsing-nova-info-subheader = Wulašujomy kužde pytanje a pśizjawjenje, gaž toś to wokno zacynjaśo. Šćit, kótaryž jo w { -brand-short-name } zatwarjony, jo how teke zmóžnjony, na pśikład blokěrowanje pśeslědowakow.

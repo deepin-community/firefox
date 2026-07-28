@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,7 @@
 #include "CTTestUtils.h"
 #include "gtest/gtest.h"
 #include "nss.h"
+#include "signature_cache_ffi.h"
 
 namespace mozilla {
 namespace ct {
@@ -38,7 +37,8 @@ class CTObjectsExtractorTest : public ::testing::Test {
   Buffer mEmbeddedCert;
   Buffer mCaCert;
   Buffer mCaCertSPKI;
-  CTLogVerifier mLog = CTLogVerifier(-1, CTLogState::Admissible, 0);
+  CTLogVerifier mLog =
+      CTLogVerifier(-1, CTLogState::Admissible, CTLogFormat::RFC6962, 0);
 };
 
 TEST_F(CTObjectsExtractorTest, ExtractPrecert) {
@@ -73,7 +73,9 @@ TEST_F(CTObjectsExtractorTest, ComplementarySCTVerifies) {
 
   LogEntry entry;
   GetX509LogEntry(InputForBuffer(mTestCert), entry);
-  EXPECT_EQ(Success, mLog.Verify(entry, sct));
+  SignatureCache* signatureCache(signature_cache_new(1));
+  EXPECT_EQ(Success, mLog.Verify(entry, sct, signatureCache));
+  signature_cache_free(signatureCache);
 }
 
 }  // namespace ct

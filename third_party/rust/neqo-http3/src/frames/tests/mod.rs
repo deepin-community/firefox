@@ -4,15 +4,13 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::mem;
-
 use neqo_common::Encoder;
-use neqo_crypto::AuthenticationStatus;
 use neqo_transport::StreamType;
+use nss::AuthenticationStatus;
 use test_fixture::{default_client, default_server, now};
 
 use crate::frames::{
-    reader::FrameDecoder, FrameReader, HFrame, StreamReaderConnectionWrapper, WebTransportFrame,
+    FrameReader, HFrame, StreamReaderConnectionWrapper, WebTransportFrame, reader::FrameDecoder,
 };
 
 pub fn enc_dec<T: FrameDecoder<T>>(d: &Encoder, st: &str, remaining: usize) -> T {
@@ -22,30 +20,34 @@ pub fn enc_dec<T: FrameDecoder<T>>(d: &Encoder, st: &str, remaining: usize) -> T
 
     let mut conn_c = default_client();
     let mut conn_s = default_server();
-    let out = conn_c.process(None, now());
-    let out = conn_s.process(out.as_dgram_ref(), now());
-    let out = conn_c.process(out.as_dgram_ref(), now());
-    mem::drop(conn_s.process(out.as_dgram_ref(), now()));
+    let out = conn_c.process_output(now());
+    let out2 = conn_c.process_output(now());
+    _ = conn_s.process(out.dgram(), now());
+    let out = conn_s.process(out2.dgram(), now());
+    let out = conn_c.process(out.dgram(), now());
+    let out = conn_s.process(out.dgram(), now());
+    let out = conn_c.process(out.dgram(), now());
+    drop(conn_s.process(out.dgram(), now()));
     conn_c.authenticated(AuthenticationStatus::Ok, now());
-    let out = conn_c.process(None, now());
-    mem::drop(conn_s.process(out.as_dgram_ref(), now()));
+    let out = conn_c.process_output(now());
+    drop(conn_s.process(out.dgram(), now()));
 
     // create a stream
     let stream_id = conn_s.stream_create(StreamType::BiDi).unwrap();
 
-    let mut fr: FrameReader = FrameReader::new();
+    let mut fr = FrameReader::new();
 
-    // conver string into u8 vector
+    // convert string into u8 vector
     let buf = Encoder::from_hex(st);
     conn_s.stream_send(stream_id, buf.as_ref()).unwrap();
-    let out = conn_s.process(None, now());
-    mem::drop(conn_c.process(out.as_dgram_ref(), now()));
+    let out = conn_s.process_output(now());
+    drop(conn_c.process(out.dgram(), now()));
 
     let (frame, fin) = fr
-        .receive::<T>(&mut StreamReaderConnectionWrapper::new(
-            &mut conn_c,
-            stream_id,
-        ))
+        .receive::<T>(
+            &mut StreamReaderConnectionWrapper::new(&mut conn_c, stream_id),
+            now(),
+        )
         .unwrap();
     assert!(!fin);
     assert!(frame.is_some());
@@ -60,21 +62,15 @@ pub fn enc_dec<T: FrameDecoder<T>>(d: &Encoder, st: &str, remaining: usize) -> T
 
 pub fn enc_dec_hframe(f: &HFrame, st: &str, remaining: usize) {
     let mut d = Encoder::default();
-
     f.encode(&mut d);
-
     let frame = enc_dec::<HFrame>(&d, st, remaining);
-
     assert_eq!(*f, frame);
 }
 
 pub fn enc_dec_wtframe(f: &WebTransportFrame, st: &str, remaining: usize) {
     let mut d = Encoder::default();
-
     f.encode(&mut d);
-
     let frame = enc_dec::<WebTransportFrame>(&d, st, remaining);
-
     assert_eq!(*f, frame);
 }
 

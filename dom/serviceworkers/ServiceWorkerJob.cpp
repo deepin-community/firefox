@@ -1,16 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ServiceWorkerJob.h"
 
+#include "ServiceWorkerManager.h"
 #include "mozilla/dom/WorkerCommon.h"
 #include "nsIPrincipal.h"
 #include "nsProxyRelease.h"
 #include "nsThreadUtils.h"
-#include "ServiceWorkerManager.h"
 
 namespace mozilla::dom {
 
@@ -164,10 +162,8 @@ void ServiceWorkerJob::InvokeResultCallbacks(nsresult aRv) {
 void ServiceWorkerJob::Finish(ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
 
-  // Avoid double-completion because it can result on operating on cleaned
-  // up data.  This should not happen, though, so also assert to try to
-  // narrow down the causes.
-  MOZ_DIAGNOSTIC_ASSERT(mState == State::Started);
+  // Finishing a job is idempotent and potentially expected by the error
+  // handling path for ServiceWorkerUpdateJob, so this is not an error.
   if (mState != State::Started) {
     return;
   }

@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __IPC_GLUE_GECKOCHILDPROCESSHOST_H__
-#define __IPC_GLUE_GECKOCHILDPROCESSHOST_H__
+#ifndef IPC_GLUE_GECKOCHILDPROCESSHOST_H_
+#define IPC_GLUE_GECKOCHILDPROCESSHOST_H_
 
 #include "base/file_path.h"
 #include "base/process_util.h"
@@ -13,13 +11,14 @@
 #include "chrome/common/ipc_message.h"
 #include "mojo/core/ports/port_ref.h"
 
+#include "mozilla/GeckoArgs.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/ipc/NodeChannel.h"
 #include "mozilla/ipc/LaunchError.h"
 #include "mozilla/ipc/ScopedPort.h"
+#include "mozilla/ipc/UtilityProcessSandboxing.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/Buffer.h"
 #include "mozilla/LinkedList.h"
 #include "mozilla/Monitor.h"
 #include "mozilla/MozPromise.h"
@@ -43,10 +42,6 @@
 
 #if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
 #  include "mozilla/Sandbox.h"
-#endif
-
-#if defined(MOZ_SANDBOX)
-#  include "mozilla/ipc/UtilityProcessSandboxing.h"
 #endif
 
 #if (defined(XP_WIN) && defined(_ARM64_)) || \
@@ -95,7 +90,8 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   // Does not block.  The IPC channel may not be initialized yet, and
   // the child process may or may not have been created when this
   // method returns.
-  bool AsyncLaunch(StringVector aExtraOpts = StringVector());
+  bool AsyncLaunch(
+      geckoargs::ChildProcessArgs aExtraOpts = geckoargs::ChildProcessArgs{});
 
   virtual bool WaitUntilConnected(int32_t aTimeoutMs = 0);
 
@@ -111,14 +107,16 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   // executable image can be loaded.  On win32, we do know that when
   // we return.  But we don't know if dynamic linking succeeded on
   // either platform.
-  bool LaunchAndWaitForProcessHandle(StringVector aExtraOpts = StringVector());
+  bool LaunchAndWaitForProcessHandle(
+      geckoargs::ChildProcessArgs aExtraOpts = geckoargs::ChildProcessArgs());
   bool WaitForProcessHandle();
 
   // Block until the child process has been created and it connects to
   // the IPC channel, meaning it's fully initialized.  (Or until an
   // error occurs.)
-  bool SyncLaunch(StringVector aExtraOpts = StringVector(),
-                  int32_t timeoutMs = 0);
+  bool SyncLaunch(
+      geckoargs::ChildProcessArgs aExtraOpts = geckoargs::ChildProcessArgs(),
+      int32_t timeoutMs = 0);
 
   virtual void OnChannelConnected(base::ProcessId peer_pid);
 
@@ -126,7 +124,7 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   // LaunchAndWaitForProcessHandle); use with AsyncLaunch.
   RefPtr<ProcessHandlePromise> WhenProcessHandleReady();
 
-  void InitializeChannel(IPC::Channel::ChannelHandle&& aServerHandle);
+  bool InitializeChannel(IPC::Channel::ChannelHandle* aClientHandle);
 
   virtual bool CanShutdown() { return true; }
 
@@ -161,19 +159,8 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
 
   GeckoProcessType GetProcessType() { return mProcessType; }
 
-#ifdef XP_DARWIN
+#ifdef XP_MACOSX
   task_t GetChildTask();
-#endif
-
-#ifdef XP_WIN
-
-  void AddHandleToShare(HANDLE aHandle) {
-    mLaunchOptions->handles_to_inherit.push_back(aHandle);
-  }
-#else
-  void AddFdToRemap(int aSrcFd, int aDstFd) {
-    mLaunchOptions->fds_to_remap.push_back(std::make_pair(aSrcFd, aDstFd));
-  }
 #endif
 
 #ifdef ALLOW_GECKO_CHILD_PROCESS_ARCH
@@ -221,7 +208,7 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   GeckoProcessType mProcessType;
   GeckoChildID mChildID;
   bool mIsFileContent;
-  Monitor mMonitor;
+  mutable Monitor mMonitor;
   FilePath mProcessPath;
 #ifdef ALLOW_GECKO_CHILD_PROCESS_ARCH
   // Used on platforms where we may launch a child process with a different
@@ -255,26 +242,29 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
     PROCESS_ERROR
   } mProcessState MOZ_GUARDED_BY(mMonitor);
 
-  void PrepareLaunch();
+  bool PrepareLaunch(geckoargs::ChildProcessArgs& aExtraOpts);
 
 #ifdef XP_WIN
   void InitWindowsGroupID();
   nsString mGroupId;
 #  ifdef MOZ_SANDBOX
-  RefPtr<AbstractSandboxBroker> mSandboxBroker;
+  UniquePtr<SandboxBroker> mSandboxBroker;
   std::vector<std::wstring> mAllowedFilesRead;
   bool mEnableSandboxLogging;
   int32_t mSandboxLevel;
 #  endif
 #endif  // XP_WIN
 
-#if defined(MOZ_SANDBOX)
-  SandboxingKind mSandbox;
-#endif
+  // Only set by UtilityProcessHost. The sandbox policy associated with
+  // mUtilitySandbox will only be honored under MOZ_SANDBOX. However, on macOS,
+  // we will choose the proper firefox binary to run independently of
+  // MOZ_SANDBOX. This ensures that the utility process always runs with the
+  // expected set of entitlements.
+  SandboxingKind mUtilitySandbox;
 
   mozilla::RWLock mHandleLock;
   ProcessHandle mChildProcessHandle MOZ_GUARDED_BY(mHandleLock);
-#if defined(XP_DARWIN)
+#if defined(XP_MACOSX)
   task_t mChildTask MOZ_GUARDED_BY(mHandleLock);
 #endif
 #if defined(MOZ_WIDGET_UIKIT)
@@ -306,14 +296,14 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   virtual bool AppendMacSandboxParams(StringVector& aArgs);
 #endif
 
+  virtual void OnProcessLaunchError(const LaunchError aError);
+
  private:
   DISALLOW_EVIL_CONSTRUCTORS(GeckoChildProcessHost);
 
   // Removes the instance from sGeckoChildProcessHosts
   void RemoveFromProcessList();
 
-  // Linux-Only. Set this up before we're called from a different thread.
-  nsCString mTmpDirName;
   // Mac and Windows. Set this up before we're called from a different thread.
   nsCOMPtr<nsIFile> mProfileDir;
 
@@ -325,9 +315,9 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   static StaticMutex sMutex;
 };
 
-nsCOMPtr<nsIEventTarget> GetIPCLauncher();
+nsCOMPtr<nsISerialEventTarget> GetIPCLauncher();
 
 } /* namespace ipc */
 } /* namespace mozilla */
 
-#endif /* __IPC_GLUE_GECKOCHILDPROCESSHOST_H__ */
+#endif /* IPC_GLUE_GECKOCHILDPROCESSHOST_H_ */

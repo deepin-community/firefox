@@ -5,9 +5,8 @@
 package mozilla.components.browser.storage.sync
 
 import android.content.Context
-import android.net.Uri
-import android.os.Build
 import androidx.annotation.VisibleForTesting
+import androidx.core.net.toUri
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.WorkManager
 import kotlinx.coroutines.withContext
@@ -30,8 +29,8 @@ import mozilla.components.concept.storage.SearchResult
 import mozilla.components.concept.storage.TopFrecentSiteInfo
 import mozilla.components.concept.storage.VisitInfo
 import mozilla.components.concept.storage.VisitType
-import mozilla.components.concept.sync.SyncAuthInfo
-import mozilla.components.concept.sync.SyncStatus
+import mozilla.components.concept.storage.constraints
+import mozilla.components.concept.storage.periodicStorageWorkRequest
 import mozilla.components.concept.sync.SyncableStore
 import mozilla.components.concept.toolbar.AutocompleteProvider
 import mozilla.components.concept.toolbar.AutocompleteResult
@@ -254,26 +253,10 @@ open class PlacesHistoryStorage(
             ) {
                 constraints {
                     setRequiresBatteryNotLow(true)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        setRequiresDeviceIdle(true)
-                    }
+                    setRequiresDeviceIdle(true)
                 }
             },
         )
-    }
-
-    /**
-     * Runs syncHistory() method on the places Connection
-     *
-     * @param authInfo The authentication information to sync with.
-     * @return Sync status of OK or Error
-     */
-    suspend fun sync(authInfo: SyncAuthInfo): SyncStatus {
-        return withContext(writeScope.coroutineContext) {
-            syncAndHandleExceptions {
-                places.syncHistory(authInfo)
-            }
-        }
     }
 
     override fun registerWithSyncManager() {
@@ -323,7 +306,7 @@ open class PlacesHistoryStorage(
         }
         withContext(writeScope.coroutineContext) {
             handlePlacesExceptions("noteHistoryMetadataObservation") {
-                places.writer().noteHistoryMetadataObservation(observation.into(key))
+                places.writer().noteHistoryMetadataObservation(observation.into(key), observation.options())
             }
         }
     }
@@ -385,7 +368,7 @@ open class PlacesHistoryStorage(
         // Filter out unwanted URIs, such as "chrome:", "about:", etc.
         // Ported from nsAndroidHistory::CanAddURI
         // See https://dxr.mozilla.org/mozilla-central/source/mobile/android/components/build/nsAndroidHistory.cpp#326
-        val parsedUri = Uri.parse(uri)
+        val parsedUri = uri.toUri()
         val scheme = parsedUri.normalizeScheme().scheme ?: return false
 
         // Short-circuit most common schemes.
@@ -400,8 +383,19 @@ open class PlacesHistoryStorage(
         }
 
         val schemasToIgnore = listOf(
-            "", "about", "imap", "news", "mailbox", "moz-anno", "moz-extension",
-            "view-source", "chrome", "resource", "data", "javascript", "blob",
+            "",
+            "about",
+            "imap",
+            "news",
+            "mailbox",
+            "moz-anno",
+            "moz-extension",
+            "view-source",
+            "chrome",
+            "resource",
+            "data",
+            "javascript",
+            "blob",
         )
 
         return !schemasToIgnore.contains(scheme)

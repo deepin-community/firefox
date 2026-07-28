@@ -10,9 +10,9 @@
 #ifndef MODULES_REMOTE_BITRATE_ESTIMATOR_CONGESTION_CONTROL_FEEDBACK_GENERATOR_H_
 #define MODULES_REMOTE_BITRATE_ESTIMATOR_CONGESTION_CONTROL_FEEDBACK_GENERATOR_H_
 
+#include <cstdint>
 #include <map>
-#include <memory>
-#include <vector>
+#include <optional>
 
 #include "api/environment/environment.h"
 #include "api/sequence_checker.h"
@@ -20,11 +20,12 @@
 #include "api/units/data_size.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
+#include "modules/congestion_controller/rtp/congestion_controller_feedback_stats.h"
+#include "modules/remote_bitrate_estimator/congestion_control_feedback_tracker.h"
 #include "modules/remote_bitrate_estimator/rtp_transport_feedback_generator.h"
-#include "modules/rtp_rtcp/source/rtcp_packet.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
+#include "rtc_base/containers/flat_map.h"
 #include "rtc_base/experiments/field_trial_parser.h"
-#include "rtc_base/numerics/sequence_number_unwrapper.h"
 
 namespace webrtc {
 
@@ -32,9 +33,17 @@ namespace webrtc {
 // incoming media packets. Feedback format will comply with RFC 8888.
 // https://datatracker.ietf.org/doc/rfc8888/
 
-// Feedback should not use more than 5% of the configured send bandwidth
-// estimate. Min and max duration between feedback is configurable using field
-// trials, but per default, min is 25ms and max is 250ms.
+// Min and max duration between feedback is configurable using field
+// trials, but per default, min is 25ms and max is 500ms.
+//
+// RTCP should not use more than 5% of the uplink link capacity.
+// However, there is no good way for a feedback sender to know the
+// link capacity unless media is sent in both directions. So we just assume that
+// the link capacity is 10 Mbit/s or more and allow sending 500 kbit/s of
+// feedback packets. This allows an approximate receive rate of 200
+// Mbit/s with feedback every 25ms. (200 Mbit/s with average size of 800 bytes =
+// 31250 packets/s => 40 feedback packets/s with feedback of 780 packets each)
+
 // If possible, given the other constraints, feedback will be sent when a packet
 // with marker bit is received in order to provide feedback as soon as possible
 // after receiving a complete video frame. If no packet with marker bit is
@@ -47,24 +56,18 @@ class CongestionControlFeedbackGenerator
   CongestionControlFeedbackGenerator(
       const Environment& env,
       RtpTransportFeedbackGenerator::RtcpSender feedback_sender);
-  ~CongestionControlFeedbackGenerator() = default;
+  ~CongestionControlFeedbackGenerator() override = default;
 
   void OnReceivedPacket(const RtpPacketReceived& packet) override;
 
-  void OnSendBandwidthEstimateChanged(DataRate estimate) override;
+  void OnSendBandwidthEstimateChanged(DataRate estimate) override {}
 
   TimeDelta Process(Timestamp now) override;
 
-  void SetTransportOverhead(DataSize overhead_per_packet) override;
+  flat_map<uint32_t, SentCongestionControllerFeedbackStats> GetStatsPerSsrc()
+      const;
 
  private:
-  struct PacketInfo {
-    uint32_t ssrc;
-    int64_t unwrapped_sequence_number = 0;
-    Timestamp arrival_time;
-    rtc::EcnMarking ecn = rtc::EcnMarking::kNotEct;
-  };
-
   Timestamp NextFeedbackTime() const RTC_RUN_ON(sequence_checker_);
 
   void SendFeedback(Timestamp now) RTC_RUN_ON(sequence_checker_);
@@ -80,15 +83,14 @@ class CongestionControlFeedbackGenerator
   FieldTrialParameter<TimeDelta> max_time_to_wait_for_packet_with_marker_;
   FieldTrialParameter<TimeDelta> max_time_between_feedback_;
 
-  DataRate max_feedback_rate_ = DataRate::KilobitsPerSec(1000);
   DataSize packet_overhead_ = DataSize::Zero();
   DataSize send_rate_debt_ = DataSize::Zero();
 
-  std::map</*ssrc=*/uint32_t, SeqNumUnwrapper<uint16_t>>
-      sequence_number_unwrappers_;
+  std::map</*ssrc=*/uint32_t, CongestionControlFeedbackTracker>
+      feedback_trackers_;
 
-  std::vector<PacketInfo> packets_;
-  Timestamp last_feedback_sent_time_ = Timestamp::Zero();
+  Timestamp last_feedback_sent_time_ = Timestamp::MinusInfinity();
+  std::optional<Timestamp> first_arrival_time_since_feedback_;
   bool marker_bit_seen_ = false;
   Timestamp next_possible_feedback_send_time_ = Timestamp::Zero();
 };

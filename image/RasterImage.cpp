@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -27,13 +26,10 @@
 #include "gfxContext.h"
 #include "gfxPlatform.h"
 #include "mozilla/ClearOnShutdown.h"
-#include "mozilla/DebugOnly.h"
-#include "mozilla/Likely.h"
-#include "mozilla/MemoryReporting.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/SizeOfState.h"
 #include "mozilla/StaticPrefs_image.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/ImageDecodersMetrics.h"
 #include "mozilla/TimeStamp.h"
 
 #include "mozilla/gfx/2D.h"
@@ -81,6 +77,8 @@ RasterImage::RasterImage(nsIURI* aURI /* = nullptr */)
 
 //******************************************************************************
 RasterImage::~RasterImage() {
+  mIsBeingDestroyed = true;
+
   // Make sure our SourceBuffer is marked as complete. This will ensure that any
   // outstanding decoders terminate.
   if (!mSourceBuffer->IsComplete()) {
@@ -91,7 +89,7 @@ RasterImage::~RasterImage() {
   SurfaceCache::RemoveImage(ImageKey(this));
 
   // Record Telemetry.
-  Telemetry::Accumulate(Telemetry::IMAGE_DECODE_COUNT, mDecodeCount);
+  glean::image_decode::count.AccumulateSingleSample(mDecodeCount);
 }
 
 nsresult RasterImage::Init(const char* aMimeType, uint32_t aFlags) {
@@ -128,11 +126,6 @@ nsresult RasterImage::Init(const char* aMimeType, uint32_t aFlags) {
     mLockCount++;
     SurfaceCache::LockImage(ImageKey(this));
   }
-
-  // Set the default flags according to the decoder type to allow preferences to
-  // be stored if necessary.
-  mDefaultDecoderFlags =
-      DecoderFactory::GetDefaultDecoderFlagsForType(mDecoderType);
 
   // Mark us as initialized
   mInitialized = true;
@@ -208,6 +201,20 @@ RasterImage::GetHeight(int32_t* aHeight) {
 }
 
 //******************************************************************************
+NS_IMETHODIMP
+RasterImage::GetIntrinsicSize(ImageIntrinsicSize* aIntrinsicSize) {
+  NS_ENSURE_ARG_POINTER(aIntrinsicSize);
+
+  if (mError) {
+    return NS_ERROR_FAILURE;
+  }
+
+  aIntrinsicSize->mWidth = Some(mSize.width);
+  aIntrinsicSize->mHeight = Some(mSize.height);
+  return NS_OK;
+}
+
+//******************************************************************************
 void RasterImage::MediaFeatureValuesChangedAllDocuments(
     const mozilla::MediaFeatureChange& aChange) {}
 
@@ -245,7 +252,7 @@ size_t RasterImage::GetNativeSizesLength() {
 
 //******************************************************************************
 NS_IMETHODIMP
-RasterImage::GetIntrinsicSize(nsSize* aSize) {
+RasterImage::GetIntrinsicSizeInAppUnits(nsSize* aSize) {
   if (mError) {
     return NS_ERROR_FAILURE;
   }
@@ -256,12 +263,16 @@ RasterImage::GetIntrinsicSize(nsSize* aSize) {
 }
 
 //******************************************************************************
-Maybe<AspectRatio> RasterImage::GetIntrinsicRatio() {
+AspectRatio RasterImage::GetIntrinsicRatio() {
   if (mError) {
-    return Nothing();
+    return {};
   }
-
-  return Some(AspectRatio::FromSize(mSize.width, mSize.height));
+  OrientedIntSize size = mSize;
+  if (mResolution.mX != mResolution.mY) {
+    mResolution.ApplyXTo(size.width);
+    mResolution.ApplyYTo(size.height);
+  }
+  return AspectRatio::FromSize(size.width, size.height);
 }
 
 NS_IMETHODIMP_(Orientation)
@@ -476,8 +487,12 @@ RasterImage::WillDrawOpaqueNow() {
 void RasterImage::OnSurfaceDiscarded(const SurfaceKey& aSurfaceKey) {
   MOZ_ASSERT(mProgressTracker);
 
+  if (mIsBeingDestroyed) {
+    return;
+  }
+
   bool animatedFramesDiscarded =
-      mAnimationState && aSurfaceKey.Playback() == PlaybackType::eAnimated;
+      aSurfaceKey.Playback() == PlaybackType::eAnimated;
 
   nsCOMPtr<nsIEventTarget> eventTarget = do_GetMainThread();
 
@@ -745,8 +760,8 @@ bool RasterImage::SetMetadata(const ImageMetadata& aMetadata,
     MOZ_ASSERT(mOrientation.IsIdentity(), "Would need to orient hotspot point");
 
     auto hotspot = aMetadata.GetHotspot();
-    mHotspot.x = std::max(std::min(hotspot.x.value, mSize.width - 1), 0);
-    mHotspot.y = std::max(std::min(hotspot.y.value, mSize.height - 1), 0);
+    mHotspot.x = std::clamp(hotspot.x.value, 0, mSize.width - 1);
+    mHotspot.y = std::clamp(hotspot.y.value, 0, mSize.height - 1);
   }
 
   return true;
@@ -1175,7 +1190,7 @@ void RasterImage::Decode(const OrientedIntSize& aSize, uint32_t aFlags,
   SurfaceCache::UnlockEntries(ImageKey(this));
 
   // Determine which flags we need to decode this image with.
-  DecoderFlags decoderFlags = mDefaultDecoderFlags;
+  DecoderFlags decoderFlags = DefaultDecoderFlags();
   if (aFlags & FLAG_ASYNC_NOTIFY) {
     decoderFlags |= DecoderFlags::ASYNC_NOTIFY;
   }
@@ -1259,7 +1274,7 @@ RasterImage::DecodeMetadata(uint32_t aFlags) {
 
   // Create a decoder.
   RefPtr<IDecodingTask> task = DecoderFactory::CreateMetadataDecoder(
-      mDecoderType, WrapNotNull(this), mDefaultDecoderFlags, mSourceBuffer);
+      mDecoderType, WrapNotNull(this), DefaultDecoderFlags(), mSourceBuffer);
 
   // Make sure DecoderFactory was able to create a decoder successfully.
   if (!task) {
@@ -1433,8 +1448,7 @@ RasterImage::Draw(gfxContext* aContext, const IntSize& aSize,
 
   if (shouldRecordTelemetry) {
     TimeDuration drawLatency = TimeStamp::Now() - mDrawStartTime;
-    Telemetry::Accumulate(Telemetry::IMAGE_DECODE_ON_DRAW_LATENCY,
-                          int32_t(drawLatency.ToMicroseconds()));
+    glean::image_decode::on_draw_latency.AccumulateRawDuration(drawLatency);
     mDrawStartTime = TimeStamp();
   }
 
@@ -1535,6 +1549,11 @@ void RasterImage::DoError() {
 
   // Invalidate to get rid of any partially-drawn image content.
   auto dirtyRect = OrientedIntRect({0, 0}, mSize);
+  // Make sure to provide a non-empty rect so a FRAME_UPDATE notification goes
+  // out otherwise consumers might not get any kind of update whatsoever.
+  if (dirtyRect.IsEmpty()) {
+    dirtyRect.width = dirtyRect.height = 1;
+  }
   NotifyProgress(NoProgress, dirtyRect);
 
   MOZ_LOG(gImgLog, LogLevel::Error,
@@ -1679,16 +1698,15 @@ void RasterImage::NotifyDecodeComplete(
   // Do some telemetry if this isn't a metadata decode.
   if (!aStatus.mWasMetadataDecode) {
     if (aTelemetry.mChunkCount) {
-      Telemetry::Accumulate(Telemetry::IMAGE_DECODE_CHUNKS,
-                            aTelemetry.mChunkCount);
+      glean::image_decode::chunks.AccumulateSingleSample(
+          aTelemetry.mChunkCount);
     }
 
     if (aStatus.mFinished) {
-      Telemetry::Accumulate(Telemetry::IMAGE_DECODE_TIME,
-                            int32_t(aTelemetry.mDecodeTime.ToMicroseconds()));
+      glean::image_decode::time.AccumulateRawDuration(aTelemetry.mDecodeTime);
 
-      if (aTelemetry.mSpeedHistogram && aTelemetry.mBytesDecoded) {
-        Telemetry::Accumulate(*aTelemetry.mSpeedHistogram, aTelemetry.Speed());
+      if (aTelemetry.mSpeedMetric && aTelemetry.mBytesDecoded) {
+        (*aTelemetry.mSpeedMetric).Accumulate(aTelemetry.Speed());
       }
     }
   }

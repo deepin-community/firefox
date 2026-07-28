@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Preferințe
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Setări…
+menu-application-set-as-default =
+    .label = Setează { -brand-shorter-name } ca browser implicit
 menu-application-services =
     .label = Servicii
 menu-application-hide-this =
@@ -76,6 +69,17 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Deschide un fișier…
     .accesskey = O
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Închide fila
+            [one] Închide fila
+            [few] Închide { $tabCount } file
+           *[other] Închide { $tabCount } de file
+        }
+    .accesskey = C
 menu-file-close-window =
     .label = Închide fereastra
     .accesskey = d
@@ -85,14 +89,23 @@ menu-file-save-page =
 menu-file-email-link =
     .label = Trimite linkul prin e-mail…
     .accesskey = E
+menu-file-share-url =
+    .label = Partajează
+    .accesskey = h
+menu-file-share-qrcode =
+    .label = Generează cod QR…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Generează cod QR
+    .accesskey = Q
 menu-file-print-setup =
     .label = Aranjare în pagină…
     .accesskey = u
 menu-file-print =
-    .label = Tipărește…
+    .label = Printează…
     .accesskey = P
 menu-file-import-from-another-browser =
-    .label = Importă din alt browser…
+    .label = Importă dintr-un alt browser…
     .accesskey = I
 menu-file-go-offline =
     .label = Lucrează offline
@@ -213,6 +226,9 @@ menu-history-undo-menu =
     .label = File închise recent
 menu-history-undo-window-menu =
     .label = Ferestre închise recent
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Caută în istoric
 
 ## Bookmarks Menu
 
@@ -223,6 +239,11 @@ menu-bookmarks-manage =
     .label = Gestionează marcajele
 menu-bookmark-tab =
     .label = Marchează fila actuală…
+menu-edit-bookmark =
+    .label = Editează marcajul...
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Caută marcaje
 menu-bookmarks-all-tabs =
     .label = Marchează toate filele…
 menu-bookmarks-toolbar =
@@ -232,6 +253,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Marcaje mobile
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profiluri
+menu-profiles-manage-profiles =
+    .label = Gestionează profilurile
+menu-profiles-new-profile =
+    .label = Profil nou
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (actual)
+menu-profiles-menu =
+    .label = Profiluri
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -240,23 +277,26 @@ menu-tools =
 menu-tools-downloads =
     .label = Descărcări
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = Extensii și teme
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Suplimente și teme
     .accesskey = A
 menu-tools-fxa-sign-in2 =
-    .label = Autentifică-te
+    .label = Intră în cont
     .accesskey = g
 menu-tools-turn-on-sync2 =
     .label = Activează sincronizarea
     .accesskey = n
 menu-tools-sync-now =
     .label = Sincronizează acum
-    .accesskey = S
+    .accesskey = o
 menu-tools-fxa-re-auth =
     .label = Reconectare la { -brand-product-name }…
     .accesskey = R
 menu-tools-browser-tools =
-    .label = Uneltele browserului
+    .label = Instrumentele browserului
     .accesskey = B
 menu-tools-task-manager =
     .label = Manager de activități
@@ -267,6 +307,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Informații despre pagină
     .accesskey = I
+menu-tools-edit-pdf =
+    .label = Editează PDF-ul…
+    .accesskey = P
 menu-settings =
     .label = Setări
     .accesskey =
@@ -317,7 +360,7 @@ menu-help-exit-troubleshoot-mode =
     .label = Oprește modul de depanare
     .accesskey = M
 menu-help-switch-device =
-    .label = Comutarea pe un dispozitiv nou
+    .label = Trecere la un dispozitiv nou
     .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.

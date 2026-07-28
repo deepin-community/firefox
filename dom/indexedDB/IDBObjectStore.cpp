@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,10 +15,10 @@
 #include "IDBKeyRange.h"
 #include "IDBRequest.h"
 #include "IDBTransaction.h"
+#include "IndexedDBCommon.h"
 #include "IndexedDatabase.h"
 #include "IndexedDatabaseInlines.h"
 #include "IndexedDatabaseManager.h"
-#include "IndexedDBCommon.h"
 #include "KeyPath.h"
 #include "ProfilerHelpers.h"
 #include "ReportInternalError.h"
@@ -32,11 +30,13 @@
 #include "js/StructuredClone.h"
 #include "mozilla/EndianUtils.h"
 #include "mozilla/ErrorResult.h"
-#include "mozilla/ResultExtensions.h"
+#include "mozilla/ScopeExit.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/BlobBinding.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/File.h"
+#include "mozilla/dom/FileList.h"
+#include "mozilla/dom/FileListBinding.h"
 #include "mozilla/dom/IDBObjectStoreBinding.h"
 #include "mozilla/dom/MemoryBlobImpl.h"
 #include "mozilla/dom/StreamBlobImpl.h"
@@ -46,6 +46,7 @@
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/PBackgroundSharedTypes.h"
 #include "nsCOMPtr.h"
+#include "nsIGlobalObject.h"
 #include "nsStreamUtils.h"
 #include "nsStringStream.h"
 
@@ -144,6 +145,71 @@ MovingNotNull<RefPtr<IDBRequest>> GenerateRequest(
                             std::move(transaction));
 }
 
+bool WriteBlob(JSContext* aCx, JSStructuredCloneWriter* aWriter,
+               Blob* const aBlob,
+               IDBObjectStore::StructuredCloneWriteInfo* aCloneWriteInfo) {
+  MOZ_ASSERT(aCx);
+  MOZ_ASSERT(aWriter);
+  MOZ_ASSERT(aBlob);
+  MOZ_ASSERT(aCloneWriteInfo);
+
+  ErrorResult rv;
+  const uint64_t nativeEndianSize = aBlob->GetSize(rv);
+  MOZ_ASSERT(!rv.Failed());
+
+  const uint64_t size = NativeEndian::swapToLittleEndian(nativeEndianSize);
+
+  nsString type;
+  aBlob->GetType(type);
+
+  const NS_ConvertUTF16toUTF8 convType(type);
+  const uint32_t convTypeLength =
+      NativeEndian::swapToLittleEndian(convType.Length());
+
+  if (aCloneWriteInfo->mFiles.Length() > size_t(UINT32_MAX)) {
+    MOZ_ASSERT(false, "Fix the structured clone data to use a bigger type!");
+
+    return false;
+  }
+
+  const uint32_t index = aCloneWriteInfo->mFiles.Length();
+
+  if (!JS_WriteUint32Pair(
+          aWriter, aBlob->IsFile() ? SCTAG_DOM_FILE : SCTAG_DOM_BLOB, index) ||
+      !JS_WriteBytes(aWriter, &size, sizeof(size)) ||
+      !JS_WriteBytes(aWriter, &convTypeLength, sizeof(convTypeLength)) ||
+      !JS_WriteBytes(aWriter, convType.get(), convType.Length())) {
+    return false;
+  }
+
+  const RefPtr<File> file = aBlob->ToFile();
+  if (file) {
+    ErrorResult rv;
+    const int64_t nativeEndianLastModifiedDate = file->GetLastModified(rv);
+    MOZ_ALWAYS_TRUE(!rv.Failed());
+
+    const int64_t lastModifiedDate =
+        NativeEndian::swapToLittleEndian(nativeEndianLastModifiedDate);
+
+    nsString name;
+    file->GetName(name);
+
+    const NS_ConvertUTF16toUTF8 convName(name);
+    const uint32_t convNameLength =
+        NativeEndian::swapToLittleEndian(convName.Length());
+
+    if (!JS_WriteBytes(aWriter, &lastModifiedDate, sizeof(lastModifiedDate)) ||
+        !JS_WriteBytes(aWriter, &convNameLength, sizeof(convNameLength)) ||
+        !JS_WriteBytes(aWriter, convName.get(), convName.Length())) {
+      return false;
+    }
+  }
+
+  aCloneWriteInfo->mFiles.EmplaceBack(StructuredCloneFileBase::eBlob, aBlob);
+
+  return true;
+}
+
 bool StructuredCloneWriteCallback(JSContext* aCx,
                                   JSStructuredCloneWriter* aWriter,
                                   JS::Handle<JSObject*> aObj,
@@ -168,70 +234,66 @@ bool StructuredCloneWriteCallback(JSContext* aCx,
   JS::Rooted<JSObject*> obj(aCx, aObj);
 
   {
-    Blob* blob = nullptr;
-    if (NS_SUCCEEDED(UNWRAP_OBJECT(Blob, &obj, blob))) {
-      ErrorResult rv;
-      const uint64_t nativeEndianSize = blob->GetSize(rv);
-      MOZ_ASSERT(!rv.Failed());
+    FileList* fileList = nullptr;
+    if (NS_SUCCEEDED(UNWRAP_OBJECT(FileList, &obj, fileList))) {
+      const auto fileListStartIndex = cloneWriteInfo->mFiles.Length();
+      const uint32_t fileListLength = fileList->Length();
 
-      const uint64_t size = NativeEndian::swapToLittleEndian(nativeEndianSize);
-
-      nsString type;
-      blob->GetType(type);
-
-      const NS_ConvertUTF16toUTF8 convType(type);
-      const uint32_t convTypeLength =
-          NativeEndian::swapToLittleEndian(convType.Length());
-
-      if (cloneWriteInfo->mFiles.Length() > size_t(UINT32_MAX)) {
+      if (size_t(fileListStartIndex) > size_t(UINT32_MAX) - fileListLength) {
         MOZ_ASSERT(false,
                    "Fix the structured clone data to use a bigger type!");
         return false;
       }
 
-      const uint32_t index = cloneWriteInfo->mFiles.Length();
-
-      if (!JS_WriteUint32Pair(aWriter,
-                              blob->IsFile() ? SCTAG_DOM_FILE : SCTAG_DOM_BLOB,
-                              index) ||
-          !JS_WriteBytes(aWriter, &size, sizeof(size)) ||
-          !JS_WriteBytes(aWriter, &convTypeLength, sizeof(convTypeLength)) ||
-          !JS_WriteBytes(aWriter, convType.get(), convType.Length())) {
+      if (!JS_WriteUint32Pair(aWriter, SCTAG_DOM_FILELIST, fileListLength)) {
         return false;
       }
 
-      const RefPtr<File> file = blob->ToFile();
-      if (file) {
-        ErrorResult rv;
-        const int64_t nativeEndianLastModifiedDate = file->GetLastModified(rv);
-        MOZ_ALWAYS_TRUE(!rv.Failed());
-
-        const int64_t lastModifiedDate =
-            NativeEndian::swapToLittleEndian(nativeEndianLastModifiedDate);
-
-        nsString name;
-        file->GetName(name);
-
-        const NS_ConvertUTF16toUTF8 convName(name);
-        const uint32_t convNameLength =
-            NativeEndian::swapToLittleEndian(convName.Length());
-
-        if (!JS_WriteBytes(aWriter, &lastModifiedDate,
-                           sizeof(lastModifiedDate)) ||
-            !JS_WriteBytes(aWriter, &convNameLength, sizeof(convNameLength)) ||
-            !JS_WriteBytes(aWriter, convName.get(), convName.Length())) {
-          return false;
+      for (uint32_t i = 0; i < fileListLength; ++i) {
+        File* file = fileList->Item(i);
+        if (!WriteBlob(aCx, aWriter, file, cloneWriteInfo)) {
+          return false;  // Everything should fail
         }
       }
-
-      cloneWriteInfo->mFiles.EmplaceBack(StructuredCloneFileBase::eBlob, blob);
 
       return true;
     }
   }
 
+  {
+    Blob* blob = nullptr;
+    if (NS_SUCCEEDED(UNWRAP_OBJECT(Blob, &obj, blob))) {
+      return WriteBlob(aCx, aWriter, blob, cloneWriteInfo);
+    }
+  }
+
   return StructuredCloneHolder::WriteFullySerializableObjects(aCx, aWriter,
                                                               aObj);
+}
+
+bool CopyingWriteBlob(JSContext* aCx, JSStructuredCloneWriter* aWriter,
+                      Blob* const aBlob,
+                      IDBObjectStore::StructuredCloneInfo* aCloneInfo) {
+  MOZ_ASSERT(aCx);
+  MOZ_ASSERT(aWriter);
+  MOZ_ASSERT(aBlob);
+  MOZ_ASSERT(aCloneInfo);
+
+  if (aCloneInfo->mFiles.Length() > size_t(UINT32_MAX)) {
+    MOZ_ASSERT(false, "Fix the structured clone data to use a bigger type!");
+    return false;
+  }
+
+  const uint32_t index = aCloneInfo->mFiles.Length();
+
+  if (!JS_WriteUint32Pair(
+          aWriter, aBlob->IsFile() ? SCTAG_DOM_FILE : SCTAG_DOM_BLOB, index)) {
+    return false;
+  }
+
+  aCloneInfo->mFiles.EmplaceBack(StructuredCloneFileBase::eBlob, aBlob);
+
+  return true;
 }
 
 bool CopyingStructuredCloneWriteCallback(JSContext* aCx,
@@ -250,25 +312,36 @@ bool CopyingStructuredCloneWriteCallback(JSContext* aCx,
   JS::Rooted<JSObject*> obj(aCx, aObj);
 
   {
-    Blob* blob = nullptr;
-    if (NS_SUCCEEDED(UNWRAP_OBJECT(Blob, &obj, blob))) {
-      if (cloneInfo->mFiles.Length() > size_t(UINT32_MAX)) {
+    FileList* fileList = nullptr;
+    if (NS_SUCCEEDED(UNWRAP_OBJECT(FileList, &obj, fileList))) {
+      const auto fileListStartIndex = cloneInfo->mFiles.Length();
+      const uint32_t fileListLength = fileList->Length();
+
+      if (size_t(fileListStartIndex) > size_t(UINT32_MAX) - fileListLength) {
         MOZ_ASSERT(false,
                    "Fix the structured clone data to use a bigger type!");
         return false;
       }
 
-      const uint32_t index = cloneInfo->mFiles.Length();
-
-      if (!JS_WriteUint32Pair(aWriter,
-                              blob->IsFile() ? SCTAG_DOM_FILE : SCTAG_DOM_BLOB,
-                              index)) {
+      if (!JS_WriteUint32Pair(aWriter, SCTAG_DOM_FILELIST, fileListLength)) {
         return false;
       }
 
-      cloneInfo->mFiles.EmplaceBack(StructuredCloneFileBase::eBlob, blob);
+      for (uint32_t i = 0; i < fileList->Length(); ++i) {
+        File* file = fileList->Item(i);
+        if (!CopyingWriteBlob(aCx, aWriter, file, cloneInfo)) {
+          return false;  // Everything should fail
+        }
+      }
 
       return true;
+    }
+  }
+
+  {
+    Blob* blob = nullptr;
+    if (NS_SUCCEEDED(UNWRAP_OBJECT(Blob, &obj, blob))) {
+      return CopyingWriteBlob(aCx, aWriter, blob, cloneInfo);
     }
   }
 
@@ -325,6 +398,88 @@ JSObject* CopyingStructuredCloneReadCallback(
     void* aClosure) {
   MOZ_ASSERT(aTag != SCTAG_DOM_FILE_WITHOUT_LASTMODIFIEDDATE);
 
+  if (aTag == SCTAG_DOM_FILELIST) {
+    auto* const cloneInfo =
+        static_cast<IDBObjectStore::StructuredCloneInfo*>(aClosure);
+
+    // For empty filelist, aData is not used but must remain within bounds.
+    const auto& files = cloneInfo->mFiles;
+    const uint32_t fileListLength = aData;
+
+    if (fileListLength > files.Length()) {
+      MOZ_ASSERT(false, "Bad file list length value!");
+
+      return nullptr;
+    }
+
+    // We need to ensure that all RAII smart pointers which may trigger GC are
+    // destroyed on return prior to this JS::Rooted being destroyed and
+    // unrooting the pointer. This scope helps make this intent more explicit.
+    JS::Rooted<JSObject*> obj(aCx);
+    {
+      nsCOMPtr<nsIGlobalObject> global = xpc::CurrentNativeGlobal(aCx);
+      if (!global) {
+        MOZ_ASSERT(false, "Could not access global!");
+
+        return nullptr;
+      }
+
+      RefPtr<FileList> fileList = new FileList(global);
+
+      for (uint32_t i = 0u; i < fileListLength; ++i) {
+        uint32_t tag = UINT32_MAX;
+        uint32_t index = UINT32_MAX;
+        if (!JS_ReadUint32Pair(aReader, &tag, &index)) {
+          return nullptr;
+        }
+
+        const bool hasFileTag = tag == SCTAG_DOM_FILE;
+        if (!hasFileTag) {
+          MOZ_ASSERT(false, "Unexpected tag!");
+
+          return nullptr;
+        }
+
+        if (uint64_t(index) >= cloneInfo->mFiles.Length()) {
+          MOZ_ASSERT(false, "Bad index!");
+
+          return nullptr;
+        }
+
+        StructuredCloneFileChild& fileChild = cloneInfo->mFiles[index];
+        MOZ_ASSERT(fileChild.Type() == StructuredCloneFileBase::eBlob);
+
+        RefPtr<Blob> blob = fileChild.BlobPtr();
+        MOZ_ASSERT(blob->IsFile());
+
+        RefPtr<File> file;
+        if (blob->HasExpandos()) {
+          const RefPtr<Blob> clonedBlob = blob->Clone();
+          file = clonedBlob->ToFile();
+        } else {
+          file = blob->ToFile();
+        }
+        if (!file) {
+          MOZ_ASSERT(false, "Could not create file!");
+
+          return nullptr;
+        }
+
+        if (!fileList->Append(file)) {
+          MOZ_ASSERT(false, "Could not extend filelist!");
+
+          return nullptr;
+        }
+      }
+
+      if (!WrapAsJSObject(aCx, fileList, &obj)) {
+        return nullptr;
+      }
+    }
+
+    return obj;
+  }
+
   if (aTag == SCTAG_DOM_BLOB || aTag == SCTAG_DOM_FILE ||
       aTag == SCTAG_DOM_MUTABLEFILE) {
     auto* const cloneInfo =
@@ -338,11 +493,29 @@ JSObject* CopyingStructuredCloneReadCallback(
     StructuredCloneFileChild& file = cloneInfo->mFiles[aData];
 
     switch (static_cast<StructuredCloneTags>(aTag)) {
-      case SCTAG_DOM_BLOB:
+      case SCTAG_DOM_BLOB: {
         MOZ_ASSERT(file.Type() == StructuredCloneFileBase::eBlob);
         MOZ_ASSERT(!file.Blob().IsFile());
 
-        return WrapAsJSObject(aCx, file.MutableBlob());
+        JS::Rooted<JSObject*> result(aCx);
+        if (file.Blob().HasExpandos()) {
+          const RefPtr<Blob> newBlob = file.Blob().Clone();
+          MOZ_ASSERT(newBlob);
+
+          if (!WrapAsJSObject(aCx, newBlob, &result)) {
+            return nullptr;
+          }
+        } else {
+          // If the blob has no expandos, we can return the existing wrapper
+          // directly. This is an optimization over step 10 of
+          // https://w3c.github.io/IndexedDB/#add-or-put since the result is
+          // observably equivalent when there are no user-added properties.
+          if (!WrapAsJSObject(aCx, file.MutableBlob(), &result)) {
+            return nullptr;
+          }
+        }
+        return result;
+      }
 
       case SCTAG_DOM_FILE: {
         MOZ_ASSERT(file.Type() == StructuredCloneFileBase::eBlob);
@@ -351,15 +524,30 @@ JSObject* CopyingStructuredCloneReadCallback(
 
         {
           // Create a scope so ~RefPtr fires before returning an unwrapped
-          // JS::Value.
+          // JSObject*. Otherwise ~JS::Rooted will unroot the object, then
+          // ~RefPtr will trigger GC before the value is returned and rooted
+          // again by the caller.
+          // See bug 1480640 for details.
           const RefPtr<Blob> blob = file.BlobPtr();
           MOZ_ASSERT(blob->IsFile());
 
-          const RefPtr<File> file = blob->ToFile();
-          MOZ_ASSERT(file);
+          // Same logic as blob above: clone only if necessary
+          if (blob->HasExpandos()) {
+            const RefPtr<Blob> clonedBlob = blob->Clone();
+            MOZ_ASSERT(clonedBlob);
+            const RefPtr<File> file = clonedBlob->ToFile();
+            MOZ_ASSERT(file);
 
-          if (!WrapAsJSObject(aCx, file, &result)) {
-            return nullptr;
+            if (!WrapAsJSObject(aCx, file, &result)) {
+              return nullptr;
+            }
+          } else {
+            const RefPtr<File> file = blob->ToFile();
+            MOZ_ASSERT(file);
+
+            if (!WrapAsJSObject(aCx, file, &result)) {
+              return nullptr;
+            }
           }
         }
 
@@ -606,14 +794,15 @@ void IDBObjectStore::GetAddInfo(JSContext* aCx, ValueWrapper& aValueWrapper,
 
   if (!HasValidKeyPath()) {
     // Out-of-line keys must be passed in.
-    auto result = aKey.SetFromJSVal(aCx, aKeyVal);
+    auto result =
+        aKey.SetFromJSVal(aCx, aKeyVal, mTransaction.unsafeGetRawPtr());
     if (result.isErr()) {
       aRv = result.unwrapErr().ExtractErrorResult(
           InvalidMapsTo<NS_ERROR_DOM_INDEXEDDB_DATA_ERR>);
       return;
     }
   } else if (!isAutoIncrement) {
-    if (!aValueWrapper.Clone(aCx)) {
+    if (!aValueWrapper.Clone(aCx, mTransaction.unsafeGetRawPtr())) {
       aRv.Throw(NS_ERROR_DOM_DATA_CLONE_ERR);
       return;
     }
@@ -633,7 +822,8 @@ void IDBObjectStore::GetAddInfo(JSContext* aCx, ValueWrapper& aValueWrapper,
 
   // Figure out indexes and the index values to update here.
 
-  if (mSpec->indexes().Length() && !aValueWrapper.Clone(aCx)) {
+  if (mSpec->indexes().Length() &&
+      !aValueWrapper.Clone(aCx, mTransaction.unsafeGetRawPtr())) {
     aRv.Throw(NS_ERROR_DOM_DATA_CLONE_ERR);
     return;
   }
@@ -672,22 +862,46 @@ void IDBObjectStore::GetAddInfo(JSContext* aCx, ValueWrapper& aValueWrapper,
     }
   }
 
-  if (isAutoIncrement && HasValidKeyPath()) {
-    if (!aValueWrapper.Clone(aCx)) {
-      aRv.Throw(NS_ERROR_DOM_DATA_CLONE_ERR);
-      return;
+  // The transaction must be temporarily inactive during the structured
+  // serialization of the value per the spec:
+  // https://w3c.github.io/IndexedDB/#clone-value
+  {
+    const bool shouldInactivate = mTransaction && mTransaction->IsActive();
+    if (shouldInactivate) {
+      mTransaction->TransitionToInactiveWithDeferral();
     }
+    auto guard = MakeScopeExit([&]() {
+      if (shouldInactivate) {
+        if (!mTransaction->IsAborted()) {
+          mTransaction->TransitionToActive();
+        } else {
+          mTransaction->DeactivateDeferral();
+          mTransaction->DrainDeferredResponses();
+        }
+      }
+    });
 
-    GetAddInfoClosure data(aCloneWriteInfo, aValueWrapper.Value());
+    if (isAutoIncrement && HasValidKeyPath()) {
+      if (!aValueWrapper.Clone(aCx, mTransaction.unsafeGetRawPtr())) {
+        aRv.Throw(NS_ERROR_DOM_DATA_CLONE_ERR);
+        return;
+      }
 
-    MOZ_ASSERT(aKey.IsUnset());
+      GetAddInfoClosure data(aCloneWriteInfo, aValueWrapper.Value());
 
-    aRv = GetKeyPath().ExtractOrCreateKey(aCx, aValueWrapper.Value(), aKey,
-                                          &GetAddInfoCallback, &data);
-  } else {
-    GetAddInfoClosure data(aCloneWriteInfo, aValueWrapper.Value());
+      MOZ_ASSERT(aKey.IsUnset());
 
-    aRv = GetAddInfoCallback(aCx, &data);
+      aRv = GetKeyPath().ExtractOrCreateKey(aCx, aValueWrapper.Value(), aKey,
+                                            &GetAddInfoCallback, &data);
+    } else {
+      GetAddInfoClosure data(aCloneWriteInfo, aValueWrapper.Value());
+
+      aRv = GetAddInfoCallback(aCx, &data);
+    }
+  }
+
+  if (mTransaction && mTransaction->IsAborted() && !aRv.Failed()) {
+    aRv.Throw(NS_ERROR_DOM_INDEXEDDB_ABORT_ERR);
   }
 }
 
@@ -720,29 +934,30 @@ RefPtr<IDBRequest> IDBObjectStore::AddOrPut(JSContext* aCx,
   StructuredCloneWriteInfo cloneWriteInfo(mTransaction->Database());
   nsTArray<IndexUpdateInfo> updateInfos;
 
-  // According to spec https://w3c.github.io/IndexedDB/#clone-value,
-  // the transaction must be in inactive state during clone
-  mTransaction->TransitionToInactive();
-
-#ifdef DEBUG
-  const uint32_t previousPendingRequestCount{
-      mTransaction->GetPendingRequestCount()};
-#endif
   GetAddInfo(aCx, aValueWrapper, aKey, cloneWriteInfo, key, updateInfos, aRv);
-  // Check that new requests were rejected in the Inactive state
-  // and possibly in the Finished state, if the transaction has been aborted,
-  // during the structured cloning.
-  MOZ_ASSERT(mTransaction->GetPendingRequestCount() ==
-             previousPendingRequestCount);
-
-  if (!mTransaction->IsAborted()) {
-    mTransaction->TransitionToActive();
-  } else if (!aRv.Failed()) {
-    aRv.Throw(NS_ERROR_DOM_INDEXEDDB_ABORT_ERR);
-    return nullptr;  // It is mandatory to return right after throw
+  if (aRv.Failed()) {
+    return nullptr;
   }
 
-  if (aRv.Failed()) {
+  // Total structured clone size in bytes.
+  const size_t structuredCloneSize = cloneWriteInfo.mCloneBuffer.data().Size();
+
+  // Bug 1783242 introduced the use of shared memory for serializing large
+  // JSStructuredCloneData, which required adjusting IPC message size estimation
+  // calculations below. However, structured clone sizes are still limited:
+  // - On 32-bit platforms, crashes can occur around 2GB, and on 64-bit
+  //   platforms around 4GB, even with shared memory.
+  // - Ideally, the content process would write directly to a file to avoid
+  //   shared memory and data copying (see Bug 1944231).
+  //
+  // For now, structured clone sizes are capped at < 1042 MB (configurable via a
+  // preference).
+  if (structuredCloneSize > IndexedDatabaseManager::MaxStructuredCloneSize()) {
+    IDB_REPORT_INTERNAL_ERR();
+    aRv.ThrowUnknownError(nsPrintfCString(
+        "The structured clone is too large"
+        " (size=%zu bytes, max=%u bytes).",
+        structuredCloneSize, IndexedDatabaseManager::MaxStructuredCloneSize()));
     return nullptr;
   }
 
@@ -756,6 +971,14 @@ RefPtr<IDBRequest> IDBObjectStore::AddOrPut(JSContext* aCx,
   MOZ_ASSERT(maximalSizeFromPref > kMaxIDBMsgOverhead);
   const size_t kMaxMessageSize = maximalSizeFromPref - kMaxIDBMsgOverhead;
 
+  // Serialized structured clone size in bytes. For structured clone sizes >
+  // IPC::kMessageBufferShmemThreshold, only the size and shared memory handle
+  // are included in the IPC message. The value 16 is an estimate.
+  const size_t serializedStructuredCloneSize =
+      structuredCloneSize > IPC::kMessageBufferShmemThreshold
+          ? 16
+          : structuredCloneSize;
+
   const size_t indexUpdateInfoSize =
       std::accumulate(updateInfos.cbegin(), updateInfos.cend(), 0u,
                       [](size_t old, const IndexUpdateInfo& updateInfo) {
@@ -763,7 +986,12 @@ RefPtr<IDBRequest> IDBObjectStore::AddOrPut(JSContext* aCx,
                                updateInfo.localizedValue().GetBuffer().Length();
                       });
 
-  const size_t messageSize = cloneWriteInfo.mCloneBuffer.data().Size() +
+  // TODO: Adjust the calculation of messageSize to account for the fallback
+  // to shared memory during serialization of the primary key and index keys if
+  // their size exceeds IPC::kMessageBufferShmemThreshold. This ensures the
+  // calculated size accurately reflects the actual IPC message size.
+  // See also bug 1945043.
+  const size_t messageSize = serializedStructuredCloneSize +
                              key.GetBuffer().Length() + indexUpdateInfoSize;
 
   if (messageSize > kMaxMessageSize) {
@@ -783,7 +1011,7 @@ RefPtr<IDBRequest> IDBObjectStore::AddOrPut(JSContext* aCx,
   commonParams.key() = key;
   commonParams.indexUpdateInfos() = std::move(updateInfos);
 
-  // Convert any blobs or mutable files into FileAddInfo.
+  // Convert any blobs or mutable files into FileAddInfos.
   QM_TRY_UNWRAP(
       commonParams.fileAddInfos(),
       TransformIntoNewArrayAbortOnErr(
@@ -875,7 +1103,8 @@ RefPtr<IDBRequest> IDBObjectStore::GetAllInternal(
   }
 
   RefPtr<IDBKeyRange> keyRange;
-  IDBKeyRange::FromJSVal(aCx, aKey, &keyRange, aRv);
+  IDBKeyRange::FromJSVal(aCx, aKey, &keyRange, aRv,
+                         mTransaction.unsafeGetRawPtr());
   if (NS_WARN_IF(aRv.Failed())) {
     return nullptr;
   }
@@ -1194,7 +1423,8 @@ RefPtr<IDBRequest> IDBObjectStore::GetInternal(bool aKeyOnly, JSContext* aCx,
   }
 
   RefPtr<IDBKeyRange> keyRange;
-  IDBKeyRange::FromJSVal(aCx, aKey, &keyRange, aRv);
+  IDBKeyRange::FromJSVal(aCx, aKey, &keyRange, aRv,
+                         mTransaction.unsafeGetRawPtr());
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -1256,7 +1486,8 @@ RefPtr<IDBRequest> IDBObjectStore::DeleteInternal(JSContext* aCx,
   }
 
   RefPtr<IDBKeyRange> keyRange;
-  IDBKeyRange::FromJSVal(aCx, aKey, &keyRange, aRv);
+  IDBKeyRange::FromJSVal(aCx, aKey, &keyRange, aRv,
+                         mTransaction.unsafeGetRawPtr());
   if (NS_WARN_IF((aRv.Failed()))) {
     return nullptr;
   }
@@ -1504,7 +1735,8 @@ RefPtr<IDBRequest> IDBObjectStore::Count(JSContext* aCx,
   }
 
   RefPtr<IDBKeyRange> keyRange;
-  IDBKeyRange::FromJSVal(aCx, aKey, &keyRange, aRv);
+  IDBKeyRange::FromJSVal(aCx, aKey, &keyRange, aRv,
+                         mTransaction.unsafeGetRawPtr());
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -1555,7 +1787,8 @@ RefPtr<IDBRequest> IDBObjectStore::OpenCursorInternal(
   }
 
   RefPtr<IDBKeyRange> keyRange;
-  IDBKeyRange::FromJSVal(aCx, aRange, &keyRange, aRv);
+  IDBKeyRange::FromJSVal(aCx, aRange, &keyRange, aRv,
+                         mTransaction.unsafeGetRawPtr());
   if (NS_WARN_IF(aRv.Failed())) {
     return nullptr;
   }
@@ -1753,10 +1986,21 @@ bool IDBObjectStore::HasValidKeyPath() const {
   return GetKeyPath().IsValid();
 }
 
-bool IDBObjectStore::ValueWrapper::Clone(JSContext* aCx) {
+bool IDBObjectStore::ValueWrapper::Clone(JSContext* aCx,
+                                         IDBTransaction* aTransaction) {
   if (mCloned) {
     return true;
   }
+
+  const bool shouldInactivate = aTransaction && aTransaction->IsActive();
+  if (shouldInactivate) {
+    aTransaction->TransitionToInactive();
+  }
+  auto guard = MakeScopeExit([&]() {
+    if (shouldInactivate && !aTransaction->IsAborted()) {
+      aTransaction->TransitionToActive();
+    }
+  });
 
   static const JSStructuredCloneCallbacks callbacks = {
       CopyingStructuredCloneReadCallback /* read */,
@@ -1773,6 +2017,10 @@ bool IDBObjectStore::ValueWrapper::Clone(JSContext* aCx) {
 
   JS::Rooted<JS::Value> clonedValue(aCx);
   if (!JS_StructuredClone(aCx, mValue, &clonedValue, &callbacks, &cloneInfo)) {
+    return false;
+  }
+
+  if (aTransaction && aTransaction->IsAborted()) {
     return false;
   }
 

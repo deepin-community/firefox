@@ -5,12 +5,12 @@
 /**
  * Test for Bug 646224.  Make sure that after changing the URI via
  * history.pushState, the history service has a title stored for the new URI.
- **/
+ */
 
 add_task(async function () {
   let tab = await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
-    "http://example.com"
+    "https://example.com"
   );
 
   const newTitlePromise = PlacesTestUtils.waitForNotification(

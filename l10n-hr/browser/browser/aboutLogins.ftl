@@ -29,8 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Uvezi iz drugog pregled
 about-logins-menu-menuitem-import-from-a-file = Uvezi iz datoteke…
 about-logins-menu-menuitem-export-logins = Izvezi prijave…
 about-logins-menu-menuitem-remove-all-logins = Ukloni sve prijave…
-about-logins-menu-menuitem-export-logins2 = Izvezi lozinke …
-about-logins-menu-menuitem-remove-all-logins2 = Ukloni sve lozinke …
+about-logins-menu-menuitem-export-logins2 = Izvezi lozinke…
+about-logins-menu-menuitem-remove-all-logins2 = Ukloni sve lozinke…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Mogućnosti
@@ -78,12 +78,12 @@ login-list-filtered-count2 =
     }
 login-list-sort-label-text = Poredaj po:
 login-list-name-option = Ime (A-Z)
-login-list-name-reverse-option = Ime (Z-A)
+login-list-name-reverse-option = Naziv (Z-A)
 login-list-username-option = Korisničko ime (A-Z)
 login-list-username-reverse-option = Korisničko ime (Z-A)
 about-logins-login-list-alerts-option = Upozorenja
 login-list-last-changed-option = Zadnja promjena
-login-list-last-used-option = Zadnje korišteno
+login-list-last-used-option = Zadnji put korišteno
 login-list-intro-title = Nema prijava
 login-list-intro-title2 = Nema spremljenih lozinki
 login-list-intro-description = Kad spremaš lozinku u { -brand-product-name }u, ona će se pojaviti ovdje.
@@ -103,7 +103,7 @@ about-logins-list-section-vulnerable = Ranjive lozinke
 about-logins-list-section-nothing = Bez upozorenja
 about-logins-list-section-today = Danas
 about-logins-list-section-yesterday = Jučer
-about-logins-list-section-week = Posljednjih 7 dana
+about-logins-list-section-week = Zadnjih 7 dana
 
 ## Introduction screen
 
@@ -114,11 +114,11 @@ login-intro-instructions-fxa = Stvori ili prijavi se na svoj { -fxaccount-brand-
 about-logins-login-intro-heading-message = Spremite svoje lozinke na sigurno mjesto
 login-intro-description2 = Sve lozinke koje spremiš u { -brand-product-name } se šifriraju. Osim toga, pazimo na curenja lozinki i upozoravamo te ako si pogođen/a. <a data-l10n-name="breach-alert-link">Saznaj više</a>
 login-intro-instructions-fxa2 = Otvori račun ili se prijavi u svoj na uređaju gdje su tvoje prijave spremljene.
-login-intro-instructions-fxa-settings = Idi u Postavke > Sinkronizacija > Uključi sinkronizaciju… Odaberi opciju "Prijave i lozinke".
+login-intro-instructions-fxa-settings = Idi u Postavke > Sinkronizacija > Uključi sinkronizaciju … Odaberi opciju „Prijave i lozinke”.
 login-intro-instructions-fxa-passwords-help = Posjeti <a data-l10n-name="passwords-help-link">podršku za lozinke</a> za dodatnu pomoć.
 about-logins-intro-browser-only-import = Ako su tvoje prijave spremljene u drugom pregledniku, možeš ih <a data-l10n-name="import-link">uvesti u { -brand-product-name }</a>
 about-logins-intro-import2 = Ako su tvoje prijave spremljene izvan { -brand-product-name(case: "gen") }, možeš ih <a data-l10n-name="import-browser-link">uvesti iz jednog drugog preglednika</a> ili <a data-l10n-name="import-file-link">iz jedne datoteke</a>
-about-logins-intro-import3 = Odaberite plus znak iznad kako biste dodali lozinku. Također možete <a data-l10n-name="import-browser-link">uvesti lozinke iz drugog preglednika</a> ili <a data-l10n-name="import-file-link">iz datoteke</a>.
+about-logins-intro-import3 = Odaberi gornji znak plus za dodavanje lozinke. Također možeš <a data-l10n-name="import-browser-link">uvesti lozinke iz jednog drugog preglednika</a> ili <a data-l10n-name="import-file-link">iz datoteke</a>.
 
 ## Login
 
@@ -127,8 +127,8 @@ login-item-new-login-title = Stvori novu prijavu
 about-logins-login-item-new-login-title = Dodaj lozinku
 login-item-edit-button = Uredi
 about-logins-login-item-remove-button = Ukloni
-login-item-origin-label = Adresa web stranice
-login-item-tooltip-message = Provjeri podudara li se adresa web stranice na kojoj se prijavljuješ.
+login-item-origin-label = Adresa web-stranice
+login-item-tooltip-message = Provjeri podudara li se adresa web-stranice na kojoj se prijavljuješ.
 about-logins-origin-tooltip2 = Upiši punu adresu i provjeri da točno odgovara stranici na kojoj se prijavljuješ.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
@@ -144,6 +144,8 @@ login-item-copied-username-button-text = Kopirano!
 login-item-password-label = Lozinka
 login-item-password-reveal-checkbox =
     .aria-label = Prikaži lozinku
+login-item-password-conceal-checkbox =
+    .aria-label = Sakrij lozinku
 login-item-copy-password-button-text = Kopiraj
 login-item-copied-password-button-text = Kopirano!
 login-item-save-changes-button = Spremi promjene
@@ -179,8 +181,8 @@ about-logins-edit-login-os-auth-dialog-message-macosx = uredi spremljenu prijavu
 # This message can be seen when attempting to disable osauth in about:preferences.
 about-logins-os-auth-dialog-message =
     { PLATFORM() ->
-        [macos] promijeni postavke za lozinke
-       *[other] { -brand-short-name } pokušava promijeniti postavke za lozinke. Za dozvoljavanje mijenjanja postavki koristi svoj uređaj za prijavu.
+        [macos] promijeniti postavke za lozinke
+       *[other] { -brand-short-name } pokušava promijeniti postavke za lozinke. Za dozvoljavanje mijenjanja postavki koristi prijavu tvog uređaja.
     }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = Za uređivanje tvoje lozinke, upiši svoje Windows podatke za prijavu. To pomaže zaštiti sigurnost tvojih računa.
@@ -221,7 +223,7 @@ confirmation-dialog-cancel-button = Odustani
 confirmation-dialog-dismiss-button =
     .title = Odustani
 about-logins-confirm-remove-dialog-title = Ukloniti ovu prijavu?
-confirm-delete-dialog-message = Ova radnja je nepovratna.
+confirm-delete-dialog-message = Ovo je nepovratna radnja.
 # Title for modal to confirm the removal of one saved password
 about-logins-confirm-delete-dialog-title = Ukloniti lozinku?
 # Message for modal to confirm the removal of one saved password
@@ -253,10 +255,10 @@ about-logins-confirm-remove-all-dialog-title =
     }
 about-logins-confirm-remove-all-dialog-message =
     { $count ->
-        [1] Ovo će ukloniti prijavu koja je spremljena u { -brand-short-name }u i bilo koje upozorenje o curenju podataka koje se pojavljuje ovdje. Ovu radnju nije moguće poništiti.
-        [one] Ovo će ukloniti prijavu koja je spremljena u { -brand-short-name }u i bilo koje upozorenje o curenju podataka koje se pojavljuje ovdje. Ovu radnju nije moguće poništiti.
-        [few] Ovo će ukloniti prijave koje su spremljene u { -brand-short-name }u i bilo koje upozorenje o curenju podataka koje se pojavljuje ovdje. Ovu radnju nije moguće poništiti.
-       *[other] Ovo će ukloniti prijave koje su spremljene u { -brand-short-name }u i bilo koje upozorenje o curenju podataka koje se pojavljuje ovdje. Ovu radnju nije moguće poništiti.
+        [1] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljenu prijavu i sva upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju nećeš moći poništiti.
+        [one] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljenu prijavu i sva upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju nećeš moći poništiti.
+        [few] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljene prijave i sva upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju nećeš moći poništiti.
+       *[other] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljene prijave i sva upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju nećeš moći poništiti.
     }
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
@@ -266,10 +268,10 @@ about-logins-confirm-remove-all-sync-dialog-title =
     }
 about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
-        [1] Ovo će ukloniti prijavu spremljenu u { -brand-short-name }u na svim uređajima sinkroniziranim s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se nalaze ovdje. Ovu radnju nije moguće poništiti.
-        [one] Ovo će ukloniti prijavu spremljenu u { -brand-short-name }u na svim uređajima sinkroniziranim s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se nalaze ovdje. Ovu radnju nije moguće poništiti.
-        [few] Ovo će ukloniti prijave spremljene u { -brand-short-name }u na svim uređajima sinkroniziranim s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se nalaze ovdje. Ovu radnju nije moguće poništiti.
-       *[other] Ovo će ukloniti prijave spremljene u { -brand-short-name }u na svim uređajima sinkroniziranim s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se nalaze ovdje. Ovu radnju nije moguće poništiti.
+        [1] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljenu prijavu na svim uređajima koji su sinkronizirani s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju nećeš moći poništiti.
+        [one] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljenu prijavu na svim uređajima koji su sinkronizirani s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju nećeš moći poništiti.
+        [few] Ovo će ukloniti sve u { -brand-short-name(case: "loc") } spremljene prijave na svim uređajima koji su sinkronizirani s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju nećeš moći poništiti.
+       *[other] Ovo će ukloniti sve u { -brand-short-name(case: "loc") } spremljene prijave na svim uređajima koji su sinkronizirani s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju nećeš moći poništiti.
     }
 # Checkbox for modal to confirm the removal of saved passwords
 about-logins-confirm-remove-all-dialog-checkbox-label2 =
@@ -288,11 +290,11 @@ about-logins-confirm-remove-all-dialog-title2 =
     }
 # Message for modal to confirm the removal of saved passwords when user is NOT synced
 about-logins-confirm-remove-all-dialog-message2 =
-    { NUMBER($count) ->
-        [1] Ovo će ukloniti lozinku spremljenu u { -brand-short-name } i sva upozorenja o kršenju. Ne možete poništiti ovu radnju.
-        [one] Ovo će ukloniti lozinku spremljenu u { -brand-short-name } i sva upozorenja o kršenju. Ne možete poništiti ovu radnju.
-        [few] Ovo će ukloniti lozinke spremljene u { -brand-short-name } i sva upozorenja o kršenju. Ne možete poništiti ovu radnju.
-       *[other] Ovo će ukloniti lozinke spremljene u { -brand-short-name } i sva upozorenja o kršenju. Ne možete poništiti ovu radnju.
+    { $count ->
+        [1] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljenu lozinku i sva upozorenja o curenju podataka. Ovu radnju ne možeš poništiti.
+        [one] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljenu lozinku i sva upozorenja o curenju podataka. Ovu radnju ne možeš poništiti.
+        [few] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljene lozinke i sva upozorenja o curenju podataka. Ovu radnju ne možeš poništiti.
+       *[other] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljene lozinke i sva upozorenja o curenju podataka. Ovu radnju ne možeš poništiti.
     }
 # Title for modal to confirm the removal of all saved passwords when user IS SYNCED
 about-logins-confirm-remove-all-sync-dialog-title2 =
@@ -303,11 +305,11 @@ about-logins-confirm-remove-all-sync-dialog-title2 =
     }
 # Message for modal to confirm the removal of saved passwords when user IS synced.
 about-logins-confirm-remove-all-sync-dialog-message3 =
-    { NUMBER($count) ->
-        [1] Ovo će ukloniti lozinke spremljene u { -brand-short-name } na svim vašim sinkroniziranim uređajima. Ovo će također ukloniti sva upozorenja o kršenju koja se ovdje pojavljuju. Ne možete poništiti ovu radnju.
-        [one] Ovo će ukloniti lozinke spremljene u { -brand-short-name } na svim vašim sinkroniziranim uređajima. Ovo će također ukloniti sva upozorenja o kršenju koja se ovdje pojavljuju. Ne možete poništiti ovu radnju.
-        [few] Ovo će ukloniti lozinke spremljene u { -brand-short-name } na svim vašim sinkroniziranim uređajima. Ovo će također ukloniti sva upozorenja o kršenju koja se ovdje pojavljuju. Ne možete poništiti ovu radnju.
-       *[other] Ovo će ukloniti lozinke spremljene u { -brand-short-name } na svim vašim sinkroniziranim uređajima. Ovo će također ukloniti sva upozorenja o kršenju koja se ovdje pojavljuju. Ne možete poništiti ovu radnju.
+    { $count ->
+        [1] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljenu lozinku na svim tvojim sinkroniziranim uređajima. Ovo će također ukloniti sva upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju ne možeš poništiti.
+        [one] Ovo će ukloniti u { -brand-short-name(case: "loc") } spremljenu lozinku na svim tvojim sinkroniziranim uređajima. Ovo će također ukloniti sva upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju ne možeš poništiti.
+        [few] Ovo će ukloniti sve u { -brand-short-name(case: "loc") } spremljene lozinke na svim tvojim sinkroniziranim uređajima. Ovo će također ukloniti sva upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju ne možeš poništiti.
+       *[other] Ovo će ukloniti sve u { -brand-short-name(case: "loc") } spremljene lozinke na svim tvojim sinkroniziranim uređajima. Ovo će također ukloniti sva upozorenja o curenju podataka koja se ovdje pojave. Ovu radnju ne možeš poništiti.
     }
 
 ##
@@ -362,7 +364,7 @@ about-logins-export-file-picker-title = Izvezi datoteku prijava
 # This must end in .csv
 about-logins-export-file-picker-default-filename = prijave.csv
 # Title of the file picker dialog
-about-logins-export-file-picker-title2 = Izvezi lozinke iz { -brand-short-name }
+about-logins-export-file-picker-title2 = Izvezi lozinke iz { -brand-short-name(case: "gen") }
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename2 = lozinke.csv
@@ -454,7 +456,7 @@ about-logins-import-dialog-error-unable-to-read-title = Nije moguće analizirati
 about-logins-import-dialog-error-unable-to-read-description = Provjeri je li odabrana CSV ili TSV datoteka.
 about-logins-import-dialog-error-no-logins-imported = Nije uvezena nijedna prijava
 about-logins-import-dialog-error-learn-more = Saznaj više
-about-logins-import-dialog-error-try-import-again = Pokušaj ponovno uvesti…
+about-logins-import-dialog-error-try-import-again = Pokušaj ponovo uvesti …
 about-logins-import-dialog-error-cancel = Odustani
 about-logins-import-report-title = Sažetak uvoza
 about-logins-import-report-description = Prijave i lozinke uvezene u { -brand-short-name }.

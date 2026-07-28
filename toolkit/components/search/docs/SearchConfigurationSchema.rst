@@ -2,9 +2,9 @@
 Search Configuration Schema
 ===========================
 
-This document outlines the details of the `search-config-v2`_ schema and how
+This document outlines the details of the :searchfox:`search-config-v2 <services/settings/dumps/main/search-config-v2.json>` schema and how
 the various sub-parts interact. For the full fields and descriptions, please see
-the `schema itself`_.
+the :searchfox:`schema itself <toolkit/components/search/schema/>`.
 
 .. note::
     In the examples, only relevant properties are displayed.
@@ -355,6 +355,34 @@ Example:
 This would result in the order: ``c-engine``, ``b-engine``, ``a-engine`` for the
 distribution ``distro``.
 
-.. _schema itself: https://searchfox.org/mozilla-central/source/toolkit/components/search/schema/
+Locale Fallbacks
+================
+
+On desktop, the locale provided for the user's environment matches the locales that
+are shipped with Firefox. The current list of possibilities may be found in the
+:searchfox:`all-locales file <browser/locales/all-locales>`. These are typically
+two-letter locale names, with some variants.
+
+On mobile platforms, the locales are typically language and region, e.g. ``de-DE``
+and ``de-AT``. To match with the locales on desktop, we need to implement a fallback
+routine to map the locales to those that desktop uses. For example, ``de-DE``
+needs to map to ``de``, but ``en-CA`` would stay as it is.
+
+Whilst this could be managed by looking through the full search configuration for
+all the locales referenced, this would incur a runtime cost on every startup and
+parsing of the configuration. Hence we have introduced the ``availableLocales``
+record which is a list of all the locales currently referenced in the search
+configuration.
+
+When determining the user's locale to compare with the environments within the
+configuration, the following algorithm is used by the search engine selector:
+
+#. If the user's locale matches one in the ``availableLocales``, then the user's
+   locale is used unchanged.
+
+#. If the user's locale is of the form ``ab-CD`` and the ``ab`` part matches one
+   in ``availableLocales``, then the two-letter form is used.
+
+#. Otherwise, the locale used doesn't matter, and either form may be used.
+
 .. _the version comparator: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/version/format
-.. _search-config-v2: https://searchfox.org/mozilla-central/source/services/settings/dumps/main/search-config-v2.json

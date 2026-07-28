@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,7 +24,7 @@ mozilla::StaticRefPtr<nsJARProtocolHandler> gJarHandler;
 
 nsJARProtocolHandler::nsJARProtocolHandler() { MOZ_ASSERT(NS_IsMainThread()); }
 
-nsJARProtocolHandler::~nsJARProtocolHandler() {}
+nsJARProtocolHandler::~nsJARProtocolHandler() = default;
 
 nsresult nsJARProtocolHandler::Init() {
   nsresult rv;
@@ -70,24 +69,23 @@ nsJARProtocolHandler::GetScheme(nsACString& result) {
 NS_IMETHODIMP
 nsJARProtocolHandler::NewChannel(nsIURI* uri, nsILoadInfo* aLoadInfo,
                                  nsIChannel** result) {
-  nsJARChannel* chan = new nsJARChannel();
-  if (!chan) return NS_ERROR_OUT_OF_MEMORY;
-  NS_ADDREF(chan);
+  RefPtr<nsJARChannel> chan = new nsJARChannel();
+  if (!chan) {
+    return NS_ERROR_OUT_OF_MEMORY;
+  }
 
   nsresult rv = chan->Init(uri);
   if (NS_FAILED(rv)) {
-    NS_RELEASE(chan);
     return rv;
   }
 
   // set the loadInfo on the new channel
   rv = chan->SetLoadInfo(aLoadInfo);
   if (NS_FAILED(rv)) {
-    NS_RELEASE(chan);
     return rv;
   }
 
-  *result = chan;
+  *result = chan.forget().take();
   return NS_OK;
 }
 

@@ -208,7 +208,7 @@ about-logins-export-password-os-auth-dialog-message2-macosx = εξαγάγει �
 
 ## Primary Password notification
 
-about-logins-primary-password-notification-message = Παρακαλώ εισαγάγετε τον κύριο κωδικό πρόσβασής σας για να δείτε τις αποθηκευμένες συνδέσεις και κωδικούς πρόσβασης
+about-logins-primary-password-notification-message = Εισαγάγετε τον κύριο κωδικό πρόσβασής σας για να δείτε τις αποθηκευμένες συνδέσεις και κωδικούς πρόσβασης
 master-password-reload-button =
     .label = Σύνδεση
     .accesskey = Σ
@@ -275,7 +275,7 @@ about-logins-confirm-remove-all-dialog-title2 =
 about-logins-confirm-remove-all-dialog-message2 =
     { $count ->
         [1] Αυτή η ενέργεια θα αφαιρέσει τον κωδικό πρόσβασης που έχει αποθηκευτεί στο { -brand-short-name }, καθώς και τυχόν ειδοποιήσεις παραβιάσεων. Δεν μπορείτε να αναιρέσετε αυτήν την ενέργεια.
-       *[other] This will remove the passwords saved to { -brand-short-name } and any breach alerts. You cannot undo this action.
+       *[other] Αυτή η ενέργεια θα αφαιρέσει τους κωδικούς πρόσβασης που έχουν αποθηκευτεί στο { -brand-short-name }, καθώς και τυχόν ειδοποιήσεις παραβιάσεων. Δεν μπορείτε να αναιρέσετε αυτήν την ενέργεια.
     }
 # Title for modal to confirm the removal of all saved passwords when user IS SYNCED
 about-logins-confirm-remove-all-sync-dialog-title2 =
@@ -309,7 +309,7 @@ confirm-discard-changes-dialog-confirm-button = Απόρριψη
 ## Breach Alert notification
 
 about-logins-breach-alert-title = Παραβίαση ιστοτόπου
-breach-alert-text = Από την τελευταία φορά που αλλάξατε τα στοιχεία σύνδεσής σας σε αυτόν τον ιστότοπο, έχουν υπάρξει περιπτώσεις διαρροής ή κλοπής κωδικών. Για να προστατεύσετε το λογαριασμό σας, αλλάξτε τον κωδικό σας.
+breach-alert-text = Από την τελευταία φορά που αλλάξατε τα στοιχεία σύνδεσής σας σε αυτόν τον ιστότοπο, έχουν υπάρξει περιπτώσεις διαρροής ή κλοπής κωδικών πρόσβασης. Για να προστατέψετε τον λογαριασμό σας, αλλάξτε τον κωδικό πρόσβασής σας.
 about-logins-breach-alert-date = Η παραβίαση συνέβη στις { DATETIME($date, day: "numeric", month: "long", year: "numeric") }
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
@@ -318,7 +318,7 @@ about-logins-breach-alert-link = Μετάβαση στο { $hostname }
 ## Vulnerable Password notification
 
 about-logins-vulnerable-alert-title = Ευάλωτος κωδικός πρόσβασης
-about-logins-vulnerable-alert-text2 = Αυτός ο κωδικός πρόσβασης έχει χρησιμοποιηθεί σε άλλο λογαριασμό με πιθανή παραβίαση δεδομένων. Η επαναχρησιμοποίηση διαπιστευτηρίων θέτει σε κίνδυνο όλους τους λογαριασμούς σας. Αλλάξτε αυτόν τον κωδικό πρόσβασης.
+about-logins-vulnerable-alert-text2 = Αυτός ο κωδικός πρόσβασης έχει χρησιμοποιηθεί σε άλλο λογαριασμό που πιθανώς ενεπλάκη σε παραβίαση δεδομένων. Η επαναχρησιμοποίηση διαπιστευτηρίων θέτει σε κίνδυνο όλους τους λογαριασμούς σας. Αλλάξτε αυτόν τον κωδικό πρόσβασης.
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-vulnerable-alert-link = Μετάβαση στο { $hostname }
@@ -416,22 +416,22 @@ about-logins-import-dialog-error-conflicting-values-title = Πολλές τιμ�
 about-logins-import-dialog-error-conflicting-values-description = Για παράδειγμα: πολλαπλά ονόματα χρήστη, κωδικοί πρόσβασης, URL, κ.λπ. για μια σύνδεση.
 about-logins-import-dialog-error-file-format-title = Πρόβλημα μορφής αρχείου
 about-logins-import-dialog-error-file-format-description = Σφάλμα ή απουσία κεφαλίδων στήλης. Βεβαιωθείτε ότι το αρχείο περιλαμβάνει στήλες για όνομα χρήστη, κωδικό πρόσβασης και URL.
-about-logins-import-dialog-error-file-permission-title = Αδυναμία ανάγνωσης αρχείου
+about-logins-import-dialog-error-file-permission-title = Δεν είναι δυνατή η ανάγνωση του αρχείου
 about-logins-import-dialog-error-file-permission-description = Το { -brand-short-name } δεν έχει άδεια ανάγνωσης για το αρχείο. Δοκιμάστε να αλλάξετε τα δικαιώματα του αρχείου.
-about-logins-import-dialog-error-unable-to-read-title = Αδυναμία ανάλυσης αρχείου
+about-logins-import-dialog-error-unable-to-read-title = Δεν είναι δυνατή η ανάλυση του αρχείου
 about-logins-import-dialog-error-unable-to-read-description = Βεβαιωθείτε ότι έχετε επιλέξει ένα αρχείο CSV ή TSV.
 about-logins-import-dialog-error-no-logins-imported = Δεν έγινε εισαγωγή συνδέσεων
 about-logins-import-dialog-error-learn-more = Μάθετε περισσότερα
 about-logins-import-dialog-error-try-import-again = Εισαγωγή ξανά…
 about-logins-import-dialog-error-cancel = Ακύρωση
 about-logins-import-report-title = Περίληψη εισαγωγής
-about-logins-import-report-description = Εισήχθησαν συνδέσεις και κωδικοί πρόσβασης στο { -brand-short-name }.
+about-logins-import-report-description = Έγινε εισαγωγή συνδέσεων και κωδικών πρόσβασης στο { -brand-short-name }.
 about-logins-import-report-description2 = Έγινε εισαγωγή κωδικών πρόσβασης στο { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
 about-logins-import-report-row-index = Σειρά { $number }
-about-logins-import-report-row-description-no-change = Διπλότυπο: ακριβής αντιστοίχιση υπαρχουσών συνδέσεων
+about-logins-import-report-row-description-no-change = Διπλότυπο: Απόλυτη αντιστοιχία με υπάρχουσα σύνδεση
 about-logins-import-report-row-description-modified = Η υπάρχουσα σύνδεση ενημερώθηκε
 about-logins-import-report-row-description-added = Προστέθηκε νέα σύνδεση
 about-logins-import-report-row-description-no-change2 = Διπλότυπο: Απόλυτη αντιστοιχία με υπάρχουσα καταχώρηση
@@ -443,8 +443,8 @@ about-logins-import-report-row-description-error = Σφάλμα: Απουσία 
 ## Variables:
 ##  $field (String) - The name of the field from the CSV file for example url, username or password
 
-about-logins-import-report-row-description-error-multiple-values = Σφάλμα: Πολλαπλές τιμές για το { $field }
-about-logins-import-report-row-description-error-missing-field = Σφάλμα: Απουσία πεδίου «{ $field }»
+about-logins-import-report-row-description-error-multiple-values = Σφάλμα: Πολλαπλές τιμές για το πεδίο «{ $field }»
+about-logins-import-report-row-description-error-missing-field = Σφάλμα: Απουσία του πεδίου «{ $field }»
 
 ##
 ## Variables:

@@ -8,6 +8,7 @@ const {
   enumNonIndexedProperties,
   enumPrivateProperties,
   enumSymbols,
+  getGlobal,
   getPrototype,
   getFullText,
   getPromiseState,
@@ -32,7 +33,7 @@ const {
   nodeIsLongString,
 } = require("resource://devtools/client/shared/components/object-inspector/utils/node.js");
 
-function loadItemProperties(item, client, loadedProperties, threadActorID) {
+function loadItemProperties(item, client, loadedProperties, threadActorID, options = {}) {
   const gripItem = getClosestGripNode(item);
   const value = getValue(gripItem);
   let front = getFront(gripItem);
@@ -74,6 +75,10 @@ function loadItemProperties(item, client, loadedProperties, threadActorID) {
     promises.push(getPrototype(getObjectFront()));
   }
 
+  if (shouldLoadItemGlobal(item, loadedProperties, options)) {
+    promises.push(getGlobal(getObjectFront()));
+  }
+
   if (shouldLoadItemPrivateProperties(item, loadedProperties)) {
     promises.push(enumPrivateProperties(getObjectFront(), start, end));
   }
@@ -106,16 +111,20 @@ function mergeResponses(responses) {
       data.ownProperties = { ...data.ownProperties, ...response.ownProperties };
     }
 
-    if (response.privateProperties && response.privateProperties.length > 0) {
+    if (response.privateProperties && response.privateProperties.length) {
       data.privateProperties = response.privateProperties;
     }
 
-    if (response.ownSymbols && response.ownSymbols.length > 0) {
+    if (response.ownSymbols && response.ownSymbols.length) {
       data.ownSymbols = response.ownSymbols;
     }
 
     if (response.prototype) {
       data.prototype = response.prototype;
+    }
+
+    if (response.global) {
+      data.global = response.global;
     }
 
     if (response.fullText) {
@@ -183,6 +192,27 @@ function shouldLoadItemEntries(item, loadedProperties = new Map()) {
 }
 
 function shouldLoadItemPrototype(item, loadedProperties = new Map()) {
+  const value = getValue(item);
+
+  return (
+    value &&
+    !loadedProperties.has(item.path) &&
+    !nodeIsBucket(item) &&
+    !nodeIsMapEntry(item) &&
+    !nodeIsEntries(item) &&
+    !nodeIsDefaultProperties(item) &&
+    !nodeHasAccessors(item) &&
+    !nodeIsPrimitive(item) &&
+    !nodeIsLongString(item) &&
+    !nodeIsProxy(item)
+  );
+}
+
+function shouldLoadItemGlobal(item, loadedProperties = new Map(), options = {}) {
+  if (!options?.showGlobalNode) {
+    return false;
+  }
+
   const value = getValue(item);
 
   return (

@@ -12,7 +12,7 @@ places-open-in-container-tab =
     .label = ਨਵੀਂ ਕਨਟੇਨਰ ਟੈਬ ਵਿੱਚ ਖੋਲ੍ਹੋ
     .accesskey = i
 places-open-all-bookmarks =
-    .label = ਸਾਰੇ ਬੁੱਕਮਾਰਕ ਖੋਲ੍ਹੋ
+    .label = ਸਭ ਬੁੱਕਮਾਰਕਾਂ ਨੂੰ ਖੋਲ੍ਹੋ
     .accesskey = O
 places-open-all-in-tabs =
     .label = ਸਭ ਨੂੰ ਟੈਬਾਂ 'ਚ ਖੋਲ੍ਹੋ
@@ -26,7 +26,7 @@ places-open-in-private-window =
 places-empty-bookmarks-folder =
     .label = (ਖਾਲੀ)
 places-add-bookmark =
-    .label = …ਬੁੱਕਮਾਰਕ ਜੋੜੋ
+    .label = …ਬੁੱਕਮਾਰਕ ਨੂੰ ਜੋੜੋ
     .accesskey = B
 places-add-folder-contextmenu =
     .label = …ਫੋਲਡਰ ਜੋੜੋ
@@ -60,7 +60,7 @@ places-history-search =
 places-history =
     .aria-label = ਅਤੀਤ
 places-bookmarks-search =
-    .placeholder = ਬੁੱਕਮਾਰਕ ਖੋਜੋ
+    .placeholder = ਬੁੱਕਮਾਰਕ ਨੂੰ ਖੋਜੋ
 places-delete-domain-data =
     .label = ਇਹ ਸਾਈਟ ਨੂੰ ਭੁੱਲ ਜਾਓ
     .accesskey = F
@@ -98,7 +98,7 @@ places-delete-page =
            *[other] ਸਫ਼ਿਆਂ ਨੂੰ ਹਟਾਓ
         }
     .accesskey = D
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = ਇੰਤਜ਼ਾਮ ਕੀਤੇ ਬੁੱਕਮਾਰਕਾਂ
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -115,8 +115,8 @@ places-show-in-folder =
 places-delete-bookmark =
     .label =
         { $count ->
-            [1] ਬੁੱਕਮਾਰਕ ਹਟਾਓ
-           *[other] ਬੁੱਕਮਾਰਕ ਹਟਾਓ
+            [1] ਬੁੱਕਮਾਰਕ ਨੂੰ ਹਟਾਓ
+           *[other] ਬੁੱਕਮਾਰਕ ਨੂੰ ਹਟਾਓ
         }
     .accesskey = D
 # Variables:
@@ -176,12 +176,12 @@ places-view-sort-descending =
     .label = Z > A ਲੜੀਬੱਧ
     .accesskey = Z
 places-maintenance-button =
-    .label = ਇੰਪੋਰਟ ਤੇ ਬੈਕਅੱਪ
-    .tooltiptext = ਆਪਣੇ ਬੁੱਕਮਾਰਕ ਇੰਪੋਰਟ ਕਰੋ ਤੇ ਬੈਕਅੱਪ ਲਵੋ
+    .label = ਇੰਪੋਰਟ ਅਤੇ ਬੈਕਅੱਪ
+    .tooltiptext = ਆਪਣੇ ਬੁੱਕਮਾਰਕ ਇੰਪੋਰਟ ਕਰੋ ਅਤੇ ਬੈਕਅੱਪ ਲਵੋ
     .accesskey = I
 places-maintenance-button-mac =
-    .label = ਇੰਪੋਰਟ ਤੇ ਬੈਕਅੱਪ
-    .tooltiptext = ਆਪਣੇ ਬੁੱਕਮਾਰਕ ਇੰਪੋਰਟ ਕਰੋ ਤੇ ਬੈਕਅੱਪ ਲਵੋ
+    .label = ਇੰਪੋਰਟ ਅਤੇ ਬੈਕਅੱਪ
+    .tooltiptext = ਆਪਣੇ ਬੁੱਕਮਾਰਕ ਇੰਪੋਰਟ ਕਰੋ ਅਤੇ ਬੈਕਅੱਪ ਲਵੋ
 places-cmd-backup =
     .label = ਬੈਕਅੱਪ…
     .accesskey = B
@@ -257,7 +257,7 @@ places-details-pane-items-count =
 ## "Search History" stands for "Search through the browser's history".
 
 places-search-bookmarks =
-    .placeholder = ਬੁੱਕਮਾਰਕਾਂ ਵਿੱਚ ਖੋਜ
+    .placeholder = ਬੁੱਕਮਾਰਕਾਂ ਨੂੰ ਖੋਜੋ
 places-search-history =
     .placeholder = ਖੋਜ ਅਤੀਤ
 places-search-downloads =
@@ -266,3 +266,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = ਬੁੱਕਮਾਰਕ ਅਤੇ ਅਤੀਤ ਸਿਸਟਮ ਕੰਮ ਨਹੀਂ ਕਰਨਗੇ, ਕਿਉਂਕਿ { -brand-short-name } ਦੀ ਇੱਕ ਫਾਈਲ ਨੂੰ ਹੋਰ ਐਪਲੀਕੇਸ਼ਨ ਵਜੋਂ ਵਰਤਿਆ ਜਾ ਰਿਹਾ ਹੈ। ਕੁਝ ਸੁਰੱਖਿਆ ਸਾਫਟਵੇਅਰ ਇਸ ਸਮੱਸਿਆ ਪੈਦਾ ਕਰ ਸਕਦੇ ਹਨ।
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .badge = ਨਵਾਂ
+    .label = ਫੋਲਡਰ ਸਾਂਝਾ ਕਰੋ

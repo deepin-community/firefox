@@ -1,15 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "MediaDrmProxySupport.h"
+
+#include "MediaCodec.h"  // For MediaDrm::KeyStatus
 #include "MediaDrmCDMCallbackProxy.h"
 #include "mozilla/EMEUtils.h"
 #include "mozilla/java/MediaDrmProxyNatives.h"
 #include "mozilla/java/SessionKeyInfoWrappers.h"
-#include "MediaCodec.h"  // For MediaDrm::KeyStatus
 
 namespace mozilla {
 
@@ -190,7 +189,8 @@ void MediaDrmJavaCallbacksSupport::OnRejectPromise(
   mDecryptorProxyCallback->RejectPromise(aPromiseId, std::move(rv), reason);
 }
 
-MediaDrmProxySupport::MediaDrmProxySupport(const nsAString& aKeySystem)
+MediaDrmProxySupport::MediaDrmProxySupport(const nsAString& aKeySystem,
+                                           const nsACString& aOriginID)
     : mKeySystem(aKeySystem), mDestroyed(false) {
   mJavaCallbacks = java::MediaDrmProxy::NativeMediaDrmProxyCallbacks::New();
 
@@ -198,6 +198,13 @@ MediaDrmProxySupport::MediaDrmProxySupport(const nsAString& aKeySystem)
 
   MOZ_ASSERT(mBridgeProxy, "mBridgeProxy should not be null");
   mMediaDrmStubId = mBridgeProxy->GetStubId()->ToString();
+
+  if (!aOriginID.IsEmpty()) {
+    mBridgeProxy->SetOriginID(aOriginID);
+    MDRMN_LOG("Have origin ID (%.4s)", PromiseFlatCString(aOriginID).get());
+  } else {
+    MDRMN_LOG("Origin ID is empty");
+  }
 }
 
 MediaDrmProxySupport::~MediaDrmProxySupport() {
@@ -223,7 +230,8 @@ void MediaDrmProxySupport::CreateSession(uint32_t aCreateSessionToken,
   MOZ_ASSERT(mBridgeProxy);
 
   auto initDataBytes = mozilla::jni::ByteArray::New(
-      reinterpret_cast<const int8_t*>(&aInitData[0]), aInitData.Length());
+      reinterpret_cast<const int8_t*>(aInitData.Elements()),
+      aInitData.Length());
   // TODO: aSessionType is not used here.
   // Refer to
   // http://androidxref.com/5.1.1_r6/xref/external/chromium_org/media/base/android/java/src/org/chromium/media/MediaDrmBridge.java#420

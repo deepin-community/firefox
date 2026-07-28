@@ -1,12 +1,8 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <math.h>
-
-#include "mozilla/Alignment.h"
 
 #include "cairo.h"
 
@@ -433,9 +429,7 @@ void gfxContext::EnsurePath() {
       Matrix mat = mAzureState.transform;
       mat.Invert();
       mat = mPathTransform * mat;
-      mPathBuilder = mPath->TransformedCopyToBuilder(mat);
-      mPath = mPathBuilder->Finish();
-      mPathBuilder = nullptr;
+      Path::Transform(mPath, mat);
 
       mTransformChanged = false;
     }
@@ -454,13 +448,12 @@ void gfxContext::EnsurePathBuilder() {
 
   if (mPath) {
     if (!mTransformChanged) {
-      mPathBuilder = mPath->CopyToBuilder();
-      mPath = nullptr;
+      mPathBuilder = Path::ToBuilder(mPath.forget());
     } else {
       Matrix invTransform = mAzureState.transform;
       invTransform.Invert();
       Matrix toNewUS = mPathTransform * invTransform;
-      mPathBuilder = mPath->TransformedCopyToBuilder(toNewUS);
+      mPathBuilder = Path::ToBuilder(mPath.forget(), toNewUS);
     }
     return;
   }
@@ -495,7 +488,7 @@ void gfxContext::EnsurePathBuilder() {
       gfxCriticalError()
           << "gfxContext::EnsurePathBuilder failed in PathBuilder::Finish";
     }
-    mPathBuilder = path->TransformedCopyToBuilder(toNewUS);
+    mPathBuilder = Path::ToBuilder(path.forget(), toNewUS);
   }
 
   mPathIsRect = false;

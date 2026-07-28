@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2019, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -264,6 +264,17 @@ enum {
   USE_FAST_RD,
   USE_LARGESTALL,
 } UENUM1BYTE(TX_SIZE_SEARCH_METHOD);
+
+enum {
+  // Good Quality Fast Encoding. The encoder balances quality with the amount of
+  // time it takes to encode the output. Speed setting controls how fast.
+  GOOD,
+  // Realtime Fast Encoding. Will force some restrictions on bitrate
+  // constraints.
+  REALTIME,
+  // All intra mode. All the frames are coded as intra frames.
+  ALLINTRA
+} UENUM1BYTE(MODE);
 
 #ifdef __cplusplus
 }  // extern "C"

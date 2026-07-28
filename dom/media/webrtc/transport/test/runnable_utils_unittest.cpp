@@ -1,22 +1,18 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Original author: ekr@rtfm.com
-#include <iostream>
+#include "runnable_utils.h"
 
-#include "nsCOMPtr.h"
-#include "nsNetCID.h"
+#include <iostream>
 
 #include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
-
+#include "nsCOMPtr.h"
+#include "nsNetCID.h"
 #include "nsServiceManagerUtils.h"
 #include "nsThreadUtils.h"
-
-#include "runnable_utils.h"
 
 #define GTEST_HAS_RTTI 0
 #include "gtest/gtest.h"

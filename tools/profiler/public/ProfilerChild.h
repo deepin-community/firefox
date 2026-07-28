@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -81,6 +79,10 @@ class ProfilerChild final : public PProfilerChild,
   void ProcessChunkManagerUpdate(
       ProfileBufferControlledChunkManager::Update&& aUpdate);
 
+  void JoinGatherProfileThread();
+
+  static void ClearPendingUpdate();
+
   static void GatherProfileThreadFunction(void* already_AddRefedParameters);
 
   nsCOMPtr<nsIThread> mThread;
@@ -99,6 +101,9 @@ class ProfilerChild final : public PProfilerChild,
       sPendingChunkManagerUpdate;
 
   RefPtr<ProgressLogger::SharedProgress> mGatherProfileProgress;
+
+  // Handle to the gather profile thread so we can join it.
+  PRThread* mGatherProfileThread = nullptr;
 };
 
 }  // namespace mozilla

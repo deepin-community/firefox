@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,9 +6,9 @@
 #define DOMIntersectionObserver_h
 
 #include "mozilla/Attributes.h"
-#include "mozilla/dom/IntersectionObserverBinding.h"
 #include "mozilla/ServoStyleConsts.h"
 #include "mozilla/Variant.h"
+#include "mozilla/dom/IntersectionObserverBinding.h"
 #include "nsDOMNavigationTiming.h"
 #include "nsTArray.h"
 #include "nsTHashSet.h"
@@ -73,12 +71,10 @@ class DOMIntersectionObserverEntry final : public nsISupports,
   double mIntersectionRatio;
 };
 
-#define NS_DOM_INTERSECTION_OBSERVER_IID             \
-  {                                                  \
-    0x8570a575, 0xe303, 0x4d18, {                    \
-      0xb6, 0xb1, 0x4d, 0x2b, 0x49, 0xd8, 0xef, 0x94 \
-    }                                                \
-  }
+#define NS_DOM_INTERSECTION_OBSERVER_IID \
+  {0x8570a575, 0xe303, 0x4d18, {0xb6, 0xb1, 0x4d, 0x2b, 0x49, 0xd8, 0xef, 0x94}}
+
+using IntersectionObserverMargin = StyleRect<LengthPercentage>;
 
 // An input suitable to compute intersections with multiple targets.
 struct IntersectionInput {
@@ -93,6 +89,8 @@ struct IntersectionInput {
   nsRect mRootRect;
   // The root margin computed against the root rect.
   nsMargin mRootMargin;
+  // The scroll margin computed against the root rect.
+  IntersectionObserverMargin mScrollMargin;
   // If this is in an OOP iframe, the visible rect of the OOP frame.
   Maybe<nsRect> mRemoteDocumentVisibleRect;
 };
@@ -102,6 +100,10 @@ struct IntersectionOutput {
   const nsRect mRootBounds;
   const nsRect mTargetRect;
   const Maybe<nsRect> mIntersectionRect;
+  // See aPreservesAxisAlignedRectangles of
+  // nsLayoutUtils::TransformFrameRectToAncestor().
+  // https://searchfox.org/firefox-main/rev/e2cbda2dd0f622553b5c825f319832db4863f6a4/layout/base/nsLayoutUtils.h#829-830
+  const bool mPreservesAxisAlignedRectangles;
 
   bool Intersects() const { return mIntersectionRect.isSome(); }
 };
@@ -119,7 +121,7 @@ class DOMIntersectionObserver final : public nsISupports,
                           dom::IntersectionCallback& aCb);
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(DOMIntersectionObserver)
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_DOM_INTERSECTION_OBSERVER_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_DOM_INTERSECTION_OBSERVER_IID)
 
   static already_AddRefed<DOMIntersectionObserver> Constructor(
       const GlobalObject&, dom::IntersectionCallback&, ErrorResult&);
@@ -139,22 +141,36 @@ class DOMIntersectionObserver final : public nsISupports,
   void GetRootMargin(nsACString&);
   bool SetRootMargin(const nsACString&);
 
+  void GetScrollMargin(nsACString&);
+  bool SetScrollMargin(const nsACString&);
+
   void GetThresholds(nsTArray<double>& aRetVal);
   void Observe(Element& aTarget);
   void Unobserve(Element& aTarget);
+  [[nodiscard]] bool Observes(Element& aTarget) const;
 
   void UnlinkTarget(Element& aTarget);
   void Disconnect();
 
   void TakeRecords(nsTArray<RefPtr<DOMIntersectionObserverEntry>>& aRetVal);
 
+  static IntersectionInput ComputeInputForIframeThrottling(const Document&);
   static IntersectionInput ComputeInput(
       const Document& aDocument, const nsINode* aRoot,
-      const StyleRect<LengthPercentage>* aRootMargin);
+      const StyleRect<LengthPercentage>* aRootMargin,
+      const StyleRect<LengthPercentage>* aScrollMargin);
 
   enum class IsForProximityToViewport : bool { No, Yes };
+  enum class BoxToUse : uint8_t {
+    Content,
+    Border,
+    OverflowClip,
+  };
   static IntersectionOutput Intersect(
-      const IntersectionInput&, const Element&,
+      const IntersectionInput&, const Element&, BoxToUse = BoxToUse::Border,
+      IsForProximityToViewport = IsForProximityToViewport::No);
+  static IntersectionOutput Intersect(
+      const IntersectionInput&, nsIFrame*, BoxToUse = BoxToUse::Border,
       IsForProximityToViewport = IsForProximityToViewport::No);
   // Intersects with a given rect, already relative to the root frame.
   static IntersectionOutput Intersect(const IntersectionInput&, const nsRect&);
@@ -183,6 +199,7 @@ class DOMIntersectionObserver final : public nsISupports,
   Variant<RefPtr<dom::IntersectionCallback>, NativeCallback> mCallback;
   RefPtr<nsINode> mRoot;
   StyleRect<LengthPercentage> mRootMargin;
+  StyleRect<LengthPercentage> mScrollMargin;
   AutoTArray<double, 1> mThresholds;
 
   // These hold raw pointers which are explicitly cleared by UnlinkTarget().
@@ -202,9 +219,6 @@ class DOMIntersectionObserver final : public nsISupports,
   nsTArray<RefPtr<DOMIntersectionObserverEntry>> mQueuedEntries;
   bool mConnected = false;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(DOMIntersectionObserver,
-                              NS_DOM_INTERSECTION_OBSERVER_IID)
 
 }  // namespace mozilla::dom
 

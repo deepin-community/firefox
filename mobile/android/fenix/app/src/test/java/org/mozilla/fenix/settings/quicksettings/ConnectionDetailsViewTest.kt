@@ -20,9 +20,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.databinding.ConnectionDetailsWebsiteInfoBinding
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class ConnectionDetailsViewTest {
 
     private lateinit var view: ConnectionDetailsView
@@ -47,7 +47,7 @@ class ConnectionDetailsViewTest {
             WebsiteInfoState(
                 websiteUrl = websiteUrl,
                 websiteTitle = "Mozilla",
-                websiteSecurityUiValues = WebsiteSecurityUiValues.SECURE,
+                websiteInfoUiValues = WebsiteInfoUiValues.SECURE,
                 certificateName = "",
             ),
         )
@@ -64,7 +64,7 @@ class ConnectionDetailsViewTest {
             WebsiteInfoState(
                 websiteUrl = "https://mozilla.org",
                 websiteTitle = "Mozilla",
-                websiteSecurityUiValues = WebsiteSecurityUiValues.INSECURE,
+                websiteInfoUiValues = WebsiteInfoUiValues.INSECURE,
                 certificateName = "Certificate",
             ),
         )
@@ -78,7 +78,7 @@ class ConnectionDetailsViewTest {
             WebsiteInfoState(
                 websiteUrl = "https://mozilla.org",
                 websiteTitle = "Mozilla",
-                websiteSecurityUiValues = WebsiteSecurityUiValues.INSECURE,
+                websiteInfoUiValues = WebsiteInfoUiValues.INSECURE,
                 certificateName = "Certificate",
             ),
         )

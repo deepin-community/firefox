@@ -153,6 +153,7 @@ export class _RemoteL10n {
 
   // If `string_id` is present it means we are relying on fluent for translations.
   // Otherwise, we have a vanilla string.
+  // attributes: Fluent arguments to be used in substitutions in the string specified by the string_id
   setString(el, { content, attributes = {} }) {
     if (content && content.string_id) {
       for (let [fluentId, value] of Object.entries(attributes)) {
@@ -162,6 +163,24 @@ export class _RemoteL10n {
     } else {
       el.textContent = content;
     }
+  }
+
+  get cfrFluentFileDir() {
+    return PathUtils.join(
+      Services.dirsvc.get("ProfLD", Ci.nsIFile).path,
+      "settings",
+      "main",
+      "ms-language-packs"
+    );
+  }
+
+  get cfrFluentFilePath() {
+    return PathUtils.join(
+      this.cfrFluentFileDir,
+      "browser",
+      "newtab",
+      "asrouter.ftl"
+    );
   }
 
   /**
@@ -176,23 +195,17 @@ export class _RemoteL10n {
     let useRemoteL10n = Services.prefs.getBoolPref(USE_REMOTE_L10N_PREF, true);
     if (useRemoteL10n && !L10nRegistry.getInstance().hasSource("cfr")) {
       const appLocale = Services.locale.appLocaleAsBCP47;
-      const l10nFluentDir = PathUtils.join(
-        Services.dirsvc.get("ProfLD", Ci.nsIFile).path,
-        "settings",
-        "main",
-        "ms-language-packs"
-      );
       let cfrIndexedFileSource = new L10nFileSource(
         "cfr",
         "app",
         [appLocale],
-        `file://${l10nFluentDir}/`,
+        `${PathUtils.toFileURI(this.cfrFluentFileDir)}/`,
         {
           addResourceOptions: {
             allowOverrides: true,
           },
         },
-        [`file://${l10nFluentDir}/browser/newtab/asrouter.ftl`]
+        [PathUtils.toFileURI(this.cfrFluentFilePath)]
       );
       L10nRegistry.getInstance().registerSources([cfrIndexedFileSource]);
     } else if (!useRemoteL10n && L10nRegistry.getInstance().hasSource("cfr")) {
@@ -204,6 +217,10 @@ export class _RemoteL10n {
         "branding/brand.ftl",
         "browser/defaultBrowserNotification.ftl",
         "browser/newtab/asrouter.ftl",
+        "browser/policy-messages.ftl",
+        "browser/profiles.ftl",
+        "browser/termsofuse.ftl",
+        "preview/aiWindow.ftl",
         "toolkit/branding/brandings.ftl",
       ],
       false
@@ -232,13 +249,17 @@ export class _RemoteL10n {
    * otherwise return `localizableText` unmodified.
    *
    * @param {object|string} `localizableText` to format.
+   * attributes: Fluent arguments to be used in substitutions in the string specified by the string_id
    * @return {string} formatted text.
    */
-  async formatLocalizableText(localizableText) {
+  async formatLocalizableText(localizableText, attributes) {
     if (typeof localizableText !== "string") {
       // It's more useful to get an error than passing through an object without
       // a `string_id` field.
-      let value = await this.l10n.formatValue(localizableText.string_id);
+      let value = await this.l10n.formatValue(
+        localizableText.string_id,
+        attributes
+      );
       return value;
     }
     return localizableText;

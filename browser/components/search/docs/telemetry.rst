@@ -1,8 +1,13 @@
-Telemetry
-=========
+.. _browser-search-telemetry:
+
+Search UI Telemetry
+===================
 
 This section describes existing telemetry probes measuring interaction with
 search engines from the browser UI.
+
+This document only covers Legacy telemetry, not Glean telemetry.
+Glean metrics are self-documenting and can be looked up in the Glean dictionary.
 
 Other search-related telemetry is recorded by Toolkit such as search service
 telemetry and telemetry related to fetching search suggestions. Toolkit search
@@ -18,7 +23,8 @@ Glossary
 
 SAP
   Search Access Point, a search that a user performs by visiting
-  via one of Firefox's access points using the associated partner codes.
+  via one of Firefox's access points. The search may or may not have an
+  associated partner code.
 
 SERP
   A search engine results page.
@@ -63,8 +69,17 @@ BrowserSearchTelemetry.sys.mjs
 
 This telemetry is handled by `BrowserSearchTelemetry.sys.mjs`_.
 
+sap.counts
+^^^^^^^^^^
+
+  See the `sap.counts Event documentation`_ for more information.
+
 SEARCH_COUNTS - SAP usage
 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  Note: This probe is reflected into the Glean probe ``sap.deprecated_counts``,
+  which should not be used for ongoing measurements. Use the new ``sap.counts``
+  event instead.
 
   This histogram tracks search engines and Search Access Points. It is augmented
   by multiple SAPs, including the urlbar.
@@ -82,12 +97,15 @@ SEARCH_COUNTS - SAP usage
     - ``contextmenu``
     - ``newtab``
     - ``searchbar``
+    - ``smartbar`` Used when searching from Smart Window.
+    - ``smartwindow_assistant`` Used when searching from Smart Window assistant.
     - ``system``
     - ``urlbar`` Except aliases and search mode.
     - ``urlbar-handoff`` Used when searching from about:newtab.
     - ``urlbar-persisted`` Used when searching from the Urlbar while it
       was in a Persisted Search state.
-    - ``urlbar-searchmode`` Used when the Urlbar is in search mode.
+    - ``urlbar-searchmode`` Used when the Urlbar is in search mode or the search
+      was started using the unified search button popup.
     - ``webextension``
 
 browser.engagement.navigation.*
@@ -105,6 +123,8 @@ browser.engagement.navigation.*
       was in a Persisted Search state.
     - ``urlbar_searchmode``  Used when the Urlbar is in search mode.
     - ``searchbar``
+    - ``smartbar`` Used when searching from Smart Window.
+    - ``smartwindow_assistant`` Used when searching from Smart Window assistant.
     - ``about_home``
     - ``about_newtab``
     - ``contextmenu``
@@ -128,14 +148,6 @@ browser.engagement.navigation.*
     - ``search_suggestion``
       For ``urlbar`` or ``searchbar``, indicates the user confirmed a search
       suggestion.
-
-navigation.search (OBSOLETE)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-  This is a legacy and disabled event telemetry that is currently under
-  discussion for removal or modernization. It can't be enabled through a pref.
-  it's more or less equivalent to browser.engagement.navigation, but can also
-  report the picked search engine.
 
 SearchSERPTelemetry.sys.mjs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -172,6 +184,8 @@ browser.search.content.*
     was in a Persisted Search state.
   - ``urlbar_searchmode``  Used when the Urlbar is in search mode.
   - ``searchbar``
+  - ``smartbar`` Used when searching from Smart Window.
+  - ``smartwindow_assistant`` Used for search hand-off from Smart Window assistant.
   - ``about_home``
   - ``about_newtab``
   - ``contextmenu``
@@ -198,4 +212,5 @@ browser.search.adclicks.*
 
 .. _additional telemetry of its own: /browser/urlbar/telemetry.html
 .. _SearchSERPTelemetry.sys.mjs and the associated parent/child actors: https://searchfox.org/mozilla-central/search?q=&path=SearchSERPTelemetry*.sys.mjs&case=false&regexp=false
-.. _BrowserSearchTelemetry: https://searchfox.org/mozilla-central/source/browser/components/search/BrowserSearchTelemetry.sys.mjs
+.. _BrowserSearchTelemetry: :searchfox:`browser/components/search/BrowserSearchTelemetry.sys.mjs`
+.. _sap.counts Event documentation: https://dictionary.telemetry.mozilla.org/apps/firefox_desktop/metrics/sap_counts

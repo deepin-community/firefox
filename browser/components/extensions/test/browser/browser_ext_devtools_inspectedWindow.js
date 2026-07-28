@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 loadTestSubscript("head_devtools.js");
@@ -139,9 +137,8 @@ add_task(async function test_devtools_inspectedWindow_tabId() {
 
   await extension.startup();
 
-  let backgroundPageCurrentTabId = await extension.awaitMessage(
-    "current-tab-id"
-  );
+  let backgroundPageCurrentTabId =
+    await extension.awaitMessage("current-tab-id");
 
   await openToolboxForTab(tab);
 

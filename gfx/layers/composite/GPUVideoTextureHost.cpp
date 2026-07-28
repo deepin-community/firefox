@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,7 @@
 #include "GPUVideoTextureHost.h"
 
 #include "ImageContainer.h"
-#include "mozilla/RemoteDecoderManagerParent.h"
+#include "mozilla/RemoteMediaManagerParent.h"
 #include "mozilla/layers/ImageBridgeParent.h"
 #include "mozilla/layers/VideoBridgeParent.h"
 #include "mozilla/webrender/RenderTextureHostWrapper.h"
@@ -100,6 +98,14 @@ gfx::ColorRange GPUVideoTextureHost::GetColorRange() const {
     return TextureHost::GetColorRange();
   }
   return mWrappedTextureHost->GetColorRange();
+}
+
+gfx::TransferFunction GPUVideoTextureHost::GetTransferFunction() const {
+  MOZ_ASSERT(mWrappedTextureHost, "Image isn't valid yet");
+  if (!mWrappedTextureHost) {
+    return TextureHost::GetTransferFunction();
+  }
+  return mWrappedTextureHost->GetTransferFunction();
 }
 
 gfx::IntSize GPUVideoTextureHost::GetSize() const {
@@ -209,6 +215,12 @@ void GPUVideoTextureHost::NotifyNotUsed() {
   TextureHost::NotifyNotUsed();
 }
 
+void GPUVideoTextureHost::SetReadFence(Fence* aReadFence) {
+  if (EnsureWrappedTextureHost()) {
+    EnsureWrappedTextureHost()->SetReadFence(aReadFence);
+  }
+}
+
 BufferTextureHost* GPUVideoTextureHost::AsBufferTextureHost() {
   if (EnsureWrappedTextureHost()) {
     return EnsureWrappedTextureHost()->AsBufferTextureHost();
@@ -219,6 +231,13 @@ BufferTextureHost* GPUVideoTextureHost::AsBufferTextureHost() {
 DXGITextureHostD3D11* GPUVideoTextureHost::AsDXGITextureHostD3D11() {
   if (EnsureWrappedTextureHost()) {
     return EnsureWrappedTextureHost()->AsDXGITextureHostD3D11();
+  }
+  return nullptr;
+}
+
+DXGIYCbCrTextureHostD3D11* GPUVideoTextureHost::AsDXGIYCbCrTextureHostD3D11() {
+  if (EnsureWrappedTextureHost()) {
+    return mWrappedTextureHost->AsDXGIYCbCrTextureHostD3D11();
   }
   return nullptr;
 }
@@ -242,6 +261,13 @@ bool GPUVideoTextureHost::NeedsDeferredDeletion() const {
     return TextureHost::NeedsDeferredDeletion();
   }
   return mWrappedTextureHost->NeedsDeferredDeletion();
+}
+
+bool GPUVideoTextureHost::NeedsYFlip() const {
+  if (!mWrappedTextureHost) {
+    return TextureHost::NeedsYFlip();
+  }
+  return mWrappedTextureHost->NeedsYFlip();
 }
 
 }  // namespace layers

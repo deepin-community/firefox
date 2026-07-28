@@ -3,17 +3,22 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-import json
 import os
 import re
+from typing import Literal, Optional
 
+from taskgraph.util import json
 from taskgraph.util.schema import Schema
-from taskgraph.util.taskcluster import get_artifact_path, get_artifact_url
-from voluptuous import Extra, Optional, Required
+from taskgraph.util.taskcluster import get_artifact_path
 
 from gecko_taskgraph.transforms.job import configure_taskdesc_for_run, run_job_using
-from gecko_taskgraph.transforms.job.common import get_expiration, support_vcs_checkout
-from gecko_taskgraph.transforms.test import normpath, test_description_schema
+from gecko_taskgraph.transforms.job.common import (
+    docker_worker_add_artifacts,
+    generic_worker_add_artifacts,
+    get_expiration,
+    support_vcs_checkout,
+)
+from gecko_taskgraph.transforms.test import TestDescriptionSchema, normpath
 from gecko_taskgraph.util.attributes import is_try
 from gecko_taskgraph.util.chunking import get_test_tags
 from gecko_taskgraph.util.perftest import is_external_browser
@@ -39,30 +44,28 @@ def get_variant(test_platform):
     return ""
 
 
-mozharness_test_run_schema = Schema(
-    {
-        Required("using"): "mozharness-test",
-        Required("test"): {
-            Required("test-platform"): str,
-            Required("mozharness"): test_description_schema["mozharness"],
-            Required("docker-image"): test_description_schema["docker-image"],
-            Required("loopback-video"): test_description_schema["loopback-video"],
-            Required("loopback-audio"): test_description_schema["loopback-audio"],
-            Required("max-run-time"): test_description_schema["max-run-time"],
-            Optional("retry-exit-status"): test_description_schema["retry-exit-status"],
-            Extra: object,
-        },
-        # Base work directory used to set up the task.
-        Optional("workdir"): str,
-    }
-)
+class MozharnessTestSchema(Schema, forbid_unknown_fields=False, kw_only=True):
+    test_platform: str
+    mozharness: TestDescriptionSchema.__annotations__["mozharness"]  # noqa: F821
+    docker_image: TestDescriptionSchema.__annotations__[
+        "docker_image"  # noqa: F821
+    ]
+    loopback_video: TestDescriptionSchema.__annotations__["loopback_video"]  # noqa: F821
+    loopback_audio: TestDescriptionSchema.__annotations__["loopback_audio"]  # noqa: F821
+    max_run_time: TestDescriptionSchema.__annotations__["max_run_time"]  # noqa: F821
+    retry_exit_status: TestDescriptionSchema.__annotations__["retry_exit_status"] = None
+
+
+class MozharnessTestRunSchema(Schema, kw_only=True):
+    using: Literal["mozharness-test"]
+    test: MozharnessTestSchema  # noqa: F821
+    # Base work directory used to set up the task.
+    workdir: Optional[str] = None
 
 
 def test_packages_url(taskdesc):
     """Account for different platforms that name their test packages differently"""
-    artifact_url = get_artifact_url(
-        "<build>", get_artifact_path(taskdesc, "target.test_packages.json")
-    )
+    artifact_path = "target.test_packages.json"
     # for android shippable we need to add 'en-US' to the artifact url
     test = taskdesc["run"]["test"]
     if (
@@ -73,9 +76,8 @@ def test_packages_url(taskdesc):
         )
         and not is_external_browser(test.get("try-name", ""))
     ):
-        head, tail = os.path.split(artifact_url)
-        artifact_url = os.path.join(head, "en-US", tail)
-    return artifact_url
+        artifact_path = os.path.join("en-US", artifact_path)
+    return f"<build/{get_artifact_path(taskdesc, artifact_path)}>"
 
 
 def installer_url(taskdesc):
@@ -83,19 +85,12 @@ def installer_url(taskdesc):
     mozharness = test["mozharness"]
 
     if "installer-url" in mozharness:
-        installer_url = mozharness["installer-url"]
-    else:
-        upstream_task = (
-            "<build-signing>" if mozharness["requires-signed-builds"] else "<build>"
-        )
-        installer_url = get_artifact_url(
-            upstream_task, mozharness["build-artifact-name"]
-        )
-
-    return installer_url
+        return mozharness["installer-url"]
+    upstream_task = "build-signing" if mozharness["requires-signed-builds"] else "build"
+    return f"<{upstream_task}/{mozharness['build-artifact-name']}>"
 
 
-@run_job_using("docker-worker", "mozharness-test", schema=mozharness_test_run_schema)
+@run_job_using("docker-worker", "mozharness-test", schema=MozharnessTestRunSchema)
 def mozharness_test_on_docker(config, job, taskdesc):
     run = job["run"]
     test = taskdesc["run"]["test"]
@@ -109,8 +104,8 @@ def mozharness_test_on_docker(config, job, taskdesc):
     worker["loopback-audio"] = test["loopback-audio"]
     worker["max-run-time"] = test["max-run-time"]
     worker["retry-exit-status"] = test["retry-exit-status"]
-    if "android-em-7.0-x86" in test["test-platform"]:
-        worker["privileged"] = True
+    if "android-em-" in test["test-platform"]:
+        worker["kvm"] = True
 
     artifacts = [
         # (artifact name prefix, in-image path)
@@ -124,54 +119,55 @@ def mozharness_test_on_docker(config, job, taskdesc):
 
     installer = installer_url(taskdesc)
 
-    mozharness_url = get_artifact_url(
-        "<build>", get_artifact_path(taskdesc, "mozharness.zip")
-    )
-
     worker.setdefault("artifacts", [])
-    worker["artifacts"].extend(
-        [
-            {
-                "name": prefix,
-                "path": os.path.join("{workdir}/workspace".format(**run), path),
-                "type": "directory",
-                "expires-after": get_expiration(config, "default"),
-            }
-            for (prefix, path) in artifacts
-        ]
-    )
+    worker["artifacts"].extend([
+        {
+            "name": prefix,
+            "path": os.path.join("{workdir}/workspace".format(**run), path),
+            "type": "directory",
+            "expires-after": get_expiration(config, "default"),
+        }
+        for (prefix, path) in artifacts
+    ])
+    worker["artifacts"].append({
+        "name": "public/xsession-errors.log",
+        "path": "{workdir}/.xsession-errors".format(**run),
+        "type": "file",
+        "expires-after": get_expiration(config, "default"),
+    })
+    docker_worker_add_artifacts(config, job, taskdesc)
 
     env = worker.setdefault("env", {})
-    env.update(
-        {
-            "MOZHARNESS_CONFIG": " ".join(mozharness["config"]),
-            "MOZHARNESS_SCRIPT": mozharness["script"],
-            "MOZILLA_BUILD_URL": {"task-reference": installer},
-            "NEED_PULSEAUDIO": "true",
-            "NEED_WINDOW_MANAGER": "true",
-            "ENABLE_E10S": str(bool(test.get("e10s"))).lower(),
-            "WORKING_DIR": "/builds/worker",
-        }
-    )
+    env.update({
+        "MOZHARNESS_CONFIG": " ".join(mozharness["config"]),
+        "MOZHARNESS_SCRIPT": mozharness["script"],
+        "MOZILLA_BUILD_URL": {"artifact-reference": installer},
+        "NEED_WINDOW_MANAGER": "true",
+        "ENABLE_E10S": str(bool(test.get("e10s"))).lower(),
+        "WORKING_DIR": "/builds/worker",
+    })
 
     env["PYTHON"] = "python3"
 
-    # Legacy linux64 tests rely on compiz.
-    if test.get("docker-image", {}).get("in-tree") == "desktop1604-test":
-        env.update({"NEED_COMPIZ": "true"})
-
-    # Bug 1602701/1601828 - use compiz on ubuntu1804 due to GTK asynchiness
-    # when manipulating windows.
     if test.get("docker-image", {}).get("in-tree") == "ubuntu1804-test":
+        env["NEED_PULSEAUDIO"] = "true"
+
+        # Bug 1602701/1601828 - use compiz on ubuntu1804 due to GTK asynchiness
+        # when manipulating windows.
         if "wdspec" in job["run"]["test"]["suite"] or (
             "marionette" in job["run"]["test"]["suite"]
             and "headless" not in job["label"]
         ):
             env.update({"NEED_COMPIZ": "true"})
 
+    if test.get("docker-image", {}).get("in-tree") == "ubuntu2404-test":
+        env["NEED_PIPEWIRE"] = "true"
+
     # Set MOZ_ENABLE_WAYLAND env variables to enable Wayland backend.
     if "wayland" in job["label"]:
         env["MOZ_ENABLE_WAYLAND"] = "1"
+    else:
+        assert "MOZ_ENABLE_WAYLAND" not in env
 
     if mozharness.get("mochitest-flavor"):
         env["MOCHITEST_FLAVOR"] = mozharness["mochitest-flavor"]
@@ -191,9 +187,10 @@ def mozharness_test_on_docker(config, job, taskdesc):
             "reboot: {} not supported on generic-worker".format(test["reboot"])
         )
 
-    # Support vcs checkouts regardless of whether the task runs from
-    # source or not in case it is needed on an interactive loaner.
-    support_vcs_checkout(config, job, taskdesc)
+    if not test["checkout"]:
+        # Support vcs checkouts regardless of whether the task runs from
+        # source or not in case it is needed on an interactive loaner.
+        support_vcs_checkout(config, job, taskdesc, config.repo_configs)
 
     # If we have a source checkout, run mozharness from it instead of
     # downloading a zip file with the same content.
@@ -202,14 +199,15 @@ def mozharness_test_on_docker(config, job, taskdesc):
             **run
         )
     else:
-        env["MOZHARNESS_URL"] = {"task-reference": mozharness_url}
+        mozharness_url = f"<build/{get_artifact_path(taskdesc, 'mozharness.zip')}>"
+        env["MOZHARNESS_URL"] = {"artifact-reference": mozharness_url}
 
     extra_config = {
         "installer_url": installer,
         "test_packages_url": test_packages_url(taskdesc),
     }
     env["EXTRA_MOZHARNESS_CONFIG"] = {
-        "task-reference": json.dumps(extra_config, sort_keys=True)
+        "artifact-reference": json.dumps(extra_config, sort_keys=True)
     }
 
     # Bug 1634554 - pass in decision task artifact URL to mozharness for WPT.
@@ -234,12 +232,15 @@ def mozharness_test_on_docker(config, job, taskdesc):
     test_tags = get_test_tags(config, env)
     if test_tags:
         env["MOZHARNESS_TEST_TAG"] = json.dumps(test_tags)
-        command.extend(["--tag={}".format(x) for x in test_tags])
+        command.extend([f"--tag={x}" for x in test_tags])
 
     # TODO: remove the need for run['chunked']
     elif mozharness.get("chunked") or test["chunks"] > 1:
         command.append("--total-chunk={}".format(test["chunks"]))
         command.append("--this-chunk={}".format(test["this-chunk"]))
+
+    if test.get("timeoutfactor"):
+        command.append("--timeout-factor={}".format(test["timeoutfactor"]))
 
     if "download-symbols" in mozharness:
         download_symbols = mozharness["download-symbols"]
@@ -248,17 +249,19 @@ def mozharness_test_on_docker(config, job, taskdesc):
         )
         command.append("--download-symbols=" + download_symbols)
 
+    use_caches = test.get("use-caches", ["checkout", "pip", "uv"])
     job["run"] = {
         "workdir": run["workdir"],
         "tooltool-downloads": mozharness["tooltool-downloads"],
         "checkout": test["checkout"],
         "command": command,
+        "use-caches": use_caches,
         "using": "run-task",
     }
     configure_taskdesc_for_run(config, job, taskdesc, worker["implementation"])
 
 
-@run_job_using("generic-worker", "mozharness-test", schema=mozharness_test_run_schema)
+@run_job_using("generic-worker", "mozharness-test", schema=MozharnessTestRunSchema)
 def mozharness_test_on_generic_worker(config, job, taskdesc):
     test = taskdesc["run"]["test"]
     mozharness = test["mozharness"]
@@ -268,8 +271,12 @@ def mozharness_test_on_generic_worker(config, job, taskdesc):
 
     is_macosx = worker["os"] == "macosx"
     is_windows = worker["os"] == "windows"
-    is_linux = worker["os"] == "linux" or worker["os"] == "linux-bitbar"
+    is_linux = worker["os"] == "linux" or worker["os"] in [
+        "linux-bitbar",
+        "linux-lambda",
+    ]
     is_bitbar = worker["os"] == "linux-bitbar"
+    is_lambda = worker["os"] == "linux-lambda"
     assert is_macosx or is_windows or is_linux
 
     artifacts = [
@@ -281,18 +288,18 @@ def mozharness_test_on_generic_worker(config, job, taskdesc):
         }
     ]
 
+    generic_worker_add_artifacts(config, job, taskdesc)
+
     # jittest doesn't have blob_upload_dir
     if test["test-name"] != "jittest":
-        artifacts.append(
-            {
-                "name": "public/test_info",
-                "path": "build/blobber_upload_dir",
-                "type": "directory",
-                "expires-after": get_expiration(config, "default"),
-            }
-        )
+        artifacts.append({
+            "name": "public/test_info",
+            "path": "build/blobber_upload_dir",
+            "type": "directory",
+            "expires-after": get_expiration(config, "default"),
+        })
 
-    if is_bitbar:
+    if is_bitbar or is_lambda:
         artifacts = [
             {
                 "name": "public/test/",
@@ -350,40 +357,36 @@ def mozharness_test_on_generic_worker(config, job, taskdesc):
 
     # this list will get cleaned up / reduced / removed in bug 1354088
     if is_macosx:
-        env.update(
-            {
-                "LC_ALL": "en_US.UTF-8",
-                "LANG": "en_US.UTF-8",
-                "MOZ_NODE_PATH": "/usr/local/bin/node",
-                "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
-                "SHELL": "/bin/bash",
-            }
-        )
-    elif is_bitbar:
-        env.update(
-            {
-                "LANG": "en_US.UTF-8",
-                "MOZHARNESS_CONFIG": " ".join(mozharness["config"]),
-                "MOZHARNESS_SCRIPT": mozharness["script"],
-                "MOZHARNESS_URL": {
-                    "artifact-reference": "<build/public/build/mozharness.zip>"
-                },
-                "MOZILLA_BUILD_URL": {"task-reference": installer},
-                "NEED_XVFB": "false",
-                "XPCOM_DEBUG_BREAK": "warn",
-                "NO_FAIL_ON_TEST_ERRORS": "1",
-                "MOZ_HIDE_RESULTS_TABLE": "1",
-                "MOZ_NODE_PATH": "/usr/local/bin/node",
-                "TASKCLUSTER_WORKER_TYPE": job["worker-type"],
-            }
-        )
+        env.update({
+            "LC_ALL": "en_US.UTF-8",
+            "LANG": "en_US.UTF-8",
+            "MOZ_NODE_PATH": "/usr/local/bin/node",
+            "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+            "SHELL": "/bin/bash",
+        })
+    elif is_bitbar or is_lambda:
+        env.update({
+            "LANG": "en_US.UTF-8",
+            "MOZHARNESS_CONFIG": " ".join(mozharness["config"]),
+            "MOZHARNESS_SCRIPT": mozharness["script"],
+            "MOZHARNESS_URL": {
+                "artifact-reference": "<build/public/build/mozharness.zip>"
+            },
+            "MOZILLA_BUILD_URL": {"artifact-reference": installer},
+            "NEED_XVFB": "false",
+            "XPCOM_DEBUG_BREAK": "warn",
+            "NO_FAIL_ON_TEST_ERRORS": "1",
+            "MOZ_HIDE_RESULTS_TABLE": "1",
+            "MOZ_NODE_PATH": "/usr/local/bin/node",
+            "TASKCLUSTER_WORKER_TYPE": job["worker-type"],
+        })
 
     extra_config = {
         "installer_url": installer,
         "test_packages_url": test_packages_url(taskdesc),
     }
     env["EXTRA_MOZHARNESS_CONFIG"] = {
-        "task-reference": json.dumps(extra_config, sort_keys=True)
+        "artifact-reference": json.dumps(extra_config, sort_keys=True)
     }
 
     # Bug 1634554 - pass in decision task artifact URL to mozharness for WPT.
@@ -402,7 +405,7 @@ def mozharness_test_on_generic_worker(config, job, taskdesc):
             "-u",
             "mozharness\\scripts\\" + normpath(mozharness["script"]),
         ]
-    elif is_bitbar:
+    elif is_bitbar or is_lambda:
         py_binary = "python3"
         mh_command = ["bash", f"./{bitbar_script}"]
     elif is_macosx:
@@ -447,13 +450,18 @@ def mozharness_test_on_generic_worker(config, job, taskdesc):
 
     test_tags = get_test_tags(config, env)
     if test_tags:
-        env["MOZHARNESS_TEST_TAG"] = json.dumps(test_tags)
-        mh_command.extend(["--tag={}".format(x) for x in test_tags])
+        # do not add --tag for perf tests
+        if test["suite"] not in ["talos", "raptor"]:
+            env["MOZHARNESS_TEST_TAG"] = json.dumps(test_tags)
+            mh_command.extend([f"--tag={x}" for x in test_tags])
 
     # TODO: remove the need for run['chunked']
     elif mozharness.get("chunked") or test["chunks"] > 1:
         mh_command.append("--total-chunk={}".format(test["chunks"]))
         mh_command.append("--this-chunk={}".format(test["this-chunk"]))
+
+    if test.get("timeoutfactor"):
+        mh_command.append("--timeout-factor={}".format(test["timeoutfactor"]))
 
     if is_try(config.params):
         env["TRY_COMMIT_MSG"] = config.params["message"]
@@ -468,7 +476,7 @@ def mozharness_test_on_generic_worker(config, job, taskdesc):
             "format": "zip",
         }
     ]
-    if is_bitbar:
+    if is_bitbar or is_lambda:
         a_url = config.params.file_url(
             f"taskcluster/scripts/tester/{bitbar_script}",
         )
@@ -481,12 +489,14 @@ def mozharness_test_on_generic_worker(config, job, taskdesc):
             }
         ]
 
+    use_caches = test.get("use-caches", ["checkout", "pip", "uv"])
     job["run"] = {
         "tooltool-downloads": mozharness["tooltool-downloads"],
         "checkout": test["checkout"],
         "command": mh_command,
+        "use-caches": use_caches,
         "using": "run-task",
     }
-    if is_bitbar:
+    if is_bitbar or is_lambda:
         job["run"]["run-as-root"] = True
     configure_taskdesc_for_run(config, job, taskdesc, worker["implementation"])

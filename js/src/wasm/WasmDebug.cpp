@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2016 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +36,7 @@ DebugState::DebugState(const Code& code, const Module& module)
       module_(&module),
       enterFrameTrapsEnabled_(false),
       enterAndLeaveFrameTrapsCounter_(0) {
-  MOZ_RELEASE_ASSERT(code.codeMeta().debugEnabled);
+  MOZ_RELEASE_ASSERT(code.debugEnabled());
 }
 
 void DebugState::trace(JSTracer* trc) {
@@ -55,28 +53,33 @@ void DebugState::finalize(JS::GCContext* gcx) {
   }
 }
 
-static const CallSite* SlowCallSiteSearchByOffset(const CodeBlock& code,
-                                                  uint32_t offset) {
-  for (const CallSite& callSite : code.callSites) {
-    if (callSite.lineOrBytecode() == offset &&
-        callSite.kind() == CallSiteDesc::Breakpoint) {
-      return &callSite;
+static bool SlowCallSiteSearchByOffset(const CodeBlock& code, uint32_t offset,
+                                       CallSite* callSite) {
+  for (uint32_t callSiteIndex = 0; callSiteIndex < code.callSites.length();
+       callSiteIndex++) {
+    if (code.callSites.kind(callSiteIndex) == CallSiteKind::Breakpoint &&
+        code.callSites.bytecodeOffset(callSiteIndex).offset() == offset) {
+      *callSite = code.callSites.get(callSiteIndex, code.inliningContext);
+      return true;
     }
   }
-  return nullptr;
+  return false;
 }
 
 bool DebugState::getLineOffsets(size_t lineno, Vector<uint32_t>* offsets) {
-  const CallSite* callsite = SlowCallSiteSearchByOffset(debugCode(), lineno);
-  return !(callsite && !offsets->append(lineno));
+  CallSite callSite;
+  return !SlowCallSiteSearchByOffset(debugCode(), lineno, &callSite) ||
+         offsets->append(lineno);
 }
 
 bool DebugState::getAllColumnOffsets(Vector<ExprLoc>* offsets) {
-  for (const CallSite& callSite : debugCode().callSites) {
-    if (callSite.kind() != CallSite::Breakpoint) {
+  for (uint32_t callSiteIndex = 0;
+       callSiteIndex < debugCode().callSites.length(); callSiteIndex++) {
+    if (debugCode().callSites.kind(callSiteIndex) != CallSiteKind::Breakpoint) {
       continue;
     }
-    uint32_t offset = callSite.lineOrBytecode();
+    uint32_t offset =
+        debugCode().callSites.bytecodeOffset(callSiteIndex).offset();
     if (!offsets->emplaceBack(
             offset,
             JS::WasmFunctionIndex::DefaultBinarySourceColumnNumberOneOrigin,
@@ -89,7 +92,8 @@ bool DebugState::getAllColumnOffsets(Vector<ExprLoc>* offsets) {
 
 bool DebugState::getOffsetLocation(uint32_t offset, uint32_t* lineno,
                                    JS::LimitedColumnNumberOneOrigin* column) {
-  if (!SlowCallSiteSearchByOffset(debugCode(), offset)) {
+  CallSite callSite;
+  if (!SlowCallSiteSearchByOffset(debugCode(), offset, &callSite)) {
     return false;
   }
   *lineno = offset;
@@ -142,11 +146,12 @@ void DebugState::decrementStepperCount(JS::GCContext* gcx, Instance* instance,
   bool anyEnterAndLeave = enterAndLeaveFrameTrapsCounter_ > 0;
 
   bool keepDebugging = false;
-  for (const CallSite& callSite : debugCode().callSites) {
-    if (callSite.kind() != CallSite::Breakpoint) {
+  for (uint32_t callSiteIndex = 0;
+       callSiteIndex < debugCode().callSites.length(); callSiteIndex++) {
+    if (debugCode().callSites.kind(callSiteIndex) != CallSiteKind::Breakpoint) {
       continue;
     }
-    uint32_t offset = callSite.returnAddressOffset();
+    uint32_t offset = debugCode().callSites.returnAddressOffset(callSiteIndex);
     if (codeRange.begin() <= offset && offset <= codeRange.end()) {
       keepDebugging = keepDebugging || breakpointSites_.has(offset);
     }
@@ -161,20 +166,20 @@ void DebugState::decrementStepperCount(JS::GCContext* gcx, Instance* instance,
 }
 
 bool DebugState::hasBreakpointTrapAtOffset(uint32_t offset) {
-  return SlowCallSiteSearchByOffset(debugCode(), offset);
+  CallSite callSite;
+  return SlowCallSiteSearchByOffset(debugCode(), offset, &callSite);
 }
 
 void DebugState::toggleBreakpointTrap(JSRuntime* rt, Instance* instance,
                                       uint32_t offset, bool enabled) {
-  const CallSite* callSite = SlowCallSiteSearchByOffset(debugCode(), offset);
-  if (!callSite) {
+  CallSite callSite;
+  if (!SlowCallSiteSearchByOffset(debugCode(), offset, &callSite)) {
     return;
   }
-  size_t debugTrapOffset = callSite->returnAddressOffset();
+  size_t debugTrapOffset = callSite.returnAddressOffset();
 
-  const CodeSegment& codeSegment = debugSegment();
   const CodeRange* codeRange =
-      code_->lookupFuncRange(codeSegment.base() + debugTrapOffset);
+      code_->lookupFuncRange(debugCode().base() + debugTrapOffset);
   MOZ_ASSERT(codeRange);
 
   uint32_t funcIndex = codeRange->funcIndex();
@@ -260,9 +265,8 @@ void DebugState::clearBreakpointsIn(JS::GCContext* gcx,
   if (breakpointSites_.empty()) {
     return;
   }
-  for (WasmBreakpointSiteMap::Enum e(breakpointSites_); !e.empty();
-       e.popFront()) {
-    WasmBreakpointSite* site = e.front().value();
+  for (auto iter = breakpointSites_.modIter(); !iter.done(); iter.next()) {
+    WasmBreakpointSite* site = iter.get().value();
     MOZ_ASSERT(site->instanceObject == instance);
 
     Breakpoint* nextbp;
@@ -276,7 +280,7 @@ void DebugState::clearBreakpointsIn(JS::GCContext* gcx,
     }
     if (site->isEmpty()) {
       gcx->delete_(instance, site, MemoryUse::BreakpointSite);
-      e.removeFront();
+      iter.remove();
     }
   }
 }
@@ -292,7 +296,7 @@ void DebugState::disableDebuggingForFunction(Instance* instance,
 }
 
 void DebugState::enableDebugTrapping(Instance* instance) {
-  instance->setDebugStub(code_->sharedStubs().segment->base() +
+  instance->setDebugStub(code_->sharedStubs().base() +
                          code_->debugStubOffset());
 }
 
@@ -331,13 +335,12 @@ void DebugState::adjustEnterAndLeaveFrameTrapsState(JSContext* cx,
       for (auto iter = breakpointSites_.iter();
            !iter.done() && !mustLeaveEnabled; iter.next()) {
         WasmBreakpointSite* site = iter.get().value();
-        const CallSite* callSite =
-            SlowCallSiteSearchByOffset(debugCode(), site->offset);
-        if (callSite) {
-          size_t debugTrapOffset = callSite->returnAddressOffset();
-          const CodeSegment& codeSegment = debugSegment();
+        CallSite callSite;
+        const CodeBlock& codeBlock = debugCode();
+        if (SlowCallSiteSearchByOffset(codeBlock, site->offset, &callSite)) {
+          size_t debugTrapOffset = callSite.returnAddressOffset();
           const CodeRange* codeRange =
-              code_->lookupFuncRange(codeSegment.base() + debugTrapOffset);
+              code_->lookupFuncRange(codeBlock.base() + debugTrapOffset);
           MOZ_ASSERT(codeRange);
           mustLeaveEnabled = codeRange->funcIndex() == funcIdx;
         }
@@ -382,9 +385,10 @@ bool DebugState::debugGetLocalTypes(uint32_t funcIndex, ValTypeVector* locals,
   }
 
   // Decode local var types from wasm binary function body.
-  uint32_t bytecodeOffset = codeMeta().funcBytecodeOffset(funcIndex);
-  Decoder d(bytecode().begin() + bytecodeOffset, bytecode().end(),
-            bytecodeOffset,
+  const BytecodeRange& funcRange = codeTailMeta().funcDefRange(funcIndex);
+  BytecodeSpan funcBytecode = codeTailMeta().funcDefBody(funcIndex);
+  Decoder d(funcBytecode.data(), funcBytecode.data() + funcBytecode.size(),
+            funcRange.start,
             /* error = */ nullptr);
   return DecodeValidatedLocalEntries(types, d, locals);
 }

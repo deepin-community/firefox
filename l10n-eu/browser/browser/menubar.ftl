@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Hobespenak
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Ezarpenak…
+menu-application-set-as-default =
+    .label = Ezarri { -brand-shorter-name } nabigatzaile lehenetsi gisa
 menu-application-services =
     .label = Zerbitzuak
 menu-application-hide-this =
@@ -97,6 +90,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Partekatu
     .accesskey = P
+menu-file-share-qrcode =
+    .label = Sortu QR kodea…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Sortu QR kodea
+    .accesskey = S
 menu-file-print-setup =
     .label = Prestatu orria…
     .accesskey = u
@@ -145,8 +144,6 @@ menu-view-history-button =
     .label = Historia
 menu-view-synced-tabs-sidebar =
     .label = Sinkronizatutako fitxak
-menu-view-megalist-sidebar =
-    .label = Pasahitzak
 menu-view-full-zoom =
     .label = Zooma
     .accesskey = Z
@@ -254,6 +251,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mugikorreko laster-markak
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profilak
+menu-profiles-manage-profiles =
+    .label = Kudeatu profilak
+menu-profiles-new-profile =
+    .label = Profil berria
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (unekoa)
+menu-profiles-menu =
+    .label = Profilak
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +275,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Deskargak
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = Hedapenak eta itxurak
+    .accesskey = H
 menu-tools-addons-and-themes =
     .label = Gehigarriak eta itxurak
     .accesskey = G

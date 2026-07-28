@@ -7,95 +7,108 @@
 
 autofill-manage-addresses-title = Saxlanılmış Ünvanlar
 autofill-manage-addresses-list-header = Ünvanlar
-
 autofill-manage-credit-cards-title = Saxlanılmış Kredit Kartları
 autofill-manage-credit-cards-list-header = Kredit kartları
-
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Sil
 autofill-manage-add-button = Əlavə et…
 autofill-manage-edit-button = Düzəlt…
 
-##
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Yeni ünvan əlavə et
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Ünvanı düzəlt
-
 autofill-address-given-name = Ad
 autofill-address-additional-name = İkinci ad
 autofill-address-family-name = Soyad
 autofill-address-organization = Təşkilat
 autofill-address-street = Küçə ünvanı
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Qonşuluq
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Qəsəbə və ya Şəhərcik
 autofill-address-island = Ada
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Townland
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Şəhər
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Rayon
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Poçt şəhərciyi
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Şəhər kənarı
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Əyalət
 autofill-address-state = Bölgə
 autofill-address-county = Dairə
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Qraflıq
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Prefektura
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Ərazi
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Şöbə
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Əmirlik
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Oblast
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pin
 autofill-address-postal-code = Poçt kodu
+# Postal code field.
 autofill-address-zip = ZIP kodu
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Yeni ünvan əlavə et
 autofill-address-country = Ölkə və ya Bölgə
 autofill-address-tel = Telefon
 autofill-address-email = E-poçt
-
 autofill-cancel-button = Ləğv et
 autofill-save-button = Saxla
 autofill-country-warning-message = Forma avto doldurma hazırda ancaq bəzi ölkələrdə mövcuddur.
-
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Yeni kredit kartı əlavə et
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Kredit kartını dəyişdir
-
+autofill-card-number-2 =
+    .label = Kart nömrəsi
 autofill-card-number = Kart nömrəsi
 autofill-card-invalid-number = Lütfən, keçərli kart nömrəsi daxil edin
+autofill-card-name-on-card-2 =
+    .label = Kart üzərindəki ad
+autofill-card-billing-address-2 =
+    .label = Faktura ünvanı
 autofill-card-name-on-card = Kart üzərindəki ad
 autofill-card-expires-month = Vaxtı çıxma ayı
 autofill-card-expires-year = Vaxtı çıxma ili

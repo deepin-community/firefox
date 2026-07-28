@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* This is a JavaScript module (JSM) to be imported via
-   ChromeUtils.import() and acts as a singleton.
+/* This is a JavaScript module to be imported via
+   ChromeUtils.importESModule() and acts as a singleton.
    Only the following listed symbols will exposed on import, and only when
    and where imported. */
 
@@ -37,13 +37,24 @@ export var BrowserTabs = {
    * @return Promise
    */
   async Add(uri) {
-    let mainWindow = Services.wm.getMostRecentWindow("navigator:browser");
+    // getMostRecentWindow may return the OAuth sign-in window that is still
+    // closing. Find a fully initialized browser window instead.
+    let mainWindow = null;
+    for (let win of Services.wm.getEnumerator("navigator:browser")) {
+      if (!win.closed && win.gBrowserInit?.delayedStartupFinished) {
+        mainWindow = win;
+        break;
+      }
+    }
+    if (!mainWindow) {
+      throw new Error("No fully initialized browser window found");
+    }
     let browser = mainWindow.gBrowser;
     let newtab = browser.addTrustedTab(uri);
 
     // Wait for the tab to load.
     await new Promise(resolve => {
-      let mm = browser.ownerGlobal.messageManager;
+      let mm = browser.documentGlobal.messageManager;
       mm.addMessageListener("tps:loadEvent", function onLoad() {
         mm.removeMessageListener("tps:loadEvent", onLoad);
         resolve();

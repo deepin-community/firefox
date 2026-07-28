@@ -27,7 +27,7 @@ about-private-browsing-get-privacy = Få ivaretaking av personvernet overalt der
 about-private-browsing-hide-activity-1 = Gøym nettlesaraktivitet og plasseringa di med { -mozilla-vpn-brand-name }. Eitt klikk skapar ei trygg tilkopling, sjølv på offentleg Wi-Fi.
 about-private-browsing-prominent-cta = Hald deg privat med { -mozilla-vpn-brand-name }
 about-private-browsing-focus-promo-cta = Last ned { -focus-brand-name }
-about-private-browsing-focus-promo-header = { -focus-brand-name }: Privat nettlesing medan du er på farten
+about-private-browsing-focus-promo-header = { -focus-brand-name }: Privat nettlesing medan du er på farta
 about-private-browsing-focus-promo-text = Vår dedikerte mobilapp for privat nettlesing slettar historikken og infokapslane kvar gong.
 
 ## The following strings will be used for experiments in Fx99 and Fx100
@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = La { -brand-short-name } a
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } tek seg av infokapselbanner for deg
 about-private-browsing-cookie-banners-promo-body = Vi nektar no automatisk mange infokapselbanner, slik at du kan sporast mindre og gå tilbake til distraksjonsfri surfing.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Etterlèt ingen spor på denne eininga
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } slettar infokapslar, historikk og nettstad-data, når du lèt att alle nettlesarvindauga.
 about-private-browsing-felt-privacy-v1-info-link = Kven kan kanskje sjå aktiviteten min?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Når du lèt att alle private vindauge, vert infokapslane, historikken og nettstaddataa dine sletta.
+about-private-browsing-nova-info-link = Kven kan framleis sjå aktiviteten min?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Du etterlèt ingen spor
+about-private-browsing-nova-info-subheader = Vi slettar alle søk og innloggingar når du lèt att dette vindauget. { -brand-short-name } sitt innebygde vern er også aktivt her, til dømes blokkering av sporarar.

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,6 +5,7 @@
 #ifndef TRRService_h_
 #define TRRService_h_
 
+#include "mozilla/Atomics.h"
 #include "mozilla/DataMutex.h"
 #include "nsHostResolver.h"
 #include "nsIObserver.h"
@@ -27,11 +27,12 @@ namespace net {
 class TRRServiceChild;
 class TRRServiceParent;
 
+const nsCString& TRRProviderKey();
+
 class TRRService : public TRRServiceBase,
                    public nsIObserver,
                    public nsSupportsWeakReference,
-                   public AHostResolver,
-                   public SingleWriterLockOwner {
+                   public AHostResolver {
  public:
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_NSIOBSERVER
@@ -39,8 +40,6 @@ class TRRService : public TRRServiceBase,
 
   TRRService();
   static TRRService* Get();
-
-  bool OnWritingThread() const override { return NS_IsMainThread(); }
 
   nsresult Init(bool aNativeHTTPSQueryEnabled);
   nsresult Start();
@@ -99,13 +98,14 @@ class TRRService : public TRRServiceBase,
   // Only called when TRR mode changed.
   static void SetCurrentTRRMode(nsIDNSService::ResolverMode aMode);
 
-  void InitTRRConnectionInfo() override;
+  void InitTRRConnectionInfo(bool aForceReinit = false) override;
 
   void DontUseTRRThread() { mDontUseTRRThread = true; }
 
  private:
   virtual ~TRRService();
 
+  friend class TRR;
   friend class TRRServiceChild;
   friend class TRRServiceParent;
   static void AddObserver(nsIObserver* aObserver,
@@ -124,7 +124,7 @@ class TRRService : public TRRServiceBase,
 
   bool IsDomainBlocked(const nsACString& aHost, const nsACString& aOriginSuffix,
                        bool aPrivateBrowsing);
-  bool IsExcludedFromTRR_unlocked(const nsACString& aHost);
+  bool IsExcludedFromTRR_unlocked(const nsACString& aHost) MOZ_REQUIRES(mLock);
 
   void RebuildSuffixList(nsTArray<nsCString>&& aSuffixList);
 
@@ -137,12 +137,12 @@ class TRRService : public TRRServiceBase,
   // or false if mPrivateURI already had that value.
   bool MaybeSetPrivateURI(const nsACString& aURI) override;
   void ClearEntireCache();
+  void MaybeSpeculativeConnectToTRR();
 
   virtual void ReadEtcHostsFile() override;
   void AddEtcHosts(const nsTArray<nsCString>&);
 
   bool mInitialized{false};
-  MutexSingleWriter mLock;
 
   nsCString mPrivateCred;  // main thread only
   nsCString mConfirmationNS MOZ_GUARDED_BY(mLock){"example.com"_ns};
@@ -269,7 +269,7 @@ class TRRService : public TRRServiceBase,
    public:
     // Called when a confirmation completes successfully or when the
     // confirmation context changes.
-    void RecordEvent(const char* aReason, const MutexSingleWriterAutoLock&);
+    void RecordEvent(const char* aReason, const MutexAutoLock&);
 
     // Called when a confirmation request is completed. The status is recorded
     // in the results.
@@ -284,8 +284,7 @@ class TRRService : public TRRServiceBase,
     // Returns true when handling the event caused a new confirmation task to be
     // dispatched.
     bool HandleEvent(ConfirmationEvent aEvent);
-    bool HandleEvent(ConfirmationEvent aEvent,
-                     const MutexSingleWriterAutoLock&);
+    bool HandleEvent(ConfirmationEvent aEvent, const MutexAutoLock&);
 
     void SetCaptivePortalStatus(int32_t aStatus) {
       mCaptivePortalStatus = aStatus;
@@ -326,8 +325,7 @@ class TRRService : public TRRServiceBase,
    public:
     // Called when a confirmation completes successfully or when the
     // confirmation context changes.
-    void RecordEvent(const char* aReason,
-                     const MutexSingleWriterAutoLock& aLock) {
+    void RecordEvent(const char* aReason, const MutexAutoLock& aLock) {
       mConfirmation.RecordEvent(aReason, aLock);
     }
 
@@ -351,8 +349,7 @@ class TRRService : public TRRServiceBase,
       return mConfirmation.HandleEvent(aEvent);
     }
 
-    bool HandleEvent(ConfirmationEvent aEvent,
-                     const MutexSingleWriterAutoLock& lock) {
+    bool HandleEvent(ConfirmationEvent aEvent, const MutexAutoLock& lock) {
       return mConfirmation.HandleEvent(aEvent, lock);
     }
 
@@ -374,7 +371,7 @@ class TRRService : public TRRServiceBase,
 
   ConfirmationWrapper mConfirmation;
 
-  bool mParentalControlEnabled{false};
+  Atomic<bool, Relaxed> mParentalControlEnabled{false};
   // This is used to track whether a confirmation was triggered by a URI change,
   // so we don't trigger another one just because other prefs have changed.
   bool mConfirmationTriggered{false};

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,15 +5,12 @@
 #ifndef mozilla_dom_CryptoBuffer_h
 #define mozilla_dom_CryptoBuffer_h
 
+#include "mozilla/dom/BufferSourceBindingFwd.h"
+#include "mozilla/dom/TypedArray.h"
 #include "nsTArray.h"
 #include "seccomon.h"
-#include "mozilla/dom/TypedArray.h"
 
 namespace mozilla::dom {
-
-class ArrayBufferViewOrArrayBuffer;
-class OwningArrayBufferViewOrArrayBuffer;
-
 class CryptoBuffer : public FallibleTArray<uint8_t> {
  public:
   uint8_t* Assign(const CryptoBuffer& aData);
@@ -25,8 +20,8 @@ class CryptoBuffer : public FallibleTArray<uint8_t> {
   uint8_t* Assign(const nsTArray<uint8_t>& aData);
   uint8_t* Assign(const ArrayBuffer& aData);
   uint8_t* Assign(const ArrayBufferView& aData);
-  uint8_t* Assign(const ArrayBufferViewOrArrayBuffer& aData);
-  uint8_t* Assign(const OwningArrayBufferViewOrArrayBuffer& aData);
+  uint8_t* Assign(const BufferSource& aData);
+  uint8_t* Assign(const OwningBufferSource& aData);
   uint8_t* Assign(const Uint8Array& aArray);
 
   uint8_t* AppendSECItem(const SECItem* aItem);

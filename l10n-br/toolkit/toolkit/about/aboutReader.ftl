@@ -26,7 +26,7 @@ about-reader-estimated-read-time =
        *[other] { $range } munutenn
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Bihanaat ment an nodrezh
@@ -51,3 +51,10 @@ about-reader-font-type-sans-serif = Hep-serif
 about-reader-toolbar-close = Serriñ ar mod lenn
 about-reader-toolbar-type-controls = Reoliñ ar skritur
 about-reader-toolbar-savetopocket = Enrollañ e { -pocket-brand-name }
+
+## Reader View text and layout menu
+
+about-reader-text-header = Testenn
+about-reader-text-size-label = Ment an testennoù
+about-reader-font-weight-bold = Tev
+about-reader-advanced-layout-header = Kempleshocʼh

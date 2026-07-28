@@ -46,10 +46,13 @@ export class FormValidationParent extends JSWindowActorParent {
     this._obs = null;
   }
 
-  static hasOpenPopups() {
+  static hasOpenPopups(ownPanel = null) {
     for (let win of lazy.BrowserWindowTracker.orderedWindows) {
       let popups = win.document.querySelectorAll("panel,menupopup");
       for (let popup of popups) {
+        if (popup == ownPanel) {
+          continue; // Skip our own panel if provided.
+        }
         let { state } = popup;
         if (state == "open" || state == "showing") {
           return true;
@@ -78,9 +81,9 @@ export class FormValidationParent extends JSWindowActorParent {
 
   receiveMessage(aMessage) {
     switch (aMessage.name) {
-      case "FormValidation:ShowPopup":
+      case "FormValidation:ShowPopup": {
         let browser = this.browsingContext.top.embedderElement;
-        let window = browser.ownerGlobal;
+        let window = browser.documentGlobal;
         let data = aMessage.data;
         let tabBrowser = window.gBrowser;
 
@@ -90,12 +93,17 @@ export class FormValidationParent extends JSWindowActorParent {
           return;
         }
 
-        if (FormValidationParent.hasOpenPopups()) {
+        // If any other popups are open, we don't show the form validation
+        // popup. We have to fall through for our own popup to make sure the
+        // popup is updated if we are asked to reshow it with a different
+        // message or for a different element.
+        if (FormValidationParent.hasOpenPopups(this._panel)) {
           return;
         }
 
         this._showPopup(browser, data);
         break;
+      }
       case "FormValidation:HidePopup":
         this._hidePopup();
         break;
@@ -122,7 +130,7 @@ export class FormValidationParent extends JSWindowActorParent {
   _onPopupHidden(aEvent) {
     aEvent.originalTarget.removeEventListener("popuphidden", this, true);
     Services.obs.removeObserver(this._obs, "popup-shown");
-    let tabBrowser = aEvent.originalTarget.ownerGlobal.gBrowser;
+    let tabBrowser = aEvent.originalTarget.documentGlobal.gBrowser;
     tabBrowser.selectedBrowser.removeEventListener("scroll", this, true);
     tabBrowser.selectedBrowser.removeEventListener("FullZoomChange", this);
     tabBrowser.selectedBrowser.removeEventListener("TextZoomChange", this);
@@ -131,12 +139,12 @@ export class FormValidationParent extends JSWindowActorParent {
     this._panel = null;
   }
 
-  /*
+  /**
    * Shows the form validation popup at a specified position or updates the
    * messaging and position if the popup is already displayed.
    *
-   * @aBrowser - Browser element that requests the popup.
-   * @aPanelData - Object that contains popup information
+   * @param {MozBrowser} aBrowser - Browser element that requests the popup.
+   * @param {object} aPanelData - Object that contains popup information
    *  aPanelData stucture detail:
    *   screenRect - the screen rect of the target element.
    *   position - popup positional string constants.
@@ -189,7 +197,7 @@ export class FormValidationParent extends JSWindowActorParent {
     // Lazy load the invalid form popup the first time we need to display it.
     if (!this._panel) {
       let browser = this.browsingContext.top.embedderElement;
-      let window = browser.ownerGlobal;
+      let window = browser.documentGlobal;
       let template = window.document.getElementById("invalidFormTemplate");
       if (template) {
         template.replaceWith(template.content);

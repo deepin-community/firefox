@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2021, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -14,9 +14,12 @@
 #include <memory>
 #include <new>
 
-#include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
+#include "aom/aomcx.h"
+#include "aom/internal/aom_codec_internal.h"
+#include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
+#include "av1/common/common.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encoder_utils.h"
 #include "av1/encoder/pickcdef.h"
@@ -25,39 +28,73 @@
 #include "av1/encoder/rc_utils.h"
 #include "av1/encoder/svc_layercontext.h"
 
+namespace {
+
+void AomAV1RateControlRtcConfigInitDefault(AomAV1RateControlRtcConfig *config) {
+  if (config == nullptr) return;
+  config->width = 1280;
+  config->height = 720;
+  config->is_screen = false;
+  config->max_quantizer = 63;
+  config->min_quantizer = 2;
+  config->target_bandwidth = 1000;
+  config->buf_initial_sz = 600;
+  config->buf_optimal_sz = 600;
+  config->buf_sz = 1000;
+  config->undershoot_pct = 50;
+  config->overshoot_pct = 50;
+  config->max_intra_bitrate_pct = 50;
+  config->max_inter_bitrate_pct = 0;
+  config->frame_drop_thresh = 0;
+  config->max_consec_drop_ms = 0;
+  config->framerate = 30.0;
+  av1_zero(config->layer_target_bitrate);
+  config->layer_target_bitrate[0] = static_cast<int>(config->target_bandwidth);
+  av1_zero(config->ts_rate_decimator);
+  config->ts_rate_decimator[0] = 1;
+  config->aq_mode = 0;
+  config->ss_number_layers = 1;
+  config->ts_number_layers = 1;
+  av1_zero(config->max_quantizers);
+  av1_zero(config->min_quantizers);
+  av1_zero(config->scaling_factor_num);
+  av1_zero(config->scaling_factor_den);
+  config->max_quantizers[0] = config->max_quantizer;
+  config->min_quantizers[0] = config->min_quantizer;
+  config->scaling_factor_num[0] = 1;
+  config->scaling_factor_den[0] = 1;
+}
+
+}  // namespace
+
+AomAV1RateControlRtcConfig::AomAV1RateControlRtcConfig() {
+  AomAV1RateControlRtcConfigInitDefault(this);
+}
+
 namespace aom {
 
-AV1RateControlRtcConfig::AV1RateControlRtcConfig() {
-  width = 1280;
-  height = 720;
-  max_quantizer = 63;
-  min_quantizer = 2;
-  target_bandwidth = 1000;
-  buf_initial_sz = 600;
-  buf_optimal_sz = 600;
-  buf_sz = 1000;
-  undershoot_pct = overshoot_pct = 50;
-  max_intra_bitrate_pct = 50;
-  max_inter_bitrate_pct = 0;
-  frame_drop_thresh = 0;
-  max_consec_drop = 0;
-  framerate = 30.0;
-  ss_number_layers = 1;
-  ts_number_layers = 1;
-  aq_mode = 0;
-  layer_target_bitrate[0] = static_cast<int>(target_bandwidth);
-  ts_rate_decimator[0] = 1;
-  av1_zero(max_quantizers);
-  av1_zero(min_quantizers);
-  av1_zero(scaling_factor_den);
-  av1_zero(scaling_factor_num);
-  av1_zero(layer_target_bitrate);
-  av1_zero(ts_rate_decimator);
-  scaling_factor_num[0] = 1;
-  scaling_factor_den[0] = 1;
-  max_quantizers[0] = max_quantizer;
-  min_quantizers[0] = min_quantizer;
-}
+// Creates a setjmp target using `CPI->common.error->jmp` and sets
+// `CPI->common.error->setjmp = 1`. Returns false on longjmp. This should be
+// accompanied by a call to DISABLE_SETJMP using the same CPI before going out
+// of scope.
+#define ENABLE_SETJMP(CPI)                                      \
+  do {                                                          \
+    struct aom_internal_error_info *const enable_setjmp_error = \
+        (CPI)->common.error;                                    \
+    if (setjmp(enable_setjmp_error->jmp)) {                     \
+      enable_setjmp_error->setjmp = 0;                          \
+      return false;                                             \
+    }                                                           \
+    enable_setjmp_error->setjmp = 1;                            \
+  } while (0)
+
+// Sets CPI->common.error->setjmp = 0.
+#define DISABLE_SETJMP(CPI)                                     \
+  do {                                                          \
+    struct aom_internal_error_info *const enable_setjmp_error = \
+        (CPI)->common.error;                                    \
+    enable_setjmp_error->setjmp = 0;                            \
+  } while (0)
 
 std::unique_ptr<AV1RateControlRTC> AV1RateControlRTC::Create(
     const AV1RateControlRtcConfig &cfg) {
@@ -71,6 +108,7 @@ std::unique_ptr<AV1RateControlRTC> AV1RateControlRTC::Create(
       static_cast<AV1_PRIMARY *>(aom_memalign(32, sizeof(AV1_PRIMARY)));
   if (!rc_api->cpi_->ppi) return nullptr;
   av1_zero(*rc_api->cpi_->ppi);
+  rc_api->cpi_->common.error = &rc_api->cpi_->ppi->error;
   rc_api->cpi_->common.seq_params = &rc_api->cpi_->ppi->seq_params;
   av1_zero(*rc_api->cpi_->common.seq_params);
   if (!rc_api->InitRateControl(cfg)) return nullptr;
@@ -127,7 +165,10 @@ bool AV1RateControlRTC::InitRateControl(const AV1RateControlRtcConfig &rc_cfg) {
   oxcf->q_cfg.aq_mode = rc_cfg.aq_mode ? CYCLIC_REFRESH_AQ : NO_AQ;
   oxcf->tune_cfg.content = AOM_CONTENT_DEFAULT;
   oxcf->rc_cfg.drop_frames_water_mark = rc_cfg.frame_drop_thresh;
-  rc->max_consec_drop = rc_cfg.max_consec_drop;
+  if (rc_cfg.max_consec_drop_ms > 0) {
+    rc->max_consec_drop = saturate_cast_double_to_int(
+        ceil(cpi_->framerate * rc_cfg.max_consec_drop_ms / 1000));
+  }
   cpi_->svc.framedrop_mode = AOM_FULL_SUPERFRAME_DROP;
   oxcf->tool_cfg.bit_depth = AOM_BITS_8;
   oxcf->tool_cfg.superblock_size = AOM_SUPERBLOCK_SIZE_DYNAMIC;
@@ -163,6 +204,9 @@ bool AV1RateControlRTC::UpdateRateControl(
       rc_cfg.ts_number_layers > AOM_MAX_TS_LAYERS) {
     return false;
   }
+  if (cpi_->svc.number_spatial_layers != rc_cfg.ss_number_layers ||
+      cpi_->svc.number_temporal_layers != rc_cfg.ts_number_layers)
+    av1_free_svc_cyclic_refresh(cpi_);
   const int num_layers = rc_cfg.ss_number_layers * rc_cfg.ts_number_layers;
   if (num_layers > 1 && !av1_alloc_layer_context(cpi_, num_layers)) {
     return false;
@@ -190,7 +234,10 @@ bool AV1RateControlRTC::UpdateRateControl(
   oxcf->rc_cfg.under_shoot_pct = rc_cfg.undershoot_pct;
   oxcf->rc_cfg.over_shoot_pct = rc_cfg.overshoot_pct;
   oxcf->rc_cfg.drop_frames_water_mark = rc_cfg.frame_drop_thresh;
-  rc->max_consec_drop = rc_cfg.max_consec_drop;
+  if (rc_cfg.max_consec_drop_ms > 0) {
+    rc->max_consec_drop = saturate_cast_double_to_int(
+        ceil(cpi_->framerate * rc_cfg.max_consec_drop_ms / 1000));
+  }
   oxcf->rc_cfg.max_intra_bitrate_pct = rc_cfg.max_intra_bitrate_pct;
   oxcf->rc_cfg.max_inter_bitrate_pct = rc_cfg.max_inter_bitrate_pct;
   cpi_->framerate = rc_cfg.framerate;
@@ -205,7 +252,7 @@ bool AV1RateControlRTC::UpdateRateControl(
   av1_new_framerate(cpi_, cpi_->framerate);
   if (cpi_->svc.number_temporal_layers > 1 ||
       cpi_->svc.number_spatial_layers > 1) {
-    int64_t target_bandwidth_svc = 0;
+    volatile int64_t target_bandwidth_svc = 0;
     for (int sl = 0; sl < cpi_->svc.number_spatial_layers; ++sl) {
       for (int tl = 0; tl < cpi_->svc.number_temporal_layers; ++tl) {
         const int layer =
@@ -227,10 +274,14 @@ bool AV1RateControlRTC::UpdateRateControl(
       }
     }
 
-    if (cm->current_frame.frame_number == 0) av1_init_layer_context(cpi_);
+    ENABLE_SETJMP(cpi_);
+    if (cm->current_frame.frame_number == 0) {
+      av1_init_layer_context(cpi_);
+    }
     // This is needed to initialize external RC flag in layer context structure.
     cpi_->rc.rtc_external_ratectrl = 1;
     av1_update_layer_context_change_config(cpi_, target_bandwidth_svc);
+    DISABLE_SETJMP(cpi_);
   }
   check_reset_rc_flag(cpi_);
   return true;
@@ -283,8 +334,6 @@ FrameDropDecision AV1RateControlRTC::ComputeQP(
       cpi_->svc.layer_context[layer].is_key_frame = 0;
     }
   }
-  if (cpi_->svc.spatial_layer_id == cpi_->svc.number_spatial_layers - 1)
-    cpi_->rc.frames_since_key++;
   if (cpi_->svc.number_spatial_layers > 1 ||
       cpi_->svc.number_temporal_layers > 1) {
     av1_update_temporal_layer_framerate(cpi_);
@@ -311,9 +360,15 @@ FrameDropDecision AV1RateControlRTC::ComputeQP(
       av1_rc_drop_frame(cpi_)) {
     cpi_->is_dropped_frame = true;
     av1_rc_postencode_update_drop_frame(cpi_);
+    if (cpi_->svc.spatial_layer_id == cpi_->svc.number_spatial_layers - 1)
+      cpi_->rc.frames_since_key++;
+    if (cpi_->svc.number_spatial_layers > 1 ||
+        cpi_->svc.number_temporal_layers > 1) {
+      av1_save_layer_context(cpi_);
+    }
     cpi_->frame_index_set.show_frame_count++;
     cpi_->common.current_frame.frame_number++;
-    return FrameDropDecision::kDrop;
+    return kFrameDropDecisionDrop;
   }
   int bottom_index = 0, top_index = 0;
   cpi_->common.quant_params.base_qindex =
@@ -321,7 +376,7 @@ FrameDropDecision AV1RateControlRTC::ComputeQP(
                                cpi_->gf_frame_index, &bottom_index, &top_index);
   if (cpi_->oxcf.q_cfg.aq_mode == CYCLIC_REFRESH_AQ)
     av1_cyclic_refresh_setup(cpi_);
-  return FrameDropDecision::kOk;
+  return kFrameDropDecisionOk;
 }
 
 int AV1RateControlRTC::GetQP() const {
@@ -335,23 +390,26 @@ AV1LoopfilterLevel AV1RateControlRTC::GetLoopfilterLevel() const {
   lpf_level.filter_level[1] = cpi_->common.lf.filter_level[1];
   lpf_level.filter_level_u = cpi_->common.lf.filter_level_u;
   lpf_level.filter_level_v = cpi_->common.lf.filter_level_v;
-
   return lpf_level;
 }
 
 AV1CdefInfo AV1RateControlRTC::GetCdefInfo() const {
-  av1_pick_cdef_from_qp(&cpi_->common, 0, 0);
+  av1_pick_cdef_from_qp(&cpi_->common, /*skip_cdef=*/0, /*is_screen_content=*/0,
+                        /*avoid_uv_cdef=*/false);
   AV1CdefInfo cdef_level;
   cdef_level.cdef_strength_y = cpi_->common.cdef_info.cdef_strengths[0];
   cdef_level.cdef_strength_uv = cpi_->common.cdef_info.cdef_uv_strengths[0];
   cdef_level.damping = cpi_->common.cdef_info.cdef_damping;
-
   return cdef_level;
 }
 
 bool AV1RateControlRTC::GetSegmentationData(
     AV1SegmentationData *segmentation_data) const {
   if (cpi_->oxcf.q_cfg.aq_mode == 0) {
+    return false;
+  }
+  // Don't update the segmentation map if cyclic refresh is not enabled.
+  if (!cpi_->cyclic_refresh->apply_cyclic_refresh) {
     return false;
   }
   segmentation_data->segmentation_map = cpi_->enc_seg.map;
@@ -364,12 +422,90 @@ bool AV1RateControlRTC::GetSegmentationData(
 
 void AV1RateControlRTC::PostEncodeUpdate(uint64_t encoded_frame_size) {
   cpi_->common.current_frame.frame_number++;
-  if (cpi_->svc.spatial_layer_id == cpi_->svc.number_spatial_layers - 1)
-    cpi_->svc.prev_number_spatial_layers = cpi_->svc.number_spatial_layers;
   av1_rc_postencode_update(cpi_, encoded_frame_size);
+  if (cpi_->svc.spatial_layer_id == cpi_->svc.number_spatial_layers - 1) {
+    cpi_->svc.prev_number_spatial_layers = cpi_->svc.number_spatial_layers;
+    cpi_->rc.frames_since_key++;
+  }
   if (cpi_->svc.number_spatial_layers > 1 ||
       cpi_->svc.number_temporal_layers > 1)
     av1_save_layer_context(cpi_);
 }
-
 }  // namespace aom
+
+extern "C" {
+
+AomAV1RateControlRTC *av1_ratecontrol_rtc_create(
+    const AomAV1RateControlRtcConfig *rc_cfg) {
+  if (rc_cfg == nullptr) return nullptr;
+  return reinterpret_cast<AomAV1RateControlRTC *>(
+      aom::AV1RateControlRTC::Create(*rc_cfg).release());
+}
+
+void av1_ratecontrol_rtc_destroy(AomAV1RateControlRTC *controller) {
+  delete reinterpret_cast<aom::AV1RateControlRTC *>(controller);
+}
+
+bool av1_ratecontrol_rtc_update(
+    AomAV1RateControlRTC *controller,
+    const struct AomAV1RateControlRtcConfig *rc_cfg) {
+  if (controller == nullptr || rc_cfg == nullptr) return false;
+
+  return reinterpret_cast<aom::AV1RateControlRTC *>(controller)
+      ->UpdateRateControl(*rc_cfg);
+}
+
+int av1_ratecontrol_rtc_get_qp(const AomAV1RateControlRTC *controller) {
+  if (controller == nullptr) return 0;
+  return reinterpret_cast<const aom::AV1RateControlRTC *>(controller)->GetQP();
+}
+
+AomAV1LoopfilterLevel av1_ratecontrol_rtc_get_loop_filter_level(
+    const AomAV1RateControlRTC *controller) {
+  if (controller == nullptr) {
+    return { { 0, 0 }, 0, 0 };
+  }
+  return reinterpret_cast<const aom::AV1RateControlRTC *>(controller)
+      ->GetLoopfilterLevel();
+}
+
+AomFrameDropDecision av1_ratecontrol_rtc_compute_qp(
+    AomAV1RateControlRTC *controller,
+    const AomAV1FrameParamsRTC *frame_params) {
+  if (controller == nullptr || frame_params == nullptr)
+    return kAomFrameDropDecisionOk;
+  return reinterpret_cast<aom::AV1RateControlRTC *>(controller)
+      ->ComputeQP(*frame_params);
+}
+
+void av1_ratecontrol_rtc_post_encode_update(AomAV1RateControlRTC *controller,
+                                            uint64_t encoded_frame_size) {
+  if (controller == nullptr) return;
+  reinterpret_cast<aom::AV1RateControlRTC *>(controller)
+      ->PostEncodeUpdate(encoded_frame_size);
+}
+
+bool av1_ratecontrol_rtc_get_segmentation(
+    const AomAV1RateControlRTC *controller,
+    AomAV1SegmentationData *segmentation_data) {
+  if (controller == nullptr || segmentation_data == nullptr) return false;
+
+  return reinterpret_cast<const aom::AV1RateControlRTC *>(controller)
+      ->GetSegmentationData(segmentation_data);
+}
+
+AomAV1CdefInfo av1_ratecontrol_rtc_get_cdef_info(
+    const AomAV1RateControlRTC *controller) {
+  if (controller == nullptr) {
+    return { 0, 0, 0 };
+  }
+  return reinterpret_cast<const aom::AV1RateControlRTC *>(controller)
+      ->GetCdefInfo();
+}
+
+void av1_ratecontrol_rtc_init_ratecontrol_config(
+    AomAV1RateControlRtcConfig *config) {
+  AomAV1RateControlRtcConfigInitDefault(config);
+}
+
+}  // extern "C"

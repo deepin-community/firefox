@@ -43,9 +43,7 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Tamaño do búfer:
-
 perftools-custom-threads-label = Engadir fíos personalizados por nome:
-
 perftools-devtools-interval-label = Intervalo:
 perftools-devtools-threads-label = Fíos:
 perftools-devtools-settings-label = Configuración
@@ -70,6 +68,14 @@ perftools-button-restart = Reiniciar
 perftools-button-add-directory = Engadir un cartafol
 perftools-button-remove-directory = Retirar o seleccionado
 perftools-button-edit-settings = Editar a gravación…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Máis accións
+perftools-menu-more-actions-restart-with-profiling = Reinicia { -brand-shorter-name } co perfilador de inicio activado
+perftools-menu-more-actions-copy-for-startup = Copiar variables de entorno para o perfilado ao inicio
+perftools-menu-more-actions-copy-for-perf-tests = Copiar parámetros para probas de rendemento
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -113,7 +119,6 @@ perftools-thread-jvm-pool =
 ##
 
 perftools-record-all-registered-threads = Rodea as seleccións anteriores e grava todos os fíos rexistrados
-
 perftools-tools-threads-input-label =
     .title =
         Eses nomes de fíos son unha lista separada por comas que se utiliza para activar o perfilado dos fíos no perfilador.
@@ -123,7 +128,6 @@ perftools-tools-threads-input-label =
 ## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Novo</b>:{ -profiler-brand-name } está agora integrado nas Developer Tools.<a>Saiba máis</a> sobre esta poderosa ferramenta nova.
-
 perftools-onboarding-close-button =
     .aria-label = Pechar a mensaxe de incorporación
 
@@ -131,34 +135,29 @@ perftools-onboarding-close-button =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/shared/background.jsm.js
+# devtools/client/performance-new/shared/background.sys.mjs
 # The same labels and descriptions are also defined in appmenu.ftl.
 
 perftools-presets-web-developer-label = Desenvolvedores web
 perftools-presets-web-developer-description = Predefinición recomendada para a maioría da depuración de aplicacións web, con sobrecarga baixa.
-
 perftools-presets-firefox-label = { -brand-shorter-name }
 perftools-presets-firefox-description = Configuración predeterminada recomendada para o perfil { -brand-shorter-name }.
-
 perftools-presets-graphics-label = Gráficos
 perftools-presets-graphics-description = Predefinido para investigar erros gráficos en { -brand-shorter-name }.
-
 perftools-presets-media-label = Multimedia
 perftools-presets-media-description2 = Predefinido para investigar erros de son e de vídeo en { -brand-shorter-name }.
-
+perftools-presets-ml-label = Aprendizaxe automática
+perftools-presets-ml-description2 = Predefinido para investigar erros de aprendizaxe automática en { -brand-shorter-name }.
 perftools-presets-networking-label = Rede
 perftools-presets-networking-description = Predefinido para investigar erros de rede en { -brand-shorter-name }.
-
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Enerxía
 perftools-presets-power-description = Predefinición para investigar erros de uso de enerxía en { -brand-shorter-name }, con baixo consumo de recursos.
-
+perftools-presets-debug-label = Depurar
+perftools-presets-debug-description = Predefinido para a depuración en { -brand-shorter-name }. Alta sobrecarga, non o uses para traballos de rendemento, senón para centrarte na comprensión do comportamento do navegador.
 perftools-presets-custom-label = Personalizado
-
-##
-

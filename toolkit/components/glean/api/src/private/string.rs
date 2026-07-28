@@ -5,7 +5,7 @@
 use inherent::inherent;
 use std::sync::Arc;
 
-use super::{CommonMetricData, MetricId};
+use super::{BaseMetricId, CommonMetricData, MetricId};
 use crate::ipc::need_ipc;
 
 /// A string metric.
@@ -39,26 +39,38 @@ use crate::ipc::need_ipc;
 /// ```
 #[derive(Clone)]
 pub enum StringMetric {
-    Parent(Arc<glean::private::StringMetric>),
+    Parent {
+        /// The metric's ID. Used for testing and profiler markers. String
+        /// metrics can be labeled, so we may have either a metric ID or
+        /// sub-metric ID.
+        id: MetricId,
+        inner: Arc<glean::private::StringMetric>,
+    },
     Child(StringMetricIpc),
 }
 #[derive(Clone, Debug)]
 pub struct StringMetricIpc;
 
+define_metric_metadata_getter!(StringMetric, STRING_MAP, LABELED_STRING_MAP);
+define_metric_namer!(StringMetric, PARENT_ONLY);
+
 impl StringMetric {
     /// Create a new string metric.
-    pub fn new(_id: MetricId, meta: CommonMetricData) -> Self {
+    pub fn new(id: BaseMetricId, meta: CommonMetricData) -> Self {
         if need_ipc() {
             StringMetric::Child(StringMetricIpc)
         } else {
-            StringMetric::Parent(Arc::new(glean::private::StringMetric::new(meta)))
+            StringMetric::Parent {
+                id: id.into(),
+                inner: Arc::new(glean::private::StringMetric::new(meta)),
+            }
         }
     }
 
     #[cfg(test)]
     pub(crate) fn child_metric(&self) -> Self {
         match self {
-            StringMetric::Parent(_) => StringMetric::Child(StringMetricIpc),
+            StringMetric::Parent { .. } => StringMetric::Child(StringMetricIpc),
             StringMetric::Child(_) => panic!("Can't get a child metric from a child metric"),
         }
     }
@@ -77,8 +89,16 @@ impl glean::traits::String for StringMetric {
     /// Truncates the value if it is longer than `MAX_STRING_LENGTH` bytes and logs an error.
     pub fn set<S: Into<std::string::String>>(&self, value: S) {
         match self {
-            StringMetric::Parent(p) => {
-                p.set(value.into());
+            #[allow(unused)]
+            StringMetric::Parent { id, inner } => {
+                let value = value.into();
+                #[cfg(feature = "with_gecko")]
+                gecko_profiler::lazy_add_marker!(
+                    "String::set",
+                    super::profiler_utils::TelemetryProfilerCategory,
+                    super::profiler_utils::StringLikeMetricMarker::<StringMetric>::new(*id, &value)
+                );
+                inner.set(value);
             }
             StringMetric::Child(_) => {
                 log::error!("Unable to set string metric in non-main process. This operation will be ignored.");
@@ -88,29 +108,6 @@ impl glean::traits::String for StringMetric {
                 // TODO: Record an error.
             }
         };
-    }
-
-    /// **Exported for test purposes.**
-    ///
-    /// Gets the currently stored value as a string.
-    ///
-    /// This doesn't clear the stored value.
-    ///
-    /// # Arguments
-    ///
-    /// * `ping_name` - represents the optional name of the ping to retrieve the
-    ///   metric for. Defaults to the first value in `send_in_pings`.
-    pub fn test_get_value<'a, S: Into<Option<&'a str>>>(
-        &self,
-        ping_name: S,
-    ) -> Option<std::string::String> {
-        let ping_name = ping_name.into().map(|s| s.to_string());
-        match self {
-            StringMetric::Parent(p) => p.test_get_value(ping_name),
-            StringMetric::Child(_) => {
-                panic!("Cannot get test value for string metric in non-main process!")
-            }
-        }
     }
 
     /// **Exported for test purposes.**
@@ -128,10 +125,37 @@ impl glean::traits::String for StringMetric {
     /// The number of errors reported.
     pub fn test_get_num_recorded_errors(&self, error: glean::ErrorType) -> i32 {
         match self {
-            StringMetric::Parent(p) => p.test_get_num_recorded_errors(error),
+            StringMetric::Parent { id: _, inner } => inner.test_get_num_recorded_errors(error),
             StringMetric::Child(_) => panic!(
                 "Cannot get the number of recorded errors for string metric in non-main process!"
             ),
+        }
+    }
+}
+
+#[inherent]
+impl glean::TestGetValue for StringMetric {
+    type Output = std::string::String;
+
+    /// **Exported for test purposes.**
+    ///
+    /// Gets the currently stored value as a string.
+    ///
+    /// This doesn't clear the stored value.
+    ///
+    /// # Arguments
+    ///
+    /// * `ping_name` - represents the optional name of the ping to retrieve the
+    ///   metric for. Defaults to the first value in `send_in_pings`.
+    pub fn test_get_value(
+        &self,
+        ping_name: Option<std::string::String>,
+    ) -> Option<std::string::String> {
+        match self {
+            StringMetric::Parent { id: _, inner } => inner.test_get_value(ping_name),
+            StringMetric::Child(_) => {
+                panic!("Cannot get test value for string metric in non-main process!")
+            }
         }
     }
 }
@@ -150,7 +174,9 @@ mod test {
 
         assert_eq!(
             "test_string_value",
-            metric.test_get_value("store1").unwrap()
+            metric
+                .test_get_value(Some("test-ping".to_string()))
+                .unwrap()
         );
     }
 
@@ -178,7 +204,10 @@ mod test {
         assert!(ipc::replay_from_buf(&ipc::take_buf().unwrap()).is_ok());
 
         assert!(
-            "test_parent_value" == parent_metric.test_get_value("store1").unwrap(),
+            "test_parent_value"
+                == parent_metric
+                    .test_get_value(Some("test-ping".to_string()))
+                    .unwrap(),
             "String metrics should only work in the parent process"
         );
     }

@@ -12,23 +12,37 @@ update-updateButton =
     .label = Emoñepyrũjey embohekopyahu hag̃ua { -brand-shorter-name }
     .accesskey = E
 update-checkingForUpdates = Tekopyahu jehechajey…
+settings-update-checking-for-updates =
+    .label = Tekopyahu jehechajey…
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
 settings-update-downloading = <img data-l10n-name="icon"/>Oñemboguejyhína tekopyahu —<label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = Oguejyhína ñemhekopyahu — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = Oñemboguejyhína tekopyahu —{ $transfer }
 
 ##
 
 update-applying = Ojeporuhína tekopyahu…
+settings-update-applying =
+    .label = Ojeporuhína tekopyahu…
 update-failed = Tekopyahu ndoikói.<label data-l10n-name="failed-link">Emboguejy apopy ipyahuvéva</label>
 update-failed-main = Tekopyahu ndoikói.<a data-l10n-name="failed-link-main">Emboguejy apopy ipyahuvéva</a>
 update-adminDisabled = Tekopyahu ñangarekohára omongeva’ekue
 update-policy-disabled = Ñembohekopyahu oipe’áva ne mba’apohaguasu
+settings-update-policy-disabled =
+    .label = Ñembohekopyahu oipe’áva ne mba’apohaguasu
 update-noUpdatesFound = { -brand-short-name } hekopyahúma
+settings-update-no-updates-found =
+    .label = { -brand-short-name } hekopyahúma
 aboutdialog-update-checking-failed = Ndojejuhukuaái ñembohekopyahu.
+settings-update-checking-failed =
+    .label = Ndojejuhukuaái ñembohekopyahu.
 update-otherInstanceHandlingUpdates = { -brand-short-name } oñembohekopyahuhína ambuéva rupi
+settings-update-other-instance-handling-updates =
+    .label = { -brand-short-name } oñembohekopyahuhína ambuéva rupi
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -36,8 +50,12 @@ update-otherInstanceHandlingUpdates = { -brand-short-name } oñembohekopyahuhín
 aboutdialog-update-manual-with-link = Tekopyahu rejuhukuaáva ápe<label data-l10n-name="manual-link">{ $displayUrl }</label>
 settings-update-manual-with-link = Tekopyahu rejuhukuaáva ápe<a data-l10n-name="manual-link">{ $displayUrl }</a>
 update-unsupported = Ndaikatuvéima reiporu ambue tekopyahu ko apopyvusúpe.<label data-l10n-name="unsupported-link">Kuaave</label>
+settings-update-unsupported = Ndaikatuvéima reiporu ambue tekopyahu ko apopyvusúpe.<a data-l10n-name="unsupported-link">Kuaave</a>
 update-restarting = Moñepyrũjey…
+settings-update-restarting =
+    .label = Moñepyrũjey…
 update-internal-error2 = Ndaikatúi eheka ñembohekopyahu oĩ rupi jejavy. Ñembohekopyahu eiporukuaa <label data-l10n-name="manual-link">{ $displayUrl }</label>-pe
+settings-update-internal-error = Ndaikatúi eheka ñembohekopyahu oĩ rupi jejavy. Ñembohekopyahu eiporukuaa <a data-l10n-name="manual-link">{ $displayUrl }</a>-pe
 
 ##
 
@@ -51,6 +69,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } apohare<label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, peteĩ <label data-l10n-name="community-creditsLink">Yvóra rekoha</label>ñamba’apo oñondivepa ikatu hag̃uáicha ñanduti ijuruja, opavavépe g̃uarã ha oikekuaahápe oimeraẽva.
 helpus = Reipytyvõsepa<label data-l10n-name="helpus-donateLink">Mba’eme’ẽ</label> térã<label data-l10n-name="helpus-getInvolvedLink">eiképy</label>
 bottomLinks-license = Marandu ñe’ẽme’ẽguigua
+bottom-links-terms = Jeporurã reko
+bottom-links-privacy = Marandu’i ñemigua
 bottomLinks-rights = Poruhára paha mba’engatu
 bottomLinks-privacy = Temiñemi porureko
 # Example of resulting string: 66.0.1 (64-bit)

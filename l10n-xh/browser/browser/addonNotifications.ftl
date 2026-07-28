@@ -4,10 +4,6 @@
 
 xpinstall-prompt = I-{ -brand-short-name } iyithintele le sayithi ekukuceleni ukuba ufakele isoftwe kwikhompyutha.
 
-## Variables:
-##   $host (String): The hostname of the site the add-on is being installed from.
-
-
 ##
 
 xpinstall-prompt-dont-allow =
@@ -24,7 +20,6 @@ xpinstall-disabled = Ukufakelwa kwesoftwe kuqhwalelisiwe kungokunje. Cofa uKwenz
 xpinstall-disabled-button =
     .label = Vumela
     .accesskey = n
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = I-{ $addonName } yongezwe kwi-{ -brand-short-name }
@@ -42,7 +37,6 @@ addon-downloading-and-verifying =
        *[other] Ukukhuphela nokuqinisekisa { $addonCount } izongezelelo…
     }
 addon-download-verifying = Iyaqinisekisa
-
 addon-install-cancel-button =
     .label = Rhoxisa
     .accesskey = R

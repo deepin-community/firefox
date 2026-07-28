@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } 正嘗試使
 autofill-edit-payment-method-os-prompt-macos = 顯示儲存的付款方式資訊
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } 正嘗試顯示儲存的付款方式資訊。請在下方登入此 Windows 帳號確認。
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } 正嘗試顯示儲存的付款方式資訊。
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = 表單自動填寫選項
 autofill-options-link-osx = 表單自動填寫偏好設定
 
@@ -81,3 +81,6 @@ autofill-category-name = 姓名
 autofill-category-organization = 組織
 autofill-category-tel = 電話
 autofill-category-email = 電子郵件地址
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } 偵測到此網站為不安全的網站，將暫時停用表單自動填寫功能

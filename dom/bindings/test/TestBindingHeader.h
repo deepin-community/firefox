@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,14 +6,14 @@
 #ifndef TestBindingHeader_h
 #define TestBindingHeader_h
 
+#include "js/Object.h"  // JS::GetClass
+#include "mozilla/ErrorResult.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/Record.h"
 #include "mozilla/dom/TypedArray.h"
-#include "mozilla/ErrorResult.h"
 #include "nsCOMPtr.h"
 #include "nsGenericHTMLElement.h"
 #include "nsWrapperCache.h"
-#include "js/Object.h"  // JS::GetClass
 
 // Forward declare this before we include TestCodeGenBinding.h, because that
 // header relies on including this one for it, for ParentDict. Hopefully it
@@ -38,39 +36,26 @@ namespace mozilla {
 namespace dom {
 
 // IID for nsRenamedInterface
-#define NS_RENAMED_INTERFACE_IID                     \
-  {                                                  \
-    0xd4b19ef3, 0xe68b, 0x4e3f, {                    \
-      0x94, 0xbc, 0xc9, 0xde, 0x3a, 0x69, 0xb0, 0xe8 \
-    }                                                \
-  }
+#define NS_RENAMED_INTERFACE_IID \
+  {0xd4b19ef3, 0xe68b, 0x4e3f, {0x94, 0xbc, 0xc9, 0xde, 0x3a, 0x69, 0xb0, 0xe8}}
 
 class nsRenamedInterface : public nsISupports, public nsWrapperCache {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_RENAMED_INTERFACE_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_RENAMED_INTERFACE_IID)
   NS_DECL_ISUPPORTS
 
   // We need a GetParentObject to make binding codegen happy
   virtual nsISupports* GetParentObject();
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(nsRenamedInterface, NS_RENAMED_INTERFACE_IID)
-
 // IID for the TestExternalInterface
-#define NS_TEST_EXTERNAL_INTERFACE_IID               \
-  {                                                  \
-    0xd5ba0c99, 0x9b1d, 0x4e71, {                    \
-      0x8a, 0x94, 0x56, 0x38, 0x6c, 0xa3, 0xda, 0x3d \
-    }                                                \
-  }
+#define NS_TEST_EXTERNAL_INTERFACE_IID \
+  {0xd5ba0c99, 0x9b1d, 0x4e71, {0x8a, 0x94, 0x56, 0x38, 0x6c, 0xa3, 0xda, 0x3d}}
 class TestExternalInterface : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_TEST_EXTERNAL_INTERFACE_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_TEST_EXTERNAL_INTERFACE_IID)
   NS_DECL_ISUPPORTS
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(TestExternalInterface,
-                              NS_TEST_EXTERNAL_INTERFACE_IID)
 
 class TestNonWrapperCacheInterface : public nsISupports {
  public:
@@ -1151,6 +1136,30 @@ class TestInterface : public nsISupports, public nsWrapperCache {
   void PassUnionArrayBuffer(const StringOrArrayBuffer& foo);
   void PassUnionAllowSharedArrayBuffer(
       const StringOrMaybeSharedArrayBuffer& foo);
+  void passAllowSharedInt8ArrayOrInt16Array(
+      const MaybeSharedInt8ArrayOrMaybeSharedInt16Array&);
+
+  void SetAllowLargeArrayBufferView(const ArrayBufferView&);
+  void GetAllowLargeArrayBufferView(JSContext*, JS::MutableHandle<JSObject*>);
+  void SetAllowLargeNullableArrayBufferView(const Nullable<ArrayBufferView>&);
+  void GetAllowLargeNullableArrayBufferView(JSContext*,
+                                            JS::MutableHandle<JSObject*>);
+  void SetAllowLargeArrayBuffer(const ArrayBuffer&);
+  void GetAllowLargeArrayBuffer(JSContext*, JS::MutableHandle<JSObject*>);
+  void SetAllowLargeNullableArrayBuffer(const Nullable<ArrayBuffer>&);
+  void GetAllowLargeNullableArrayBuffer(JSContext*,
+                                        JS::MutableHandle<JSObject*>);
+
+  void PassAllowLargeArrayBufferView(const ArrayBufferView&);
+  void PassAllowLargeNullableArrayBufferView(const Nullable<ArrayBufferView>&);
+  void PassAllowLargeArrayBuffer(const ArrayBuffer&);
+  void PassAllowLargeNullableArrayBuffer(const Nullable<ArrayBuffer>&);
+  void PassUnionAllowLargeArrayBuffer(const StringOrAllowLargeArrayBuffer& foo);
+
+  void SetAllowSharedAllowLargeArrayBufferView(const ArrayBufferView&);
+  void GetAllowSharedAllowLargeArrayBufferView(JSContext*,
+                                               JS::MutableHandle<JSObject*>);
+  void PassAllowSharedAllowLargeArrayBufferView(const ArrayBufferView&);
 
   void GetReflectedHTMLAttributeReturningFrozenArray(
       bool*, Nullable<nsTArray<RefPtr<Element>>>&) const;
@@ -1567,11 +1576,11 @@ class TestNamedDeleterWithRetvalInterface : public nsISupports,
   // We need a GetParentObject to make binding codegen happy
   virtual nsISupports* GetParentObject();
 
-  bool NamedDeleter(const nsAString&, bool&);
-  bool NamedDeleter(const nsAString&) = delete;
+  void NamedDeleter(const nsAString&, bool&);
+  void NamedDeleter(const nsAString&) = delete;
   long NamedGetter(const nsAString&, bool&);
-  bool DelNamedItem(const nsAString&);
-  bool DelNamedItem(const nsAString&, bool&) = delete;
+  void DelNamedItem(const nsAString&);
+  void DelNamedItem(const nsAString&, bool&) = delete;
   void GetSupportedNames(nsTArray<nsString>&);
 };
 

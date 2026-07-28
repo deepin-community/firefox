@@ -20,6 +20,7 @@
 #include "include/core/SkTypes.h"
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/private/base/SkCPUTypes.h"
+#include "include/private/base/SkFloatingPoint.h"
 #include "include/private/base/SkSpan_impl.h"
 #include "src/core/SkImageFilterTypes.h"
 #include "src/core/SkImageFilter_Base.h"
@@ -27,6 +28,7 @@
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkRectPriv.h"
 #include "src/core/SkWriteBuffer.h"
+#include "src/effects/SkEmbossMaskFilter.h"
 
 #include <optional>
 #include <utility>
@@ -134,7 +136,8 @@ struct Material {
     enum class Type {
         kDiffuse,
         kSpecular,
-        kLast = kSpecular
+        kEmbossSpecular,
+        kLast = kEmbossSpecular
     };
 
     Type fType;
@@ -152,6 +155,10 @@ struct Material {
 
     static Material Specular(float k, float shininess, float surfaceDepth) {
         return {Type::kSpecular, skif::ParameterSpace<ZValue>(surfaceDepth), k, shininess};
+    }
+
+    static Material EmbossSpecular(float k, float shininess, float surfaceDepth) {
+        return {Type::kEmbossSpecular , skif::ParameterSpace<ZValue>(surfaceDepth), k, shininess};
     }
 };
 
@@ -238,7 +245,7 @@ sk_sp<SkShader> make_lighting_shader(sk_sp<SkShader> normalMap,
     builder.uniform("materialAndLightType") =
             SkV4{surfaceDepth.val(),
                  shininess,
-                 matType == Material::Type::kDiffuse ? 0.f : 1.f,
+                 static_cast<float>(matType),
                  lightType == Light::Type::kPoint ?
                          0.f : (lightType == Light::Type::kDistant ? -1.f : 1.f)};
     builder.uniform("lightPosAndSpotFalloff") =
@@ -281,19 +288,15 @@ sk_sp<SkImageFilter> make_lighting(const Light& light,
                                    const SkImageFilters::CropRect& cropRect) {
     // According to the spec, ks and kd can be any non-negative number:
     // http://www.w3.org/TR/SVG/filters.html#feSpecularLightingElement
-    if (!SkScalarIsFinite(material.fK) || material.fK < 0.f ||
-        !SkScalarIsFinite(material.fShininess) ||
-        !SkScalarIsFinite(ZValue(material.fSurfaceDepth))) {
+    if (!SkIsFinite(material.fK, material.fShininess, ZValue(material.fSurfaceDepth)) ||
+        material.fK < 0.f) {
         return nullptr;
     }
 
     // Ensure light values are finite, and the cosine should be between -1 and 1
-    if (!SkPoint(light.fLocationXY).isFinite() ||
-        !SkScalarIsFinite(ZValue(light.fLocationZ)) ||
-        !skif::Vector(light.fDirectionXY).isFinite() ||
-        !SkScalarIsFinite(ZValue(light.fDirectionZ)) ||
-        !SkScalarIsFinite(light.fFalloffExponent) ||
-        !SkScalarIsFinite(light.fCosCutoffAngle) ||
+    if (!SkPoint(light.fLocationXY).isFinite() || !skif::Vector(light.fDirectionXY).isFinite() ||
+        !SkIsFinite(light.fFalloffExponent, light.fCosCutoffAngle,
+                    ZValue(light.fLocationZ), ZValue(light.fDirectionZ)) ||
         light.fCosCutoffAngle < -1.f || light.fCosCutoffAngle > 1.f) {
         return nullptr;
     }
@@ -339,6 +342,15 @@ sk_sp<SkImageFilter> SkImageFilters::SpotLitDiffuse(
     return make_lighting(Light::Spot(lightColor, location, dir, falloffExponent, cosCutoffAngle),
                          Material::Diffuse(kd, surfaceScale),
                          std::move(input), cropRect);
+}
+
+// Private factory method for usage in SkEmbossMaskFilter.
+sk_sp<SkImageFilter> SkEmbossMaskFilter::LegacySpecular(
+        const SkPoint3& direction, SkColor lightColor, SkScalar surfaceScale, SkScalar ks,
+        SkScalar shininess, sk_sp<SkImageFilter> input) {
+    return make_lighting(::Light::Distant(lightColor, direction),
+                         Material::EmbossSpecular(ks, shininess, surfaceScale),
+                         std::move(input), {});
 }
 
 sk_sp<SkImageFilter> SkImageFilters::DistantLitSpecular(

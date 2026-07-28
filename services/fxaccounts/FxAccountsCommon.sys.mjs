@@ -49,6 +49,7 @@ export let DATA_FORMAT_VERSION = 1;
 export let DEFAULT_STORAGE_FILENAME = "signedInUser.json";
 
 export let OAUTH_TOKEN_FOR_SYNC_LIFETIME_SECONDS = 3600 * 6; // 6 hours
+export let ATTACHED_CLIENTS_CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in ms
 
 // After we start polling for account verification, we stop polling when this
 // many milliseconds have elapsed.
@@ -70,6 +71,7 @@ export let ON_ACCOUNT_DESTROYED_NOTIFICATION = "fxaccounts:account_destroyed";
 export let ON_COLLECTION_CHANGED_NOTIFICATION = "sync:collection_changed";
 export let ON_VERIFY_LOGIN_NOTIFICATION = "fxaccounts:verify_login";
 export let ON_COMMAND_RECEIVED_NOTIFICATION = "fxaccounts:command_received";
+export let ON_SERVICE_ENABLED_NOTIFICATION = "fxaccounts:service_enabled";
 
 export let FXA_PUSH_SCOPE_ACCOUNT_UPDATE = "chrome://fxa-device-update";
 
@@ -97,6 +99,9 @@ export let OAUTH_CLIENT_ID = CLIENT_IS_THUNDERBIRD
   : FX_OAUTH_CLIENT_ID;
 export let SCOPE_PROFILE = "profile";
 export let SCOPE_PROFILE_WRITE = "profile:write";
+export let SCOPE_PROFILE_UID = "profile:uid";
+export let SCOPE_SMART_WINDOW = "https://identity.mozilla.com/apps/smartwindow";
+
 // Sync scope in Firefox.
 export let SCOPE_OLD_SYNC = "https://identity.mozilla.com/apps/oldsync";
 // Sync scope in Thunderbird.
@@ -138,6 +143,8 @@ export let COMMAND_PROFILE_CHANGE = "profile:change";
 export let COMMAND_CAN_LINK_ACCOUNT = "fxaccounts:can_link_account";
 export let COMMAND_LOGIN = "fxaccounts:login";
 export let COMMAND_OAUTH = "fxaccounts:oauth_login";
+export let COMMAND_OAUTH_FLOW_IS_ACTIVE = "fxaccounts:oauth_flow_is_active";
+export let COMMAND_OAUTH_FLOW_BEGIN = "fxaccounts:oauth_flow_begin";
 export let COMMAND_LOGOUT = "fxaccounts:logout";
 export let COMMAND_DELETE = "fxaccounts:delete";
 export let COMMAND_SYNC_PREFERENCES = "fxaccounts:sync_preferences";
@@ -150,7 +157,13 @@ export let COMMAND_FIREFOX_VIEW = "fxaccounts:firefox_view";
 // be stored. This branch will be reset on account signout and signin.
 export let PREF_ACCOUNT_ROOT = "identity.fxaccounts.account.";
 
-export let PREF_LAST_FXA_USER = "identity.fxaccounts.lastSignedInUserHash";
+// Where we store the hashed uid of the previous user.
+export let PREF_LAST_FXA_USER_UID =
+  "identity.fxaccounts.lastSignedInUserIdHash";
+// Where we used to store the hashed email of the previous user. We now store the
+// uid, but need to migrate from this.
+export let PREF_LAST_FXA_USER_EMAIL =
+  "identity.fxaccounts.lastSignedInUserHash";
 export let PREF_REMOTE_PAIRING_URI = "identity.fxaccounts.remote.pairing.uri";
 
 // Server errno.
@@ -289,6 +302,7 @@ export let FXA_PWDMGR_PLAINTEXT_FIELDS = new Set([
   "profileCache",
   "encryptedSendTabKeys",
   "encryptedCloseTabKeys",
+  "requestedServices", // info about services which should be configured, used during oauth flows.
 ]);
 
 // Fields we store in secure storage if it exists.

@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = Avrir la colliaziun en in nov tab
     .accesskey = t
+main-context-menu-open-link-split-view =
+    .label = Avrir la colliaziun en la vista dividida
+    .accesskey = d
 main-context-menu-open-link-container-tab =
     .label = Avrir la colliaziun en in nov tab da container
     .accesskey = C
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Memorisar la colliaziun en { -pocket-brand-name }
     .accesskey = c
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Copiar l'adressa dad e-mail
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Copiar la colliaziun
     .accesskey = l
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Copiar la colliaziun senza fastizaders da websites
-    .accesskey = i
+main-context-menu-preview-link =
+    .label = Prevista da la colliaziun
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Copiar ina colliaziun netta
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Zuppentar las controllas
     .accesskey = c
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Maletg entir
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Mussar la descripziun
     .accesskey = D
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Tschertgar il maletg cun { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Memorisar il video sut…
     .accesskey = v
@@ -283,6 +293,12 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Trametter l'audio per e-mail…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Trametter ad in apparat
+    .accesskey = n
+main-context-menu-send-to-mobile-2 =
+    .label = Trametter ad in apparat mobil
+    .accesskey = n
 main-context-menu-save-to-pocket =
     .label = Memorisar la pagina en { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +306,7 @@ main-context-menu-send-to-device =
     .label = Trametter la pagina ad in apparat
     .accesskey = a
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Utilisar l'infurmaziun d'annunzia memorisada
@@ -319,9 +333,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Agiuntar in pled magic per questa tschertga…
     .accesskey = s
+main-context-menu-add-engine =
+    .label = Agiuntar ina maschina da retschertga
+    .accesskey = s
 main-context-menu-link-send-to-device =
     .label = Trametter la colliaziun ad in apparat
     .accesskey = a
+main-context-menu-link-send-to-mobile =
+    .label = Trametter la colliaziun ad in apparat mobil
+    .accesskey = n
 main-context-menu-frame =
     .label = Frame actual
     .accesskey = F
@@ -389,3 +409,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Mussar il pled-clav
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nov
+main-context-menu-pdfjs-copy-page =
+    .label = Copiar la pagina
+main-context-menu-pdfjs-cut-page =
+    .label = Tagliar ora la pagina
+main-context-menu-pdfjs-delete-page =
+    .label = Stizzar la pagina
+main-context-menu-pdfjs-save-page =
+    .label = Memorisar la selecziun sco…

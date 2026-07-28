@@ -1,13 +1,13 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "VideoSegment.h"
 
-#include "gfx2DGlue.h"
 #include "ImageContainer.h"
 #include "VideoUtils.h"
+#include "gfx2DGlue.h"
+#include "mozilla/CheckedInt.h"
 #include "mozilla/UniquePtr.h"
 
 namespace mozilla {
@@ -51,9 +51,21 @@ already_AddRefed<Image> VideoFrame::CreateBlackImage(
     return nullptr;
   }
 
-  gfx::IntSize cbcrSize((aSize.width + 1) / 2, (aSize.height + 1) / 2);
-  int yLen = aSize.width * aSize.height;
-  int cbcrLen = cbcrSize.width * cbcrSize.height;
+  if (aSize.width <= 0 || aSize.height <= 0) {
+    return nullptr;
+  }
+  auto checkedYLen = CheckedInt32(aSize.width) * aSize.height;
+  if (!checkedYLen.isValid()) {
+    return nullptr;
+  }
+  auto checkedCbCrWidth = (CheckedInt32(aSize.width) + 1) / 2;
+  auto checkedCbCrHeight = (CheckedInt32(aSize.height) + 1) / 2;
+  auto checkedCbCrLen = checkedCbCrWidth * checkedCbCrHeight;
+  if (!checkedCbCrLen.isValid()) {
+    return nullptr;
+  }
+  int yLen = checkedYLen.value();
+  int cbcrLen = checkedCbCrLen.value();
 
   // Generate a black image.
   auto frame = MakeUnique<uint8_t[]>(yLen + 2 * cbcrLen);
@@ -65,7 +77,7 @@ already_AddRefed<Image> VideoFrame::CreateBlackImage(
   layers::PlanarYCbCrData data;
   data.mYChannel = frame.get();
   data.mYStride = aSize.width;
-  data.mCbCrStride = cbcrSize.width;
+  data.mCbCrStride = checkedCbCrWidth.value();
   data.mCbChannel = frame.get() + yLen;
   data.mCrChannel = data.mCbChannel + cbcrLen;
   data.mPictureRect = gfx::IntRect(0, 0, aSize.width, aSize.height);
@@ -84,12 +96,72 @@ already_AddRefed<Image> VideoFrame::CreateBlackImage(
   return image.forget();
 }
 
+void VideoSegment::AppendFrame(const VideoChunk& aChunk,
+                               const Maybe<bool>& aForceBlack,
+                               const Maybe<TimeStamp>& aTimeStamp) {
+  VideoChunk* chunk = AppendChunk(0);
+  chunk->mTimeStamp = aTimeStamp ? *aTimeStamp : aChunk.mTimeStamp;
+  chunk->mProcessingDuration = aChunk.mProcessingDuration;
+  chunk->mMediaTime = aChunk.mMediaTime;
+  chunk->mWebrtcCaptureTime = aChunk.mWebrtcCaptureTime;
+  chunk->mWebrtcReceiveTime = aChunk.mWebrtcReceiveTime;
+  chunk->mRtpTimestamp = aChunk.mRtpTimestamp;
+  VideoFrame frame(do_AddRef(aChunk.mFrame.GetImage()),
+                   aChunk.mFrame.GetIntrinsicSize());
+  MOZ_ASSERT_IF(!IsNull(), !aChunk.mTimeStamp.IsNull());
+  frame.SetForceBlack(aForceBlack ? *aForceBlack
+                                  : aChunk.mFrame.GetForceBlack());
+  frame.SetPrincipalHandle(aChunk.mFrame.GetPrincipalHandle());
+  chunk->mFrame.TakeFrom(&frame);
+}
+
 void VideoSegment::AppendFrame(already_AddRefed<Image>&& aImage,
                                const IntSize& aIntrinsicSize,
                                const PrincipalHandle& aPrincipalHandle,
-                               bool aForceBlack, TimeStamp aTimeStamp) {
+                               bool aForceBlack, TimeStamp aTimeStamp,
+                               media::TimeUnit aProcessingDuration,
+                               media::TimeUnit aMediaTime) {
   VideoChunk* chunk = AppendChunk(0);
   chunk->mTimeStamp = aTimeStamp;
+  chunk->mProcessingDuration = aProcessingDuration;
+  chunk->mMediaTime = aMediaTime;
+  VideoFrame frame(std::move(aImage), aIntrinsicSize);
+  MOZ_ASSERT_IF(!IsNull(), !aTimeStamp.IsNull());
+  frame.SetForceBlack(aForceBlack);
+  frame.SetPrincipalHandle(aPrincipalHandle);
+  chunk->mFrame.TakeFrom(&frame);
+}
+
+void VideoSegment::AppendWebrtcRemoteFrame(
+    already_AddRefed<Image>&& aImage, const IntSize& aIntrinsicSize,
+    const PrincipalHandle& aPrincipalHandle, bool aForceBlack,
+    TimeStamp aTimeStamp, media::TimeUnit aProcessingDuration,
+    uint32_t aRtpTimestamp, int64_t aWebrtcCaptureTimeNtp,
+    int64_t aWebrtcReceiveTimeUs) {
+  VideoChunk* chunk = AppendChunk(0);
+  chunk->mTimeStamp = aTimeStamp;
+  chunk->mProcessingDuration = aProcessingDuration;
+  if (aWebrtcCaptureTimeNtp > 0) {
+    chunk->mWebrtcCaptureTime = AsVariant(aWebrtcCaptureTimeNtp);
+  }
+  if (aWebrtcReceiveTimeUs > 0) {
+    chunk->mWebrtcReceiveTime = Some(aWebrtcReceiveTimeUs);
+  }
+  chunk->mRtpTimestamp = Some(aRtpTimestamp);
+  VideoFrame frame(std::move(aImage), aIntrinsicSize);
+  MOZ_ASSERT_IF(!IsNull(), !aTimeStamp.IsNull());
+  frame.SetForceBlack(aForceBlack);
+  frame.SetPrincipalHandle(aPrincipalHandle);
+  chunk->mFrame.TakeFrom(&frame);
+}
+
+void VideoSegment::AppendWebrtcLocalFrame(
+    already_AddRefed<Image>&& aImage, const IntSize& aIntrinsicSize,
+    const PrincipalHandle& aPrincipalHandle, bool aForceBlack,
+    TimeStamp aTimeStamp, TimeStamp aWebrtcCaptureTime) {
+  VideoChunk* chunk = AppendChunk(0);
+  chunk->mTimeStamp = aTimeStamp;
+  chunk->mWebrtcCaptureTime = AsVariant(aWebrtcCaptureTime);
   VideoFrame frame(std::move(aImage), aIntrinsicSize);
   MOZ_ASSERT_IF(!IsNull(), !aTimeStamp.IsNull());
   frame.SetForceBlack(aForceBlack);

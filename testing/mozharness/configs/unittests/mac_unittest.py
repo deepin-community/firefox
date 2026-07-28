@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
+import sys
 
 # OS Specifics
 INSTALLER_PATH = os.path.join(os.getcwd(), "installer.dmg")
@@ -13,10 +14,9 @@ if "MOZ_FETCHES_DIR" in os.environ:
 XPCSHELL_NAME = "xpcshell"
 HTTP3SERVER_NAME = "http3server"
 EXE_SUFFIX = ""
-ADJUST_MOUSE_AND_SCREEN = False
 #####
 config = {
-    "virtualenv_modules": ["six==1.13.0", "vcversioner==2.16.0.0"],
+    "virtualenv_modules": ["six==1.16.0", "vcversioner==2.16.0.0"],
     ###
     "installer_path": INSTALLER_PATH,
     "xpcshell_name": XPCSHELL_NAME,
@@ -117,12 +117,12 @@ config = {
     },
     # local mochi suites
     "all_mochitest_suites": {
-        "mochitest-plain": ["--chunk-by-dir=4"],
+        "mochitest-plain": [],
         "mochitest-plain-gpu": ["--subsuite=gpu"],
         "mochitest-media": ["--subsuite=media"],
-        "mochitest-chrome": ["--flavor=chrome", "--chunk-by-dir=4", "--disable-e10s"],
+        "mochitest-chrome": ["--flavor=chrome", "--disable-e10s"],
         "mochitest-chrome-gpu": ["--flavor=chrome", "--subsuite=gpu", "--disable-e10s"],
-        "mochitest-browser-chrome": ["--flavor=browser", "--chunk-by-runtime"],
+        "mochitest-browser-chrome": ["--flavor=browser"],
         "mochitest-browser-screenshots": [
             "--flavor=browser",
             "--subsuite=screenshots",
@@ -136,10 +136,13 @@ config = {
         "mochitest-devtools-chrome": [
             "--flavor=browser",
             "--subsuite=devtools",
-            "--chunk-by-runtime",
         ],
         "mochitest-browser-a11y": ["--flavor=browser", "--subsuite=a11y"],
         "mochitest-browser-media": ["--flavor=browser", "--subsuite=media-bc"],
+        "mochitest-browser-translations": [
+            "--flavor=browser",
+            "--subsuite=translations",
+        ],
         "mochitest-a11y": ["--flavor=a11y", "--disable-e10s"],
         "mochitest-remote": ["--flavor=browser", "--subsuite=remote"],
     },
@@ -207,26 +210,41 @@ config = {
             "enabled": True,
         },
         {
-            "name": "run mouse & screen adjustment script",
+            "name": "verify refresh rate",
             "cmd": [
-                # when configs are consolidated this python path will only show
-                # for windows.
-                "python",
-                "../scripts/external_tools/mouse_and_screen_resolution.py",
-                "--configuration-file",
-                "../scripts/external_tools/machine-configuration.json",
+                sys.executable,
+                os.path.join(
+                    os.getcwd(),
+                    "mozharness",
+                    "external_tools",
+                    "macosx_resolution_refreshrate.py",
+                ),
+                "--check=refresh-rate",
             ],
-            "architectures": ["32bit"],
+            "architectures": ["64bit"],
             "halt_on_failure": True,
-            "enabled": ADJUST_MOUSE_AND_SCREEN,
+            "enabled": True,
+        },
+        {
+            "name": "verify screen resolution",
+            "cmd": [
+                sys.executable,
+                os.path.join(
+                    os.getcwd(),
+                    "mozharness",
+                    "external_tools",
+                    "macosx_resolution_refreshrate.py",
+                ),
+                "--check=resolution",
+            ],
+            "architectures": ["64bit"],
+            "halt_on_failure": True,
+            "enabled": True,
         },
     ],
     "vcs_output_timeout": 1000,
     "minidump_save_path": "%(abs_work_dir)s/../minidumps",
     "unstructured_flavors": {
-        "xpcshell": [],
-        "gtest": [],
-        "cppunittest": [],
         "jittest": [],
     },
     "tooltool_cache": "/builds/tooltool_cache",

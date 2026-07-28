@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _MOZILLA_GFX_2D_H
-#define _MOZILLA_GFX_2D_H
+#ifndef MOZILLA_GFX_2D_H
+#define MOZILLA_GFX_2D_H
 
 #include "Types.h"
 #include "Point.h"
@@ -34,8 +32,6 @@
 #include "mozilla/ThreadSafeWeakPtr.h"
 #include "mozilla/Atomics.h"
 
-#include "mozilla/DebugOnly.h"
-
 #include "nsRegionFwd.h"
 
 #if defined(MOZ_WIDGET_ANDROID) || defined(MOZ_WIDGET_GTK)
@@ -63,9 +59,6 @@ typedef _FcPattern FcPattern;
 
 struct ID3D11Texture2D;
 struct ID3D11Device;
-struct ID2D1Device;
-struct ID2D1DeviceContext;
-struct ID2D1Multithread;
 struct IDWriteFactory;
 struct IDWriteRenderingParams;
 struct IDWriteFontFace;
@@ -104,7 +97,7 @@ class ScaledFont;
 
 namespace gfx {
 
-class AlphaBoxBlur;
+class GaussianBlur;
 class ScaledFont;
 class SourceSurface;
 class DataSourceSurface;
@@ -702,6 +695,9 @@ class SourceSurface : public SupportsThreadSafeWeakPtr<SourceSurface> {
     return surface.forget();
   }
 
+  /** Utility function to quickly determine the underlying surface type. */
+  virtual SurfaceType GetUnderlyingType() const { return GetType(); }
+
   /** Tries to get this SourceSurface's native surface.  This will fail if aType
    * is not the type of this SourceSurface's native surface.
    */
@@ -718,6 +714,11 @@ class SourceSurface : public SupportsThreadSafeWeakPtr<SourceSurface> {
    */
   virtual already_AddRefed<SourceSurface> ExtractSubrect(const IntRect& aRect) {
     return nullptr;
+  }
+
+  /** Tries to generate a SurfaceDescriptor for the surface, if possible. */
+  virtual bool GetSurfaceDescriptor(layers::SurfaceDescriptor& aDesc) {
+    return false;
   }
 
  protected:
@@ -880,6 +881,11 @@ class DataSourceSurface : public SourceSurface {
    */
   virtual void Invalidate(const IntRect& aDirtyRect) {}
 
+  /**
+   * Attempt to cache internal data into the supplied memory buffer.
+   */
+  virtual bool ReadDataInto(uint8_t* aData, int32_t aStride) { return false; }
+
  protected:
   Atomic<int32_t> mMapCount;
 };
@@ -959,6 +965,72 @@ class Path : public external::AtomicRefCounted<Path> {
   virtual already_AddRefed<PathBuilder> TransformedCopyToBuilder(
       const Matrix& aTransform, FillRule aFillRule) const = 0;
 
+ protected:
+  /** This returns a PathBuilder object that may consume the contents of this
+   * path.
+   */
+  virtual inline already_AddRefed<PathBuilder> MoveToBuilder(
+      FillRule aFillRule) {
+    return CopyToBuilder(aFillRule);
+  }
+  inline already_AddRefed<PathBuilder> MoveToBuilder() {
+    return MoveToBuilder(GetFillRule());
+  }
+  /** Like TransformedCopyToBuilder, but is allowed to consume the contents of
+   * the path when beneficial.
+   */
+  virtual inline already_AddRefed<PathBuilder> TransformedMoveToBuilder(
+      const Matrix& aTransform, FillRule aFillRule) {
+    return TransformedCopyToBuilder(aTransform, aFillRule);
+  }
+  inline already_AddRefed<PathBuilder> TransformedMoveToBuilder(
+      const Matrix& aTransform) {
+    return TransformedMoveToBuilder(aTransform, GetFillRule());
+  }
+
+ public:
+  /** Move to a PathBuilder only if there are no other references to the path,
+   * otherwise copy.
+   */
+  static inline already_AddRefed<PathBuilder> ToBuilder(
+      already_AddRefed<Path> aPath, FillRule aFillRule) {
+    RefPtr<Path> path = aPath;
+    return path->hasOneRef() ? path->MoveToBuilder(aFillRule)
+                             : path->CopyToBuilder(aFillRule);
+  }
+  static inline already_AddRefed<PathBuilder> ToBuilder(
+      already_AddRefed<Path> aPath) {
+    RefPtr<Path> path = aPath;
+    FillRule fillRule = path->GetFillRule();
+    return ToBuilder(path.forget(), fillRule);
+  }
+  /** Transformed move to a PathBuilder only if there are no other references to
+   * the path, otherwise copy.
+   */
+  static inline already_AddRefed<PathBuilder> ToBuilder(
+      already_AddRefed<Path> aPath, const Matrix& aTransform,
+      FillRule aFillRule) {
+    RefPtr<Path> path = aPath;
+    return path->hasOneRef()
+               ? path->TransformedMoveToBuilder(aTransform, aFillRule)
+               : path->TransformedCopyToBuilder(aTransform, aFillRule);
+  }
+  static inline already_AddRefed<PathBuilder> ToBuilder(
+      already_AddRefed<Path> aPath, const Matrix& aTransform) {
+    RefPtr<Path> path = aPath;
+    FillRule fillRule = path->GetFillRule();
+    return ToBuilder(path.forget(), aTransform, fillRule);
+  }
+
+  /** Modifies an existing path in-place if it has no other references, or
+   * copies if it is used elsewhere.
+   */
+  static void Transform(RefPtr<Path>& aPath, const Matrix& aTransform);
+  static void SetFillRule(RefPtr<Path>& aPath, FillRule aFillRule);
+  static void TransformAndSetFillRule(RefPtr<Path>& aPath,
+                                      const Matrix& aTransform,
+                                      FillRule aFillRule);
+
   /** This function checks if a point lies within a path. It allows passing a
    * transform that will transform the path to the coordinate space in which
    * aPoint is given.
@@ -1037,6 +1109,24 @@ class PathBuilder : public PathSink {
   virtual bool IsActive() const = 0;
 };
 
+inline void Path::Transform(RefPtr<Path>& aPath, const Matrix& aTransform) {
+  RefPtr<PathBuilder> builder = Path::ToBuilder(aPath.forget(), aTransform);
+  aPath = builder->Finish();
+}
+
+inline void Path::SetFillRule(RefPtr<Path>& aPath, FillRule aFillRule) {
+  RefPtr<PathBuilder> builder = Path::ToBuilder(aPath.forget(), aFillRule);
+  aPath = builder->Finish();
+}
+
+inline void Path::TransformAndSetFillRule(RefPtr<Path>& aPath,
+                                          const Matrix& aTransform,
+                                          FillRule aFillRule) {
+  RefPtr<PathBuilder> builder =
+      Path::ToBuilder(aPath.forget(), aTransform, aFillRule);
+  aPath = builder->Finish();
+}
+
 struct Glyph {
   uint32_t mIndex;
   Point mPosition;
@@ -1103,6 +1193,7 @@ class FTUserFontData final
   explicit FTUserFontData(const char* aFilename) : mFilename(aFilename) {}
 
   const uint8_t* FontData() const { return mFontData; }
+  uint32_t FontDataLength() const { return mLength; }
 
   already_AddRefed<mozilla::gfx::SharedFTFace> CloneFace(
       int aFaceIndex = 0) override;
@@ -1361,6 +1452,13 @@ class DrawTarget : public external::AtomicRefCounted<DrawTarget> {
   virtual void Destination(const char* aDestination, const Point& aPoint) {}
 
   /**
+   * Associate subsequent calls to other methods with a specific accessibility
+   * node. This is used to generate tagged PDF output. Specifying an id of (0,
+   * 0) disassociates subsequent calls from any accessibility node.
+   */
+  virtual void AccessibleId(uint64_t aBrowsingContextId, uint64_t aAccId) {}
+
+  /**
    * Returns a SourceSurface which is a snapshot of the current contents of the
    * DrawTarget. Multiple calls to Snapshot() without any drawing operations in
    * between will normally return the same SourceSurface object.
@@ -1426,6 +1524,12 @@ class DrawTarget : public external::AtomicRefCounted<DrawTarget> {
       const DrawSurfaceOptions& aSurfOptions = DrawSurfaceOptions(),
       const DrawOptions& aOptions = DrawOptions()) {
     MOZ_CRASH("GFX: DrawSurfaceDescriptor");
+  }
+
+  virtual already_AddRefed<SourceSurface> ImportSurfaceDescriptor(
+      const layers::SurfaceDescriptor& aDesc, const gfx::IntSize& aSize,
+      SurfaceFormat aFormat) {
+    return nullptr;
   }
 
   /**
@@ -1746,7 +1850,7 @@ class DrawTarget : public external::AtomicRefCounted<DrawTarget> {
    * Perform an in-place blur operation. This is only supported on data draw
    * targets.
    */
-  virtual void Blur(const AlphaBoxBlur& aBlur);
+  virtual void Blur(const GaussianBlur& aBlur);
 
   /**
    * Performs an in-place edge padding operation.
@@ -1866,6 +1970,13 @@ class DrawTarget : public external::AtomicRefCounted<DrawTarget> {
   }
 
   /**
+   * Get the BackendType of Paths/PathBuilders created from this DrawTarget.
+   * This will usually just be the same as the DrawTarget's BackendType.
+   * However, some DrawTargets may create PathBuilders with differing type.
+   */
+  virtual BackendType GetPathType() const { return GetBackendType(); }
+
+  /**
    * Create a path builder with the specified fillmode.
    *
    * We need the fill mode up front because of Direct2D.
@@ -1896,6 +2007,23 @@ class DrawTarget : public external::AtomicRefCounted<DrawTarget> {
    * @param aType Type of filter node to be created.
    */
   virtual already_AddRefed<FilterNode> CreateFilter(FilterType aType) = 0;
+
+  /**
+   * Create a SourceSurface to resolve a deferred filter input.
+   */
+  already_AddRefed<SourceSurface> ResolveFilterInput(
+      const Path* aPath, const Pattern& aPattern, const IntRect& aSourceRect,
+      const Matrix& aDestTransform, const DrawOptions& aOptions = DrawOptions(),
+      const StrokeOptions* aStrokeOptions = nullptr,
+      SurfaceFormat aFormat = SurfaceFormat::B8G8R8A8);
+
+  /**
+   * Create a FilterNode that may defer drawing of the input path.
+   */
+  virtual already_AddRefed<FilterNode> DeferFilterInput(
+      const Path* aPath, const Pattern& aPattern, const IntRect& aSourceRect,
+      const IntPoint& aDestOffset, const DrawOptions& aOptions = DrawOptions(),
+      const StrokeOptions* aStrokeOptions = nullptr);
 
   Matrix GetTransform() const { return mTransform; }
 
@@ -2036,9 +2164,6 @@ class GFX2D_API Factory {
   static void Init(const Config& aConfig);
   static void ShutDown();
 
-  static bool HasSSE2();
-  static bool HasSSE4();
-
   /**
    * Returns false if any of the following are true:
    *
@@ -2089,7 +2214,8 @@ class GFX2D_API Factory {
 
   static already_AddRefed<DrawTarget> CreateDrawTargetForData(
       BackendType aBackend, unsigned char* aData, const IntSize& aSize,
-      int32_t aStride, SurfaceFormat aFormat, bool aUninitialized = false);
+      int32_t aStride, SurfaceFormat aFormat, bool aUninitialized = false,
+      bool aIsClear = false);
 
 #ifdef XP_DARWIN
   static already_AddRefed<ScaledFont> CreateScaledFontForMacFont(
@@ -2121,7 +2247,7 @@ class GFX2D_API Factory {
    * @return a NativeFontResource of nullptr if failed.
    */
   static already_AddRefed<NativeFontResource> CreateNativeFontResource(
-      uint8_t* aData, uint32_t aSize, FontType aFontType,
+      const uint8_t* aData, uint32_t aSize, FontType aFontType,
       void* aFontContext = nullptr);
 
   /**
@@ -2178,7 +2304,8 @@ class GFX2D_API Factory {
   static void CopyDataSourceSurface(DataSourceSurface* aSource,
                                     DataSourceSurface* aDest);
 
-  static uint32_t GetMaxSurfaceSize(BackendType aType);
+  static size_t GetMaxSurfaceSize(BackendType aType);
+  static size_t GetMaxSurfaceArea(BackendType aType);
 
   static LogForwarder* GetLogForwarder() {
     return sConfig ? sConfig->mLogForwarder : nullptr;
@@ -2195,11 +2322,11 @@ class GFX2D_API Factory {
 
   static bool DoesBackendSupportDataDrawtarget(BackendType aType);
 
-  static void SetBGRSubpixelOrder(bool aBGR);
-  static bool GetBGRSubpixelOrder();
+  static void SetSubpixelOrder(SubpixelOrder aOrder);
+  static SubpixelOrder GetSubpixelOrder();
 
  private:
-  static bool mBGRSubpixelOrder;
+  static SubpixelOrder mSubpixelOrder;
 
  public:
   static already_AddRefed<DrawTarget> CreateDrawTargetWithSkCanvas(
@@ -2236,28 +2363,12 @@ class GFX2D_API Factory {
 #endif
 
 #ifdef WIN32
-  static already_AddRefed<DrawTarget> CreateDrawTargetForD3D11Texture(
-      ID3D11Texture2D* aTexture, SurfaceFormat aFormat);
-
-  /*
-   * Attempts to create and install a D2D1 device from the supplied Direct3D11
-   * device. Returns true on success, or false on failure and leaves the
-   * D2D1/Direct3D11 devices unset.
-   */
   static bool SetDirect3D11Device(ID3D11Device* aDevice);
   static RefPtr<ID3D11Device> GetDirect3D11Device();
-  static RefPtr<ID2D1Device> GetD2D1Device(uint32_t* aOutSeqNo = nullptr);
-  static bool HasD2D1Device();
   static RefPtr<IDWriteFactory> GetDWriteFactory();
   static RefPtr<IDWriteFactory> EnsureDWriteFactory();
-  static bool SupportsD2D1();
   static RefPtr<IDWriteFontCollection> GetDWriteSystemFonts(
       bool aUpdate = false);
-  static RefPtr<ID2D1DeviceContext> GetD2DDeviceContext();
-
-  static uint64_t GetD2DVRAMUsageDrawTarget();
-  static uint64_t GetD2DVRAMUsageSourceSurface();
-  static void D2DCleanup();
 
   static already_AddRefed<ScaledFont> CreateScaledFontForDWriteFont(
       IDWriteFontFace* aFontFace, const gfxFontStyle* aStyle,
@@ -2271,63 +2382,46 @@ class GFX2D_API Factory {
   static void SetSystemTextQuality(uint8_t aQuality);
 
   static already_AddRefed<DataSourceSurface>
-  CreateBGRA8DataSourceSurfaceForD3D11Texture(ID3D11Texture2D* aSrcTexture,
-                                              uint32_t aArrayIndex = 0);
+  CreateBGRA8DataSourceSurfaceForD3D11Texture(
+      ID3D11Texture2D* aSrcTexture, uint32_t aArrayIndex,
+      gfx::ColorSpace2 aColorSpace, gfx::ColorRange aColorRange,
+      gfx::TransferFunction aTransferFunction);
 
   static nsresult CreateSdbForD3D11Texture(
       ID3D11Texture2D* aSrcTexture, const IntSize& aSrcSize,
       layers::SurfaceDescriptorBuffer& aSdBuffer,
       const std::function<layers::MemoryOrShmem(uint32_t)>& aAllocate);
 
-  static bool ReadbackTexture(layers::TextureData* aDestCpuTexture,
-                              ID3D11Texture2D* aSrcTexture);
-
   static bool ReadbackTexture(DataSourceSurface* aDestCpuTexture,
                               ID3D11Texture2D* aSrcTexture,
-                              uint32_t aArrayIndex = 0);
+                              uint32_t aArrayIndex,
+                              gfx::ColorSpace2 aColorSpace,
+                              gfx::ColorRange aColorRange,
+                              gfx::TransferFunction aTransferFunction);
 
  private:
-  static StaticRefPtr<ID2D1Device> mD2D1Device;
   static StaticRefPtr<ID3D11Device> mD3D11Device;
   static StaticRefPtr<IDWriteFactory> mDWriteFactory;
   static bool mDWriteFactoryInitialized;
   static StaticRefPtr<IDWriteFontCollection> mDWriteSystemFonts;
-  static StaticRefPtr<ID2D1DeviceContext> mMTDC;
-  static StaticRefPtr<ID2D1DeviceContext> mOffMTDC;
 
   static bool ReadbackTexture(uint8_t* aDestData, int32_t aDestStride,
                               ID3D11Texture2D* aSrcTexture);
 
   // DestTextureT can be TextureData or DataSourceSurface.
-  template <typename DestTextureT>
-  static bool ConvertSourceAndRetryReadback(DestTextureT* aDestCpuTexture,
-                                            ID3D11Texture2D* aSrcTexture,
-                                            uint32_t aArrayIndex = 0);
+  static bool ConvertSourceAndRetryReadback(
+      DataSourceSurface* aDestCpuTexture, ID3D11Texture2D* aSrcTexture,
+      uint32_t aArrayIndex, gfx::ColorSpace2 aColorSpace,
+      gfx::ColorRange aColorRange, gfx::TransferFunction aTransferFunction);
 
  protected:
   // This guards access to the singleton devices above, as well as the
   // singleton devices in DrawTargetD2D1.
   static StaticMutex mDeviceLock;
-  // This synchronizes access between different D2D drawtargets and their
-  // implied dependency graph.
-  static StaticMutex mDTDependencyLock;
-
-  friend class DrawTargetD2D1;
 #endif  // WIN32
-};
-
-class MOZ_RAII AutoSerializeWithMoz2D final {
- public:
-  explicit AutoSerializeWithMoz2D(BackendType aBackendType);
-  ~AutoSerializeWithMoz2D();
-
- private:
-#if defined(WIN32)
-  RefPtr<ID2D1Multithread> mMT;
-#endif
 };
 
 }  // namespace gfx
 }  // namespace mozilla
 
-#endif  // _MOZILLA_GFX_2D_H
+#endif  // MOZILLA_GFX_2D_H

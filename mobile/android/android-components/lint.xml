@@ -3,6 +3,10 @@
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <lint>
+    <issue id="MissingQuantity" severity="ignore" />
+    <issue id="ImpliedQuantity" severity="ignore" />
+    <issue id="Untranslatable" severity="ignore" />
+    <issue id="JUnitAssertNotNull" severity="warning" />
     <issue id="BrandUsage" severity="error">
         <ignore path="**/values-*/strings.xml" />
     </issue>
@@ -13,6 +17,13 @@
         <ignore path="**/values-*/strings.xml" />
     </issue>
     <issue id="IncorrectStraightDoubleQuote" severity="error">
+        <ignore path="**/values-*/strings.xml" />
+    </issue>
+    <issue id="PlaceholderComment" severity="error">
+        <ignore path="**/values-*/strings.xml" />
+        <ignore path="**/samples/**/values/strings.xml" />
+    </issue>
+    <issue id="Typos" severity="error">
         <ignore path="**/values-*/strings.xml" />
     </issue>
 </lint>

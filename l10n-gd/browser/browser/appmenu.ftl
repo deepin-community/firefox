@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Luchdaidhean a-nuas
 appmenuitem-passwords =
     .label = Faclan-faire
+appmenuitem-extensions-and-themes =
+    .label = Leudachain is ùrlaran
+appmenuitem-extensions =
+    .label = Leudachain
 appmenuitem-addons-and-themes =
     .label = Tuilleadain ’s ùrlaran
 appmenuitem-print =
@@ -77,18 +81,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Seall barrachd tabaichean
     .tooltiptext = Seall barrachd thabaichean on uidheam seo
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Seall { $count } taba neo-ghnìomhach
-            [two] Seall { $count } thaba neo-ghnìomhach
-            [few] Seall { $count } tabaichean neo-ghnìomhach
-           *[other] Seall { $count } taba neo-ghnìomhach
-        }
-    .tooltiptext = Seall na tabaichean neo-ghnìomhach air an uidheam seo
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Tabaichean neo-ghnìomhach
+    .tooltiptext = Faic na tabaichean neo-ghnìomhach air an uidheam seo
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Chan eil taba fosgailte
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -106,6 +102,7 @@ appmenuitem-fxa-toolbar-sync-now2 = Sioncronaich an-dràsta
 appmenuitem-fxa-sign-in = Clàraich a-steach gu { -brand-product-name }
 appmenuitem-fxa-manage-account = Stiùirich an cunntas
 appmenu-fxa-header2 = { -fxaccount-brand-name }
+appmenu-account-header = Cunntas
 # Variables
 # $time (string) - Localized relative time since last sync (e.g. 1 second ago,
 # 3 hours ago, etc.)
@@ -115,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Sioncronaich is sàbhail an dàta
 appmenu-fxa-signed-in-label = Clàraich a-steach
 appmenu-fxa-setup-sync =
     .label = Cuir an sioncronachadh air…
+appmenu-fxa-setup-sync-new = Cuir air
 appmenuitem-save-page =
     .label = Sàbhail an duilleag mar…
+appmenuitem-fxa-sync-off-title = Tha an sioncronachadh dheth
+appmenuitem-fxa-sync-off-description = Dìon is faigh cothrom air na comharran-lìn, na faclan-faire agad is mòran a bharrachd àite sam bith.
 
 ## What's New panel in App menu.
 
@@ -170,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Fosgail panail a’ phròifileir
+    .tooltiptext = Fosgail panail a’ phròifileir
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -196,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Preset for investigating audio and video bugs in { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-ml-description = Ro-sheata airson bugaichean ionnsachaidh-inneil a rannsachadh ann am { -brand-shorter-name }
+profiler-popup-presets-ml-label =
+    .label = Ionnsachadh-inneil
 profiler-popup-presets-networking-description = Preset for investigating networking bugs in { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Networking
@@ -203,6 +209,12 @@ profiler-popup-presets-power-description = Preset for investigating power use bu
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Cumhachd
+profiler-popup-presets-debug-description = Preset for debugging in { -brand-shorter-name }. High overhead, do not use for performance work but use for focusing on understanding browser behavior.
+profiler-popup-presets-debug-label =
+    .label = Debug
+profiler-popup-presets-web-compat-description = Ro-sheata a mholamaid airson duilgheadasan leis a’ cho-chòrdalachd-lìn a dhì-bhugachadh air làraichean-lìn, seach tracadh an dèanadais.
+profiler-popup-presets-web-compat-label =
+    .label = Co-chòrdalachd-lìn
 profiler-popup-presets-custom-label =
     .label = Custom
 
@@ -271,6 +283,37 @@ appmenu-customizetoolbar =
 appmenu-developer-tools-subheader = Innealan a’ bhrabhsair
 appmenu-developer-tools-extensions =
     .label = Leudachain do luchd-leasachaidh
+appmenuitem-report-broken-site =
+    .label = Dèan aithris air làrach bhriste
 
 ## Panel for privacy and security products
 
+appmenuitem-sign-in-account = Clàraich a-steach dhan chunntas agad
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Faigh caismeachdan mu dhàta air an deach briseadh a-steach
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Cùm am fìor-phost-d is am fìor-fhòn agad am falach
+appmenuitem-services-relay-description = Cuir gu dol deas-bhòrd masgan a’ phuist-d
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Faigh dìon dhan uidheam air fad
+appmenuitem-vpn-description = Dìon do ghnìomhachd air loidhne
+appmenu-services-header = Na seirbheisean agam
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Feuch na h-innealan-dìon eile aig Mozilla:
+appmenu-other-protection-header = Feuch na h-innealan dìon eile o { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Pròifilean eile
+appmenu-manage-profiles =
+    .label = Stiùirich na pròifilean
+appmenu-copy-profile =
+    .label = Dèan lethbhreac dhen phròifil seo
+appmenu-create-profile =
+    .label = Pròifil ùr
+appmenu-edit-profile =
+    .aria-label = Deasaich a’ phròifil
+appmenu-profiles-2 =
+    .label = Pròifilean

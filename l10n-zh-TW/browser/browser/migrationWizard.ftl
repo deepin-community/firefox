@@ -184,6 +184,14 @@ migration-safari-password-import-step1 = 在 Safari 點擊「Safari」選單，�
 migration-safari-password-import-step2 = 選擇 <img data-l10n-name="safari-icon-3dots"/> 按鈕，然後選擇「匯出所有密碼」
 migration-safari-password-import-step3 = 儲存密碼檔案
 migration-safari-password-import-step4 = 使用下方的「選擇檔案」選擇您儲存的密碼檔案
+migration-chrome-windows-password-import-header = 如何從 Chrome 匯入密碼
+migration-chrome-windows-password-import-steps-header = 在 Chrome：
+migration-chrome-windows-password-import-step1 = 開啟主選單 <img data-l10n-name="chrome-icon-3dots"/> 然後前往「密碼和自動填入 > Google 密碼管理工具」。
+migration-chrome-windows-password-import-step2 = 點擊選單中的「設定」。
+migration-chrome-windows-password-import-step3 = 選擇「下載檔案」然後儲存到您的裝置上。
+migration-chrome-windows-password-import-step4 = 回到此處，然後點擊「選擇檔案」，選擇剛剛儲存的檔案即可匯入。
+migration-manual-password-import-skip-button = 略過
+migration-manual-password-import-select-button = 選擇檔案
 migration-safari-password-import-skip-button = 略過
 migration-safari-password-import-select-button = 選擇檔案
 # Shown in the migration wizard after importing bookmarks from another
@@ -240,7 +248,7 @@ migration-wizard-progress-success-passwords = { $quantity } 筆密碼
 migration-wizard-progress-success-history =
     { $maxAgeInDays ->
         [one] 昨天以來
-       *[other] 過去 { $maxAgeInDays } 來
+       *[other] 過去 { $maxAgeInDays } 天以來的資料
     }
 migration-wizard-progress-success-formdata = 表單填寫紀錄
 # Shown in the migration wizard after importing payment methods from another

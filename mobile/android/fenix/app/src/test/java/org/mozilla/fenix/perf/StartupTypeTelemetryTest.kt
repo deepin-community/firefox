@@ -12,12 +12,10 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import mozilla.components.support.ktx.kotlin.crossProduct
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.components.support.test.rule.MainCoroutineRule
-import mozilla.components.support.test.rule.runTestOnMain
-import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -26,6 +24,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.GleanMetrics.PerfStartup
 import org.mozilla.fenix.HomeActivity
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.perf.StartupPathProvider.StartupPath
 import org.mozilla.fenix.perf.StartupStateProvider.StartupState
 
@@ -42,10 +41,9 @@ private val activityClass = HomeActivity::class.java
 class StartupTypeTelemetryTest {
 
     @get:Rule
-    val coroutinesTestRule = MainCoroutineRule()
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
-    @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var telemetry: StartupTypeTelemetry
     private lateinit var callbacks: StartupTypeTelemetry.StartupTypeLifecycleObserver
@@ -70,7 +68,7 @@ class StartupTypeTelemetryTest {
     }
 
     @Test
-    fun `GIVEN all possible path and state combinations WHEN record telemetry THEN the labels are incremented the appropriate number of times`() = runTestOnMain {
+    fun `GIVEN all possible path and state combinations WHEN record telemetry THEN the labels are incremented the appropriate number of times`() = runTest(testDispatcher) {
         val allPossibleInputArgs = StartupState.entries.crossProduct(
             StartupPath.entries,
         ) { state, path ->
@@ -81,8 +79,8 @@ class StartupTypeTelemetryTest {
             every { stateProvider.getStartupStateForStartedActivity(activityClass) } returns state
             every { pathProvider.startupPathForActivity } returns path
 
-            telemetry.record(coroutinesTestRule.testDispatcher)
-            advanceUntilIdle()
+            telemetry.record(testDispatcher)
+            testDispatcher.scheduler.advanceUntilIdle()
         }
 
         validTelemetryLabels.forEach { label ->
@@ -96,12 +94,12 @@ class StartupTypeTelemetryTest {
     }
 
     @Test
-    fun `WHEN record is called THEN telemetry is recorded with the appropriate label`() = runTestOnMain {
+    fun `WHEN record is called THEN telemetry is recorded with the appropriate label`() = runTest(testDispatcher) {
         every { stateProvider.getStartupStateForStartedActivity(activityClass) } returns StartupState.COLD
         every { pathProvider.startupPathForActivity } returns StartupPath.MAIN
 
-        telemetry.record(coroutinesTestRule.testDispatcher)
-        advanceUntilIdle()
+        telemetry.record(testDispatcher)
+        testDispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(1, PerfStartup.startupType["cold_main"].testGetValue())
     }

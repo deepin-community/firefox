@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +8,6 @@
 
 #include "mozilla/AutoRestore.h"
 #include "mozilla/ContainStyleScopeManager.h"
-#include "mozilla/IntegerRange.h"
 #include "mozilla/Likely.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/StaticPrefs_layout.h"
@@ -333,6 +330,27 @@ bool nsCounterList::SetScopeByWalkingBackwardThroughList(
   return false;
 }
 
+#if defined(DEBUG) || defined(MOZ_LAYOUT_DEBUGGER)
+void nsCounterList::Dump() {
+  int32_t i = 0;
+  for (auto* node = First(); node; node = Next(node)) {
+    const char* types[] = {"RESET", "INCREMENT", "SET", "USE"};
+    printf(
+        "  Node #%d @%p frame=%p index=%d type=%s valAfter=%d\n"
+        "       scope-start=%p scope-prev=%p",
+        i++, (void*)node, (void*)node->mPseudoFrame, node->mContentIndex,
+        types[node->mType], node->mValueAfter, (void*)node->mScopeStart,
+        (void*)node->mScopePrev);
+    if (node->mType == nsCounterNode::USE) {
+      nsAutoString text;
+      node->UseNode()->GetText(text);
+      printf(" text=%s", NS_ConvertUTF16toUTF8(text).get());
+    }
+    printf("\n");
+  }
+}
+#endif
+
 void nsCounterList::RecalcAll() {
   AutoRestore<bool> restoreRecalculatingAll(mRecalculatingAll);
   mRecalculatingAll = true;
@@ -535,22 +553,7 @@ void nsCounterManager::Dump() const {
     printf("Counter named \"%s\":\n", nsAtomCString(entry.GetKey()).get());
 
     nsCounterList* list = entry.GetWeak();
-    int32_t i = 0;
-    for (nsCounterNode* node = list->First(); node; node = list->Next(node)) {
-      const char* types[] = {"RESET", "INCREMENT", "SET", "USE"};
-      printf(
-          "  Node #%d @%p frame=%p index=%d type=%s valAfter=%d\n"
-          "       scope-start=%p scope-prev=%p",
-          i++, (void*)node, (void*)node->mPseudoFrame, node->mContentIndex,
-          types[node->mType], node->mValueAfter, (void*)node->mScopeStart,
-          (void*)node->mScopePrev);
-      if (node->mType == nsCounterNode::USE) {
-        nsAutoString text;
-        node->UseNode()->GetText(text);
-        printf(" text=%s", NS_ConvertUTF16toUTF8(text).get());
-      }
-      printf("\n");
-    }
+    list->Dump();
   }
   printf("\n\n");
 }

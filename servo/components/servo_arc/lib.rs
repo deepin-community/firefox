@@ -26,10 +26,6 @@
 #![allow(missing_docs)]
 
 #[cfg(feature = "servo")]
-extern crate serde;
-extern crate stable_deref_trait;
-
-#[cfg(feature = "servo")]
 use serde::{Deserialize, Serialize};
 use stable_deref_trait::{CloneStableDeref, StableDeref};
 use std::alloc::{self, Layout};
@@ -212,12 +208,15 @@ impl<T> Arc<T> {
             let ptr = ptr::NonNull::new(alloc::alloc(layout))
                 .unwrap_or_else(|| alloc::handle_alloc_error(layout))
                 .cast::<ArcInner<T>>();
-            ptr::write(ptr.as_ptr(), ArcInner {
-                count: atomic::AtomicUsize::new(1),
-                #[cfg(feature = "track_alloc_size")]
-                alloc_size: layout.size(),
-                data,
-            });
+            ptr::write(
+                ptr.as_ptr(),
+                ArcInner {
+                    count: atomic::AtomicUsize::new(1),
+                    #[cfg(feature = "track_alloc_size")]
+                    alloc_size: layout.size(),
+                    data,
+                },
+            );
             ptr
         };
 
@@ -376,7 +375,7 @@ impl<T: ?Sized> Arc<T> {
     /// allocation
     #[inline]
     pub fn ptr_eq(this: &Self, other: &Self) -> bool {
-        this.ptr() as *const () == other.ptr() as *const ()
+        this.raw_ptr() == other.raw_ptr()
     }
 
     fn ptr(&self) -> *mut ArcInner<T> {
@@ -384,8 +383,8 @@ impl<T: ?Sized> Arc<T> {
     }
 
     /// Returns a raw ptr to the underlying allocation.
-    pub fn raw_ptr(&self) -> *const c_void {
-        self.p.as_ptr() as *const _
+    pub fn raw_ptr(&self) -> ptr::NonNull<()> {
+        self.p.cast()
     }
 }
 
@@ -818,7 +817,8 @@ impl<H, T> Arc<HeaderSlice<H, T>> {
                 // We should have consumed the buffer exactly, maybe accounting
                 // for some padding from the alignment.
                 debug_assert!(
-                    (buffer.add(layout.size()) as usize - current as *mut u8 as usize) < layout.align()
+                    (buffer.add(layout.size()) as usize - current as *mut u8 as usize)
+                        < layout.align()
                 );
             }
             assert!(
@@ -1064,7 +1064,7 @@ impl<A, B> ArcUnion<A, B> {
 
     /// Returns an enum representing a borrow of either A or B.
     #[inline]
-    pub fn borrow(&self) -> ArcUnionBorrow<A, B> {
+    pub fn borrow(&self) -> ArcUnionBorrow<'_, A, B> {
         if self.is_first() {
             let ptr = self.p.as_ptr() as *const ArcInner<A>;
             let borrow = unsafe { ArcBorrow::from_ref(&(*ptr).data) };
@@ -1101,7 +1101,7 @@ impl<A, B> ArcUnion<A, B> {
     }
 
     /// Returns a borrow of the first type if applicable, otherwise `None`.
-    pub fn as_first(&self) -> Option<ArcBorrow<A>> {
+    pub fn as_first(&self) -> Option<ArcBorrow<'_, A>> {
         match self.borrow() {
             ArcUnionBorrow::First(x) => Some(x),
             ArcUnionBorrow::Second(_) => None,
@@ -1109,7 +1109,7 @@ impl<A, B> ArcUnion<A, B> {
     }
 
     /// Returns a borrow of the second type if applicable, otherwise None.
-    pub fn as_second(&self) -> Option<ArcBorrow<B>> {
+    pub fn as_second(&self) -> Option<ArcBorrow<'_, B>> {
         match self.borrow() {
             ArcUnionBorrow::First(_) => None,
             ArcUnionBorrow::Second(x) => Some(x),

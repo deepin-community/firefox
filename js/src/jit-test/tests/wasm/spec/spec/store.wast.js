@@ -184,7 +184,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty
+    (func \$type-address-empty
       (i32.store)
     )
   )`),
@@ -195,7 +195,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty
+    (func \$type-value-empty
      (i32.const 0) (i32.store)
     )
   )`),
@@ -206,7 +206,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-block
+    (func \$type-address-empty-in-block
       (i32.const 0) (i32.const 0)
       (block (i32.store))
     )
@@ -218,7 +218,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-block
+    (func \$type-value-empty-in-block
       (i32.const 0)
       (block (i32.const 0) (i32.store))
     )
@@ -230,7 +230,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-loop
+    (func \$type-address-empty-in-loop
       (i32.const 0) (i32.const 0)
       (loop (i32.store))
     )
@@ -242,7 +242,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-loop
+    (func \$type-value-empty-in-loop
       (i32.const 0)
       (loop (i32.const 0) (i32.store))
     )
@@ -254,7 +254,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-then
+    (func \$type-address-empty-in-then
       (i32.const 0) (i32.const 0)
       (if (then (i32.store)))
     )
@@ -266,7 +266,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-then
+    (func \$type-value-empty-in-then
       (i32.const 0)
       (if (then (i32.const 0) (i32.store)))
     )
@@ -278,7 +278,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-else
+    (func \$type-address-empty-in-else
       (i32.const 0) (i32.const 0)
       (if (result i32) (then (i32.const 0)) (else (i32.store)))
     )
@@ -290,7 +290,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-else
+    (func \$type-value-empty-in-else
       (i32.const 0)
       (if (result i32) (then (i32.const 0)) (else (i32.const 0) (i32.store)))
     )
@@ -302,7 +302,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-br
+    (func \$type-address-empty-in-br
       (i32.const 0) (i32.const 0)
       (block (br 0 (i32.store)))
     )
@@ -314,7 +314,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-br
+    (func \$type-value-empty-in-br
       (i32.const 0)
       (block (br 0 (i32.const 0) (i32.store)))
     )
@@ -326,7 +326,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-br_if
+    (func \$type-address-empty-in-br_if
       (i32.const 0) (i32.const 0)
       (block (br_if 0 (i32.store) (i32.const 1)) )
     )
@@ -338,7 +338,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-br_if
+    (func \$type-value-empty-in-br_if
       (i32.const 0)
       (block (br_if 0 (i32.const 0) (i32.store) (i32.const 1)) )
     )
@@ -350,7 +350,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-br_table
+    (func \$type-address-empty-in-br_table
       (i32.const 0) (i32.const 0)
       (block (br_table 0 (i32.store)))
     )
@@ -362,7 +362,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-br_table
+    (func \$type-value-empty-in-br_table
       (i32.const 0)
       (block (br_table 0 (i32.const 0) (i32.store)))
     )
@@ -374,7 +374,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-return
+    (func \$type-address-empty-in-return
       (return (i32.store))
     )
   )`),
@@ -385,7 +385,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-return
+    (func \$type-value-empty-in-return
       (return (i32.const 0) (i32.store))
     )
   )`),
@@ -396,7 +396,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-select
+    (func \$type-address-empty-in-select
       (select (i32.store) (i32.const 1) (i32.const 2))
     )
   )`),
@@ -407,7 +407,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-select
+    (func \$type-value-empty-in-select
       (select (i32.const 0) (i32.store) (i32.const 1) (i32.const 2))
     )
   )`),
@@ -418,7 +418,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-address-empty-in-call
+    (func \$type-address-empty-in-call
       (call 1 (i32.store))
     )
     (func (param i32) (result i32) (local.get 0))
@@ -430,7 +430,7 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$type-value-empty-in-call
+    (func \$type-value-empty-in-call
       (call 1 (i32.const 0) (i32.store))
     )
     (func (param i32) (result i32) (local.get 0))
@@ -442,12 +442,12 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$f (param i32) (result i32) (local.get 0))
-    (type $$sig (func (param i32) (result i32)))
-    (table funcref (elem $$f))
-    (func $$type-address-empty-in-call_indirect
+    (func \$f (param i32) (result i32) (local.get 0))
+    (type \$sig (func (param i32) (result i32)))
+    (table funcref (elem \$f))
+    (func \$type-address-empty-in-call_indirect
       (block (result i32)
-        (call_indirect (type $$sig)
+        (call_indirect (type \$sig)
           (i32.store) (i32.const 0)
         )
       )
@@ -460,12 +460,12 @@ assert_invalid(
 assert_invalid(
   () => instantiate(`(module
     (memory 1)
-    (func $$f (param i32) (result i32) (local.get 0))
-    (type $$sig (func (param i32) (result i32)))
-    (table funcref (elem $$f))
-    (func $$type-value-empty-in-call_indirect
+    (func \$f (param i32) (result i32) (local.get 0))
+    (type \$sig (func (param i32) (result i32)))
+    (table funcref (elem \$f))
+    (func \$type-value-empty-in-call_indirect
       (block (result i32)
-        (call_indirect (type $$sig)
+        (call_indirect (type \$sig)
           (i32.const 0) (i32.store) (i32.const 0)
         )
       )

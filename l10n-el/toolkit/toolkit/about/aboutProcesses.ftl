@@ -11,7 +11,7 @@ about-processes-column-action =
 ## Tooltips
 
 about-processes-shutdown-process =
-    .title = "Ξεφόρτωμα" καρτελών και τερματισμός διεργασίας
+    .title = Εκφόρτωση καρτελών και τερματισμός διεργασίας
 about-processes-kill-process =
     .title = Τερματισμός διεργασίας
 about-processes-shutdown-tab =
@@ -41,7 +41,7 @@ about-processes-browser-process = { -brand-short-name } ({ $pid })
 about-processes-web-process = Κοινόχρηστη διεργασία ιστού ({ $pid })
 about-processes-file-process = Αρχεία ({ $pid })
 about-processes-extension-process = Επεκτάσεις ({ $pid })
-about-processes-privilegedabout-process = Σελίδες "about:" ({ $pid })
+about-processes-privilegedabout-process = Σελίδες «about:» ({ $pid })
 about-processes-plugin-process = Αρθρώματα ({ $pid })
 about-processes-privilegedmozilla-process = Σελίδες της { -vendor-short-name } ({ $pid })
 about-processes-gmp-plugin-process = Αρθρώματα πολυμέσων Gecko ({ $pid })
@@ -59,6 +59,20 @@ about-processes-inference-process = Συμπέρασμα ({ $pid })
 #    $pid (String) The process id of this process, assigned by the OS.
 #    $type (String) The raw type for this process.
 about-processes-unknown-process = Άλλο: { $type } ({ $pid })
+
+## Properties of isolated web processes
+
+about-processes-web-isolated-property-private = ιδιωτική
+about-processes-web-isolated-property-serviceworker = serviceworker
+about-processes-web-isolated-property-jit-disabled = JIT ανενεργό
+about-processes-web-isolated-property-with-coop-coep = απομονωμένο cross-origin
+
+## Isolated process names
+## Variables:
+##    $origin (String) The domain name for this process.
+##    $properties (String) A formatted list of properties from the above strings.
+
+about-processes-web-isolated-process2 = { $origin } ({ $properties })
 
 ## Isolated process names
 ## Variables:
@@ -131,6 +145,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Βοηθήματα των Windows
 about-processes-utility-actor-windows-file-dialog = Παράθυρο διαλόγου αρχείων των Windows
+about-processes-utility-actor-pkcs11-module = Βοηθός μονάδας ασφαλείας
 
 ## Displaying CPU (percentage and total)
 ## Variables:

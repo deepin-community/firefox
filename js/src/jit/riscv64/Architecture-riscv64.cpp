@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -8,7 +6,9 @@
 
 #include "jit/FlushICache.h"  // js::jit::FlushICache
 #include "jit/RegisterSets.h"
+#include "jit/riscv64/Assembler-riscv64.h"
 #include "jit/Simulator.h"
+
 namespace js {
 namespace jit {
 Registers::Code Registers::FromName(const char* name) {
@@ -76,7 +76,7 @@ void FlushICache(void* code, size_t size) {
 #if defined(JS_SIMULATOR)
   js::jit::SimulatorProcess::FlushICache(code, size);
 
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__OpenBSD__)
 #  if defined(__GNUC__)
   intptr_t end = reinterpret_cast<intptr_t>(code) + size;
   __builtin___clear_cache(reinterpret_cast<char*>(code),
@@ -90,11 +90,7 @@ void FlushICache(void* code, size_t size) {
 #endif
 }
 
-bool CPUFlagsHaveBeenComputed() {
-  // TODO Add CPU flags support
-  // Flags were computed above.
-  return true;
-}
+bool CPUFlagsHaveBeenComputed() { return RVFlags::FlagsHaveBeenComputed(); }
 
 }  // namespace jit
 }  // namespace js

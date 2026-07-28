@@ -37,6 +37,9 @@ permissions-remove =
 permissions-remove-all =
     .label = සියළුම අඩවි ඉවත් කරන්න
     .accesskey = e
+permissions-save-changes-2 =
+    .buttonlabelaccept = වෙනස්කම් සුරකින්න
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = වෙනස්කම් සුරකින්න
     .buttonaccesskeyaccept = S
@@ -90,8 +93,8 @@ permissions-exceptions-cookie-desc = දත්තකඩ හා අඩවි ද�
 permissions-exceptions-https-only-window2 =
     .title = හැරදැමීම් - HTTPS-පමණි ප්‍රකාරය
     .style = { permissions-window2.style }
-permissions-exceptions-https-only-desc = ඔබට නිශ්චිත වියමන අඩවි සඳහා HTTPS-පමණි ප්‍රකාරය අක්‍රිය කළ හැකිය. { -brand-short-name } එම අඩවි වෙත සම්බන්ධතාවය ආරක්‍ෂිත HTTPS සඳහා උත්ශ්‍රේණි කිරීමට තැත් නොකරනු ඇත. පෞද්ගලික කවුළු සඳහා හැරදැමීම් අදාළ නොවේ.
-permissions-exceptions-https-only-desc2 = ඔබට නිශ්චිත වියමන අඩවි සඳහා HTTPS-පමණි ප්‍රකාරය අක්‍රිය කිරීමට හැකිය. { -brand-short-name } එම අඩවි වෙත සම්බන්ධතාවය ආරක්‍ෂිත HTTPS සඳහා උත්ශ්‍රේණි නොකරනු ඇත.
+permissions-exceptions-https-only-desc = ඔබට නිශ්චිත වියමන අඩවි සඳහා HTTPS-පමණි ප්‍රකාරය අක්‍රිය කළ හැකිය. { -brand-short-name } එම අඩවි වෙත සම්බන්‍ධතාව ආරක්‍ෂිත HTTPS සඳහා උත්ශ්‍රේණි කිරීමට තැත් නොකරනු ඇත. පෞද්ගලික කවුළු සඳහා හැරදැමීම් අදාළ නොවේ.
+permissions-exceptions-https-only-desc2 = ඔබට නිශ්චිත වියමන අඩවි සඳහා HTTPS-පමණි ප්‍රකාරය අක්‍රිය කිරීමට හැකිය. { -brand-short-name } එම අඩවි වෙත සම්බන්‍ධතාව ආරක්‍ෂිත HTTPS සඳහා උත්ශ්‍රේණි නොකරනු ඇත.
 
 ## Exceptions - Pop-ups
 

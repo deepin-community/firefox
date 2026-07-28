@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,6 +8,8 @@
  * https://w3c.github.io/webappsec-secure-contexts/#monkey-patching-global-object
  * https://w3c.github.io/ServiceWorker/#self-caches
  */
+
+typedef (Function or TrustedScript or DOMString) TimerHandler;
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#windoworworkerglobalscope-mixin
 [Exposed=(Window,Worker)]
@@ -26,17 +27,11 @@ interface mixin WindowOrWorkerGlobalScope {
   DOMString atob(DOMString atob);
 
   // timers
-  // NOTE: We're using overloads where the spec uses a union.  Should
-  // be black-box the same.
-  [Throws]
-  long setTimeout(Function handler, optional long timeout = 0, any... arguments);
-  [Throws]
-  long setTimeout(DOMString handler, optional long timeout = 0, any... unused);
+  [Throws, NeedsSubjectPrincipal=NonSystem]
+  long setTimeout(TimerHandler handler, optional long timeout = 0, any... arguments);
   undefined clearTimeout(optional long handle = 0);
-  [Throws]
-  long setInterval(Function handler, optional long timeout = 0, any... arguments);
-  [Throws]
-  long setInterval(DOMString handler, optional long timeout = 0, any... unused);
+  [Throws, NeedsSubjectPrincipal=NonSystem]
+  long setInterval(TimerHandler handler, optional long timeout = 0, any... unused);
   undefined clearInterval(optional long handle = 0);
 
   // microtask queuing
@@ -76,7 +71,7 @@ partial interface mixin WindowOrWorkerGlobalScope {
 
 // https://w3c.github.io/ServiceWorker/#self-caches
 partial interface mixin WindowOrWorkerGlobalScope {
-  [Throws, Func="nsGlobalWindowInner::CachesEnabled", SameObject]
+  [Throws, Func="cache::CacheStorage::CachesEnabled", SameObject]
   readonly attribute CacheStorage caches;
 };
 
@@ -91,4 +86,11 @@ partial interface mixin WindowOrWorkerGlobalScope {
 partial interface mixin WindowOrWorkerGlobalScope {
   [Pref="dom.security.trusted_types.enabled"]
   readonly attribute TrustedTypePolicyFactory trustedTypes;
+};
+
+partial interface mixin WindowOrWorkerGlobalScope {
+  // A testing function to check if the given target is active in the current context.
+  // See valid targets at toolkit/components/resistfingerprinting/RFPTargets.inc
+  [Throws, Pref="privacy.fingerprintingProtection.testing"]
+  boolean isRFPTargetActive(DOMString aTargetName);
 };

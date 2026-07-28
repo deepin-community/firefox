@@ -12,21 +12,25 @@ import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.lib.state.Action
 import mozilla.components.lib.state.Middleware
 import mozilla.components.lib.state.Store
-import java.lang.IllegalArgumentException
+import org.mockito.DoNotMock
 
 /**
  * The [BrowserStore] holds the [BrowserState] (state tree).
  *
  * The only way to change the [BrowserState] inside [BrowserStore] is to dispatch an [Action] on it.
  */
-class BrowserStore(
+@Suppress("UseRequire")
+@DoNotMock(
+    reason = "Mocking the store hides state transitions and violates the Redux-like flow. " +
+        "Use a real instance instead. To verify behavior, use CaptureActionsMiddleware to assert dispatched actions, " +
+        "or assert on the resulting BrowserState.",
+)class BrowserStore(
     initialState: BrowserState = BrowserState(),
     middleware: List<Middleware<BrowserState, BrowserAction>> = emptyList(),
 ) : Store<BrowserState, BrowserAction>(
     initialState,
     BrowserStateReducer::reduce,
     middleware,
-    "BrowserStore",
 ) {
     init {
         initialState.selectedTabId?.let {

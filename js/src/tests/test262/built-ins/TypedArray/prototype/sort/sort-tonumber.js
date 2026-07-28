@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2018 Mozilla Corporation. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -31,6 +30,6 @@ testWithTypedArrayConstructors(function(TA) {
   });
 
   assert.sameValue(true, called);
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

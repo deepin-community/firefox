@@ -4,7 +4,7 @@
 
 add_setup(async function () {
   await PlacesUtils.bookmarks.eraseEverything();
-  const TEST_EXAMPLE_URL = "http://example.com/";
+  const TEST_EXAMPLE_URL = "https://example.com/";
   const TEST_EXAMPLE_PARAMS = "?foo=1|2";
   const TEST_EXAMPLE_TITLE = "Example Domain";
 
@@ -34,7 +34,7 @@ add_task(async function test_open_all_in_tabs_from_library() {
     placesContext,
     "popupshown"
   );
-  synthesizeClickOnSelectedTreeCell(gLibrary.ContentTree.view, {
+  await synthesizeClickOnSelectedTreeCell(gLibrary.ContentTree.view, {
     button: 2,
     type: "contextmenu",
   });

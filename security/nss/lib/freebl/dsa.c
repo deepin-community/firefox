@@ -14,7 +14,6 @@
 #include "prtypes.h"
 #include "prinit.h"
 #include "blapi.h"
-#include "nssilock.h"
 #include "secitem.h"
 #include "blapit.h"
 #include "mpi.h"
@@ -259,7 +258,7 @@ DSA_NewRandom(PLArenaPool *arena, const SECItem *q, SECItem *seed)
     if (!good) {
         PORT_SetError(SEC_ERROR_NEED_RANDOM);
     loser:
-        if (arena != NULL) {
+        if (arena == NULL) {
             SECITEM_ZfreeItem(seed, PR_FALSE);
         }
         return SECFailure;
@@ -337,7 +336,9 @@ dsa_SignDigest(DSAPrivateKey *key, SECItem *signature, const SECItem *digest,
 
     dsa_subprime_len = PQG_GetLength(&key->params.subPrime);
     dsa_signature_len = dsa_subprime_len * 2;
-    if ((signature->len < dsa_signature_len) ||
+    if ((dsa_subprime_len == 0) ||
+        (dsa_subprime_len > DSA_MAX_SUBPRIME_LEN) ||
+        (signature->len < dsa_signature_len) ||
         (digest->len > HASH_LENGTH_MAX) ||
         (digest->len < SHA1_LENGTH)) {
         PORT_SetError(SEC_ERROR_INVALID_ARGS);
@@ -471,7 +472,7 @@ dsa_SignDigest(DSAPrivateKey *key, SECItem *signature, const SECItem *digest,
     err = MP_OKAY;
     signature->len = dsa_signature_len;
 cleanup:
-    PORT_Memset(localDigestData, 0, DSA_MAX_SUBPRIME_LEN);
+    PORT_SafeZero(localDigestData, DSA_MAX_SUBPRIME_LEN);
     mp_clear(&p);
     mp_clear(&q);
     mp_clear(&g);
@@ -532,7 +533,7 @@ DSA_SignDigest(DSAPrivateKey *key, SECItem *signature, const SECItem *digest)
         rv = dsa_SignDigest(key, signature, digest, kSeed);
     } while (rv != SECSuccess && PORT_GetError() == SEC_ERROR_NEED_RANDOM &&
              --retries > 0);
-    PORT_Memset(kSeed, 0, sizeof kSeed);
+    PORT_SafeZero(kSeed, sizeof kSeed);
     return rv;
 }
 
@@ -575,7 +576,9 @@ DSA_VerifyDigest(DSAPublicKey *key, const SECItem *signature,
 
     dsa_subprime_len = PQG_GetLength(&key->params.subPrime);
     dsa_signature_len = dsa_subprime_len * 2;
-    if ((signature->len != dsa_signature_len) ||
+    if ((dsa_subprime_len == 0) ||
+        (dsa_subprime_len > DSA_MAX_SUBPRIME_LEN) ||
+        (signature->len != dsa_signature_len) ||
         (digest->len > HASH_LENGTH_MAX) ||
         (digest->len < SHA1_LENGTH)) {
         PORT_SetError(SEC_ERROR_INVALID_ARGS);
@@ -673,7 +676,7 @@ DSA_VerifyDigest(DSAPublicKey *key, const SECItem *signature,
         verified = SECSuccess; /* Signature verified. */
     }
 cleanup:
-    PORT_Memset(localDigestData, 0, sizeof localDigestData);
+    PORT_SafeZero(localDigestData, sizeof localDigestData);
     mp_clear(&p);
     mp_clear(&q);
     mp_clear(&g);

@@ -59,6 +59,8 @@ pub type KeywordsCollectFn<'a> = &'a mut dyn FnMut(&[&'static str]);
 /// * `#[value_info(starts_with_keyword)]` can be used on variants to
 ///   add the name of a non-unit variant (serialized like `ToCss`) into
 ///   `collect_completion_keywords`.
+/// * `#[value_info(skip)]` ignores the variant (can be useful for functions where you don't want
+///   the argument to show up in the value-info output).
 pub trait SpecifiedValueInfo {
     /// Supported CssTypes by the given value type.
     ///
@@ -89,7 +91,7 @@ impl SpecifiedValueInfo for String {}
 impl SpecifiedValueInfo for crate::owned_str::OwnedStr {}
 
 #[cfg(feature = "servo")]
-impl SpecifiedValueInfo for ::servo_atoms::Atom {}
+impl SpecifiedValueInfo for ::stylo_atoms::Atom {}
 #[cfg(feature = "servo")]
 impl SpecifiedValueInfo for ::url::Url {}
 

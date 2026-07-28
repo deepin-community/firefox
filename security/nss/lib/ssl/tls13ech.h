@@ -49,7 +49,7 @@ struct sslEchConfigContentsStr {
 };
 
 /* ECH Information needed by a server to process a second CH after a
- * HelloRetryRequest is sent. This data is stored in the cookie. 
+ * HelloRetryRequest is sent. This data is stored in the cookie.
  */
 struct sslEchCookieDataStr {
     PRBool previouslyOffered;
@@ -108,6 +108,7 @@ void tls13_DestroyEchConfigs(PRCList *list);
 void tls13_DestroyEchXtnState(sslEchXtnState *state);
 SECStatus tls13_GetMatchingEchConfig(const sslSocket *ss, HpkeKdfId kdf, HpkeAeadId aead,
                                      const SECItem *configId, sslEchConfig **cfg);
+void tls13_EchKeyLog(sslSocket *ss);
 SECStatus tls13_MaybeHandleEch(sslSocket *ss, const PRUint8 *msg, PRUint32 msgLen, SECItem *sidBytes,
                                SECItem *comps, SECItem *cookieBytes, SECItem *suites, SECItem **echInner);
 SECStatus tls13_MaybeHandleEchSignal(sslSocket *ss, const PRUint8 *savedMsg, PRUint32 savedLength, PRBool isHrr);

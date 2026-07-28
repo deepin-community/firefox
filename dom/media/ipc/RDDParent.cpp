@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,16 +15,17 @@
 #  include <unistd.h>
 #endif
 
-#include "PDMFactory.h"
+#include "MediaCodecsSupport.h"
 #include "gfxConfig.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/FOGIPC.h"
 #include "mozilla/Preferences.h"
-#include "mozilla/RemoteDecoderManagerParent.h"
+#include "mozilla/RemoteMediaManagerParent.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/dom/MemoryReportRequest.h"
 #include "mozilla/gfx/gfxVars.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/GleanTestsTestMetrics.h"
+#include "mozilla/glean/IpcMetrics.h"
 #include "mozilla/ipc/CrashReporterClient.h"
 #include "mozilla/ipc/ProcessChild.h"
 
@@ -56,6 +55,14 @@
 #if defined(XP_MACOSX) || defined(XP_LINUX)
 #  include "VideoUtils.h"
 #endif
+
+#if defined(MOZ_WIDGET_GTK)
+#  include "mozilla/widget/DMABufSurface.h"
+#endif
+
+namespace TelemetryScalar {
+void Set(mozilla::Telemetry::ScalarID aId, uint32_t aValue);
+}
 
 namespace mozilla {
 
@@ -131,12 +138,10 @@ mozilla::ipc::IPCResult RDDParent::RecvInit(
     nsTArray<GfxVarUpdate>&& vars, const Maybe<FileDescriptor>& aBrokerFd,
     const bool& aCanRecordReleaseTelemetry,
     const bool& aIsReadyForBackgroundProcessing) {
-  for (const auto& var : vars) {
-    gfxVars::ApplyUpdate(var);
-  }
+  gfxVars::ApplyUpdate(vars);
 
-  auto supported = PDMFactory::Supported();
-  Unused << SendUpdateMediaCodecsSupported(supported);
+  auto supported = media::MCSInfo::GetSupportFromFactory();
+  (void)SendUpdateMediaCodecsSupported(supported);
 
 #if defined(MOZ_SANDBOX)
 #  if defined(XP_MACOSX)
@@ -164,8 +169,23 @@ mozilla::ipc::IPCResult RDDParent::RecvInit(
   return IPC_OK();
 }
 
-IPCResult RDDParent::RecvUpdateVar(const GfxVarUpdate& aUpdate) {
+IPCResult RDDParent::RecvUpdateVar(const nsTArray<GfxVarUpdate>& aUpdate) {
   gfxVars::ApplyUpdate(aUpdate);
+
+  MOZ_ALWAYS_SUCCEEDS(NS_DispatchBackgroundTask(
+      NS_NewRunnableFunction(
+          "RDDParent::RecvUpdateVar",
+          []() {
+            NS_DispatchToMainThread(NS_NewRunnableFunction(
+                "RDDParent::UpdateMediaCodecsSupported",
+                [supported = media::MCSInfo::GetSupportFromFactory(
+                     true /* force refresh */)]() {
+                  if (auto* rdd = RDDParent::GetSingleton()) {
+                    (void)rdd->SendUpdateMediaCodecsSupported(supported);
+                  }
+                }));
+          }),
+      nsIEventTarget::DISPATCH_NORMAL));
   return IPC_OK();
 }
 
@@ -175,11 +195,11 @@ mozilla::ipc::IPCResult RDDParent::RecvInitProfiler(
   return IPC_OK();
 }
 
-mozilla::ipc::IPCResult RDDParent::RecvNewContentRemoteDecoderManager(
-    Endpoint<PRemoteDecoderManagerParent>&& aEndpoint,
+mozilla::ipc::IPCResult RDDParent::RecvNewContentRemoteMediaManager(
+    Endpoint<PRemoteMediaManagerParent>&& aEndpoint,
     const ContentParentId& aParentId) {
-  if (!RemoteDecoderManagerParent::CreateForContent(std::move(aEndpoint),
-                                                    aParentId)) {
+  if (!RemoteMediaManagerParent::CreateForContent(std::move(aEndpoint),
+                                                  aParentId)) {
     return IPC_FAIL_NO_REASON(this);
   }
   return IPC_OK();
@@ -188,7 +208,7 @@ mozilla::ipc::IPCResult RDDParent::RecvNewContentRemoteDecoderManager(
 mozilla::ipc::IPCResult RDDParent::RecvInitVideoBridge(
     Endpoint<PVideoBridgeChild>&& aEndpoint, const bool& aCreateHardwareDevice,
     const ContentDeviceData& aContentDeviceData) {
-  if (!RemoteDecoderManagerParent::CreateVideoBridgeToOtherProcess(
+  if (!RemoteMediaManagerParent::CreateVideoBridgeToOtherProcess(
           std::move(aEndpoint))) {
     return IPC_FAIL_NO_REASON(this);
   }
@@ -198,7 +218,6 @@ mozilla::ipc::IPCResult RDDParent::RecvInitVideoBridge(
           Feature::HW_COMPOSITING,
           Feature::D3D11_COMPOSITING,
           Feature::OPENGL_COMPOSITING,
-          Feature::DIRECT2D,
       },
       aContentDeviceData.prefs());
 #ifdef XP_WIN
@@ -225,7 +244,7 @@ mozilla::ipc::IPCResult RDDParent::RecvRequestMemoryReport(
   mozilla::dom::MemoryReportRequestClient::Start(
       aGeneration, aAnonymize, aMinimizeMemoryUsage, aDMDFile, processName,
       [&](const MemoryReport& aReport) {
-        Unused << GetSingleton()->SendAddMemoryReport(aReport);
+        (void)GetSingleton()->SendAddMemoryReport(aReport);
       },
       aResolver);
   return IPC_OK();
@@ -284,7 +303,7 @@ mozilla::ipc::IPCResult RDDParent::RecvTestTriggerMetrics(
 
 mozilla::ipc::IPCResult RDDParent::RecvTestTelemetryProbes() {
   const uint32_t kExpectedUintValue = 42;
-  Telemetry::ScalarSet(Telemetry::ScalarID::TELEMETRY_TEST_RDD_ONLY_UINT,
+  TelemetryScalar::Set(Telemetry::ScalarID::TELEMETRY_TEST_RDD_ONLY_UINT,
                        kExpectedUintValue);
   return IPC_OK();
 }
@@ -296,7 +315,7 @@ void RDDParent::ActorDestroy(ActorDestroyReason aWhy) {
 
   if (AbnormalShutdown == aWhy) {
     NS_WARNING("Shutting down RDD process early due to a crash!");
-    Telemetry::Accumulate(Telemetry::SUBPROCESS_ABNORMAL_ABORT, "rdd"_ns, 1);
+    glean::subprocess::abnormal_abort.Get("rdd"_ns).Add(1);
     ProcessChild::QuickExit();
   }
 
@@ -310,7 +329,7 @@ void RDDParent::ActorDestroy(ActorDestroyReason aWhy) {
   ProcessChild::QuickExit();
 #endif
 
-  // Wait until all RemoteDecoderManagerParent have closed.
+  // Wait until all RemoteMediaManagerParent have closed.
   mShutdownBlockers.WaitUntilClear(10 * 1000 /* 10s timeout*/)
       ->Then(GetCurrentSerialEventTarget(), __func__, [&]() {
 
@@ -324,7 +343,13 @@ void RDDParent::ActorDestroy(ActorDestroyReason aWhy) {
           mProfilerController = nullptr;
         }
 
-        RemoteDecoderManagerParent::ShutdownVideoBridge();
+        RemoteMediaManagerParent::ShutdownVideoBridge();
+
+#if defined(MOZ_WIDGET_GTK)
+        // Linux runs VA-API decode on RDD process so we need to
+        // shutdown GL here.
+        DMABufSurface::ReleaseSnapshotGLContext();
+#endif
 
 #ifdef XP_WIN
         DeviceManagerDx::Shutdown();

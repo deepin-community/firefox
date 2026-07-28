@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -155,8 +153,7 @@ already_AddRefed<GetFilesTaskParent> GetFilesTaskParent::Create(
   RefPtr<GetFilesTaskParent> task =
       new GetFilesTaskParent(aFileSystem, aParam, aParent);
 
-  aRv = NS_NewLocalFile(aParam.realPath(), true,
-                        getter_AddRefs(task->mTargetPath));
+  aRv = NS_NewLocalFile(aParam.realPath(), getter_AddRefs(task->mTargetPath));
   if (NS_WARN_IF(aRv.Failed())) {
     return nullptr;
   }

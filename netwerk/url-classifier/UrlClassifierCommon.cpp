@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -139,6 +137,10 @@ nsresult UrlClassifierCommon::SetBlockedContent(nsIChannel* channel,
   NS_ENSURE_ARG(!aList.IsEmpty());
 
   switch (aErrorCode) {
+    case NS_ERROR_HARMFULADDON_URI:
+      NS_SetRequestBlockingReason(
+          channel, nsILoadInfo::BLOCKING_REASON_CLASSIFY_HARMFULADDON_URI);
+      break;
     case NS_ERROR_MALWARE_URI:
       NS_SetRequestBlockingReason(
           channel, nsILoadInfo::BLOCKING_REASON_CLASSIFY_MALWARE_URI);
@@ -259,7 +261,7 @@ nsresult UrlClassifierCommon::SetBlockedContent(nsIChannel* channel,
   }
 
   nsContentUtils::ReportToConsole(nsIScriptError::warningFlag, category, doc,
-                                  nsContentUtils::eNECKO_PROPERTIES, message,
+                                  PropertiesFile::NECKO_PROPERTIES, message,
                                   params);
 
   return NS_OK;
@@ -333,7 +335,7 @@ nsresult UrlClassifierCommon::CreatePairwiseEntityListURI(nsIChannel* aChannel,
           if (principal) {
             auto* basePrin = BasePrincipal::Cast(principal);
             rv = basePrin->GetURI(getter_AddRefs(topWinURI));
-            Unused << NS_WARN_IF(NS_FAILED(rv));
+            (void)NS_WARN_IF(NS_FAILED(rv));
           }
         }
       }
@@ -350,7 +352,7 @@ nsresult UrlClassifierCommon::CreatePairwiseEntityListURI(nsIChannel* aChannel,
       if (principal) {
         auto* basePrin = BasePrincipal::Cast(principal);
         rv = basePrin->GetURI(getter_AddRefs(topWinURI));
-        Unused << NS_WARN_IF(NS_FAILED(rv));
+        (void)NS_WARN_IF(NS_FAILED(rv));
       }
     }
   }
@@ -490,8 +492,9 @@ void UrlClassifierCommon::AnnotateChannel(nsIChannel* aChannel,
     return;
   }
 
+  RefPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
   bool isThirdPartyWithTopLevelWinURI =
-      AntiTrackingUtils::IsThirdPartyChannel(aChannel);
+      loadInfo->GetIsThirdPartyContextToTopWindow();
 
   SetClassificationFlagsHelper(aChannel, aClassificationFlags,
                                isThirdPartyWithTopLevelWinURI);
@@ -507,6 +510,31 @@ void UrlClassifierCommon::AnnotateChannel(nsIChannel* aChannel,
   if (validClassificationFlags && isThirdPartyWithTopLevelWinURI) {
     ContentBlockingNotifier::OnEvent(aChannel, aLoadingState);
   }
+
+  if (isThirdPartyWithTopLevelWinURI &&
+      StaticPrefs::privacy_trackingprotection_lower_network_priority()) {
+    LowerPriorityHelper(aChannel);
+  }
+}
+
+// static
+void UrlClassifierCommon::AnnotateChannelWithoutNotifying(
+    nsIChannel* aChannel, uint32_t aClassificationFlags) {
+  MOZ_ASSERT(XRE_IsParentProcess());
+  MOZ_ASSERT(aChannel);
+
+  nsCOMPtr<nsIURI> chanURI;
+  nsresult rv = aChannel->GetURI(getter_AddRefs(chanURI));
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return;
+  }
+
+  RefPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
+  bool isThirdPartyWithTopLevelWinURI =
+      loadInfo->GetIsThirdPartyContextToTopWindow();
+
+  SetClassificationFlagsHelper(aChannel, aClassificationFlags,
+                               isThirdPartyWithTopLevelWinURI);
 
   if (isThirdPartyWithTopLevelWinURI &&
       StaticPrefs::privacy_trackingprotection_lower_network_priority()) {
@@ -662,9 +690,58 @@ bool UrlClassifierCommon::IsPassiveContent(nsIChannel* aChannel) {
   // defined by the mixed content blocker.
   // https://searchfox.org/mozilla-central/rev/c80fa7258c935223fe319c5345b58eae85d4c6ae/dom/security/nsMixedContentBlocker.cpp#532
   return contentType == ExtContentPolicy::TYPE_IMAGE ||
-         contentType == ExtContentPolicy::TYPE_MEDIA ||
-         (contentType == ExtContentPolicy::TYPE_OBJECT_SUBREQUEST &&
-          !StaticPrefs::security_mixed_content_block_object_subrequest());
+         contentType == ExtContentPolicy::TYPE_MEDIA;
+}
+
+/* static */
+bool UrlClassifierCommon::ShouldProcessWithProtectionFeature(
+    nsIChannel* aChannel) {
+  MOZ_ASSERT(aChannel);
+
+  bool shouldProcess = true;
+  bool isPrivateMode = NS_UsePrivateBrowsing(aChannel);
+
+  nsCOMPtr<nsIClassifiedChannel> classifiedChannel =
+      do_QueryInterface(aChannel);
+
+  if (classifiedChannel) {
+    if (classifiedChannel->GetClassificationFlags() &
+        nsIClassifiedChannel::ClassificationFlags::CLASSIFIED_CONSENTMANAGER) {
+      // Channel is classified as consent manager
+      if (StaticPrefs::
+              privacy_trackingprotection_consentmanager_skip_enabled() ||
+          (StaticPrefs::
+               privacy_trackingprotection_consentmanager_skip_pbmode_enabled() &&
+           isPrivateMode)) {
+        // Don't process channel
+        shouldProcess = false;
+
+        UC_LOG(
+            ("UrlClassifierCommon::ShouldProcessWithProtectionFeature - "
+             "Skipping channel %p because annotated as a consent manager",
+             aChannel));
+      }
+    }
+
+    if (classifiedChannel->GetClassificationFlags() &
+        nsIClassifiedChannel::ClassificationFlags::CLASSIFIED_ANTIFRAUD) {
+      // Channel is classified as anti-fraud
+      if (StaticPrefs::privacy_trackingprotection_antifraud_skip_enabled() ||
+          (StaticPrefs::
+               privacy_trackingprotection_antifraud_skip_pbmode_enabled() &&
+           isPrivateMode)) {
+        // Don't process channel
+        shouldProcess = false;
+
+        UC_LOG(
+            ("UrlClassifierCommon::ShouldProcessWithProtectionFeature - "
+             "Skipping channel %p because it is annotated as anti-fraud",
+             aChannel));
+      }
+    }
+  }
+
+  return shouldProcess;
 }
 
 }  // namespace net

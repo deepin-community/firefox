@@ -10,7 +10,7 @@
 
 ChromeUtils.defineESModuleGetters(this, {
   UrlbarProviderUnitConversion:
-    "resource:///modules/UrlbarProviderUnitConversion.sys.mjs",
+    "moz-src:///browser/components/urlbar/UrlbarProviderUnitConversion.sys.mjs",
 });
 
 const TEST_DATA = [
@@ -26,42 +26,53 @@ const TEST_DATA = [
       { queryString: "2 d to degree", expected: "2 deg" },
       {
         queryString: "1 d to radian",
-        expected: `${round(Math.PI / 180)} radian`,
+        expected: "0.01745329252 radian",
       },
       {
         queryString: "2 d to radian",
-        expected: `${round((Math.PI / 180) * 2)} radian`,
+        expected: "0.03490658504 radian",
       },
-      { queryString: "1 d to rad", expected: `${round(Math.PI / 180)} radian` },
-      { queryString: "1 d to r", expected: `${round(Math.PI / 180)} radian` },
-      { queryString: "1 d to gradian", expected: `${round(1 / 0.9)} gradian` },
-      { queryString: "1 d to g", expected: `${round(1 / 0.9)} gradian` },
+      {
+        queryString: "1 d to rad",
+        expected: "0.01745329252 radian",
+      },
+      { queryString: "1 d to r", expected: "0.01745329252 radian" },
+      { queryString: "1 d to gradian", expected: "1.1111111111 gradian" },
+      { queryString: "1 d to g", expected: "1.1111111111 gradian" },
       { queryString: "1 d to minute", expected: "60 min" },
       { queryString: "1 d to min", expected: "60 min" },
       { queryString: "1 d to m", expected: "60 min" },
       { queryString: "1 d to second", expected: "3,600 sec" },
       { queryString: "1 d to sec", expected: "3,600 sec" },
       { queryString: "1 d to s", expected: "3,600 sec" },
-      { queryString: "1 d to sign", expected: `${round(1 / 30)} sign` },
-      { queryString: "1 d to mil", expected: `${round(1 / 0.05625)} mil` },
+      { queryString: "1 d to sign", expected: "0.03333333333 sign" },
+      { queryString: "1 d to mil", expected: "17.7777777778 mil" },
       {
         queryString: "1 d to revolution",
-        expected: `${round(1 / 360)} revolution`,
+        expected: "0.002777777778 revolution",
       },
-      { queryString: "1 d to circle", expected: `${round(1 / 360)} circle` },
-      { queryString: "1 d to turn", expected: `${round(1 / 360)} turn` },
-      { queryString: "1 d to quadrant", expected: `${round(1 / 90)} quadrant` },
+      { queryString: "1 d to circle", expected: "0.002777777778 circle" },
+      { queryString: "1 d to turn", expected: "0.002777777778 turn" },
+      {
+        queryString: "1 d to quadrant",
+        expected: "0.01111111111 quadrant",
+      },
       {
         queryString: "1 d to rightangle",
-        expected: `${round(1 / 90)} rightangle`,
+        expected: "0.01111111111 rightangle",
       },
-      { queryString: "1 d to sextant", expected: `${round(1 / 60)} sextant` },
+      { queryString: "1 d to sextant", expected: "0.01666666667 sextant" },
       { queryString: "1 degree to d", expected: "1 deg" },
-      { queryString: "1 radian to d", expected: `${round(180 / Math.PI)} deg` },
+      {
+        queryString: "1 radian to d",
+        expected: "57.2957795131 deg",
+      },
       {
         queryString: "1 r to g",
-        expected: `${round(180 / Math.PI / 0.9)} gradian`,
+        expected: "63.6619772368 gradian",
       },
+      { queryString: "1° to d", expected: "1 deg" },
+      { queryString: "360° to rad", expected: "6.2831853072 radian" },
     ],
   },
   {
@@ -77,52 +88,55 @@ const TEST_DATA = [
       { queryString: "1 n to kn", expected: "0.001 kilonewton" },
       {
         queryString: "1 n to gram-force",
-        expected: `${round(101.9716213)} gram-force`,
+        expected: "101.9716212978 gram-force",
       },
       {
         queryString: "1 n to gf",
-        expected: `${round(101.9716213)} gram-force`,
+        expected: "101.9716212978 gram-force",
       },
       {
         queryString: "1 n to kilogram-force",
-        expected: `${round(0.1019716213)} kilogram-force`,
+        expected: "0.1019716213 kilogram-force",
       },
       {
         queryString: "1 n to kgf",
-        expected: `${round(0.1019716213)} kilogram-force`,
+        expected: "0.1019716213 kilogram-force",
       },
       {
         queryString: "1 n to ton-force",
-        expected: `${round(0.0001019716213)} ton-force`,
+        expected: "0.0001019716213 ton-force",
       },
       {
         queryString: "1 n to tf",
-        expected: `${round(0.0001019716213)} ton-force`,
+        expected: "0.0001019716213 ton-force",
       },
       {
         queryString: "1 n to exanewton",
-        expected: `${round(1.0e-18)} exanewton`,
+        expected: "1.0e-18 exanewton",
       },
-      { queryString: "1 n to en", expected: `${round(1.0e-18)} exanewton` },
+      { queryString: "1 n to en", expected: "1.0e-18 exanewton" },
       {
         queryString: "1 n to petanewton",
-        expected: `${round(1.0e-15)} petanewton`,
+        expected: "1.0e-15 petanewton",
       },
-      { queryString: "1 n to PN", expected: `${round(1.0e-15)} petanewton` },
-      { queryString: "1 n to Pn", expected: `${round(1.0e-15)} petanewton` },
+      { queryString: "1 n to PN", expected: "1.0e-15 petanewton" },
+      { queryString: "1 n to Pn", expected: "1.0e-15 petanewton" },
       {
         queryString: "1 n to teranewton",
-        expected: `${round(1.0e-12)} teranewton`,
+        expected: "1.0e-12 teranewton",
       },
-      { queryString: "1 n to tn", expected: `${round(1.0e-12)} teranewton` },
+      { queryString: "1 n to tn", expected: "1.0e-12 teranewton" },
       {
         queryString: "1 n to giganewton",
-        expected: `${round(1.0e-9)} giganewton`,
+        expected: "1.0e-9 giganewton",
       },
-      { queryString: "1 n to gn", expected: `${round(1.0e-9)} giganewton` },
-      { queryString: "1 n to meganewton", expected: "0.000001 meganewton" },
-      { queryString: "1 n to MN", expected: "0.000001 meganewton" },
-      { queryString: "1 n to Mn", expected: "0.000001 meganewton" },
+      { queryString: "1 n to gn", expected: "1.0e-9 giganewton" },
+      {
+        queryString: "1 n to meganewton",
+        expected: "1.0e-6 meganewton",
+      },
+      { queryString: "1 n to MN", expected: "1.0e-6 meganewton" },
+      { queryString: "1 n to Mn", expected: "1.0e-6 meganewton" },
       { queryString: "1 n to hectonewton", expected: "0.01 hectonewton" },
       { queryString: "1 n to hn", expected: "0.01 hectonewton" },
       { queryString: "1 n to dekanewton", expected: "0.1 dekanewton" },
@@ -131,32 +145,44 @@ const TEST_DATA = [
       { queryString: "1 n to dn", expected: "10 decinewton" },
       { queryString: "1 n to centinewton", expected: "100 centinewton" },
       { queryString: "1 n to cn", expected: "100 centinewton" },
-      { queryString: "1 n to millinewton", expected: "1000 millinewton" },
-      { queryString: "1 n to mn", expected: "1000 millinewton" },
-      { queryString: "1 n to micronewton", expected: "1000000 micronewton" },
-      { queryString: "1 n to µn", expected: "1000000 micronewton" },
+      { queryString: "1 n to millinewton", expected: "1,000 millinewton" },
+      { queryString: "1 n to mn", expected: "1,000 millinewton" },
+      { queryString: "1 n to micronewton", expected: "1,000,000 micronewton" },
+      { queryString: "1 n to µn", expected: "1,000,000 micronewton" },
       {
         queryString: "1 n to nanonewton",
-        expected: "1000000000 nanonewton",
+        expected: "1,000,000,000 nanonewton",
       },
-      { queryString: "1 n to nn", expected: "1000000000 nanonewton" },
+      {
+        queryString: "1 n to nn",
+        expected: "1,000,000,000 nanonewton",
+      },
       {
         queryString: "1 n to piconewton",
-        expected: "1000000000000 piconewton",
+        expected: "1.0e12 piconewton",
       },
-      { queryString: "1 n to pn", expected: "1000000000000 piconewton" },
+      {
+        queryString: "1 n to pn",
+        expected: "1.0e12 piconewton",
+      },
       {
         queryString: "1 n to femtonewton",
-        expected: "1000000000000000 femtonewton",
+        expected: "1.0e15 femtonewton",
       },
-      { queryString: "1 n to fn", expected: "1000000000000000 femtonewton" },
+      {
+        queryString: "1 n to fn",
+        expected: "1.0e15 femtonewton",
+      },
       {
         queryString: "1 n to attonewton",
-        expected: "1000000000000000000 attonewton",
+        expected: "1.0e18 attonewton",
       },
-      { queryString: "1 n to an", expected: "1000000000000000000 attonewton" },
-      { queryString: "1 n to dyne", expected: "100000 dyne" },
-      { queryString: "1 n to dyn", expected: "100000 dyne" },
+      {
+        queryString: "1 n to an",
+        expected: "1.0e18 attonewton",
+      },
+      { queryString: "1 n to dyne", expected: "100,000 dyne" },
+      { queryString: "1 n to dyn", expected: "100,000 dyne" },
       { queryString: "1 n to joule/meter", expected: "1 joule/meter" },
       { queryString: "1 n to j/m", expected: "1 joule/meter" },
       {
@@ -166,57 +192,63 @@ const TEST_DATA = [
       { queryString: "1 n to j/cm", expected: "100 joule/centimeter" },
       {
         queryString: "1 n to ton-force-short",
-        expected: `${round(0.0001124045)} ton-force-short`,
+        expected: "0.0001124044715 ton-force-short",
       },
       {
         queryString: "1 n to short",
-        expected: `${round(0.0001124045)} ton-force-short`,
+        expected: "0.0001124044715 ton-force-short",
       },
       {
         queryString: "1 n to ton-force-long",
-        expected: `${round(0.0001003611)} ton-force-long`,
+        expected: "0.0001003611353 ton-force-long",
       },
       {
         queryString: "1 n to tonf",
-        expected: `${round(0.0001003611)} ton-force-long`,
+        expected: "0.0001003611353 ton-force-long",
       },
       {
         queryString: "1 n to kip-force",
-        expected: `${round(0.0002248089)} kip-force`,
+        expected: "0.0002248089431 kip-force",
       },
       {
         queryString: "1 n to kipf",
-        expected: `${round(0.0002248089)} kip-force`,
+        expected: "0.0002248089431 kip-force",
       },
       {
         queryString: "1 n to pound-force",
-        expected: `${round(0.2248089431)} pound-force`,
+        expected: "0.2248089431 pound-force",
       },
       {
         queryString: "1 n to lbf",
-        expected: `${round(0.2248089431)} pound-force`,
+        expected: "0.2248089431 pound-force",
       },
       {
         queryString: "1 n to ounce-force",
-        expected: `${round(3.5969430896)} ounce-force`,
+        expected: "3.5969430896 ounce-force",
       },
       {
         queryString: "1 n to ozf",
-        expected: `${round(3.5969430896)} ounce-force`,
+        expected: "3.5969430896 ounce-force",
       },
       {
         queryString: "1 n to poundal",
-        expected: `${round(7.2330138512)} poundal`,
+        expected: "7.2330138512 poundal",
       },
-      { queryString: "1 n to pdl", expected: `${round(7.2330138512)} poundal` },
-      { queryString: "1 n to pond", expected: `${round(101.9716213)} pond` },
-      { queryString: "1 n to p", expected: `${round(101.9716213)} pond` },
+      {
+        queryString: "1 n to pdl",
+        expected: "7.2330138512 poundal",
+      },
+      { queryString: "1 n to pond", expected: "101.9716212978 pond" },
+      { queryString: "1 n to p", expected: "101.9716212978 pond" },
       {
         queryString: "1 n to kilopond",
-        expected: `${round(0.1019716213)} kilopond`,
+        expected: "0.1019716213 kilopond",
       },
-      { queryString: "1 n to kp", expected: `${round(0.1019716213)} kilopond` },
-      { queryString: "1 kilonewton to n", expected: "1000 newton" },
+      {
+        queryString: "1 n to kp",
+        expected: "0.1019716213 kilopond",
+      },
+      { queryString: "1 kilonewton to n", expected: "1,000 newton" },
     ],
   },
   {
@@ -228,22 +260,49 @@ const TEST_DATA = [
       { queryString: "1 meter = meter", expected: "1 m" },
       { queryString: "1 METER=METER", expected: "1 m" },
       { queryString: "1 m to meter", expected: "1 m" },
-      { queryString: "1 m to nanometer", expected: "1000000000 nanometer" },
-      { queryString: "1 m to micrometer", expected: "1000000 micrometer" },
+      { queryString: "1 m to nanometer", expected: "1,000,000,000 nanometer" },
+      { queryString: "1 m to micrometer", expected: "1,000,000 micrometer" },
       { queryString: "1 m to millimeter", expected: "1,000 mm" },
       { queryString: "1 m to mm", expected: "1,000 mm" },
       { queryString: "1 m to centimeter", expected: "100 cm" },
       { queryString: "1 m to cm", expected: "100 cm" },
       { queryString: "1 m to kilometer", expected: "0.001 km" },
       { queryString: "1 m to km", expected: "0.001 km" },
-      { queryString: "1 m to mile", expected: `${round(0.0006213689)} mi` },
-      { queryString: "1 m to mi", expected: `${round(0.0006213689)} mi` },
-      { queryString: "1 m to yard", expected: `${round(1.0936132983)} yd` },
-      { queryString: "1 m to yd", expected: `${round(1.0936132983)} yd` },
-      { queryString: "1 m to foot", expected: `${round(3.280839895)} ft` },
-      { queryString: "1 m to ft", expected: `${round(3.280839895)} ft` },
-      { queryString: "1 m to inch", expected: `${round(39.37007874)} in` },
-      { queryString: "1 inch to m", expected: `${round(1 / 39.37007874)} m` },
+      { queryString: "1 m to mile", expected: "0.0006213711922 mi" },
+      { queryString: "1 m to mi", expected: "0.0006213711922 mi" },
+      { queryString: "1 m to yard", expected: "1.0936132983 yd" },
+      { queryString: "1 m to yd", expected: "1.0936132983 yd" },
+      { queryString: "1 m to foot", expected: "3.280839895 ft" },
+      { queryString: "1 m to ft", expected: "3.280839895 ft" },
+      { queryString: "1 m to inch", expected: "39.3700787402 in" },
+      { queryString: "1 inch to m", expected: "0.0254 m" },
+      { queryString: "1 mi to ft", expected: "5,280 ft" },
+      { queryString: "1 yd to ft", expected: "3 ft" },
+      { queryString: "12 in to ft", expected: "1 ft" },
+      { queryString: "1 in to cm", expected: "2.54 cm" },
+      { queryString: "1 mi to in", expected: "63,360 in" },
+      { queryString: "1 m to femtometer", expected: "1.0e15 femtometer" },
+      { queryString: "1 m to fermi", expected: "1.0e15 femtometer" },
+      { queryString: "1 m to fm", expected: "1.0e15 femtometer" },
+      { queryString: "1 m to picometer", expected: "1.0e12 picometer" },
+      { queryString: "1 m to pm", expected: "1.0e12 picometer" },
+      { queryString: "1 m to angstrom", expected: "1.0e10 angstrom" },
+      { queryString: "1 m to nanometer", expected: "1,000,000,000 nanometer" },
+      { queryString: "1 m to nm", expected: "1,000,000,000 nanometer" },
+      { queryString: "1 m to micrometer", expected: "1,000,000 micrometer" },
+      { queryString: "1 m to μm", expected: "1,000,000 micrometer" },
+      { queryString: "1 nautical mile to m", expected: "1,852 m" },
+      { queryString: "1 nmi to m", expected: "1,852 m" },
+      { queryString: "1 NM to m", expected: "1,852 m" },
+      { queryString: "1 nm to m", expected: "1.0e-9 m" },
+      { queryString: "1 light-year to m", expected: "9.4607304726e15 m" },
+      { queryString: "1 light year to m", expected: "9.4607304726e15 m" },
+      { queryString: "1 lyr to m", expected: "9.4607304726e15 m" },
+      { queryString: "1 ly to m", expected: "9.4607304726e15 m" },
+      { queryString: "1 ly to mi", expected: "5.8786253732e12 mi" },
+      { queryString: "1 astronomical unit to m", expected: "1.495978707e11 m" },
+      { queryString: "1 au to m", expected: "1.495978707e11 m" },
+      { queryString: "1 au to km", expected: "149,597,870.7 km" },
     ],
   },
   {
@@ -257,51 +316,71 @@ const TEST_DATA = [
       { queryString: "1 kg to kilogram", expected: "1 kg" },
       { queryString: "1 kg to gram", expected: "1,000 g" },
       { queryString: "1 kg to g", expected: "1,000 g" },
-      { queryString: "1 kg to milligram", expected: "1000000 milligram" },
-      { queryString: "1 kg to mg", expected: "1000000 milligram" },
+      { queryString: "1 kg to milligram", expected: "1,000,000 milligram" },
+      { queryString: "1 kg to mg", expected: "1,000,000 milligram" },
       { queryString: "1 kg to ton", expected: "0.001 ton" },
       { queryString: "1 kg to t", expected: "0.001 ton" },
       {
+        queryString: "1 kg to long ton",
+        expected: "0.0009842065276 long ton",
+      },
+      {
         queryString: "1 kg to longton",
-        expected: `${round(0.0009842073)} longton`,
+        expected: "0.0009842065276 long ton",
       },
       {
         queryString: "1 kg to l.t.",
-        expected: `${round(0.0009842073)} longton`,
+        expected: "0.0009842065276 long ton",
       },
       {
         queryString: "1 kg to l/t",
-        expected: `${round(0.0009842073)} longton`,
+        expected: "0.0009842065276 long ton",
+      },
+      {
+        queryString: "1 kg to short ton",
+        expected: "0.001102311311 short ton",
       },
       {
         queryString: "1 kg to shortton",
-        expected: `${round(0.0011023122)} shortton`,
+        expected: "0.001102311311 short ton",
       },
       {
         queryString: "1 kg to s.t.",
-        expected: `${round(0.0011023122)} shortton`,
+        expected: "0.001102311311 short ton",
       },
       {
         queryString: "1 kg to s/t",
-        expected: `${round(0.0011023122)} shortton`,
+        expected: "0.001102311311 short ton",
       },
       {
         queryString: "1 kg to pound",
-        expected: `${round(2.2046244202)} lb`,
+        expected: "2.2046226218 lb",
       },
-      { queryString: "1 kg to lbs", expected: `${round(2.2046244202)} lb` },
+      { queryString: "1 kg to lbs", expected: "2.2046226218 lb" },
       {
         queryString: "1 kg to lb",
-        expected: `${round(2.2046244202)} lb`,
+        expected: "2.2046226218 lb",
       },
       {
         queryString: "1 kg to ounce",
-        expected: `${round(35.273990723)} oz`,
+        expected: "35.2739619496 oz",
       },
-      { queryString: "1 kg to oz", expected: `${round(35.273990723)} oz` },
-      { queryString: "1 kg to carat", expected: "5000 carat" },
-      { queryString: "1 kg to ffd", expected: "5000 ffd" },
-      { queryString: "1 ffd to kg", expected: `${round(1 / 5000)} kg` },
+      { queryString: "1 kg to oz", expected: "35.2739619496 oz" },
+      { queryString: "1 kg to carat", expected: "5,000 carat" },
+      { queryString: "1 kg to ffd", expected: "5,000 ffd" },
+      { queryString: "1 ffd to kg", expected: "0.0002 kg" },
+      { queryString: "1 shortton to lbs", expected: "2,000 lb" },
+      { queryString: "1 longton to lbs", expected: "2,240 lb" },
+      { queryString: "12 oz to lb", expected: "0.75 lb" },
+      { queryString: "0.75 lb to oz", expected: "12 oz" },
+      { queryString: "16 oz to lb", expected: "1 lb" },
+      { queryString: "1 lb to oz", expected: "16 oz" },
+      { queryString: "1000 shortton to lb", expected: "2,000,000 lb" },
+      { queryString: "1000000 shortton to lb", expected: "2,000,000,000 lb" },
+      {
+        queryString: "1000.00000001 shortton to lb",
+        expected: "2,000,000.00002 lb",
+      },
     ],
   },
   {
@@ -317,12 +396,50 @@ const TEST_DATA = [
       { queryString: "10 c to k", expected: "283.15 kelvin" },
       { queryString: "0 c to fahrenheit", expected: "32°F" },
       { queryString: "0 c to f", expected: "32°F" },
-      { queryString: "10 c to f", expected: `${round(10 * 1.8 + 32)}°F` },
+      { queryString: "10 c to f", expected: "50°F" },
       {
         queryString: "10 f to kelvin",
-        expected: `${round((10 - 32) / 1.8 + 273.15)} kelvin`,
+        expected: `260.9277777778 kelvin`,
       },
       { queryString: "-10 c to f", expected: "14°F" },
+      { queryString: "-40 °c to °f", expected: "-40°F" },
+      { queryString: "-40°c to °f", expected: "-40°F" },
+      { queryString: "-40c to °f", expected: "-40°F" },
+      { queryString: "-40 °c to f", expected: "-40°F" },
+      { queryString: "-40°C to °f", expected: "-40°F" },
+      { queryString: "-40C to °F", expected: "-40°F" },
+      { queryString: "0K to °C", expected: "-273.15°C" },
+      { queryString: "0K to °F", expected: "-459.67°F" },
+      { queryString: "0°F to °C", expected: "-17.7777777778°C" },
+    ],
+  },
+  {
+    category: "speed",
+    cases: [
+      { queryString: "1 m/s to m/s", expected: "1 m/s" },
+      { queryString: "1 km/h to m/s", expected: "0.2777777778 m/s" },
+      { queryString: "1 km/hr to m/s", expected: "0.2777777778 m/s" },
+      { queryString: "1 kph to m/s", expected: "0.2777777778 m/s" },
+      { queryString: "1 ft/s to m/s", expected: "0.3048 m/s" },
+      { queryString: "1 fps to m/s", expected: "0.3048 m/s" },
+      { queryString: "1 mph to m/s", expected: "0.44704 m/s" },
+      { queryString: "1 mi/hr to m/s", expected: "0.44704 m/s" },
+      { queryString: "1 mi/h to m/s", expected: "0.44704 m/s" },
+      { queryString: "1 knot to m/s", expected: "0.5144444444 m/s" },
+      { queryString: "1 kn to m/s", expected: "0.5144444444 m/s" },
+      { queryString: "1 kt to m/s", expected: "0.5144444444 m/s" },
+      { queryString: "1km/h to m/s", expected: "0.2777777778 m/s" },
+      { queryString: "1 km/h in m/s", expected: "0.2777777778 m/s" },
+      { queryString: "1 km/h = m/s", expected: "0.2777777778 m/s" },
+      { queryString: "1 KM/H to M/S", expected: "0.2777777778 m/s" },
+      { queryString: "1 KPH to MPH", expected: "0.6213711922 mph" },
+      { queryString: "1 ft/s to mph", expected: "0.6818181818 mph" },
+      { queryString: "1 knot to kph", expected: "1.852 km/h" },
+      { queryString: "1000 m/s to km/h", expected: "3,600 km/h" },
+      { queryString: "1000 km/h to m/s", expected: "277.7777777778 m/s" },
+      { queryString: "75 mph to ft/s", expected: "110 ft/s" },
+      { queryString: "0.001 m/s to km/h", expected: "0.0036 km/h" },
+      { queryString: "1 m/s to km/h", expected: "3.6 km/h" },
     ],
   },
   {
@@ -455,12 +572,13 @@ const TEST_DATA = [
   },
 ];
 
-add_task(function () {
+add_task(async function () {
   // Enable unit conversion.
   Services.prefs.setBoolPref("browser.urlbar.unitConversion.enabled", true);
   registerCleanupFunction(() => {
     Services.prefs.clearUserPref("browser.urlbar.unitConversion.enabled");
   });
+  let provider = new UrlbarProviderUnitConversion();
 
   for (const { category, cases } of TEST_DATA) {
     for (const { queryString, timezone, expected, assertResult } of cases) {
@@ -472,11 +590,11 @@ add_task(function () {
       }
 
       const context = createContext(queryString);
-      const isActive = UrlbarProviderUnitConversion.isActive(context);
+      const isActive = await provider.isActive(context);
       Assert.equal(isActive, !!expected || !!assertResult);
 
       if (isActive) {
-        UrlbarProviderUnitConversion.startQuery(context, (module, result) => {
+        provider.startQuery(context, (module, result) => {
           Assert.equal(result.type, UrlbarUtils.RESULT_TYPE.DYNAMIC);
           Assert.equal(result.source, UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL);
           Assert.equal(result.suggestedIndex, 1);
@@ -497,7 +615,3 @@ add_task(function () {
     }
   }
 });
-
-function round(number) {
-  return parseFloat(number.toPrecision(10));
-}

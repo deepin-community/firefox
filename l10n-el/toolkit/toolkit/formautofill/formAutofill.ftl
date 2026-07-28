@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = Το { -brand-short-name } προ�
 autofill-edit-payment-method-os-prompt-macos = εμφανίσει αποθηκευμένα στοιχεία μεθόδου πληρωμής
 autofill-edit-payment-method-os-prompt-windows = Το { -brand-short-name } προσπαθεί να εμφανίσει αποθηκευμένα στοιχεία μεθόδου πληρωμής. Επιβεβαιώστε παρακάτω την πρόσβαση σε αυτόν τον λογαριασμό των Windows.
 autofill-edit-payment-method-os-prompt-other = Το { -brand-short-name } προσπαθεί να εμφανίσει αποθηκευμένα στοιχεία μεθόδου πληρωμής.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Επιλογές αυτόματης συμπλήρωσης φορμών
 autofill-options-link-osx = Προτιμήσεις αυτόματης συμπλήρωσης φορμών
 
@@ -34,7 +34,7 @@ credit-card-capture-cancel-button =
     .label = Όχι τώρα
     .accessKey = ρ
 credit-card-capture-never-save-button =
-    .label = Να μη γίνεται ποτέ αποθήκευση καρτών
+    .label = Να μην γίνεται ποτέ αποθήκευση καρτών
     .accessKey = Ν
 
 # Used on the doorhanger when an credit card change is detected.
@@ -81,3 +81,6 @@ autofill-category-name = όνομα
 autofill-category-organization = εταιρεία
 autofill-category-tel = τηλέφωνο
 autofill-category-email = email
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = Το { -brand-short-name } έχει εντοπίσει έναν επισφαλή ιστότοπο. Η αυτόματη συμπλήρωση φορμών έχει απενεργοποιηθεί προσωρινά.

@@ -1,4 +1,3 @@
-/* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,8 +15,7 @@ export class ThumbnailsChild extends JSWindowActorChild {
         let [width, height] = lazy.PageThumbUtils.getContentSize(
           this.contentWindow
         );
-        let documentElement = this.document.documentElement;
-        let body = this.document.body;
+        let { documentElement, body } = this.document;
         return {
           width,
           height,
@@ -26,9 +24,9 @@ export class ThumbnailsChild extends JSWindowActorChild {
             documentElement.clientHeight,
             documentElement.scrollHeight,
             documentElement.offsetHeight,
-            body.clientHeight,
-            body.scrollHeight,
-            body.offsetHeight
+            body?.clientHeight || 0,
+            body?.scrollHeight || 0,
+            body?.offsetHeight || 0
           ),
         };
       }

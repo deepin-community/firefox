@@ -5,6 +5,8 @@
 screenshot-toolbarbutton =
     .label = Екранна снимка
     .tooltiptext = Направете снимка на екрана
+screenshot-shortcut =
+    .key = s
 screenshots-instructions = За да изберете участък влачете или щракнете с мишката в страницата. Натиснете ESC за отказ.
 screenshots-cancel-button = Отказ
 screenshots-save-visible-button = Запазване на видимата област
@@ -12,7 +14,11 @@ screenshots-save-page-button = Запазване на цялата страни
 screenshots-download-button = Изтегляне
 screenshots-download-button-tooltip = Изтегляне на екранна снимка
 screenshots-copy-button = Копиране
-screenshots-copy-button-tooltip = Копиране в системния буфер
+screenshots-copy-button-tooltip = Копиране в клипборда
+screenshots-download-button-title =
+    .title = Изтегляне на екранна снимка
+screenshots-copy-button-title =
+    .title = Копиране на екранната снимка в системния буфер
 screenshots-cancel-button-title =
     .title = Отмяна
 screenshots-retry-button-title =
@@ -23,7 +29,7 @@ screenshots-meta-key =
        *[other] Ctrl
     }
 screenshots-notification-link-copied-title = Препратката е копирана
-screenshots-notification-link-copied-details = Препратка към снимката е копирана в системния буфер. За да я поставите натиснете { screenshots-meta-key }-V.
+screenshots-notification-link-copied-details = Препратка към снимката е копирана в клипборда. За да я поставите натиснете { screenshots-meta-key }-V.
 screenshots-notification-image-copied-title = Снимката е копирана
 screenshots-notification-image-copied-details = Снимката е копирана в системния буфер. За да я поставите натиснете { screenshots-meta-key }-V.
 screenshots-request-error-title = Повреда.
@@ -39,6 +45,9 @@ screenshots-private-window-error-details = Съжаляваме за неудо�
 screenshots-generic-error-title = Леле! Нещо се обърка с { -screenshots-brand-name }.
 screenshots-generic-error-details = Не сме сигурни какво точно се случи. Може да опитате отново, както и да снимате друга страница.
 screenshots-too-large-error-title = Екранната ви снимка беше отрязана, защото е твърде голяма
+screenshots-component-retry-button =
+    .title = Нов опит за снимка на екрана
+    .aria-label = Нов опит за снимка на екрана
 # Variables
 #   $shortcut (String) - A keyboard shortcut for copying the screenshot.
 screenshots-component-copy-button-2 = Копиране
@@ -49,10 +58,11 @@ screenshots-component-copy-button-2 = Копиране
 screenshots-component-download-button-2 = Изтегляне
     .title = Изтегляне ({ $shortcut })
     .aria-label = Изтегляне
-
-## The below strings are used to capture keydown events so the strings should
-## not be changed unless the keyboard layout in the locale requires it.
-
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = Екранна снимка
+    .tooltiptext = Направете снимка на екрана ({ $shortcut })
 
 ##
 

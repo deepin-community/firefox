@@ -18,16 +18,6 @@ const { SyncedRecordsTelemetry } = ChromeUtils.importESModule(
   "resource://services-sync/telemetry.sys.mjs"
 );
 
-var recordedEvents = [];
-
-function checkRecordedEvents(object, expected, message) {
-  // Ignore event telemetry from the merger.
-  let checkEvents = recordedEvents.filter(event => event.object == object);
-  deepEqual(checkEvents, expected, message);
-  // and clear the list so future checks are easier to write.
-  recordedEvents = [];
-}
-
 async function fetchAllRecordIds() {
   let db = await PlacesUtils.promiseDBConnection();
   let rows = await db.executeCached(`
@@ -66,13 +56,12 @@ async function cleanup(engine, server) {
   await cleanupEngine(engine);
 }
 
-add_task(async function setup() {
+add_setup(async function () {
   await generateNewKeys(Service.collectionKeys);
   await Service.engineManager.unregister("bookmarks");
 
-  Service.recordTelemetryEvent = (object, method, value, extra = undefined) => {
-    recordedEvents.push({ object, method, value, extra });
-  };
+  do_get_profile(); // FOG needs a profile dir
+  Services.fog.initializeFOG();
 });
 
 add_task(async function test_buffer_timeout() {
@@ -172,29 +161,16 @@ add_bookmark_test(async function test_maintenance_after_failure(engine) {
       sync_engine_and_validate_telem(engine, true),
       ex => ex == syncError
     );
-    checkRecordedEvents(
-      "maintenance",
-      [
-        {
-          object: "maintenance",
-          method: "run",
-          value: "bookmarks",
-          extra: undefined,
-        },
-      ],
-      "Should record event for first maintenance run"
-    );
+    Assert.equal(Glean.sync.maintenanceRunBookmarks.testGetValue().length, 1);
+    Services.fog.testResetFOG();
 
     _("Sync again, but ensure maintenance doesn't run");
     await Assert.rejects(
       sync_engine_and_validate_telem(engine, true),
       ex => ex == syncError
     );
-    checkRecordedEvents(
-      "maintenance",
-      [],
-      "Should not record event if maintenance didn't run"
-    );
+    Assert.equal(Glean.sync.maintenanceRunBookmarks.testGetValue(), null);
+    Services.fog.testResetFOG();
 
     _("Fast-forward last maintenance pref; ensure maintenance runs");
     Services.prefs.setIntPref(
@@ -205,41 +181,18 @@ add_bookmark_test(async function test_maintenance_after_failure(engine) {
       sync_engine_and_validate_telem(engine, true),
       ex => ex == syncError
     );
-    checkRecordedEvents(
-      "maintenance",
-      [
-        {
-          object: "maintenance",
-          method: "run",
-          value: "bookmarks",
-          extra: undefined,
-        },
-      ],
-      "Should record event for second maintenance run"
-    );
+    Assert.equal(Glean.sync.maintenanceRunBookmarks.testGetValue().length, 1);
+    Services.fog.testResetFOG();
 
     _("Fix sync failure; ensure we report success after maintenance");
     engine._syncStartup = syncStartup;
     await sync_engine_and_validate_telem(engine, false);
-    checkRecordedEvents(
-      "maintenance",
-      [
-        {
-          object: "maintenance",
-          method: "fix",
-          value: "bookmarks",
-          extra: undefined,
-        },
-      ],
-      "Should record event for successful sync after second maintenance"
-    );
+    Assert.equal(Glean.sync.maintenanceFixBookmarks.testGetValue().length, 1);
+    Services.fog.testResetFOG();
 
     await sync_engine_and_validate_telem(engine, false);
-    checkRecordedEvents(
-      "maintenance",
-      [],
-      "Should not record maintenance events after successful sync"
-    );
+    Assert.equal(Glean.sync.maintenanceFixBookmarks.testGetValue(), null);
+    Services.fog.testResetFOG();
   } finally {
     await cleanup(engine, server);
   }
@@ -337,90 +290,90 @@ add_bookmark_test(async function test_delete_invalid_roots_from_server(engine) {
   }
 });
 
-add_bookmark_test(async function test_processIncoming_error_orderChildren(
-  engine
-) {
-  _(
-    "Ensure that _orderChildren() is called even when _processIncoming() throws an error."
-  );
+add_bookmark_test(
+  async function test_processIncoming_error_orderChildren(engine) {
+    _(
+      "Ensure that _orderChildren() is called even when _processIncoming() throws an error."
+    );
 
-  let store = engine._store;
-  let server = await serverForFoo(engine);
-  await SyncTestingInfrastructure(server);
+    let store = engine._store;
+    let server = await serverForFoo(engine);
+    await SyncTestingInfrastructure(server);
 
-  let collection = server.user("foo").collection("bookmarks");
+    let collection = server.user("foo").collection("bookmarks");
 
-  try {
-    let folder1 = await PlacesUtils.bookmarks.insert({
-      parentGuid: PlacesUtils.bookmarks.toolbarGuid,
-      type: PlacesUtils.bookmarks.TYPE_FOLDER,
-      title: "Folder 1",
-    });
-
-    let bmk1 = await PlacesUtils.bookmarks.insert({
-      parentGuid: folder1.guid,
-      url: "http://getfirefox.com/",
-      title: "Get Firefox!",
-    });
-    let bmk2 = await PlacesUtils.bookmarks.insert({
-      parentGuid: folder1.guid,
-      url: "http://getthunderbird.com/",
-      title: "Get Thunderbird!",
-    });
-
-    let toolbar_record = await store.createRecord("toolbar");
-    collection.insert("toolbar", encryptPayload(toolbar_record.cleartext));
-
-    let bmk1_record = await store.createRecord(bmk1.guid);
-    collection.insert(bmk1.guid, encryptPayload(bmk1_record.cleartext));
-
-    let bmk2_record = await store.createRecord(bmk2.guid);
-    collection.insert(bmk2.guid, encryptPayload(bmk2_record.cleartext));
-
-    // Create a server record for folder1 where we flip the order of
-    // the children.
-    let folder1_record = await store.createRecord(folder1.guid);
-    let folder1_payload = folder1_record.cleartext;
-    folder1_payload.children.reverse();
-    collection.insert(folder1.guid, encryptPayload(folder1_payload));
-
-    // Create a bogus record that when synced down will provoke a
-    // network error which in turn provokes an exception in _processIncoming.
-    const BOGUS_GUID = "zzzzzzzzzzzz";
-    let bogus_record = collection.insert(BOGUS_GUID, "I'm a bogus record!");
-    bogus_record.get = function get() {
-      throw new Error("Sync this!");
-    };
-
-    // Make the 10 minutes old so it will only be synced in the toFetch phase.
-    bogus_record.modified = new_timestamp() - 60 * 10;
-    await engine.setLastSync(new_timestamp() - 60);
-    engine.toFetch = new SerializableSet([BOGUS_GUID]);
-
-    let error;
     try {
-      await sync_engine_and_validate_telem(engine, true);
-    } catch (ex) {
-      error = ex;
+      let folder1 = await PlacesUtils.bookmarks.insert({
+        parentGuid: PlacesUtils.bookmarks.toolbarGuid,
+        type: PlacesUtils.bookmarks.TYPE_FOLDER,
+        title: "Folder 1",
+      });
+
+      let bmk1 = await PlacesUtils.bookmarks.insert({
+        parentGuid: folder1.guid,
+        url: "http://getfirefox.com/",
+        title: "Get Firefox!",
+      });
+      let bmk2 = await PlacesUtils.bookmarks.insert({
+        parentGuid: folder1.guid,
+        url: "http://getthunderbird.com/",
+        title: "Get Thunderbird!",
+      });
+
+      let toolbar_record = await store.createRecord("toolbar");
+      collection.insert("toolbar", encryptPayload(toolbar_record.cleartext));
+
+      let bmk1_record = await store.createRecord(bmk1.guid);
+      collection.insert(bmk1.guid, encryptPayload(bmk1_record.cleartext));
+
+      let bmk2_record = await store.createRecord(bmk2.guid);
+      collection.insert(bmk2.guid, encryptPayload(bmk2_record.cleartext));
+
+      // Create a server record for folder1 where we flip the order of
+      // the children.
+      let folder1_record = await store.createRecord(folder1.guid);
+      let folder1_payload = folder1_record.cleartext;
+      folder1_payload.children.reverse();
+      collection.insert(folder1.guid, encryptPayload(folder1_payload));
+
+      // Create a bogus record that when synced down will provoke a
+      // network error which in turn provokes an exception in _processIncoming.
+      const BOGUS_GUID = "zzzzzzzzzzzz";
+      let bogus_record = collection.insert(BOGUS_GUID, "I'm a bogus record!");
+      bogus_record.get = function get() {
+        throw new Error("Sync this!");
+      };
+
+      // Make the 10 minutes old so it will only be synced in the toFetch phase.
+      bogus_record.modified = new_timestamp() - 60 * 10;
+      await engine.setLastSync(new_timestamp() - 60);
+      engine.toFetch = new SerializableSet([BOGUS_GUID]);
+
+      let error;
+      try {
+        await sync_engine_and_validate_telem(engine, true);
+      } catch (ex) {
+        error = ex;
+      }
+      ok(!!error);
+
+      // Verify that the bookmark order has been applied.
+      folder1_record = await store.createRecord(folder1.guid);
+      let new_children = folder1_record.children;
+      Assert.deepEqual(
+        new_children.sort(),
+        [folder1_payload.children[0], folder1_payload.children[1]].sort()
+      );
+
+      let localChildIds = await PlacesSyncUtils.bookmarks.fetchChildRecordIds(
+        folder1.guid
+      );
+      Assert.deepEqual(localChildIds.sort(), [bmk2.guid, bmk1.guid].sort());
+    } finally {
+      await cleanup(engine, server);
     }
-    ok(!!error);
-
-    // Verify that the bookmark order has been applied.
-    folder1_record = await store.createRecord(folder1.guid);
-    let new_children = folder1_record.children;
-    Assert.deepEqual(
-      new_children.sort(),
-      [folder1_payload.children[0], folder1_payload.children[1]].sort()
-    );
-
-    let localChildIds = await PlacesSyncUtils.bookmarks.fetchChildRecordIds(
-      folder1.guid
-    );
-    Assert.deepEqual(localChildIds.sort(), [bmk2.guid, bmk1.guid].sort());
-  } finally {
-    await cleanup(engine, server);
   }
-});
+);
 
 add_bookmark_test(async function test_restorePromptsReupload(engine) {
   await test_restoreOrImport(engine, { replace: true });

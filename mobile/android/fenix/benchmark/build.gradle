@@ -10,11 +10,12 @@ plugins {
 }
 
 android {
-    namespace 'org.mozilla.fenix.benchmark'
-    compileSdk config.compileSdkVersion
+    namespace = 'org.mozilla.fenix.benchmark'
+
+    compileSdk { version = release(config.compileSdkMajorVersion) { minorApiLevel = config.compileSdkMinorVersion } }
 
     defaultConfig {
-        minSdk 23
+        minSdk config.minSdkVersion
         targetSdk config.targetSdkVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -25,12 +26,12 @@ android {
         // for easy local testing.
         benchmark {
             debuggable = true
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
             matchingFallbacks = ["release"]
         }
     }
 
-    targetProjectPath = ":app"
+    targetProjectPath = project.findProject(":app") != null ? ":app" : ":fenix"
     experimentalProperties["android.experimental.self-instrumenting"] = true
 
     testOptions {
@@ -46,26 +47,14 @@ android {
     }
 }
 
-/**
- * This fixes the dependency resolution issue with Glean Native. The glean gradle plugin does this
- * and that's applied to the app module. Since there are no other uses of the glean plugin in the
- * benchmark module, we do this manually here.
- */
-configurations.configureEach {
-    resolutionStrategy.capabilitiesResolution.withCapability("org.mozilla.telemetry:glean-native") {
-        def toBeSelected = candidates.find { it.id instanceof ModuleComponentIdentifier && it.id.module.contains('geckoview') }
-        if (toBeSelected != null) {
-            select(toBeSelected)
-        }
-        because 'use GeckoView Glean instead of standalone Glean'
-    }
-}
-
 dependencies {
-    implementation ComponentsDependencies.androidx_test_junit
-    implementation ComponentsDependencies.androidx_espresso_core
-    implementation ComponentsDependencies.androidx_test_uiautomator
-    implementation ComponentsDependencies.androidx_benchmark_macro_junit4
+    implementation libs.androidx.benchmark.macro.junit4
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.test.espresso.core
+    implementation libs.androidx.test.junit
+    implementation libs.androidx.test.uiautomator
+    implementation libs.mockwebserver
+    implementation project(':components:support-android-test')
 }
 
 androidComponents {

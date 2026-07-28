@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -117,6 +116,8 @@
 
 namespace mozilla::net {
 
+class WebTransportEventService;
+
 class WebTransportStreamCallbackWrapper;
 
 class WebTransportSessionProxy final
@@ -166,20 +167,22 @@ class WebTransportSessionProxy final
   void CreateStreamInternal(nsIWebTransportStreamCallback* callback,
                             bool aBidi);
   void DoCreateStream(WebTransportStreamCallbackWrapper* aCallback,
-                      Http3WebTransportSession* aSession, bool aBidi);
-  void SendDatagramInternal(const RefPtr<Http3WebTransportSession>& aSession,
+                      WebTransportSessionBase* aSession, bool aBidi);
+  void SendDatagramInternal(const RefPtr<WebTransportSessionBase>& aSession,
                             nsTArray<uint8_t>&& aData, uint64_t aTrackingId);
   void NotifyDatagramReceived(nsTArray<uint8_t>&& aData);
   void GetMaxDatagramSizeInternal(
-      const RefPtr<Http3WebTransportSession>& aSession);
+      const RefPtr<WebTransportSessionBase>& aSession);
   void OnMaxDatagramSizeInternal(uint64_t aSize);
   void OnOutgoingDatagramOutComeInternal(
       uint64_t aId, WebTransportSessionEventListener::DatagramOutcome aOutCome);
 
   nsCOMPtr<nsIChannel> mChannel;
+  uint64_t mHttpChannelID = 0;
   nsCOMPtr<nsIChannel> mRedirectChannel;
+  RefPtr<WebTransportEventService> mService;
   nsCOMPtr<WebTransportSessionEventListener> mListener MOZ_GUARDED_BY(mMutex);
-  RefPtr<Http3WebTransportSession> mWebTransportSession MOZ_GUARDED_BY(mMutex);
+  RefPtr<WebTransportSessionBase> mWebTransportSession MOZ_GUARDED_BY(mMutex);
   uint64_t mSessionId MOZ_GUARDED_BY(mMutex) = UINT64_MAX;
   uint32_t mCloseStatus MOZ_GUARDED_BY(mMutex) = 0;
   nsCString mReason MOZ_GUARDED_BY(mMutex);
@@ -191,8 +194,10 @@ class WebTransportSessionProxy final
   nsTArray<std::function<void(nsresult)>> mPendingCreateStreamEvents
       MOZ_GUARDED_BY(mMutex);
   nsCOMPtr<nsIEventTarget> mTarget MOZ_GUARDED_BY(mMutex);
-  nsTArray<RefPtr<nsIWebTransportHash>> mServerCertHashes;
-  bool mDedicatedConnection;  // for WebTranport
+  nsTArray<RefPtr<nsIWebTransportHash>> mServerCertHashes
+      MOZ_GUARDED_BY(mMutex);
+  bool mDedicatedConnection = false;  // for WebTranport
+  nsIWebTransport::HTTPVersion mHTTPVersion = nsIWebTransport::HTTPVersion::h3;
 };
 
 }  // namespace mozilla::net

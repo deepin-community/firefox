@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +8,7 @@
 #include "SpeculativeTransaction.h"
 #include "HTTPSRecordResolver.h"
 #include "nsICachingChannel.h"
+#include "nsHttpConnectionMgr.h"
 #include "nsHttpHandler.h"
 
 namespace mozilla {
@@ -16,9 +16,12 @@ namespace net {
 
 SpeculativeTransaction::SpeculativeTransaction(
     nsHttpConnectionInfo* aConnInfo, nsIInterfaceRequestor* aCallbacks,
-    uint32_t aCaps, std::function<void(bool)>&& aCallback)
-    : NullHttpTransaction(aConnInfo, aCallbacks, aCaps),
+    uint32_t aCaps, std::function<void(nsresult)>&& aCallback,
+    bool reportActivity)
+    : NullHttpTransaction(aConnInfo, aCallbacks, aCaps, reportActivity),
       mCloseCallback(std::move(aCallback)) {}
+
+SpeculativeTransaction::~SpeculativeTransaction() = default;
 
 already_AddRefed<SpeculativeTransaction>
 SpeculativeTransaction::CreateWithNewConnInfo(nsHttpConnectionInfo* aConnInfo) {
@@ -26,7 +29,6 @@ SpeculativeTransaction::CreateWithNewConnInfo(nsHttpConnectionInfo* aConnInfo) {
       new SpeculativeTransaction(aConnInfo, mCallbacks, mCaps);
   trans->mParallelSpeculativeConnectLimit = mParallelSpeculativeConnectLimit;
   trans->mIgnoreIdle = mIgnoreIdle;
-  trans->mIsFromPredictor = mIsFromPredictor;
   trans->mAllow1918 = mAllow1918;
   return trans.forget();
 }
@@ -35,17 +37,25 @@ nsresult SpeculativeTransaction::FetchHTTPSRR() {
   LOG(("SpeculativeTransaction::FetchHTTPSRR [this=%p]", this));
   MOZ_ASSERT(OnSocketThread(), "not on socket thread");
 
-  RefPtr<HTTPSRecordResolver> resolver = new HTTPSRecordResolver(this);
+  mResolver = new HTTPSRecordResolver(this);
   nsCOMPtr<nsICancelable> dnsRequest;
-  return resolver->FetchHTTPSRRInternal(GetCurrentSerialEventTarget(),
-                                        getter_AddRefs(dnsRequest));
+  nsresult rv = mResolver->FetchHTTPSRRInternal(GetCurrentSerialEventTarget(),
+                                                getter_AddRefs(dnsRequest));
+  if (NS_FAILED(rv)) {
+    mResolver->Close();
+    mResolver = nullptr;
+  }
+
+  return rv;
 }
 
 nsresult SpeculativeTransaction::OnHTTPSRRAvailable(
     nsIDNSHTTPSSVCRecord* aHTTPSSVCRecord,
-    nsISVCBRecord* aHighestPriorityRecord) {
+    nsISVCBRecord* aHighestPriorityRecord, const nsACString& aCname) {
   MOZ_ASSERT(OnSocketThread(), "not on socket thread");
   LOG(("SpeculativeTransaction::OnHTTPSRRAvailable [this=%p]", this));
+
+  RefPtr<HTTPSRecordResolver> resolver = std::move(mResolver);
 
   if (!aHTTPSSVCRecord || !aHighestPriorityRecord) {
     gHttpHandler->ConnMgr()->DoSpeculativeConnection(this, false);
@@ -73,19 +83,24 @@ void SpeculativeTransaction::Close(nsresult aReason) {
   LOG(("SpeculativeTransaction::Close %p aReason=%" PRIx32, this,
        static_cast<uint32_t>(aReason)));
   NullHttpTransaction::Close(aReason);
+  if (mResolver) {
+    mResolver->Close();
+    mResolver = nullptr;
+  }
 
   if (aReason == NS_BASE_STREAM_CLOSED) {
     aReason = NS_OK;
   }
   if (mCloseCallback) {
-    mCloseCallback(mTriedToWrite && NS_SUCCEEDED(aReason));
+    mCloseCallback(mTriedToWrite || NS_FAILED(aReason) ? aReason
+                                                       : NS_ERROR_FAILURE);
     mCloseCallback = nullptr;
   }
 }
 
 void SpeculativeTransaction::InvokeCallback() {
   if (mCloseCallback) {
-    mCloseCallback(true);
+    mCloseCallback(NS_OK);
     mCloseCallback = nullptr;
   }
 }

@@ -52,7 +52,7 @@ function popupShown()
   let index = menulist.selectedIndex;
   if (menulist.selectedItem && navigator.platform.includes("Mac")) {
     let menulistlabelrect = menulist.shadowRoot.getElementById("label").getBoundingClientRect();
-    let mitemlabelrect = menulist.selectedItem.querySelector(".menu-iconic-text").getBoundingClientRect();
+    let mitemlabelrect = menulist.selectedItem.querySelector(".menu-text").getBoundingClientRect();
 
     ok(isWithinHalfPixel(menulistlabelrect.top, mitemlabelrect.top),
        `Labels vertically aligned for ${index} : ${menulistlabelrect.top} vs. ${mitemlabelrect.top}`);
@@ -94,7 +94,7 @@ function popupHidden()
 
 <hbox align="center" pack="center" style="margin-top: 140px;">
   <menulist style="width: 200px" id="menulist" onpopupshown="popupShown();" onpopuphidden="popupHidden();" native="true">
-    <menupopup style="max-height: 90px;">
+    <menupopup style="max-height: 90px;" nonnative="">
       <menuitem label="One"/>
       <menuitem label="Two"/>
       <menuitem label="Three"/>

@@ -14,18 +14,63 @@ newtab-personalize-icon-label =
 newtab-personalize-dialog-label =
     .aria-label = Tinkinti
 
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = Naujos kortelės
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } eilutė
+            [few] { $num } eilutės
+           *[other] { $num } eilučių
+        }
+home-restore-defaults-srd =
+    .label = Atstatyti numatytąsias
+    .accesskey = A
+home-mode-choice-default-fx-srd =
+    .label = „{ -firefox-home-brand-name }“ (numatytasis)
+home-mode-choice-custom-srd =
+    .label = Kiti URL…
+home-mode-choice-blank-srd =
+    .label = Tuščias puslapis
+home-prefs-shortcuts-header-srd =
+    .label = Leistukai
+home-prefs-shortcuts-select =
+    .aria-label = Leistukai
+home-prefs-shortcuts-by-option-sponsored-srd =
+    .label = Rėmėjų leistukai
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Rėmėjų straipsniai
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Aplankyti tinklalapiai
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Adresynas
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Paskiausias atsisiuntimas
+home-prefs-recent-activity-header-srd =
+    .label = Paskiausia veikla
+home-prefs-recent-activity-select =
+    .aria-label = Paskiausia veikla
+
 ## Search box component.
 
 # "Search" is a verb/action
 newtab-search-box-search-button =
     .title = Ieškoti
     .aria-label = Ieškoti
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = Įveskite adresą arba ieškokite per „{ $engine }“
 newtab-search-box-handoff-text-no-engine = Įveskite adresą arba paieškos žodžius
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = Įveskite adresą arba ieškokite per „{ $engine }“
     .title = Įveskite adresą arba ieškokite per „{ $engine }“
@@ -39,7 +84,7 @@ newtab-search-box-input =
     .placeholder = Ieškokite saityne
     .aria-label = Ieškokite saityne
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Pridėti ieškyklę
 newtab-topsites-add-shortcut-header = Naujas leistukas
@@ -86,7 +131,7 @@ newtab-dismiss-button-tooltip =
     .aria-label = Pašalinti
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Atverti meniu
     .aria-label = Atverti kontekstinį { $title } meniu
@@ -158,16 +203,16 @@ newtab-label-saved = Įrašyta į „{ -pocket-brand-name }“
 newtab-label-download = Atsiųsta
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · Rėmėjas
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = Rėmėjas: „{ $sponsor }“
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -196,7 +241,7 @@ newtab-section-expand-section-label =
 newtab-section-header-topsites = Lankomiausios svetainės
 newtab-section-header-recent-activity = Paskiausia veikla
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Rekomenduoja „{ $provider }“
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
@@ -204,7 +249,7 @@ newtab-section-header-pocket = Rekomenduoja „{ $provider }“
 newtab-empty-section-highlights = Pradėkite naršyti, o mes čia pateiksime puikių straipsnių, vaizdo įrašų bei kitų tinklalapių, kuriuose neseniai lankėtės ar įtraukėte į adresyną.
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Viską perskaitėte. Užsukite vėliau, norėdami rasti daugiau gerų straipsnių iš „{ $provider }“. Nekantraujate? Pasirinkite populiarią temą, norėdami rasti daugiau puikių straipsnių saityne.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -227,9 +272,6 @@ newtab-pocket-cta-button = Gauti „{ -pocket-brand-name }“
 newtab-pocket-cta-text = Išsaugokite patinkančius straipsnius į „{ -pocket-brand-name }“, bei sužadinkite savo mintis stulbinančiomis istorijomis.
 newtab-pocket-pocket-firefox-family = „{ -pocket-brand-name }“ yra „{ -brand-product-name }“ šeimos dalis
 
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
-
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
@@ -240,9 +282,24 @@ newtab-error-fallback-refresh-link = Pabandykite iš naujo įkelti tinklalapį.
 
 newtab-custom-shortcuts-title = Leistukai
 newtab-custom-shortcuts-subtitle = Jūsų įrašytos arba lankomos svetainės
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Leistukai
     .description = Jūsų įrašytos arba lankomos svetainės
+newtab-custom-shortcuts-nova =
+    .label = Leistukai
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } eilutė
+            [few] { $num } eilutės
+           *[other] { $num } eilučių
+        }
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } eilutė
@@ -252,14 +309,8 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Rėmėjų leistukai
 newtab-custom-pocket-title = Rekomenduoja „{ -pocket-brand-name }“
 newtab-custom-pocket-subtitle = Išskirtinis turinys, kuruojamas „{ -pocket-brand-name }“, kuri yra „{ -brand-product-name }“ šeimos dalis
-newtab-custom-pocket-toggle =
-    .label = Rekomenduoja „{ -pocket-brand-name }“
-    .description = Išskirtinis turinys, kuruojamas „{ -pocket-brand-name }“, kuri yra „{ -brand-product-name }“ šeimos dalis
 newtab-custom-pocket-sponsored = Rėmėjų straipsniai
 newtab-custom-recent-title = Paskiausia veikla
 newtab-custom-recent-subtitle = Paskiausiai lankytos svetainės ir žiūrėtas turinys
-newtab-custom-recent-toggle =
-    .label = Paskiausia veikla
-    .description = Paskiausiai lankytos svetainės ir žiūrėtas turinys
 newtab-custom-close-button = Užverti
 newtab-custom-settings = Keisti daugiau nuostatų

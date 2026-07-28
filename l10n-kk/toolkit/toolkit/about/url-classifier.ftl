@@ -5,11 +5,16 @@
 url-classifier-title = URL классификатор ақпараты
 url-classifier-search-title = Іздеу
 url-classifier-search-result-title = Нәтижелер
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = Кестелер тізімі: { $list }
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = Жарамсыз URL
 url-classifier-search-error-no-features = Мүмкіндіктер таңдалмады
+url-classifier-search-error-no-results = URL үшін жазбалар табылмады
 url-classifier-search-btn = Іздеуді бастау
 url-classifier-search-features = Мүмкіндіктер
 url-classifier-search-listType = Тізім түрі
@@ -40,7 +45,6 @@ url-classifier-debug-sb-modules = Қауіпсіз шолу журналдау �
 url-classifier-debug-modules = Ағымдағы журналдау модульдері
 url-classifier-debug-sbjs-modules = Қауіпсіз шолу JS журналдауы
 url-classifier-debug-file = Ағымдағы журналдау файлы
-
 url-classifier-trigger-update = Жаңарту күйін ауыстыру
 url-classifier-not-available = Қ/Ж
 url-classifier-disable-sbjs-log = Қауіпсіз шолу JS журналдауын сөндіру

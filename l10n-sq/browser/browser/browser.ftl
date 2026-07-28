@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,11 +48,89 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Shfletim Privat { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Shfletim Privat { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Shfletim Privat { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Shfletim Privat { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Shfletim Privat { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Shfletim Privat
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Shfletim Privat { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Shfletim Privat
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Shfletim Privat
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Shfletim Privat
+       *[other] Shfletim Privat { -brand-full-name }
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Shfletim Privat
+popups-infobar-dont-show-message2 =
+    .label = Mos e shfaq këtë mesazh, kur bllokohen flluska, ose ridrejtime nga palë të treta
+    .accesskey = M
+edit-popup-settings2 =
+    .label = Administroni rregullime për flluska dhe ridrejtime nga palë të treta…
+    .accesskey = A
 
 ##
 
 urlbar-identity-button =
-    .aria-label = Shihni të dhëna sajti
+    .aria-label = Shihni hollësi sajti
 
 ## Tooltips for images appearing in the address bar
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Hapni panelin e mesazheve
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Hapni panel kërkesash vendndodhjesh
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Administroni hyrje pajisjesh vendore për këtë sajt
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Administroni dhënie përdorimi të rrjetit tuaj vendor këtij sajti
 urlbar-xr-notification-anchor =
     .tooltiptext = Hapni panel lejesh për realitet virtual
 urlbar-storage-access-anchor =
@@ -114,6 +193,24 @@ urlbar-result-menu-button =
     .title = Hape menunë
 urlbar-result-menu-button-feedback = Përshtypje
     .title = Hap menunë
+urlbar-result-menu-learn-more2 = Mësoni më tepër
+    .accesskey = M
+urlbar-result-menu-remove-from-history2 = Hiqe prej historiku
+    .accesskey = H
+urlbar-result-menu-tip-get-help2 = Merrni ndihmë
+    .accesskey = d
+urlbar-result-menu-dismiss-suggestion2 = Hidhe tej këtë sugjerim
+    .accesskey = H
+urlbar-result-menu-manage-firefox-suggest2 = Administroni { -firefox-suggest-brand-name }
+    .accesskey = A
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location2 = Njoftoni për vendndodhje të pasaktë
+urlbar-result-menu-show-less-frequently2 = Shfaqi më rrallë
+urlbar-result-menu-dont-show-weather-suggestions2 = Mos shfaq sugjerime moti
 urlbar-result-menu-learn-more =
     .label = Mësoni më tepër
     .accesskey = M
@@ -123,6 +220,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Merrni ndihmë
     .accesskey = d
+urlbar-result-menu-dismiss-suggestion =
+    .label = Hidhe tej këtë sugjerim
+    .accesskey = H
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Mësoni më tepër rreth { -firefox-suggest-brand-name }
+    .accesskey = M
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Administroni { -firefox-suggest-brand-name }
+    .accesskey = A
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Njoftoni për vendndodhje të pasaktë
+urlbar-result-menu-show-less-frequently =
+    .label = Shfaqi më rrallë
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Mos shfaq sugjerime moti
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Hape menunë
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Faleminderit për përshtypjet tuaja
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Faleminderit për përshtypjet. S’do të shihni më sugjerime moti.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +274,10 @@ urlbar-search-mode-actions = Veprime
 
 urlbar-geolocation-blocked =
     .tooltiptext = Ia keni bllokuar këtij sajti të dhënat mbi vendndodhjen tuaj.
+urlbar-localhost-blocked =
+    .tooltiptext = Keni bllokuar lidhje pajisjesh vendore për këtë sajt.
+urlbar-local-network-blocked =
+    .tooltiptext = Keni bllokuar lidhje rrjetesh vendorë për këtë sajt.
 urlbar-xr-blocked =
     .tooltiptext = E keni bllokuar hyrjen në pajisje realiteti virtual për këtë sajt.
 urlbar-web-notifications-blocked =
@@ -160,6 +290,8 @@ urlbar-screen-blocked =
     .tooltiptext = Ia keni bllokuar këtij sajti përdorimin e ekranit tuaj.
 urlbar-persistent-storage-blocked =
     .tooltiptext = E keni bllokuar depozitimin e qëndrueshëm për këtë sajt.
+urlbar-popup-blocked2 =
+    .tooltiptext = Keni bllokuar flluska dhe ridrejtime palësh të treta për këtë sajt.
 urlbar-popup-blocked =
     .tooltiptext = I keni bllokuar flluskat për këtë sajt.
 urlbar-autoplay-media-blocked =
@@ -178,6 +310,15 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Faqeruani këtë faqe ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = Pamje krah për krah
+    .aria-label = Pamje krah për krah
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = Spastro Historik Kërkimesh
+    .accesskey = P
 
 ## Page Action Context Menu
 
@@ -250,14 +391,21 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Shihini Shtesa
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = zgjerime, tema, shtesa
 quickactions-cmd-addons2 = shtesa
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Administroni faqerojtës
 quickactions-cmd-bookmarks = faqerojtës
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Spastro historik së fundi
+quickactions-cmd-clearrecenthistory = spastro historik së fundi, historik
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Spastro Historikun
 quickactions-cmd-clearhistory = spastroni historikun
@@ -266,9 +414,20 @@ quickactions-downloads2 = Shihni shkarkime
 quickactions-cmd-downloads = shkarkime
 # Opens about:addons page in the extensions section
 quickactions-extensions = Administroni zgjerime
+quickactions-cmd-extensions2 = zgjerime, shtesa
 quickactions-cmd-extensions = zgjerime
+# Opens Firefox View
+quickactions-firefoxview = Hap { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = hap { -firefoxview-brand-name }, { -firefoxview-brand-name }, hap pamje, pamje
+# Opens SUMO home page
+quickactions-help = Ndihmë { -brand-product-name }
+quickactions-cmd-help = ndihmë, asistencë
 # Opens the devtools web inspector
 quickactions-inspector2 = Hap Mjete Zhvilluesish
+quickactions-cmd-inspector2 = mbikëqyrë, mjete zhvilluesi
 quickactions-cmd-inspector = mbikëqyrës, mjete zhvilluesish
 # Opens about:logins
 quickactions-logins2 = Administroni fjalëkalime
@@ -281,7 +440,7 @@ quickactions-print2 = Shtypni faqe
 quickactions-cmd-print = shtype
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Ruaje faqen si PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, ruaje faqen
 # Opens a new private browsing window
 quickactions-private2 = Hap dritare private
 quickactions-cmd-private = shfletim privat
@@ -293,22 +452,37 @@ quickactions-restart = Riniseni { -brand-short-name }-in
 quickactions-cmd-restart = rinise
 # Opens the screenshot tool
 quickactions-screenshot3 = Bëni një foto ekrani
+quickactions-cmd-screenshot2 = foto ekrani, bëni një foto ekrani
+# Opens about:translations
+quickactions-translate = Përktheje
+quickactions-cmd-translate = përktheje
 quickactions-cmd-screenshot = foto ekrani
 # Opens about:preferences
 quickactions-settings2 = Administroni rregullime
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = rregullime, parapëlqime, mundësi, administroni
 quickactions-cmd-settings = rregullime, parapëlqime, mundësi
 # Opens about:addons page in the themes section
 quickactions-themes = Administroni tema
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = temsa, shtesa
 quickactions-cmd-themes = tema
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = Përditësoni { -brand-short-name }
 quickactions-cmd-update = përditësoje
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Shihni Burim Faqeje
+quickactions-cmd-viewsource2 = shihini burimin, burim, burim faqeje
 quickactions-cmd-viewsource = shihni burimin, burim
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Mësoni më tepër rreth Veprimesh të shpejta
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Shtypni tastin tab, që të përzgjidhet:
 
 ## Bookmark Panel
 
@@ -341,21 +515,21 @@ bookmark-panel =
 
 # Variables
 #  $host (String): the hostname of the site that is being displayed.
-identity-site-information = Të dhëna Sajti për { $host }
+identity-site-information = Hollësi sajti për { $host }
 # Variables
 #  $host (String): the hostname of the site that is being displayed.
 identity-header-security-with-host =
     .title = Siguri Lidhjeje për { $host }
-identity-connection-not-secure = Lidhje jo e sigurt
-identity-connection-secure = Lidhje e sigurt
+identity-connection-not-secure = Lidhje jo e siguruar
+identity-connection-secure = Lidhje e siguruar
 identity-connection-failure = Dështim lidhjeje
-identity-connection-internal = Kjo është një faqe { -brand-short-name } e sigurt.
+identity-connection-internal = Kjo është një faqe { -brand-short-name } e siguruar.
 identity-connection-file = Kjo është faqe e depozituar në kompjuterin tuaj.
 identity-connection-associated = Kjo faqe është ngarkuar nga një tjetër faqe.
 identity-extension-page = Kjo faqe është ngarkuar nga një zgjerim.
-identity-active-blocked = { -brand-short-name }-i ka bllokuar pjesë të kësaj faqeje që s'janë të sigurta.
+identity-active-blocked = { -brand-short-name }-i ka bllokuar pjesë të kësaj faqeje që s'janë të siguruara.
 identity-custom-root = Lidhje e verifikuar nga një lëshues dëshmish që s’njihet nga Mozilla.
-identity-passive-loaded = Pjesë të kësaj faqeje (fjala vjen, figura) s'janë të sigurta.
+identity-passive-loaded = Pjesë të kësaj faqeje (fjala vjen, figura) s'janë të siguruara.
 identity-active-loaded = E keni çaktivizuar mbrojtjen për këtë faqe.
 identity-weak-encryption = Kjo faqe përdor fshehtëzim të dobët.
 identity-insecure-login-forms = Kredencialet e hyrjeve të dhëna në këtë faqe mund të komprometohen.
@@ -369,7 +543,7 @@ identity-https-only-dropdown-off =
 identity-https-only-dropdown-off-temporarily =
     .label = Off përkohësisht
 identity-https-only-info-turn-on2 = Aktivizoni Mënyrën Vetëm-HTTPS për këtë sajt, nëse doni që { -brand-short-name }-i të përmirësojë lidhjen, kur është e mundur.
-identity-https-only-info-turn-off2 = Nëse faqja duket të jetë e dëmtuar, mund të doni të çaktivizoni Mënyrën Vetëm-HTTPS- për këtë sajt, që të ringarkohet duke përdorur HTTP jo të sigurt.
+identity-https-only-info-turn-off2 = Nëse faqja duket të jetë e dëmtuar, mund të doni të çaktivizoni Mënyrën Vetëm-HTTPS- për këtë sajt, që të ringarkohet duke përdorur HTTP jo të siguruar.
 identity-https-only-info-turn-on3 = Nëse doni që { -brand-short-name }-i të përmirësojë lidhjen, kur kjo është e mundur, aktivizoni përmirësime HTTPS për këtë sajt.
 identity-https-only-info-turn-off3 = Nëse faqja duket e dëmtuar, mund të doni të çaktivizoni përmirësime  HTTPS për këtë sajt, që të ngarkohet duke përdorur HTTP jo të siguruar.
 identity-https-only-info-no-upgrade = S’arrihet të përmirësohet lidhja nga HTTP.
@@ -386,15 +560,15 @@ identity-description-custom-root2 = Mozilla nuk e njeh këtë lëshues dëshmish
 identity-remove-cert-exception =
     .label = Hiqeni Përjashtimin
     .accesskey = H
-identity-description-insecure = Lidhja juaj te ky sajt, s'është private. Të dhënat që parashtroni mund të shihen nga të tjerë (fjalëkalime, mesazhe, karta krediti, etj.).
-identity-description-insecure-login-forms = Të dhënat e hyrjes që dhatë në këtë faqe s'janë të sigurta dhe mund të komprometohen.
+identity-description-insecure = Lidhja juaj te ky sajt, s'është private. Hollësitë që parashtroni (fjala vjen, fjalëkalime, mesazhe, karta krediti, etj.) mund të shihen nga të tjerë.
+identity-description-insecure-login-forms = Hollësitë për hyrje që dhatë në këtë faqe s'janë të siguruara dhe mund të komprometohen.
 identity-description-weak-cipher-intro = Lidhja juaj te ky sajt përdor fshehtëzim të dobët dhe s'është private.
 identity-description-weak-cipher-risk = Të tjerët mund të shohin të dhënat tuaja ose të ndryshojnë sjelljen e sajtit.
-identity-description-active-blocked2 = { -brand-short-name }-i ka bllokuar pjesë të kësaj faqeje që s'janë të sigurta.
+identity-description-active-blocked2 = { -brand-short-name }-i ka bllokuar pjesë të kësaj faqeje që s'janë të siguruara.
 identity-description-passive-loaded = Lidhja juaj s'është private dhe të dhënat që ndani me të tjerët në këtë saj mund të shihen nga të tjerë.
-identity-description-passive-loaded-insecure2 = Ky sajt përmban lëndë që s'është e sigurt (fjala vjen, figura).
-identity-description-passive-loaded-mixed2 = Edhe pse { -brand-short-name }-i ka bllokuar një pjesë të lëndës, në këtë faqe prapë ka lëndë që s'është e sigurt (fjala vjen, figura).
-identity-description-active-loaded = Ky sajt përmban lëndë që s'është e sigurt (fjala vjen, programthe) dhe lidhja juaj me të s'është private.
+identity-description-passive-loaded-insecure2 = Ky sajt përmban lëndë që s'është e siguruar (fjala vjen, figura).
+identity-description-passive-loaded-mixed2 = Edhe pse { -brand-short-name }-i ka bllokuar një pjesë të lëndës, në këtë faqe prapë ka lëndë që s'është e siguruar (fjala vjen, figura).
+identity-description-active-loaded = Ky sajt përmban lëndë që s'është e siguruar (fjala vjen, programthe) dhe lidhja juaj me të s'është private.
 identity-description-active-loaded-insecure = Të dhënat që ndani me këtë sajt mund të shihen nga të tjerë (fjala vjen, fjalëkalime, mesazhe, karta krediti, etj.).
 identity-disable-mixed-content-blocking =
     .label = Çaktivizoje mbrojtjen për tani
@@ -415,6 +589,9 @@ browser-window-restore-down-button =
     .tooltiptext = Riktheje Poshtë
 browser-window-close-button =
     .tooltiptext = Mbylleni
+# Clicking this button closes the window and returns to the tab where it was opened from
+browser-window-return-to-opener =
+    .tooltiptext = Riktheje
 
 ## Tab actions
 
@@ -495,6 +672,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Bëni kërkim, ose jepni adresë
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Jepni adresë
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -543,17 +724,18 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Zgjerim:
+urlbar-go-button2 =
+    .title = Shkoni te adresa e dhënë te Shtylla e Vendndodhjeve
 urlbar-go-button =
     .tooltiptext = Shkoni te adresa e dhënë te Shtylla e Vendndodhjeve
 urlbar-page-action-button =
     .tooltiptext = Veprime faqeje
 urlbar-revert-button =
     .tooltiptext = Shfaqe adresën te Shtylla e Vendndodhjeve
-urlbar-show-page-actions-button =
-    .tooltiptext = Shfaqi krejt veprimet për faqen
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -570,12 +752,15 @@ urlbar-result-action-search-in-private = Kërko në Dritare Private
 urlbar-result-action-search-w-engine = Kërko me { $engine }
 urlbar-result-action-sponsored = E sponsorizuar
 urlbar-result-action-switch-tab = Kalo te Skeda
+urlbar-result-action-move-tab-to-split-view = Kaloje Skedën nën Pamje të Ndarë
 urlbar-result-action-visit = Vizitojeni
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Kaloni te Skeda · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Grup i paemër
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Vizitojeni që nga e papastra
 # Directs a user to press the Tab key to perform a search with the specified
@@ -605,12 +790,220 @@ urlbar-result-action-copy-to-clipboard = Kopjoje
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = e papërcaktuar
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = Zgjerim { -brand-product-name }-i
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = I rekomanduar
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> në { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> në { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> në { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } ·E sponsorizuar
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = Pyetni
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Merrni të dhëna tregu aksionesh drejt e te shtylla juaj e kërkimeve
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Shfaq përditësime tregjesh, etj, nga partnerët tanë, kur ndani me { -vendor-short-name } të dhëna termash kërkimi. <a data-l10n-name="learn-more-link">Mësoni më tepër</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Shfaq sugjerime
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Jo tani
+urlbar-result-realtime-opt-in-dismiss = Hidhe tej
+urlbar-result-realtime-opt-in-dismiss-all2 = Mos i shfaq këto sugjerime
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market2 = Mos shfaq sugjerime tregu
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Mos i shfaq këto sugjerime
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Mos shfaq sugjerime tregu
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Faleminderit për përshtypjet. S’do të shihni më sugjerime tregu.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = Sugjerime për aksione
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Faleminderit për përshtypjet. S’do të shihni më këto sugjerime.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · në { $daysUntilStart } ditë
+       *[other] { $name } · në { $daysUntilStart } ditë
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Fillon për  { $daysUntilStart } ditë
+       *[other] { $name } · Fillon për { $daysUntilStart } ditë
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Përfundon pas { $daysUntilEnd } dite
+       *[other] { $name } · Përfundon pas { $daysUntilEnd } ditësh
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Sot
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Përfundon sot
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Kërko me { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Kërkoni me { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Kërkoni me { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Zgjidhni një Motor Kërkimesh
+urlbar-searchmode-bookmarks =
+    .label = Faqerojtës
+urlbar-searchmode-tabs =
+    .label = Skeda
+urlbar-searchmode-history =
+    .label = Historik
+urlbar-searchmode-actions =
+    .label = Veprime
+urlbar-searchmode-exit-button =
+    .tooltiptext = Mbylle
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Këtë herë kërko me:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Parametra Kërkimi
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, zgjidhni një motor kërkimesh
+    .tooltiptext = { $engine }, zgjidhni një motor kërkimesh
+urlbar-searchmode-button-no-engine =
+    .label = S’u përzgjodh shkurtore, zgjidhni një shkurtore
+    .tooltiptext = S’u përzgjodh shkurtore, zgjidhni një shkurtore
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button3 =
+    .title = { $engine }, zgjidhni një motor kërkimesh
+urlbar-searchmode-button-no-engine2 =
+    .title = S’u përzgjodh shkurtore, zgjidhni një shkurtore
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword2 =
+    .title = Kërkimi me fjalëkyçe është i çaktivizuar
+urlbar-searchmode-dropmarker2 =
+    .title = Zgjidhni një Motor Kërkimesh
+urlbar-searchmode-bookmarks2 = Faqerojtës
+urlbar-searchmode-tabs2 = Skeda
+urlbar-searchmode-history2 = Historik
+urlbar-searchmode-actions2 = Veprime
+urlbar-searchmode-exit-button2 =
+    .title = Mbylle
+urlbar-searchmode-default2 =
+    .title = Motor parazgjedhje kërkimesh
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = Shtoni “{ $engineName }”
+    .title = Shtoni motorin e kërkimeve “{ $engineName }”
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-one-off-header = Këtë herë kërko me:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-header = Kërko me:
+urlbar-searchmode-popup-search-settings-panelitem = Parametra Kërkimi
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -620,6 +1013,12 @@ urlbar-result-action-search-bookmarks = Kërkoni Te Faqerojtësit
 urlbar-result-action-search-history = Kërkoni Në Historik
 urlbar-result-action-search-tabs = Kërkoni Në Skeda
 urlbar-result-action-search-actions = Veprime Kërkimi
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Kalo te { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Hap { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -646,6 +1045,12 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Prirje te { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show2 = Mos shfaq prirje kërkimesh
+    .accesskey = M
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Të sponsorizuar
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = Mos shfaq prirje kërkimesh
@@ -785,7 +1190,7 @@ repair-text-encoding-button =
     .label = Riparo kodim teksti
     .tooltiptext = Hamendësoje kodimin e saktë të tekstit që nga lënda e faqes
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -805,6 +1210,29 @@ toolbar-button-email-link =
 toolbar-button-logins =
     .label = Fjalëkalime
     .tooltiptext = Shihni dhe administroni fjalëkalimet tuaj të ruajtur
+qrcode-panel-error =
+    .message = S’u arrit të prodhohej kod QR. Ju lutemi, riprovoni.
+qrcode-copy-button =
+    .label = Kopjoje
+qrcode-copy-success =
+    .message = Kodi QR u kopjua në të papastër.
+qrcode-copy-error =
+    .message = S’u arrit të kopjohej kodi QR.
+qrcode-save-button =
+    .label = Ruaje
+qrcode-save-success =
+    .message = Kodi QR u ruajt.
+qrcode-save-error =
+    .message = S’u arrit të ruhej kodi QR.
+qrcode-save-title = Ruaje Kodin QR
+qrcode-save-filter-png = Figurë PNG
+qrcode-save-filename = kodqr.png
+qrcode-window-title = Kod QR
+qrcode-dialog-title = Kod QR
+qrcode-image =
+    .aria-label = Kod QR
+qrcode-close-button =
+    .aria-label = Mbylle
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -823,6 +1251,14 @@ toolbar-button-synced-tabs =
 toolbar-button-new-private-window =
     .label = Dritare e re private
     .tooltiptext = Hapni një dritare të re shfletimi privat ({ $shortcut })
+toolbar-button-share-tab =
+    .label = Ndajeni me të tjerët
+    .tooltiptext = Ndajeni këtë faqe me të tjerët
+
+## Default filenames used when saving a QR code. The file extension (.png)
+## is added automatically.
+
+qrcode-save-filename-base = kodqr
 
 ## EME notification panel
 
@@ -836,12 +1272,28 @@ eme-notifications-drm-content-playing-dismiss-accesskey = H
 
 panel-save-update-username = Emër përdoruesi
 panel-save-update-password = Fjalëkalim
+panel-save-update-username-2 =
+    .label = Emër përdoruesi
+panel-save-update-password-2 =
+    .label = Fjalëkalim
 
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
     .label = Më tepër…
+# Variables:
+#   $count (Number) - The number of links that will be copied.
+menu-share-copy-links =
+    .label =
+        { $count ->
+            [one] Kopjo Lidhjen
+           *[other] Kopjo { $count } Lidhje
+        }
+    .accesskey = L
+menu-share-copy-link =
+    .label = Kopjoji Lidhjen
+    .accesskey = L
 ui-tour-info-panel-close =
     .tooltiptext = Mbylleni
 
@@ -853,6 +1305,9 @@ popups-infobar-allow =
     .accesskey = L
 popups-infobar-block =
     .label = Blloko flluska nga { $uriHost }
+    .accesskey = L
+popups-infobar-allow2 =
+    .label = Lejo flluska dhe ridrejtime palësh të treta për { $uriHost }
     .accesskey = L
 
 ##
@@ -889,6 +1344,8 @@ navbar-accessible =
     .aria-label = Lëvizje
 navbar-downloads =
     .label = Shkarkime
+navbar-overflow-2 =
+    .tooltiptext = Më tepër mjete
 navbar-overflow =
     .tooltiptext = Më tepër mjete…
 # Variables:
@@ -915,6 +1372,10 @@ tabs-toolbar-list-all-tabs =
     .label = Paraqiti krejt skedat
     .tooltiptext = Paraqiti krejt skedat
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Lini këtu skedë që duhet fiksuar
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -933,6 +1394,9 @@ data-reporting-notification-button =
     .accesskey = Z
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Shfletim privat
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Shfletim privat
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -941,7 +1405,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Mbrojtje të dhënash
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Enti juaj përdor { $agentName } për mbrojtje kundër humbjesh të dhënash. <a data-l10n-name="info">Mësoni më tepër</a>
+content-analysis-panel-text-styled = Enti juaj përdor <b>{ $agentName }</b> për mbrojtje kundër humbjesh të dhënash. <a data-l10n-name="info">Mësoni më tepër</a>
 
 ## Unified extensions (toolbar) button
 
@@ -964,6 +1428,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Zgjerime
         Disa zgjerime nuk lejohen
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Zgjerime
+    .tooltiptext =
+        Zgjerime
+        Disa zgjerime janë aktivizuar
 
 ## Private browsing reset button
 
@@ -998,16 +1471,23 @@ firefox-relay-offer-why-to-use-relay = Maskat tona të siguruara, të lehta për
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Krejt email-et dërguar te maskat e emal-eve tuaj do të përcillen te <strong>{ $useremail }</strong> (veç në vendosshi t’i bllokoni ato).
 firefox-relay-offer-legal-notice = Duke klikuar mbi “Përdor maskë email-i”, pajtoheni me <label data-l10n-name="tos-url">Kushte Shërbimi</label> dhe <label data-l10n-name="privacy-url">Shënim Privatësie</label>.
+firefox-relay-offer-legal-notice-1 = Duke u regjistruar dhe duke krijuar një maskë email-i”, pajtoheni me <label data-l10n-name="tos-url">Kushte Shërbimi</label> dhe <label data-l10n-name="privacy-url">Shënim Privatësie</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (E paverifikuar)
 popup-notification-xpinstall-prompt-learn-more = Mësoni më tepër rreth instalimit të shtesave në mënyrë të parrezik
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Xhiroje në Dritare Private
-    .accesskey = P
+popup-notification-xpinstall-prompt-block-url = Shihni hollësitë
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Lejoje zgjerimin të xhirojë në dritare private
+    .accesskey = p
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Ndani me zhvillues të zgjerimit të dhëna teknike dhe ndërveprimi
+    .accesskey = N
 
 ## Pop-up warning
 
@@ -1018,10 +1498,25 @@ popup-warning-message =
         [one] { -brand-short-name } pengoi këtë sajt të hapë një dritare flluskë.
        *[other] { -brand-short-name } pengoi kë të sajt të hapë { $popupCount } dritare flluska.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name }-i i pengoi këtij sajti ridrejtimin.
+        [1] { -brand-short-name }-i e pengoi këtë sajt të hapë një dritare flluskë dhe të bëjë ridrejtim.
+       *[other] { -brand-short-name } e pengoi këtë sajt të hapë { $popupCount } dritare flluskë dhe të bëjë ridrejtim.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-exceeded-message = { -brand-short-name } e pengoi këtë sajt të hapë më shumë se { $popupCount } dritare flluska.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } e pengoi këtë sajt të hapë më tepër se { $popupCount } dritare flluskë dhe të bëjë ridrejtim.
+       *[other] { -brand-short-name } e pengoi këtë sajt të hapë më tepër se { $popupCount } dritare flluskë dhe të bëjë ridrejtim.
+    }
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1037,6 +1532,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Shfaq '{ $popupURI }'
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = Shfaq “{ $redirectURI }”
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1058,3 +1557,148 @@ file-picker-crashed-save-nowhere = Dialogu Windows për kartela u vithis. S’p�
 file-picker-crashed-show-in-folder =
     .label = Shfaqe Në Dosje
     .accessKey = D
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Përfundo ujdisjen
+onboarding-aw-finish-setup-button =
+    .label = Përfundo ujdisjen
+    .tooltiptext = Përfundoni ujdisjen e { -brand-short-name }-it
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Mbrojtje e Thelluar Nga Gjurmimi është aktive
+trustpanel-etp-label-disabled = Mbrojtje e Thelluar Nga Gjurmimi është joaktive
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Mbrojtje e Thelluar Nga Gjurmimi: On për { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Mbrojtje e Thelluar Nga Gjurmimi: Off për { $host }
+trustpanel-etp-description-enabled = Nëse diçka duket se nuk punon në këtë sajt, provoni të çaktivizoni mbrojtjet.
+trustpanel-etp-description-disabled = { -brand-product-name }-i mendon se shoqëritë duhet t’ju ndjekin më pak. Bllokojmë aq gjurmues sa mundim, kur aktivizoni mbrojtjet.
+trustpanel-connection-label-secure = Lidhje e siguruar
+trustpanel-connection-label-insecure = Lidhje jo e siguruar
+trustpanel-header-enabled = { -brand-product-name }-i po bën rojë
+trustpanel-description-enabled2 = Jeni i mbrojtur. Nëse vërejmë gjë, do t’ua bëjmë të ditur.
+trustpanel-header-enabled-insecure = Hapni sytë në këtë sajt
+trustpanel-description-enabled-insecure = { -brand-product-name } vuri re diçka të dyshimtë.
+trustpanel-header-disabled = Keni mbyllur mbrojtjet
+trustpanel-description-disabled = { -brand-product-name }-i s’është në shërbim. Sugjerojmë të riaktivizoni mbrojtjet.
+trustpanel-clear-cookies-button = Spastro cookie-t dhe të dhëna sajti
+trustpanel-privacy-link = Rregullime Privatësie
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Spastro “ cookies” dhe të dhëna sajti për { $host }
+trustpanel-clear-cookies-description = Heqja e cookie-eve dhe të dhënave të sajteve mund të sjellë daljen tuaj nga sajte dhe spastrim shportash blerjesh.
+trustpanel-clear-cookies-subview-button-clear = Spastroje
+trustpanel-clear-cookies-subview-button-cancel = Anuloje
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Mbrojtje lidhjeje për { $host }
+trustpanel-siteinformation-morelink = Më tepër hollësi sajti
+trustpanel-blocker-see-all = Shihini Krejt
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Mbrojtje nga gjurmimet për { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Jo i Siguruar
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-description = { -brand-product-name } mendon se shoqëritë duhet t’ju ndjekin më pak. Ndaj bllokojmë sa më shumë të mundemi.
+trustpanel-blocked-header = { -brand-product-name }-i bllokoi këto gjëra për ju:
+trustpanel-tracking-header = { -brand-product-name }-i lejoi këto gjëra, që kështu të mos dëmtohet funksionimi i sajteve:
+trustpanel-tracking-description = Pa gjurmues, disa butona, formularë dhe fusha në kredenciale hyrjesh mund të mos funksionojnë.
+trustpanel-insecure-section-header = Lidhja juaj s’është e sigurt
+trustpanel-insecure-description = Të dhënat që po dërgoni te ky sajt s’janë të fshehtëzuara. Mund të shihen, vidhen, ose ndryshohen.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } “Cookie” gjurmimi nga sajte në sajte
+       *[other] { $count } “Cookies” gjurmimi nga sajte në sajte
+    }
+trustpanel-list-label-tracking-content = Lëndë gjurmimi
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } Krijues Shenjash Gishtash
+       *[other] { $count } Krijues Shenjash Gishtash
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } Gjurmues mediash shoqërore
+       *[other] { $count } Gjurmues mediash shoqërore
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } Nxjerrës kriptomonedhash
+       *[other] { $count } Nxjerrës kriptomonedhash
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name }-i bllokoi { $count } gjurmues mediash shoqërore
+       *[other] { -brand-product-name }-i bllokoi { $count } gjurmues mediash shoqërore
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name }-i lejoi { $count } gjurmues mediash shoqërore
+       *[other] { -brand-product-name }-i lejoi { $count } gjurmues mediash shoqërore
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name }-i bllokoi { $count } “cookie” gjurmimi nga sajti në sajt
+       *[other] { -brand-product-name }-i bllokoi { $count } “cookies” gjurmimi nga sajti në sajt
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name }-i lejoi { $count } “cookie” gjurmimi nga sajti në sajt
+       *[other] { -brand-product-name }-i lejoi { $count } “cookies” gjurmimi nga sajti në sajt
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name }-i bllokoi { $count } gjurmues
+       *[other] { -brand-product-name }-i bllokoi { $count } gjurmues
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name }-i lejoi { $count } gjurmues
+       *[other] { -brand-product-name }-i lejoi { $count } gjurmues
+    }
+trustpanel-tracking-content-tab-list-header = Këto sajte po rreken t’ju ndjekin:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name }-i bllokoi { $count } krijues shenjash gishtash
+       *[other] { -brand-product-name }-i bllokoi { $count } krijues shenjash gishtash
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name }-i lejoi { $count } krijues shenjash gishtash
+       *[other] { -brand-product-name }-i lejoi { $count } krijues shenjash gishtash
+    }
+trustpanel-fingerprinter-list-header = Këto sajte po rreken të krijojnë shenja gishtash rreth jush:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } bllokoi { $count } nxjerrës kriptomonedhash
+       *[other] { -brand-product-name } bllokoi { $count } nxjerrës kriptomonedhash
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } lejoi { $count } nxjerrës kriptomonedhash
+       *[other] { -brand-product-name } lejoi { $count } nxjerrës kriptomonedhash
+    }
+trustpanel-cryptominer-tab-list-header = Këto sajte po rreken të nxjerrin kriptomonedha:
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [one] <span data-l10n-name="count">{ $count }</span> Gjurmues i bllokuar në këtë sajt
+       *[other] <span data-l10n-name="count">{ $count }</span> Gjurmues të bllokuar në këtë sajt
+    }

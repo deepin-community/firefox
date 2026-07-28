@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
@@ -22,7 +20,7 @@ const kTestcases = [
     expectedIdentityMode: "mixedDisplayContent",
   },
   {
-    uri: kBaseURI + "file_bug1045809_1.html",
+    uri: kBaseURI + "file_mixedActiveContent_1.html",
     expectErrorPage: false,
     expectedIdentityMode: "mixedActiveBlocked",
   },

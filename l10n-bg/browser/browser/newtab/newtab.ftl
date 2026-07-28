@@ -8,11 +8,88 @@
 newtab-page-title = Нов раздел
 newtab-settings-button =
     .title = Настройки на новия раздел
+#  (developer note): @nova-cleanup(remove-string): Remove newtab-customize-panel-icon-button once Nova lands, will be using newtab-customize-panel-label instead
+newtab-customize-panel-icon-button =
+    .title = Персонализирайте тази страница
+#  (developer note): @nova-cleanup(remove-string): Remove newtab-customize-panel-icon-button-label once Nova lands, will be using newtab-customize-panel-label instead
+newtab-customize-panel-icon-button-label = Персонализиране
+newtab-customize-panel-label =
+    .label = Персонализиране
+newtab-personalize-settings-icon-label =
+    .title = Персонализиране на нов раздел
+    .aria-label = Настройки
+newtab-settings-dialog-label =
+    .aria-label = Настройки
 newtab-personalize-icon-label =
     .title = Приспособяване на новите раздели
     .aria-label = Приспособяване на новите раздели
 newtab-personalize-dialog-label =
     .aria-label = Приспособяване
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = Нов раздел
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } ред
+           *[other] { $num } реда
+        }
+# Dropdown option shown when an extension replaces the contents of new windows or tabs.
+# Variables:
+#   $extension (string) - Name of the extension
+home-prefs-homepage-extension-option =
+    .label = Разширение ({ $extension })
+home-restore-defaults-srd =
+    .label = Стандартни настройки
+    .accesskey = с
+home-mode-choice-default-fx-srd =
+    .label = { -firefox-home-brand-name } (По подразбиране)
+home-mode-choice-custom-srd =
+    .label = Потребителски адреси…
+home-mode-choice-blank-srd =
+    .label = Празна страница
+home-prefs-shortcuts-header-srd =
+    .label = Преки пътища
+home-prefs-shortcuts-select =
+    .aria-label = Преки пътища
+home-prefs-shortcuts-by-option-sponsored-srd =
+    .label = Спонсорирани препратки
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Платени публикации
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Посетени страници
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Отметки
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Последни изтегляния
+home-prefs-recent-activity-header-srd =
+    .label = Последна активност
+home-prefs-recent-activity-select =
+    .aria-label = Последна активност
+home-prefs-weather-header-srd =
+    .label = Времето
+home-prefs-support-firefox-header-srd =
+    .label = Подкрепете { -brand-product-name }
+
+## Strings for the Privacy widget
+
+# Context menu item linking to more information about the Privacy widget.
+newtab-privacy-menu-learn-more = Научете повече
+
+## Strings for the Picture of the Day widget
+
+# Context menu item linking to more information about the widget.
+newtab-picture-menu-learn-more = Научете повече
 
 ## Search box component.
 
@@ -39,12 +116,16 @@ newtab-search-box-input =
     .placeholder = Търсене в мрежата
     .aria-label = Търсене в мрежата
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Добавяне на търсеща машина
 newtab-topsites-add-shortcut-header = Нова клавишна комбинация
 newtab-topsites-edit-topsites-header = Променяне на често посещавана страница
 newtab-topsites-edit-shortcut-header = Промяна на икона
+newtab-topsites-add-shortcut-label = Добавяне на пряк път
+newtab-topsites-add-shortcut-title =
+    .title = Добавяне на пряк път
+    .aria-label = Добавяне на пряк път
 newtab-topsites-title-label = Заглавие
 newtab-topsites-title-input =
     .placeholder = Въведете заглавие
@@ -73,6 +154,14 @@ newtab-confirm-delete-history-p2 = Действието е необратимо.
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = Спонсорирано
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (закачен)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -108,6 +197,23 @@ newtab-menu-save-to-pocket = Запазване в { -pocket-brand-name }
 newtab-menu-delete-pocket = Изтриване от { -pocket-brand-name }
 newtab-menu-archive-pocket = Архивиране в { -pocket-brand-name }
 newtab-menu-show-privacy-info = Спонсори и поверителност
+newtab-menu-about-fakespot = Относно { -fakespot-brand-name }
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Докладване
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Забраняване
+# Context menu option to open a support page explaining the New Tab personalization features and privacy controls.
+newtab-menu-section-learn-more = Научете повече
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Прекратяване  на следенето на темата
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Управление на спонсорирано съдържание
+newtab-menu-our-sponsors-and-your-privacy = Нашите спонсори и вашата поверителност
+newtab-menu-report-this-ad = Докладване на рекламата
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,6 +276,8 @@ newtab-label-sponsored-by = Спонсорирано от { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } мин.
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Спонсорирано
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -231,7 +339,7 @@ newtab-pocket-more-recommendations = Повече препоръчани
 newtab-pocket-learn-more = Научете повече
 newtab-pocket-cta-button = Вземете { -pocket-brand-name }
 newtab-pocket-cta-text = Запазете статиите, които харесвате в { -pocket-brand-name } и заредете ума си с увлекателни четива.
-# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-pocket-firefox-family = { -pocket-brand-name } е част от семейството на { -brand-product-name }
 newtab-pocket-save = Запазване
 newtab-pocket-saved = Запазено
 
@@ -243,7 +351,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Не и за мен
-newtab-toast-thumbs-up-or-down = Благодаря! Вашата обратна връзка ще ни помогне в подбора за новини.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Благодаря! Вашата обратна връзка ще ни помогне в подбора за новини.
 newtab-toast-dismiss-button =
     .title = Отхвърляне
     .aria-label = Отхвърляне
@@ -251,6 +361,7 @@ newtab-toast-dismiss-button =
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Открийте най-доброто от интернет
+newtab-pocket-onboarding-cta = { -pocket-brand-name } изследва широка гама от публикации, за да предостави най-информиращото, вдъхновяващо и надеждно съдържание точно за вашия четец { -brand-product-name }.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -262,9 +373,21 @@ newtab-error-fallback-refresh-link = Презаредете страницата
 
 newtab-custom-shortcuts-title = Препратки
 newtab-custom-shortcuts-subtitle = Страници за преглед по-късно
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Препратки
     .description = Страници за преглед по-късно
+newtab-custom-shortcuts-nova =
+    .label = Препратки
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } ред
+           *[other] { $num } реда
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -275,25 +398,52 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Спонсорирани препратки
 newtab-custom-pocket-title = Препоръчани от { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Изключително съдържание, подбрано от { -pocket-brand-name }, част от семейството на { -brand-product-name }
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be having a description under "Recommended stories" anymore
 newtab-custom-stories-toggle =
     .label = Препоръчани истории
     .description = Изключително съдържание подбрано от семейството на { -brand-product-name }
+newtab-recommended-stories-toggle =
+    .label = Препоръчани истории
+newtab-custom-stories-personalized-toggle =
+    .label = Истории
+newtab-custom-stories-personalized-checkbox =
+    .label = Персонализирани истории въз основа на вашата активност
+newtab-custom-stories-personalized-checkbox-label = Персонализирани истории въз основа на вашата активност
 newtab-custom-pocket-sponsored = Платени публикации
 newtab-custom-pocket-show-recent-saves = Показване на последните запазени
 newtab-custom-recent-title = Последна активност
 newtab-custom-recent-subtitle = Избрани страници и съдържание
-newtab-custom-recent-toggle =
-    .label = Последна активност
-    .description = Избрани страници и съдържание
 newtab-custom-weather-toggle =
     .label = Времето
     .description = Времето днес накратко
+newtab-custom-widget-weather-toggle =
+    .label = Времето
+newtab-custom-widget-lists-toggle =
+    .label = Списъци
+newtab-custom-widget-timer-toggle =
+    .label = Таймер
+newtab-custom-widget-privacy-toggle =
+    .label = Поверителност
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Затваряне
+    .aria-label = Затваряне на менюто
 newtab-custom-close-button = Затваряне
 newtab-custom-settings = Настройки
 
 ## New Tab Wallpapers
 
 newtab-wallpaper-title = Тапети
+newtab-wallpaper-reset = Връщане на стандартни настройки
+#  (developer note): @nova-cleanup(remove-string): Remove old "Upload an image" string once Nova lands. The new "Add an image"  string will take over
+newtab-wallpaper-upload-image = Качване на изображение
+newtab-wallpaper-custom-color = Изберете цвят
+newtab-wallpaper-toggle-title =
+    .label = Тапети
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Изображението надхвърля ограничението за големина на файла от { $file_size }MB. Моля, опитайте се да качите по-малък файл.
+newtab-wallpaper-error-file-type = Не можахме да качим вашия файл. Моля, опитайте отново с друг тип файл.
 newtab-wallpaper-light-red-panda = Червена панда
 newtab-wallpaper-light-mountain = Бяла планина
 newtab-wallpaper-light-sky = Небе с лилави и розови облаци
@@ -309,6 +459,7 @@ newtab-wallpaper-dark-city = Лилав градски пейзаж
 
 ## Solid Colors
 
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
 newtab-wallpaper-category-title-colors = Едноцветни
 newtab-wallpaper-blue = Синьо
 newtab-wallpaper-light-blue = Светлосиньо
@@ -335,8 +486,9 @@ newtab-wallpaper-abstract-purple = Лилави фигури
 newtab-wallpaper-abstract-orange = Оранжеви фигури
 newtab-wallpaper-gradient-orange = Преливащо се оранжево и розово
 newtab-wallpaper-abstract-blue-purple = Сини и лилави фигури
+newtab-wallpaper-abstract-white-curves = Бяло със засенчени извивки
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Снимки
 newtab-wallpaper-beach-at-sunrise = Плаж при изгрев
@@ -345,7 +497,19 @@ newtab-wallpaper-storm-sky = Бурно небе
 newtab-wallpaper-sky-with-pink-clouds = Небе с розови облаци
 newtab-wallpaper-red-panda-yawns-in-a-tree = Червена панда се прозява на дърво
 newtab-wallpaper-white-mountains = Бели планини
+newtab-wallpaper-feature-highlight-header = Опитайте с малко цвят
 newtab-wallpaper-feature-highlight-button = Разбрах
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Небесен
+newtab-wallpaper-celestial-lunar-eclipse = Лунно затъмнение
 
 ## New Tab Weather
 
@@ -366,6 +530,8 @@ newtab-weather-menu-temperature-option-celsius = Целзий
 newtab-weather-menu-change-temperature-units-fahrenheit = Превключване към Фаренхайт
 newtab-weather-menu-change-temperature-units-celsius = Превключване към Целзий
 newtab-weather-menu-learn-more = Научете повече
+# This message is shown if user is working offline
+newtab-weather-error-not-available = В момента няма данни за времето.
 
 ## Topic Labels
 
@@ -390,7 +556,26 @@ newtab-topic-label-society = Лайфхакове
 newtab-topic-label-sports = Спорт
 newtab-topic-label-tech = Технологии
 newtab-topic-label-travel = Пътуване
+newtab-topic-label-home = Дом и градина
 
 ## Topic Selection Modal
 
 newtab-topic-selection-button-maybe-later = Може би по-късно
+newtab-topic-selection-button-update-interests = Актуализирайте интересите си
+newtab-topic-selection-button-pick-interests = Изберете вашите интереси
+
+## Strings for custom wallpaper highlight
+
+newtab-custom-wallpaper-cta = Опитайте
+
+## Strings for task / to-do list productivity widget
+
+newtab-widget-lists-menu-delete = Изтриване на този списък
+newtab-widget-lists-menu-learn-more = Научете повече
+newtab-widget-lists-input-menu-delete = Изтриване
+
+## Strings introduced by the Nova redesign of the Timer widget
+
+newtab-widget-timer-menu-learn-more = Научете повече
+newtab-promo-card-body = Нашите спонсори подкрепят мисията ни да изградим по-добра мрежа
+newtab-promo-card-cta = Научете повече

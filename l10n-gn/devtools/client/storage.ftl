@@ -36,6 +36,8 @@ storage-variable-view-search-box =
 # Add Item button title
 storage-add-button =
     .title = Embojuaju porurã
+storage-delete-all-button =
+    .title = Emboguepaite
 # Refresh button title
 storage-refresh-button =
     .title = Mba’eporu mbohekopyahu
@@ -71,6 +73,7 @@ storage-table-headers-cookies-expires = Opáta / Aravo pukukue
 storage-table-headers-cookies-size = Tuichakue
 storage-table-headers-cookies-last-accessed = Jeike paháva
 storage-table-headers-cookies-creation-time = Moheñoipyre
+storage-table-headers-cookies-update-time = hekopyahupyre
 storage-table-headers-cache-status = Tekotee
 storage-table-headers-extension-storage-area = Ñembyatyha rendag̃ua
 
@@ -107,3 +110,11 @@ storage-idb-delete-blocked = Mba’ekuaarã renda “{ $dbName }” oguepáta o�
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = Mba’ekuaarã renda “{ $dbName }” ndoguetekuaái.
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = Ndaikatúi emoheñói kookie: “{ $errorString }”.
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = Ndaikatúi embohekopyahu kookie: “{ $errorString }”.

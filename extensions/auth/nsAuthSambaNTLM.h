@@ -1,17 +1,16 @@
-/* vim:set ts=4 sw=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsAuthSambaNTLM_h__
-#define nsAuthSambaNTLM_h__
+#ifndef nsAuthSambaNTLM_h_
+#define nsAuthSambaNTLM_h_
 
 #include "nsIAuthModule.h"
 #include "nsString.h"
 #include "nsCOMPtr.h"
 #include "prio.h"
 #include "prproces.h"
-#include "mozilla/Attributes.h"
+#include "mozilla/UniquePtrExtensions.h"
 
 /**
  * This is an implementation of NTLM authentication that does single-signon
@@ -41,11 +40,11 @@ class nsAuthSambaNTLM final : public nsIAuthModule {
 
   void Shutdown();
 
-  uint8_t* mInitialMessage; /* free with free() */
+  uint8_t* mInitialMessage = nullptr; /* free with free() */
   uint32_t mInitialMessageLen{};
-  PRProcess* mChildPID;
-  PRFileDesc* mFromChildFD;
-  PRFileDesc* mToChildFD;
+  pid_t mChildPID = -1;
+  mozilla::UniqueFileHandle mFromChildFD;
+  mozilla::UniqueFileHandle mToChildFD;
 };
 
-#endif /* nsAuthSambaNTLM_h__ */
+#endif /* nsAuthSambaNTLM_h_ */

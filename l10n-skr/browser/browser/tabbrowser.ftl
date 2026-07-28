@@ -130,8 +130,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = میکوں ایہ ڈائیلاگ ب�
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = دھیان ݙیوو
-tabbrowser-confirm-close-duplicate-tabs-text = اساں چھیکڑی فعال ٹیب کھلی رکھسوں
 tabbrowser-confirm-close-all-duplicate-tabs-title = واڳی ٹیباں بند کرو؟
 tabbrowser-confirm-close-all-duplicate-tabs-text =
     ایں ونڈو وچ اساں واڳی ٹیباں بند کریسوں۔ چھیکڑی فعال
@@ -173,6 +171,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = تمام { $tabCount } ٹیبز دی تندیر بݨاؤ
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = ٹیب کوں خاموش کرو
@@ -180,3 +181,20 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = ٹیب کوں چالو کرو
 tabbrowser-manager-close-tab =
     .tooltiptext = ٹیب بند کرو
+
+##
+
+tab-group-editor-title-create = ٹیب گروپ خلقو
+tab-group-editor-title-edit = ٹیب گروپ منیج کرو
+tab-group-editor-name-label = ناں
+tab-group-editor-name-field =
+    .placeholder = مثال: خریداری
+tab-group-editor-cancel =
+    .label = منسوخ
+    .accesskey = C
+
+##
+
+tab-group-editor-done =
+    .label = تھی ڳیا
+    .accessKey = D

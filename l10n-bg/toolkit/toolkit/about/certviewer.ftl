@@ -14,6 +14,8 @@ certificate-viewer-error-title = Нещо се обърка.
 certificate-viewer-algorithm = Алгоритъм
 certificate-viewer-certificate-authority = Удостоверител на сертификати
 certificate-viewer-email-address = Имейл адрес
+# Inc. means Incorporated, e.g GitHub is incorporated in Delaware
+certificate-viewer-inc-country = Inc. Country
 certificate-viewer-country = Държава
 certificate-viewer-curve = Крива
 certificate-viewer-dns-name = Име на DNS
@@ -29,6 +31,7 @@ certificate-viewer-organization = Организация
 certificate-viewer-policy = Политика
 certificate-viewer-protocol = Протокол
 certificate-viewer-purposes = Цели
+certificate-viewer-unsupported = &lt;неподдържано&gt;
 certificate-viewer-state-province = Щат/провинция
 certificate-viewer-sha-1 = SHA-1
 certificate-viewer-sha-256 = SHA-256
@@ -63,9 +66,6 @@ certificate-viewer-download-pem-chain = PEM (верига)
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Това разширение е отбелязано като критично, което означава, че клиентите трябва да отхвърлят сертификата, ако не го разбират.
-
-##
-
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

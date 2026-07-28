@@ -1,16 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __IPC_GLUE_IPCMESSAGEUTILSSPECIALIZATIONS_H__
-#define __IPC_GLUE_IPCMESSAGEUTILSSPECIALIZATIONS_H__
+#ifndef IPC_GLUE_IPCMESSAGEUTILSSPECIALIZATIONS_H_
+#define IPC_GLUE_IPCMESSAGEUTILSSPECIALIZATIONS_H_
 
 #include <cstdint>
-#include <cstdlib>
 #include <limits>
-#include <string>
+#include <set>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -26,16 +23,15 @@
 #include "mozilla/IntegerRange.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/TimeStamp.h"
-#ifdef XP_WIN
-#  include "mozilla/TimeStamp_windows.h"
-#endif
 
 #include "mozilla/UniquePtr.h"
-#include "mozilla/Unused.h"
 #include "mozilla/Vector.h"
 #include "mozilla/dom/ipc/StructuredCloneData.h"
 #include "mozilla/dom/UserActivation.h"
-#include "nsCSSPropertyID.h"
+#include "gfxPlatform.h"
+#include "NonCustomCSSPropertyId.h"
+#include "nsContentPolicyType.h"
+#include "nsContentPermissionHelper.h"
 #include "nsDebug.h"
 #include "nsIContentPolicy.h"
 #include "nsID.h"
@@ -49,9 +45,7 @@
 
 // XXX Includes that are only required by implementations which could be moved
 // to the cpp file.
-#include "base/string_util.h"    // for StringPrintf
-#include "mozilla/ArrayUtils.h"  // for ArrayLength
-#include "mozilla/CheckedInt.h"
+#include "base/string_util.h"  // for StringPrintf
 
 #ifdef _MSC_VER
 #  pragma warning(disable : 4800)
@@ -124,12 +118,15 @@ struct ParamTraits<nsTAutoStringN<T, N>> : ParamTraits<nsTSubstring<T>> {};
 template <class T>
 struct ParamTraits<nsTDependentString<T>> : ParamTraits<nsTSubstring<T>> {};
 
-// XXX While this has no special dependencies, it's currently only used in
-// GfxMessageUtils and could be moved there, or generalized to potentially work
-// with any nsTHashSet.
-template <>
-struct ParamTraits<nsTHashSet<uint64_t>> {
-  typedef nsTHashSet<uint64_t> paramType;
+// Key type must be a type with ParamTraits, a default constructor and a move
+// constructor.
+template <
+    typename KeyClass,
+    typename ConstructableKeyType = typename std::remove_const<
+        typename std::remove_reference<typename KeyClass::KeyType>::type>::type>
+struct ParamTraitsforHashSet {
+  typedef nsTBaseHashSet<KeyClass> paramType;
+  using KeyType = typename KeyClass::KeyType;
 
   static void Write(MessageWriter* aWriter, const paramType& aParam) {
     uint32_t count = aParam.Count();
@@ -146,16 +143,23 @@ struct ParamTraits<nsTHashSet<uint64_t>> {
     }
     paramType table(count);
     for (uint32_t i = 0; i < count; ++i) {
-      uint64_t key;
+      ConstructableKeyType key;
       if (!ReadParam(aReader, &key)) {
         return false;
       }
-      table.Insert(key);
+      table.Insert(std::move(key));
     }
     *aResult = std::move(table);
     return true;
   }
 };
+
+template <typename KeyClass>
+struct ParamTraits<nsTBaseHashSet<KeyClass>> : ParamTraitsforHashSet<KeyClass> {
+};
+template <>
+struct ParamTraits<nsTBaseHashSet<nsStringHashKey>>
+    : ParamTraitsforHashSet<nsStringHashKey, nsString> {};
 
 template <typename E>
 struct ParamTraits<nsTArray<E>> {
@@ -294,6 +298,34 @@ struct ParamTraits<std::vector<E>> {
   }
 };
 
+template <typename V, typename Compare, typename Allocator>
+struct ParamTraits<std::set<V, Compare, Allocator>> final {
+  using T = std::set<V, Compare, Allocator>;
+
+  static void Write(MessageWriter* const writer, const T& in) {
+    WriteParam(writer, in.size());
+    for (const auto& value : in) {
+      WriteParam(writer, value);
+    }
+  }
+
+  static bool Read(MessageReader* const reader, T* const out) {
+    size_t size = 0;
+    if (!ReadParam(reader, &size)) return false;
+    T set;
+    for (const auto i : mozilla::IntegerRange(size)) {
+      V value;
+      (void)i;
+      if (!ReadParam(reader, &(value))) {
+        return false;
+      }
+      set.insert(std::move(value));
+    }
+    *out = std::move(set);
+    return true;
+  }
+};
+
 template <typename K, typename V>
 struct ParamTraits<std::unordered_map<K, V>> final {
   using T = std::unordered_map<K, V>;
@@ -313,7 +345,7 @@ struct ParamTraits<std::unordered_map<K, V>> final {
     map.reserve(size);
     for (const auto i : mozilla::IntegerRange(size)) {
       std::pair<K, V> pair;
-      mozilla::Unused << i;
+      (void)i;
       if (!ReadParam(reader, &(pair.first)) ||
           !ReadParam(reader, &(pair.second))) {
         return false;
@@ -339,9 +371,9 @@ struct ParamTraits<float> {
 };
 
 template <>
-struct ParamTraits<nsCSSPropertyID>
-    : public ContiguousEnumSerializer<nsCSSPropertyID, eCSSProperty_UNKNOWN,
-                                      eCSSProperty_COUNT> {};
+struct ParamTraits<NonCustomCSSPropertyId>
+    : public ContiguousEnumSerializer<
+          NonCustomCSSPropertyId, eCSSProperty_FIRST, eCSSProperty_INVALID> {};
 
 template <>
 struct ParamTraits<nsID> {
@@ -351,7 +383,7 @@ struct ParamTraits<nsID> {
     WriteParam(aWriter, aParam.m0);
     WriteParam(aWriter, aParam.m1);
     WriteParam(aWriter, aParam.m2);
-    for (unsigned int i = 0; i < mozilla::ArrayLength(aParam.m3); i++) {
+    for (unsigned int i = 0; i < std::size(aParam.m3); i++) {
       WriteParam(aWriter, aParam.m3[i]);
     }
   }
@@ -362,18 +394,35 @@ struct ParamTraits<nsID> {
         !ReadParam(aReader, &(aResult->m2)))
       return false;
 
-    for (unsigned int i = 0; i < mozilla::ArrayLength(aResult->m3); i++)
+    for (unsigned int i = 0; i < std::size(aResult->m3); i++)
       if (!ReadParam(aReader, &(aResult->m3[i]))) return false;
 
     return true;
   }
 };
 
+struct nsContentPolicyTypeValidator {
+  using IntegralType = std::underlying_type_t<nsContentPolicyType>;
+
+  static bool IsLegalValue(const IntegralType e) {
+    switch (e) {
+#define CONTENT_POLICY_TYPE(name) case nsContentPolicyType::name:
+      FOR_EACH_CONTENT_POLICY_TYPE(CONTENT_POLICY_TYPE)
+#undef CONTENT_POLICY_TYPE
+      return true;
+
+      case nsContentPolicyType::TYPE_INVALID:
+        // NOTE: It is intentionally valid to send TYPE_INVALID over IPC.
+        return true;
+    }
+
+    return false;
+  }
+};
+
 template <>
 struct ParamTraits<nsContentPolicyType>
-    : public ContiguousEnumSerializer<nsContentPolicyType,
-                                      nsIContentPolicy::TYPE_INVALID,
-                                      nsIContentPolicy::TYPE_END> {};
+    : EnumSerializer<nsContentPolicyType, nsContentPolicyTypeValidator> {};
 
 template <>
 struct ParamTraits<mozilla::TimeDuration> {
@@ -395,40 +444,6 @@ struct ParamTraits<mozilla::TimeStamp> {
   static bool Read(MessageReader* aReader, paramType* aResult) {
     return ReadParam(aReader, &aResult->mValue);
   };
-};
-
-#ifdef XP_WIN
-
-template <>
-struct ParamTraits<mozilla::TimeStampValue> {
-  typedef mozilla::TimeStampValue paramType;
-  static void Write(MessageWriter* aWriter, const paramType& aParam) {
-    WriteParam(aWriter, aParam.mGTC);
-    WriteParam(aWriter, aParam.mQPC);
-    WriteParam(aWriter, aParam.mIsNull);
-    WriteParam(aWriter, aParam.mHasQPC);
-  }
-  static bool Read(MessageReader* aReader, paramType* aResult) {
-    return (ReadParam(aReader, &aResult->mGTC) &&
-            ReadParam(aReader, &aResult->mQPC) &&
-            ReadParam(aReader, &aResult->mIsNull) &&
-            ReadParam(aReader, &aResult->mHasQPC));
-  }
-};
-
-#endif
-
-template <>
-struct ParamTraits<mozilla::dom::ipc::StructuredCloneData> {
-  typedef mozilla::dom::ipc::StructuredCloneData paramType;
-
-  static void Write(MessageWriter* aWriter, const paramType& aParam) {
-    aParam.WriteIPCParams(aWriter);
-  }
-
-  static bool Read(MessageReader* aReader, paramType* aResult) {
-    return aResult->ReadIPCParams(aReader);
-  }
 };
 
 template <class T>
@@ -494,14 +509,21 @@ struct ParamTraits<mozilla::EnumSet<T, U>> {
     return false;
   }
 
+  static constexpr size_t kUnderlyingWidth = [] {
+    if constexpr (std::numeric_limits<serializedType>::is_specialized) {
+      return std::numeric_limits<serializedType>::digits;
+    } else {
+      return serializedType().size();  // for std::bitset<N>
+    }
+  }();
+
   static constexpr serializedType AllEnumBits() {
-    return ~serializedType(0) >> (std::numeric_limits<serializedType>::digits -
-                                  (mozilla::MaxEnumValue<T>::value + 1));
+    return ~serializedType(0) >>
+           (kUnderlyingWidth - (mozilla::MaxEnumValue<T>::value + 1));
   }
 
   static constexpr bool IsLegalValue(const serializedType value) {
-    static_assert(mozilla::MaxEnumValue<T>::value <
-                      std::numeric_limits<serializedType>::digits,
+    static_assert(mozilla::MaxEnumValue<T>::value < kUnderlyingWidth,
                   "Enum max value is not in the range!");
     static_assert(
         std::is_unsigned<decltype(mozilla::MaxEnumValue<T>::value)>::value,
@@ -528,20 +550,23 @@ struct ParamTraits<mozilla::Variant<Ts...>> {
   struct VariantReader {
     using Next = VariantReader<N - 1>;
 
-    static bool Read(MessageReader* reader, Tag tag, paramType* result) {
-      // Since the VariantReader specializations start at N , we need to
-      // subtract one to look at N - 1, the first valid tag.  This means our
-      // comparisons are off by 1.  If we get to N = 0 then we have failed to
-      // find a match to the tag.
-      if (tag == N - 1) {
-        // Recall, even though the template parameter is N, we are
-        // actually interested in the N - 1 tag.
-        // Default construct our field within the result outparameter and
-        // directly deserialize into the variant. Note that this means that
-        // every type in Ts needs to be default constructible
-        return ReadParam(reader, &result->template emplace<N - 1>());
+    // Since the VariantReader specializations start at N , we need to
+    // subtract one to look at N - 1, the first valid tag.  This means our
+    // comparisons are off by 1.  If we get to N = 0 then we have failed to
+    // find a match to the tag.
+    static constexpr size_t Idx = N - 1;
+    using T = typename mozilla::detail::Nth<Idx, Ts...>::Type;
+
+    static ReadResult<paramType> Read(MessageReader* reader, Tag tag) {
+      if (tag == Idx) {
+        auto p = ReadParam<T>(reader);
+        if (p) {
+          return ReadResult<paramType>(
+              std::in_place, mozilla::VariantIndex<Idx>{}, std::move(*p));
+        }
+        return {};
       } else {
-        return Next::Read(reader, tag, result);
+        return Next::Read(reader, tag);
       }
     }
 
@@ -552,17 +577,17 @@ struct ParamTraits<mozilla::Variant<Ts...>> {
   // a matching tag.
   template <typename dummy>
   struct VariantReader<0, dummy> {
-    static bool Read(MessageReader* reader, Tag tag, paramType* result) {
-      return false;
+    static ReadResult<paramType> Read(MessageReader* reader, Tag tag) {
+      return {};
     }
   };
 
-  static bool Read(MessageReader* reader, paramType* result) {
+  static ReadResult<paramType> Read(MessageReader* reader) {
     Tag tag;
     if (ReadParam(reader, &tag)) {
-      return VariantReader<sizeof...(Ts)>::Read(reader, tag, result);
+      return VariantReader<sizeof...(Ts)>::Read(reader, tag);
     }
-    return false;
+    return {};
   }
 };
 
@@ -764,8 +789,6 @@ struct ParamTraits<mozilla::net::LinkHeader> {
   static void Write(MessageWriter* aWriter, const paramType& aParam) {
     static_assert(sizeof(paramType) == kExpectedSizeOfParamType,
                   "All members of should be written below.");
-    // Bug 1860565: `aParam.mAnchor` is not written.
-
     WriteParam(aWriter, aParam.mHref);
     WriteParam(aWriter, aParam.mRel);
     WriteParam(aWriter, aParam.mTitle);
@@ -784,8 +807,6 @@ struct ParamTraits<mozilla::net::LinkHeader> {
   static bool Read(MessageReader* aReader, paramType* aResult) {
     static_assert(sizeof(paramType) == kExpectedSizeOfParamType,
                   "All members of should be handled below.");
-    // Bug 1860565: `aParam.mAnchor` is not handled.
-
     if (!ReadParam(aReader, &aResult->mHref)) {
       return false;
     }
@@ -840,6 +861,47 @@ struct ParamTraits<mozilla::dom::UserActivation::Modifiers> {
   };
 };
 
+template <>
+struct ParamTraits<gfxPlatform::GlobalReflowFlags>
+    : public BitFlagsEnumSerializer<gfxPlatform::GlobalReflowFlags,
+                                    gfxPlatform::GlobalReflowFlags::ALL_BITS> {
+};
+
+template <size_t N>
+struct ParamTraits<std::bitset<N>> {
+  typedef std::bitset<N> paramType;
+  static void Write(MessageWriter* aWriter, const paramType& aParam) {
+    paramType mask(UINT64_MAX);
+    for (size_t i = 0; i < N; i += 64) {
+      uint64_t value = ((aParam >> i) & mask).to_ullong();
+      WriteParam(aWriter, value);
+    }
+  }
+
+  static bool Read(MessageReader* aReader, paramType* aResult) {
+    for (size_t i = 0; i < N; i += 64) {
+      uint64_t value = 0;
+      if (!ReadParam(aReader, &value)) {
+        return false;
+      }
+      *aResult |= std::bitset<N>(value) << i;
+    }
+    return true;
+  }
+};
+
+template <>
+struct ParamTraits<nsILoadInfo::IPAddressSpace>
+    : public ContiguousEnumSerializer<nsILoadInfo::IPAddressSpace,
+                                      nsILoadInfo::IPAddressSpace::Unknown,
+                                      nsILoadInfo::IPAddressSpace::Invalid> {};
+
+using PromptResult = mozilla::dom::ContentPermissionRequestBase::PromptResult;
+template <>
+struct ParamTraits<PromptResult>
+    : public ContiguousEnumSerializerInclusive<
+          PromptResult, PromptResult::Granted, PromptResult::Pending> {};
+
 } /* namespace IPC */
 
-#endif /* __IPC_GLUE_IPCMESSAGEUTILSSPECIALIZATIONS_H__ */
+#endif /* IPC_GLUE_IPCMESSAGEUTILSSPECIALIZATIONS_H_ */

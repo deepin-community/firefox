@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim:expandtab:shiftwidth=2:tabstop=2:cin:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -53,6 +51,7 @@ NS_IMETHODIMP
 nsOSHelperAppService::GetProtocolHandlerInfoFromOS(const nsACString& aScheme,
                                                    bool* found,
                                                    nsIHandlerInfo** _retval) {
-  *found = false;
-  return NS_OK;
+  // We don't want to get protocol handlers from the OS in GV; the app
+  // should take care of that in NavigationDelegate.onLoadRequest().
+  return NS_ERROR_NOT_IMPLEMENTED;
 }

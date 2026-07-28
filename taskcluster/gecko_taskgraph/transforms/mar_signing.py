@@ -13,28 +13,27 @@ from taskgraph.util.dependencies import get_primary_dependency
 from taskgraph.util.taskcluster import get_artifact_prefix
 from taskgraph.util.treeherder import inherit_treeherder_from_dep, join_symbol
 
-from gecko_taskgraph.util.attributes import (
-    copy_attributes_from_dependent_job,
-    sorted_unique_list,
-)
+from gecko_taskgraph.util.attributes import copy_attributes_from_dependent_job
 from gecko_taskgraph.util.partials import get_partials_artifacts_from_params
-from gecko_taskgraph.util.scriptworker import get_signing_cert_scope_per_platform
+from gecko_taskgraph.util.scriptworker import get_signing_type_per_platform
 
 logger = logging.getLogger(__name__)
 
 SIGNING_FORMATS = {
     "mar-signing-autograph-stage": {
-        "target.complete.mar": ["autograph_stage_mar384"],
+        "target.complete.mar": ["gcp_prod_autograph_stage_mar384"],
     },
     "default": {
-        "target.complete.mar": ["autograph_hash_only_mar384"],
+        "target.complete.mar": ["gcp_prod_autograph_hash_only_mar384"],
     },
 }
 
 transforms = TransformSequence()
 
 
-def generate_partials_artifacts(job, release_history, platform, locale=None):
+def generate_partials_artifacts(
+    job, release_history, platform, upstream_kind, locale=None
+):
     artifact_prefix = get_artifact_prefix(job)
     if locale:
         artifact_prefix = f"{artifact_prefix}/{locale}"
@@ -45,10 +44,10 @@ def generate_partials_artifacts(job, release_history, platform, locale=None):
 
     upstream_artifacts = [
         {
-            "taskId": {"task-reference": "<partials>"},
+            "taskId": {"task-reference": f"<{upstream_kind}>"},
             "taskType": "partials",
             "paths": [f"{artifact_prefix}/{path}" for path, version in artifacts],
-            "formats": ["autograph_hash_only_mar384"],
+            "formats": ["gcp_prod_autograph_hash_only_mar384"],
         }
     ]
 
@@ -62,14 +61,12 @@ def generate_complete_artifacts(job, kind):
     for artifact in job.attributes["release_artifacts"]:
         basename = os.path.basename(artifact)
         if basename in SIGNING_FORMATS[kind]:
-            upstream_artifacts.append(
-                {
-                    "taskId": {"task-reference": f"<{job.kind}>"},
-                    "taskType": "build",
-                    "paths": [artifact],
-                    "formats": SIGNING_FORMATS[kind][basename],
-                }
-            )
+            upstream_artifacts.append({
+                "taskId": {"task-reference": f"<{job.kind}>"},
+                "taskType": "build",
+                "paths": [artifact],
+                "formats": SIGNING_FORMATS[kind][basename],
+            })
 
     return upstream_artifacts
 
@@ -96,9 +93,6 @@ def make_task_description(config, jobs):
         dependencies.update(signing_dependencies)
 
         attributes = copy_attributes_from_dependent_job(dep_job)
-        attributes["required_signoffs"] = sorted_unique_list(
-            attributes.get("required_signoffs", []), job.pop("required_signoffs")
-        )
         attributes["shipping_phase"] = job["shipping-phase"]
         if locale:
             attributes["locale"] = locale
@@ -106,19 +100,22 @@ def make_task_description(config, jobs):
         build_platform = attributes.get("build_platform")
         if config.kind == "partials-signing":
             upstream_artifacts = generate_partials_artifacts(
-                dep_job, config.params["release_history"], build_platform, locale
+                dep_job,
+                config.params["release_history"],
+                build_platform,
+                dep_job.kind,
+                locale,
             )
         else:
             upstream_artifacts = generate_complete_artifacts(dep_job, config.kind)
 
         is_shippable = job.get(
-            "shippable", dep_job.attributes.get("shippable")  # First check current job
+            "shippable",
+            dep_job.attributes.get("shippable"),  # First check current job
         )  # Then dep job for 'shippable'
-        signing_cert_scope = get_signing_cert_scope_per_platform(
+        signing_type = get_signing_type_per_platform(
             build_platform, is_shippable, config
         )
-
-        scopes = [signing_cert_scope]
 
         task = {
             "label": label,
@@ -128,16 +125,18 @@ def make_task_description(config, jobs):
             "worker-type": job.get("worker-type", "linux-signing"),
             "worker": {
                 "implementation": "scriptworker-signing",
+                "signing-type": signing_type,
                 "upstream-artifacts": upstream_artifacts,
-                "max-run-time": 3600,
             },
             "dependencies": dependencies,
             "attributes": attributes,
-            "scopes": scopes,
             "run-on-projects": job.get(
                 "run-on-projects", dep_job.attributes.get("run_on_projects")
             ),
+            "run-on-repo-type": job.get("run-on-repo-type", ["git", "hg"]),
             "treeherder": treeherder,
         }
+        if (git_branches := job.get("run-on-git-branches")) is not None:
+            task["run-on-git-branches"] = git_branches
 
         yield task

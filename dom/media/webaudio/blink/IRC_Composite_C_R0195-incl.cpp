@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,10 +15,6 @@
  * equally spaced azimuths for the left ear, ordered clockwise from in front
  * the listener.
  */
-
-#include "mozilla/ArrayUtils.h"
-
-using mozilla::ArrayLength;
 
 const int16_t irc_composite_c_r0195_p315[][256] =
     {/* IRC_Composite_C_R0195_T000_P315.wav */
@@ -4555,16 +4549,16 @@ struct Elevation {
  * elevation.
  */
 const Elevation irc_composite_c_r0195[] = {
-    {irc_composite_c_r0195_p315, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p315)},
-    {irc_composite_c_r0195_p330, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p330)},
-    {irc_composite_c_r0195_p345, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p345)},
-    {irc_composite_c_r0195_p000, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p000)},
-    {irc_composite_c_r0195_p015, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p015)},
-    {irc_composite_c_r0195_p030, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p030)},
-    {irc_composite_c_r0195_p045, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p045)},
-    {irc_composite_c_r0195_p060, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p060)},
-    {irc_composite_c_r0195_p075, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p075)},
-    {irc_composite_c_r0195_p090, MOZ_ARRAY_LENGTH(irc_composite_c_r0195_p090)}};
+    {irc_composite_c_r0195_p315, std::size(irc_composite_c_r0195_p315)},
+    {irc_composite_c_r0195_p330, std::size(irc_composite_c_r0195_p330)},
+    {irc_composite_c_r0195_p345, std::size(irc_composite_c_r0195_p345)},
+    {irc_composite_c_r0195_p000, std::size(irc_composite_c_r0195_p000)},
+    {irc_composite_c_r0195_p015, std::size(irc_composite_c_r0195_p015)},
+    {irc_composite_c_r0195_p030, std::size(irc_composite_c_r0195_p030)},
+    {irc_composite_c_r0195_p045, std::size(irc_composite_c_r0195_p045)},
+    {irc_composite_c_r0195_p060, std::size(irc_composite_c_r0195_p060)},
+    {irc_composite_c_r0195_p075, std::size(irc_composite_c_r0195_p075)},
+    {irc_composite_c_r0195_p090, std::size(irc_composite_c_r0195_p090)}};
 
 const int irc_composite_c_r0195_first_elevation = -45;   /* degrees */
 const int irc_composite_c_r0195_elevation_interval = 15; /* degrees */

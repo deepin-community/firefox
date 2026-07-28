@@ -4,7 +4,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use criterion::{criterion_group, criterion_main, Criterion};
+#![expect(
+    clippy::significant_drop_tightening,
+    reason = "Inherent in codspeed criterion_group! macro."
+)]
+
+use std::hint::black_box;
+
+use criterion::{Criterion, criterion_group, criterion_main};
 use neqo_transport::recv_stream::RxStreamOrderer;
 
 fn rx_stream_orderer() {
@@ -18,7 +25,7 @@ fn rx_stream_orderer() {
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("RxStreamOrderer::inbound_frame()", |b| {
-        b.iter(rx_stream_orderer);
+        b.iter(black_box(rx_stream_orderer));
     });
 }
 

@@ -1,12 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGFESpotLightElement.h"
-#include "mozilla/dom/SVGFESpotLightElementBinding.h"
+
 #include "mozilla/SVGFilterInstance.h"
+#include "mozilla/dom/SVGFESpotLightElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FESpotLight)
 
@@ -53,19 +52,31 @@ bool SVGFESpotLightElement::AttributeAffectsRendering(
 LightType SVGFESpotLightElement::ComputeLightAttributes(
     SVGFilterInstance* aInstance, nsTArray<float>& aFloatAttributes) {
   aFloatAttributes.SetLength(kSpotLightNumAttributes);
-  GetAnimatedNumberValues(&aFloatAttributes[kSpotLightPositionXIndex],
-                          &aFloatAttributes[kSpotLightPositionYIndex],
-                          &aFloatAttributes[kSpotLightPositionZIndex],
-                          &aFloatAttributes[kSpotLightPointsAtXIndex],
-                          &aFloatAttributes[kSpotLightPointsAtYIndex],
-                          &aFloatAttributes[kSpotLightPointsAtZIndex],
+  Point3D lightPos, lightPointsAt;
+  float limitingConeAngle;
+
+  GetAnimatedNumberValues(&lightPos.x, &lightPos.y, &lightPos.z,
+                          &lightPointsAt.x, &lightPointsAt.y, &lightPointsAt.z,
                           &aFloatAttributes[kSpotLightFocusIndex],
-                          &aFloatAttributes[kSpotLightLimitingConeAngleIndex],
-                          nullptr);
-  if (!mNumberAttributes[SVGFESpotLightElement::LIMITING_CONE_ANGLE]
-           .IsExplicitlySet()) {
-    aFloatAttributes[kSpotLightLimitingConeAngleIndex] = 90;
+                          &limitingConeAngle, nullptr);
+
+  lightPos = aInstance->ConvertLocation(lightPos);
+  lightPointsAt = aInstance->ConvertLocation(lightPointsAt);
+  aFloatAttributes[kSpotLightPositionXIndex] = lightPos.x;
+  aFloatAttributes[kSpotLightPositionYIndex] = lightPos.y;
+  aFloatAttributes[kSpotLightPositionZIndex] = lightPos.z;
+  aFloatAttributes[kSpotLightPointsAtXIndex] = lightPointsAt.x;
+  aFloatAttributes[kSpotLightPointsAtYIndex] = lightPointsAt.y;
+  aFloatAttributes[kSpotLightPointsAtZIndex] = lightPointsAt.z;
+
+  if (mNumberAttributes[SVGFESpotLightElement::LIMITING_CONE_ANGLE]
+          .IsExplicitlySet()) {
+    limitingConeAngle = std::clamp(limitingConeAngle, -90.0f, 90.0f);
+  } else {
+    limitingConeAngle = 90.0f;
   }
+
+  aFloatAttributes[kSpotLightLimitingConeAngleIndex] = limitingConeAngle;
 
   return LightType::Spot;
 }
@@ -109,7 +120,7 @@ SVGFESpotLightElement::LimitingConeAngle() {
 
 SVGElement::NumberAttributesInfo SVGFESpotLightElement::GetNumberInfo() {
   return NumberAttributesInfo(mNumberAttributes, sNumberInfo,
-                              ArrayLength(sNumberInfo));
+                              std::size(sNumberInfo));
 }
 
 }  // namespace mozilla::dom

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +6,6 @@
 #define mozilla_net_CookieCommons_h
 
 #include <cstdint>
-#include <functional>
 #include "mozIThirdPartyUtil.h"
 #include "prtime.h"
 #include "nsString.h"
@@ -57,8 +55,6 @@ static const char kPrefCookiePurgeAge[] = "network.cookie.purgeAge";
 static const uint32_t kMaxCookiesPerHost = 180;
 static const uint32_t kCookieQuotaPerHost = 150;
 static const uint32_t kMaxNumberOfCookies = 3000;
-static const uint32_t kMaxBytesPerCookie = 4096;
-static const uint32_t kMaxBytesPerPath = 1024;
 
 static const int64_t kCookiePurgeAge =
     int64_t(30 * 24 * 60 * 60) * PR_USEC_PER_SEC;  // 30 days in microseconds
@@ -68,6 +64,9 @@ class CookieCommons final {
   static bool DomainMatches(Cookie* aCookie, const nsACString& aHost);
 
   static bool PathMatches(Cookie* aCookie, const nsACString& aPath);
+
+  static bool PathMatches(const nsACString& aCookiePath,
+                          const nsACString& aPath);
 
   static nsresult GetBaseDomain(nsIEffectiveTLDService* aTLDService,
                                 nsIURI* aHostURI, nsACString& aBaseDomain,
@@ -88,14 +87,6 @@ class CookieCommons final {
                              uint32_t aRejectedReason,
                              CookieOperation aOperation);
 
-  static bool CheckPathSize(const CookieStruct& aCookieData);
-
-  static bool CheckNameAndValueSize(const CookieStruct& aCookieData);
-
-  static bool CheckName(const CookieStruct& aCookieData);
-
-  static bool CheckValue(const CookieStruct& aCookieData);
-
   static bool CheckCookiePermission(nsIChannel* aChannel,
                                     CookieStruct& aCookieData);
 
@@ -112,8 +103,23 @@ class CookieCommons final {
   static already_AddRefed<nsICookieJarSettings> GetCookieJarSettings(
       nsIChannel* aChannel);
 
-  static bool ShouldIncludeCrossSiteCookieForDocument(Cookie* aCookie,
-                                                      dom::Document* aDocument);
+  static bool ShouldIncludeCrossSiteCookie(Cookie* aCookie, nsIURI* aHostURI,
+                                           bool aPartitionForeign,
+                                           bool aInPrivateBrowsing,
+                                           bool aUsingStorageAccess,
+                                           bool aOn3pcbException);
+
+  static bool ShouldIncludeCrossSiteCookie(
+      nsIURI* aHostURI, int32_t aSameSiteAttr, bool aCookiePartitioned,
+      bool aPartitionForeign, bool aInPrivateBrowsing, bool aUsingStorageAccess,
+      bool aOn3pcbException);
+
+  static bool IsFirstPartyPartitionedCookieWithoutCHIPS(
+      Cookie* aCookie, const nsACString& aBaseDomain,
+      const OriginAttributes& aOriginAttributes);
+
+  static bool ShouldEnforceSessionForOriginAttributes(
+      const OriginAttributes& aOriginAttributes);
 
   static bool IsSchemeSupported(nsIPrincipal* aPrincipal);
   static bool IsSchemeSupported(nsIURI* aURI);
@@ -142,6 +148,46 @@ class CookieCommons final {
 
   static void ComposeCookieString(nsTArray<RefPtr<Cookie>>& aCookieList,
                                   nsACString& aCookieString);
+
+  static void GetServerDateHeader(nsIChannel* aChannel,
+                                  nsACString& aServerDateHeader);
+
+  enum class SecurityChecksResult {
+    // A sandboxed context detected.
+    eSandboxedError,
+    // A security error needs to be thrown.
+    eSecurityError,
+    // This context should not see cookies without returning errors.
+    eDoNotContinue,
+    // No security issues found. Proceed to expose cookies.
+    eContinue,
+  };
+
+  // Runs the security checks requied by specs on the current context (Document
+  // or Worker) to see if it's allowed to set/get cookies. In case it does
+  // (eContinue), the cookie principals are returned. Use the
+  // `aCookiePartitionedPrincipal` to retrieve CHIP cookies. Use
+  // `aCookiePrincipal` to retrieve non-CHIP cookies.
+  static SecurityChecksResult CheckGlobalAndRetrieveCookiePrincipals(
+      mozilla::dom::Document* aDocument, nsIPrincipal** aCookiePrincipal,
+      nsIPrincipal** aCookiePartitionedPrincipal);
+
+  // Return a reduced expiry attribute value if needed.
+  static int64_t MaybeCapExpiry(int64_t aCurrentTimeInMSec,
+                                int64_t aExpiryInMSec);
+
+  // Return a reduced expiry value starting from the max-age attribute and the
+  // current time.
+  static int64_t MaybeCapMaxAge(int64_t aCurrentTimeInMSec,
+                                int64_t aMaxAgeInSec);
+
+  // returns true if 'a' is equal to or a subdomain of 'b',
+  // assuming no leading dots are present.
+  static bool IsSubdomainOf(const nsACString& a, const nsACString& b);
+
+  // Returns the current time in USecs using a nsIChannel, which corresponds to
+  // the response start time.
+  static int64_t GetCurrentTimeInUSecFromChannel(nsIChannel* aChannel);
 };
 
 }  // namespace net

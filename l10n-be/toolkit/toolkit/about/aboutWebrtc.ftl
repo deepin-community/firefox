@@ -33,8 +33,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = Файлы журнала за�
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Аўтаабнаўленне
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = Тыповае аўтаабнаўленне
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = Абнавіць
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -98,8 +96,8 @@ about-webrtc-save-page-label = Захаваць старонку
 about-webrtc-debug-mode-msg-label = Рэжым адладкі
 about-webrtc-debug-mode-off-state-label = Увайсці ў рэжым адладкі
 about-webrtc-debug-mode-on-state-label = Выйсці з рэжыма адладкі
-about-webrtc-enable-logging-label = Уключыць нарыхтоўку журнала WebRTC
 about-webrtc-stats-heading = Статыстыка сеанса
+about-webrtc-enable-logging-label = Уключыць нарыхтоўку журнала WebRTC
 about-webrtc-peerconnections-section-heading = Статыстыка RTCPeerConnection
 about-webrtc-peerconnections-section-show-msg = Паказаць статыстыку RTCPeerConnection
 about-webrtc-peerconnections-section-hide-msg = Схаваць статыстыку RTCPeerConnection
@@ -229,10 +227,7 @@ about-webrtc-round-trip-time-ms = RTT, мс
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Статыстыка відэакадраў - MediaStreamTrack ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = старонка захавана ў: { $path }
 about-webrtc-debug-mode-off-state-msg = журнал трасіроўкі можна знайсці ў: { $path }
@@ -327,6 +322,3 @@ about-webrtc-hide-msg-sdp = Схаваць SDP
 about-webrtc-media-context-show-msg = Паказаць медыякантэкст
 about-webrtc-media-context-hide-msg = Схаваць медыякантэкст
 about-webrtc-media-context-heading = Медыякантэкст
-
-##
-

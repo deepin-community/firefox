@@ -69,6 +69,15 @@ async function testHandlingUserInputOnChange(aTriggerFn) {
   );
 }
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["test.wait300msAfterTabSwitch", true],
+      ["widget.macos.allow-native-select", false],
+    ],
+  });
+});
+
 // This test checks if the change/click event is considered as user input event.
 add_task(async function test_handling_user_input_key() {
   return testHandlingUserInputOnChange(async function () {

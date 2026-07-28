@@ -3,7 +3,7 @@
 const { ExperimentAPI } = ChromeUtils.importESModule(
   "resource://nimbus/ExperimentAPI.sys.mjs"
 );
-const { ExperimentFakes } = ChromeUtils.importESModule(
+const { NimbusTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/NimbusTestUtils.sys.mjs"
 );
 const { TelemetryTestUtils } = ChromeUtils.importESModule(
@@ -113,7 +113,7 @@ add_task(async function test_multistage_aboutwelcome_transitions() {
   await setAboutWelcomePref(true);
   await ExperimentAPI.ready();
 
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
+  let doExperimentCleanup = await NimbusTestUtils.enrollWithFeatureConfig({
     featureId: "aboutwelcome",
     value: {
       id: "my-mochitest-experiment",
@@ -139,27 +139,40 @@ add_task(async function test_multistage_aboutwelcome_transitions() {
     sandbox.restore();
   });
 
-  await test_screen_content(
-    browser,
-    "multistage proton step 1",
-    // Expected selectors:
-    ["div.proton.transition- .screen"],
-    // Unexpected selectors:
-    ["div.proton.transition-out"]
-  );
+  try {
+    await test_screen_content(
+      browser,
+      "multistage proton step 1",
+      // Expected selectors:
+      ["div.proton.transition- .screen"],
+      // Unexpected selectors:
+      ["div.proton.transition-out"]
+    );
 
-  // Double click should still only transition once.
-  await onButtonClick(browser, "button.primary");
-  await onButtonClick(browser, "button.primary");
+    await onButtonClick(browser, "button.primary");
 
-  await test_screen_content(
-    browser,
-    "multistage proton step 1 transition to 2",
-    // Expected selectors:
-    ["div.proton.transition-out .screen", "div.proton.transition- .screen-1"]
-  );
+    // Wait for the transition-out animation to begin before sending a second
+    // click. The guard in handleTransition only fires once transition="out" is
+    // reflected in the DOM, so the second click must arrive after that point to
+    // correctly test that it is ignored.
+    await test_screen_content(
+      browser,
+      "multistage proton step 1 transition to 2",
+      // Expected selectors:
+      ["div.proton.transition-out .screen"]
+    );
 
-  doExperimentCleanup();
+    await onButtonClick(browser, "button.primary");
+
+    await test_screen_content(
+      browser,
+      "multistage proton step 1 transition to 2 settled",
+      // Expected selectors:
+      ["div.proton.transition- .screen-1"]
+    );
+  } finally {
+    await doExperimentCleanup();
+  }
 });
 
 /**
@@ -170,7 +183,7 @@ add_task(async function test_multistage_aboutwelcome_transitions_off() {
   await setAboutWelcomePref(true);
   await ExperimentAPI.ready();
 
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
+  let doExperimentCleanup = await NimbusTestUtils.enrollWithFeatureConfig({
     featureId: "aboutwelcome",
     value: {
       id: "my-mochitest-experiment",
@@ -196,24 +209,26 @@ add_task(async function test_multistage_aboutwelcome_transitions_off() {
     sandbox.restore();
   });
 
-  await test_screen_content(
-    browser,
-    "multistage proton step 1",
-    // Expected selectors:
-    ["div.proton.transition- .screen"],
-    // Unexpected selectors:
-    ["div.proton.transition-out"]
-  );
+  try {
+    await test_screen_content(
+      browser,
+      "multistage proton step 1",
+      // Expected selectors:
+      ["div.proton.transition- .screen"],
+      // Unexpected selectors:
+      ["div.proton.transition-out"]
+    );
 
-  await onButtonClick(browser, "button.primary");
-  await test_screen_content(
-    browser,
-    "multistage proton step 1 no transition to 2",
-    // Expected selectors:
-    [],
-    // Unexpected selectors:
-    ["div.proton.transition-out .screen-0"]
-  );
-
-  doExperimentCleanup();
+    await onButtonClick(browser, "button.primary");
+    await test_screen_content(
+      browser,
+      "multistage proton step 1 no transition to 2",
+      // Expected selectors:
+      [],
+      // Unexpected selectors:
+      ["div.proton.transition-out .screen-0"]
+    );
+  } finally {
+    await doExperimentCleanup();
+  }
 });

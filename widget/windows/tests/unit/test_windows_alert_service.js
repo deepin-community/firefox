@@ -173,7 +173,7 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
     if (serverEnabled) {
       s += `program&#xA;${AppConstants.MOZ_APP_NAME}`;
     } else {
-      s += `invalid key&#xA;invalid value`;
+      s += `skipNotificationServer&#xA;true`;
     }
     if (serverEnabled && profD) {
       s += `&#xA;profile&#xA;${profD.path}`;
@@ -195,7 +195,7 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
     ? ""
     : `<action content="Notification settings"/>`;
 
-  let parsedSettingsAction = hostport => {
+  let parsedSettingsAction = origin => {
     if (isBackgroundTaskMode) {
       return [];
     }
@@ -209,8 +209,8 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
             {
               action: "settings",
             },
-            hostport && {
-              launchUrl: hostport,
+            origin && {
+              origin,
             }
           )
         ),
@@ -219,7 +219,7 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
     ];
   };
 
-  let parsedSnoozeAction = hostport => {
+  let parsedSnoozeAction = (hostport, origin) => {
     let content = `Disable notifications from ${hostport}`;
     return [
       content,
@@ -230,8 +230,8 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
             {
               action: "snooze",
             },
-            hostport && {
-              launchUrl: hostport,
+            origin && {
+              origin,
             }
           )
         ),
@@ -414,8 +414,8 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
   );
 
   // But content unprivileged alerts can't use `windowsSystemActivationType`.
-  let launchUrl = "https://example.com/foo/bar.html";
-  const principaluri = Services.io.newURI(launchUrl);
+  let path = "https://example.com/foo/bar.html";
+  const principaluri = Services.io.newURI(path);
   const principal = Services.scriptSecurityManager.createContentPrincipal(
     principaluri,
     {}
@@ -436,19 +436,19 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
       {
         launch: parsedArgumentString({
           action: "",
-          launchUrl: principaluri.hostPort,
+          origin: principal.origin,
         }),
         actions: Object.fromEntries(
           [
-            parsedSnoozeAction(principaluri.hostPort),
-            parsedSettingsAction(principaluri.hostPort),
+            parsedSnoozeAction(principal.hostPort, principal.origin),
+            parsedSettingsAction(principal.origin),
             [
               "dismissTitle",
               {
                 content: "dismissTitle",
                 arguments: parsedArgumentString({
                   action: "dismiss",
-                  launchUrl: principaluri.hostPort,
+                  origin: principal.origin,
                 }),
               },
             ],
@@ -458,7 +458,7 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
                 content: "snoozeTitle",
                 arguments: parsedArgumentString({
                   action: "snooze",
-                  launchUrl: principaluri.hostPort,
+                  origin: principal.origin,
                 }),
               },
             ],
@@ -514,12 +514,12 @@ function testAlert(when, { serverEnabled, profD, isBackgroundTaskMode } = {}) {
       {
         launch: parsedArgumentString({
           action: "",
-          launchUrl: principaluri.hostPort,
+          origin: principal.origin,
         }),
         actions: Object.fromEntries(
           [
-            parsedSnoozeAction(principaluri.hostPort),
-            parsedSettingsAction(principaluri.hostPort),
+            parsedSnoozeAction(principal.hostPort, principal.origin),
+            parsedSettingsAction(principal.origin),
           ].filter(x => x.length)
         ),
       },
@@ -652,7 +652,8 @@ add_task(condition, async () => {
   profilePath.append(`test_windows_alert_service`);
   let profile = profileService.createUniqueProfile(
     profilePath,
-    "test_windows_alert_service"
+    "test_windows_alert_service",
+    "tests"
   );
 
   profileService.defaultProfile = profile;
@@ -664,4 +665,63 @@ add_task(condition, async () => {
 
   // No longer a background task,
   bts.overrideBackgroundTaskNameForTesting("");
+});
+
+// This test checks whether `nsIWindowsalert.imagePathUnchecked` is used
+// in the generated XML used to display notifications.
+add_task(async function test_image_unchecked_xml() {
+  let alertsService = Cc["@mozilla.org/system-alerts-service;1"].getService(
+    Ci.nsIWindowsAlertsService
+  );
+
+  let name = "name";
+  let title = "title";
+  let text = "text";
+  let imageURL = "chrome://branding/content/icon32.gif";
+  let alert = makeAlert({ name, title, text, imageURL });
+
+  let capturedXML = alertsService.getXmlStringForWindowsAlert(alert);
+  Assert.ok(capturedXML, "Should have captured toast XML");
+
+  const xmlDoc = new DOMParser().parseFromString(
+    capturedXML,
+    "application/xml"
+  );
+  const [img] = xmlDoc.getElementsByTagNameNS("*", "image");
+  const src = img?.getAttribute("src");
+
+  Assert.deepEqual(
+    src,
+    imageURL,
+    "Check if image path is set in alert.imagePathUnchecked"
+  );
+});
+
+// This test makes sure that we can still get a notification xml without
+// images in it.
+add_task(async function test_not_gif_xml() {
+  let alertsService = Cc["@mozilla.org/system-alerts-service;1"].getService(
+    Ci.nsIWindowsAlertsService
+  );
+
+  let name = "name";
+  let title = "title";
+  let text = "text";
+
+  let alert = makeAlert({ name, title, text });
+
+  let capturedXML = alertsService.getXmlStringForWindowsAlert(alert);
+  Assert.ok(capturedXML, "Should have captured toast XML");
+
+  const xmlDoc = new DOMParser().parseFromString(
+    capturedXML,
+    "application/xml"
+  );
+  const [img] = xmlDoc.getElementsByTagNameNS("*", "image");
+  const src = img?.getAttribute("src");
+
+  Assert.ok(
+    !src,
+    "Ensure that imagePathUnchecked is not set since there is no image."
+  );
 });

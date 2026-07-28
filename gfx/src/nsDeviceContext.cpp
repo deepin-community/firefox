@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=2 expandtab: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,40 +5,27 @@
 #include "nsDeviceContext.h"
 #include <algorithm>  // for max
 #include "gfxContext.h"
-#include "gfxImageSurface.h"  // for gfxImageSurface
-#include "gfxPoint.h"         // for gfxSize
-#include "gfxTextRun.h"       // for gfxFontGroup
+#include "gfxPoint.h"    // for gfxSize
+#include "gfxTextRun.h"  // for gfxFontGroup
 #include "mozilla/LookAndFeel.h"
 #include "mozilla/gfx/PathHelpers.h"
 #include "mozilla/gfx/PrintTarget.h"
-#include "mozilla/Preferences.h"  // for Preferences
 #include "mozilla/ProfilerMarkers.h"
-#include "mozilla/Services.h"  // for GetObserverService
 #include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/Try.h"            // for MOZ_TRY
-#include "mozilla/mozalloc.h"       // for operator new
 #include "mozilla/widget/Screen.h"  // for Screen
-#include "nsCRT.h"                  // for nsCRT
 #include "nsDebug.h"                // for NS_ASSERTION, etc
-#include "nsFont.h"                 // for nsFont
-#include "nsFontCache.h"            // for nsFontCache
 #include "nsFontMetrics.h"          // for nsFontMetrics
-#include "nsAtom.h"                 // for nsAtom, NS_Atomize
-#include "nsID.h"
 #include "nsIDeviceContextSpec.h"   // for nsIDeviceContextSpec
-#include "nsLanguageAtomService.h"  // for nsLanguageAtomService
-#include "nsIObserver.h"            // for nsIObserver, etc
-#include "nsIObserverService.h"     // for nsIObserverService
-#include "nsISupportsImpl.h"        // for MOZ_COUNT_CTOR, etc
-#include "nsISupportsUtils.h"       // for NS_ADDREF, NS_RELEASE
 #include "nsIWidget.h"              // for nsIWidget, NS_NATIVE_WINDOW
 #include "nsRect.h"                 // for nsRect
-#include "nsServiceManagerUtils.h"  // for do_GetService
-#include "nsString.h"               // for nsDependentString
 #include "nsTArray.h"               // for nsTArray, nsTArray_Impl
-#include "nsThreadUtils.h"          // for NS_IsMainThread
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/widget/ScreenManager.h"  // for ScreenManager
+
+#if defined(ACCESSIBILITY) && defined(MOZ_ENABLE_SKIA_PDF)
+#  include "mozilla/a11y/PdfStructTreeBuilder.h"
+#endif
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -61,6 +46,19 @@ nsDeviceContext::nsDeviceContext()
 
 nsDeviceContext::~nsDeviceContext() = default;
 
+int32_t nsDeviceContext::ComputeAppUnitsPerDevPixelForWidgetScale(
+    CSSToLayoutDeviceScale aScale) {
+  return std::max(1, NS_lround(AppUnitsPerCSSPixel() / aScale.scale));
+}
+
+int32_t nsDeviceContext::ApplyFullZoomToAPD(int32_t aUnzoomedAppUnits,
+                                            float aFullZoom) {
+  if (aFullZoom == 1.0f) {
+    return aUnzoomedAppUnits;
+  }
+  return std::max(1, NSToIntRound(float(aUnzoomedAppUnits) / aFullZoom));
+}
+
 void nsDeviceContext::SetDPI() {
   float dpi;
 
@@ -70,7 +68,8 @@ void nsDeviceContext::SetDPI() {
     mPrintingScale = mDeviceContextSpec->GetPrintingScale();
     mPrintingTranslate = mDeviceContextSpec->GetPrintingTranslate();
     mAppUnitsPerDevPixelAtUnitFullZoom =
-        NS_lround((AppUnitsPerCSSPixel() * 96) / dpi);
+        ComputeAppUnitsPerDevPixelForWidgetScale(
+            CSSToLayoutDeviceScale(dpi / 96.0));
   } else {
     // A value of -1 means use the maximum of 96 and the system DPI.
     // A value of 0 means use the system DPI. A positive value is used as the
@@ -93,7 +92,7 @@ void nsDeviceContext::SetDPI() {
         mWidget ? mWidget->GetDefaultScale() : CSSToLayoutDeviceScale(1.0);
     MOZ_ASSERT(scale.scale > 0.0);
     mAppUnitsPerDevPixelAtUnitFullZoom =
-        std::max(1, NS_lround(AppUnitsPerCSSPixel() / scale.scale));
+        ComputeAppUnitsPerDevPixelForWidgetScale(scale);
   }
 
   NS_ASSERTION(dpi != -1.0, "no dpi set");
@@ -166,11 +165,6 @@ UniquePtr<gfxContext> nsDeviceContext::CreateRenderingContextCommon(
 
 uint32_t nsDeviceContext::GetDepth() {
   RefPtr<widget::Screen> screen = FindScreen();
-  if (!screen) {
-    ScreenManager& screenManager = ScreenManager::GetSingleton();
-    screen = screenManager.GetPrimaryScreen();
-    MOZ_ASSERT(screen);
-  }
   int32_t depth = 0;
   screen->GetColorDepth(&depth);
   return uint32_t(depth);
@@ -178,11 +172,6 @@ uint32_t nsDeviceContext::GetDepth() {
 
 dom::ScreenColorGamut nsDeviceContext::GetColorGamut() {
   RefPtr<widget::Screen> screen = FindScreen();
-  if (!screen) {
-    auto& screenManager = ScreenManager::GetSingleton();
-    screen = screenManager.GetPrimaryScreen();
-    MOZ_ASSERT(screen);
-  }
   dom::ScreenColorGamut colorGamut;
   screen->GetColorGamut(&colorGamut);
   return colorGamut;
@@ -190,65 +179,39 @@ dom::ScreenColorGamut nsDeviceContext::GetColorGamut() {
 
 hal::ScreenOrientation nsDeviceContext::GetScreenOrientationType() {
   RefPtr<widget::Screen> screen = FindScreen();
-  if (!screen) {
-    auto& screenManager = ScreenManager::GetSingleton();
-    screen = screenManager.GetPrimaryScreen();
-    MOZ_ASSERT(screen);
-  }
   return screen->GetOrientationType();
 }
 
 uint16_t nsDeviceContext::GetScreenOrientationAngle() {
   RefPtr<widget::Screen> screen = FindScreen();
-  if (!screen) {
-    auto& screenManager = ScreenManager::GetSingleton();
-    screen = screenManager.GetPrimaryScreen();
-    MOZ_ASSERT(screen);
-  }
   return screen->GetOrientationAngle();
 }
 
 bool nsDeviceContext::GetScreenIsHDR() {
   RefPtr<widget::Screen> screen = FindScreen();
-  if (!screen) {
-    auto& screenManager = ScreenManager::GetSingleton();
-    screen = screenManager.GetPrimaryScreen();
-    MOZ_ASSERT(screen);
-  }
   return screen->GetIsHDR();
 }
 
-nsresult nsDeviceContext::GetDeviceSurfaceDimensions(nscoord& aWidth,
-                                                     nscoord& aHeight) {
+nsSize nsDeviceContext::GetDeviceSurfaceDimensions() {
+  return GetRect().Size();
+}
+
+nsRect nsDeviceContext::GetRect() {
   if (IsPrinterContext()) {
-    aWidth = mWidth;
-    aHeight = mHeight;
-  } else {
-    nsRect area;
-    ComputeFullAreaUsingScreen(&area);
-    aWidth = area.Width();
-    aHeight = area.Height();
+    return {0, 0, mWidth, mHeight};
   }
-
-  return NS_OK;
+  RefPtr<widget::Screen> screen = FindScreen();
+  return LayoutDeviceIntRect::ToAppUnits(screen->GetRect(),
+                                         AppUnitsPerDevPixel());
 }
 
-nsresult nsDeviceContext::GetRect(nsRect& aRect) {
+nsRect nsDeviceContext::GetClientRect() {
   if (IsPrinterContext()) {
-    aRect.SetRect(0, 0, mWidth, mHeight);
-  } else
-    ComputeFullAreaUsingScreen(&aRect);
-
-  return NS_OK;
-}
-
-nsresult nsDeviceContext::GetClientRect(nsRect& aRect) {
-  if (IsPrinterContext()) {
-    aRect.SetRect(0, 0, mWidth, mHeight);
-  } else
-    ComputeClientRectUsingScreen(&aRect);
-
-  return NS_OK;
+    return {0, 0, mWidth, mHeight};
+  }
+  RefPtr<widget::Screen> screen = FindScreen();
+  return LayoutDeviceIntRect::ToAppUnits(screen->GetAvailRect(),
+                                         AppUnitsPerDevPixel());
 }
 
 nsresult nsDeviceContext::InitForPrinting(nsIDeviceContextSpec* aDevice) {
@@ -277,19 +240,21 @@ nsresult nsDeviceContext::InitForPrinting(nsIDeviceContextSpec* aDevice) {
 
 nsresult nsDeviceContext::BeginDocument(const nsAString& aTitle,
                                         const nsAString& aPrintToFileName,
+                                        uint64_t aBrowsingContextId,
                                         int32_t aStartPage, int32_t aEndPage) {
   MOZ_DIAGNOSTIC_ASSERT(!mIsCurrentlyPrintingDoc,
                         "Mismatched BeginDocument/EndDocument calls");
   AUTO_PROFILER_MARKER_TEXT("DeviceContext Printing", LAYOUT_Printing, {},
                             "nsDeviceContext::BeginDocument"_ns);
 
-  nsresult rv = mPrintTarget->BeginPrinting(aTitle, aPrintToFileName,
-                                            aStartPage, aEndPage);
+  mBrowsingContextId = aBrowsingContextId;
+  nsresult rv = mPrintTarget->BeginPrinting(
+      aTitle, aPrintToFileName, aBrowsingContextId, aStartPage, aEndPage);
 
   if (NS_SUCCEEDED(rv)) {
     if (mDeviceContextSpec) {
-      rv = mDeviceContextSpec->BeginDocument(aTitle, aPrintToFileName,
-                                             aStartPage, aEndPage);
+      rv = mDeviceContextSpec->BeginDocument(
+          aTitle, aPrintToFileName, aBrowsingContextId, aStartPage, aEndPage);
     }
     mIsCurrentlyPrintingDoc = true;
   }
@@ -309,6 +274,17 @@ RefPtr<PrintEndDocumentPromise> nsDeviceContext::EndDocument() {
                             "nsDeviceContext::EndDocument"_ns);
 
   mIsCurrentlyPrintingDoc = false;
+#if defined(ACCESSIBILITY) && defined(MOZ_ENABLE_SKIA_PDF)
+  // PdfStructTreeBuilder::Init is called in
+  // a11y::DocManager::NotifyOfPrintDocument for same-process documents or
+  // a11y::DocAccessibleParent::RecvPrinting for remote documents, triggered by
+  // nsPrintJob::SetupToPrintContent. This is because the accessibility tree
+  // needs to be built from the DOM document and potentially sent async from the
+  // content process before printing begins. However, cleanup is much simpler:
+  // we can do it synchronously as soon as we're finished printing and
+  // nsDeviceContext will always be notified when we finish printing.
+  mozilla::a11y::PdfStructTreeBuilder::Done(mBrowsingContextId);
+#endif
 
   if (mPrintTarget) {
     auto result = mPrintTarget->EndPrinting();
@@ -335,9 +311,13 @@ nsresult nsDeviceContext::AbortDocument() {
 
   nsresult rv = mPrintTarget->AbortPrinting();
   mIsCurrentlyPrintingDoc = false;
+#if defined(ACCESSIBILITY) && defined(MOZ_ENABLE_SKIA_PDF)
+  // See the comment in EndDocument.
+  mozilla::a11y::PdfStructTreeBuilder::Done(mBrowsingContextId);
+#endif
 
   if (mDeviceContextSpec) {
-    Unused << mDeviceContextSpec->EndDocument();
+    (void)mDeviceContextSpec->EndDocument();
   }
 
   mPrintTarget = nullptr;
@@ -375,50 +355,14 @@ nsresult nsDeviceContext::EndPage() {
   return NS_OK;
 }
 
-void nsDeviceContext::ComputeClientRectUsingScreen(nsRect* outRect) {
-  // we always need to recompute the clientRect
-  // because the window may have moved onto a different screen. In the single
-  // monitor case, we only need to do the computation if we haven't done it
-  // once already, and remember that we have because we're assured it won't
-  // change.
-  if (RefPtr<widget::Screen> screen = FindScreen()) {
-    *outRect = LayoutDeviceIntRect::ToAppUnits(screen->GetAvailRect(),
-                                               AppUnitsPerDevPixel());
-  }
-}
-
-void nsDeviceContext::ComputeFullAreaUsingScreen(nsRect* outRect) {
-  // if we have more than one screen, we always need to recompute the clientRect
-  // because the window may have moved onto a different screen. In the single
-  // monitor case, we only need to do the computation if we haven't done it
-  // once already, and remember that we have because we're assured it won't
-  // change.
-  if (RefPtr<widget::Screen> screen = FindScreen()) {
-    *outRect = LayoutDeviceIntRect::ToAppUnits(screen->GetRect(),
-                                               AppUnitsPerDevPixel());
-    mWidth = outRect->Width();
-    mHeight = outRect->Height();
-  }
-}
-
-//
-// FindScreen
-//
-// Determines which screen intersects the largest area of the given surface.
-//
 already_AddRefed<widget::Screen> nsDeviceContext::FindScreen() {
-  if (!mWidget) {
-    return nullptr;
+  if (mWidget) {
+    CheckDPIChange();
+    if (RefPtr<widget::Screen> screen = mWidget->GetWidgetScreen()) {
+      return screen.forget();
+    }
   }
-
-  CheckDPIChange();
-
-  if (RefPtr<widget::Screen> screen = mWidget->GetWidgetScreen()) {
-    return screen.forget();
-  }
-
-  ScreenManager& screenManager = ScreenManager::GetSingleton();
-  return screenManager.GetPrimaryScreen();
+  return ScreenManager::GetSingleton().GetPrimaryScreen();
 }
 
 bool nsDeviceContext::CalcPrintingSize() {
@@ -454,28 +398,22 @@ bool nsDeviceContext::SetFullZoom(float aScale) {
   return oldAppUnitsPerDevPixel != mAppUnitsPerDevPixel;
 }
 
-static int32_t ApplyFullZoom(int32_t aUnzoomedAppUnits, float aFullZoom) {
-  if (aFullZoom == 1.0f) {
-    return aUnzoomedAppUnits;
-  }
-  return std::max(1, NSToIntRound(float(aUnzoomedAppUnits) / aFullZoom));
-}
-
 int32_t nsDeviceContext::AppUnitsPerDevPixelInTopLevelChromePage() const {
   // The only zoom that applies to chrome pages is the system zoom, if any.
-  return ApplyFullZoom(mAppUnitsPerDevPixelAtUnitFullZoom,
-                       LookAndFeel::SystemZoomSettings().mFullZoom);
+  return ApplyFullZoomToAPD(mAppUnitsPerDevPixelAtUnitFullZoom,
+                            LookAndFeel::SystemZoomSettings().mFullZoom);
 }
 
 void nsDeviceContext::UpdateAppUnitsForFullZoom() {
   mAppUnitsPerDevPixel =
-      ApplyFullZoom(mAppUnitsPerDevPixelAtUnitFullZoom, mFullZoom);
+      ApplyFullZoomToAPD(mAppUnitsPerDevPixelAtUnitFullZoom, mFullZoom);
   // adjust mFullZoom to reflect appunit rounding
   mFullZoom = float(mAppUnitsPerDevPixelAtUnitFullZoom) / mAppUnitsPerDevPixel;
 }
 
 DesktopToLayoutDeviceScale nsDeviceContext::GetDesktopToDeviceScale() {
-  if (RefPtr<widget::Screen> screen = FindScreen()) {
+  if (mWidget) {
+    RefPtr<widget::Screen> screen = FindScreen();
     return screen->GetDesktopToLayoutDeviceScale();
   }
   return DesktopToLayoutDeviceScale(1.0);

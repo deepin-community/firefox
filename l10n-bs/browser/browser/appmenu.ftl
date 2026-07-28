@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Preuzimanja
 appmenuitem-passwords =
     .label = Lozinke
+appmenuitem-extensions-and-themes =
+    .label = Ekstenzije i teme
+appmenuitem-extensions =
+    .label = Ekstenzije
 appmenuitem-addons-and-themes =
     .label = Add-oni i teme
 appmenuitem-print =
@@ -77,6 +81,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Prikaži više tabova
     .tooltiptext = Prikaži više tabova s ovog uređaja
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Neaktivni tabovi
+    .tooltiptext = Pogledajte neaktivne tabove na ovom uređaju
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nema otvorenih tabova
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -104,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Sinhroniziraj i sačuvaj podatke
 appmenu-fxa-signed-in-label = Prijava
 appmenu-fxa-setup-sync =
     .label = Uključi sinhronizaciju…
+appmenu-fxa-setup-sync-new = Uključi
 appmenuitem-save-page =
     .label = Spasi stranicu kao…
+appmenuitem-fxa-sync-off-title = Sinhronizacija je isključena
+appmenuitem-fxa-sync-off-description = Zaštitite i pristupite svojim oznakama, lozinkama i još mnogo toga bilo gdje.
 
 ## What's New panel in App menu.
 
@@ -124,6 +135,9 @@ profiler-popup-button-idle =
     .label = Profiler
     .tooltiptext = Snimi profil performansi
 profiler-popup-button-recording =
+    .label = Profiler
+    .tooltiptext = Profiler snima profil
+profiler-popup-button-capturing =
     .label = Profiler
     .tooltiptext = Profiler snima profil
 profiler-popup-header-text = { -profiler-brand-name }
@@ -156,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Otvori panel profilera
+    .tooltiptext = Otvori panel profilera
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -182,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Unaprijed postavljen za istraživanje audio i video grešaka u { -brand-shorter-name }u.
 profiler-popup-presets-media-label =
     .label = Mediji
+profiler-popup-presets-ml-description = Unaprijed postavljeno za istraživanje grešaka u mašinskom učenju u { -brand-shorter-name }u.
+profiler-popup-presets-ml-label =
+    .label = Mašinsko učenje
 profiler-popup-presets-networking-description = Unaprijed postavljen za istraživanje grešaka u mreži u { -brand-shorter-name }u.
 profiler-popup-presets-networking-label =
     .label = Umrežavanje
@@ -189,6 +209,9 @@ profiler-popup-presets-power-description = Unaprijed postavljen za istraživanje
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Struja
+profiler-popup-presets-debug-description = Unaprijed postavljeno za otklanjanje grešaka u { -brand-shorter-name }. Visoki troškovi, ne koristite za rad na performansama, već za fokusiranje na razumijevanje ponašanja pretraživača.
+profiler-popup-presets-debug-label =
+    .label = Otklanjanje grešaka
 profiler-popup-presets-custom-label =
     .label = Prilagođeno
 
@@ -219,14 +242,26 @@ appmenu-about =
 appmenu-get-help =
     .label = Pomoć
     .accesskey = h
+appmenu-help-more-troubleshooting-info =
+    .label = Više informacija o rješavanju problema
+    .accesskey = t
 appmenu-help-report-site-issue =
     .label = Prijavite problem sa stranicom…
+appmenu-help-share-ideas =
+    .label = Podijelite ideje i povratne informacije…
+    .accesskey = S
 appmenu-help-switch-device =
     .label = Prelazak na novi uređaj
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
 
+appmenu-help-enter-troubleshoot-mode2 =
+    .label = Način rješavanja problema…
+    .accesskey = M
+appmenu-help-exit-troubleshoot-mode =
+    .label = Isključi način rješavanja problema
+    .accesskey = M
 
 ## appmenu-help-report-deceptive-site and appmenu-help-not-deceptive
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -255,5 +290,20 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Primajte upozorenja o curenju podataka
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maskirajte svoj pravi e-mail i telefon
+appmenuitem-services-relay-description = Pokreni kontrolnu ploču za email maske
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Zaštitite svoju aktivnost na mreži
+appmenu-services-header = Moje usluge
+appmenu-other-protection-header = Isprobajte druge alate za zaštitu od { -vendor-short-name }a:
+
+## Profiles panel
+
+appmenu-other-profiles = Ostali profili
+appmenu-manage-profiles =
+    .label = Upravljaj profilima
+appmenu-create-profile =
+    .label = Novi profil
+appmenu-edit-profile =
+    .aria-label = Uredi profil
+appmenu-profiles-2 =
+    .label = Profili

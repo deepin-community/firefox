@@ -11,11 +11,12 @@ import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.browser.state.state.createCustomTab
 import mozilla.components.browser.state.state.createTab
 import mozilla.components.browser.state.store.BrowserStore
-import mozilla.components.support.test.ext.joinBlocking
+import mozilla.components.concept.engine.EngineSession
+import mozilla.components.support.test.mock
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import kotlin.test.assertNotNull
 
 class SelectorsKtTest {
     @Test
@@ -27,21 +28,21 @@ class SelectorsKtTest {
 
         store.dispatch(
             CustomTabListAction.AddCustomTabAction(createCustomTab("https://www.mozilla.org")),
-        ).joinBlocking()
+        )
 
         assertNull(store.state.selectedTab)
 
         val tab = createTab("https://www.firefox.com")
-        store.dispatch(TabListAction.AddTabAction(tab, select = true)).joinBlocking()
+        store.dispatch(TabListAction.AddTabAction(tab, select = true))
 
         assertEquals(tab, store.state.selectedTab)
 
         val otherTab = createTab("https://getpocket.com", lastAccess = tabLastAccessTimeStamp)
-        store.dispatch(TabListAction.AddTabAction(otherTab)).joinBlocking()
+        store.dispatch(TabListAction.AddTabAction(otherTab))
 
         assertEquals(tab, store.state.selectedTab)
 
-        store.dispatch(TabListAction.SelectTabAction(otherTab.id)).joinBlocking()
+        store.dispatch(TabListAction.SelectTabAction(otherTab.id))
 
         assertEquals(otherTab, store.state.selectedTab)
     }
@@ -54,19 +55,19 @@ class SelectorsKtTest {
 
         store.dispatch(
             CustomTabListAction.AddCustomTabAction(createCustomTab("https://www.mozilla.org")),
-        ).joinBlocking()
+        )
 
         assertNull(store.state.selectedNormalTab)
 
         val privateTab = createTab("https://www.firefox.com", private = true)
-        store.dispatch(TabListAction.AddTabAction(privateTab, select = true)).joinBlocking()
+        store.dispatch(TabListAction.AddTabAction(privateTab, select = true))
         assertNull(store.state.selectedNormalTab)
 
         val normalTab = createTab("https://getpocket.com", lastAccess = tabLastAccessTimeStamp)
-        store.dispatch(TabListAction.AddTabAction(normalTab)).joinBlocking()
+        store.dispatch(TabListAction.AddTabAction(normalTab))
         assertNull(store.state.selectedNormalTab)
 
-        store.dispatch(TabListAction.SelectTabAction(normalTab.id)).joinBlocking()
+        store.dispatch(TabListAction.SelectTabAction(normalTab.id))
         assertEquals(normalTab, store.state.selectedNormalTab)
     }
 
@@ -105,6 +106,21 @@ class SelectorsKtTest {
     }
 
     @Test
+    fun `WHEN findTab WITH engine session THEN correct tab is returned`() {
+        val mockEngineSession: EngineSession = mock()
+        val tab = createTab("https://www.firefox.com", engineSession = mockEngineSession)
+        val otherTab = createTab("https://getpocket.com")
+        val customTab = createCustomTab("https://www.mozilla.org")
+
+        val state = BrowserState(
+            tabs = listOf(tab, otherTab),
+            customTabs = listOf(customTab),
+        )
+
+        assertEquals(tab, state.findTab(mockEngineSession))
+    }
+
+    @Test
     fun `findNormalTab extension function`() {
         val privateTab = createTab("https://www.firefox.com", private = true)
         val normalTab = createTab("https://getpocket.com")
@@ -134,6 +150,21 @@ class SelectorsKtTest {
         assertNull(state.findCustomTab(tab.id))
         assertNull(state.findCustomTab(otherTab.id))
         assertEquals(customTab, state.findCustomTab(customTab.id))
+    }
+
+    @Test
+    fun `WHEN findCustomTab WITH engine session THEN correct tab is returned`() {
+        val mockEngineSession: EngineSession = mock()
+        val tab = createTab("https://www.firefox.com")
+        val otherTab = createTab("https://getpocket.com")
+        val customTab = createCustomTab("https://www.mozilla.org", engineSession = mockEngineSession)
+
+        val state = BrowserState(
+            tabs = listOf(tab, otherTab),
+            customTabs = listOf(customTab),
+        )
+
+        assertEquals(customTab, state.findCustomTab(mockEngineSession))
     }
 
     @Test
@@ -231,6 +262,30 @@ class SelectorsKtTest {
             assertEquals(
                 "https://www.mozilla.org",
                 state.findTabOrCustomTab("test-id")!!.content.url,
+            )
+        }
+    }
+
+    @Test
+    fun `WHEN findTabOrCustomTab WITH engine session THEN correct tab is returned`() {
+        val mockEngineSession: EngineSession = mock()
+        BrowserState(
+            tabs = listOf(createTab("https://www.mozilla.org", engineSession = mockEngineSession)),
+        ).also { state ->
+            assertNotNull(state.findTabOrCustomTab(mockEngineSession))
+            assertEquals(
+                "https://www.mozilla.org",
+                state.findTabOrCustomTab(mockEngineSession)!!.content.url,
+            )
+        }
+
+        BrowserState(
+            customTabs = listOf(createCustomTab("https://www.mozilla.org", engineSession = mockEngineSession)),
+        ).also { state ->
+            assertNotNull(state.findTabOrCustomTab(mockEngineSession))
+            assertEquals(
+                "https://www.mozilla.org",
+                state.findTabOrCustomTab(mockEngineSession)!!.content.url,
             )
         }
     }

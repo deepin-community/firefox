@@ -16,6 +16,12 @@ about-glean-interface-description =
     is gegevenssamlingsbiblioteek dy’t brûkt wurdt yn { -vendor-short-name }-projekten.
     Dizze interface is ûntwurpen foar gebrûk troch ûntwikkelers en testers om hânmjittich
     <a data-l10n-name="fog-link">ynstrumintaasje te testen</a>.
+about-glean-category-about-glean = Oer { -glean-brand-name }
+about-glean-category-manual-testing = Hânmjittich teste
+about-glean-category-adhoc-testing = Ad-hocteste
+about-glean-category-profiler = De Profiler brûke
+about-glean-category-about-data = Oer gegevens
+about-glean-category-metrics-table = Tabel mei statistiken
 about-glean-upload-enabled = Gegevensoplaad is ynskeakele.
 about-glean-upload-disabled = Gegevensoplaad is útskeakele.
 about-glean-upload-enabled-local = Gegevensoplaad is allinnich ynskeakele foar ferstjoeren nei in lokale server.
@@ -43,6 +49,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Foar in útlis oer ferskate manieren om gegevens fêst te lizzen en te finen it
+    ljepblêd <strong>Oer gegevens</strong>.
 about-glean-about-testing-header = Oer testen
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -100,8 +109,104 @@ about-glean-adhoc-note =
     Hâld der rekkening mei dat jo de Glean JS-API brûke yn de devtools-console.
     Dit betsjut dat de metryske kategory en de metryske namme opmakke binne yn
     <code>camelCase</code>, yn tsjinstelling ta de Rust- en C++-API’s.
+about-glean-profiler-explanation =
+    Om in folslein oersjoch fan alle opnommen statistiken te sjen, kinne jo de { -profiler-brand-name } brûke.
+    Earst moatte jo <a data-l10n-name="firefox-profiler-link">in prestaasjesprofyl fêstlizze</a>.
+    Sadree’t jo it profyl fêstlein hawwe, selektearje <q>Marker Chart</q> en sjoch nei de markearringen ûnder <q>Telemetry</q>.
+about-glean-profiler-explanation-profiler =
+    Yn it prestaasjesprofyl kinne jo alle sammele statistiken besjen, wannear’t sammele
+    binne, en krekt hokker wearden sammele binne. Troch yndividuele markearringen oan te wizen,
+    kinne jo ferifiearje dat de krekte wearde sammele is en oft de kolleksje barde op it krekte momint.
 controls-button-label-verbose = Ynstellingen tapasse en ping ferstjoere
+about-glean-feedback-settings-only =
+    .message = Ynstellingen tapast!
+about-glean-feedback-settings-and-ping =
+    .message = Ynstellingen tapast en ping ferstjoerd!
 about-glean-about-data-header = Oer gegevens
+about-glean-about-data-description =
+    Der is ferskillend ark dy’t jo brûke kinne om jo gegevens te besjen, ôfhinklik fan
+    wêr’t jo nei sykje.
+about-glean-about-data-description-list-intro =
+    Besjoch de ûndersteande list foar spesifike gebrûksfoarbylden
+    foar elk helpmiddel:
+about-glean-about-data-list-item-dictionary =
+    Besjoch, om troch de list mei troch { -glean-brand-name } sammele gegevens per tapassing te blêdzjen, de
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name }-biblioteek</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Besjoch om troch de fia legacy-telemetry sammele gegevens te blêdzjen
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Besjoch om troch debuglabels te blêdzjen, folsleine pings te besjen, in live-barresstream te besjen of statistyk-
+    fisualisaasjes te besjen de
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Brûk foar it opnimmen fan in prestaasjeprofyl en it besjen fan alle opnommen statistiken de
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
+about-glean-metrics-table-header = Alle statistiken
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Kategory
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Namme
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Type
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Wearde
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Aksjes
+about-glean-metrics-table-settings-button = Ynstellingen
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Statistyktabelynstellingen
+about-glean-metrics-table-settings-category-general = Algemien
+about-glean-metrics-table-settings-hide-empty-value-rows = Regels mei lege wearden ferstopje
+about-glean-metrics-table-settings-category-visualizations = Fisualisaasjes
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Foarbyld
+about-glean-metrics-table-settings-category-visualizations-histogram = Histogram
+about-glean-metrics-table-settings-histograms-chart-max = Maksimale hichte diagram
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Skealde maksimumhichte
+about-glean-metrics-table-settings-histograms-box-padding = Box-opfolling
+about-glean-metrics-table-settings-histograms-chart-padding = Grafykopfolling
+about-glean-metrics-table-settings-histograms-left-padding = Ekstra linkeropfolling
+about-glean-metrics-table-settings-category-visualizations-timeline = Tiidline
+about-glean-metrics-table-settings-timelines-height = Hichte
+about-glean-metrics-table-settings-timelines-width = Breedte
+about-glean-metrics-table-settings-timelines-chart-padding = Grafykopfolling
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Sirkelstraal
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = X-offset Y-as
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Y-offset Y-as
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Filterje
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Dit filteret de ûndersteande tabel op basis fan kategory, namme, type en wearde (as de wearde in ienfâldich type is).
+about-glean-button-load-all = Alle wearden lade
+# A button that, when pressed, exports the data currently shown in the metrics table
+about-glean-button-export-data = Gegevens eksportearje
+about-glean-button-load-value = Lade
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Dokuminten
+about-glean-button-watch = Folgje
+# Meaning "to stop watching"
+about-glean-button-unwatch = Net mear folgje
+about-glean-no-data-to-display = Gjin gegevens om wer te jaan.
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = <code>DualLabeledCounter</code>-statistiken wurde noch net stipe yn de <code>about:glean</code>-werjefte.
+about-glean-unknown-metric-type-warning = Unbekend statistyktype.
 about-glean-about-data-explanation =
     Besjoch, om troch de list mei sammele gegevens te blêdzjen, de
     <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name }-biblioteek</a>.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Ynboude pings
+about-glean-ping-list-optgroup-custom =
+    .label = Oanpaste pings

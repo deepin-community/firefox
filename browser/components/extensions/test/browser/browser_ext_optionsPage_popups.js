@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 async function openContextMenuInOptionsPage(optionsBrowser) {
@@ -22,7 +20,7 @@ async function openContextMenuInOptionsPage(optionsBrowser) {
       new content.MouseEvent("contextmenu", {
         bubbles: true,
         cancelable: true,
-        view: el.ownerGlobal,
+        view: el.documentGlobal,
       })
     );
   });
@@ -101,9 +99,8 @@ add_task(async function test_tab_options_popups() {
 
   const optionsBrowser = getInlineOptionsBrowser(gBrowser.selectedBrowser);
 
-  const contentAreaContextMenu = await openContextMenuInOptionsPage(
-    optionsBrowser
-  );
+  const contentAreaContextMenu =
+    await openContextMenuInOptionsPage(optionsBrowser);
 
   let contextMenuItemIds = [
     "context-openlinkintab",
@@ -220,9 +217,8 @@ add_task(async function overrideContext_in_options_page() {
   await extension.awaitMessage("options-page:loaded");
 
   const optionsBrowser = getInlineOptionsBrowser(gBrowser.selectedBrowser);
-  const contentAreaContextMenu = await openContextMenuInOptionsPage(
-    optionsBrowser
-  );
+  const contentAreaContextMenu =
+    await openContextMenuInOptionsPage(optionsBrowser);
 
   await extension.awaitMessage("contextmenu-overridden");
 

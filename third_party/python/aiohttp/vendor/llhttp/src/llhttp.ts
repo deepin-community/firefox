@@ -1,10 +1,19 @@
-import * as constants from './llhttp/constants';
+import constants from './llhttp/constants';
 
-import HTTPMode = constants.HTTPMode;
+import { HTTP } from './llhttp/http';
+import { URL } from './llhttp/url';
+import { CHeaders } from './llhttp/c-headers';
 
-export { constants };
-export { HTTPMode };
+export { 
+  constants,
+  HTTP,
+  URL,
+  CHeaders,
+};
 
-export { HTTP } from './llhttp/http';
-export { URL } from './llhttp/url';
-export { CHeaders } from './llhttp/c-headers';
+export default {
+  constants,
+  HTTP,
+  URL,
+  CHeaders,
+}

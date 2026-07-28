@@ -24,8 +24,9 @@ class DownloadEntityTest {
             contentType = "application/zip",
             contentLength = 5242880,
             status = DownloadState.Status.DOWNLOADING,
-            destinationDirectory = Environment.DIRECTORY_MUSIC,
+            directoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path,
             createdAt = 33,
+            etag = "etag",
         )
 
         val downloadState = downloadEntity.toDownloadState()
@@ -36,8 +37,9 @@ class DownloadEntityTest {
         assertEquals(downloadEntity.contentType, downloadState.contentType)
         assertEquals(downloadEntity.contentLength, downloadState.contentLength)
         assertEquals(downloadEntity.status, downloadState.status)
-        assertEquals(downloadEntity.destinationDirectory, downloadState.destinationDirectory)
+        assertEquals(downloadEntity.directoryPath, downloadState.directoryPath)
         assertEquals(downloadEntity.createdAt, downloadState.createdTime)
+        assertEquals(downloadEntity.etag, downloadState.etag)
     }
 
     @Test
@@ -49,9 +51,10 @@ class DownloadEntityTest {
             contentType = "application/zip",
             contentLength = 5242880,
             status = DownloadState.Status.DOWNLOADING,
-            destinationDirectory = Environment.DIRECTORY_MUSIC,
+            directoryPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path,
             private = true,
             createdTime = 33,
+            etag = "etag",
         )
 
         val downloadEntity = downloadState.toDownloadEntity()
@@ -62,8 +65,9 @@ class DownloadEntityTest {
         assertEquals(downloadState.contentType, downloadEntity.contentType)
         assertEquals(downloadState.contentLength, downloadEntity.contentLength)
         assertEquals(downloadState.status, downloadEntity.status)
-        assertEquals(downloadState.destinationDirectory, downloadEntity.destinationDirectory)
+        assertEquals(downloadState.directoryPath, downloadEntity.directoryPath)
         assertEquals(downloadState.createdTime, downloadEntity.createdAt)
+        assertEquals(downloadState.etag, downloadEntity.etag)
     }
 
     @Test

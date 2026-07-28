@@ -5,7 +5,6 @@
 
 ##
 ## Localization for remote types defined in RemoteType.h
-##
 
 process-type-web = Веб-содержимое
 # process used to run privileged about pages,
@@ -24,13 +23,12 @@ process-type-forkserver = Форк-сервер
 process-type-webisolated = Изолированное веб-содержимое
 # process used to isolate a ServiceWorker to improve
 # performance
-process-type-webserviceworker = Изолированный Service Worker
+process-type-webserviceworker = Изолированный Обработчик
 # process preallocated; may change to other types
 process-type-prealloc = Зарезервирован
 
 ##
 ## Localization for Gecko process types defined in GeckoProcessTypes.h
-##
 
 process-type-default = Основной
 process-type-tab = Вкладка
@@ -45,7 +43,7 @@ process-type-rdd = RDD
 process-type-inference = Вывод
 # process used to run some IPC actor in their own sandbox
 process-type-utility = IPC Actor в песочнице
-process-type-utility-actor-audio-decoder-generic = Утилита Универсальный аудиодекодер
+process-type-utility-actor-audio-decoder-generic = Утилита «Универсальный аудиодекодер»
 process-type-utility-actor-audio-decoder-applemedia = Утилита AppleMedia
 process-type-utility-actor-audio-decoder-wmf = Утилита Windows Media Foundation
 process-type-utility-actor-mf-media-engine = Утилита Media Foundation Engine
@@ -55,7 +53,6 @@ process-type-utility-actor-windows-file-dialog = Утилита Windows File Dia
 
 ##
 ## Other
-##
 
 # fallback
 process-type-unknown = Неизвестно

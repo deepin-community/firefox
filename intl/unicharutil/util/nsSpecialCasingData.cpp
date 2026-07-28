@@ -6,11 +6,11 @@
    by genSpecialCasingData.pl - do not edit! */
 
 #include "nsSpecialCasingData.h"
-#include "mozilla/ArrayUtils.h" // for ArrayLength
 #include <stdlib.h>       // for bsearch
+#include <array>          // for std::size
 
-/* SpecialCasing-15.0.0.txt */
-/* Date: 2022-02-02, 23:35:52 GMT */
+/* SpecialCasing-17.0.0.txt */
+/* Date: 2025-07-31, 22:11:55 GMT */
 
 using mozilla::unicode::MultiCharMapping;
 
@@ -186,7 +186,7 @@ static int CompareMCM(const void* aKey, const void* aElement)
   Special##which(uint32_t aChar) \
   { \
     const void* p = bsearch(&aChar, CaseSpecials_##which, \
-                            mozilla::ArrayLength(CaseSpecials_##which), \
+                            std::size(CaseSpecials_##which), \
                             sizeof(MultiCharMapping), CompareMCM); \
     return static_cast<const MultiCharMapping*>(p); \
   }

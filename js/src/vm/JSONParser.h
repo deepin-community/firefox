@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -9,6 +7,7 @@
 
 #include "mozilla/Assertions.h"  // MOZ_ASSERT
 #include "mozilla/Attributes.h"  // MOZ_STACK_CLASS
+#include "mozilla/Maybe.h"       // mozilla::{Maybe,Some}
 #include "mozilla/Range.h"       // mozilla::Range
 #include "mozilla/RangedPtr.h"   // mozilla::RangedPtr
 
@@ -207,6 +206,10 @@ class MOZ_STACK_CLASS JSONFullParseHandlerAnyChar {
 
   JSContext* cx;
 
+  bool reportLineNumbersFromParsedData = false;
+
+  mozilla::Maybe<JS::ConstUTF8CharsZ> filename;
+
   JS::Value v;
 
   ParseType parseType = ParseType::JSONParse;
@@ -324,7 +327,6 @@ class MOZ_STACK_CLASS JSONFullParseHandler
   void reportError(const char* msg, uint32_t line, uint32_t column);
 };
 
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
 template <typename CharT>
 class MOZ_STACK_CLASS JSONReviveHandler : public JSONFullParseHandler<CharT> {
   using CharPtr = mozilla::RangedPtr<const CharT>;
@@ -332,7 +334,6 @@ class MOZ_STACK_CLASS JSONReviveHandler : public JSONFullParseHandler<CharT> {
 
  public:
   using SourceT = mozilla::Span<const CharT>;
-  using ParseRecordEntry = ParseRecordObject::EntryMap;
 
   using JSONStringBuilder = typename Base::JSONStringBuilder;
   using StackEntry = typename Base::StackEntry;
@@ -344,8 +345,7 @@ class MOZ_STACK_CLASS JSONReviveHandler : public JSONFullParseHandler<CharT> {
 
   JSONReviveHandler(JSONReviveHandler&& other) noexcept
       : Base(std::move(other)),
-        parseRecordStack(std::move(other.parseRecordStack)),
-        parseRecord(std::move(other.parseRecord)) {}
+        parseRecordStack(std::move(other.parseRecordStack)) {}
 
   JSONReviveHandler(const JSONReviveHandler& other) = delete;
   void operator=(const JSONReviveHandler& other) = delete;
@@ -358,6 +358,10 @@ class MOZ_STACK_CLASS JSONReviveHandler : public JSONFullParseHandler<CharT> {
                                            std::forward<SourceT&&>(source))) {
       return false;
     }
+    // Property names don't need parse records.
+    if constexpr (ST == JSONStringType::PropertyName) {
+      return true;
+    }
     return finishPrimitiveParseRecord(this->v, source);
   }
 
@@ -366,6 +370,10 @@ class MOZ_STACK_CLASS JSONReviveHandler : public JSONFullParseHandler<CharT> {
     if (!Base::template setStringValue<ST>(builder,
                                            std::forward<SourceT&&>(source))) {
       return false;
+    }
+    // Property names don't need parse records.
+    if constexpr (ST == JSONStringType::PropertyName) {
+      return true;
     }
     return finishPrimitiveParseRecord(this->v, source);
   }
@@ -404,19 +412,15 @@ class MOZ_STACK_CLASS JSONReviveHandler : public JSONFullParseHandler<CharT> {
 
   void trace(JSTracer* trc);
 
+  inline ParseRecordObject* getParseRecordObject() {
+    return parseRecordStack.back();
+  };
+
  private:
-  inline bool finishMemberParseRecord(JS::PropertyKey& key,
-                                      ParseRecordEntry& objectEntry);
-  inline bool finishCompoundParseRecord(const Value& value,
-                                        ParseRecordEntry& objectEntry);
   inline bool finishPrimitiveParseRecord(const Value& value, SourceT source);
 
-  Vector<ParseRecordEntry, 10> parseRecordStack;
-
- public:
-  ParseRecordObject parseRecord;
+  GCVector<ParseRecordObject*, 10> parseRecordStack;
 };
-#endif  // ENABLE_JSON_PARSE_WITH_SOURCE
 
 template <typename CharT>
 class MOZ_STACK_CLASS JSONSyntaxParseHandler {
@@ -598,10 +602,21 @@ class MOZ_STACK_CLASS JSONParser
    */
   bool parse(JS::MutableHandle<JS::Value> vp);
 
+  void reportLineNumbersFromParsedData(bool b) {
+    this->handler.reportLineNumbersFromParsedData = b;
+  }
+
+  /**
+   * Set a filename to be used in error messages.
+   * This is optional and only used for error reporting.
+   */
+  void setFilename(JS::ConstUTF8CharsZ filename) {
+    this->handler.filename = mozilla::Some(filename);
+  }
+
   void trace(JSTracer* trc);
 };
 
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
 template <typename CharT>
 class MOZ_STACK_CLASS JSONReviveParser
     : JSONPerHandlerParser<CharT, JSONReviveHandler<CharT>> {
@@ -638,11 +653,10 @@ class MOZ_STACK_CLASS JSONReviveParser
    * set to |undefined|.
    */
   bool parse(JS::MutableHandle<JS::Value> vp,
-             JS::MutableHandle<ParseRecordObject> pro);
+             JS::MutableHandle<ParseRecordObject*> pro);
 
   void trace(JSTracer* trc);
 };
-#endif  // ENABLE_JSON_PARSE_WITH_SOURCE
 
 template <typename CharT, typename Wrapper>
 class MutableWrappedPtrOperations<JSONParser<CharT>, Wrapper>
@@ -650,6 +664,12 @@ class MutableWrappedPtrOperations<JSONParser<CharT>, Wrapper>
  public:
   bool parse(JS::MutableHandle<JS::Value> vp) {
     return static_cast<Wrapper*>(this)->get().parse(vp);
+  }
+  void setFilename(JS::ConstUTF8CharsZ filename) {
+    static_cast<Wrapper*>(this)->get().setFilename(filename);
+  }
+  void reportLineNumbersFromParsedData(bool b) {
+    static_cast<Wrapper*>(this)->get().reportLineNumbersFromParsedData(b);
   }
 };
 

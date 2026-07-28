@@ -4,35 +4,29 @@
 
 profile-selection-window =
     .title = { -brand-short-name } - Vel brukarprofil
-
 profile-selection-button-accept =
     .label = Start { -brand-short-name }
-
 profile-selection-button-cancel =
     .label = Avslutt
-
 profile-selection-new-button =
     .label = Lag ny profil…
     .accesskey = L
-
 profile-selection-rename-button =
     .label = Endre profilnamn…
     .accesskey = E
-
 profile-selection-delete-button =
     .label = Slett profil…
     .accesskey = S
-
 profile-selection-conflict-message = EIt anna eksemplar av programmet { -brand-product-name } har gjort endringar i profilane. Du må starte { -brand-short-name } på nytt før du kan gjere fleire endringar.
 
 ## Messages used in the profile manager
 
 profile-manager-description = { -brand-short-name } lagrar innstillingar og andre brukardata, i brukarprofilen.
-
 profile-manager-work-offline =
     .label = Arbeid fråkopla
     .accesskey = A
-
 profile-manager-use-selected =
     .label = Bruk den valde profilen utan å spørje ved oppstart
     .accesskey = B
+profile-has-selectable-profiles-title = Kan ikkje slette ein profil som er kopla til andre profilar
+profile-has-selectable-profiles-message = For å slette denne profilen opnar du han og vel «Handsam profilar» frå profildelen i { -brand-short-name }-menyen. Etter at du har sletta eventuelle andre profilar du har oppretta her, kan du gå tilbake til about:profiles og slette denne profilen.

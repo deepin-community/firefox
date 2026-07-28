@@ -11,7 +11,7 @@
 namespace mozilla {
 namespace net {
 
-NS_IMPL_ISUPPORTS(NullHttpChannel, nsINullChannel, nsIHttpChannel,
+NS_IMPL_ISUPPORTS(NullHttpChannel, nsINullChannel, nsIChannel, nsIHttpChannel,
                   nsIIdentChannel, nsITimedChannel)
 
 NullHttpChannel::NullHttpChannel() {
@@ -25,8 +25,8 @@ NullHttpChannel::NullHttpChannel(nsIHttpChannel* chan)
   nsIScriptSecurityManager* ssm = nsContentUtils::GetSecurityManager();
   ssm->GetChannelURIPrincipal(chan, getter_AddRefs(mResourcePrincipal));
 
-  Unused << chan->GetResponseHeader("Timing-Allow-Origin"_ns,
-                                    mTimingAllowOriginHeader);
+  (void)chan->GetResponseHeader("Timing-Allow-Origin"_ns,
+                                mTimingAllowOriginHeader);
   chan->GetURI(getter_AddRefs(mURI));
   chan->GetOriginalURI(getter_AddRefs(mOriginalURI));
 
@@ -234,11 +234,6 @@ NullHttpChannel::IsNoCacheResponse(bool* _retval) {
 }
 
 NS_IMETHODIMP
-NullHttpChannel::IsPrivateResponse(bool* _retval) {
-  return NS_ERROR_NOT_IMPLEMENTED;
-}
-
-NS_IMETHODIMP
 NullHttpChannel::RedirectTo(nsIURI* aNewURI) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
@@ -273,6 +268,16 @@ NullHttpChannel::GetProtocolVersion(nsACString& aProtocolVersion) {
 
 NS_IMETHODIMP
 NullHttpChannel::GetEncodedBodySize(uint64_t* aEncodedBodySize) {
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+NullHttpChannel::GetIsUserAgentHeaderOutdated(bool* aValue) {
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+NullHttpChannel::SetIsUserAgentHeaderOutdated(bool aValue) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -497,18 +502,6 @@ NullHttpChannel::GetIsDocument(bool* aIsDocument) {
 //-----------------------------------------------------------------------------
 
 NS_IMETHODIMP
-NullHttpChannel::GetTimingEnabled(bool* aTimingEnabled) {
-  // We don't want to report timing for null channels.
-  *aTimingEnabled = false;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-NullHttpChannel::SetTimingEnabled(bool aTimingEnabled) {
-  return NS_ERROR_NOT_IMPLEMENTED;
-}
-
-NS_IMETHODIMP
 NullHttpChannel::GetRedirectCount(uint8_t* aRedirectCount) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
@@ -674,6 +667,20 @@ NullHttpChannel::GetRequestStart(mozilla::TimeStamp* aRequestStart) {
 NS_IMETHODIMP
 NullHttpChannel::GetResponseStart(mozilla::TimeStamp* aResponseStart) {
   *aResponseStart = mAsyncOpenTime;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+NullHttpChannel::GetFirstInterimResponseStart(
+    mozilla::TimeStamp* aFirstInterimResponseStart) {
+  *aFirstInterimResponseStart = mozilla::TimeStamp();
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+NullHttpChannel::GetFinalResponseHeadersStart(
+    mozilla::TimeStamp* aFinalResponseHeadersStart) {
+  *aFinalResponseHeadersStart = mAsyncOpenTime;
   return NS_OK;
 }
 
@@ -848,6 +855,19 @@ NullHttpChannel::GetRenderBlocking(bool* aRenderBlocking) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
+NS_IMETHODIMP
+NullHttpChannel::GetDecompressDictionary(
+    mozilla::net::DictionaryCacheEntry** aDictionary) {
+  *aDictionary = nullptr;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+NullHttpChannel::SetDecompressDictionary(
+    mozilla::net::DictionaryCacheEntry* aDictionary) {
+  return NS_OK;
+}
+
 #define IMPL_TIMING_ATTR(name)                                           \
   NS_IMETHODIMP                                                          \
   NullHttpChannel::Get##name##Time(PRTime* _retval) {                    \
@@ -879,6 +899,8 @@ IMPL_TIMING_ATTR(SecureConnectionStart)
 IMPL_TIMING_ATTR(ConnectEnd)
 IMPL_TIMING_ATTR(RequestStart)
 IMPL_TIMING_ATTR(ResponseStart)
+IMPL_TIMING_ATTR(FirstInterimResponseStart)
+IMPL_TIMING_ATTR(FinalResponseHeadersStart)
 IMPL_TIMING_ATTR(ResponseEnd)
 IMPL_TIMING_ATTR(CacheReadStart)
 IMPL_TIMING_ATTR(CacheReadEnd)

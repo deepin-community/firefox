@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import assert from 'assert';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import {Browser, Cache} from '../../lib/cjs/main.js';
+import {Browser, Cache} from '../../lib/esm/main.js';
 
 describe('Cache', () => {
   let tmpDir = '/tmp/puppeteer-browsers-test';
@@ -52,7 +52,7 @@ describe('Cache', () => {
 
     assert.deepStrictEqual(
       cache.resolveAlias(Browser.CHROME, 'canary'),
-      '123.0.0.0'
+      '123.0.0.0',
     );
   });
 
@@ -66,7 +66,7 @@ describe('Cache', () => {
 
     assert.deepStrictEqual(
       cache.resolveAlias(Browser.CHROME, 'latest'),
-      '115.0.5789'
+      '115.0.5789',
     );
   });
 });

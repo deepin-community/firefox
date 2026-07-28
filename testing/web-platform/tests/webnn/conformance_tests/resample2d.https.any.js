@@ -1,5 +1,5 @@
 // META: title=test WebNN API resample2d operation
-// META: global=window,dedicatedworker
+// META: global=window
 // META: variant=?cpu
 // META: variant=?gpu
 // META: variant=?npu
@@ -27,33 +27,6 @@
 // MLOperand resample2d(
 //     MLOperand input, optional MLResample2dOptions options = {});
 
-
-const getResample2dPrecisionTolerance = (graphResources) => {
-  const args = graphResources.operators[0].arguments;
-  const options =
-      args.length === 2 ? {...args[1][Object.keys(args[1])[0]]} : {};
-  const expectedOutputs = graphResources.expectedOutputs;
-  const dataType =
-      expectedOutputs[Object.keys(expectedOutputs)[0]].descriptor.dataType;
-  let tolerance;
-
-  if (options.mode && options.mode === 'linear') {
-    // interpolation mode is linear
-    if (dataType === 'float32') {
-      tolerance = 84;
-    } else if (dataType === 'float16') {
-      tolerance = 10;
-    } else {
-      tolerance = 1;
-    }
-  } else {
-    // interpolation mode is nearest-neighbor
-    tolerance = 0;
-  }
-
-  return {metricType: 'ULP', value: tolerance};
-};
-
 const resample2dTests = [
   {
     'name': 'resample2d float32 4D tensor default options',
@@ -70,7 +43,7 @@ const resample2dTests = [
             62.06375503540039,  1.7712159156799316, 99.4723129272461,
             11.440549850463867, 25.396343231201172, 67.0217514038086
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -90,7 +63,7 @@ const resample2dTests = [
             62.06375503540039,  1.7712159156799316, 99.4723129272461,
             11.440549850463867, 25.396343231201172, 67.0217514038086
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -104,7 +77,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 2, 3], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 2, 3], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -125,7 +98,7 @@ const resample2dTests = [
             90.7006607055664,  90.7006607055664,  86.95105743408203,
             86.95105743408203, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -139,7 +112,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 2, 3], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 2, 3], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -160,7 +133,7 @@ const resample2dTests = [
             90.7006607055664,  90.7006607055664,  86.95105743408203,
             86.95105743408203, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -175,7 +148,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 2, 3], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 2, 3], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -198,7 +171,7 @@ const resample2dTests = [
             90.7006607055664,  90.7006607055664,  86.95105743408203,
             86.95105743408203, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -212,7 +185,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 2, 3, 1], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 2, 3, 1], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -235,7 +208,7 @@ const resample2dTests = [
             90.7006607055664,  90.7006607055664,  86.95105743408203,
             86.95105743408203, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 4, 6, 1], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 4, 6, 1], dataType: 'float32'}
         }
       }
     }
@@ -250,7 +223,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 2, 3], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 2, 3], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -273,7 +246,7 @@ const resample2dTests = [
             90.7006607055664,  90.7006607055664,  86.95105743408203,
             86.95105743408203, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -288,7 +261,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 2, 3], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 2, 3], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -311,7 +284,7 @@ const resample2dTests = [
             90.7006607055664,  90.7006607055664,  86.95105743408203,
             86.95105743408203, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -326,7 +299,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 2, 3], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 2, 3], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -349,7 +322,7 @@ const resample2dTests = [
             90.7006607055664,  90.7006607055664,  86.95105743408203,
             86.95105743408203, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -364,7 +337,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 2, 3], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 2, 3], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -387,7 +360,7 @@ const resample2dTests = [
             90.7006607055664,   89.76325988769531,  87.88845825195312,
             84.9883041381836,   81.06280517578125,  79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -402,7 +375,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 2, 3], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 2, 3], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -425,7 +398,7 @@ const resample2dTests = [
             90.7006607055664,   89.76325988769531,  87.88845825195312,
             84.9883041381836,   81.06280517578125,  79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 1, 4, 6], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 1, 4, 6], dataType: 'float32'}
         }
       }
     }
@@ -440,7 +413,7 @@ const resample2dTests = [
             59.92947006225586, 41.98918914794922, 66.39534759521484,
             90.7006607055664, 86.95105743408203, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 2, 3, 1], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 2, 3, 1], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -463,7 +436,7 @@ const resample2dTests = [
             90.7006607055664,   89.76325988769531,  87.88845825195312,
             84.9883041381836,   81.06280517578125,  79.10005187988281
           ],
-          'descriptor': {'dimensions': [1, 4, 6, 1], 'dataType': 'float32'}
+          'descriptor': {shape: [1, 4, 6, 1], dataType: 'float32'}
         }
       }
     }
@@ -477,7 +450,7 @@ const resample2dTests = [
             59.92947006225586, 90.7006607055664, 41.98918914794922,
             86.95105743408203, 66.39534759521484, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [3, 2, 1, 1], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 2, 1, 1], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -500,7 +473,7 @@ const resample2dTests = [
             79.10005187988281, 79.10005187988281, 66.39534759521484,
             66.39534759521484, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [6, 4, 1, 1], 'dataType': 'float32'}
+          'descriptor': {shape: [6, 4, 1, 1], dataType: 'float32'}
         }
       }
     }
@@ -514,7 +487,7 @@ const resample2dTests = [
             59.92947006225586, 90.7006607055664, 41.98918914794922,
             86.95105743408203, 66.39534759521484, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [3, 2, 1, 1], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 2, 1, 1], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -537,18 +510,12 @@ const resample2dTests = [
             79.10005187988281, 79.10005187988281, 66.39534759521484,
             66.39534759521484, 79.10005187988281, 79.10005187988281
           ],
-          'descriptor': {'dimensions': [6, 4, 1, 1], 'dataType': 'float32'}
+          'descriptor': {shape: [6, 4, 1, 1], dataType: 'float32'}
         }
       }
     }
   }
 ];
 
-if (navigator.ml) {
-  resample2dTests.forEach((test) => {
-    webnn_conformance_test(
-        buildGraphAndCompute, getResample2dPrecisionTolerance, test);
-  });
-} else {
-  test(() => assert_implements(navigator.ml, 'missing navigator.ml'));
-}
+webnn_conformance_test(
+    resample2dTests, buildAndExecuteGraph, getPrecisionTolerance);

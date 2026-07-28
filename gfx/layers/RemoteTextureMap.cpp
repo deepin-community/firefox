@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,7 @@
 #include <vector>
 
 #include "CompositableHost.h"
+#include "ImageDataSerializer.h"
 #include "mozilla/ipc/ProtocolUtils.h"
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/layers/AsyncImagePipelineManager.h"
@@ -21,7 +20,7 @@
 #include "mozilla/layers/WebRenderTextureHost.h"
 #include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/StaticPrefs_webgl.h"
-#include "mozilla/webgpu/ExternalTexture.h"
+#include "mozilla/webgpu/SharedTexture.h"
 #include "mozilla/webrender/RenderThread.h"
 #include "SharedSurface.h"
 
@@ -172,7 +171,7 @@ void RemoteTextureOwnerClient::PushTexture(
 
 void RemoteTextureOwnerClient::PushTexture(
     const RemoteTextureId aTextureId, const RemoteTextureOwnerId aOwnerId,
-    const std::shared_ptr<webgpu::ExternalTexture>& aExternalTexture,
+    const std::shared_ptr<webgpu::SharedTexture>& aSharedTexture,
     const gfx::IntSize& aSize, gfx::SurfaceFormat aFormat,
     const SurfaceDescriptor& aDesc) {
   MOZ_ASSERT(IsRegistered(aOwnerId));
@@ -188,7 +187,7 @@ void RemoteTextureOwnerClient::PushTexture(
 
   RemoteTextureMap::Get()->PushTexture(
       aTextureId, aOwnerId, mForPid, std::move(textureData), textureHost,
-      SharedResourceWrapper::ExternalTexture(aExternalTexture));
+      SharedResourceWrapper::SharedTexture(aSharedTexture));
 }
 
 void RemoteTextureOwnerClient::PushDummyTexture(
@@ -198,7 +197,8 @@ void RemoteTextureOwnerClient::PushDummyTexture(
   auto flags = TextureFlags::DEALLOCATE_CLIENT | TextureFlags::REMOTE_TEXTURE |
                TextureFlags::DUMMY_TEXTURE;
   auto* rawData = BufferTextureData::Create(
-      gfx::IntSize(1, 1), gfx::SurfaceFormat::B8G8R8A8, gfx::BackendType::SKIA,
+      gfx::IntSize(1, 1), gfx::SurfaceFormat::B8G8R8A8, gfx::ColorSpace2::SRGB,
+      gfx::TransferFunction::SRGB, gfx::BackendType::SKIA,
       LayersBackend::LAYERS_WR, flags, ALLOC_DEFAULT, nullptr);
   if (!rawData) {
     MOZ_ASSERT_UNREACHABLE("unexpected to be called");
@@ -221,10 +221,10 @@ void RemoteTextureOwnerClient::PushDummyTexture(
 
 void RemoteTextureOwnerClient::GetLatestBufferSnapshot(
     const RemoteTextureOwnerId aOwnerId, const mozilla::ipc::Shmem& aDestShmem,
-    const gfx::IntSize& aSize) {
+    const gfx::IntSize& aDestSize, size_t aDestStride) {
   MOZ_ASSERT(IsRegistered(aOwnerId));
-  RemoteTextureMap::Get()->GetLatestBufferSnapshot(aOwnerId, mForPid,
-                                                   aDestShmem, aSize);
+  RemoteTextureMap::Get()->GetLatestBufferSnapshot(
+      aOwnerId, mForPid, aDestShmem, aDestSize, aDestStride);
 }
 
 UniquePtr<TextureData> RemoteTextureOwnerClient::GetRecycledTextureData(
@@ -245,9 +245,10 @@ RemoteTextureOwnerClient::CreateOrRecycleBufferTextureData(
   }
 
   auto flags = TextureFlags::DEALLOCATE_CLIENT | TextureFlags::REMOTE_TEXTURE;
-  auto* data = BufferTextureData::Create(aSize, aFormat, gfx::BackendType::SKIA,
-                                         LayersBackend::LAYERS_WR, flags,
-                                         ALLOC_DEFAULT, nullptr);
+  auto* data = BufferTextureData::Create(
+      aSize, aFormat, gfx::ColorSpace2::SRGB, gfx::TransferFunction::SRGB,
+      gfx::BackendType::SKIA, LayersBackend::LAYERS_WR, flags, ALLOC_DEFAULT,
+      nullptr);
   return UniquePtr<TextureData>(data);
 }
 
@@ -265,8 +266,8 @@ RemoteTextureOwnerClient::GetRecycledSharedSurface(
   return wrapper->mSharedSurface;
 }
 
-std::shared_ptr<webgpu::ExternalTexture>
-RemoteTextureOwnerClient::GetRecycledExternalTexture(
+std::shared_ptr<webgpu::SharedTexture>
+RemoteTextureOwnerClient::GetRecycledSharedTexture(
     const gfx::IntSize& aSize, gfx::SurfaceFormat aFormat,
     SurfaceDescriptor::Type aType, RemoteTextureOwnerId aOwnerId) {
   UniquePtr<SharedResourceWrapper> wrapper =
@@ -275,8 +276,8 @@ RemoteTextureOwnerClient::GetRecycledExternalTexture(
   if (!wrapper) {
     return nullptr;
   }
-  MOZ_ASSERT(wrapper->mExternalTexture);
-  return wrapper->mExternalTexture;
+  MOZ_ASSERT(wrapper->mSharedTexture);
+  return wrapper->mSharedTexture;
 }
 
 StaticAutoPtr<RemoteTextureMap> RemoteTextureMap::sInstance;
@@ -487,11 +488,12 @@ bool RemoteTextureMap::RemoveTexture(const RemoteTextureId aTextureId,
 
 void RemoteTextureMap::GetLatestBufferSnapshot(
     const RemoteTextureOwnerId aOwnerId, const base::ProcessId aForPid,
-    const mozilla::ipc::Shmem& aDestShmem, const gfx::IntSize& aSize) {
+    const mozilla::ipc::Shmem& aDestShmem, const gfx::IntSize& aDestSize,
+    size_t aDestStride) {
   // The compositable ref of remote texture should be updated in mMonitor lock.
   CompositableTextureHostRef textureHostRef;
   RefPtr<TextureHost> releasingTexture;  // Release outside the monitor
-  std::shared_ptr<webgpu::ExternalTexture> externalTexture;
+  std::shared_ptr<webgpu::SharedTexture> sharedTexture;
   {
     MonitorAutoLock lock(mMonitor);
 
@@ -511,7 +513,7 @@ void RemoteTextureMap::GetLatestBufferSnapshot(
                              : owner->mUsingTextureDataHolders.back().get();
     TextureHost* textureHost = holder->mTextureHost;
 
-    if (textureHost->GetSize() != aSize) {
+    if (textureHost->GetSize() != aDestSize) {
       MOZ_ASSERT_UNREACHABLE("unexpected to be called");
       return;
     }
@@ -520,12 +522,11 @@ void RemoteTextureMap::GetLatestBufferSnapshot(
       MOZ_ASSERT_UNREACHABLE("unexpected to be called");
       return;
     }
-    if (holder->mResourceWrapper &&
-        holder->mResourceWrapper->mExternalTexture) {
+    if (holder->mResourceWrapper && holder->mResourceWrapper->mSharedTexture) {
       // Increment compositable ref to prevent that TextureDataHolder is removed
       // during memcpy.
       textureHostRef = textureHost;
-      externalTexture = holder->mResourceWrapper->mExternalTexture;
+      sharedTexture = holder->mResourceWrapper->mSharedTexture;
     } else if (textureHost->AsBufferTextureHost()) {
       // Increment compositable ref to prevent that TextureDataHolder is removed
       // during memcpy.
@@ -540,17 +541,33 @@ void RemoteTextureMap::GetLatestBufferSnapshot(
     return;
   }
 
-  if (externalTexture) {
-    externalTexture->GetSnapshot(aDestShmem, aSize);
-  } else if (auto* bufferTextureHost = textureHostRef->AsBufferTextureHost()) {
-    uint32_t stride = ImageDataSerializer::ComputeRGBStride(
-        bufferTextureHost->GetFormat(), aSize.width);
-    uint32_t bufferSize = stride * aSize.height;
-    uint8_t* dst = aDestShmem.get<uint8_t>();
-    uint8_t* src = bufferTextureHost->GetBuffer();
+  if (sharedTexture) {
+    const auto src_size = sharedTexture->GetSize();
+    // The size of the shared texture should match `textureHost->GetSize()`.
+    // We already checked above that `textureHost->GetSize()` matches
+    // `aDestSize`. Just assert here to make sure they match.
+    MOZ_RELEASE_ASSERT(src_size == aDestSize);
 
-    MOZ_ASSERT(bufferSize <= aDestShmem.Size<uint8_t>());
-    memcpy(dst, src, bufferSize);
+    sharedTexture->GetSnapshot(aDestShmem, aDestStride);
+  } else if (auto* bufferTextureHost = textureHostRef->AsBufferTextureHost()) {
+    const auto src_size = bufferTextureHost->GetSize();
+    // We already checked above that `textureHost->GetSize()` matches
+    // `aDestSize`.
+
+    uint8_t* src = bufferTextureHost->GetBuffer();
+    uint8_t* dst = aDestShmem.get<uint8_t>();
+
+    const Maybe<int32_t> src_stride = ImageDataSerializer::GetRGBStride(
+        bufferTextureHost->GetBufferDescriptor());
+    MOZ_RELEASE_ASSERT(src_stride.isSome());
+    // note that this might still copy some padding bytes
+    const size_t min_stride = std::min(size_t(src_stride.value()), aDestStride);
+
+    for (int y = 0; y < src_size.height; y++) {
+      memcpy(dst, src, min_stride);
+      src += src_stride.value();
+      dst += aDestStride;
+    }
   }
 
   {
@@ -1305,7 +1322,7 @@ bool RemoteTextureMap::WaitRemoteTextureReady(const RemoteTextureInfo& aInfo) {
       return false;
     }
 
-    auto* owner = GetTextureOwner(lock, aInfo.mOwnerId, aInfo.mForPid);
+    owner = GetTextureOwner(lock, aInfo.mOwnerId, aInfo.mForPid);
     // When owner is alreay unregistered, remote texture will not be pushed.
     if (!owner || owner->mIsContextLost) {
       // This could happen with IPC abnormal shutdown

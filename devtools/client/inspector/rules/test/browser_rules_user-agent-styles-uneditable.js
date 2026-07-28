@@ -33,7 +33,7 @@ async function userAgentStylesUneditable(inspector, view) {
   info("Making sure that UI is not editable for user agent styles");
 
   await selectNode("a", inspector);
-  const uaRules = view._elementStyle.rules.filter(
+  const uaRules = view.elementStyle.rules.filter(
     rule => !rule.editor.isEditable
   );
 
@@ -50,7 +50,7 @@ async function userAgentStylesUneditable(inspector, view) {
     ok(!rule.editor.closeBrace._editable, "closeBrace is not editable");
 
     const colorswatch = rule.editor.element.querySelector(
-      ".ruleview-colorswatch"
+      ".inspector-colorswatch"
     );
     if (colorswatch) {
       ok(

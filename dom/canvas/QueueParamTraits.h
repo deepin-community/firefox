@@ -1,26 +1,20 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=4 et :
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef _QUEUEPARAMTRAITS_H_
-#define _QUEUEPARAMTRAITS_H_ 1
+#ifndef QUEUEPARAMTRAITS_H_
+#define QUEUEPARAMTRAITS_H_ 1
 
+#include "WebGLTypes.h"
 #include "ipc/EnumSerializer.h"
-#include "mozilla/gfx/2D.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/IntegerRange.h"
-#include "mozilla/ipc/ProtocolUtils.h"
-#include "mozilla/ipc/SharedMemory.h"
 #include "mozilla/Logging.h"
 #include "mozilla/TimeStamp.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/ipc/ProtocolUtils.h"
 #include "nsExceptionHandler.h"
 #include "nsString.h"
-#include "WebGLTypes.h"
-
-#include <optional>
 
 namespace mozilla::webgl {
 
@@ -121,7 +115,7 @@ class ProducerView {
   template <typename T>
   bool WriteFromRange(const Range<const T>& src) {
     static_assert(BytesAlwaysValidT<T>::value);
-    if (MOZ_LIKELY(mOk)) {
+    if (mOk) [[likely]] {
       mOk &= mProducer->WriteFromRange(src);
     }
     return mOk;
@@ -175,9 +169,9 @@ class ConsumerView {
 
     const auto dest = AsRange(destBegin, destEnd);
     const auto view = ReadRange<T>(dest.length());
-    if (MOZ_LIKELY(view)) {
+    if (view) [[likely]] {
       const auto byteSize = ByteSize(dest);
-      if (MOZ_LIKELY(byteSize)) {
+      if (byteSize) [[likely]] {
         memcpy(dest.begin().get(), view->begin().get(), byteSize);
       }
     }
@@ -188,7 +182,9 @@ class ConsumerView {
   template <typename T>
   inline Maybe<Range<const T>> ReadRange(const size_t elemCount) {
     static_assert(BytesAlwaysValidT<T>::value);
-    if (MOZ_UNLIKELY(!mOk)) return {};
+    if (!mOk) [[unlikely]] {
+      return {};
+    }
     const auto view = mConsumer->template ReadRange<T>(elemCount);
     mOk &= bool(view);
     return view;
@@ -256,29 +252,6 @@ struct QueueParamTraits<bool> {
       *aArg = temp ? true : false;
     }
     return aConsumerView.Ok();
-  }
-};
-
-// ---------------------------------------------------------------
-
-template <class T>
-struct QueueParamTraits_IsEnumCase {
-  template <typename ProducerView>
-  static bool Write(ProducerView& aProducerView, const T& aArg) {
-    MOZ_ASSERT(IsEnumCase(aArg));
-    const auto shadow = static_cast<std::underlying_type_t<T>>(aArg);
-    aProducerView.WriteParam(shadow);
-    return true;
-  }
-
-  template <typename ConsumerView>
-  static bool Read(ConsumerView& aConsumerView, T* aArg) {
-    auto shadow = std::underlying_type_t<T>{};
-    aConsumerView.ReadParam(&shadow);
-    const auto e = AsEnumCase<T>(shadow);
-    if (!e) return false;
-    *aArg = *e;
-    return true;
   }
 };
 
@@ -383,7 +356,7 @@ struct QueueParamTraits<webgl::TexUnpackBlobDesc> {
   static bool Write(ProducerView<U>& view, const ParamType& in) {
     MOZ_RELEASE_ASSERT(!in.image);
     MOZ_RELEASE_ASSERT(!in.sd);
-    const bool isDataSurf = bool(in.dataSurf);
+    const bool isDataSurf = bool(in.sourceSurf);
     if (!view.WriteParam(in.imageTarget) || !view.WriteParam(in.size) ||
         !view.WriteParam(in.srcAlphaType) || !view.WriteParam(in.unpacking) ||
         !view.WriteParam(in.cpuData) || !view.WriteParam(in.pboOffset) ||
@@ -393,7 +366,11 @@ struct QueueParamTraits<webgl::TexUnpackBlobDesc> {
       return false;
     }
     if (isDataSurf) {
-      const auto& surf = in.dataSurf;
+      const RefPtr<gfx::DataSourceSurface> surf =
+          in.sourceSurf->GetDataSurface();
+      if (!surf) {
+        return false;
+      }
       gfx::DataSourceSurface::ScopedMap map(surf, gfx::DataSourceSurface::READ);
       if (!map.IsMapped()) {
         return false;
@@ -435,15 +412,29 @@ struct QueueParamTraits<webgl::TexUnpackBlobDesc> {
           !view.ReadParam(&stride)) {
         return false;
       }
-      const size_t dataSize = stride * surfSize.height;
-      const auto range = view.template ReadRange<uint8_t>(dataSize);
+      if (!CheckedInt32(stride).isValid() || surfSize.IsEmpty()) {
+        return false;
+      }
+      int32_t bpp = BytesPerPixel(format);
+      CheckedInt<size_t> minStride(bpp);
+      minStride *= surfSize.width;
+      if (!minStride.isValid() || minStride.value() <= 0 ||
+          stride < minStride.value()) {
+        return false;
+      }
+      CheckedInt<size_t> dataSize(stride);
+      dataSize *= surfSize.height;
+      if (!dataSize.isValid()) {
+        return false;
+      }
+      const auto range = view.template ReadRange<uint8_t>(dataSize.value());
       if (!range) return false;
 
       // DataSourceSurface demands pointer-to-mutable.
       const auto bytes = const_cast<uint8_t*>(range->begin().get());
-      out->dataSurf = gfx::Factory::CreateWrappingDataSourceSurface(
+      out->sourceSurf = gfx::Factory::CreateWrappingDataSourceSurface(
           bytes, stride, surfSize, format);
-      MOZ_ASSERT(out->dataSurf);
+      MOZ_ASSERT(out->sourceSurf);
     }
     return true;
   }
@@ -749,6 +740,66 @@ struct QueueParamTraits<std::pair<TypeA, TypeB>> {
   }
 };
 
+// -
+
+template <class... T>
+struct QueueParamTraits<std::tuple<T...>> {
+  using ParamType = std::tuple<T...>;
+
+  template <typename U>
+  static bool Write(ProducerView<U>& aProducerView, const ParamType& aArg) {
+    bool ok = true;
+    mozilla::MapTuple(aArg, [&](const auto& field) {
+      ok &= aProducerView.WriteParam(field);
+      return true;  // ignored
+    });
+    return ok;
+  }
+
+  template <typename U>
+  static bool Read(ConsumerView<U>& aConsumerView, ParamType* aArg) {
+    bool ok = true;
+    mozilla::MapTuple(*aArg, [&](auto& field) {
+      ok &= aConsumerView.ReadParam(&field);
+      return true;  // ignored
+    });
+    return ok;
+  }
+};
+
+// -
+
+template <class K, class V, class H, class E>
+struct QueueParamTraits<std::unordered_map<K, V, H, E>> {
+  using ParamType = std::unordered_map<K, V, H, E>;
+
+  template <typename U>
+  static bool Write(ProducerView<U>& aProducerView, const ParamType& aArg) {
+    bool ok = aProducerView.WriteParam(uint64_t{aArg.size()});
+    for (const auto& pair : aArg) {
+      ok &= aProducerView.WriteParam(pair);
+    }
+    return ok;
+  }
+
+  template <typename U>
+  static bool Read(ConsumerView<U>& aConsumerView, ParamType* aArg) {
+    aArg->clear();
+
+    auto size = uint64_t{0};
+    if (!aConsumerView.ReadParam(&size)) return false;
+
+    aArg->reserve(size);
+    for (const auto i : IntegerRange(size)) {
+      (void)i;
+      auto pair = std::pair<K, V>{};
+      if (!aConsumerView.ReadParam(&pair)) return false;
+      aArg->insert(pair);
+    }
+    return true;
+  }
+};
+
 }  // namespace mozilla::webgl
 
-#endif  // _QUEUEPARAMTRAITS_H_
+#endif  // QUEUEPARAMTRAITS_H_

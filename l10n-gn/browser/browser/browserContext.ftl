@@ -106,7 +106,7 @@ main-context-menu-bookmark-page-mac =
 # Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
 main-context-menu-edit-bookmark-mac =
-    .label = Embosakoí techaukaha…
+    .label = Embosako’i techaukaha…
     .accesskey = m
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
@@ -115,21 +115,24 @@ main-context-menu-bookmark-page-with-shortcut =
     .accesskey = m
     .tooltiptext = Embojuaju kuatiarogue techaukaháre ({ $shortcut })
 main-context-menu-edit-bookmark =
-    .aria-label = Embosakoí Techaukaha…
+    .aria-label = Embosako’i Techaukaha…
     .accesskey = m
-    .tooltiptext = Embosakoí techaukaha
+    .tooltiptext = Embosako’i techaukaha
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 main-context-menu-edit-bookmark-with-shortcut =
-    .aria-label = Embosakoí Techaukaha…
+    .aria-label = Embosako’i Techaukaha…
     .accesskey = m
-    .tooltiptext = Embosakoí techaukaha ({ $shortcut })
+    .tooltiptext = Embosako’i techaukaha ({ $shortcut })
 main-context-menu-open-link =
     .label = Joajuhápe jeike
     .accesskey = O
 main-context-menu-open-link-new-tab =
     .label = Tendayke pyahu joajuhápe jeike
     .accesskey = T
+main-context-menu-open-link-split-view =
+    .label = Embojuruja juajuha jehecha pehẽmbyrépe
+    .accesskey = M
 main-context-menu-open-link-container-tab =
     .label = Juajuha tendayke pyahu ñongatuhápe jeike
     .accesskey = b
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = Eñongatu juajuha { -pocket-brand-name }-pe
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Maranduveve rape mbohasarã
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Emonguatia juajuha
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Emonguatia juajuha tenda rapykueho’ỹre
-    .accesskey = y
+main-context-menu-preview-link =
+    .label = Juajuha jehecha ypy
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Emonguatia juajuha ipotĩva
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = Ñangarekoha moñemi
     .accesskey = C
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Mba’erechaha tuichavéva
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Moesakãha jehecha
     .accesskey = D
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Eheka ta’ãnga { $engine } ndive
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Ta’ãngamýi ñongatu pyahu…
     .accesskey = v
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Mba’epu mondo…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Emondo mba’e’okápe
+    .accesskey = n
+main-context-menu-send-to-mobile-2 =
+    .label = Emondo pumbyrýpe
+    .accesskey = n
+main-context-menu-send-to-mobile-sign-in = Eike ñandutípe emondo hag̃ua tendayke
+main-context-menu-send-to-mobile-enable-sync2 = Embojuruja ñembojuehe emondo hag̃ua tendayke
+main-context-menu-send-to-mobile-connect-phone2 = Embojuaju ne pumbyry
+main-context-menu-send-to-mobile-device-missing2 = ¿Nderehechái ne mba’e’oka?
+main-context-menu-send-to-mobile-sign-in-from-link = Eike ñandutípe emondo hag̃ua juajuha
+main-context-menu-send-to-mobile-sign-in-from-page = Eike ñandutípe emondo hag̃ua kuatiarogue
+main-context-menu-send-to-mobile-enable-sync3 = Emyandy ñembojuehe emondo hag̃ua tendaykeita
+main-context-menu-send-to-mobile-enable-sync-from-link = Emyandy ñembojuehe emondo hag̃ua juajuha
+main-context-menu-send-to-mobile-enable-sync-from-page = Emyandy ñembojuehe emondo hag̃ua kuatiarogue
+main-context-menu-send-to-mobile-connect-phone3 = Embojuaju mba’e’oka emondo hag̃ua tendaykeita
+main-context-menu-send-to-mobile-connect-phone-from-link = Embojuaju mba’e’oka emondo hag̃ua juajuha
+main-context-menu-send-to-mobile-connect-phone-from-page = Embojuaju mba’e’oka emondo hag̃ua kuatiarogue
 main-context-menu-save-to-pocket =
     .label = Eñongatu kuatiarogue { -pocket-brand-name }-pe
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = Emondo Kuatiarogue Mba’e’okápe
     .accesskey = n
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Eiporu tembiapo ñepyrũ ñongatupyre
@@ -319,8 +345,14 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Jehero mbojoapy ko jehekápe g̃uarã…
     .accesskey = K
+main-context-menu-add-engine =
+    .label = Embojuaju hekaha mongu’eha
+    .accesskey = S
 main-context-menu-link-send-to-device =
     .label = Emondo Juajuha Mba’e’okápe
+    .accesskey = n
+main-context-menu-link-send-to-mobile =
+    .label = Emondo juajuha pumbyrýpe
     .accesskey = n
 main-context-menu-frame =
     .label = Ko kora
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Ñe’ẽñemi jehechauka
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Pyahu
+main-context-menu-pdfjs-copy-page =
+    .label = Embokuatia kuatiarogue
+main-context-menu-pdfjs-cut-page =
+    .label = Eikytĩ kuatiarogue
+main-context-menu-pdfjs-delete-page =
+    .label = Embogue kuatiarogue
+main-context-menu-pdfjs-save-page =
+    .label = Eñongatu jeporavopy…

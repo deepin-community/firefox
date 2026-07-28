@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Gardar ligazón en { -pocket-brand-name }
     .accesskey = G
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Copiar correo electrónico
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Copiar ligazón
     .accesskey = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Copiar ligazón sen seguimento do sitio
-    .accesskey = C
+main-context-menu-preview-link =
+    .label = Ligazón de vista previa
+    .accesskey = L
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Copiar ligazón limpa
+    .accesskey = l
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +218,7 @@ main-context-menu-media-hide-controls =
     .label = Agochar controis
     .accesskey = o
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = Pantalla completa
@@ -290,9 +292,7 @@ main-context-menu-send-to-device =
     .label = Enviar a páxina ao dispositivo
     .accesskey = n
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Usar identificación gardada
@@ -319,6 +319,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Engadir unha palabra clave para esta busca…
     .accesskey = b
+main-context-menu-add-engine =
+    .label = Engadir buscador
+    .accesskey = s
 main-context-menu-link-send-to-device =
     .label = Enviar a ligazón ao dispositivo
     .accesskey = n
@@ -389,3 +392,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Revelar o contrasinal
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Novo

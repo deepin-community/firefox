@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 40; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +6,10 @@
 #define mozilla_widget_IMEData_h_
 
 #include "mozilla/CheckedInt.h"
+#include "mozilla/EnumSet.h"
+#include "mozilla/EnumTypeTraits.h"
 #include "mozilla/EventForwards.h"
 #include "mozilla/NativeKeyBindingsType.h"
-#include "mozilla/ToString.h"
 
 #include "nsCOMPtr.h"
 #include "nsIURI.h"
@@ -208,73 +208,45 @@ namespace widget {
 /**
  * Preference for receiving IME updates
  *
- * If mWantUpdates is not NOTIFY_NOTHING, nsTextStateManager will observe text
+ * If mWantUpdates is not empty, IMEContentObserver will observe text
  * change and/or selection change and call nsIWidget::NotifyIME() with
  * NOTIFY_IME_OF_SELECTION_CHANGE and/or NOTIFY_IME_OF_TEXT_CHANGE.
  * Please note that the text change observing cost is very expensive especially
  * on an HTML editor has focus.
  * If the IME implementation on a particular platform doesn't care about
  * NOTIFY_IME_OF_SELECTION_CHANGE and/or NOTIFY_IME_OF_TEXT_CHANGE,
- * they should set mWantUpdates to NOTIFY_NOTHING to avoid the cost.
+ * they should set mWantUpdates to empty to avoid the cost.
  * If the IME implementation needs notifications even while our process is
- * deactive, it should also set NOTIFY_DURING_DEACTIVE.
+ * inactive, it should also set NotifyDuringInactive.
  */
-struct IMENotificationRequests final {
-  typedef uint8_t Notifications;
-
-  enum : Notifications {
-    NOTIFY_NOTHING = 0,
-    NOTIFY_TEXT_CHANGE = 1 << 1,
-    NOTIFY_POSITION_CHANGE = 1 << 2,
-    // NOTIFY_MOUSE_BUTTON_EVENT_ON_CHAR is used when mouse button is pressed
-    // or released on a character in the focused editor.  The notification is
-    // notified to IME as a mouse event.  If it's consumed by IME, NotifyIME()
-    // returns NS_SUCCESS_EVENT_CONSUMED.  Otherwise, it returns NS_OK if it's
-    // handled without any error.
-    NOTIFY_MOUSE_BUTTON_EVENT_ON_CHAR = 1 << 3,
-    // NOTE: NOTIFY_DURING_DEACTIVE isn't supported in environments where two
-    //       or more compositions are possible.  E.g., Mac and Linux (GTK).
-    NOTIFY_DURING_DEACTIVE = 1 << 7,
-
-    NOTIFY_ALL = NOTIFY_TEXT_CHANGE | NOTIFY_POSITION_CHANGE |
-                 NOTIFY_MOUSE_BUTTON_EVENT_ON_CHAR,
-  };
-
-  IMENotificationRequests() : mWantUpdates(NOTIFY_NOTHING) {}
-
-  explicit IMENotificationRequests(Notifications aWantUpdates)
-      : mWantUpdates(aWantUpdates) {}
-
-  IMENotificationRequests operator|(
-      const IMENotificationRequests& aOther) const {
-    return IMENotificationRequests(aOther.mWantUpdates | mWantUpdates);
-  }
-  IMENotificationRequests& operator|=(const IMENotificationRequests& aOther) {
-    mWantUpdates |= aOther.mWantUpdates;
-    return *this;
-  }
-  bool operator==(const IMENotificationRequests& aOther) const {
-    return mWantUpdates == aOther.mWantUpdates;
-  }
-
-  bool WantTextChange() const { return !!(mWantUpdates & NOTIFY_TEXT_CHANGE); }
-
-  bool WantPositionChanged() const {
-    return !!(mWantUpdates & NOTIFY_POSITION_CHANGE);
-  }
-
-  bool WantChanges() const { return WantTextChange(); }
-
-  bool WantMouseButtonEventOnChar() const {
-    return !!(mWantUpdates & NOTIFY_MOUSE_BUTTON_EVENT_ON_CHAR);
-  }
-
-  bool WantDuringDeactive() const {
-    return !!(mWantUpdates & NOTIFY_DURING_DEACTIVE);
-  }
-
-  Notifications mWantUpdates;
+enum class IMENotificationRequest : uint8_t {
+  TextChange,
+  PositionChange,
+  // NOTIFY_MOUSE_BUTTON_EVENT_ON_CHAR is used when mouse button is pressed
+  // or released on a character in the focused editor.  The notification is
+  // notified to IME as a mouse event.  If it's consumed by IME, NotifyIME()
+  // returns NS_SUCCESS_EVENT_CONSUMED.  Otherwise, it returns NS_OK if it's
+  // handled without any error.
+  MouseEventOnChar,
+  // NOTE: NotifyDuringInactive isn't supported in environments where two
+  //       or more compositions are possible.  E.g., Mac and Linux (GTK).
+  NotifyDuringInactive,
 };
+
+}  // namespace widget
+
+template <>
+struct MaxEnumValue<widget::IMENotificationRequest> {
+  static constexpr uint8_t value = static_cast<uint8_t>(
+      widget::IMENotificationRequest::NotifyDuringInactive);
+};
+
+namespace widget {
+
+using IMENotificationRequests = EnumSet<IMENotificationRequest>;
+inline constexpr const IMENotificationRequests AllIMENotificationRequests = {
+    IMENotificationRequest::TextChange, IMENotificationRequest::PositionChange,
+    IMENotificationRequest::MouseEventOnChar};
 
 /**
  * IME enabled states.
@@ -425,6 +397,7 @@ struct InputContext final {
     mHTMLInputMode.Truncate();
     mActionHint.Truncate();
     mAutocapitalize.Truncate();
+    mAutocorrect = true;
   }
 
   bool IsPasswordEditor() const {
@@ -467,6 +440,11 @@ struct InputContext final {
            // enterkeyhint is only supported by Android IME API and iOS API.
            mActionHint != aOldContext.mActionHint ||
 #endif
+#if defined(ANDROID) || defined(XP_DARWIN)
+           // autocorrect is only supported by Android IME API, macOS text
+           // substitution and iOS API.
+           mAutocorrect != aOldContext.mAutocorrect ||
+#endif
            false;
   }
 
@@ -486,6 +464,9 @@ struct InputContext final {
 
   /* A hint for autocapitalize */
   nsString mAutocapitalize;
+
+  /* A hint for autocorrect */
+  bool mAutocorrect = true;  // on-by-default
 
   /**
    * mOrigin indicates whether this focus event refers to main or remote
@@ -520,7 +501,7 @@ struct InputContext final {
   }
 };
 
-// FYI: Implemented in nsBaseWidget.cpp
+// FYI: Implemented in nsIWidget.cpp
 const char* ToChar(InputContext::Origin aOrigin);
 
 struct InputContextAction final {
@@ -632,7 +613,7 @@ struct InputContextAction final {
 // IMEMessage is shared by IMEStateManager and TextComposition.
 // Update values in GeckoEditable.java if you make changes here.
 // XXX Negative values are used in Android...
-typedef int8_t IMEMessageType;
+using IMEMessageType = int8_t;
 enum IMEMessage : IMEMessageType {
   // This is used by IMENotification internally.  This means that the instance
   // hasn't been initialized yet.
@@ -669,7 +650,7 @@ enum IMEMessage : IMEMessageType {
   REQUEST_TO_CANCEL_COMPOSITION
 };
 
-// FYI: Implemented in nsBaseWidget.cpp
+// FYI: Implemented in nsIWidget.cpp
 const char* ToChar(IMEMessage aIMEMessage);
 
 struct IMENotification final {
@@ -988,6 +969,23 @@ struct IMENotification final {
       return *this;
     }
 
+    [[nodiscard]] uint32_t ComputeNewOffset(uint32_t aOldOffset) const {
+      // If mStartOffset equals or greater than aOldOffset, the text after
+      // aOldOffset is changed, i.e., the preceding text is not changed.  So,
+      // aOldOffset is not changed.
+      if (mStartOffset >= aOldOffset) {
+        return aOldOffset;
+      }
+      // If mRemovedEndOffset equals or less than aOldOffset, only the preceding
+      // text is changed.  So, add the difference to aOldOffset.
+      if (mRemovedEndOffset <= aOldOffset) {
+        return aOldOffset + Difference();
+      }
+      // If the character at aOldOffset is changed, the new offset should be the
+      // end of the changed text.
+      return mAddedEndOffset;
+    }
+
 #ifdef DEBUG
     void Test();
 #endif  // #ifdef DEBUG
@@ -1053,17 +1051,6 @@ struct IMENotification final {
     MOZ_RELEASE_ASSERT(mMessage == NOTIFY_IME_OF_TEXT_CHANGE);
     mTextChangeData = aTextChangeData;
   }
-};
-
-struct CandidateWindowPosition {
-  // Upper left corner of the candidate window if mExcludeRect is false.
-  // Otherwise, the position currently interested.  E.g., caret position.
-  LayoutDeviceIntPoint mPoint;
-  // Rect which shouldn't be overlapped with the candidate window.
-  // This is valid only when mExcludeRect is true.
-  LayoutDeviceIntRect mRect;
-  // See explanation of mPoint and mRect.
-  bool mExcludeRect;
 };
 
 std::ostream& operator<<(std::ostream& aStream, const IMEEnabled& aEnabled);

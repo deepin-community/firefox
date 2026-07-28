@@ -1,5 +1,4 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +6,10 @@
 const { AppConstants } = ChromeUtils.importESModule(
   "resource://gre/modules/AppConstants.sys.mjs"
 );
+const { canDeleteProfile, deleteSharedProfilesStore } =
+  ChromeUtils.importESModule(
+    "moz-src:///toolkit/profile/ProfilesDatastoreService.sys.mjs"
+  );
 
 const C = Cc;
 const I = Ci;
@@ -31,6 +34,8 @@ function getFluentString(str) {
 function startup() {
   try {
     gDialogParams = window.arguments[0].QueryInterface(I.nsIDialogParamBlock);
+    gDialogParams.SetNumberStrings(0);
+    gDialogParams.SetInt(2, 0);
 
     gProfileService = C[ToolkitProfileService].getService(
       I.nsIToolkitProfileService
@@ -75,8 +80,45 @@ function startup() {
     window.close();
     throw e;
   }
-  document.addEventListener("dialogaccept", acceptDialog);
-  document.addEventListener("dialogcancel", exitDialog);
+
+  document.addEventListener("dialogaccept", dialogClosing);
+  document.addEventListener("dialogcancel", dialogClosing);
+  document
+    .getElementById("newbutton")
+    .addEventListener("command", CreateProfileWizard);
+  document
+    .getElementById("renbutton")
+    .addEventListener("command", RenameProfile);
+  document
+    .getElementById("delbutton")
+    .addEventListener("command", ConfirmDelete);
+  document
+    .getElementById("profiles")
+    .addEventListener("dblclick", event => onProfilesDblClick(event));
+  document
+    .getElementById("profiles")
+    .addEventListener("keypress", event => onProfilesKey(event));
+}
+
+function dialogClosing(event) {
+  // We want to handle closing the dialog ourselves once the async operation has
+  // completed. Note that this means the `dialogclosing` event is not dispatched
+  // but we don't use that anyway.
+  event.preventDefault();
+
+  let promise = event.type == "dialogaccept" ? acceptDialog() : exitDialog();
+  promise
+    .then(shouldClose => {
+      if (shouldClose === false) {
+        return;
+      }
+
+      window.close();
+    })
+    .catch(e => {
+      console.error(e);
+      window.close();
+    });
 }
 
 async function flush(cancelled) {
@@ -89,7 +131,7 @@ async function flush(cancelled) {
 
   if (gNeedsFlush) {
     try {
-      gProfileService.flush();
+      await gProfileService.asyncFlush();
     } catch (e) {
       let appName = gBrandBundle.getString("brandShortName");
 
@@ -140,7 +182,7 @@ async function flush(cancelled) {
   );
 }
 
-function acceptDialog(event) {
+async function acceptDialog() {
   var appName = gBrandBundle.getString("brandShortName");
 
   var profilesElement = document.getElementById("profiles");
@@ -153,8 +195,8 @@ function acceptDialog(event) {
       [appName]
     );
     Services.prompt.alert(window, pleaseSelectTitle, pleaseSelect);
-    event.preventDefault();
-    return;
+
+    return false;
   }
 
   gDialogParams.objects.insertElementAt(selectedProfile.profile.rootDir, 0);
@@ -169,11 +211,13 @@ function acceptDialog(event) {
       // profile based on the lock's directories.
     }
   }
-  flush(false);
+
+  await flush(false);
+  return true;
 }
 
-function exitDialog() {
-  flush(true);
+async function exitDialog() {
+  await flush(true);
 }
 
 function updateStartupPrefs() {
@@ -214,7 +258,8 @@ function CreateProfileWizard() {
     "",
     "centerscreen,chrome,modal,titlebar",
     gProfileService,
-    { CreateProfile }
+    { CreateProfile },
+    "profile-manager"
   );
 }
 
@@ -295,7 +340,7 @@ function RenameProfile() {
   return false;
 }
 
-function ConfirmDelete() {
+async function ConfirmDelete() {
   var profileList = document.getElementById("profiles");
 
   var selectedItem = profileList.selectedItem;
@@ -307,6 +352,18 @@ function ConfirmDelete() {
   var deleteFiles = false;
 
   if (selectedProfile.rootDir.exists()) {
+    if (!(await canDeleteProfile(selectedProfile))) {
+      let title = await getFluentString(
+        "profile-has-selectable-profiles-title"
+      );
+      let msg = await getFluentString(
+        "profile-has-selectable-profiles-message"
+      );
+      Services.prompt.alert(window, title, msg);
+
+      return false;
+    }
+
     var dialogTitle = gProfileManagerBundle.getString("deleteTitle");
     var dialogText = gProfileManagerBundle.getFormattedString(
       "deleteProfileConfirm",
@@ -335,6 +392,8 @@ function ConfirmDelete() {
     }
   }
 
+  let { storeID } = selectedProfile;
+
   try {
     selectedProfile.remove(deleteFiles);
     gNeedsFlush = true;
@@ -346,6 +405,10 @@ function ConfirmDelete() {
     return true;
   }
 
+  if (deleteFiles && storeID) {
+    await deleteSharedProfilesStore(storeID);
+  }
+
   profileList.removeChild(selectedItem);
   if (profileList.firstChild != undefined) {
     profileList.selectItem(profileList.firstChild);
@@ -353,3 +416,5 @@ function ConfirmDelete() {
 
   return true;
 }
+
+window.addEventListener("load", startup);

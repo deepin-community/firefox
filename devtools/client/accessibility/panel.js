@@ -17,9 +17,6 @@ loader.lazyRequireGetter(
   "resource://devtools/client/accessibility/picker.js",
   true
 );
-const {
-  A11Y_SERVICE_DURATION,
-} = require("resource://devtools/client/accessibility/constants.js");
 
 // The panel's window global is an EventEmitter firing the following events:
 const EVENTS = {
@@ -45,43 +42,55 @@ const EVENTS = {
  * render Accessibility Tree of the current debugger target and the sidebar that
  * displays current relevant accessible details.
  */
-function AccessibilityPanel(iframeWindow, toolbox, commands) {
-  this.panelWin = iframeWindow;
-  this._toolbox = toolbox;
-  this._commands = commands;
+class AccessibilityPanel extends EventEmitter {
+  #toolbox;
+  #commands;
+  #opening;
+  #telemetry;
+  #timerID;
+  #destroyed;
 
-  this.onPanelVisibilityChange = this.onPanelVisibilityChange.bind(this);
-  this.onNewAccessibleFrontSelected =
-    this.onNewAccessibleFrontSelected.bind(this);
-  this.onAccessibilityInspectorUpdated =
-    this.onAccessibilityInspectorUpdated.bind(this);
-  this.updateA11YServiceDurationTimer =
-    this.updateA11YServiceDurationTimer.bind(this);
-  this.forceUpdatePickerButton = this.forceUpdatePickerButton.bind(this);
-  this.onLifecycleEvent = this.onLifecycleEvent.bind(this);
+  constructor(iframeWindow, toolbox, commands) {
+    super();
 
-  EventEmitter.decorate(this);
-}
+    this.panelWin = iframeWindow;
+    this.#toolbox = toolbox;
+    this.#commands = commands;
 
-AccessibilityPanel.prototype = {
+    this.onPanelVisibilityChange = this.onPanelVisibilityChange.bind(this);
+    this.onNewAccessibleFrontSelected =
+      this.onNewAccessibleFrontSelected.bind(this);
+    this.onAccessibilityInspectorUpdated =
+      this.onAccessibilityInspectorUpdated.bind(this);
+    this.updateA11YServiceDurationTimer =
+      this.updateA11YServiceDurationTimer.bind(this);
+    this.forceUpdatePickerButton = this.forceUpdatePickerButton.bind(this);
+    this.onLifecycleEvent = this.onLifecycleEvent.bind(this);
+  }
   /**
    * Open is effectively an asynchronous constructor.
    */
   async open() {
-    if (this._opening) {
-      await this._opening;
-      return this._opening;
+    if (this.#opening) {
+      await this.#opening;
+      return this.#opening;
     }
 
+    // This first promise includes initialization of proxy *and* the call to forceRefresh
     let resolver;
-    this._opening = new Promise(resolve => {
+    this.#opening = new Promise(resolve => {
       resolver = resolve;
     });
 
-    this._telemetry = this._toolbox.telemetry;
-    this.panelWin.gTelemetry = this._telemetry;
+    // This second promise only include the initialization of proxy and few other things,
+    // but not the call to forceRefresh.
+    const { promise, resolve } = Promise.withResolvers();
+    this.initializedPromise = promise;
 
-    this._toolbox.on("select", this.onPanelVisibilityChange);
+    this.#telemetry = this.#toolbox.telemetry;
+    this.panelWin.gTelemetry = this.#telemetry;
+
+    this.#toolbox.on("select", this.onPanelVisibilityChange);
 
     this.panelWin.EVENTS = EVENTS;
     EventEmitter.decorate(this.panelWin);
@@ -94,35 +103,30 @@ AccessibilityPanel.prototype = {
       this.onAccessibilityInspectorUpdated
     );
 
-    this.accessibilityProxy = new AccessibilityProxy(this._commands, this);
-    await this.accessibilityProxy.initialize();
-
-    // Enable accessibility service if necessary.
-    if (
-      this.accessibilityProxy.canBeEnabled &&
-      !this.accessibilityProxy.enabled
-    ) {
-      await this.accessibilityProxy.enableAccessibility();
-    }
-
     this.picker = new Picker(this);
     this.fluentBundles = await this.createFluentBundles();
 
-    this.updateA11YServiceDurationTimer();
+    this.accessibilityProxy = new AccessibilityProxy(this.#commands, this);
+
+    await this.accessibilityProxy.initialize();
+
     this.accessibilityProxy.startListeningForLifecycleEvents({
       init: this.onLifecycleEvent,
       shutdown: this.onLifecycleEvent,
     });
 
-    // Force refresh to render the UI and wait for the INITIALIZED event.
-    const onInitialized = this.panelWin.once(EVENTS.INITIALIZED);
-    this.shouldRefresh = true;
-    this.refresh();
-    await onInitialized;
+    // Start recording the duration where a11y service is enabled via the proxy.
+    this.updateA11YServiceDurationTimer();
+
+    // Resolve the `this.initializedPromise`
+    resolve();
+
+    // Force rendering the panel once everything is initialized
+    await this.forceRefresh();
 
     resolver(this);
-    return this._opening;
-  },
+    return this.#opening;
+  }
 
   /**
    * Retrieve message contexts for the current locales, and return them as an
@@ -142,20 +146,20 @@ AccessibilityPanel.prototype = {
     }
 
     return contexts;
-  },
+  }
 
   onLifecycleEvent() {
     this.updateA11YServiceDurationTimer();
     this.forceUpdatePickerButton();
-  },
+  }
 
   onNewAccessibleFrontSelected(selected) {
     this.emit("new-accessible-front-selected", selected);
-  },
+  }
 
   onAccessibilityInspectorUpdated() {
     this.emit("accessibility-inspector-updated");
-  },
+  }
 
   /**
    * Make sure the panel is refreshed when the page is reloaded. The panel is
@@ -164,22 +168,22 @@ AccessibilityPanel.prototype = {
    */
   async forceRefresh() {
     this.shouldRefresh = true;
-    await this._opening;
 
-    await this.accessibilityProxy.accessibilityFrontGetPromise;
+    // Wait for initialization to be done, in case this is called early on.
+    await this.initializedPromise;
     const onUpdated = this.panelWin.once(EVENTS.INITIALIZED);
     this.refresh();
     await onUpdated;
 
     this.emit("reloaded");
-  },
+  }
 
   /**
    * Make sure the panel is refreshed (if needed) when it's selected.
    */
   onPanelVisibilityChange() {
-    this._opening.then(() => this.refresh());
-  },
+    this.#opening.then(() => this.refresh());
+  }
 
   refresh() {
     this.cancelPicker();
@@ -214,7 +218,7 @@ AccessibilityPanel.prototype = {
     } = this.accessibilityProxy;
     this.postContentMessage("initialize", {
       fluentBundles: this.fluentBundles,
-      toolbox: this._toolbox,
+      toolbox: this.#toolbox,
       supports,
       getAccessibilityTreeRoot,
       startListeningForAccessibilityEvents,
@@ -231,35 +235,34 @@ AccessibilityPanel.prototype = {
       highlightAccessible,
       unhighlightAccessible,
     });
-  },
+  }
 
   updateA11YServiceDurationTimer() {
     if (this.accessibilityProxy.enabled) {
-      this._telemetry.start(A11Y_SERVICE_DURATION, this);
-    } else {
-      this._telemetry.finish(A11Y_SERVICE_DURATION, this, true);
+      this.#timerID = Glean.devtools.accessibilityServiceTimeActive.start();
+    } else if (this.#timerID) {
+      Glean.devtools.accessibilityServiceTimeActive.stopAndAccumulate(
+        this.#timerID
+      );
+      this.#timerID = null;
     }
-  },
+  }
 
   selectAccessible(accessibleFront) {
     this.postContentMessage("selectAccessible", accessibleFront);
-  },
+  }
 
   selectAccessibleForNode(nodeFront, reason) {
     if (reason) {
-      this._telemetry.keyedScalarAdd(
-        "devtools.accessibility.select_accessible_for_node",
-        reason,
-        1
-      );
+      Glean.devtoolsAccessibility.selectAccessibleForNode[reason].add(1);
     }
 
     this.postContentMessage("selectNodeAccessible", nodeFront);
-  },
+  }
 
   highlightAccessible(accessibleFront) {
     this.postContentMessage("highlightAccessible", accessibleFront);
-  },
+  }
 
   postContentMessage(type, ...args) {
     const event = new this.panelWin.MessageEvent("devtools/chrome/message", {
@@ -269,11 +272,11 @@ AccessibilityPanel.prototype = {
     });
 
     this.panelWin.dispatchEvent(event);
-  },
+  }
 
   updatePickerButton() {
     this.picker && this.picker.updateButton();
-  },
+  }
 
   forceUpdatePickerButton() {
     // Only update picker button when the panel is selected.
@@ -283,33 +286,37 @@ AccessibilityPanel.prototype = {
 
     this.updatePickerButton();
     // Calling setToolboxButtons to make sure toolbar is forced to re-render.
-    this._toolbox.component.setToolboxButtons(this._toolbox.toolbarButtons);
-  },
+    this.#toolbox.component.setToolboxButtons(this.#toolbox.toolbarButtons);
+  }
 
   togglePicker() {
     this.picker && this.picker.toggle();
-  },
+  }
 
   cancelPicker() {
     this.picker && this.picker.cancel();
-  },
+  }
 
   stopPicker() {
     this.picker && this.picker.stop();
-  },
+  }
 
   /**
    * Return true if the Accessibility panel is currently selected.
    */
   get isVisible() {
-    return this._toolbox.currentToolId === "accessibility";
-  },
+    return this.#toolbox.currentToolId === "accessibility";
+  }
+
+  get toolbox() {
+    return this.#toolbox;
+  }
 
   destroy() {
-    if (this._destroyed) {
+    if (this.#destroyed) {
       return;
     }
-    this._destroyed = true;
+    this.#destroyed = true;
 
     this.postContentMessage("destroy");
 
@@ -320,9 +327,10 @@ AccessibilityPanel.prototype = {
       });
       this.accessibilityProxy.destroy();
       this.accessibilityProxy = null;
+      this.initializedPromise = null;
     }
 
-    this._toolbox.off("select", this.onPanelVisibilityChange);
+    this.#toolbox.off("select", this.onPanelVisibilityChange);
 
     this.panelWin.off(
       EVENTS.NEW_ACCESSIBLE_FRONT_SELECTED,
@@ -339,12 +347,12 @@ AccessibilityPanel.prototype = {
       this.picker = null;
     }
 
-    this._telemetry = null;
+    this.#telemetry = null;
     this.panelWin.gTelemetry = null;
 
     this.emit("destroyed");
-  },
-};
+  }
+}
 
 // Exports from this module
 exports.AccessibilityPanel = AccessibilityPanel;

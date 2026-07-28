@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -77,6 +76,15 @@ interface nsIAccessibilityService : nsISupports
    * @return       cached accessible for the given DOM node if any
    */
   nsIAccessible getAccessibleFromCache(in Node aNode);
+
+  /**
+   * Set the active cache domains. If any given domains are not currently
+   * active, then the accessibility service will enable them in all content
+   * processes, causing them to be cached.
+   *
+   * @param aCacheDomains [in] the cache domains to set
+   */
+  void setCacheDomains(in unsigned long long aCacheDomains);
 
   /**
    * Create a new pivot for tracking a position and traversing a subtree.

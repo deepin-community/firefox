@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Golwg
 download-cert-view-text = Archwilio tystysgrif Awdurdod Tystysgrifo
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Cyhoeddwyd gan: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Storiwyd ar: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Cofio'r penderfyniad yma
+client-auth-cert-remember-label = Cofiwch y penderfyniad hwn:
+client-auth-cert-remember-never =
+    .label = Unwaith
+client-auth-cert-remember-always =
+    .label = Yn barhaol
+client-auth-cert-remember-temporarily =
+    .label = Ar gyfer y sesiwn hon
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Cyfrinair y dystysgrif wrth gefn (eto):
 set-password-reminder = Pwysig: Os byddwch yn anghofio eich cyfrinair diogelwch cludadwy, ni fydd modd i chi adfer y ffeil wrth gefn yma eto.  Cofnodwch hwn mewn man diogel.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Dilysiad Gwarchodedig
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Dilyswch i'r ddyfais ddiogelwch ( { $tokenName } ). Mae sut i wneud hynny yn dibynnu ar y ddyfais (er enghraifft, defnyddio darllenydd olion bysedd neu nodi cod gyda bysellbad).
 
 ## Protected authentication alert
 

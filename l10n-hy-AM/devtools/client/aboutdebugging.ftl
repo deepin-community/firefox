@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Վրիպազերծում - աշխատ�
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Այս { -brand-shorter-name }-ը
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Այս { -brand-shorter-name }-ը
+about-debugging-sidebar-this-firefox-title =
+    .title = Այս { -brand-shorter-name }-ը
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Տեղակայում
+about-debugging-sidebar-setup-title =
+    .title = Տեղակայում
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -36,7 +44,7 @@ about-debugging-sidebar-usb-disabled = USB-ն անջատված է
 # Connection status (connected) for runtime items in the sidebar
 aboutdebugging-sidebar-runtime-connection-status-connected = Կապակցված
 # Connection status (disconnected) for runtime items in the sidebar
-aboutdebugging-sidebar-runtime-connection-status-disconnected = Կապախզված
+aboutdebugging-sidebar-runtime-connection-status-disconnected = Անջատված
 # Text displayed in the about:debugging sidebar when no device was found.
 about-debugging-sidebar-no-devices = Սարքեր չեն հայտնաբերվել
 # Text displayed in buttons found in sidebar items representing remote runtimes.
@@ -139,11 +147,11 @@ about-debugging-network-locations-remove-button = Հեռացնել
 # Text used as error message if the format of the input value was invalid in the network locations form of the Setup page.
 # Variables:
 #   $host-value (string) - The input value submitted by the user in the network locations form
-about-debugging-network-location-form-invalid = Անվավեր խնամորդ “{ $host-value }”: Սպասվող ձևաչափը “hostname:portnumber”֊ն է։
+about-debugging-network-location-form-invalid = Անվավեր հյուրընկալ «{ $host-value }»: Սպասվող ձևաչափը «hostname:portnumber»֊ն է։
 # Text used as error message if the input value was already registered in the network locations form of the Setup page.
 # Variables:
 #   $host-value (string) - The input value submitted by the user in the network locations form
-about-debugging-network-location-form-duplicate = Խնամորդ՝ “{ $host-value }” ֊ն արդեն գրանցված է
+about-debugging-network-location-form-duplicate = «{ $host-value }» հյուրընկալն արդեն գրանցված է
 
 # Runtime Page strings
 
@@ -314,6 +322,9 @@ about-debugging-multiprocess-toolbox-name = Բազմամշակման գործի�
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Թիրախային դիտարկչի համար հիմնական գործընթաց և բովանդակության գործընթացներ
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Փակել նամակը
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Փակել նամակը

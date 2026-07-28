@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -22,16 +21,16 @@ const eeList = [
   "ee-keyCertSign-and-keyEncipherment",
 ];
 
-const caUsage = [certificateUsageSSLCA];
+const caUsage = [Ci.nsIX509CertDB.verifyUsageTLSServerCA];
 const allEEUsages = [
-  certificateUsageSSLClient,
-  certificateUsageSSLServer,
-  certificateUsageEmailSigner,
-  certificateUsageEmailRecipient,
+  Ci.nsIX509CertDB.verifyUsageTLSClient,
+  Ci.nsIX509CertDB.verifyUsageTLSServer,
+  Ci.nsIX509CertDB.verifyUsageEmailSigner,
+  Ci.nsIX509CertDB.verifyUsageEmailRecipient,
 ];
 const serverEEUsages = [
-  certificateUsageSSLServer,
-  certificateUsageEmailRecipient,
+  Ci.nsIX509CertDB.verifyUsageTLSServer,
+  Ci.nsIX509CertDB.verifyUsageEmailRecipient,
 ];
 
 const expectedUsagesMap = {

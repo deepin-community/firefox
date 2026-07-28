@@ -1,17 +1,16 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsColorPicker_h__
-#define nsColorPicker_h__
+#ifndef nsColorPicker_h_
+#define nsColorPicker_h_
 
 #include <windows.h>
 #include <commdlg.h>
 
+#include "nsBaseColorPicker.h"
 #include "nsCOMPtr.h"
-#include "nsIColorPicker.h"
 #include "nsThreadUtils.h"
 
 class nsIWidget;
@@ -37,19 +36,21 @@ class AsyncColorChooser : public mozilla::Runnable {
   nsCOMPtr<nsIColorPickerShownCallback> mCallback;
 };
 
-class nsColorPicker : public nsIColorPicker {
+class nsColorPicker final : public nsBaseColorPicker {
   virtual ~nsColorPicker();
 
  public:
   nsColorPicker();
 
   NS_DECL_ISUPPORTS
-  NS_DECL_NSICOLORPICKER
 
  private:
-  COLORREF mInitialColor;
+  // nsBaseColorPicker
+  nsresult InitNative(const nsTArray<nsString>& aDefaultColors) override;
+  nsresult OpenNative() override;
+
   nsTArray<nsString> mDefaultColors;
   nsCOMPtr<nsIWidget> mParentWidget;
 };
 
-#endif  // nsColorPicker_h__
+#endif  // nsColorPicker_h_

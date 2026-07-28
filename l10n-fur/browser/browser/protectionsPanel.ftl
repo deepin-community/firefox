@@ -23,6 +23,11 @@ protections-panel-etp-more-info =
     .aria-label = Plui informazions su la protezion des spiis miorade
 protections-panel-etp-on-header = La protezion miorade da lis spiis e je ATIVE par chest sît
 protections-panel-etp-off-header = La protezion miorade da lis spiis e je DISATIVADE par chest sît
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = Il sît nol funzione?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = Il sît nol funzione?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = Protezion miorade da lis spiis
     .description = Disativade par chest sît
     .aria-label = Protezion miorade da lis spiis: disativade par { $host }
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = Il sît nol funzione?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = Il sît nol funzione?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -72,6 +72,19 @@ protections-panel-blocking-label = Blocâts
 protections-panel-not-blocking-label = Permetûts
 protections-panel-not-found-label = Nissun rilevât
 
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } al bloche i contignûts che ti spiin intant che tu navighis su chest sît, gjavât che no tu lu permetis.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Permet { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = A son stâts blocâts contignûts e spiis di { $trackername }
+smartblock-placeholder-desc = Lis impostazions di { -brand-short-name } a àn impedît a chest contignût di spiâti su ducj i sîts o di vignî doprât par motîfs publicitaris.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Permet su { $websitehost }
+
 ##
 
 protections-panel-settings-label = Impostazions di protezion
@@ -93,9 +106,9 @@ protections-panel-site-not-working-view-send-report = Invie une segnalazion
 
 ##
 
-protections-panel-cross-site-tracking-cookies = Chescj cookies ti stan daûr di un sît a chel altri par tirâ dongje dâts su ce che tu fasis in rêt. A son metûts impins di tiercis parts tant che agjenziis publicitariis e di analisi di dâts.
+protections-panel-cross-site-tracking-cookies = Chescj cookies ti stan daûr di un sît a chel altri par tirâ sù dâts su ce che tu fasis in rêt. A son metûts impins di tiercis parts tant che agjenziis publicitariis e di analisi di dâts.
 protections-panel-cryptominers = I minadôrs di criptomonede a doprin la potente di elaborazion dal to sisteme par minâ monede digjitâl. I scripts par minâ la criptomonede ti cjucjin la batarie, ti morestin il computer e a puedin fâ cressi il cont de bolete de eletricitât.
-protections-panel-fingerprinters = I rilevadôrs di stamp numeric a tirin dongje impostazions dal to navigadôr e dal to computer par creâ un to profîl. Doprant chest stamp numeric digjitâl, a puedin stâti daûr su diviers sîts web.
+protections-panel-fingerprinters = I rilevadôrs di stamp numeric a tirin sù impostazions dal to navigadôr e dal to computer par creâ un to profîl. Doprant chest stamp numeric digjitâl, a puedin stâti daûr su diviers sîts web.
 protections-panel-tracking-content = I sîts web a puedin cjariâ publicitât, videos e altri contignûts esternis cul codiç par spiâti. Blocant i contignûts che ti spiin tu puedis sveltî il cjariament dai sîts, ma cualchi boton, formulari e cjamp pes credenziâls al podarès no funzionâ.
 protections-panel-social-media-trackers = I social networks a placin spiis su altris sîts web par stâti daûr su ce che tu fasis, viodis e osservis in rêt. Chest al permet aes compagniis dai social media di savê alc di plui su di te, rispiet a ce che za tu condividis sui profîi dai tiei social media.
 protections-panel-description-shim-allowed = Cualchi spion segnât chi sot al è stât sblocât in mût parziâl su cheste pagjine parcè che tu âs interagjît cun lui.
@@ -108,13 +121,12 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Segnale un sît che nol funzione
 protections-panel-content-blocking-breakage-report-view-description = Blocant ciertis spiis tu puedis causâ problemis cun cualchi sît web. La segnalazion di chescj problemis e jude a miorâ { -brand-short-name } par ducj. Inviant cheste segnalazion tu inviarâs a Mozilla un URL e lis informazions su lis impostazions dal tô navigadôr. <label data-l10n-name="learn-more">Plui informazions</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Blocant ciertis spiis tu puedis causâ problemis cun cualchi sît web. La segnalazion di chescj problemis e jude a miorâ { -brand-short-name } par ducj. Inviant cheste segnalazion tu inviarâs a { -vendor-short-name } un URL e lis informazions su lis impostazions dal tô navigadôr.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
-protections-panel-content-blocking-breakage-report-view-collection-comments = Opzionâl: descrîf il probleme
+protections-panel-content-blocking-breakage-report-view-collection-comments = Facoltatîf: descrîf il probleme
 protections-panel-content-blocking-breakage-report-view-collection-comments-label =
-    .aria-label = Opzionâl: descrîf il probleme
+    .aria-label = Facoltatîf: descrîf il probleme
 protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Anule
 protections-panel-content-blocking-breakage-report-view-send-report =

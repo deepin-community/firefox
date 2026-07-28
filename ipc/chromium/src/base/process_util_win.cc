@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -261,7 +259,7 @@ Result<Ok, LaunchError> LaunchApp(const std::wstring& cmdline,
   for (HANDLE h : options.handles_to_inherit) {
     if (SetHandleInformation(h, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT) ==
         0) {
-      MOZ_DIAGNOSTIC_ASSERT(false, "SetHandleInformation failed");
+      MOZ_DIAGNOSTIC_CRASH("SetHandleInformation failed");
       return Err(
           LaunchError::FromWin32Error("SetHandleInformation", GetLastError()));
     }

@@ -15,7 +15,6 @@ options-select-dev-tools-theme-label = Теми
 
 # The heading
 options-context-inspector = Инспектор
-
 # The label for the checkbox option to show user agent styles
 options-show-user-agent-styles-label = Прикажи стилови на прелистувачот
 
@@ -28,24 +27,21 @@ options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-name = Имиња на бои
 
-## Style Editor section
-
-
 ## Screenshot section
 
 options-screenshot-audio-tooltip =
     .title = Емитува звук на бленда кога се фаќаат слики од екран
 
-## Editor section
-
-
 ## Advanced section
 
-# The heading
+# The heading (this item is also used in perftools.ftl)
 options-context-advanced-settings = Напредни поставки
-
-# The message shown for settings that trigger page reload
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label = Оневозможи JavaScript *
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Само во текот на оваа сесија. Ја вчитува страницата одново.
-
-##
-
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *

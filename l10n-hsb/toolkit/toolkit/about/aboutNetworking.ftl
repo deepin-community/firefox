@@ -12,6 +12,13 @@ about-networking-dns-trr-url = DoH URL
 about-networking-dns-trr-mode = DoH-modus
 about-networking-dns-suffix = DNS-sufiks
 about-networking-websockets = Websokety
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Pochad
+about-networking-alt-svc-alternate = Alternatiwny
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Přepruwowany
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Izolaciski kluč
 about-networking-refresh = Aktualizować
 about-networking-auto-refresh = Kóžde 3 sekundy aktualizować
 about-networking-hostname = Hostmjeno
@@ -39,6 +46,7 @@ about-networking-dns-lookup = DNS-pytanje
 about-networking-dns-lookup-button = Rozeznać
 about-networking-dns-domain = Domena:
 about-networking-dns-lookup-table-column = IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP-RRs
 about-networking-rcwn = Statistika RCWN
 about-networking-rcwn-status = Status RCWN
@@ -64,6 +72,3 @@ about-networking-moved-about-logging = Tuta strona je so do <a data-l10n-name="a
 
 about-networking-networkid-is-up = Wotkaz je spadnjeny
 about-networking-networkid-status-known = Wotkazowy status je znaty
-
-##
-

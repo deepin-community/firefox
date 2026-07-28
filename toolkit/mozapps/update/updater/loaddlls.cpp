@@ -1,14 +1,19 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <windows.h>
 
+#ifdef MOZ_CLANG_PLUGIN
+#  define MOZ_RUNINIT __attribute__((annotate("moz_global_var")))
+#else
+#  define MOZ_RUNINIT
+#endif
+
 // Delayed load libraries are loaded when the first symbol is used.
 // The following ensures that we load the delayed loaded libraries from the
 // system directory.
-struct AutoLoadSystemDependencies {
+MOZ_RUNINIT struct AutoLoadSystemDependencies {
   AutoLoadSystemDependencies() {
     // Remove the current directory from the search path for dynamically loaded
     // DLLs as a precaution.  This call has no effect for delay load DLLs.

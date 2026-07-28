@@ -1,5 +1,4 @@
-/* vim: sw=2 ts=2 et lcs=trail\:.,tab\:>~ :
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -15,17 +14,18 @@
 #include "nsThreadUtils.h"
 #include "nsProxyRelease.h"
 #include "prtime.h"
-#include "mozilla/Telemetry.h"
 #include "mozIStorageStatementCallback.h"
 
 class nsIFile;
 
-namespace mozilla {
-namespace places {
+namespace mozilla::places {
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Asynchronous Statement Callback Helper
 
+/**
+ * Doesn't implement ISupports methods, leaving that to the inherited class.
+ */
 class WeakAsyncStatementCallback : public mozIStorageStatementCallback {
  public:
   NS_DECL_MOZISTORAGESTATEMENTCALLBACK
@@ -35,13 +35,31 @@ class WeakAsyncStatementCallback : public mozIStorageStatementCallback {
   virtual ~WeakAsyncStatementCallback() = default;
 };
 
+/**
+ * This is the most common class to use, with ISupports.
+ */
 class AsyncStatementCallback : public WeakAsyncStatementCallback {
  public:
-  NS_DECL_ISUPPORTS
+  NS_DECL_THREADSAFE_ISUPPORTS
   AsyncStatementCallback() = default;
 
  protected:
   virtual ~AsyncStatementCallback() = default;
+};
+
+/**
+ * Adds a callback to bind parameters to AsyncStatementCallback.
+ */
+class PendingStatementCallback : public AsyncStatementCallback {
+ public:
+  NS_INLINE_DECL_REFCOUNTING_INHERITED(PendingStatementCallback,
+                                       AsyncStatementCallback);
+  PendingStatementCallback() = default;
+
+  virtual nsresult BindParams(mozIStorageBindingParamsArray*) MOZ_MUST_OVERRIDE;
+
+ protected:
+  virtual ~PendingStatementCallback() = default;
 };
 
 /**
@@ -200,8 +218,9 @@ class QueryKeyValuePair final {
                     int32_t aEquals, int32_t aPastEnd) {
     if (aEquals == aKeyBegin) aEquals = aPastEnd;
     key = Substring(aSource, aKeyBegin, aEquals - aKeyBegin);
-    if (aPastEnd - aEquals > 0)
+    if (aPastEnd - aEquals > 0) {
       value = Substring(aSource, aEquals + 1, aPastEnd - aEquals - 1);
+    }
   }
   nsCString key;
   nsCString value;
@@ -289,23 +308,6 @@ class FinalizeStatementCacheProxy : public Runnable {
  */
 bool GetHiddenState(bool aIsRedirect, uint32_t aTransitionType);
 
-/**
- * Used to notify a topic to system observers on async execute completion.
- */
-class AsyncStatementTelemetryTimer : public AsyncStatementCallback {
- public:
-  explicit AsyncStatementTelemetryTimer(Telemetry::HistogramID aHistogramId,
-                                        TimeStamp aStart = TimeStamp::Now())
-      : mHistogramId(aHistogramId), mStart(aStart) {}
-
-  NS_IMETHOD HandleCompletion(uint16_t aReason) override;
-
- private:
-  const Telemetry::HistogramID mHistogramId;
-  const TimeStamp mStart;
-};
-
-}  // namespace places
-}  // namespace mozilla
+}  // namespace mozilla::places
 
 #endif  // mozilla_places_Helpers_h_

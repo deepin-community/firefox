@@ -1,47 +1,43 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SpeechRecognition.h"
 
-#include "nsCOMPtr.h"
-#include "nsCycleCollectionParticipant.h"
+#include <algorithm>
 
-#include "mozilla/dom/AudioStreamTrack.h"
-#include "mozilla/dom/BindingUtils.h"
-#include "mozilla/dom/Element.h"
-#include "mozilla/dom/SpeechRecognitionBinding.h"
-#include "mozilla/dom/MediaStreamTrackBinding.h"
-#include "mozilla/dom/MediaStreamError.h"
-#include "mozilla/dom/RootedDictionary.h"
-#include "mozilla/dom/SpeechGrammar.h"
+#include "AudioSegment.h"
+#include "MediaEnginePrefs.h"
+#include "SpeechTrackListener.h"
+#include "VideoUtils.h"
+#include "endpointer.h"
+#include "mozilla/AbstractThread.h"
 #include "mozilla/MediaManager.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_media.h"
-#include "mozilla/AbstractThread.h"
-#include "VideoUtils.h"
-#include "AudioSegment.h"
-#include "MediaEnginePrefs.h"
-#include "endpointer.h"
-
+#include "mozilla/dom/AudioStreamTrack.h"
+#include "mozilla/dom/BindingUtils.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/Element.h"
+#include "mozilla/dom/MediaStreamError.h"
+#include "mozilla/dom/MediaStreamTrackBinding.h"
+#include "mozilla/dom/RootedDictionary.h"
+#include "mozilla/dom/SpeechGrammar.h"
+#include "mozilla/dom/SpeechRecognitionBinding.h"
 #include "mozilla/dom/SpeechRecognitionEvent.h"
+#include "nsCOMPtr.h"
 #include "nsComponentManagerUtils.h"
 #include "nsContentUtils.h"
-#include "mozilla/dom/Document.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsGlobalWindowInner.h"
 #include "nsIObserverService.h"
 #include "nsIPermissionManager.h"
 #include "nsIPrincipal.h"
 #include "nsPIDOMWindow.h"
-#include "nsServiceManagerUtils.h"
 #include "nsQueryObject.h"
-#include "nsGlobalWindowInner.h"
-#include "SpeechTrackListener.h"
-
-#include <algorithm>
+#include "nsServiceManagerUtils.h"
 
 // Undo the windows.h damage
 #if defined(XP_WIN) && defined(GetMessage)
@@ -108,7 +104,7 @@ CreateSpeechRecognitionService(nsPIDOMWindowInner* aWindow,
   nsAutoCString speechRecognitionService;
 
   if (!prefValue.IsEmpty()) {
-    speechRecognitionService = prefValue;
+    speechRecognitionService = std::move(prefValue);
   } else {
     speechRecognitionService = DEFAULT_RECOGNITION_SERVICE;
   }
@@ -161,7 +157,7 @@ SpeechRecognition::SpeechRecognition(nsPIDOMWindowInner* aOwnerWindow)
       mEndpointer(kSAMPLE_RATE),
       mAudioSamplesPerChunk(mEndpointer.FrameSize()),
       mSpeechDetectionTimer(NS_NewTimer()),
-      mSpeechGrammarList(new SpeechGrammarList(GetOwnerGlobal())),
+      mSpeechGrammarList(new SpeechGrammarList(GetRelevantGlobal())),
       mContinuous(false),
       mInterimResults(false),
       mMaxAlternatives(1) {
@@ -200,32 +196,6 @@ void SpeechRecognition::SetState(FSMState state) {
 JSObject* SpeechRecognition::WrapObject(JSContext* aCx,
                                         JS::Handle<JSObject*> aGivenProto) {
   return SpeechRecognition_Binding::Wrap(aCx, this, aGivenProto);
-}
-
-bool SpeechRecognition::IsAuthorized(JSContext* aCx, JSObject* aGlobal) {
-  nsCOMPtr<nsIPrincipal> principal = nsContentUtils::ObjectPrincipal(aGlobal);
-
-  nsresult rv;
-  nsCOMPtr<nsIPermissionManager> mgr =
-      do_GetService(NS_PERMISSIONMANAGER_CONTRACTID, &rv);
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return false;
-  }
-
-  uint32_t speechRecognition = nsIPermissionManager::UNKNOWN_ACTION;
-  rv = mgr->TestExactPermissionFromPrincipal(principal, "speech-recognition"_ns,
-                                             &speechRecognition);
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return false;
-  }
-
-  bool hasPermission =
-      (speechRecognition == nsIPermissionManager::ALLOW_ACTION);
-
-  return (hasPermission ||
-          StaticPrefs::media_webspeech_recognition_force_enable() ||
-          StaticPrefs::media_webspeech_test_enable()) &&
-         StaticPrefs::media_webspeech_recognition_enable();
 }
 
 already_AddRefed<SpeechRecognition> SpeechRecognition::Constructor(
@@ -456,7 +426,7 @@ uint32_t SpeechRecognition::ProcessAudioSegment(AudioSegment* aSegment,
       }));
 
   MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-  Unused << rv;
+  (void)rv;
   return samples;
 }
 
@@ -1131,7 +1101,7 @@ const char* SpeechRecognition::GetName(FSMState aId) {
   };
 
   MOZ_ASSERT(aId < STATE_COUNT);
-  MOZ_ASSERT(ArrayLength(names) == STATE_COUNT);
+  MOZ_ASSERT(std::size(names) == STATE_COUNT);
   return names[aId];
 }
 
@@ -1146,7 +1116,7 @@ const char* SpeechRecognition::GetName(SpeechEvent* aEvent) {
                                 "EVENT_RECOGNITIONSERVICE_ERROR"};
 
   MOZ_ASSERT(aEvent->mType < EVENT_COUNT);
-  MOZ_ASSERT(ArrayLength(names) == EVENT_COUNT);
+  MOZ_ASSERT(std::size(names) == EVENT_COUNT);
   return names[aEvent->mType];
 }
 

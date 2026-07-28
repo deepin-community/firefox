@@ -40,7 +40,7 @@ add_task(async function test_about_inference_disabled() {
       const { display } = window.getComputedStyle(element);
       is(display, "block", "The warning should be visible");
       Assert.stringContains(
-        element.textContent,
+        element.message,
         "browser.ml.enable is set to False !"
       );
     },
@@ -62,17 +62,15 @@ add_task(async function test_about_inference_process() {
             return;
           }
           const checkInnerHTML = () => {
-            console.log(
-              `Checking innerHTML of element with selector: ${selector}`
-            );
+            info(`Checking innerHTML of element with selector: ${selector}`);
             if (element.innerHTML.includes(substring)) {
-              console.log(
+              info(
                 `Substring "${substring}" found in element with selector: ${selector}`
               );
               resolve();
             } else {
               // eslint-disable-next-line mozilla/no-arbitrary-setTimeout
-              setTimeout(checkInnerHTML, interval);
+              content.setTimeout(checkInnerHTML, interval);
             }
           };
           checkInnerHTML();

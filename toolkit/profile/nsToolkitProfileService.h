@@ -1,6 +1,3 @@
-
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,12 +7,29 @@
 
 #include "mozilla/Components.h"
 #include "mozilla/LinkedList.h"
+#include "nsIObserver.h"
 #include "nsIToolkitProfileService.h"
 #include "nsIToolkitProfile.h"
 #include "nsIFactory.h"
 #include "nsSimpleEnumerator.h"
 #include "nsProfileLock.h"
 #include "nsINIParser.h"
+#include "mozilla/MozPromise.h"
+#include "nsProxyRelease.h"
+
+class nsStartupLock;
+
+struct CurrentProfileData {
+  nsCString mPath;
+  nsCString mStoreID;
+  bool mShowSelector;
+  bool mIsRelative;
+};
+
+struct IniData {
+  nsCString mProfiles;
+  nsCString mInstalls;
+};
 
 class nsToolkitProfile final
     : public nsIToolkitProfile,
@@ -68,10 +82,12 @@ class nsToolkitProfileLock final : public nsIProfileLock {
   nsProfileLock mLock;
 };
 
-class nsToolkitProfileService final : public nsIToolkitProfileService {
+class nsToolkitProfileService final : public nsIToolkitProfileService,
+                                      public nsIObserver {
  public:
-  NS_DECL_ISUPPORTS
+  NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSITOOLKITPROFILESERVICE
+  NS_DECL_NSIOBSERVER
 
   nsresult SelectStartupProfile(int* aArgc, char* aArgv[], bool aIsResetting,
                                 nsIFile** aRootDir, nsIFile** aLocalDir,
@@ -79,7 +95,12 @@ class nsToolkitProfileService final : public nsIToolkitProfileService {
                                 bool* aWasDefaultSelection);
   nsresult CreateResetProfile(nsIToolkitProfile** aNewProfile);
   nsresult ApplyResetProfile(nsIToolkitProfile* aOldProfile);
+  bool HasShowProfileSelector();
+  void UpdateCurrentProfile();
   void CompleteStartup();
+
+  using AsyncFlushPromise =
+      mozilla::MozPromise<bool /* ignored */, nsresult, false>;
 
  private:
   friend class nsToolkitProfile;
@@ -91,22 +112,35 @@ class nsToolkitProfileService final : public nsIToolkitProfileService {
 
   nsresult Init();
 
-  nsresult CreateTimesInternal(nsIFile* profileDir);
+  nsresult CreateTimesInternal(nsIFile* profileDir, const nsACString& aSource);
   void GetProfileByDir(nsIFile* aRootDir, nsIFile* aLocalDir,
-                       nsIToolkitProfile** aResult);
-
-  nsresult GetProfileDescriptor(nsIFile* aRootDir, nsACString& aDescriptor,
-                                bool* aIsRelative);
-  nsresult GetProfileDescriptor(nsIToolkitProfile* aProfile,
-                                nsACString& aDescriptor, bool* aIsRelative);
-  bool IsProfileForCurrentInstall(nsIToolkitProfile* aProfile);
-  void ClearProfileFromOtherInstalls(nsIToolkitProfile* aProfile);
-  nsresult MaybeMakeDefaultDedicatedProfile(nsIToolkitProfile* aProfile,
+                       nsToolkitProfile** aResult);
+  already_AddRefed<nsToolkitProfile> GetProfileByStoreID(
+      const nsACString& aStoreID);
+  nsresult GetProfileDescriptor(nsToolkitProfile* aProfile, bool* aIsRelative,
+                                nsACString& aDescriptor);
+  bool IsProfileForCurrentInstall(nsToolkitProfile* aProfile);
+  void ClearProfileFromOtherInstalls(nsToolkitProfile* aProfile);
+  nsresult MaybeMakeDefaultDedicatedProfile(nsToolkitProfile* aProfile,
                                             bool* aResult);
   bool IsSnapEnvironment();
   bool UseLegacyProfiles();
-  nsresult CreateDefaultProfile(nsIToolkitProfile** aResult);
-  void SetNormalDefault(nsIToolkitProfile* aProfile);
+  nsresult CreateDefaultProfile(const nsACString& aSource,
+                                nsToolkitProfile** aResult);
+  nsresult CreateUniqueProfile(nsIFile* aRootDir, const nsACString& aNamePrefix,
+                               const nsACString& aSource,
+                               nsToolkitProfile** aResult);
+  nsresult CreateProfile(nsIFile* aRootDir, const nsACString& aName,
+                         const nsACString& aSource, nsToolkitProfile** aResult);
+  already_AddRefed<nsToolkitProfile> GetProfileByName(const nsACString& aName);
+  void SetNormalDefault(nsToolkitProfile* aProfile);
+  already_AddRefed<nsToolkitProfile> GetDefaultProfile();
+  void FlushProfileData(
+      const nsMainThreadPtrHandle<nsStartupLock>& aStartupLock,
+      const CurrentProfileData* aProfileInfo);
+  void BuildIniData(nsCString& aProfilesIniData, nsCString& aInstallsIniData);
+  nsresult FlushData(const nsCString& aProfilesIniData,
+                     const nsCString& aInstallsIniData);
 
   // Returns the known install hashes from the installs database. Modifying the
   // installs database is safe while iterating the returned array.
@@ -117,14 +151,14 @@ class nsToolkitProfileService final : public nsIToolkitProfileService {
   // The  profiles loaded from profiles.ini.
   mozilla::LinkedList<RefPtr<nsToolkitProfile>> mProfiles;
   // The profile selected for use at startup, if it exists in profiles.ini.
-  nsCOMPtr<nsIToolkitProfile> mCurrent;
+  RefPtr<nsToolkitProfile> mCurrent;
   // The profile selected for this install in installs.ini.
-  nsCOMPtr<nsIToolkitProfile> mDedicatedProfile;
+  RefPtr<nsToolkitProfile> mDedicatedProfile;
   // The default profile used by non-dev-edition builds.
-  nsCOMPtr<nsIToolkitProfile> mNormalDefault;
+  RefPtr<nsToolkitProfile> mNormalDefault;
   // The profile used if mUseDevEditionProfile is true (the default on
   // dev-edition builds).
-  nsCOMPtr<nsIToolkitProfile> mDevEditionDefault;
+  RefPtr<nsToolkitProfile> mDevEditionDefault;
   // The directory that holds profiles.ini and profile directories.
   nsCOMPtr<nsIFile> mAppData;
   // The directory that holds the cache files for profiles.
@@ -149,7 +183,7 @@ class nsToolkitProfileService final : public nsIToolkitProfileService {
   bool mUseDevEditionProfile;
   // True if this install should use a dedicated default profile.
   const bool mUseDedicatedProfile;
-  nsString mStartupReason;
+  nsCString mStartupReason;
   // Records the version of the profiles.ini file as it was when it was loaded
   // during startup.
   nsCString mStartupFileVersion;
@@ -162,6 +196,11 @@ class nsToolkitProfileService final : public nsIToolkitProfileService {
   bool mProfileDBExists;
   int64_t mProfileDBFileSize;
   PRTime mProfileDBModifiedTime;
+  nsCString mIniStatus;
+
+  // A background task queue for the async flushing operations.
+  nsCOMPtr<nsISerialEventTarget> mAsyncQueue;
+  nsISerialEventTarget* AsyncQueue();
 
   static nsToolkitProfileService* gService;
 

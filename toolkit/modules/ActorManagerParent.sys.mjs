@@ -1,4 +1,3 @@
-/* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +8,6 @@
  */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 /**
  * Fission-compatible JSProcess implementations.
@@ -50,6 +48,18 @@ let JSPROCESSACTORS = {
     },
   },
 
+  // A single process (shared with translations) that manages machine learning engines.
+  MLEngine: {
+    remoteTypes: ["inference"],
+    parent: {
+      esModuleURI: "resource://gre/actors/MLEngineParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource://gre/actors/MLEngineChild.sys.mjs",
+    },
+    enablePreference: "browser.ml.enable",
+  },
+
   ProcessConduits: {
     parent: {
       esModuleURI: "resource://gre/modules/ConduitsParent.sys.mjs",
@@ -57,6 +67,18 @@ let JSPROCESSACTORS = {
     child: {
       esModuleURI: "resource://gre/modules/ConduitsChild.sys.mjs",
     },
+  },
+
+  // A single process (shared with MLEngine) that controls all of the translations.
+  TranslationsEngine: {
+    remoteTypes: ["inference"],
+    parent: {
+      esModuleURI: "resource://gre/actors/TranslationsEngineParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource://gre/actors/TranslationsEngineChild.sys.mjs",
+    },
+    enablePreference: "browser.translations.enable",
   },
 };
 
@@ -80,6 +102,7 @@ let JSWINDOWACTORS = {
     },
 
     matches: ["about:certificate"],
+    remoteTypes: ["privilegedabout"],
   },
 
   AboutHttpsOnlyError: {
@@ -96,24 +119,18 @@ let JSWINDOWACTORS = {
     allFrames: true,
   },
 
-  AboutTranslations: {
+  AboutRestricted: {
     parent: {
-      esModuleURI: "resource://gre/actors/AboutTranslationsParent.sys.mjs",
+      esModuleURI: "resource://gre/actors/AboutRestrictedParent.sys.mjs",
     },
     child: {
-      esModuleURI: "resource://gre/actors/AboutTranslationsChild.sys.mjs",
+      esModuleURI: "resource://gre/actors/AboutRestrictedChild.sys.mjs",
       events: {
-        // Run the actor before any content of the page appears to inject functions.
         DOMDocElementInserted: {},
-        DOMContentLoaded: {},
-        // Used to show and hide the translations button.
-        pageshow: { mozSystemGroup: true },
-        pagehide: { mozSystemGroup: true },
       },
     },
-    matches: ["about:translations"],
-    remoteTypes: ["privilegedabout"],
-    enablePreference: "browser.translations.enable",
+    matches: ["about:restricted?*"],
+    allFrames: true,
   },
 
   AudioPlayback: {
@@ -223,6 +240,54 @@ let JSWINDOWACTORS = {
     allFrames: true,
   },
 
+  CaptchaDetection: {
+    parent: {
+      esModuleURI: "resource://gre/actors/CaptchaDetectionParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource://gre/actors/CaptchaDetectionChild.sys.mjs",
+      events: {
+        DOMContentLoaded: { capture: true },
+        pageshow: {},
+        pagehide: {},
+      },
+    },
+    matches: [
+      // Google reCAPTCHA v2
+      "https://www.google.com/recaptcha/api2/*",
+      "https://www.google.com/recaptcha/enterprise/*",
+      // CF Turnstile
+      "https://challenges.cloudflare.com/cdn-cgi/challenge-platform/*",
+      // DataDome Captcha
+      "https://geo.captcha-delivery.com/captcha/*",
+      // hCaptcha
+      "https://newassets.hcaptcha.com/captcha/v1/*",
+      // Arkose Labs Captcha
+      "https://client-api.arkoselabs.com/fc/assets/ec-game-core/game-core/*",
+      // Mochitest
+      ...(Cu.isInAutomation
+        ? [
+            "https://example.com/tests/toolkit/components/captchadetection/tests/mochitest/*",
+            "https://example.org/tests/toolkit/components/captchadetection/tests/mochitest/*",
+          ]
+        : []),
+    ],
+    messageManagerGroups: ["browsers"],
+    allFrames: true,
+    enablePreference: "captchadetection.actor.enabled",
+  },
+
+  CaptchaDetectionCommunication: {
+    parent: {
+      esModuleURI: "resource://gre/actors/CaptchaDetectionParent.sys.mjs",
+    },
+    child: {
+      esModuleURI:
+        "resource://gre/actors/CaptchaDetectionCommunicationChild.sys.mjs",
+    },
+    allFrames: true,
+  },
+
   CookieBanner: {
     parent: {
       esModuleURI: "resource://gre/actors/CookieBannerParent.sys.mjs",
@@ -240,47 +305,38 @@ let JSWINDOWACTORS = {
     messageManagerGroups: ["browsers"],
     // Cookie banners can be shown in sub-frames so we need to include them.
     allFrames: true,
-    // Holds lazy pref getters.
-    _prefs: {},
-    // Remember current register state to avoid duplicate calls to register /
-    // unregister.
-    _isRegistered: false,
     onAddActor(register, unregister) {
-      // Register / unregister on pref changes.
-      let onPrefChange = () => {
-        if (
-          this._prefs["cookiebanners.bannerClicking.enabled"] &&
-          (this._prefs["cookiebanners.service.mode"] != 0 ||
-            this._prefs["cookiebanners.service.mode.privateBrowsing"] != 0)
-        ) {
-          if (!this._isRegistered) {
+      let isRegistered = false;
+
+      const maybeRegister = () => {
+        const isEnabled = Services.prefs.getBoolPref(
+          "cookiebanners.bannerClicking.enabled",
+          false
+        );
+        const mode = Services.prefs.getIntPref("cookiebanners.service.mode", 0);
+        const privateBrowsing = Services.prefs.getIntPref(
+          "cookiebanners.service.mode.privateBrowsing"
+        );
+        if (isEnabled && (mode != 0 || privateBrowsing != 0)) {
+          if (!isRegistered) {
             register();
-            this._isRegistered = true;
+            isRegistered = true;
           }
-        } else if (this._isRegistered) {
+        } else if (isRegistered) {
           unregister();
-          this._isRegistered = false;
+          isRegistered = false;
         }
       };
 
-      // Add lazy pref getters with pref observers so we can dynamically enable
-      // or disable the actor.
       [
         "cookiebanners.bannerClicking.enabled",
         "cookiebanners.service.mode",
         "cookiebanners.service.mode.privateBrowsing",
       ].forEach(prefName => {
-        XPCOMUtils.defineLazyPreferenceGetter(
-          this._prefs,
-          prefName,
-          prefName,
-          null,
-          onPrefChange
-        );
+        Services.prefs.addObserver(prefName, maybeRegister);
       });
 
-      // Check initial state.
-      onPrefChange();
+      maybeRegister();
     },
   },
 
@@ -385,29 +441,18 @@ let JSWINDOWACTORS = {
     },
 
     allFrames: true,
-    messageManagerGroups: ["browsers", "webext-browsers", ""],
+    messageManagerGroups: [
+      "browsers",
+      "webext-browsers",
+      "chatbot-browser",
+      "",
+    ],
   },
 
   ManifestMessages: {
     child: {
       esModuleURI: "resource://gre/modules/ManifestMessagesChild.sys.mjs",
     },
-  },
-
-  // A single process (shared with translations) that manages machine learning engines.
-  MLEngine: {
-    parent: {
-      esModuleURI: "resource://gre/actors/MLEngineParent.sys.mjs",
-    },
-    child: {
-      esModuleURI: "resource://gre/actors/MLEngineChild.sys.mjs",
-      events: {
-        DOMContentLoaded: { createActor: true },
-      },
-    },
-    includeChrome: true,
-    matches: ["chrome://global/content/ml/MLEngine.html"],
-    enablePreference: "browser.ml.enable",
   },
 
   NetError: {
@@ -426,54 +471,44 @@ let JSWINDOWACTORS = {
     allFrames: true,
   },
 
-  PictureInPictureLauncher: {
-    parent: {
-      esModuleURI: "resource://gre/modules/PictureInPicture.sys.mjs",
-    },
+  OpenSearchLoader: {
     child: {
-      esModuleURI: "resource://gre/actors/PictureInPictureChild.sys.mjs",
-      events: {
-        MozTogglePictureInPicture: { capture: true },
-      },
+      esModuleURI:
+        "moz-src:///toolkit/components/search/OpenSearchLoaderChild.sys.mjs",
     },
-
-    allFrames: true,
+    matches: ["about:blank"],
+    messageManagerGroups: ["opensearch"],
   },
 
-  PictureInPicture: {
+  PageExtractor: {
     parent: {
-      esModuleURI: "resource://gre/modules/PictureInPicture.sys.mjs",
+      esModuleURI: "resource://gre/actors/PageExtractorParent.sys.mjs",
     },
     child: {
-      esModuleURI: "resource://gre/actors/PictureInPictureChild.sys.mjs",
+      esModuleURI: "resource://gre/actors/PageExtractorChild.sys.mjs",
     },
-
-    allFrames: true,
+    matches: [
+      "http://*/*",
+      "https://*/*",
+      "file:///*",
+      "moz-extension://*",
+      "data:text/html,*",
+      "about:reader?*",
+    ],
+    messageManagerGroups: ["browsers", "headless-browsers"],
   },
 
-  PictureInPictureToggle: {
+  PopupAndRedirectBlocking: {
     parent: {
-      esModuleURI: "resource://gre/modules/PictureInPicture.sys.mjs",
+      esModuleURI:
+        "resource://gre/actors/PopupAndRedirectBlockingParent.sys.mjs",
     },
     child: {
-      esModuleURI: "resource://gre/actors/PictureInPictureChild.sys.mjs",
-      events: {
-        UAWidgetSetupOrChange: {},
-        contextmenu: { capture: true },
-      },
-    },
-
-    allFrames: true,
-  },
-
-  PopupBlocking: {
-    parent: {
-      esModuleURI: "resource://gre/actors/PopupBlockingParent.sys.mjs",
-    },
-    child: {
-      esModuleURI: "resource://gre/actors/PopupBlockingChild.sys.mjs",
+      esModuleURI:
+        "resource://gre/actors/PopupAndRedirectBlockingChild.sys.mjs",
       events: {
         DOMPopupBlocked: { capture: true },
+        DOMRedirectBlocked: { capture: true },
         // Only listen for the `pageshow` event after the actor has already been
         // created for some other reason.
         pageshow: { createActor: false },
@@ -524,6 +559,14 @@ let JSWINDOWACTORS = {
     ],
     messageManagerGroups: ["browsers"],
     allFrames: true,
+  },
+
+  TLSCertificateBinding: {
+    child: {
+      esModuleURI: "resource://gre/actors/TLSCertificateBindingChild.sys.mjs",
+    },
+
+    messageManagerGroups: ["browsers"],
   },
 
   // This actor is available for all pages that one can
@@ -585,34 +628,24 @@ let JSWINDOWACTORS = {
       esModuleURI: "resource://gre/actors/TranslationsChild.sys.mjs",
       events: {
         DOMContentLoaded: {},
+        load: {
+          // Once the page is loaded, it's important that we react to the page's
+          // language tag as soon as possible in order to give a good response time
+          // for showing the translations panel, or for auto-translating, etc.
+          capture: true,
+          createActor: false,
+        },
       },
     },
-    matches: [
-      "http://*/*",
-      "https://*/*",
-      "file:///*",
-
-      // The actor is explicitly loaded by this page,
-      // so it needs to be allowed for it.
-      "about:translations",
-    ],
+    matches: ["http://*/*", "https://*/*", "file:///*", "moz-extension://*"],
+    messageManagerGroups: ["browsers"],
     enablePreference: "browser.translations.enable",
-  },
-
-  // A single process that controls all of the translations.
-  TranslationsEngine: {
-    parent: {
-      esModuleURI: "resource://gre/actors/TranslationsEngineParent.sys.mjs",
+    onPreferenceChanged(isEnabled) {
+      const { TranslationsParent } = ChromeUtils.importESModule(
+        "resource://gre/actors/TranslationsParent.sys.mjs"
+      );
+      TranslationsParent.onIsEnabledChanged(isEnabled);
     },
-    child: {
-      esModuleURI: "resource://gre/actors/TranslationsEngineChild.sys.mjs",
-      events: {
-        DOMContentLoaded: { createActor: true },
-      },
-    },
-    includeChrome: true,
-    matches: ["chrome://global/content/translations/translations-engine.html"],
-    enablePreference: "browser.translations.enable",
   },
 
   UAWidgets: {
@@ -689,15 +722,87 @@ if (AppConstants.platform != "android") {
   // Note that GeckoView handles MozOpenDateTimePicker in GeckoViewPrompt.
   JSWINDOWACTORS.DateTimePicker = {
     parent: {
-      esModuleURI: "resource://gre/actors/DateTimePickerParent.sys.mjs",
+      esModuleURI: "moz-src:///toolkit/actors/DateTimePickerParent.sys.mjs",
     },
 
     child: {
-      esModuleURI: "resource://gre/actors/DateTimePickerChild.sys.mjs",
+      esModuleURI: "moz-src:///toolkit/actors/DateTimePickerChild.sys.mjs",
       events: {
         MozOpenDateTimePicker: {},
-        MozUpdateDateTimePicker: {},
         MozCloseDateTimePicker: {},
+      },
+    },
+
+    includeChrome: true,
+    allFrames: true,
+  };
+
+  JSWINDOWACTORS.PictureInPictureLauncher = {
+    parent: {
+      esModuleURI: "resource://gre/modules/PictureInPicture.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource://gre/actors/PictureInPictureChild.sys.mjs",
+      events: {
+        MozTogglePictureInPicture: { capture: true },
+      },
+    },
+    messageManagerGroups: ["browsers"],
+    allFrames: true,
+  };
+
+  JSWINDOWACTORS.PictureInPicture = {
+    parent: {
+      esModuleURI: "resource://gre/modules/PictureInPicture.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource://gre/actors/PictureInPictureChild.sys.mjs",
+    },
+    messageManagerGroups: ["browsers", "pip-player"],
+    allFrames: true,
+  };
+
+  JSWINDOWACTORS.PictureInPictureToggle = {
+    parent: {
+      esModuleURI: "resource://gre/modules/PictureInPicture.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource://gre/actors/PictureInPictureChild.sys.mjs",
+      events: {
+        UAWidgetSetupOrChange: {},
+        contextmenu: { capture: true },
+      },
+    },
+    messageManagerGroups: ["browsers"],
+    allFrames: true,
+  };
+
+  JSWINDOWACTORS.AboutTranslations = {
+    parent: {
+      esModuleURI: "resource://gre/actors/AboutTranslationsParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource://gre/actors/AboutTranslationsChild.sys.mjs",
+      events: {
+        // Run the actor before any content of the page appears to inject functions.
+        DOMDocElementInserted: {},
+        DOMContentLoaded: {},
+      },
+    },
+    matches: ["about:translations"],
+    remoteTypes: ["privilegedabout"],
+  };
+
+  JSWINDOWACTORS.ColorPicker = {
+    parent: {
+      esModuleURI: "moz-src:///toolkit/actors/ColorPickerParent.sys.mjs",
+    },
+
+    child: {
+      esModuleURI: "moz-src:///toolkit/actors/ColorPickerChild.sys.mjs",
+      events: {
+        MozOpenColorPicker: {},
+        MozCloseColorPicker: {},
       },
     },
 
@@ -722,41 +827,50 @@ export var ActorManagerParent = {
         throw new Error("Invalid JSActor kind " + kind);
     }
     for (let [actorName, actor] of Object.entries(actors)) {
+      let actorRegistered = false;
+      const registerActor = () => {
+        if (!actorRegistered) {
+          register(actorName, actor);
+          actorRegistered = true;
+        }
+      };
+      const unregisterActor = () => {
+        if (actorRegistered) {
+          unregister(actorName, actor);
+          actorRegistered = false;
+        }
+      };
+
       // The actor defines its own register/unregister logic.
       if (actor.onAddActor) {
-        actor.onAddActor(
-          () => register(actorName, actor),
-          () => unregister(actorName, actor)
-        );
+        actor.onAddActor(registerActor, unregisterActor);
         continue;
       }
 
       // If enablePreference is set, only register the actor while the
       // preference is set to true.
       if (actor.enablePreference) {
-        let actorNameProp = actorName + "_Preference";
-        XPCOMUtils.defineLazyPreferenceGetter(
-          this,
-          actorNameProp,
-          actor.enablePreference,
-          false,
-          (prefName, prevValue, isEnabled) => {
-            if (isEnabled) {
-              register(actorName, actor);
-            } else {
-              unregister(actorName, actor);
-            }
-            if (actor.onPreferenceChanged) {
-              actor.onPreferenceChanged(prefName, prevValue, isEnabled);
-            }
+        Services.prefs.addObserver(actor.enablePreference, () => {
+          const isEnabled = Services.prefs.getBoolPref(
+            actor.enablePreference,
+            false
+          );
+          if (isEnabled) {
+            registerActor();
+          } else {
+            unregisterActor();
           }
-        );
-        if (!this[actorNameProp]) {
+          if (actor.onPreferenceChanged) {
+            actor.onPreferenceChanged(isEnabled);
+          }
+        });
+
+        if (!Services.prefs.getBoolPref(actor.enablePreference, false)) {
           continue;
         }
       }
 
-      register(actorName, actor);
+      registerActor();
     }
   },
 

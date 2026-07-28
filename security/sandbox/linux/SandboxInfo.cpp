@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,7 +16,6 @@
 
 #include "base/posix/eintr_wrapper.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/SandboxSettings.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
@@ -102,8 +99,8 @@ static bool HasUserNamespaceSupport() {
       "/proc/self/ns/net",
       "/proc/self/ns/ipc",
   };
-  for (size_t i = 0; i < ArrayLength(paths); ++i) {
-    if (access(paths[i], F_OK) == -1) {
+  for (auto path : paths) {
+    if (access(path, F_OK) == -1) {
       MOZ_ASSERT(errno == ENOENT);
       return false;
     }
@@ -147,10 +144,15 @@ static bool CanCreateUserNamespace() {
     // needs to be some operation that attempts to use capabilities,
     // to check if it's blocked by an LSM.
     int rv = unshare(CLONE_NEWPID);
+    if (rv < 0) {
+      SANDBOX_LOG_ERRNO("CanCreateUserNamespace() unshare(CLONE_NEWPID)");
+    }
+
     // Exit with status 0 on success, 1 on failure.
     _exit(rv == 0 ? 0 : 1);
   }
   if (pid == -1) {
+    SANDBOX_LOG_ERRNO("CanCreateUserNamespace() clone() failure");
     // Failure.
     MOZ_ASSERT(errno == EINVAL ||  // unsupported
                errno == EPERM ||   // root-only, or we're already chrooted
@@ -163,10 +165,16 @@ static bool CanCreateUserNamespace() {
   bool waitpid_ok = HANDLE_EINTR(waitpid(pid, &wstatus, 0)) == pid;
   MOZ_ASSERT(waitpid_ok);
   if (!waitpid_ok) {
+    SANDBOX_LOG_ERRNO("CanCreateUserNamespace() waitpid(%d) failure", pid);
     return false;
   }
   // Check for failures reported by the child process.
   if (!WIFEXITED(wstatus) || WEXITSTATUS(wstatus) != 0) {
+    if (!(WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 1)) {
+      SANDBOX_LOG(
+          "CanCreateUserNamespace() waitpid(%d) child process failure %08x",
+          pid, wstatus);
+    }
     setenv(kCacheEnvName, "0", 1);
     return false;
   }
@@ -175,7 +183,7 @@ static bool CanCreateUserNamespace() {
 }
 
 /* static */
-const SandboxInfo SandboxInfo::sSingleton = SandboxInfo();
+MOZ_RUNINIT const SandboxInfo SandboxInfo::sSingleton = SandboxInfo();
 
 SandboxInfo::SandboxInfo() {
   int flags = 0;

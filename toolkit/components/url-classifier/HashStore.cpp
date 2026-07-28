@@ -1,4 +1,3 @@
-//* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 // Originally based on Chrome sources:
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 //
@@ -38,7 +37,6 @@
 #include "zlib.h"
 #include "Classifier.h"
 #include "nsUrlClassifierDBService.h"
-#include "mozilla/Telemetry.h"
 
 // Main store for SafeBrowsing protocol data. We store
 // known add/sub chunks, prefixes and completions in memory

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,7 +17,7 @@ namespace layers {
 // stopped moving. Some input devices do not send move events in the
 // case where a pointer has stopped.  We need to detect this case so that we can
 // accurately predict the velocity after the pointer starts moving again.
-static const TimeDuration kAssumePointerMoveStoppedTime =
+MOZ_RUNINIT static const TimeDuration kAssumePointerMoveStoppedTime =
     TimeDuration::FromMilliseconds(40);
 
 // The degree of the approximation.

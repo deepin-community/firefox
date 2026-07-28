@@ -48,7 +48,7 @@ translations-panel-settings-always-translate-language =
 translations-panel-settings-always-translate-unknown-language =
     .label = Bu dili her zaman çevir
 translations-panel-settings-always-offer-translation =
-    .label = Her zaman çevirmeyi teklif et
+    .label = Her zaman çevirmeyi öner
 # Text displayed for the option to never translate a given language
 # Variables:
 #   $language (string) - The localized display name of the detected language
@@ -83,6 +83,14 @@ translations-panel-error-dismiss-button =
     .label = Anladım
 translations-panel-error-change-button =
     .label = Kaynak dili değiştir
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Ne yazık ki henüz { $language } dilinden çeviri yapmayı desteklemiyoruz.
+translations-panel-error-unsupported-hint-unknown-2 = Ne yazık ki bu dilden çevirileri henüz desteklemiyoruz.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
@@ -126,13 +134,6 @@ translations-manage-description = Çevrimdışı çeviri için dilleri indir.
 translations-manage-all-language = Tüm diller
 translations-manage-download-button = İndir
 translations-manage-delete-button = Sil
-translations-manage-intro = Dil ve site çevirisi tercihlerinizi ayarlayın, çevrimdışı çeviri için yüklenen dilleri yönetin.
-translations-manage-install-description = Çevrimdışı çeviri için dilleri yükle
-translations-manage-language-install-button =
-    .label = Yükle
-translations-manage-language-install-all-button =
-    .label = Tümünü yükle
-    .accesskey = T
 translations-manage-intro-2 = Dil ve site çevirisi tercihlerinizi ayarlayın, çevrimdışı çeviri için indirilen dilleri yönetin.
 translations-manage-download-description = Çevrimdışı çeviri için dilleri indir
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Tümünü kaldır
     .accesskey = k
-translations-manage-error-install = Dil dosyaları yüklenirken bir sorun oluştu. Lütfen yeniden deneyin.
 translations-manage-error-download = Dil dosyaları indirilirken bir sorun oluştu. Lütfen yeniden deneyin.
 translations-manage-error-delete = Dil dosyaları silinirken bir hata oluştu. Lütfen yeniden deneyin.
 translations-manage-error-remove = Dil dosyaları kaldırılırken bir hata oluştu. Lütfen yeniden deneyin.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Çeviri sırasında bir sorun oluştu. Lütfen yeniden deneyin.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Ne yazık ki henüz { $language } dilinden çeviri yapmayı desteklemiyoruz.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Ne yazık ki bu dilden çevirileri henüz desteklemiyoruz.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

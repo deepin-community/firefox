@@ -12,8 +12,9 @@ const r = React.createElement;
 
 /**
  * Dispatches a page event to the privileged frame script for this tab.
- * @param {String} action
- * @param {Object} data
+ *
+ * @param {string} action
+ * @param {object} data
  */
 function sendPageEvent(action, data) {
   const event = new CustomEvent("ShieldPageEvent", {
@@ -24,7 +25,7 @@ function sendPageEvent(action, data) {
 }
 
 function readOptinParams() {
-  let searchParams = new URLSearchParams(new URL(location).search);
+  let { searchParams } = new URL(location);
   return {
     slug: searchParams.get("optin_slug"),
     branch: searchParams.get("optin_branch"),
@@ -111,6 +112,8 @@ class AboutStudies extends React.Component {
     if (Object.values(this.state).some(v => v === null)) {
       return null;
     }
+
+    document.title = translations.pageTitle;
 
     return r(
       "div",
@@ -225,7 +228,7 @@ class StudyList extends React.Component {
 
     for (const study of experiments) {
       const clonedStudy = Object.assign({}, study, {
-        type: study.experimentType,
+        type: study.isRollout ? "rollout" : "nimbus",
         sortDate: new Date(study.lastSeen),
       });
       if (!study.active) {
@@ -319,7 +322,6 @@ class MessagingSystemListItem extends React.Component {
   handleClickRemove() {
     sendPageEvent("RemoveMessagingSystemExperiment", {
       slug: this.props.study.slug,
-      reason: "individual-opt-out",
     });
   }
 

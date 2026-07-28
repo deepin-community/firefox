@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,9 +7,9 @@
 
 #include "mozilla/DOMEventTargetHelper.h"
 #include "mozilla/HoldDropJSObjects.h"
+#include "mozilla/WeakPtr.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/UnderlyingSourceBinding.h"
-#include "mozilla/WeakPtr.h"
 #include "nsIAsyncInputStream.h"
 #include "nsISupports.h"
 #include "nsISupportsImpl.h"
@@ -31,7 +29,7 @@ namespace mozilla::dom {
 
 class StrongWorkerRef;
 class BodyStreamHolder;
-class ReadableStreamController;
+class ReadableStreamControllerBase;
 class ReadableStream;
 
 class UnderlyingSourceAlgorithmsBase : public nsISupports {
@@ -40,13 +38,13 @@ class UnderlyingSourceAlgorithmsBase : public nsISupports {
   NS_DECL_CYCLE_COLLECTION_CLASS(UnderlyingSourceAlgorithmsBase)
 
   MOZ_CAN_RUN_SCRIPT virtual void StartCallback(
-      JSContext* aCx, ReadableStreamController& aController,
+      JSContext* aCx, ReadableStreamControllerBase& aController,
       JS::MutableHandle<JS::Value> aRetVal, ErrorResult& aRv) = 0;
 
   // A promise-returning algorithm that pulls data from the underlying byte
   // source
   MOZ_CAN_RUN_SCRIPT virtual already_AddRefed<Promise> PullCallback(
-      JSContext* aCx, ReadableStreamController& aController,
+      JSContext* aCx, ReadableStreamControllerBase& aController,
       ErrorResult& aRv) = 0;
 
   // A promise-returning algorithm, taking one argument (the cancel reason),
@@ -102,13 +100,12 @@ class UnderlyingSourceAlgorithms final : public UnderlyingSourceAlgorithmsBase {
     mozilla::HoldJSObjects(this);
   };
 
-  MOZ_CAN_RUN_SCRIPT void StartCallback(JSContext* aCx,
-                                        ReadableStreamController& aController,
-                                        JS::MutableHandle<JS::Value> aRetVal,
-                                        ErrorResult& aRv) override;
+  MOZ_CAN_RUN_SCRIPT void StartCallback(
+      JSContext* aCx, ReadableStreamControllerBase& aController,
+      JS::MutableHandle<JS::Value> aRetVal, ErrorResult& aRv) override;
 
   MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> PullCallback(
-      JSContext* aCx, ReadableStreamController& aController,
+      JSContext* aCx, ReadableStreamControllerBase& aController,
       ErrorResult& aRv) override;
 
   MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> CancelCallback(
@@ -139,11 +136,11 @@ class UnderlyingSourceAlgorithms final : public UnderlyingSourceAlgorithmsBase {
 // `EnqueueNative()` etc. without direct controller access.
 class UnderlyingSourceAlgorithmsWrapper
     : public UnderlyingSourceAlgorithmsBase {
-  void StartCallback(JSContext*, ReadableStreamController&,
+  void StartCallback(JSContext*, ReadableStreamControllerBase&,
                      JS::MutableHandle<JS::Value> aRetVal, ErrorResult&) final;
 
   MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> PullCallback(
-      JSContext* aCx, ReadableStreamController& aController,
+      JSContext* aCx, ReadableStreamControllerBase& aController,
       ErrorResult& aRv) final;
 
   MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> CancelCallback(
@@ -151,7 +148,8 @@ class UnderlyingSourceAlgorithmsWrapper
       ErrorResult& aRv) final;
 
   MOZ_CAN_RUN_SCRIPT virtual already_AddRefed<Promise> PullCallbackImpl(
-      JSContext* aCx, ReadableStreamController& aController, ErrorResult& aRv) {
+      JSContext* aCx, ReadableStreamControllerBase& aController,
+      ErrorResult& aRv) {
     // pullAlgorithm is optional, return null by default
     return nullptr;
   }
@@ -225,7 +223,7 @@ class InputStreamHolder final : public nsIInputStreamCallback,
 
 // Using this class means you are also passing the lifetime control of your
 // nsIAsyncInputStream, as it will be closed when this class tears down.
-class InputToReadableStreamAlgorithms final
+class InputToReadableStreamAlgorithms
     : public UnderlyingSourceAlgorithmsWrapper,
       public nsIInputStreamCallback,
       public SupportsWeakPtr {
@@ -240,19 +238,15 @@ class InputToReadableStreamAlgorithms final
   // Streams algorithms
 
   already_AddRefed<Promise> PullCallbackImpl(
-      JSContext* aCx, ReadableStreamController& aController,
+      JSContext* aCx, ReadableStreamControllerBase& aController,
       ErrorResult& aRv) override;
 
   void ReleaseObjects() override;
 
   nsIInputStream* MaybeGetInputStreamIfUnread() override;
 
- private:
-  ~InputToReadableStreamAlgorithms() {
-    if (mInput) {
-      mInput->Shutdown();
-    }
-  }
+ protected:
+  ~InputToReadableStreamAlgorithms();
 
   MOZ_CAN_RUN_SCRIPT_BOUNDARY void CloseAndReleaseObjects(
       JSContext* aCx, ReadableStream* aStream);
@@ -300,7 +294,7 @@ class NonAsyncInputToReadableStreamAlgorithms
       : mInput(&aInput) {}
 
   already_AddRefed<Promise> PullCallbackImpl(
-      JSContext* aCx, ReadableStreamController& aController,
+      JSContext* aCx, ReadableStreamControllerBase& aController,
       ErrorResult& aRv) override;
 
   void ReleaseObjects() override {

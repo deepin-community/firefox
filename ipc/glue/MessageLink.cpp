@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=4 et :
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,14 +6,12 @@
 #include "mojo/core/ports/event.h"
 #include "mojo/core/ports/node.h"
 #include "mozilla/ipc/MessageChannel.h"
-#include "mozilla/ipc/BrowserProcessSubThread.h"
 #include "mozilla/ipc/ProtocolUtils.h"
 #include "mozilla/ipc/NodeController.h"
 #include "chrome/common/ipc_channel.h"
 #include "base/task.h"
 
 #include "mozilla/Assertions.h"
-#include "mozilla/DebugOnly.h"
 #include "nsDebug.h"
 #include "nsExceptionHandler.h"
 #include "nsISupportsImpl.h"
@@ -86,7 +81,7 @@ PortLink::PortLink(MessageChannel* aChan, ScopedPort aPort)
   if (aChan->mIsSameThreadChannel) {
     aChan->mWorkerThread->Dispatch(openRunnable.forget());
   } else {
-    XRE_GetIOMessageLoop()->PostTask(openRunnable.forget());
+    XRE_GetAsyncIOEventTarget()->Dispatch(openRunnable.forget());
   }
 }
 

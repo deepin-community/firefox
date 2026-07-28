@@ -1,3 +1,18 @@
+const { TabGroupTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/TabGroupTestUtils.sys.mjs"
+);
+
+async function expectFocusAfterKey(expectedActiveElement, keyName, keyOptions) {
+  let focused = BrowserTestUtils.waitForEvent(expectedActiveElement, "focus");
+  EventUtils.synthesizeKey(keyName, keyOptions);
+  await focused;
+  Assert.equal(
+    document.activeElement,
+    expectedActiveElement,
+    `After ${keyName}${keyOptions?.shiftKey ? " (Shift)" : ""}, the expected element has focus`
+  );
+}
+
 function updateTabContextMenu(tab) {
   let menu = document.getElementById("tabContextMenu");
   if (!tab) {
@@ -44,7 +59,7 @@ async function addTabTo(
   params.skipAnimation = true;
   const tab = BrowserTestUtils.addTab(targetBrowser, url, params);
   const browser = targetBrowser.getBrowserForTab(tab);
-  await BrowserTestUtils.browserLoaded(browser);
+  await BrowserTestUtils.browserLoaded(browser, { wantLoad: url });
   return tab;
 }
 
@@ -260,7 +275,7 @@ async function test_mute_tab(tab, icon, expectMuted) {
 async function dragAndDrop(
   tab1,
   tab2,
-  copy,
+  copy = false,
   destWindow = window,
   afterTab = true,
   origWindow = window
@@ -270,16 +285,16 @@ async function dragAndDrop(
     ctrlKey: copy,
     altKey: copy,
     clientX: rect.left + rect.width / 2 + (afterTab ? 1 : -1),
-    clientY: rect.top + rect.height / 2,
+    clientY: rect.top + rect.height / 2 + (afterTab ? 1 : -1),
   };
 
   if (destWindow != origWindow) {
     // Make sure that both tab1 and tab2 are visible
-    origWindow.focus();
+    await SimpleTest.promiseFocus(origWindow);
     origWindow.moveTo(rect.left, rect.top + rect.height * 3);
   }
 
-  let originalTPos = tab1._tPos;
+  let originalIndex = tab1.elementIndex;
   EventUtils.synthesizeDrop(
     tab1,
     tab2,
@@ -293,7 +308,7 @@ async function dragAndDrop(
   EventUtils.synthesizeMouseAtCenter(tab2, { type: "mouseup" }, destWindow);
   if (!copy && destWindow == origWindow) {
     await BrowserTestUtils.waitForCondition(() => {
-      return tab1._tPos != originalTPos;
+      return tab1.elementIndex != originalIndex;
     }, "Waiting for tab position to be updated");
   } else if (destWindow != origWindow) {
     await BrowserTestUtils.waitForCondition(
@@ -561,4 +576,48 @@ function httpURL(filename, host = "https://example.com/") {
 
 function loadTestSubscript(filePath) {
   Services.scriptloader.loadSubScript(new URL(filePath, gTestPath).href, this);
+}
+
+/**
+ * Removes a tab group (along with its tabs). Resolves when the tab group
+ * is gone.
+ *
+ * @param {MozTabbrowserTabGroup} group
+ * @returns {Promise<void>}
+ */
+async function removeTabGroup(group) {
+  return TabGroupTestUtils.removeTabGroup(group);
+}
+
+/**
+ * @param {Node} triggerNode
+ * @param {string} contextMenuId
+ * @returns {Promise<XULMenuElement|XULPopupElement>}
+ */
+async function getContextMenu(triggerNode, contextMenuId) {
+  let win = triggerNode.documentGlobal;
+  triggerNode.scrollIntoView({ behavior: "instant" });
+  const contextMenu = win.document.getElementById(contextMenuId);
+  const contextMenuShown = BrowserTestUtils.waitForPopupEvent(
+    contextMenu,
+    "shown"
+  );
+
+  EventUtils.synthesizeMouseAtCenter(
+    triggerNode,
+    { type: "contextmenu", button: 2 },
+    win
+  );
+  await contextMenuShown;
+  return contextMenu;
+}
+
+/**
+ * @param {XULMenuElement|XULPopupElement} contextMenu
+ * @returns {Promise<void>}
+ */
+async function closeContextMenu(contextMenu) {
+  let menuHidden = BrowserTestUtils.waitForPopupEvent(contextMenu, "hidden");
+  contextMenu.hidePopup();
+  await menuHidden;
 }

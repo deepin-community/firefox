@@ -14,18 +14,60 @@ newtab-personalize-icon-label =
 newtab-personalize-dialog-label =
     .aria-label = Personalise
 
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = New tabs
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } row
+           *[other] { $num } rows
+        }
+home-restore-defaults-srd =
+    .label = Restore Staunarts
+    .accesskey = R
+home-mode-choice-custom-srd =
+    .label = Custom URLs…
+home-mode-choice-blank-srd =
+    .label = Blank Page
+home-prefs-shortcuts-header-srd =
+    .label = Shortcuts
+home-prefs-shortcuts-select =
+    .aria-label = Shortcuts
+home-prefs-shortcuts-by-option-sponsored-srd =
+    .label = Sponsored shortcuts
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Sponsored Stories
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Veesitit Pages
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Buikmerks
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Maist Recent Doonload
+home-prefs-recent-activity-header-srd =
+    .label = Recent activity
+home-prefs-recent-activity-select =
+    .aria-label = Recent activity
+
 ## Search box component.
 
 # "Search" is a verb/action
 newtab-search-box-search-button =
     .title = Sairch
     .aria-label = Sairch
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = Sairch wi { $engine } or inpit address
 newtab-search-box-handoff-text-no-engine = Sairch or inpit address
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = Sairch wi { $engine } or inpit address
     .title = Sairch wi { $engine } or inpit address
@@ -39,7 +81,7 @@ newtab-search-box-input =
     .placeholder = Sairch the wab
     .aria-label = Sairch the wab
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Eik On Airt-oot Engine
 newtab-topsites-add-shortcut-header = New Shortcut
@@ -86,7 +128,7 @@ newtab-dismiss-button-tooltip =
     .aria-label = Remuive
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Open menu
     .aria-label = Open context menu fur { $title }
@@ -158,16 +200,16 @@ newtab-label-saved = Saved tae { -pocket-brand-name }
 newtab-label-download = Doonloadit
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · Sponsored
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = Sponsored by { $sponsor }
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -196,7 +238,7 @@ newtab-section-expand-section-label =
 newtab-section-header-topsites = Tap Sites
 newtab-section-header-recent-activity = Recent activity
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recommendit by { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
@@ -204,7 +246,7 @@ newtab-section-header-pocket = Recommendit by { $provider }
 newtab-empty-section-highlights = Stert stravaigin, and we'll shaw some o the smashin airticles, videos, and ither pages ye've recently veesitit or buikmerkt here.
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Ye're aw caught up. Check back efter fur mair tap stories fae { $provider }. Cannae wait? Wale a popular topic fur tae find mair smashin stories fae aroond the wab.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -226,9 +268,6 @@ newtab-pocket-cta-button = Get { -pocket-brand-name }
 newtab-pocket-cta-text = Save the stories ye're intae wi { -pocket-brand-name }, and nourish yer mind wi some wunnerfu reads.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } is pairt o the { -brand-product-name } faimily
 
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
-
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
@@ -239,9 +278,23 @@ newtab-error-fallback-refresh-link = Refresh page fur tae gie it anither shottie
 
 newtab-custom-shortcuts-title = Shortcuts
 newtab-custom-shortcuts-subtitle = Sites ye save or veesit
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = Shortcuts
     .description = Sites ye save or veesit
+newtab-custom-shortcuts-nova =
+    .label = Shortcuts
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } row
+           *[other] { $num } rows
+        }
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } row
@@ -250,14 +303,8 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Sponsored shortcuts
 newtab-custom-pocket-title = Recommendit by { -pocket-brand-name }
 newtab-custom-pocket-subtitle = By-ordinar content pit thegither by { -pocket-brand-name }, pairt o the { -brand-product-name } faimily.
-newtab-custom-pocket-toggle =
-    .label = Recommendit by { -pocket-brand-name }
-    .description = By-ordinar content pit thegither by { -pocket-brand-name }, pairt o the { -brand-product-name } faimily.
 newtab-custom-pocket-sponsored = Sponsored stories
 newtab-custom-recent-title = Recent activity
 newtab-custom-recent-subtitle = A walin o recent sites and content
-newtab-custom-recent-toggle =
-    .label = Recent activity
-    .description = A walin o recent sites and content
 newtab-custom-close-button = Sneck
 newtab-custom-settings = Manage mair settins

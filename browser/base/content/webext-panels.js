@@ -1,10 +1,10 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Via webext-panels.xhtml
 /* import-globals-from browser.js */
+/* global windowRoot */
 
 ChromeUtils.defineESModuleGetters(this, {
   ExtensionParent: "resource://gre/modules/ExtensionParent.sys.mjs",
@@ -20,6 +20,19 @@ function getBrowser(panel) {
   let browser = document.getElementById("webext-panels-browser");
   if (browser) {
     return Promise.resolve(browser);
+  }
+
+  if (panel.viewType === "sidebar" && gSidebarRevampEnabled) {
+    if (!customElements.get("sidebar-panel-header")) {
+      ChromeUtils.importESModule(
+        "chrome://browser/content/sidebar/sidebar-panel-header.mjs",
+        { global: "current" }
+      );
+    }
+    const heading =
+      panel.extension.manifest.sidebar_action.default_title ??
+      panel.extension.name;
+    document.getElementById("sidebar-panel-header").heading = heading;
   }
 
   let stack = document.getElementById("webext-panels-stack");
@@ -77,9 +90,9 @@ function getBrowser(panel) {
   stack.appendChild(browser);
 
   browser.addEventListener(
-    "DoZoomEnlargeBy10",
+    "DoZoomEnlarge",
     () => {
-      let { ZoomManager } = browser.ownerGlobal;
+      let { ZoomManager } = browser.documentGlobal;
       let zoom = browser.fullZoom;
       zoom += 0.1;
       if (zoom > ZoomManager.MAX) {
@@ -90,9 +103,9 @@ function getBrowser(panel) {
     true
   );
   browser.addEventListener(
-    "DoZoomReduceBy10",
+    "DoZoomReduce",
     () => {
-      let { ZoomManager } = browser.ownerGlobal;
+      let { ZoomManager } = browser.documentGlobal;
       let zoom = browser.fullZoom;
       zoom -= 0.1;
       if (zoom < ZoomManager.MIN) {
@@ -102,6 +115,17 @@ function getBrowser(panel) {
     },
     true
   );
+  browser.addEventListener("DOMWindowClose", event => {
+    if (panel.viewType == "sidebar") {
+      windowRoot.window.SidebarController.hide();
+    }
+    // Prevent DOMWindowClose events originated from
+    // extensions sidebar and devtools panels to bubble up
+    // to the gBrowser DOMWindowClose listener and
+    // be mistaken as being originated from a tab being closed
+    // (See Bug 1926373)
+    event.stopPropagation();
+  });
 
   const initBrowser = () => {
     ExtensionParent.apiManager.emit(
@@ -184,5 +208,12 @@ XPCOMUtils.defineLazyPreferenceGetter(
   this,
   "gAllowTransparentBrowser",
   "browser.tabs.allow_transparent_browser",
+  false
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  this,
+  "gSidebarRevampEnabled",
+  "sidebar.revamp",
   false
 );

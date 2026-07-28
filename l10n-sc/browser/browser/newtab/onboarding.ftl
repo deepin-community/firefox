@@ -25,6 +25,8 @@ return-to-amo-subtitle = Bene meda, immoe tenes { -brand-short-name }
 return-to-amo-addon-title = Immoe amus a installare <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Agiunghe s'estensione
 return-to-amo-add-theme-label = Agiunghe su tema
+return-to-amo-theme-install-complete-label = Tema installadu
+return-to-amo-extension-install-complete-label = Estensione installada
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importa dae { $previous
 mr1-onboarding-theme-header = Personaliza·ddu
 mr1-onboarding-theme-subtitle = Personaliza { -brand-short-name } cun unu tema.
 mr1-onboarding-theme-secondary-button-label = Immoe nono
-newtab-wallpaper-onboarding-title = Proa un’istrichiddu de colore
-newtab-wallpaper-onboarding-subtitle = Sèbera un'isfundu pro donare a s'ischeda noa unu tonu friscu.
-newtab-wallpaper-onboarding-primary-button-label = Cunfigura isfundu
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tema de sistema
 mr1-onboarding-theme-label-light = Craru
@@ -127,12 +126,12 @@ mr2-onboarding-start-browsing-button-label = Cumintza a navigare
 ##   $systemLanguage (String) - The name of the system language, e.g "Español (ES)"
 ##   $appLanguage (String) - The name of the language shipping in the browser build, e.g. "English (EN)"
 
-onboarding-live-language-header = Sèbera sa lìngua tua
-mr2022-onboarding-live-language-text = { -brand-short-name } chistionat sa lìngua tua
-mr2022-language-mismatch-subtitle = Gràtzias a sa comunidade nostra, { -brand-short-name } est tradùidu a prus de 90 lìnguas. Paret chi su sistema tuo est impreende su { $systemLanguage }, e chi { -brand-short-name } est impreende su { $appLanguage }.
-onboarding-live-language-button-label-downloading = Iscarrighende su pachete de lìngua pro su { $negotiatedLanguage }…
-onboarding-live-language-waiting-button = Otenende is lìnguas a disponimentu…
-onboarding-live-language-installing = Installende su pachete de lìngua in { $negotiatedLanguage }…
+onboarding-live-language-header = Sèbera sa limba tua
+mr2022-onboarding-live-language-text = { -brand-short-name } chistionat sa limba tua
+mr2022-language-mismatch-subtitle = Gràtzias a sa comunidade nostra, { -brand-short-name } est tradùidu a prus de 90 limbas. Paret chi su sistema tuo est impreende su { $systemLanguage }, e chi { -brand-short-name } est impreende su { $appLanguage }.
+onboarding-live-language-button-label-downloading = Iscarrighende su pachete de limba pro su { $negotiatedLanguage }…
+onboarding-live-language-waiting-button = Otenende is limbas a disponimentu…
+onboarding-live-language-installing = Installende su pachete de limba in { $negotiatedLanguage }…
 mr2022-onboarding-live-language-switch-to = Passa a { $negotiatedLanguage }
 mr2022-onboarding-live-language-continue-in = Sighi in { $appLanguage }
 onboarding-live-language-secondary-cancel-download = Annulla
@@ -150,7 +149,7 @@ onboarding-live-language-skip-button-label = Brinca
 fx100-thank-you-hero-text =
     100
     <span data-l10n-name="zap">gràtzias</span>
-fx100-thank-you-subtitle = Est sa de 100 versione nostra! Gràtzias de nos agiudare a creare un'internet mègius e prus sanu.
+fx100-thank-you-subtitle = Est sa de 100 versione nostra! Gràtzias de nos agiudare a creare un’internet mègius e prus sanu.
 fx100-thank-you-pin-primary-button-label =
     { PLATFORM() ->
         [macos] Mantene { -brand-short-name } in su Dock
@@ -159,7 +158,7 @@ fx100-thank-you-pin-primary-button-label =
 fx100-upgrade-thanks-header = 100 gràtzias
 # Message shown with a start-browsing button. Emphasis <em> should be for "you"
 # but "Thank" can be used instead if there's no "you" in the translation.
-fx100-upgrade-thank-you-body = Est sa de 100 versione de { -brand-short-name }. <em>Gràtzias</em> de nos agiudare a creare un'internet mègius e prus sanu.
+fx100-upgrade-thank-you-body = Est sa de 100 versione de { -brand-short-name }. <em>Gràtzias</em> de nos agiudare a creare un’internet mègius e prus sanu.
 # Message shown with either a pin-to-taskbar or set-default button.
 fx100-upgrade-thanks-keep-body = Est sa de 100 versione nostra! Gràtzias de èssere parte de sa comunidade nostra. Mantene { -brand-short-name } a distàntzia de un'incarcada pro is pròssimas 100!
 mr2022-onboarding-secondary-skip-button-label = Brinca custu passu
@@ -179,7 +178,7 @@ mr2022-onboarding-easy-setup-import-checkbox-label = Importa dae su navigadore a
 # In this context, open up is synonymous with "Discover".
 # The metaphor is that when they open their Firefox browser, it helps them discover an amazing internet.
 # If this translation does not make sense in your language, feel free to use the word "discover."
-mr2022-onboarding-welcome-pin-header = Iscoberi un'internet de non creere
+mr2022-onboarding-welcome-pin-header = Iscoberi un’internet de non creere
 # Subtitle is used on onboarding page for new users page when Firefox is not pinned
 mr2022-onboarding-welcome-pin-subtitle = Avia { -brand-short-name } dae in ue boles cun unu clic isceti. Ònnia borta chi ddu faghes, sèberas unu web prus abertu e indipendente.
 # Primary button string used on welcome page for when Firefox is not pinned.
@@ -188,6 +187,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Mantene { -brand-short-name } in Dock
        *[other] Apica { -brand-short-name } a sa barra de is tareas
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Apica { -brand-short-name } a sa barra de is tareas e a su menù prinzipale
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -199,7 +200,7 @@ mr2022-onboarding-set-default-only-subtitle = Cumintza cun unu navigadore realiz
 # Title used on multistage onboarding page for existing users when Firefox is not pinned
 mr2022-onboarding-existing-pin-header = Gràtzias pro istimare { -brand-product-name }
 # Subtitle is used on onboarding page for existing users when Firefox is not pinned
-mr2022-onboarding-existing-pin-subtitle = Imbuca in un'internet prus sanu cun unu clic isceti, dae in ue boles. S'ùrtima atualizatzione nostra includet funtziones noas chi as a adorare.
+mr2022-onboarding-existing-pin-subtitle = Imbuca in un’internet prus sanu cun unu clic isceti, dae in ue boles. S’ùrtima atualizatzione nostra includet funtziones noas chi as a adorare.
 # Subtitle will be used on the welcome screen for existing users
 # when they already have Firefox pinned but not set as default
 mr2022-onboarding-existing-set-default-only-subtitle = Imprea unu navigadore chi difendet sa riservadesa tua mentras arròllias in su web. S'ùrtima atualizatzione nostra includet funtziones noas chi as a adorare.
@@ -223,7 +224,9 @@ mr2022-onboarding-set-default-subtitle = Imprea unu navigadore realizadu dae un'
 mr2022-onboarding-get-started-primary-subtitle = S'ùrtima versione nostra est istantargiada a s'inghìriu de tue, e faghet s'arròlliu in su web fàtzile comente mai. Tenimus un'isciacu mannu de novidades chi as a adorare.
 mr2022-onboarding-get-started-primary-button-label = Cunfigura in pagu segundos
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Cunfiguratzione ultra-lestra
 mr2022-onboarding-import-subtitle = Cunfigura { -brand-short-name } comente ti pàrgiat. Agiunghe is sinnalibros, is craes e àteru dae su navigadore betzu tuo.
@@ -296,7 +299,7 @@ mr2022-onboarding-privacy-segmentation-button-secondary-label = Ammustra informa
 ## MR2022 Multistage Gratitude screen strings
 
 mr2022-onboarding-gratitude-title = Nos ses agiudende a istantargiare una rete mègius
-mr2022-onboarding-gratitude-subtitle = Gràtzias de impreare { -brand-short-name }, realizadu cun s'agiudu de sa fundatzione Mozilla. Cun s'agiudu tuo, semus semper a traballu pro istantargiare un'internet prus aberta, atzessìbile e mègius pro totus.
+mr2022-onboarding-gratitude-subtitle = Gràtzias de impreare { -brand-short-name }, realizadu cun s’agiudu de sa fundatzione Mozilla. Cun s’agiudu tuo, semus semper a traballu pro istantargiare un’internet prus abertu, atzessìbile e mègius pro totus.
 mr2022-onboarding-gratitude-primary-button-label = Bide is novidades
 mr2022-onboarding-gratitude-secondary-button-label = Cumintza a navigare
 
@@ -335,6 +338,14 @@ onboarding-device-migration-subtitle = Identìfica·ti in { -fxaccount-brand-nam
 onboarding-device-migration-subtitle2 = Identìfica·ti pro ti nche portare a fatu sinnalibros, cronologia e craes in su dispositivu nou.
 onboarding-device-migration-primary-button-label = Identìfica·ti
 
+## Add-ons Picker screen
+
+amo-picker-title = Personaliza su { -brand-short-name } tuo
+amo-picker-subtitle = Is estensiones sunt comente aplicatziones pro su navigadore: ti permitint de amparare craes, iscarrigare vìdeos, agatare ofertas, blocare publitzidade infadosa, modificare s’aspetu de su navigadore e meda àteru.
+amo-picker-install-button-label = Agiunghe a { -brand-short-name }
+amo-picker-install-complete-label = Installadu
+amo-picker-collection-link = Iscoberi àteros cumplementos
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
@@ -346,6 +357,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Cando cumpletas sa si
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } est acanta a tie
 onboarding-gratitude-security-and-privacy-subtitle = Gràtzias de impreare { -brand-short-name }, isvilupadu dae Mozilla Foundation. Cun su suportu tuo, traballamus pro fàghere Internet prus seguru e prus atzessìbile a totus.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincroniza is datos intre dispositivos
+onboarding-sign-up-description = Registra·ti cun unu contu e totu is informatziones tuas de importu (craes, sinnalibros e àteru) ant a èssere sarvadas in seguresa e a disponimentu cando atzedas dae cale si siat dispositivu.
+onboarding-sign-up-button = Registra·ti o identìfica·ti
+onboarding-sign-up-secondary-button = Cumintza a navigare
 
 ## New user time and familiarity survey strings
 
@@ -365,3 +381,187 @@ onboarding-new-user-survey-familiarity-based-option-1 = Apo cumintzadu dae pagu
 onboarding-new-user-survey-familiarity-based-option-2 = Dd’apo impreadu unas pariga de bortas
 onboarding-new-user-survey-familiarity-based-option-3 = Ddu connosco bene
 onboarding-new-user-survey-familiarity-based-option-4 = Dd’apo impreadu, ma dae ora
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Nara·nos in ue boles is ischedas tuas
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Podes cambiare cando boles dae sa cunfiguratzione de sa barra laterale.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Is ischedas tuas, sa manera tua
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Tenes tropu ischedas abertas? Proa cun una visualizatzione prus lìmpia ponende·ddas a su costadu. O mantene s’istile clàssicu cun is ischedas in pitzus. Càmbia cando boles.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Sèbera sa dispositziones de is ischedas
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Ischedas a su costadu
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Ischedas in artu
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Is ischedas verticales sunt inoghe
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Ti presentamus is ischedas verticales
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Proa is ischedas a su costadu. Càmbia cando boles dae sa cunfiguratzione de sa barra laterale.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Proa is ischedas verticales
+onboarding-flair-text = Nou!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Mantene is ischedas orizontales
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Una ventana de su navigadore ammustrende is ischedas a su costadu de s’ischermu comente parte de sa barra laterale de { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Una ventana de su navigadore ammustrende is ischedas a su costadu de s’ischermu comente parte de sa barra laterale de { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Una ventana de su navigadore ammustrende is ischedas in artu.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Una ventana de su navigadore ammustrende is ischedas in artu.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Proa unu chatbot in sa barra laterale
+onboarding-genai-sidebar-primary-button = Sèbera unu chatbot
+onboarding-genai-sidebar-secondary-button = Cumintza a navigare
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Agabba de cunfigurare { -brand-short-name }
+onboarding-checklist-subtitle = Sighi custos passos pro aprofitare a su màssimu s’esperièntzia de navigatzione tua.
+onboarding-checklist-set-default = Cunfigura { -brand-short-name } comente navigadore predefinidu
+onboarding-checklist-pin = Apica { -brand-short-name } a sa barra de is tareas
+onboarding-checklist-import = Importa dae unu navigadore anteriore
+onboarding-checklist-extension = Agiunghe un’estensione
+onboarding-checklist-sign-up = Registra·ti o identìfica·ti cun su profilu tuo
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Is grupos de ischedas megiorant s’organizatzione e sa cuntzentratzione
+tab-groups-onboarding-feature-callout-subtitle = Traga un’ischeda in pitzus de un’àtera pro creare su primu grupu tuo.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Agata is grupos de ischedas in cale si siat momentu dae su menù Elenca totu is ischedas
+tab-groups-onboarding-create-group-title-2 = Agata is grupos de ischedas inoghe cando ti serbant.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Agata is grupos chirchende·ddos in sa barra de indiritzos.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Cando as a serrare unu grupu de ischedas, dd’as a pòdere torrare a abèrrere in cale si siat momentu dae su menù Elenca totu is ischedas.
+tab-groups-onboarding-saved-groups-title-2 = Cando as a serrare unu grupu de ischedas, dd’as a pòdere torrare a abèrrere dae inoghe in cale si siat momentu.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Agata is grupos serrados chirchende·ddos in sa barra de indiritzos.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Torra a abèrrere is grupos de ischedas in cale si siat momentu dae su menù Elenca totu is ischedas
+tab-groups-onboarding-session-restore-title = Torra a abèrrere grupos de ischedas inoghe cando ti serbat.
+tab-groups-onboarding-dismiss = Andat bene
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Dona su benebènnidu a is profilos de { -brand-product-name }
+multi-profile-spotlight-body = Cola in manera fàtzile intre sa navigatzione de traballu e cussa de ispàssiu. Is profilos mantenent separadas is informatziones de navigatzione, includende sa cronologia de chircas e is craes, pro chi potzas tènnere totu organizadu.
+multi-profile-spotlight-cta = Crea unu profilu
+multi-profile-callout-title = Crea profilos diferentes pro traballu e ispàssiu
+multi-profile-callout-subtitle = Is profilos ti permitint de mantènnere separadas is informatziones de navigatzione, includende sa cronologia de chircas e is craes.
+multi-profile-callout-cta = Crea unu profilu
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Iscàrriga, sincroniza e bae!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Iscansione su còdighe QR pro iscarrigare { -brand-product-name }{ -brand-product-name } pro telèfonos. Una borta installadu, seletziona «Sincroniza cun su telèfonu» pro atzèdere a craes, sinnalibros e meda àteru dae onni logu.
+dismiss-button-label = Iscarta
+sync-to-mobile-button-label = Sincroniza cun dispositivos mòbiles
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Còdighe QR pro iscarrigare { -brand-product-name } pro dispositivos mòbiles
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Boles atualizare a Windows 11?
+    Faghimus deretu una còpia de seguresa de is datos de { -brand-product-name }.
+create-backup-screen-1-subtitle = Ampara in automàticu is craes, is sinnalibros e àteru, totu in unu minutu o duos.
+create-backup-screen-1-flair = Cussigiadu
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Àteras informatziones</a>
+create-backup-screen-1-sync-label = Sincroniza cun { -brand-product-name }
+create-backup-screen-1-sync-body = Faghet una còpia de seguresa de totu is dispositivos in ue as fatu s’atzessu
+create-backup-screen-1-backup-label = Faghe una còpia de seguresa in s’elaboradore (PC)
+create-backup-screen-1-backup-body = Sarvat sa còpia in su dispositivu o in OneDrive
+create-backup-select-tile-button-label = Seletziona
+create-backup-back-button-label = A coa
+create-backup-show-fewer =
+    .label = Ammustra prus pagu publitzidade comente custa
+create-backup-screen-2-title = Sèbera is datos de { -brand-product-name } pro sa còpia de seguresa
+create-backup-screen-2-subtitle = Bastat unu minutu. Is datos tuos sunt sarvados una borta a sa die.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Cunfiguratzione simplificada
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Sinnalibros, cronologia, cunfiguratziones e àteru
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = No includet craes e pagamentos
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Non tzifradu
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Totu is datos
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Includet craes e pagamentos
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Tzifradu cun crae
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = In ue boles sarvare sa còpia de seguresa?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Crea una crae pro s’archìviu de còpia de seguresa
+create-backup-screen-3-subtitle = Netzessàriu pro tzifrare is datos tuos. Sarva·dda in unu logu fàtzile de regordare.
+fx-backup-opt-in-header = Sèbera sa positzione de s’archìviu
+fx-backup-opt-in-filepath-label = Sèbera una positzione chi boles tramudare a unu dispositivu nou, comente OneDrive.
+fx-backup-opt-in-create-password-label = Inserta sa crae
+fx-backup-opt-in-confirm-btn-label = Sighi
+fx-backup-opt-in-cancel-btn-label = A coa
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Sa còpia de seguresa est programmada
+fx-backup-confirmation-screen-close-button = Serra
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Totu is datos de navigatzione incluidos
+fx-backup-confirmation-screen-all-data-item-text-2 = Sarvadu in su dispositivu
+fx-backup-confirmation-screen-all-data-item-text-3 = Tzifradu e amparadu cun crae
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Sinnalibros, cronologia, cunfiguratziones e àteros datos incluidos
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Sarvadu in su dispositivu
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Craes e pagamentos non sunt incluidos
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Bae a <a data-l10n-name="settings">Cunfiguratziones</a> pro incluire is datos riservados.
+fx-backup-confirmation-screen-item-subtext-1 = Sa còpia de seguresa tua at a cumintzare de immoe a pagu e at a èssere esecutada una borta a sa die. Podes controllare su progressu dae sa <a data-l10n-name="settings">Cunfiguratzione</a>.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } at a chircare sa còpia de seguresa si ddu depes torrare a installare.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Recùpera dae una còpia de seguresa
+restore-from-backup-title = Torremus a pònnere { -brand-short-name } comente ti praghet
+restore-from-backup-subtitle = Recùpera sinnalibros, cronologia e àteros datos pro torrare a navigare.
+restore-from-backup-secondary-button = Non recùperes
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Semus inoghe torra! Is datos tuos de { -brand-short-name } sunt istados recuperados.
+restored-from-backup-success-with-checklist-subtitle = Boles tènnere semper a portada su navigadore preferidu tuo, atentu a sa riservadesa?
+restored-from-backup-success-no-checklist-subtitle = Podes ativare sa còpia de seguresa in custu dispositivu dae is <a data-l10n-name="settings">Cunfiguratziones</a>.
+restored-from-backup-success-with-checklist-primary-button = Sarva e sighi
+restored-from-backup-success-with-checklist-secondary-button = Brinca custu passu
+restored-from-backup-success-no-checklist-primary-button = Sighi
+restored-from-backup-error-title = Mh, ddoe est istadu unu problema cun sa còpia de seguresa.
+restored-from-backup-error-subtitle = Si tenes un’àteru archìviu de còpia de seguresa de { -brand-short-name }, proa a recuperare cussu. <a data-l10n-name="restore-problems">Tenes ancora problemas?</a>
+restored-from-backup-error-primary-button = Serra
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Personaliza s’esperièntzia tua cun { -brand-short-name }
+onboarding-personalization-subtitle = Risponde a unas cantas preguntas e t’amus a cussigiare funtzionalidades e estensiones pro megiorare s’impreu de { -brand-short-name }.
+onboarding-personalization-use-case-title = Cun cale iscopu as a impreare { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Impreu personale
+onboarding-personalization-use-case-school-option = Iscola
+onboarding-personalization-use-case-work-option = Traballu
+onboarding-personalization-motivation-title = Cales funtzionalidades de { -brand-short-name } sunt prus de importu pro tue?
+onboarding-personalization-motivation-privacy-option = Riservadesa e seguresa
+onboarding-personalization-motivation-productivity-option = Produtividade
+onboarding-personalization-motivation-other-option = Àteru

@@ -1,3 +1,7 @@
+fixes/Bug-2039878-Use-VK_NULL_HANDLE-for-Vulkan-object-han.patch
+fixes/Bug-2048097-Add-missing-cinttypes-include.-r-media-p.patch
+fixes/Bug-2054321-Change-the-std-atomic-configure-check-fo.patch
+fixes/Bug-2040454-Update-xsimd-to-50d205d47b7e37e282a662b3.patch
 debian-hacks/Avoid-wrong-sessionstore-data-to-keep-windows-out-of.patch
 debian-hacks/Add-another-preferences-directory-for-applications-p.patch
 debian-hacks/Add-a-2-minutes-timeout-on-xpcshell-tests.patch
@@ -5,7 +9,6 @@ debian-hacks/Add-debian-extra-stuff-to-upstream-build-system-dire.patch
 debian-hacks/Don-t-build-image-gtests.patch
 debian-hacks/Use-the-Mozilla-Location-Service-key-when-the-Google.patch
 debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch
-debian-hacks/Fix-math_private.h-for-i386-FTBFS.patch
 debian-hacks/Allow-to-override-rust-LTO-flag.patch
 debian-hacks/Remove-workaround-for-old-libstdc-problem-which-now-.patch
 debian-hacks/Relax-nodejs-minimum-version.patch
@@ -15,13 +18,9 @@ debian-hacks/Set-DPI-to-system-settings.patch
 debian-hacks/Don-t-auto-disable-extensions-in-system-directories.patch
 debian-hacks/Work-around-GCC-ICE-on-ppc64el.patch
 debian-hacks/Adjust-our-gfx-skia-moz.build-patch-to-upstream-chan.patch
-deepin-hacks/0002-Enable-VA-API-support-for-AMD-GPUs.patch
-porting-loong64/0003-Add-support-for-LoongArch64.patch
-porting-loong64/0004-update-gn_processor.py-to-support-linux-on-loong64.patch
-porting-loong64/0005-Re-generate-libwebrtc-moz.build-files.patch
-porting-loong64/0006-enable-webrtc-for-loongarch64-in-toolkit-moz.configu.patch
-porting-loong64/0007-Fix-libyuv-unified-source-and-LoongArch-SIMD-build.patch
-porting-loong64/0008-Fix-missing-loongarch-subdir-in-libpng-moz.yaml.patch
-porting-loong64/0009-Vendor-missing-loongarch-files-of-libpng.patch
-porting-loong64/0010-Enable-LoongArch-LSX-optimization-for-libpng.patch
+debian-hacks/Disable-format-security-warning-when-disabling-forma.patch
 porting-riscv64/allowriscv64-use-gles.patch
+rust-min-version.patch
+cbindgen-min-version.patch
+ssl-tokens-cache-edition.patch
+edition-2024-to-2021.patch

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -113,9 +111,10 @@ template struct mozilla::wr::Box2D<int, mozilla::wr::LayoutPixel>;
 namespace mozilla {
 namespace wr {
 
-// Cast a blob image key into a regular image for use in
-// a display item.
+// Cast a blob image key into a regular image for use in a display item.
 inline ImageKey AsImageKey(BlobImageKey aKey) { return aKey._0; }
+// Cast a snapshot image key into a regular image for use in a display item.
+inline ImageKey AsImageKey(SnapshotImageKey aKey) { return aKey._0; }
 
 }  // namespace wr
 }  // namespace mozilla

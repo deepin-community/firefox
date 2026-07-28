@@ -15,6 +15,10 @@ support-addons-type = Peteĩchagua
 support-addons-enabled = Myandypyre
 support-addons-version = Peteĩchagua
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Tendaite
 legacy-user-stylesheets-title = Kuatia mbohekoha poruhára mba’e
 legacy-user-stylesheets-enabled = Myandy
 legacy-user-stylesheets-stylesheet-types = Kuatia mbohekoha
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = Apoporã (%)
 place-database-stats-sequentiality-perc = Joapykuerigua (%)
 place-database-integrity = Tekoite
 place-database-verify-integrity = Tekoporã Jehechajey
+place-database-last-idle-maintenance-data = Arange ojejapohague ñemopotĩ oku’e’ỹvape paha
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Arange ojejapohague ñemopotĩ
+place-database-last-integrity-corruption-date = Arange oikohague mba’evai paha
 a11y-title = Jeikekuaa
 a11y-activated = Myandypyre
 a11y-force-disabled = Jeikekuaa jejoko
@@ -181,10 +189,12 @@ media-capabilities-enumerate = Embopapapy mba’ekuaarã guapyha
 
 media-codec-support-sw-decoding = Software Jepapapy’o
 media-codec-support-hw-decoding = Hardware Jepapapy’o
+media-codec-support-sw-encoding = Software Mbopapapy
+media-codec-support-hw-encoding = Hardware Mbopapapy
 media-codec-support-codec-name = Codec Réra
 media-codec-support-supported = Pytyvõpyre
 media-codec-support-unsupported = Oñepytyvõ’ỹva
-media-codec-support-error = Pe marandu códec jokupyty ndojeporukuaái. Eha’ãjey ehecha rire marandurenda ñongatuha.
+media-codec-support-error = Pe marandu códec jokupyty ndojeporukuaái. Eha’ã jey ehecha rire marandurenda ñongatuha.
 media-codec-support-lack-of-extension = Emohenda jepysokue
 
 ## Media Content Decryption Modules (CDM)

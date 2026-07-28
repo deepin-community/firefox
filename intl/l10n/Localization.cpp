@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -107,6 +105,13 @@ already_AddRefed<Localization> Localization::Create(
 
 /* static */
 already_AddRefed<Localization> Localization::Create(
+    const nsTArray<nsCString>& aResourceIds, bool aIsSync,
+    const nsTArray<nsCString>& aLocales) {
+  return MakeAndAddRef<Localization>(aResourceIds, aIsSync, aLocales);
+}
+
+/* static */
+already_AddRefed<Localization> Localization::Create(
     const nsTArray<ffi::GeckoResourceId>& aResourceIds, bool aIsSync) {
   return MakeAndAddRef<Localization>(aResourceIds, aIsSync);
 }
@@ -117,6 +122,13 @@ Localization::Localization(const nsTArray<nsCString>& aResIds, bool aIsSync) {
                         getter_AddRefs(mRaw));
 
   RegisterObservers();
+}
+
+Localization::Localization(const nsTArray<nsCString>& aResIds, bool aIsSync,
+                           const nsTArray<nsCString>& aLocales) {
+  auto ffiResourceIds{L10nRegistry::ResourceIdsToFFI(aResIds)};
+  ffi::localization_new_with_locales(&ffiResourceIds, aIsSync, nullptr,
+                                     &aLocales, getter_AddRefs(mRaw));
 }
 
 Localization::Localization(const nsTArray<ffi::GeckoResourceId>& aResIds,
@@ -148,6 +160,14 @@ Localization::Localization(nsIGlobalObject* aGlobal, bool aIsSync,
                            const ffi::LocalizationRc* aRaw)
     : mGlobal(aGlobal), mRaw(aRaw) {
   RegisterObservers();
+}
+
+Localization::Localization(nsIGlobalObject* aGlobal, bool aIsSync,
+                           const nsTArray<nsCString>& aLocales)
+    : mGlobal(aGlobal) {
+  nsTArray<ffi::GeckoResourceId> resIds;
+  ffi::localization_new_with_locales(&resIds, aIsSync, nullptr, &aLocales,
+                                     getter_AddRefs(mRaw));
 }
 
 /* static */

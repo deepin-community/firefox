@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +6,7 @@
 
 interface nsIURI;
 
-[scriptable, uuid(68067eb5-ad8d-43cb-a043-1cc85ebe06e7)]
+[scriptable, rust_sync, builtinclass, uuid(68067eb5-ad8d-43cb-a043-1cc85ebe06e7)]
 interface nsIEffectiveTLDService : nsISupports
 {
     /**
@@ -118,6 +117,28 @@ interface nsIEffectiveTLDService : nsISupports
      * use getSite() or the Origin if you are not absolutely certain.
      */
     ACString getSchemelessSite(in nsIURI aURI);
+
+    /**
+     * Same as getSchemelessSite but takes a host string. Prefer the URI variant
+     * if possible.
+     *
+     * @param aHost
+     *        The host to analyze.
+     *
+     * @return the Site.
+     *
+     * @throws NS_ERROR_UNEXPECTED
+     *         or other error returned by nsIIDNService::normalize when
+     *         the hostname contains characters disallowed in URIs
+     *
+     * @see    getSchemelessSite()
+     * @see    getBaseDomain()
+     * @see    getSite()
+     *
+     * @warning This function should not be used without good reason. Please
+     * use getSite() or the Origin if you are not absolutely certain.
+     */
+    ACString getSchemelessSiteFromHost(in AUTF8String aHost);
 
     /**
      * Get the Site for the origin of aURI; e.g. for

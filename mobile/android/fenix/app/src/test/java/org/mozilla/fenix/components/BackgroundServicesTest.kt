@@ -19,7 +19,6 @@ import mozilla.components.concept.sync.OAuthAccount
 import mozilla.components.service.nimbus.NimbusApi
 import mozilla.components.support.base.observer.ObserverRegistry
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -27,15 +26,16 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.GleanMetrics.SyncAuth
 import org.mozilla.fenix.ext.components
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.utils.Settings
+import org.robolectric.RobolectricTestRunner
 
 // For gleanTestRule
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class BackgroundServicesTest {
 
     @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
     @MockK
     private lateinit var context: Context
@@ -61,7 +61,7 @@ class BackgroundServicesTest {
             every { events } returns nimbus
         }
         every { context.components } returns mockComponents
-        every { nimbus.recordEvent(any()) } returns Unit
+        every { nimbus.recordEvent(any()) } just Runs
 
         observer = TelemetryAccountObserver(context)
         registry = ObserverRegistry<AccountObserver>().apply { register(observer) }

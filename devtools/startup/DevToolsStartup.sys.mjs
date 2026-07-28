@@ -18,7 +18,7 @@
  * Only once any of these entry point is fired, this module ensures starting
  * core modules like 'devtools-browser.js' that hooks the browser windows
  * and ensure setting up tools.
- **/
+ */
 
 const kDebuggerPrefs = [
   "devtools.debugger.remote-enabled",
@@ -31,9 +31,12 @@ import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
-  CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
-  CustomizableWidgets: "resource:///modules/CustomizableWidgets.sys.mjs",
-  PanelMultiView: "resource:///modules/PanelMultiView.sys.mjs",
+  CustomizableUI:
+    "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
+  CustomizableWidgets:
+    "moz-src:///browser/components/customizableui/CustomizableWidgets.sys.mjs",
+  PanelMultiView:
+    "moz-src:///browser/components/customizableui/PanelMultiView.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   ProfilerMenuButton:
     "resource://devtools/client/performance-new/popup/menu-button.sys.mjs",
@@ -68,6 +71,9 @@ ChromeUtils.defineLazyGetter(lazy, "KeyShortcutsBundle", function () {
  *
  * This means that language pack users might get a new Beta version but will not
  * have a language pack with the new strings yet.
+ *
+ * @param {string} id
+ * @returns {string|null}
  */
 function getLocalizedKeyShortcut(id) {
   try {
@@ -205,7 +211,7 @@ ChromeUtils.defineLazyGetter(lazy, "KeyShortcuts", function () {
   // but also from the web page when it is focused.
   if (
     Services.prefs.getBoolPref(
-      "devtools.debugger.features.javascript-tracing",
+      "devtools.command-button-jstracer.enabled",
       false
     )
   ) {
@@ -306,49 +312,49 @@ ChromeUtils.defineLazyGetter(lazy, "ProfilerPopupBackground", function () {
   );
 });
 
-export function DevToolsStartup() {
-  this.onWindowReady = this.onWindowReady.bind(this);
-  this.addDevToolsItemsToSubview = this.addDevToolsItemsToSubview.bind(this);
-  this.onMoreToolsViewShowing = this.onMoreToolsViewShowing.bind(this);
-  this.toggleProfilerKeyShortcuts = this.toggleProfilerKeyShortcuts.bind(this);
-}
-
-DevToolsStartup.prototype = {
+// eslint-disable-next-line jsdoc/require-jsdoc
+export class DevToolsStartup {
+  constructor() {
+    this.onWindowReady = this.onWindowReady.bind(this);
+    this.addDevToolsItemsToSubview = this.addDevToolsItemsToSubview.bind(this);
+    this.onMoreToolsViewShowing = this.onMoreToolsViewShowing.bind(this);
+    this.toggleProfilerKeyShortcuts =
+      this.toggleProfilerKeyShortcuts.bind(this);
+  }
   /**
    * Boolean flag to check if DevTools have been already initialized or not.
    * By initialized, we mean that its main modules are loaded.
    */
-  initialized: false,
+  initialized = false;
 
   /**
    * Boolean flag to check if the devtools initialization was already sent to telemetry.
    * We only want to record one devtools entry point per Firefox run, but we are not
    * interested in all the entry points.
    */
-  recorded: false,
+  recorded = false;
 
   get telemetry() {
     if (!this._telemetry) {
       this._telemetry = new lazy.Telemetry();
-      this._telemetry.setEventRecordingEnabled(true);
     }
     return this._telemetry;
-  },
+  }
 
   /**
    * Flag that indicates if the developer toggle was already added to customizableUI.
    */
-  developerToggleCreated: false,
+  developerToggleCreated = false;
 
   /**
    * Flag that indicates if the profiler recording popup was already added to
    * customizableUI.
    */
-  profilerRecordingButtonCreated: false,
+  profilerRecordingButtonCreated = false;
 
   isDisabledByPolicy() {
     return Services.prefs.getBoolPref(DEVTOOLS_POLICY_DISABLED_PREF, false);
-  },
+  }
 
   handle(cmdLine) {
     const flags = this.readCommandLineFlags(cmdLine);
@@ -374,6 +380,12 @@ DevToolsStartup.prototype = {
         this.onMoreToolsViewShowing,
         "web-developer-tools-view-showing"
       );
+      // Add DevTools menu items so they can be picked up by the customize
+      // keyboard shortcuts UI.
+      Services.obs.addObserver(() => {
+        // Initialize DevTools to create all menuitems in the system menu.
+        this.initDevTools("CustomKeysUI");
+      }, "customkeys-ui-showing");
       /* eslint-enable mozilla/balanced-observers */
 
       if (!this.isDisabledByPolicy()) {
@@ -407,7 +419,7 @@ DevToolsStartup.prototype = {
     if (!isInitialLaunch && this.initialized && cmdLine.length) {
       this.checkForDebuggerLink(cmdLine);
     }
-  },
+  }
 
   /**
    * Lookup in all arguments passed to firefox binary to find
@@ -426,7 +438,7 @@ DevToolsStartup.prototype = {
     }
 
     // The following code would only work if we have a top level browser window opened
-    const window = Services.wm.getMostRecentWindow("navigator:browser");
+    const window = Services.wm.getMostRecentBrowserWindow();
     if (!window) {
       return;
     }
@@ -502,7 +514,7 @@ DevToolsStartup.prototype = {
       null,
       "CommandLine"
     );
-  },
+  }
 
   readCommandLineFlags(cmdLine) {
     // All command line flags are disabled if DevTools are disabled by policy.
@@ -515,7 +527,7 @@ DevToolsStartup.prototype = {
       };
     }
 
-    const console = cmdLine.handleFlag("jsconsole", false);
+    const jsConsole = cmdLine.handleFlag("jsconsole", false);
     const devtools = cmdLine.handleFlag("devtools", false);
 
     let devToolsServer;
@@ -539,12 +551,19 @@ DevToolsStartup.prototype = {
       debuggerFlag = cmdLine.handleFlag("jsdebugger", false);
     }
 
-    return { console, debugger: debuggerFlag, devtools, devToolsServer };
-  },
+    return {
+      console: jsConsole,
+      debugger: debuggerFlag,
+      devtools,
+      devToolsServer,
+    };
+  }
 
   /**
    * Called when receiving the "browser-delayed-startup-finished" event for a new
    * top-level window.
+   *
+   * @param {Window} window
    */
   onWindowReady(window) {
     if (
@@ -564,8 +583,14 @@ DevToolsStartup.prototype = {
     }
 
     JsonView.initialize();
-  },
+  }
 
+  /**
+   * Called when receiving the "browser-delayed-startup-finished" event for a top-level
+   * window for the first time.
+   *
+   * @param {Window} window
+   */
   onFirstWindowReady(window) {
     if (this.devtoolsFlag) {
       this.handleDevToolsFlag(window);
@@ -578,13 +603,15 @@ DevToolsStartup.prototype = {
       }
     }
     this.setSlowScriptDebugHandler();
-  },
+  }
 
   /**
    * Register listeners to all possible entry points for Developer Tools.
    * But instead of implementing the actual actions, defer to DevTools codebase.
    * In most cases, it only needs to call this.initDevTools which handles the rest.
    * We do that to prevent loading any DevTools module until the user intent to use them.
+   *
+   * @param {Window} window
    */
   hookWindow(window) {
     // Key Shortcuts need to be added on all the created windows.
@@ -601,7 +628,7 @@ DevToolsStartup.prototype = {
     if (!this.initialized) {
       this.hookBrowserToolsMenu(window);
     }
-  },
+  }
 
   /**
    * Dynamically register a wrench icon in the customization menu.
@@ -660,7 +687,7 @@ DevToolsStartup.prototype = {
     lazy.CustomizableWidgets.push(item);
 
     this.developerToggleCreated = true;
-  },
+  }
 
   addDevToolsItemsToSubview(subview) {
     // Initialize DevTools to create all menuitems in the system menu before
@@ -676,11 +703,11 @@ DevToolsStartup.prototype = {
 
     lazy.CustomizableUI.clearSubview(subview);
     lazy.CustomizableUI.fillSubviewFromMenuItems(itemsToDisplay, subview);
-  },
+  }
 
   onMoreToolsViewShowing(moreToolsView) {
     this.addDevToolsItemsToSubview(moreToolsView);
-  },
+  }
 
   /**
    * Register the profiler recording button. This button will be available
@@ -713,7 +740,14 @@ DevToolsStartup.prototype = {
       };
       Services.prefs.addObserver(featureFlagPref, enable);
     }
-  },
+
+    if (!Cu.isInAutomation && Services.env.exists("MOZ_PROFILER_STARTUP")) {
+      // If the profiler is active due to startup profiling, show the profiler
+      // button in the nav bar. But do not do it in automation to avoid
+      // side-effects with existing tests.
+      lazy.ProfilerMenuButton.ensureButtonInNavbar();
+    }
+  }
 
   /**
    * Initialize the WebChannel for profiler.firefox.com. This function happens at
@@ -756,7 +790,7 @@ DevToolsStartup.prototype = {
         );
       });
     }
-  },
+  }
 
   /*
    * We listen to the "Browser Tools" system menu, which is under "Tools" main item.
@@ -770,18 +804,18 @@ DevToolsStartup.prototype = {
       this.initDevTools("SystemMenu");
     };
     menu.addEventListener("popupshowing", onPopupShowing);
-  },
+  }
 
   /**
    * Check if the user is a DevTools user by looking at our selfxss pref.
    * This preference is incremented everytime the console is used (up to 5).
    *
-   * @return {Boolean} true if the user can be considered as a devtools user.
+   * @returns {boolean} true if the user can be considered as a devtools user.
    */
   isDevToolsUser() {
     const selfXssCount = Services.prefs.getIntPref("devtools.selfxss.count", 0);
     return selfXssCount > 0;
-  },
+  }
 
   hookKeyShortcuts(window) {
     const doc = window.document;
@@ -802,10 +836,14 @@ DevToolsStartup.prototype = {
     // account (see bug 832984).
     const mainKeyset = doc.getElementById("mainKeyset");
     mainKeyset.parentNode.insertBefore(keyset, mainKeyset);
-  },
+  }
 
   /**
    * This method attaches on the key elements to the devtools keyset.
+   *
+   * @param {Document} doc
+   * @param {Array<object>} keyShortcuts
+   * @param {XULElement} [keyset]
    */
   attachKeys(doc, keyShortcuts, keyset = doc.getElementById("devtoolsKeyset")) {
     const window = doc.defaultView;
@@ -819,10 +857,13 @@ DevToolsStartup.prototype = {
       const xulKey = this.createKey(doc, key, () => this.onKey(window, key));
       keyset.appendChild(xulKey);
     }
-  },
+  }
 
   /**
    * This method removes keys from the devtools keyset.
+   *
+   * @param {Document} doc
+   * @param {Array<object>} keyShortcuts
    */
   removeKeys(doc, keyShortcuts) {
     for (const key of keyShortcuts) {
@@ -831,11 +872,12 @@ DevToolsStartup.prototype = {
         keyElement.remove();
       }
     }
-  },
+  }
 
   /**
    * We only want to have the keyboard shortcuts active when the menu button is on.
    * This function either adds or removes the elements.
+   *
    * @param {boolean} isEnabled
    */
   toggleProfilerKeyShortcuts(isEnabled) {
@@ -866,7 +908,7 @@ DevToolsStartup.prototype = {
       // account (see bug 832984).
       mainKeyset.parentNode.insertBefore(devtoolsKeyset, mainKeyset);
     }
-  },
+  }
 
   async onKey(window, key) {
     try {
@@ -895,7 +937,7 @@ DevToolsStartup.prototype = {
       // Record the timing at which this event started in order to compute later in
       // gDevTools.showToolbox, the complete time it takes to open the toolbox.
       // i.e. especially take `initDevTools` into account.
-      const startTime = Cu.now();
+      const startTime = ChromeUtils.now();
       const require = this.initDevTools("KeyShortcut", key);
       const {
         gDevToolsBrowser,
@@ -904,11 +946,11 @@ DevToolsStartup.prototype = {
     } catch (e) {
       console.error(`Exception while trigerring key ${key}: ${e}\n${e.stack}`);
     }
-  },
+  }
 
   getKeyElementId({ id, toolId }) {
     return "key_" + (id || toolId);
-  },
+  }
 
   // Create a <xul:key> DOM Element
   createKey(doc, key, oncommand) {
@@ -934,7 +976,7 @@ DevToolsStartup.prototype = {
     k.addEventListener("command", oncommand);
 
     return k;
-  },
+  }
 
   initDevTools(reason, key = "") {
     // In the case of the --jsconsole and --jsdebugger command line parameters
@@ -952,7 +994,7 @@ DevToolsStartup.prototype = {
     // eslint-disable-next-line import/no-unassigned-import
     require("devtools/client/framework/devtools-browser");
     return require;
-  },
+  }
 
   handleConsoleFlag(cmdLine) {
     const window = Services.wm.getMostRecentWindow("devtools:webconsole");
@@ -970,14 +1012,14 @@ DevToolsStartup.prototype = {
     if (cmdLine.state == Ci.nsICommandLine.STATE_REMOTE_AUTO) {
       cmdLine.preventDefault = true;
     }
-  },
+  }
 
   // Open the toolbox on the selected tab once the browser starts up.
   async handleDevToolsFlag(window) {
     const require = this.initDevTools("CommandLine");
     const { gDevTools } = require("devtools/client/framework/devtools");
     await gDevTools.showToolboxForTab(window.gBrowser.selectedTab);
-  },
+  }
 
   _isRemoteDebuggingEnabled() {
     let remoteDebuggingEnabled = false;
@@ -1000,7 +1042,7 @@ DevToolsStartup.prototype = {
       dump(errorMsg + "\n");
     }
     return remoteDebuggingEnabled;
-  },
+  }
 
   handleDebuggerFlag(cmdLine, binaryPath) {
     if (!this._isRemoteDebuggingEnabled()) {
@@ -1037,15 +1079,18 @@ DevToolsStartup.prototype = {
     if (pauseOnStartup) {
       // Spin the event loop until the debugger connects.
       const tm = Cc["@mozilla.org/thread-manager;1"].getService();
-      tm.spinEventLoopUntil("DevToolsStartup.jsm:handleDebuggerFlag", () => {
-        return devtoolsThreadResumed;
-      });
+      tm.spinEventLoopUntil(
+        "DevToolsStartup.sys.mjs:handleDebuggerFlag",
+        () => {
+          return devtoolsThreadResumed;
+        }
+      );
     }
 
     if (cmdLine.state == Ci.nsICommandLine.STATE_REMOTE_AUTO) {
       cmdLine.preventDefault = true;
     }
-  },
+  }
 
   /**
    * Handle the --start-debugger-server command line flag. The options are:
@@ -1065,6 +1110,9 @@ DevToolsStartup.prototype = {
    *
    * --start-debugger-server ws:
    *   Start the WebSocket server on the default port (taken from d.d.remote-port)
+   *
+   * @param {nsICommandLine} cmdLine
+   * @param {boolean|string} portOrPath
    */
   handleDevToolsServerFlag(cmdLine, portOrPath) {
     if (!this._isRemoteDebuggingEnabled()) {
@@ -1143,7 +1191,7 @@ DevToolsStartup.prototype = {
     if (cmdLine.state == Ci.nsICommandLine.STATE_REMOTE_AUTO) {
       cmdLine.preventDefault = true;
     }
-  },
+  }
 
   /**
    * Send entry point telemetry explaining how the devtools were launched. This
@@ -1151,10 +1199,10 @@ DevToolsStartup.prototype = {
    * because this codepath is only used the first time a toolbox is opened for a
    * tab.
    *
-   * @param {String} reason
+   * @param {string} reason
    *        One of "KeyShortcut", "SystemMenu", "HamburgerMenu", "ContextMenu",
    *        "CommandLine".
-   * @param {String} key
+   * @param {string} key
    *        The key used by a key shortcut.
    */
   sendEntryPointTelemetry(reason, key = "") {
@@ -1176,7 +1224,7 @@ DevToolsStartup.prototype = {
       keys = `${modifiers}+${shortcut}`;
     }
 
-    const window = Services.wm.getMostRecentWindow("navigator:browser");
+    const window = Services.wm.getMostRecentBrowserWindow();
 
     this.telemetry.addEventProperty(
       window,
@@ -1203,12 +1251,12 @@ DevToolsStartup.prototype = {
     // won't necessarely start the tool. For example key shortcuts may
     // only change the currently selected tool.
     try {
-      this.telemetry.getHistogramById("DEVTOOLS_ENTRY_POINT").add(reason);
+      Glean.devtools.entryPoint[reason].add(1);
     } catch (e) {
       dump("DevTools telemetry entry point failed: " + e + "\n");
     }
     this.recorded = true;
-  },
+  }
 
   /**
    * Hook the debugger tool to the "Debug Script" button of the slow script dialog.
@@ -1244,7 +1292,7 @@ DevToolsStartup.prototype = {
     debugService.remoteActivationHandler = async (browser, callback) => {
       try {
         // Force selecting the freezing tab
-        const chromeWindow = browser.ownerGlobal;
+        const chromeWindow = browser.documentGlobal;
         const tab = chromeWindow.gBrowser.getTabForBrowser(browser);
         chromeWindow.gBrowser.selectedTab = tab;
 
@@ -1254,10 +1302,12 @@ DevToolsStartup.prototype = {
       }
       callback.finishDebuggerStartup();
     };
-  },
+  }
 
   /**
    * Called by setSlowScriptDebugHandler, when a tab freeze because of a slow running script
+   *
+   * @param {XULFrameElement} tab
    */
   async slowScriptDebugHandler(tab) {
     const require = this.initDevTools("SlowScript");
@@ -1274,36 +1324,38 @@ DevToolsStartup.prototype = {
         // When the debugger is already paused.
         threadFront.resumeThenPause();
         break;
-      case "attached":
+      case "attached": {
         // When the debugger is already open.
         const onPaused = threadFront.once("paused");
         threadFront.interrupt();
         await onPaused;
         threadFront.resumeThenPause();
         break;
-      case "resuming":
+      }
+      case "resuming": {
         // The debugger is newly opened.
         const onResumed = threadFront.once("resumed");
         await threadFront.interrupt();
         await onResumed;
         threadFront.resumeThenPause();
         break;
+      }
       default:
         throw Error(
           "invalid thread front state in slow script debug handler: " +
             threadFront.state
         );
     }
-  },
+  }
 
   // Used by tests and the toolbox to register the same key shortcuts in toolboxes loaded
   // in a window window.
   get KeyShortcuts() {
     return lazy.KeyShortcuts;
-  },
+  }
   get wrappedJSObject() {
     return this;
-  },
+  }
 
   get jsdebuggerHelpInfo() {
     return `  --jsdebugger [<path>] Open the Browser Toolbox. Defaults to the local build
@@ -1315,17 +1367,17 @@ DevToolsStartup.prototype = {
                      a TCP port or Unix domain socket path. Defaults to TCP port
                      6000. Use WebSocket protocol if ws: prefix is specified.
 `;
-  },
+  }
 
   get helpInfo() {
     return `  --jsconsole        Open the Browser Console.
   --devtools         Open DevTools on initial load.
 ${this.jsdebuggerHelpInfo}`;
-  },
+  }
 
-  classID: Components.ID("{9e9a9283-0ce9-4e4a-8f1c-ba129a032c32}"),
-  QueryInterface: ChromeUtils.generateQI(["nsICommandLineHandler"]),
-};
+  classID = Components.ID("{9e9a9283-0ce9-4e4a-8f1c-ba129a032c32}");
+  QueryInterface = ChromeUtils.generateQI(["nsICommandLineHandler"]);
+}
 
 /**
  * Singleton object that represents the JSON View in-content tool.
@@ -1352,10 +1404,12 @@ const JsonView = {
   /**
    * Save JSON to a file needs to be implemented here
    * in the parent process.
+   *
+   * @param {object} message
    */
   onSave(message) {
     const browser = message.target;
-    const chrome = browser.ownerGlobal;
+    const chrome = browser.documentGlobal;
     if (message.data === null) {
       // Save original contents
       chrome.saveBrowser(browser);
@@ -1399,6 +1453,10 @@ const JsonView = {
             ) /* private browsing ? */,
             Services.scriptSecurityManager.getSystemPrincipal()
           );
+          // Close the persist document to tear down the IPC actor
+          // that otherwise prevents the content window from being
+          // destroyed until GC runs.
+          doc.close();
         },
         onError() {
           throw new Error("JSON Viewer's onSave failed in startPersistence");

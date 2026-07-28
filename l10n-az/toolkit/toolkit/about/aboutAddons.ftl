@@ -7,10 +7,6 @@ search-header =
     .placeholder = addons.mozilla.org saytında axtar
     .searchbuttonlabel = Axtar
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -190,6 +186,8 @@ shortcuts-modifier-other = Ctrl və ya Alt istifadə edin
 shortcuts-invalid = Səhv kombinasiya
 shortcuts-letter = Hərf yazın
 shortcuts-system = { -brand-short-name } qısayolu dəyişdirilə bilməz
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Daha { $numberToShow } dənə göstər
@@ -199,28 +197,11 @@ shortcuts-card-collapse-button = Daha az göstər
 header-back-button =
     .title = Geri get
 
-## Recommended add-ons page
-
-
 ## Add-on actions
 
 remove-addon-button = Sil
 disable-addon-button = Söndür
 enable-addon-button = Aktiv et
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
 
 ## Page headings
 
@@ -241,7 +222,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } əlavəsi { -brand-short-name } { $version } ile uyğun deyil.
 # Variables:
 #   $version (string) - Application version.
@@ -256,12 +237,8 @@ details-notification-unsigned2 =
     .message = { $name } { -brand-short-name } üzərində işlədilmək üçün təsdiqlənə bilmədi. Ehtiyyatla davam edin.
 details-notification-unsigned-link = Ətraflı Məlumat
 details-notification-blocked = { $name } təhlükəsizlik və sabitlik səbəbi ilə söndürüldü.
-details-notification-blocked2 =
-    .message = { $name } təhlükəsizlik və sabitlik səbəbi ilə söndürüldü.
 details-notification-blocked-link = Daha çox məlumati
 details-notification-softblocked = { $name } əlavəsinin təhlükəsizlik və ya sabitlik problemlərinə səbəb olduğu məlumdur.
-details-notification-softblocked2 =
-    .message = { $name } əlavəsinin təhlükəsizlik və ya sabitlik problemlərinə səbəb olduğu məlumdur.
 details-notification-softblocked-link = Daha çox məlumati
 details-notification-gmp-pending = { $name } qısa müddətdə quraşdırılacaq.
 details-notification-gmp-pending2 =

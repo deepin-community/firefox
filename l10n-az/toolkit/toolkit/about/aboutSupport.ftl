@@ -3,8 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 page-title = Problem həll etmə məlumatları
-page-subtitle =   Bu səhifə, bir problemi həll etməyə çalışarkən işinizə yaraya biləcək texniki məlumatlara malikdir. { -brand-short-name } haqqında ümumi suallarla bağlı cavab axtarırsınızsa <a data-l10n-name="support-link">dəstək saytımıza</a> baxın.
-
+page-subtitle = Bu səhifə, bir problemi həll etməyə çalışarkən işinizə yaraya biləcək texniki məlumatlara malikdir. { -brand-short-name } haqqında ümumi suallarla bağlı cavab axtarırsınızsa <a data-l10n-name="support-link">dəstək saytımıza</a> baxın.
 crashes-title = Çökmə Məlumatları
 crashes-id = Hesabat kimliyi
 crashes-send-date = Göndərilib
@@ -48,7 +47,6 @@ app-basics-multi-process-support = Çox əməliyyatlı Pəncərələr
 app-basics-enterprise-policies = Sahibkarlıq Siyasəti
 app-basics-key-mozilla = Mozilla Mövqe Xidməti Açarı
 app-basics-safe-mode = Təhlükəsiz Rejim
-
 show-dir-label =
     { PLATFORM() ->
         [macos] Finder-də göstər
@@ -111,8 +109,6 @@ media-device-channels = Kanallar
 media-device-rate = Tempi
 media-device-latency = Ləngimə
 
-## Codec support table
-
 ##
 
 intl-title = Beynəlmiləlləşdirmə və Lokallaşdırma
@@ -125,16 +121,6 @@ intl-os-title = Əməliyyat Sistemi
 intl-os-prefs-system-locales = Sistem Dilləri
 intl-regional-prefs = Regional Nizamlamalar
 
-## Remote Debugging
-##
-## The Firefox remote protocol provides low-level debugging interfaces
-## used to inspect state and control execution of documents,
-## browser instrumentation, user interaction simulation,
-## and for subscribing to browser-internal events.
-##
-## See also https://firefox-source-docs.mozilla.org/remote/
-
-
 ##
 
 # Variables
@@ -144,7 +130,6 @@ report-crash-for-days =
         [one] Son { $days } Gün üçün Çökmə Hesabatı
        *[other] Son { $days } Gün üçün Çökmə Hesabatı
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -152,7 +137,6 @@ crashes-time-minutes =
         [one] { $minutes } dəqiqə əvvəl
        *[other] { $minutes } dəqiqə əvvəl
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -160,7 +144,6 @@ crashes-time-hours =
         [one] { $hours } saat əvvəl
        *[other] { $hours } saat əvvəl
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -168,7 +151,6 @@ crashes-time-days =
         [one] { $days } gün əvvəl
        *[other] { $days } gün əvvəl
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -176,7 +158,6 @@ pending-reports =
         [one] Bütün Çökmə Hesabatları (verilən zaman aralığındaki { $reports } gözləyən çökmə də daxil olmaqla)
        *[other] Bütün Çökmə Hesabatları (verilən zaman aralığındaki { $reports } gözləyən çökmələr də daxil olmaqla)
     }
-
 raw-data-copied = Raw data copied to clipboard
 text-copied = Text copied to clipboard
 
@@ -189,11 +170,9 @@ blocked-mismatched-version = Qeyd jurnalıyla DLL arasındakı qrafik sürücüs
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = VGA sürücüsü versiyanız üçün bloklanmışdır. VGA sürücünüzü { $driverVersion } və ya daha yeni bir versiyaya yeniləyin.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType parametrləri
-
 compositing = Birləşdirici
 hardware-h264 = Avadanlıq H264 Dekodlama
 main-thread-no-omtc = ana axın, OMTC yoxdur
@@ -208,7 +187,6 @@ virtual-monitor-disp = Virtual Monitor Ekranı
 
 found = Tapıldı
 missing = Əksik
-
 gpu-process-pid = GPUProcessPid
 gpu-process = GPUProcess
 gpu-description = Açıqlama
@@ -230,14 +208,11 @@ webgl2-renderer = WebGL2 Vizuallaşdırıcı
 webgl2-version = WebGL 2 Sürücü Buraxılışı
 webgl2-driver-extensions = WebGL 2 Sürücü Əlavəsi
 webgl2-extensions = WebGL 2 Əlavələr
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Əngəlləndi; xəta kodu { $failureCode }
-
 d3d11layers-crash-guard = D3D11 Compositor
 glcontext-crash-guard = OpenGL
-
 reset-on-next-restart = Sonrakı yenidən başlatmada sıfırla
 gpu-process-kill-button = GPU Prosesi Dayandır
 gpu-device-reset = Cihaz Sıfırlama
@@ -247,10 +222,8 @@ content-uses-tiling = Lövhə işlədir (Məzmun)
 off-main-thread-paint-enabled = Sönülü əsas bağın rənglənməsi aktivdir
 off-main-thread-paint-worker-count = Sönülü əsas bağın rənglənməsi işçi sayı
 target-frame-rate = Hədəf Kadr Sürəti
-
 min-lib-versions = Gözlənilən minimum versiya
 loaded-lib-versions = İstifadə olunan versiya
-
 has-seccomp-bpf = Seccomp-BPF (Sistem Çağırışı Filtrləmə)
 has-seccomp-tsync = Seccomp əməliyyat sinxronlaşdırması
 has-user-namespaces = İstifadəçi ad boşluqları
@@ -263,17 +236,14 @@ sandbox-proc-type-content = məzmun
 sandbox-proc-type-file = fayl məzmunu
 sandbox-proc-type-media-plugin = media qoşması
 sandbox-proc-type-data-decoder = məlumat dekodlaşdırıcısı
-
 launcher-process-status-0 = Aktivdir
 launcher-process-status-1 = Xətadan dolayı söndürülüb
 launcher-process-status-2 = Zorla söndürülüb
 launcher-process-status-unknown = Bilinməyən status
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 async-pan-zoom = Asinxron Sürüşdür/Yaxınlaşdır
 apz-none = heç biri
 wheel-enabled = təkər girişi aktivdir
@@ -293,8 +263,3 @@ touch-warning = dəstəklənməyən seçimdən dolayı asinxron toxunma girişi 
 policies-inactive = Passiv
 policies-active = Aktiv
 policies-error = Xəta
-
-## Printing section
-
-## Normandy sections
-

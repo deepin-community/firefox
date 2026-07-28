@@ -1,6 +1,4 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * vim: sw=4 ts=4 sts=4 et
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -17,9 +15,11 @@
 const { ASRouterTargeting } = ChromeUtils.importESModule(
   "resource:///modules/asrouter/ASRouterTargeting.sys.mjs"
 );
-const { ExperimentFakes } = ChromeUtils.importESModule(
+const { NimbusTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/NimbusTestUtils.sys.mjs"
 );
+
+NimbusTestUtils.init(this);
 
 // These randomization IDs were extracted by hand from Firefox instances.
 // Randomization is sufficiently stable to hard-code these IDs rather than
@@ -41,6 +41,7 @@ setupProfileService();
 
 let taskProfile;
 let manager;
+let cleanup;
 
 // Arrange a dummy Remote Settings server so that no non-local network
 // connections are opened.
@@ -55,7 +56,8 @@ add_setup(async () => {
   taskProfD.append("test_backgroundtask_experiments_task");
   taskProfile = profileService.createUniqueProfile(
     taskProfD,
-    "test_backgroundtask_experiments_task"
+    "test_backgroundtask_experiments_task",
+    "tests"
   );
 
   registerCleanupFunction(() => {
@@ -63,21 +65,47 @@ add_setup(async () => {
   });
 
   // Arrange fake experiment enrollment details.
-  manager = ExperimentFakes.manager();
+  ({ manager, cleanup } = await NimbusTestUtils.setupTest());
 
-  await manager.onStartup();
-  await manager.store.addEnrollment(ExperimentFakes.experiment("foo"));
-  manager.unenroll("foo", "some-reason");
-  await manager.store.addEnrollment(
-    ExperimentFakes.experiment("bar", { active: false })
+  await manager.enroll(
+    NimbusTestUtils.factories.recipe.withFeatureConfig("foo", {
+      branchSlug: "treatment",
+      featureId: "testFeature",
+    }),
+    "test"
   );
-  await manager.store.addEnrollment(
-    ExperimentFakes.experiment("baz", { active: true })
+  await manager.unenroll("foo");
+  await manager.enroll(
+    NimbusTestUtils.factories.recipe.withFeatureConfig("bar", {
+      branchSlug: "treatment",
+      featureId: "testFeature",
+    }),
+    "test"
+  );
+  await manager.unenroll("bar");
+  await manager.enroll(
+    NimbusTestUtils.factories.recipe.withFeatureConfig("baz", {
+      branchSlug: "treatment",
+      featureId: "testFeature",
+    }),
+    "test"
   );
 
-  manager.store.addEnrollment(ExperimentFakes.rollout("rol1"));
-  manager.unenroll("rol1", "some-reason");
-  manager.store.addEnrollment(ExperimentFakes.rollout("rol2"));
+  await manager.enroll(
+    NimbusTestUtils.factories.recipe("rol1", { isRollout: true }),
+    "test"
+  );
+  await manager.unenroll("rol1");
+  await manager.enroll(
+    NimbusTestUtils.factories.recipe("rol2", { isRollout: true }),
+    "test"
+  );
+});
+
+registerCleanupFunction(async () => {
+  await manager.unenroll("baz");
+  await manager.unenroll("rol2");
+  await cleanup();
 });
 
 function resetProfile(profile) {
@@ -421,6 +449,25 @@ add_task(async function test_backgroundtask_Messaging_targeting() {
       );
     }
   }
+});
+
+// Verify that the background task emits color scheme and motion preference
+// values for use by ToastNotification's image variant selection. The exact
+// values depend on the user's default profile prefs and OS settings, so we
+// only assert that they are present and have the correct type.
+add_task(async function test_backgroundtask_system_color_scheme_and_motion() {
+  let { infoMap } = await doMessage({});
+
+  Assert.equal(
+    typeof infoMap.chromeColorSchemeIsDark,
+    "boolean",
+    "Background task emits boolean chromeColorSchemeIsDark"
+  );
+  Assert.equal(
+    typeof infoMap.prefersReducedMotion,
+    "boolean",
+    "Background task emits boolean prefersReducedMotion"
+  );
 });
 
 // Verify that `RemoteSettingsClient.sync` is invoked before any

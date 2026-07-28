@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Pokoż
 download-cert-view-text = Zbadej certyfikat CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -80,8 +77,6 @@ client-auth-cert-details-issued-by = Wystawiōny ôd: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Schrōniōny na: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Pamiyntej te rozwiōnzanie
 
 ## Set password (p12) dialog
 
@@ -93,6 +88,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Hasło do ibrycznyj kopii certyfikatu (jeszcze roz):
 set-password-reminder = Pozōr: jak przepōmnisz hasła do ibrycznyj kopii certyfikatu, to niyskorzij niy pōdzie wrōcić tyj ibrycznyj kopii.  Schrōń je dobrze.
-
-## Protected authentication alert
-

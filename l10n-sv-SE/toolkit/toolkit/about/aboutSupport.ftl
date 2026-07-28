@@ -15,6 +15,10 @@ support-addons-type = Typ
 support-addons-enabled = Aktiverad
 support-addons-version = Version
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Plats
 legacy-user-stylesheets-title = Äldre stilmallar för användare
 legacy-user-stylesheets-enabled = Aktiv
 legacy-user-stylesheets-stylesheet-types = Stilmallar
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = Effektivitet (%)
 place-database-stats-sequentiality-perc = Sekvensitet (%)
 place-database-integrity = Integritet
 place-database-verify-integrity = Verifiera integritet
+place-database-last-idle-maintenance-data = Datum för senaste inaktivitet för underhåll
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Datum för senaste Vacuum
+place-database-last-integrity-corruption-date = Datum för senaste integritetskorruption
 a11y-title = Tillgänglighet
 a11y-activated = Aktiverad
 a11y-force-disabled = Förhindra tillgänglighet
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Räkna upp databasen
 
 media-codec-support-sw-decoding = Programvaruavkodning
 media-codec-support-hw-decoding = Hårdvaruavkodning
+media-codec-support-sw-encoding = Programvarukodning
+media-codec-support-hw-encoding = Hårdvarukodning
 media-codec-support-codec-name = Namn på codec
 media-codec-support-supported = Stöds
 media-codec-support-unsupported = Stöds inte

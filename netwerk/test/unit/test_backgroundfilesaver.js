@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
@@ -29,7 +27,7 @@ const BackgroundFileSaverStreamListener = Components.Constructor(
 const StringInputStream = Components.Constructor(
   "@mozilla.org/io/string-input-stream;1",
   "nsIStringInputStream",
-  "setData"
+  "setByteStringData"
 );
 
 const REQUEST_SUSPEND_AT = 1024 * 1024 * 4;
@@ -89,8 +87,8 @@ function toHex(str) {
  * @param aExpectedContents
  *        String containing the octets that are expected in the file.
  *
- * @return {Promise}
- * @resolves When the operation completes.
+ * @returns {Promise<void>}
+ *   Resolves when the operation completes.
  * @rejects Never.
  */
 function promiseVerifyContents(aFile, aExpectedContents) {
@@ -111,7 +109,7 @@ function promiseVerifyContents(aFile, aExpectedContents) {
         } else {
           // Do not print the entire content string to the test log.
           Assert.equal(contents.length, aExpectedContents.length);
-          Assert.ok(contents == aExpectedContents);
+          Assert.equal(contents, aExpectedContents);
         }
         resolve();
       }
@@ -127,8 +125,8 @@ function promiseVerifyContents(aFile, aExpectedContents) {
  * @param aOnTargetChangeFn
  *        Optional callback invoked with the target file name when it changes.
  *
- * @return {Promise}
- * @resolves When onSaveComplete is called with a success code.
+ * @returns {Promise<void>}
+ *   Resolves when onSaveComplete is called with a success code.
  * @rejects With an exception, if onSaveComplete is called with a failure code.
  */
 function promiseSaverComplete(aSaver, aOnTargetChangeFn) {
@@ -160,16 +158,13 @@ function promiseSaverComplete(aSaver, aOnTargetChangeFn) {
  * @param aCloseWhenDone
  *        If true, the output stream will be closed when the copy finishes.
  *
- * @return {Promise}
- * @resolves When the copy completes with a success code.
+ * @returns {Promise<void>}
+ *   Resolves when the copy completes with a success code.
  * @rejects With an exception, if the copy fails.
  */
 function promiseCopyToSaver(aSourceString, aSaverOutputStream, aCloseWhenDone) {
   return new Promise((resolve, reject) => {
-    let inputStream = new StringInputStream(
-      aSourceString,
-      aSourceString.length
-    );
+    let inputStream = new StringInputStream(aSourceString);
     let copier = Cc[
       "@mozilla.org/network/async-stream-copier;1"
     ].createInstance(Ci.nsIAsyncStreamCopier);
@@ -209,17 +204,14 @@ function promiseCopyToSaver(aSourceString, aSaverOutputStream, aCloseWhenDone) {
  * @param aCloseWhenDone
  *        If true, the output stream will be closed when the copy finishes.
  *
- * @return {Promise}
- * @resolves When the operation completes with a success code.
+ * @returns {Promise<void>}
+ *   Resolves when the operation completes with a success code.
  * @rejects With an exception, if the operation fails.
  */
 function promisePumpToSaver(aSourceString, aSaverStreamListener) {
   return new Promise((resolve, reject) => {
     aSaverStreamListener.QueryInterface(Ci.nsIStreamListener);
-    let inputStream = new StringInputStream(
-      aSourceString,
-      aSourceString.length
-    );
+    let inputStream = new StringInputStream(aSourceString);
     let pump = Cc["@mozilla.org/network/input-stream-pump;1"].createInstance(
       Ci.nsIInputStreamPump
     );

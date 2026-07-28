@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ToastNotificationHandler_h__
-#define ToastNotificationHandler_h__
+#ifndef ToastNotificationHandler_h_
+#define ToastNotificationHandler_h_
 
 #include <windows.ui.notifications.h>
 #include <windows.data.xml.dom.h>
@@ -27,24 +26,25 @@ enum class ImagePlacement {
 
 class ToastNotification;
 
-class ToastNotificationHandler final
-    : public nsIAlertNotificationImageListener {
+class ToastNotificationHandler final : public nsISupports {
  public:
   NS_DECL_ISUPPORTS
-  NS_DECL_NSIALERTNOTIFICATIONIMAGELISTENER
 
   ToastNotificationHandler(
-      ToastNotification* backend, const nsAString& aumid,
-      nsIObserver* aAlertListener, const nsAString& aName,
-      const nsAString& aCookie, const nsAString& aTitle, const nsAString& aMsg,
-      const nsAString& aHostPort, bool aClickable, bool aRequireInteraction,
+      ToastNotification* backend, const nsAString& aAumid,
+      nsIAlertNotification* aAlertNotification, nsIObserver* aAlertListener,
+      const nsAString& aName, const nsAString& aCookie, const nsAString& aTitle,
+      const nsAString& aMsg, const nsAString& aHostPort, bool aClickable,
+      bool aRequireInteraction,
       const nsTArray<RefPtr<nsIAlertAction>>& aActions, bool aIsSystemPrincipal,
       const nsAString& aOpaqueRelaunchData, bool aInPrivateBrowsing,
-      bool aIsSilent, bool aHandlesActions = false,
-      ImagePlacement aImagePlacement = ImagePlacement::eInline)
+      bool aIsSilent, ImagePlacement aImagePlacement = ImagePlacement::eInline,
+      const nsAString& aImagePathUnchecked = u""_ns)
       : mBackend(backend),
-        mAumid(aumid),
-        mHasImage(false),
+        mAumid(aAumid),
+        mImageUri(aImagePathUnchecked),
+        mHasImage(!aImagePathUnchecked.IsEmpty()),
+        mAlertNotification(aAlertNotification),
         mAlertListener(aAlertListener),
         mName(aName),
         mCookie(aCookie),
@@ -59,17 +59,22 @@ class ToastNotificationHandler final
         mOpaqueRelaunchData(aOpaqueRelaunchData),
         mIsSilent(aIsSilent),
         mSentFinished(!aAlertListener),
-        mHandleActions(aHandlesActions),
         mImagePlacement(aImagePlacement) {}
 
-  nsresult InitAlertAsync(nsIAlertNotification* aAlert);
+  nsresult InitAlertAsync();
 
   void OnWriteImageFinished(nsresult rv);
 
   void HideAlert();
   bool IsPrivate();
 
+  // Called to stop listening events from Windows for this notification.
+  // This allows clearing up resources bound to the listener callbacks.
   void UnregisterHandler();
+  // Called when Alerts Service closes notification.
+  // This will clear up resources and also ping the observer for further
+  // downstream cleanup.
+  void HandleCloseFromBrowser();
 
   nsString ActionArgsJSONString(
       const nsString& aAction,
@@ -109,15 +114,15 @@ class ToastNotificationHandler final
   nsString mAumid;
   nsString mWindowsTag;
 
-  nsCOMPtr<nsICancelable> mImageRequest;
   nsCOMPtr<nsIFile> mImageFile;
   nsString mImageUri;
   bool mHasImage;
 
-  EventRegistrationToken mActivatedToken;
-  EventRegistrationToken mDismissedToken;
-  EventRegistrationToken mFailedToken;
+  EventRegistrationToken mActivatedToken{};
+  EventRegistrationToken mDismissedToken{};
+  EventRegistrationToken mFailedToken{};
 
+  nsCOMPtr<nsIAlertNotification> mAlertNotification;
   nsCOMPtr<nsIObserver> mAlertListener;
   nsString mName;
   nsString mCookie;
@@ -132,16 +137,18 @@ class ToastNotificationHandler final
   nsString mOpaqueRelaunchData;
   bool mIsSilent;
   bool mSentFinished;
-  bool mHandleActions;
   ImagePlacement mImagePlacement;
 
   nsresult TryShowAlert();
   bool ShowAlert();
-  nsresult AsyncSaveImage(imgIRequest* aRequest);
+  nsresult AsyncSaveImage(imgIContainer* aImage);
   nsresult OnWriteImageSuccess();
+  // Pings the alert observer with alertfinish.
   void SendFinished();
+  // Called either when Windows tells us the notification is closed or failed to
+  // open.
+  void HandleCloseFromSystem();
 
-  nsresult InitWindowsTag();
   bool CreateWindowsNotificationFromXml(ComPtr<IXmlDocument>& aToastXml);
   ComPtr<IXmlDocument> CreateToastXmlDocument();
 

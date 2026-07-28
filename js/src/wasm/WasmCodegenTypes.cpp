@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2021 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +16,10 @@
 
 #include "wasm/WasmCodegenTypes.h"
 
+#include "mozilla/PodOperations.h"
 #include "wasm/WasmExprType.h"
 #include "wasm/WasmStubs.h"
+#include "wasm/WasmSummarizeInsn.h"
 #include "wasm/WasmTypeDef.h"
 #include "wasm/WasmValidate.h"
 #include "wasm/WasmValue.h"
@@ -35,18 +35,32 @@ ArgTypeVector::ArgTypeVector(const FuncType& funcType)
       hasStackResults_(ABIResultIter::HasStackResults(
           ResultType::Vector(funcType.results()))) {}
 
-bool TrapSiteVectorArray::empty() const {
-  for (Trap trap : MakeEnumeratedRange(Trap::Limit)) {
-    if (!(*this)[trap].empty()) {
-      return false;
-    }
-  }
+bool TrapSitesForKind::lookup(uint32_t trapInstructionOffset,
+                              const InliningContext& inliningContext,
+                              TrapSite* trapOut) const {
+  size_t lowerBound = 0;
+  size_t upperBound = pcOffsets_.length();
 
-  return true;
+  size_t match;
+  if (BinarySearch(pcOffsets_, lowerBound, upperBound, trapInstructionOffset,
+                   &match)) {
+    TrapSite site;
+    site.bytecodeOffset = bytecodeOffsets_[match];
+    if (auto inlinedCallerOffsetsIndex =
+            inlinedCallerOffsetsMap_.readonlyThreadsafeLookup(match)) {
+      site.inlinedCallerOffsets =
+          inliningContext[inlinedCallerOffsetsIndex->value()];
+    } else {
+      site.inlinedCallerOffsets = nullptr;
+    }
+    *trapOut = site;
+    return true;
+  }
+  return false;
 }
 
 #ifdef DEBUG
-const char* js::wasm::NameOfTrap(Trap trap) {
+const char* wasm::ToString(Trap trap) {
   switch (trap) {
     case Trap::Unreachable:
       return "Unreachable";
@@ -72,16 +86,22 @@ const char* js::wasm::NameOfTrap(Trap trap) {
       return "StackOverflow";
     case Trap::CheckInterrupt:
       return "CheckInterrupt";
+#  ifdef ENABLE_WASM_JSPI
+    case Trap::ThrowSuspendError:
+      return "ThrowSuspendError";
+#  endif
+    case Trap::Unimplemented:
+      return "Unimplemented";
     case Trap::ThrowReported:
       return "ThrowReported";
     case Trap::Limit:
       return "Limit";
     default:
-      return "NameOfTrap:unknown";
+      return "Unknown";
   }
 }
 
-const char* js::wasm::NameOfTrapMachineInsn(TrapMachineInsn tmi) {
+const char* wasm::ToString(TrapMachineInsn tmi) {
   switch (tmi) {
     case TrapMachineInsn::OfficialUD:
       return "OfficialUD";
@@ -108,44 +128,62 @@ const char* js::wasm::NameOfTrapMachineInsn(TrapMachineInsn tmi) {
     case TrapMachineInsn::Atomic:
       return "Atomic";
     default:
-      return "NameOfTrapMachineInsn::unknown";
+      return "Unknown";
   }
 }
 #endif  // DEBUG
 
-void TrapSiteVectorArray::clear() {
-  for (Trap trap : MakeEnumeratedRange(Trap::Limit)) {
-    (*this)[trap].clear();
-  }
-}
+void TrapSitesForKind::checkInvariants(const uint8_t* codeBase) const {
+#ifdef DEBUG
+  MOZ_ASSERT(machineInsns_.length() == pcOffsets_.length());
+  MOZ_ASSERT(pcOffsets_.length() == bytecodeOffsets_.length());
 
-void TrapSiteVectorArray::swap(TrapSiteVectorArray& rhs) {
-  for (Trap trap : MakeEnumeratedRange(Trap::Limit)) {
-    (*this)[trap].swap(rhs[trap]);
+  uint32_t last = 0;
+  for (uint32_t pcOffset : pcOffsets_) {
+    MOZ_ASSERT(pcOffset > last);
+    last = pcOffset;
   }
-}
 
-void TrapSiteVectorArray::shrinkStorageToFit() {
-  for (Trap trap : MakeEnumeratedRange(Trap::Limit)) {
-    (*this)[trap].shrinkStorageToFit();
-  }
-}
+#  if (defined(JS_CODEGEN_X64) || defined(JS_CODEGEN_X86) ||   \
+       defined(JS_CODEGEN_ARM64) || defined(JS_CODEGEN_ARM) || \
+       defined(JS_CODEGEN_LOONG64) || defined(JS_CODEGEN_MIPS64))
+  // Check that each trapsite is associated with a plausible instruction.  The
+  // required instruction kind depends on the trapsite kind.
+  //
+  // NOTE: currently enabled on x86_{32,64}, arm{32,64}, loongson64 and mips64.
+  // Ideally it should be extended to riscv64 too.
+  //
+  for (uint32_t i = 0; i < length(); i++) {
+    uint32_t pcOffset = pcOffsets_[i];
+    TrapMachineInsn expected = machineInsns_[i];
 
-size_t TrapSiteVectorArray::sumOfLengths() const {
-  size_t ret = 0;
-  for (Trap trap : MakeEnumeratedRange(Trap::Limit)) {
-    ret += (*this)[trap].length();
+    const uint8_t* insnAddr = codeBase + uintptr_t(pcOffset);
+    // `expected` describes the kind of instruction we expect to see at
+    // `insnAddr`.  Find out what is actually there and check it matches.
+    mozilla::Maybe<TrapMachineInsn> actual = SummarizeTrapInstruction(insnAddr);
+    bool valid = actual.isSome() && actual.value() == expected;
+    // This is useful for diagnosing validation failures.
+    // if (!valid) {
+    //   fprintf(stderr,
+    //           "FAIL: reason=%-22s  expected=%-12s  "
+    //           "pcOffset=%-5u  addr= %p\n",
+    //           ToString(trap), ToString(expected),
+    //           pcOffset, insnAddr);
+    //   if (actual.isSome()) {
+    //     fprintf(stderr, "FAIL: identified as %s\n",
+    //             actual.isSome() ? ToString(actual.value())
+    //                             : "(insn not identified)");
+    //   }
+    // }
+    MOZ_ASSERT(valid, "wasm trapsite does not reference a valid insn");
   }
-  return ret;
-}
 
-size_t TrapSiteVectorArray::sizeOfExcludingThis(
-    mozilla::MallocSizeOf mallocSizeOf) const {
-  size_t ret = 0;
-  for (Trap trap : MakeEnumeratedRange(Trap::Limit)) {
-    ret += (*this)[trap].sizeOfExcludingThis(mallocSizeOf);
+  for (auto iter = inlinedCallerOffsetsMap_.iter(); !iter.done(); iter.next()) {
+    MOZ_ASSERT(iter.get().key() < length());
+    MOZ_ASSERT(!iter.get().value().isNone());
   }
-  return ret;
+#  endif
+#endif
 }
 
 CodeRange::CodeRange(Kind kind, Offsets offsets)
@@ -157,6 +195,9 @@ CodeRange::CodeRange(Kind kind, Offsets offsets)
     case FarJumpIsland:
     case TrapExit:
     case Throw:
+#  ifdef ENABLE_WASM_JSPI
+    case ContBaseFrame:
+#  endif
       break;
     default:
       MOZ_CRASH("should use more specific constructor");
@@ -184,6 +225,7 @@ CodeRange::CodeRange(Kind kind, CallableOffsets offsets)
     case DebugStub:
     case BuiltinThunk:
     case RequestTierUpStub:
+    case UpdateCallRefMetricsStub:
       break;
     default:
       MOZ_CRASH("should use more specific constructor");
@@ -240,6 +282,21 @@ const CodeRange* wasm::LookupInSorted(const CodeRangeVector& codeRanges,
   }
 
   return &codeRanges[match];
+}
+
+bool CallSites::lookup(uint32_t returnAddressOffset,
+                       const InliningContext& inliningContext,
+                       CallSite* callSite) const {
+  size_t lowerBound = 0;
+  size_t upperBound = returnAddressOffsets_.length();
+
+  size_t match;
+  if (BinarySearch(returnAddressOffsets_, lowerBound, upperBound,
+                   returnAddressOffset, &match)) {
+    *callSite = get(match, inliningContext);
+    return true;
+  }
+  return false;
 }
 
 CallIndirectId CallIndirectId::forAsmJSFunc() {
@@ -331,4 +388,71 @@ CalleeDesc CalleeDesc::wasmFuncRef() {
   CalleeDesc c;
   c.which_ = FuncRef;
   return c;
+}
+
+void CompileStats::merge(const CompileStats& other) {
+  MOZ_ASSERT(&other != this);
+  numFuncs += other.numFuncs;
+  bytecodeSize += other.bytecodeSize;
+  inlinedDirectCallCount += other.inlinedDirectCallCount;
+  inlinedCallRefCount += other.inlinedCallRefCount;
+  inlinedDirectCallBytecodeSize += other.inlinedDirectCallBytecodeSize;
+  inlinedCallRefBytecodeSize += other.inlinedCallRefBytecodeSize;
+  numInliningBudgetOverruns += other.numInliningBudgetOverruns;
+  numLargeFunctionBackoffs += other.numLargeFunctionBackoffs;
+}
+
+void CompileAndLinkStats::merge(const CompileAndLinkStats& other) {
+  MOZ_ASSERT(&other != this);
+  CompileStats::merge(other);
+  codeBytesMapped += other.codeBytesMapped;
+  codeBytesUsed += other.codeBytesUsed;
+}
+
+void CompileAndLinkStats::print() const {
+#ifdef JS_JITSPEW
+  // To see the statistics printed here:
+  // * configure with --enable-jitspew or --enable-debug
+  // * run with MOZ_LOG=wasmPerf:3
+  // * this works for both JS builds and full browser builds
+  JS_LOG(wasmPerf, Info, "    %7zu functions compiled", numFuncs);
+  JS_LOG(wasmPerf, Info, "    %7zu bytecode bytes compiled", bytecodeSize);
+  JS_LOG(wasmPerf, Info, "    %7zu direct-calls inlined",
+         inlinedDirectCallCount);
+  JS_LOG(wasmPerf, Info, "    %7zu call_ref-calls inlined",
+         inlinedCallRefCount);
+  JS_LOG(wasmPerf, Info, "    %7zu direct-call bytecodes inlined",
+         inlinedDirectCallBytecodeSize);
+  JS_LOG(wasmPerf, Info, "    %7zu call_ref-call bytecodes inlined",
+         inlinedCallRefBytecodeSize);
+  JS_LOG(wasmPerf, Info, "    %7zu functions overran inlining budget",
+         numInliningBudgetOverruns);
+  JS_LOG(wasmPerf, Info, "    %7zu functions needed large-function backoff",
+         numLargeFunctionBackoffs);
+  JS_LOG(wasmPerf, Info, "    %7zu bytes mmap'd for code storage",
+         codeBytesMapped);
+  JS_LOG(wasmPerf, Info, "    %7zu bytes actually used for code storage",
+         codeBytesUsed);
+
+  size_t inlinedTotalBytecodeSize =
+      inlinedDirectCallBytecodeSize + inlinedCallRefBytecodeSize;
+
+  // This value will be 0.0 if inlining did not cause any code expansion.  A
+  // value of 1.0 means inlining doubled the total amount of bytecode, 2.0
+  // means tripled it, etc.  Take care not to compute 0.0 / 0.0 as that is,
+  // confusingly, -nan.
+  float inliningExpansion =
+      inlinedTotalBytecodeSize == 0
+          ? 0.0
+          : float(inlinedTotalBytecodeSize) / float(bytecodeSize);
+
+  // This is always between 0.0 and 1.0.
+  float codeSpaceUseRatio =
+      codeBytesUsed == 0 ? 0.0 : float(codeBytesUsed) / float(codeBytesMapped);
+
+  JS_LOG(wasmPerf, Info, "     %5.1f%% bytecode expansion caused by inlining",
+         inliningExpansion * 100.0);
+  JS_LOG(wasmPerf, Info, "      %4.1f%% of mapped code space used",
+         codeSpaceUseRatio * 100.0);
+#endif
 }

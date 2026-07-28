@@ -1,21 +1,21 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebGLParent.h"
 
-#include "WebGLChild.h"
-#include "mozilla/layers/TextureClientSharedSurface.h"
-#include "ImageContainer.h"
 #include "HostWebGLContext.h"
+#include "ImageContainer.h"
+#include "WebGLChild.h"
 #include "WebGLMethodDispatcher.h"
+#include "mozilla/layers/SharedSurfacesParent.h"
+#include "mozilla/layers/TextureClientSharedSurface.h"
 
 namespace mozilla::dom {
 
 mozilla::ipc::IPCResult WebGLParent::RecvInitialize(
     const webgl::InitContextDesc& desc, webgl::InitContextResult* const out) {
-  mHost = HostWebGLContext::Create({nullptr, this}, desc, out);
+  mHost = HostWebGLContext::Create(this, desc, out);
 
   if (!mHost) {
     MOZ_ASSERT(!out->error->empty());
@@ -24,8 +24,9 @@ mozilla::ipc::IPCResult WebGLParent::RecvInitialize(
   return IPC_OK();
 }
 
-WebGLParent::WebGLParent(const dom::ContentParentId& aContentId)
-    : mContentId(aContentId) {}
+WebGLParent::WebGLParent(layers::SharedSurfacesHolder* aSharedSurfacesHolder,
+                         const dom::ContentParentId& aContentId)
+    : mSharedSurfacesHolder(aSharedSurfacesHolder), mContentId(aContentId) {}
 
 WebGLParent::~WebGLParent() = default;
 
@@ -145,6 +146,7 @@ IPCResult WebGLParent::GetFrontBufferSnapshot(
     if (maybeSize) {
       const auto& surfSize = *maybeSize;
       const auto byteSize = 4 * surfSize.x * surfSize.y;
+      const auto byteStride = 4 * surfSize.x;
 
       auto shmem = webgl::RaiiShmem::Alloc(aProtocol, byteSize);
       if (!shmem) {
@@ -152,7 +154,7 @@ IPCResult WebGLParent::GetFrontBufferSnapshot(
         return false;
       }
       const auto range = shmem.ByteRange();
-      *ret = {surfSize, Some(shmem.Extract())};
+      *ret = {surfSize, byteStride, Some(shmem.Extract())};
 
       if (!mHost->FrontBufferSnapshotInto(Some(range))) {
         gfxCriticalNote << "WebGLParent::RecvGetFrontBufferSnapshot: "
@@ -408,17 +410,6 @@ IPCResult WebGLParent::RecvGetSamplerParameter(ObjectId id, GLenum pname,
   }
 
   *ret = mHost->GetSamplerParameter(id, pname);
-  return IPC_OK();
-}
-
-IPCResult WebGLParent::RecvGetShaderPrecisionFormat(
-    GLenum shaderType, GLenum precisionType,
-    Maybe<webgl::ShaderPrecisionFormat>* const ret) {
-  if (!mHost) {
-    return IPC_FAIL(this, "HostWebGLContext is not initialized.");
-  }
-
-  *ret = mHost->GetShaderPrecisionFormat(shaderType, precisionType);
   return IPC_OK();
 }
 

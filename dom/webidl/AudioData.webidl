@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,7 +8,7 @@
 
 // [Serializable, Transferable] are implemented without adding attributes here,
 // but directly with {Read,Write}StructuredClone and Transfer/FromTransfered.
-[Exposed=(Window,DedicatedWorker), Pref="dom.media.webcodecs.enabled"]
+[Exposed=(Window,DedicatedWorker), Func="nsRFPService::ExposeWebCodecsAPI"]
 interface AudioData {
   [Throws]
   constructor(AudioDataInit init);
@@ -24,10 +23,7 @@ interface AudioData {
   [Throws]
   unsigned long allocationSize(AudioDataCopyToOptions options);
   [Throws]
-  undefined copyTo(
-      // bug 1696216: Should be `copyTo(AllowSharedBufferSource destination, ...)`
-      ([AllowShared] ArrayBufferView or [AllowShared] ArrayBuffer) destination,
-       AudioDataCopyToOptions options);
+  undefined copyTo(AllowSharedBufferSource destination, AudioDataCopyToOptions options);
   [Throws]
   AudioData clone();
   undefined close();
@@ -39,8 +35,7 @@ dictionary AudioDataInit {
   required [EnforceRange] unsigned long numberOfFrames;
   required [EnforceRange] unsigned long numberOfChannels;
   required [EnforceRange] long long timestamp;  // microseconds
-  // bug 1696216: Should be AllowSharedBufferSource
-  required ([AllowShared] ArrayBufferView or [AllowShared] ArrayBuffer) data;
+  required AllowSharedBufferSource data;
   sequence<ArrayBuffer> transfer = [];
 };
 

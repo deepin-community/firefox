@@ -4,9 +4,9 @@
 
 #include "MFMediaEngineVideoStream.h"
 
-#include "mozilla/layers/DcompSurfaceImage.h"
 #include "MFMediaEngineUtils.h"
 #include "mozilla/StaticPrefs_media.h"
+#include "mozilla/layers/DcompSurfaceImage.h"
 
 namespace mozilla {
 
@@ -25,18 +25,20 @@ using Microsoft::WRL::MakeAndInitialize;
 
 /* static */
 MFMediaEngineVideoStream* MFMediaEngineVideoStream::Create(
-    uint64_t aStreamId, const TrackInfo& aInfo, bool aIsEncrytpedCustomInit,
+    uint64_t aStreamId, const TrackInfo& aInfo, bool aIsEncryptedCustomInit,
     MFMediaSource* aParentSource) {
   MFMediaEngineVideoStream* stream;
   MOZ_ASSERT(aInfo.IsVideo());
   if (FAILED(MakeAndInitialize<MFMediaEngineVideoStream>(
-          &stream, aStreamId, aInfo, aIsEncrytpedCustomInit, aParentSource))) {
+          &stream, aStreamId, aInfo, aIsEncryptedCustomInit, aParentSource))) {
     return nullptr;
   }
   stream->mStreamType =
       GetStreamTypeFromMimeType(aInfo.GetAsVideoInfo()->mMimeType);
   MOZ_ASSERT(StreamTypeIsVideo(stream->mStreamType));
   stream->mHasReceivedInitialCreateDecoderConfig = false;
+  stream->mHasClearLead =
+      aIsEncryptedCustomInit && !aInfo.GetAsVideoInfo()->mCrypto.IsEncrypted();
   stream->SetDCompSurfaceHandle(INVALID_HANDLE_VALUE, gfx::IntSize{});
   return stream;
 }
@@ -44,7 +46,7 @@ MFMediaEngineVideoStream* MFMediaEngineVideoStream::Create(
 void MFMediaEngineVideoStream::SetKnowsCompositor(
     layers::KnowsCompositor* aKnowsCompositor) {
   ComPtr<MFMediaEngineVideoStream> self = this;
-  Unused << mTaskQueue->Dispatch(NS_NewRunnableFunction(
+  (void)mTaskQueue->Dispatch(NS_NewRunnableFunction(
       "MFMediaEngineStream::SetKnowsCompositor",
       [self, knowCompositor = RefPtr<layers::KnowsCompositor>{aKnowsCompositor},
        this]() {
@@ -54,10 +56,19 @@ void MFMediaEngineVideoStream::SetKnowsCompositor(
       }));
 }
 
+void MFMediaEngineVideoStream::SetFrameServerMode() {
+  ComPtr<MFMediaEngineVideoStream> self = this;
+  (void)mTaskQueue->Dispatch(NS_NewRunnableFunction(
+      "MFMediaEngineVideoStream::SetFrameServerMode", [self, this]() {
+        mFrameServerMode = true;
+        LOG("Set frame server mode");
+      }));
+}
+
 void MFMediaEngineVideoStream::SetDCompSurfaceHandle(HANDLE aDCompSurfaceHandle,
                                                      gfx::IntSize aDisplay) {
   ComPtr<MFMediaEngineVideoStream> self = this;
-  Unused << mTaskQueue->Dispatch(NS_NewRunnableFunction(
+  (void)mTaskQueue->Dispatch(NS_NewRunnableFunction(
       "MFMediaEngineStream::SetDCompSurfaceHandle",
       [self, aDCompSurfaceHandle, aDisplay, this]() {
         if (mDCompSurfaceHandle == aDCompSurfaceHandle) {
@@ -83,6 +94,9 @@ HRESULT MFMediaEngineVideoStream::CreateMediaType(const TrackInfo& aInfo,
                                                   IMFMediaType** aMediaType) {
   auto& videoInfo = *aInfo.GetAsVideoInfo();
   mIsEncrypted = videoInfo.mCrypto.IsEncrypted();
+  if (mHasClearLead && mIsEncrypted) {
+    mSwitchedClearToEncrypted = true;
+  }
 
   GUID subType = VideoMimeTypeToMediaFoundationSubtype(videoInfo.mMimeType);
   NS_ENSURE_TRUE(subType != GUID_NULL, MF_E_TOPO_CODEC_NOT_FOUND);
@@ -143,26 +157,7 @@ HRESULT MFMediaEngineVideoStream::CreateMediaType(const TrackInfo& aInfo,
   const auto rotation = ToMFVideoRotationFormat(videoInfo.mRotation);
   RETURN_IF_FAILED(mediaType->SetUINT32(MF_MT_VIDEO_ROTATION, rotation));
 
-  static const auto ToMFVideoTransFunc =
-      [](const Maybe<gfx::YUVColorSpace>& aColorSpace) {
-        using YUVColorSpace = gfx::YUVColorSpace;
-        if (!aColorSpace) {
-          return MFVideoTransFunc_Unknown;
-        }
-        // https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/ne-mfobjects-mfvideotransferfunction
-        switch (*aColorSpace) {
-          case YUVColorSpace::BT601:
-          case YUVColorSpace::BT709:
-            return MFVideoTransFunc_709;
-          case YUVColorSpace::BT2020:
-            return MFVideoTransFunc_2020;
-          case YUVColorSpace::Identity:
-            return MFVideoTransFunc_sRGB;
-          default:
-            return MFVideoTransFunc_Unknown;
-        }
-      };
-  const auto transFunc = ToMFVideoTransFunc(videoInfo.mColorSpace);
+  const auto transFunc = ToMFVideoTransFunc(videoInfo.mTransferFunction);
   RETURN_IF_FAILED(mediaType->SetUINT32(MF_MT_TRANSFER_FUNCTION, transFunc));
 
   static const auto ToMFVideoPrimaries =
@@ -244,9 +239,11 @@ bool MFMediaEngineVideoStream::IsDCompImageReady() {
 RefPtr<MediaDataDecoder::DecodePromise> MFMediaEngineVideoStream::OutputData(
     RefPtr<MediaRawData> aSample) {
   if (IsShutdown()) {
+    mVideoDecodeBeforeDcompPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED,
+                                                  __func__);
     return MediaDataDecoder::DecodePromise::CreateAndReject(
         MediaResult(NS_ERROR_FAILURE,
-                    RESULT_DETAIL("MFMediaEngineStream is shutdown")),
+                    RESULT_DETAIL("MFMediaEngineVideoStream is shutdown")),
         __func__);
   }
   AssertOnTaskQueue();
@@ -269,7 +266,15 @@ RefPtr<MediaDataDecoder::DecodePromise> MFMediaEngineVideoStream::OutputData(
 
 already_AddRefed<MediaData> MFMediaEngineVideoStream::OutputDataInternal() {
   AssertOnTaskQueue();
-  if (mRawDataQueueForGeneratingOutput.GetSize() == 0 || !IsDCompImageReady()) {
+  if (mRawDataQueueForGeneratingOutput.GetSize() == 0) {
+    return nullptr;
+  }
+  if (mFrameServerMode) {
+    RefPtr<MediaRawData> discarded =
+        mRawDataQueueForGeneratingOutput.PopFront();
+    return nullptr;
+  }
+  if (!IsDCompImageReady()) {
     return nullptr;
   }
   RefPtr<MediaRawData> sample = mRawDataQueueForGeneratingOutput.PopFront();
@@ -284,8 +289,26 @@ already_AddRefed<MediaData> MFMediaEngineVideoStream::OutputDataInternal() {
 }
 
 RefPtr<MediaDataDecoder::DecodePromise> MFMediaEngineVideoStream::Drain() {
+  if (IsShutdown()) {
+    mPendingDrainPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED, __func__);
+    mVideoDecodeBeforeDcompPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED,
+                                                  __func__);
+    return MediaDataDecoder::DecodePromise::CreateAndReject(
+        MediaResult(NS_ERROR_FAILURE,
+                    RESULT_DETAIL("MFMediaEngineVideoStream is shutdown")),
+        __func__);
+  }
   AssertOnTaskQueue();
   MediaDataDecoder::DecodedData outputs;
+  if (mFrameServerMode) {
+    mRawDataQueueForGeneratingOutput.Reset();
+    if (!mSampleRequestTokens.empty() &&
+        mRawDataQueueForFeedingEngine.GetSize() == 0) {
+      NotifyEndEvent();
+    }
+    return MediaDataDecoder::DecodePromise::CreateAndResolve(std::move(outputs),
+                                                             __func__);
+  }
   if (!IsDCompImageReady()) {
     LOGV("Waiting for dcomp image for draining");
     // A workaround for a special case where we have sent all input data to the
@@ -304,6 +327,15 @@ RefPtr<MediaDataDecoder::DecodePromise> MFMediaEngineVideoStream::Drain() {
 }
 
 RefPtr<MediaDataDecoder::FlushPromise> MFMediaEngineVideoStream::Flush() {
+  if (IsShutdown()) {
+    mPendingDrainPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED, __func__);
+    mVideoDecodeBeforeDcompPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED,
+                                                  __func__);
+    return MediaDataDecoder::FlushPromise::CreateAndReject(
+        MediaResult(NS_ERROR_FAILURE,
+                    RESULT_DETAIL("MFMediaEngineVideoStream is shutdown")),
+        __func__);
+  }
   AssertOnTaskQueue();
   auto promise = MFMediaEngineStream::Flush();
   mPendingDrainPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED, __func__);
@@ -357,7 +389,7 @@ MediaDataDecoder::ConversionRequired MFMediaEngineVideoStream::NeedsConversion()
 void MFMediaEngineVideoStream::SetConfig(const TrackInfo& aConfig) {
   MOZ_ASSERT(aConfig.IsVideo());
   ComPtr<MFMediaEngineStream> self = this;
-  Unused << mTaskQueue->Dispatch(
+  (void)mTaskQueue->Dispatch(
       NS_NewRunnableFunction("MFMediaEngineStream::SetConfig",
                              [self, info = *aConfig.GetAsVideoInfo(), this]() {
                                if (mHasReceivedInitialCreateDecoderConfig) {
@@ -399,6 +431,8 @@ void MFMediaEngineVideoStream::ShutdownCleanUpOnTaskQueue() {
   mPendingDrainPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED, __func__);
   mVideoDecodeBeforeDcompPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED,
                                                 __func__);
+  // mDCompSurfaceHandle is owned by DcompSurfaceTexture, which closes it in
+  // its destructor. Do not call CloseHandle here.
 }
 
 void MFMediaEngineVideoStream::SendRequestSampleEvent(bool aIsEnough) {
@@ -426,11 +460,14 @@ bool MFMediaEngineVideoStream::IsEnded() const {
 }
 
 bool MFMediaEngineVideoStream::IsEncrypted() const {
-  return mIsEncrypted || mIsEncrytpedCustomInit;
+  if (mHasClearLead) {
+    return mSwitchedClearToEncrypted;
+  }
+  return mIsEncrypted || mIsEncryptedCustomInit;
 }
 
 bool MFMediaEngineVideoStream::ShouldDelayVideoDecodeBeforeDcompReady() {
-  return HasEnoughRawData() && !IsDCompImageReady();
+  return !mFrameServerMode && HasEnoughRawData() && !IsDCompImageReady();
 }
 
 nsCString MFMediaEngineVideoStream::GetCodecName() const {

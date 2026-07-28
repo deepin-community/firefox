@@ -15,6 +15,8 @@ about-logging-set-log-file = Imposte file di regjistri
 about-logging-set-log-modules = Imposte modui di regjistri
 about-logging-start-logging = Comence regjistri
 about-logging-stop-logging = Ferme regjistri
+about-logging-copy-as-url = Copie lis impostazions atuâls tant che URL
+about-logging-url-copied = Impostazions di regjistrazion copiadis intes notis tant che URL prestabilît
 about-logging-buttons-disabled = Regjistrazion configurade midiant variabilis di ambient, configurazion dinamiche no disponibile.
 about-logging-some-elements-disabled = Regjistrazion configurade midiant URL, cualchi opzion di configurazion no je disponibile
 about-logging-info = Informazions:
@@ -27,6 +29,9 @@ about-logging-no-log-modules = Nissun
 about-logging-no-log-file = Nissun
 about-logging-logging-preset-selector-text = Pre-configurazion di regjistrazion:
 about-logging-with-profiler-stacks-checkbox = Ative analisi dal stack pai messaçs di regjistri
+about-logging-with-javascript-tracing-checkbox = Ative il regjistri complet dai events JavaScript
+about-logging-menu =
+    .title = Opzions avanzadis
 
 ## Logging presets
 
@@ -44,6 +49,12 @@ about-logging-preset-media-playback-label = Riproduzion multimediâl
 about-logging-preset-media-playback-description = Modui di regjistrazion par diagnosticâ i problemis di riproduzion multimediâl (no relatîfs a video-conferencis)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Modui di regjistrazion par diagnosticâ lis clamadis WebRTC
+about-logging-preset-webcodecs-label = WebCodecs
+about-logging-preset-webcodecs-description = Modui di regjistrazion par fâ diagnosis di problemis cun decodificadôrs e codificadôrs audio/video, e decodificadôrs di imagjins WebCodecs
+about-logging-preset-ml-label = Machine Learning
+about-logging-preset-ml-description = Modui di regjistrazion par fâ la diagnosi dai problemis cul machine learning
+about-logging-preset-web-compat-label = Compatibilitât web
+about-logging-preset-web-compat-description = Modui di regjistrazion par diagnosticâ problemis di compatibilitât web
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Modui di regjistrazion par diagnosticâ i problemis cun WebGPU
 about-logging-preset-gfx-label = Grafiche
@@ -56,9 +67,7 @@ about-logging-preset-custom-description = Modui di regjistrazion selezionâts a 
 # Error handling
 about-logging-error = Erôr:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Valôr no valit “{ $v }“ pe clâf “{ $k }“
 about-logging-unknown-logging-preset = Pre-configurazion di regjistrazion “{ $v }“ no cognossude
@@ -66,4 +75,53 @@ about-logging-unknown-profiler-preset = Pre-configurazion dal profiladôr “{ $
 about-logging-unknown-option = Opzion di about:logging “{ $k }“ no cognossude
 about-logging-configuration-url-ignored = URL di configurazion ignorât
 about-logging-file-and-profiler-override = Impussibil sfuarçâ il file di jessude e tal stes timp passâ parsore aes opzions dal profiladôr
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-unknown-error = Al è capitât un erôr: { $errorText }
 about-logging-configured-via-url = Opzion configurade midiant URL
+
+## The upload interface is shown only with the preference toolkit.aboutLogging.uploadProfileToCloud
+## set to true. It is false by default, except on Android.
+
+about-logging-upload-question = I dâts dal profîl a son stâts cjapâts sù. Desideristu salvâju o cjariâju?
+about-logging-save-button = Salve
+about-logging-upload-button = Cjame
+# Variables:
+#   $path (string) - The path where the profile can be found.
+about-logging-saved = Salvât in { $path }
+# Variables:
+#   $percent (number) - The upload completion progress, to be displayed as a percentage. This is a value between 0 and 1.
+about-logging-uploading-progress = Daûr a cjariâ in rêt i dâts dal profîl: { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+# Variables:
+#   $url (string) - The URL where the profile can be found
+about-logging-uploaded = Cjariât su <a data-l10n-name="uploaded-message-url">{ $url }</a>
+about-logging-share-uploaded-url = <img data-l10n-name="share-image"/> Condivît URL
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-upload-error = Al è capitât un erôr intant che al vignive cjariât in rêt il profîl: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-profile-storage-error = Al è capitât un erôr intant che al vignive memorizât il profîl cjariât in rêt: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-save-error = Al è capitât un erôr intant che al vignive salvât il file: { $errorText }
+
+## Uploaded Profiles section
+
+# This string is used as the default name for performance profiles when they are
+# uploaded from about:logging and saved to the local database. The generated
+# name will appear in the "Uploaded Profiles" section list, allowing users to
+# identify when each profile was captured.
+# Variables:
+#   $date (date) - The date and time when the profile was uploaded
+about-logging-uploaded-profile-name = Profîl { DATETIME($date, dateStyle: "short", timeStyle: "medium") }
+about-logging-uploaded-profiles-title = Profîi cjariâts in rêt
+about-logging-no-uploaded-profiles = Nol è stât ancjemò cjariât in rêt nissun profîl.
+about-logging-delete-uploaded-profile = Elimine
+about-logging-view-uploaded-profile = Visualize profîl
+about-logging-delete-profile-confirm-title = Elimine profîl
+# Confirmation message shown when deleting an uploaded profile.
+# Variables:
+#   $profileName (string) - The name of the profile being deleted.
+about-logging-delete-profile-confirm = Desideristu pardabon eliminâ il profîl “{ $profileName }”? Nol è pussibil tornâ indaûr di cheste operazion.
+about-logging-deleting-profile = Daûr a eliminâ…

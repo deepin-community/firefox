@@ -13,10 +13,12 @@ please consult
 [the FOG IPC documentation](ipc.md).
 
 When adding a new metric type, the main IPC considerations are:
-* Which operations are forbidden because they are not commutative?
+* Which operations are forbidden by default because they are not commutative?
     * Most `set`-style operations cannot be reconciled sensibly across multiple processes.
-* If there are non-forbidden operations,
-what partial representation will this metric have in non-main processes?
+    * However, through use of the `permit_non_commutative_operations_over_ipc`
+      metric metadata property, these "forbidden by default"
+      operations can still be used.
+* What partial representation will this metric have in non-main processes?
 Put another way, what shape of storage will this take up in the
 [IPC Payload](https://hg.mozilla.org/mozilla-central/file/tip/toolkit/components/glean/api/src/ipc.rs)?
     * For example, Counters can aggregate all partial counts together to a single
@@ -32,10 +34,13 @@ To implement IPC support in a metric type,
 we split FOG's Rust implementation of the metric into three pieces:
 1. An umbrella `enum` with the name `MetricTypeMetric`.
     * It has a `Child` and a `Parent` variant.
+        * If there are non-commutative operations that need to be supported only occasionally,
+          you will also need an `UnorderedChild` variant.
+          It will be constructed via a `with_unordered_ipc` constructor called by Rust codegen.
     * It is IPC-aware and is responsible for
         * If on a non-parent-process,
-        either storing partial representations in the IPC Payload,
-        or logging errors if forbidden non-test APIs are called.
+        storing partial representations in the IPC Payload,
+        and logging errors if forbidden non-test APIs are called.
         (Or panicking if test APIs are called.)
         * If on the parent process, dispatching API calls on its inner Rust Language Binding metric.
 2. The parent-process implementation is supplied by
@@ -59,6 +64,9 @@ Should it be mirrored?
 If so, add an appropriate Telemetry probe for it to mirror to,
 documenting the compatibility in
 [the GIFFT docs](../user/gifft.md).
+Also inform {searchfox}`toolkit/components/glean/build_scripts/glean_parser_ext/run_glean_parser.py`
+that your new type is mirrorable by placing its name in the part of `GIFFT_TYPES`
+that contains the mirrored probe type (Event, Histogram, Scalar).
 
 ### GIFFT Tests
 
@@ -74,7 +82,7 @@ Pings also hold state to support `testBeforeNextSubmit()`.
 If your new metric type requires state in C++,
 the current state-of-the-art is a `StaticDataMutex`-locked `UniquePtr` to a `nsTHashTable`.
 Access to the inner map is guarded by the lock and is controlled and lazily-instantiated through a single access function.
-[See Ping's `GetCallbackMapLock()`](https://searchfox.org/mozilla-central/source/toolkit/components/glean/bindings/private/Ping.cpp)
+[See Ping's `GetCallbackMapLock()`](https://searchfox.org/firefox-main/source/toolkit/components/glean/bindings/private/Ping.cpp)
 for example.
 
 It is important to clear this state to avoid leaks.
@@ -82,7 +90,7 @@ It is important to clear this state to avoid leaks.
 However, instrumentation may call metrics APIs at any time.
 
 Therefore, GIFFT explicitly stops supporting these state-requiring operations after the
-[`AppShutdownTelemetry` shutdown phase](https://searchfox.org/mozilla-central/source/xpcom/base/ShutdownPhase.h).
+[`AppShutdownTelemetry` shutdown phase](https://searchfox.org/firefox-main/source/xpcom/base/ShutdownPhase.h).
 This is because during the next phase (`XPCOMWillShutdown`) we clear the state.
 
 ## Rust
@@ -110,7 +118,7 @@ To support IPC and the MLA FFI (see below)
 we identify metric instances by MetricId and store them in maps in
 [the `__glean_metric_maps` mod of `metrics.rs`](https://hg.mozilla.org/mozilla-central/toolkit/components/glean/api/src/metrics.rs).
 This work is done by the `rust.py` and `rust(_pings).jinja2` extensions to `glean_parser` found
-[in the `build_scripts/glean_parser_ext/` folder](https://searchfox.org/mozilla-central/source/toolkit/components/glean/build_scripts/glean_parser_ext).
+[in the `build_scripts/glean_parser_ext/` folder](https://searchfox.org/firefox-main/source/toolkit/components/glean/build_scripts/glean_parser_ext).
 
 You shouldn't have to edit these files for new metric types,
 as the original modifications to `glean_parser` for this type should already be generating correct code.
@@ -166,7 +174,7 @@ Each metric type has six pieces you'll need to cover:
     - The naming style for methods here is `lowerCamelCase`.
     - If the metric method is a reserved word, prepend it with a `_`.
     - Web IDL bindings use
-      [their own mapping for types](/dom/webIdlBindings/index.md).
+      [their own mapping for types](/dom/webIdlBindings/index).
       If you choose ones that most closely resemble the C++ types,
       you'll make your life easier.
 - Add a new mapping in `dom/bindings/Bindings.conf`:
@@ -187,7 +195,7 @@ Each metric type has six pieces you'll need to cover:
     - In the definition of `GleanX`, member identifiers are back to
       `CamelCase`.
     - Test-only methods can throw `DataError` on failure.
-    - Review the [Web IDL Bindings documentation](/dom/webIdlBindings/index.html)
+    - Review the [Web IDL Bindings documentation](/dom/webIdlBindings/index)
       for help with optional, nullable, and non-primitive types.
 
 ### 6. Tests
@@ -280,6 +288,9 @@ There are five pieces to this:
   `Labeled<YourSubMetric, E>::{EnumGet|Get}` and `Labeled<YourSubMetric, DynamicLabel>` to
   {searchfox}`toolkit/components/glean/bindings/private/Labeled.h`.
   This will ensure C++ consumers can fetch or create sub metric instances.
+- For GIFFT, ensure the submetric type (e.g. `quantity` for `labeled_quantity`)
+  is aware that its mirrors might be submetric mirrors
+  (ie, check `IsSubmetricId(mId)` and, if so, look at the labeled mirror map).
 
 #### JS
 

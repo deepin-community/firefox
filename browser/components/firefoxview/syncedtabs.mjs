@@ -4,6 +4,7 @@
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   SyncedTabsController: "resource:///modules/SyncedTabsController.sys.mjs",
 });
 
@@ -22,6 +23,10 @@ import {
   MAX_TABS_FOR_RECENT_BROWSING,
   navigateToLink,
 } from "./helpers.mjs";
+// eslint-disable-next-line import/no-unassigned-import
+import "chrome://browser/content/firefoxview/syncedtabs-tab-list.mjs";
+// eslint-disable-next-line import/no-unassigned-import
+import "chrome://global/content/elements/moz-button.mjs";
 
 const UI_OPEN_STATE = "browser.tabs.firefox-view.ui-state.tab-pickup.open";
 
@@ -29,22 +34,10 @@ class SyncedTabsInView extends ViewPage {
   controller = new lazy.SyncedTabsController(this, {
     contextMenu: true,
     pairDeviceCallback: () =>
-      Services.telemetry.recordEvent(
-        "firefoxview_next",
-        "fxa_mobile",
-        "sync",
-        null,
-        {
-          has_devices: TabsSetupFlowManager.secondaryDeviceConnected.toString(),
-        }
-      ),
-    signupCallback: () =>
-      Services.telemetry.recordEvent(
-        "firefoxview_next",
-        "fxa_continue",
-        "sync",
-        null
-      ),
+      Glean.firefoxviewNext.fxaMobileSync.record({
+        has_devices: TabsSetupFlowManager.secondaryDeviceConnected,
+      }),
+    signupCallback: () => Glean.firefoxviewNext.fxaContinueSync.record(),
   });
 
   constructor() {
@@ -72,8 +65,8 @@ class SyncedTabsInView extends ViewPage {
   static queries = {
     cardEls: { all: "card-container" },
     emptyState: "fxview-empty-state",
-    searchTextbox: "fxview-search-textbox",
-    tabLists: { all: "fxview-tab-list" },
+    searchTextbox: "moz-input-search",
+    tabLists: { all: "syncedtabs-tab-list" },
   };
 
   start() {
@@ -87,7 +80,7 @@ class SyncedTabsInView extends ViewPage {
 
     if (this.recentBrowsing) {
       this.recentBrowsingElement.addEventListener(
-        "fxview-search-textbox-query",
+        "MozInputSearch:search",
         this.onSearchQuery
       );
     }
@@ -104,7 +97,7 @@ class SyncedTabsInView extends ViewPage {
 
     if (this.recentBrowsing) {
       this.recentBrowsingElement.removeEventListener(
-        "fxview-search-textbox-query",
+        "MozInputSearch:search",
         this.onSearchQuery
       );
     }
@@ -144,9 +137,7 @@ class SyncedTabsInView extends ViewPage {
     buttonLabel,
     descriptionArray,
     descriptionLink,
-    error,
     header,
-    headerIconUrl,
     mainImageUrl,
   }) {
     return html`
@@ -157,19 +148,18 @@ class SyncedTabsInView extends ViewPage {
         class="empty-state synced-tabs error"
         ?isSelectedTab=${this.selectedTab}
         ?isInnerCard=${this.recentBrowsing}
-        mainImageUrl="${ifDefined(mainImageUrl)}"
-        ?errorGrayscale=${error}
-        headerIconUrl="${ifDefined(headerIconUrl)}"
+        mainImageUrl=${ifDefined(mainImageUrl)}
         id="empty-container"
       >
-        <button
+        <moz-button
           class="primary"
+          type="primary"
           slot="primary-action"
           ?hidden=${!buttonLabel}
-          data-l10n-id="${ifDefined(buttonLabel)}"
-          data-action="${action}"
+          data-l10n-id=${ifDefined(buttonLabel)}
+          data-action=${action}
           @click=${e => this.controller.handleEvent(e)}
-        ></button>
+        ></moz-button>
       </fxview-empty-state>
     `;
   }
@@ -177,24 +167,14 @@ class SyncedTabsInView extends ViewPage {
   onOpenLink(event) {
     navigateToLink(event);
 
-    Services.telemetry.recordEvent(
-      "firefoxview_next",
-      "synced_tabs",
-      "tabs",
-      null,
-      {
-        page: this.recentBrowsing ? "recentbrowsing" : "syncedtabs",
-      }
-    );
+    Glean.firefoxviewNext.syncedTabsTabs.record({
+      page: this.recentBrowsing ? "recentbrowsing" : "syncedtabs",
+    });
 
     if (this.controller.searchQuery) {
-      const searchesHistogram = Services.telemetry.getKeyedHistogramById(
-        "FIREFOX_VIEW_CUMULATIVE_SEARCHES"
-      );
-      searchesHistogram.add(
-        this.recentBrowsing ? "recentbrowsing" : "syncedtabs",
-        this.cumulativeSearches
-      );
+      Glean.firefoxview.cumulativeSearches[
+        this.recentBrowsing ? "recentbrowsing" : "syncedtabs"
+      ].accumulateSingleSample(this.cumulativeSearches);
       this.cumulativeSearches = 0;
     }
   }
@@ -202,6 +182,18 @@ class SyncedTabsInView extends ViewPage {
   onContextMenu(e) {
     this.triggerNode = e.originalTarget;
     e.target.querySelector("panel-list").toggle(e.detail.originalEvent);
+  }
+
+  onCloseTab(e) {
+    const { url, fxaDeviceId, tertiaryActionClass } = e.originalTarget;
+    if (tertiaryActionClass === "dismiss-button") {
+      // Set new pending close tab
+      this.controller.requestCloseRemoteTab(fxaDeviceId, url);
+    } else if (tertiaryActionClass === "undo-button") {
+      // User wants to undo
+      this.controller.removePendingTabToClose(fxaDeviceId, url);
+    }
+    this.requestUpdate();
   }
 
   panelListTemplate() {
@@ -216,6 +208,7 @@ class SyncedTabsInView extends ViewPage {
           @click=${this.openInNewPrivateWindow}
           data-l10n-id="fxviewtabrow-open-in-private-window"
           data-l10n-attrs="accesskey"
+          ?hidden=${!lazy.PrivateBrowsingUtils.enabled}
         ></panel-item>
         <hr />
         <panel-item
@@ -264,6 +257,11 @@ class SyncedTabsInView extends ViewPage {
   }
 
   onSearchQuery(e) {
+    if (!this.recentBrowsing) {
+      Glean.firefoxviewNext.searchInitiatedSearch.record({
+        page: "syncedtabs",
+      });
+    }
     this.controller.searchQuery = e.detail.query;
     this.cumulativeSearches = e.detail.query ? this.cumulativeSearches + 1 : 0;
     this.showAll = false;
@@ -277,19 +275,19 @@ class SyncedTabsInView extends ViewPage {
         <span class="icon ${deviceType}" role="presentation"></span>
         ${deviceName}
       </h3>
-      <fxview-tab-list
+      <syncedtabs-tab-list
         slot="main"
-        secondaryActionClass="options-button"
-        hasPopup="menu"
+        .hasPopup=${"menu"}
         .tabItems=${ifDefined(tabItems)}
         .searchQuery=${this.controller.searchQuery}
-        maxTabsLength=${this.showAll ? -1 : this.maxTabsLength}
+        .maxTabsLength=${this.showAll ? -1 : this.maxTabsLength}
         @fxview-tab-list-primary-action=${this.onOpenLink}
         @fxview-tab-list-secondary-action=${this.onContextMenu}
+        @fxview-tab-list-tertiary-action=${this.onCloseTab}
         secondaryActionClass="options-button"
       >
         ${this.panelListTemplate()}
-      </fxview-tab-list>`;
+      </syncedtabs-tab-list>`;
   }
 
   generateTabList() {
@@ -314,16 +312,18 @@ class SyncedTabsInView extends ViewPage {
             </card-container>`;
         renderArray.push(template);
         if (this.isShowAllLinkVisible(tabItems)) {
-          renderArray.push(html` <div class="show-all-link-container">
-            <div
-              class="show-all-link"
-              @click=${this.enableShowAll}
-              @keydown=${this.enableShowAll}
-              data-l10n-id="firefoxview-show-all"
-              tabindex="0"
-              role="link"
-            ></div>
-          </div>`);
+          renderArray.push(
+            html` <div class="show-all-link-container">
+              <div
+                class="show-all-link"
+                @click=${this.enableShowAll}
+                @keydown=${this.enableShowAll}
+                data-l10n-id="firefoxview-show-all"
+                tabindex="0"
+                role="link"
+              ></div>
+            </div>`
+          );
         }
       } else {
         // Check renderInfo[id].tabs.length to determine whether to display an
@@ -359,15 +359,9 @@ class SyncedTabsInView extends ViewPage {
     ) {
       event.preventDefault();
       this.showAll = true;
-      Services.telemetry.recordEvent(
-        "firefoxview_next",
-        "search_show_all",
-        "showallbutton",
-        null,
-        {
-          section: "syncedtabs",
-        }
-      );
+      Glean.firefoxviewNext.searchShowAllShowallbutton.record({
+        section: "syncedtabs",
+      });
     }
   }
 
@@ -384,53 +378,48 @@ class SyncedTabsInView extends ViewPage {
       Services.prefs.getBoolPref(UI_OPEN_STATE, true);
 
     let renderArray = [];
-    renderArray.push(html` <link
-      rel="stylesheet"
-      href="chrome://browser/content/firefoxview/view-syncedtabs.css"
-    />`);
-    renderArray.push(html` <link
-      rel="stylesheet"
-      href="chrome://browser/content/firefoxview/firefoxview.css"
-    />`);
+    renderArray.push(
+      html` <link
+        rel="stylesheet"
+        href="chrome://browser/content/firefoxview/view-syncedtabs.css"
+      />`
+    );
+    renderArray.push(
+      html` <link
+        rel="stylesheet"
+        href="chrome://browser/content/firefoxview/firefoxview.css"
+      />`
+    );
 
     if (!this.recentBrowsing) {
-      renderArray.push(html`<div class="sticky-container bottom-fade">
-        <h2
-          class="page-header"
-          data-l10n-id="firefoxview-synced-tabs-header"
-        ></h2>
-        <div class="syncedtabs-header">
-          <div>
-            <fxview-search-textbox
-              data-l10n-id="firefoxview-search-text-box-syncedtabs"
-              data-l10n-attrs="placeholder"
-              @fxview-search-textbox-query=${this.onSearchQuery}
-              .size=${this.searchTextboxSize}
-              pageName=${this.recentBrowsing ? "recentbrowsing" : "syncedtabs"}
-            ></fxview-search-textbox>
-          </div>
-          ${when(
-            this.controller.currentSetupStateIndex === 4,
-            () => html`
-              <button
-                class="small-button"
-                data-action="add-device"
-                @click=${e => this.controller.handleEvent(e)}
-              >
-                <img
-                  class="icon"
-                  role="presentation"
-                  src="chrome://global/skin/icons/plus.svg"
-                  alt="plus sign"
-                /><span
+      renderArray.push(
+        html`<div class="sticky-container bottom-fade">
+          <h2
+            class="page-header"
+            data-l10n-id="firefoxview-synced-tabs-header"
+          ></h2>
+          <div class="syncedtabs-header">
+            <div>
+              <moz-input-search
+                data-l10n-id="firefoxview-search-text-box-tabs"
+                data-l10n-attrs="placeholder"
+                @MozInputSearch:search=${this.onSearchQuery}
+              ></moz-input-search>
+            </div>
+            ${when(
+              this.controller.currentSetupStateIndex === 4,
+              () => html`
+                <moz-button
+                  iconSrc="chrome://global/skin/icons/plus.svg"
                   data-l10n-id="firefoxview-syncedtabs-connect-another-device"
                   data-action="add-device"
-                ></span>
-              </button>
-            `
-          )}
-        </div>
-      </div>`);
+                  @click=${e => this.controller.handleEvent(e)}
+                ></moz-button>
+              `
+            )}
+          </div>
+        </div>`
+      );
     }
 
     if (this.recentBrowsing) {

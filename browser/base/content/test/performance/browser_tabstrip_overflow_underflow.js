@@ -33,12 +33,20 @@ add_task(async function () {
   gReduceMotionOverride = false;
 
   await ensureNoPreloadedBrowser();
+  await disableFxaBadge();
+  await ensureSearchIconVisible();
 
   // The test starts on about:blank and opens an about:blank
   // tab which triggers opening the toolbar since
   // ensureNoPreloadedBrowser sets AboutNewTab.newTabURL to about:blank.
+  // Disable tab hover previews to avoid asynchronous reflows. On Windows when
+  // running standalone, mouse events on tabs during creation can trigger hover
+  // preview activation, causing a reflow during the performance measurement.
   await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.bookmarks.visibility", "never"]],
+    set: [
+      ["browser.toolbars.bookmarks.visibility", "never"],
+      ["browser.tabs.hoverPreview.enabled", false],
+    ],
   });
 
   const TAB_COUNT_FOR_OVERFLOW = computeMaxTabCount();
@@ -46,7 +54,6 @@ add_task(async function () {
   await createTabs(TAB_COUNT_FOR_OVERFLOW);
 
   gURLBar.focus();
-  await disableFxaBadge();
 
   let tabStripRect =
     gBrowser.tabContainer.arrowScrollbox.getBoundingClientRect();
@@ -82,7 +89,8 @@ add_task(async function () {
         condition: r =>
           // In the content area
           r.y1 >=
-          document.getElementById("appcontent").getBoundingClientRect().top,
+          document.getElementById("tabbrowser-tabbox").getBoundingClientRect()
+            .top,
       },
     ],
   };
@@ -106,7 +114,7 @@ add_task(async function () {
   );
 
   Assert.ok(
-    gBrowser.tabContainer.hasAttribute("overflow"),
+    gBrowser.tabContainer.overflowing,
     "Tabs should now be overflowed."
   );
 
@@ -143,8 +151,9 @@ add_task(async function () {
 
   // First, we'll check that the first tab is actually scrolled
   // at least partially out of view.
-  Assert.ok(
-    arrowScrollbox.scrollPosition > 0,
+  Assert.greater(
+    arrowScrollbox.scrollPosition,
+    0,
     "First tab should be partially scrolled out of view."
   );
 
@@ -167,15 +176,15 @@ add_task(async function () {
   BrowserTestUtils.removeTab(lastTab);
 
   Assert.ok(
-    gBrowser.tabContainer.hasAttribute("overflow"),
+    gBrowser.tabContainer.overflowing,
     "Tabs should still be overflowed."
   );
 
   // Depending on the size of the window, it might take one or more tab
   // removals to put the tab strip out of the overflow state, so we'll just
   // keep testing removals until that occurs.
-  while (gBrowser.tabContainer.hasAttribute("overflow")) {
-    lastTab = gBrowser.tabs[gBrowser.tabs.length - 1];
+  while (gBrowser.tabContainer.overflowing) {
+    lastTab = gBrowser.tabs.at(-1);
     if (gBrowser.selectedTab !== lastTab) {
       await BrowserTestUtils.switchTab(gBrowser, lastTab);
     }

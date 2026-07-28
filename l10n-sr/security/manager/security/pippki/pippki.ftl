@@ -48,15 +48,17 @@ download-cert-view-cert =
     .label = Преглед
 download-cert-view-text = Испитај сертификат сертификационог тела
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
     .title = Захтев за идентификацију корисника
 client-auth-site-description = Овај веб сајт је тражио да се идентификујете помоћу сертификата:
 client-auth-choose-cert = Изаберите сертификат који ће служити за идентификацију:
+client-auth-send-no-certificate =
+    .label = Не шаљи сертификат
+# Variables:
+# $hostname (String) - The domain name of the site requesting the client authentication certificate
+client-auth-site-identification = „{ $hostname }“ захтева да се идентификујете помоћу сертификата:
 client-auth-cert-details = Детаљи о изабраном сертификату:
 # Variables:
 # $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
@@ -80,8 +82,13 @@ client-auth-cert-details-issued-by = Издао: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Складишти се на: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Запамти ову одлуку
+client-auth-cert-remember-label = Запамти ову одлуку:
+client-auth-cert-remember-never =
+    .label = Једном
+client-auth-cert-remember-always =
+    .label = Трајно
+client-auth-cert-remember-temporarily =
+    .label = За ову сесију
 
 ## Set password (p12) dialog
 
@@ -94,8 +101,16 @@ set-password-repeat-backup-pw =
     .value = Резервна лозинка за сертификат (опет):
 set-password-reminder = Важно: ако заборавите лозинку за резервну лозинку сертификата, нећете моћи да касније вратите сертификат. Лозинку сачувајте на безбедно место.
 
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Заштићена идентификација
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Идентификујте се на безбедносном уређају ({ $tokenName }). Начин на који то радите зависи од уређаја (на пример, коришћење читача отиска прста или унос кода помоћу тастатуре).
+
 ## Protected authentication alert
 
 # Variables:
 # $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
-protected-auth-alert = Потврдите аутентичност токена “{ $tokenName }”. Од токена зависи како ћете то да урадите (на пример, коришћењем скенера отиска прста или уносом кода помоћу тастатуре).
+protected-auth-alert = Потврдите аутентичност жетона “{ $tokenName }”. Од жетона зависи како ћете то да урадите (на пример, коришћењем скенера отиска прста или уносом кода помоћу тастатуре).

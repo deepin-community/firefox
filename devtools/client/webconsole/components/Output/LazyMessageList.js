@@ -34,7 +34,7 @@ const {
   Component,
   createElement,
   createRef,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 
 loader.lazyRequireGetter(
   this,
@@ -76,6 +76,15 @@ class LazyMessageList extends Component {
       }),
     };
   }
+
+  #initialized;
+  #topBufferRef;
+  #bottomBufferRef;
+  #viewportHeight;
+  #startIndex;
+  #resizeObserver;
+  #cachedHeights;
+  #scrollHandlerBinding;
 
   constructor(props) {
     super(props);
@@ -154,15 +163,6 @@ class LazyMessageList extends Component {
     this.#removeListeners();
   }
 
-  #initialized;
-  #topBufferRef;
-  #bottomBufferRef;
-  #viewportHeight;
-  #startIndex;
-  #resizeObserver;
-  #cachedHeights;
-  #scrollHandlerBinding;
-
   get #overdrawHeight() {
     return this.props.scrollOverdrawCount * this.props.itemDefaultHeight;
   }
@@ -194,7 +194,7 @@ class LazyMessageList extends Component {
    * @param Number deltaPx
    *        The difference in pixels between where we want to be and
    *        where we are.
-   * @return {Number} The new computed start index.
+   * @return {number} The new computed start index.
    */
   #increaseStartIndex(startIndex, deltaPx) {
     for (let i = startIndex + 1; i < this.props.items.length; i++) {
@@ -217,7 +217,7 @@ class LazyMessageList extends Component {
    * @param Number deltaPx
    *        The difference in pixels between where we want to be and
    *        where we are.
-   * @return {Number} The new computed start index.
+   * @return {number} The new computed start index.
    */
   #decreaseStartIndex(startIndex, diff) {
     for (let i = startIndex - 1; i >= 0; i--) {

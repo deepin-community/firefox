@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_serviceworkerevents_h__
-#define mozilla_dom_serviceworkerevents_h__
+#ifndef mozilla_dom_serviceworkerevents_h_
+#define mozilla_dom_serviceworkerevents_h_
 
 #include "mozilla/Attributes.h"
 #include "mozilla/dom/Event.h"
@@ -15,10 +13,10 @@
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/Response.h"
+#include "mozilla/dom/ServiceWorkerUtils.h"
 #include "mozilla/dom/WorkerCommon.h"
-
-#include "nsProxyRelease.h"
 #include "nsContentUtils.h"
+#include "nsProxyRelease.h"
 
 class nsIInterceptedChannel;
 
@@ -33,9 +31,6 @@ class Request;
 class ResponseOrPromise;
 class ServiceWorker;
 class ServiceWorkerRegistrationInfo;
-
-// Defined in ServiceWorker.cpp
-bool ServiceWorkerVisible(JSContext* aCx, JSObject* aObj);
 
 class CancelChannelRunnable final : public Runnable {
   nsMainThreadPtrHandle<nsIInterceptedChannel> mChannel;
@@ -205,7 +200,7 @@ class PushMessageData final : public nsISupports, public nsWrapperCache {
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;
 
-  nsIGlobalObject* GetParentObject() const { return mOwner; }
+  nsIGlobalObject* GetParentObject() const { return mGlobal; }
 
   void Json(JSContext* cx, JS::MutableHandle<JS::Value> aRetval,
             ErrorResult& aRv);
@@ -216,16 +211,17 @@ class PushMessageData final : public nsISupports, public nsWrapperCache {
   void Bytes(JSContext* cx, JS::MutableHandle<JSObject*> aRetval,
              ErrorResult& aRv);
 
-  PushMessageData(nsIGlobalObject* aOwner, nsTArray<uint8_t>&& aBytes);
+  PushMessageData(nsIGlobalObject* aGlobal, nsTArray<uint8_t>&& aBytes);
 
  private:
-  nsCOMPtr<nsIGlobalObject> mOwner;
+  nsCOMPtr<nsIGlobalObject> mGlobal;
   nsTArray<uint8_t> mBytes;
   nsString mDecodedText;
   ~PushMessageData();
 
   nsresult EnsureDecodedText();
   uint8_t* GetContentsCopy();
+  void SetUseCounterIfDeclarative(JSContext* aCx);
 };
 
 class PushEvent final : public ExtendableEvent {
@@ -306,4 +302,4 @@ class ExtendableMessageEvent final : public ExtendableEvent {
 
 }  // namespace mozilla::dom
 
-#endif /* mozilla_dom_serviceworkerevents_h__ */
+#endif /* mozilla_dom_serviceworkerevents_h_ */

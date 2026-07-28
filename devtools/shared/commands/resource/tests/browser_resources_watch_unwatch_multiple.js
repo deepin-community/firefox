@@ -9,9 +9,8 @@ add_task(async function () {
   const TEST_URL = "data:text/html;charset=utf-8,<!DOCTYPE html>foo";
   const tab = await addTab(TEST_URL);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   let resources = [];
   const onAvailable = _resources => {
@@ -40,7 +39,7 @@ add_task(async function () {
   watchedResources.length = 0;
 
   info("Trigger an error in the page");
-  await ContentTask.spawn(tab.linkedBrowser, [], function frameScript() {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], function frameScript() {
     const document = content.document;
     const scriptEl = document.createElement("script");
     scriptEl.textContent = `document.unknownFunction()`;

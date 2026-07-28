@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -151,12 +149,10 @@
 
 #include "base/process_util.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/AutoRestore.h"
 #include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/CycleCollectedJSRuntime.h"
 #include "mozilla/CycleCollectorStats.h"
-#include "mozilla/DebugOnly.h"
 #include "mozilla/HashFunctions.h"
 #include "mozilla/HashTable.h"
 #include "mozilla/HoldDropJSObjects.h"
@@ -167,6 +163,7 @@
 
 #include <utility>
 
+#include "js/friend/CycleCollector.h"
 #include "js/SliceBudget.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/Likely.h"
@@ -177,9 +174,10 @@
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/ProfilerMarkers.h"
 #include "mozilla/SegmentedVector.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/XpcomMetrics.h"
 #include "mozilla/ThreadLocal.h"
 #include "mozilla/UniquePtr.h"
+#include "nsContentUtils.h"
 #include "nsCycleCollectionNoteRootCallback.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsCycleCollector.h"
@@ -242,15 +240,29 @@ static void SuspectUsingNurseryPurpleBuffer(
 
 // Cycle collector environment variables
 //
+// MOZ_CC_ALL_TRACES: If set to "all", any cycle collector logging done will be
+// WantAllTraces, which disables various cycle collector optimizations to give a
+// fuller picture of the heap. If set to "shutdown", only shutdown logging will
+// be WantAllTraces. The default is none.
+//
+// MOZ_CC_RUN_DURING_SHUTDOWN: In non-NS_FREE_PERMANENT_DATA builds, if this is
+// set, run cycle collections at shutdown.
+//
 // MOZ_CC_LOG_ALL: If defined, always log cycle collector heaps.
 //
 // MOZ_CC_LOG_SHUTDOWN: If defined, log cycle collector heaps at shutdown.
 //
-// MOZ_CC_LOG_SHUTDOWN_SKIP: If set to a non-negative integer value n, then
-// skip logging for the first n shutdown CCs. This implies MOZ_CC_LOG_SHUTDOWN.
-// The first log or two are much larger than the rest, so it can be useful to
-// reduce the total size of logs if you know already that the initial logs
-// aren't interesting.
+// MOZ_CC_LOG_SHUTDOWN_SKIP: If set to a non-negative integer value n, then skip
+// logging for the first n shutdown CCs. This implies MOZ_CC_LOG_SHUTDOWN. The
+// first log or two are much larger than the rest, so it can be useful to reduce
+// the total size of logs if you know already that the initial logs aren't
+// interesting.
+//
+// MOZ_CC_LOG_WINDOW_ONLY: If this is set, only log CCs where at least one DOM
+// window is still alive, as determined by GetCurrentInnerOrOuterWindowCount().
+// The purpose of this is to avoid useless logs when investigating intermittent
+// window leaks. Note that this count is only updated in DEBUG builds, and will
+// only be read on the main thread.
 //
 // MOZ_CC_LOG_THREAD: If set to "main", only automatically log main thread
 // CCs. If set to "worker", only automatically log worker CCs. If set to "all",
@@ -261,15 +273,6 @@ static void SuspectUsingNurseryPurpleBuffer(
 // CCs. If set to "content", only automatically log tab CCs. If set to "all",
 // log everything. The default value is "all". This must be used with either
 // MOZ_CC_LOG_ALL or MOZ_CC_LOG_SHUTDOWN for it to do anything.
-//
-// MOZ_CC_ALL_TRACES: If set to "all", any cycle collector
-// logging done will be WantAllTraces, which disables
-// various cycle collector optimizations to give a fuller picture of
-// the heap. If set to "shutdown", only shutdown logging will be WantAllTraces.
-// The default is none.
-//
-// MOZ_CC_RUN_DURING_SHUTDOWN: In non-DEBUG or builds, if this is set,
-// run cycle collections at shutdown.
 //
 // MOZ_CC_LOG_DIRECTORY: The directory in which logs are placed (such as
 // logs from MOZ_CC_LOG_ALL and MOZ_CC_LOG_SHUTDOWN, or other uses
@@ -290,6 +293,7 @@ struct nsCycleCollectorParams {
   bool mAllTracesShutdown;
   bool mLogThisThread;
   bool mLogGC;
+  bool mLogWindowOnly;
   int32_t mLogShutdownSkip = 0;
 
   nsCycleCollectorParams()
@@ -297,7 +301,8 @@ struct nsCycleCollectorParams {
         mLogShutdown(PR_GetEnv("MOZ_CC_LOG_SHUTDOWN") != nullptr),
         mAllTracesAll(false),
         mAllTracesShutdown(false),
-        mLogGC(!PR_GetEnv("MOZ_CC_DISABLE_GC_LOG")) {
+        mLogGC(!PR_GetEnv("MOZ_CC_DISABLE_GC_LOG")),
+        mLogWindowOnly(PR_GetEnv("MOZ_CC_LOG_WINDOW_ONLY")) {
     if (const char* lssEnv = PR_GetEnv("MOZ_CC_LOG_SHUTDOWN_SKIP")) {
       mLogShutdown = true;
       nsDependentCString lssString(lssEnv);
@@ -349,6 +354,12 @@ struct nsCycleCollectorParams {
   // For non-shutdown CCs, we'll pass in 0.
   // For the first shutdown CC, we'll pass in 1.
   bool LogThisCC(int32_t aShutdownCount) {
+#ifdef DEBUG
+    if (mLogWindowOnly && NS_IsMainThread() &&
+        nsContentUtils::GetCurrentInnerOrOuterWindowCount() == 0) {
+      return false;
+    }
+#endif
     if (mLogAll) {
       return mLogThisThread;
     }
@@ -546,15 +557,6 @@ class EdgePool {
 #else
 #  define CC_GRAPH_ASSERT(b)
 #endif
-
-#define CC_TELEMETRY(_name, _value)                                            \
-  do {                                                                         \
-    if (NS_IsMainThread()) {                                                   \
-      Telemetry::Accumulate(Telemetry::CYCLE_COLLECTOR##_name, _value);        \
-    } else {                                                                   \
-      Telemetry::Accumulate(Telemetry::CYCLE_COLLECTOR_WORKER##_name, _value); \
-    }                                                                          \
-  } while (0)
 
 enum NodeColor { black, white, grey };
 
@@ -824,12 +826,19 @@ struct CCGraph {
   static const uint32_t kInitialMapLength = 16384;
 
  public:
-  CCGraph()
-      : mRootCount(0), mPtrInfoMap(kInitialMapLength), mOutOfMemory(false) {}
+  CCGraph() : mRootCount(0), mOutOfMemory(false) {}
 
   ~CCGraph() = default;
 
-  void Init() { MOZ_ASSERT(IsEmpty(), "Failed to call CCGraph::Clear"); }
+  void Init() {
+    MOZ_ASSERT(IsEmpty(), "Failed to call CCGraph::Clear");
+
+    // This can fail if we're running low on memory, but we can still grow the
+    // hashtable normally at the cost of performance. The process might still
+    // be in an unrecoverably bad state.
+    DebugOnly<bool> ok = mPtrInfoMap.reserve(kInitialMapLength);
+    MOZ_ASSERT(ok, "initial reserve should succeed");
+  }
 
   void Clear() {
     mNodes.Clear();
@@ -1060,7 +1069,7 @@ struct nsPurpleBuffer {
   MOZ_ALWAYS_INLINE void Put(void* aObject, nsCycleCollectionParticipant* aCp,
                              nsCycleCollectingAutoRefCnt* aRefCnt) {
     nsPurpleBufferEntry entry(aObject, aRefCnt, aCp);
-    Unused << mEntries.Append(std::move(entry));
+    (void)mEntries.Append(std::move(entry));
     MOZ_ASSERT(!entry.mRefCnt, "Move didn't work!");
     ++mCount;
   }
@@ -1154,6 +1163,11 @@ class nsCycleCollector : public nsIMemoryReporter {
 
   uint32_t mWhiteNodeCount;
 
+  // Note, this counter may not be exact if some object has its
+  // reference count increased from zero or if we're doing incremental
+  // snow white releasing.
+  uint32_t mKnownSnowWhiteCount;
+
   CC_BeforeUnlinkCallback mBeforeUnlinkCB;
   CC_ForgetSkippableCallback mForgetSkippableCB;
 
@@ -1192,6 +1206,12 @@ class nsCycleCollector : public nsIMemoryReporter {
                        bool aAsyncSnowWhiteFreeing);
   bool FreeSnowWhite(bool aUntilNoSWInPurpleBuffer);
   bool FreeSnowWhiteWithBudget(SliceBudget& aBudget);
+  bool MaybeFreeSnowWhite() {
+    if ((mKnownSnowWhiteCount * 2) > SuspectedCount()) {
+      return FreeSnowWhite(false);
+    }
+    return false;
+  }
 
   // This method assumes its argument is already canonicalized.
   void RemoveObjectFromGraph(void* aPtr);
@@ -1215,6 +1235,8 @@ class nsCycleCollector : public nsIMemoryReporter {
 
   CycleCollectedJSRuntime* Runtime() { return mCCJSRuntime; }
 
+  void NewSnowWhiteObjectAdded() { ++mKnownSnowWhiteCount; }
+
  private:
   void CheckThreadSafety();
   MOZ_CAN_RUN_SCRIPT
@@ -1224,6 +1246,7 @@ class nsCycleCollector : public nsIMemoryReporter {
   bool IsIncrementalGCInProgress();
   void FinishAnyIncrementalGCInProgress();
   bool ShouldMergeZones(ccIsManual aIsManual);
+  void MaybeInitLogger(bool aIsShutdown, bool aForGC);
 
   void BeginCollection(CCReason aReason, ccIsManual aIsManual,
                        nsICycleCollectorListener* aManualListener);
@@ -1237,6 +1260,12 @@ class nsCycleCollector : public nsIMemoryReporter {
   // returns whether anything was collected
   bool CollectWhite();
 
+  void ClearWhiteJSWeakRefTargets();
+
+ public:
+  bool IsGCThingWhiteInCCGraph(JS::GCCellPtr aPtr);
+
+ private:
   void CleanupAfterCollection();
 };
 
@@ -1305,8 +1334,12 @@ struct CCIntervalMarker : public mozilla::BaseMarkerType<CCIntervalMarker> {
 
   using MS = mozilla::MarkerSchema;
   static constexpr MS::PayloadField PayloadFields[] = {
-      {"mReason", MS::InputType::CString, "Reason", MS::Format::String,
-       MS::PayloadFlags::Searchable},
+      {
+          "mReason",
+          MS::InputType::CString,
+          "Reason",
+          MS::Format::String,
+      },
       {"mMaxSliceTime", MS::InputType::TimeDuration, "Max Slice Time",
        MS::Format::Duration},
       {"mSuspected", MS::InputType::Uint32, "Suspected Objects",
@@ -1324,7 +1357,7 @@ struct CCIntervalMarker : public mozilla::BaseMarkerType<CCIntervalMarker> {
        "Refcounted Objects Visited", MS::Format::Integer},
       {"mVisitedGCed", MS::InputType::Uint32, "GC Objects Visited",
        MS::Format::Integer},
-      {"mFreedRefCounted", MS::InputType::Uint32, "GC Objects Freed",
+      {"mFreedRefCounted", MS::InputType::Uint32, "Refcounted Objects Freed",
        MS::Format::Integer},
       {"mFreedGCed", MS::InputType::Uint32, "GC Objects Freed",
        MS::Format::Integer},
@@ -1463,6 +1496,7 @@ struct CCGraphDescriber : public LinkedListElement<CCGraphDescriber> {
     eGCedObject,
     eGCMarkedObject,
     eEdge,
+    eWeakMapEntry,
     eRoot,
     eGarbage,
     eUnknown
@@ -1471,6 +1505,8 @@ struct CCGraphDescriber : public LinkedListElement<CCGraphDescriber> {
   nsCString mAddress;
   nsCString mName;
   nsCString mCompartmentOrToAddress;
+  nsCString mKeyDelegateAddress;
+  nsCString mValueAddress;
   uint32_t mCnt;
   Type mType;
 };
@@ -1621,7 +1657,8 @@ class nsCycleCollectorLogSinkToFile final : public nsICycleCollectorLogSink {
     // wouldn't work.
     nsIFile* logFile = nullptr;
     if (char* env = PR_GetEnv("MOZ_CC_LOG_DIRECTORY")) {
-      NS_NewNativeLocalFile(nsCString(env), /* followLinks = */ true, &logFile);
+      (void)NS_WARN_IF(
+          NS_FAILED(NS_NewNativeLocalFile(nsCString(env), &logFile)));
     }
 
     // On Android or B2G, this function will open a file named
@@ -1682,14 +1719,15 @@ class nsCycleCollectorLogSinkToFile final : public nsICycleCollectorLogSink {
       return NS_ERROR_UNEXPECTED;
     }
 
-    aLog->mFile->MoveTo(/* directory */ nullptr, logFileFinalDestinationName);
-
-    // Save the file path.
-    aLog->mFile = logFileFinalDestination;
+    if (NS_SUCCEEDED(aLog->mFile->MoveTo(/* directory */ nullptr,
+                                         logFileFinalDestinationName))) {
+      // Save the file path.
+      aLog->mFile = std::move(logFileFinalDestination);
+    }
 
     // Log to the error console.
     nsAutoString logPath;
-    logFileFinalDestination->GetPath(logPath);
+    aLog->mFile->GetPath(logPath);
     nsAutoString msg =
         aCollectorKind + u" Collector log dumped to "_ns + logPath;
 
@@ -1855,7 +1893,19 @@ class nsCycleCollectorLogger final : public nsICycleCollectorListener {
       fprintf(mCCLog, "WeakMapEntry map=%p key=%p keyDelegate=%p value=%p\n",
               (void*)aMap, (void*)aKey, (void*)aKeyDelegate, (void*)aValue);
     }
-    // We don't support after-processing for weak map entries.
+    if (mWantAfterProcessing) {
+      CCGraphDescriber* d = new CCGraphDescriber();
+      mDescribers.insertBack(d);
+      d->mType = CCGraphDescriber::eWeakMapEntry;
+      d->mAddress.AssignLiteral("0x");
+      d->mAddress.AppendInt(aMap, 16);
+      d->mCompartmentOrToAddress.AssignLiteral("0x");
+      d->mCompartmentOrToAddress.AppendInt(aKey, 16);
+      d->mKeyDelegateAddress.AssignLiteral("0x");
+      d->mKeyDelegateAddress.AppendInt(aKeyDelegate, 16);
+      d->mValueAddress.AssignLiteral("0x");
+      d->mValueAddress.AppendInt(aValue, 16);
+    }
   }
   void NoteIncrementalRoot(uint64_t aAddress) {
     if (!mDisableLog) {
@@ -1894,7 +1944,7 @@ class nsCycleCollectorLogger final : public nsICycleCollectorListener {
   void End() {
     if (!mDisableLog) {
       mCCLog = nullptr;
-      Unused << NS_WARN_IF(NS_FAILED(mLogSink->CloseCCLog()));
+      (void)NS_WARN_IF(NS_FAILED(mLogSink->CloseCCLog()));
     }
   }
   NS_IMETHOD ProcessNext(nsICycleCollectorHandler* aHandler,
@@ -1916,6 +1966,10 @@ class nsCycleCollectorLogger final : public nsICycleCollectorListener {
           break;
         case CCGraphDescriber::eEdge:
           aHandler->NoteEdge(d->mAddress, d->mCompartmentOrToAddress, d->mName);
+          break;
+        case CCGraphDescriber::eWeakMapEntry:
+          aHandler->NoteWeakMapEntry(d->mAddress, d->mCompartmentOrToAddress,
+                                     d->mKeyDelegateAddress, d->mValueAddress);
           break;
         case CCGraphDescriber::eRoot:
           aHandler->DescribeRoot(d->mAddress, d->mCnt);
@@ -2788,6 +2842,7 @@ bool nsCycleCollector::FreeSnowWhite(bool aUntilNoSWInPurpleBuffer) {
 
   AutoRestore<bool> ar(mFreeingSnowWhite);
   mFreeingSnowWhite = true;
+  mKnownSnowWhiteCount = 0;
 
   bool hadSnowWhiteObjects = false;
   do {
@@ -2811,6 +2866,7 @@ bool nsCycleCollector::FreeSnowWhiteWithBudget(SliceBudget& aBudget) {
   AUTO_PROFILER_LABEL_CATEGORY_PAIR(GCCC_FreeSnowWhite);
   AutoRestore<bool> ar(mFreeingSnowWhite);
   mFreeingSnowWhite = true;
+  mKnownSnowWhiteCount = 0;
 
   SnowWhiteKiller visitor(this, &aBudget);
   mPurpleBuf.VisitEntries(visitor);
@@ -2834,6 +2890,9 @@ void nsCycleCollector::ForgetSkippable(SliceBudget& aBudget,
   if (mCCJSRuntime) {
     mCCJSRuntime->PrepareForForgetSkippable();
   }
+
+  mKnownSnowWhiteCount = 0;
+
   MOZ_ASSERT(
       !mScanInProgress,
       "Don't forget skippable or free snow-white while scan is in progress.");
@@ -2928,10 +2987,7 @@ void nsCycleCollector::ScanWeakMaps() {
     }
   } while (anyChanged);
 
-  if (failed) {
-    MOZ_ASSERT(false, "Ran out of memory in ScanWeakMaps");
-    CC_TELEMETRY(_OOM, true);
-  }
+  MOZ_ASSERT(!failed, "Ran out of memory in ScanWeakMaps");
 }
 
 // Flood black from any objects in the purple buffer that are in the CC graph.
@@ -3066,11 +3122,7 @@ void nsCycleCollector::ScanIncrementalRoots() {
   }
 
   timeLog.Checkpoint("ScanIncrementalRoots::fix nodes");
-
-  if (failed) {
-    NS_ASSERTION(false, "Ran out of memory in ScanIncrementalRoots");
-    CC_TELEMETRY(_OOM, true);
-  }
+  NS_ASSERTION(!failed, "Ran out of memory in ScanIncrementalRoots");
 }
 
 // Mark nodes white and make sure their refcounts are ok.
@@ -3125,11 +3177,7 @@ void nsCycleCollector::ScanBlackNodes() {
       FloodBlackNode(mWhiteNodeCount, failed, pi);
     }
   }
-
-  if (failed) {
-    NS_ASSERTION(false, "Ran out of memory in ScanBlackNodes");
-    CC_TELEMETRY(_OOM, true);
-  }
+  NS_ASSERTION(!failed, "Ran out of memory in ScanBlackNodes");
 }
 
 void nsCycleCollector::ScanRoots(bool aFullySynchGraphBuild) {
@@ -3206,6 +3254,8 @@ bool nsCycleCollector::CollectWhite() {
   //   - Root(whites), which should pin the whites in memory.
   //   - Unlink(whites), which drops outgoing links on each white.
   //   - Unroot(whites), which returns the whites to normal GC.
+
+  ClearWhiteJSWeakRefTargets();
 
   // Segments are 4 KiB on 32-bit and 8 KiB on 64-bit.
   static const size_t kSegmentSize = sizeof(void*) * 1024;
@@ -3292,7 +3342,35 @@ bool nsCycleCollector::CollectWhite() {
 
   mIncrementalPhase = CleanupPhase;
 
+  // Don't delete snow white objects immediately after unlinking.
+  mKnownSnowWhiteCount = 0;
+
   return numWhiteNodes > 0 || numWhiteGCed > 0 || numWhiteJSZones > 0;
+}
+
+static bool IsGCThingWhiteInCCGraph(JS::GCCellPtr aPtr, void* aData) {
+  auto* cc = static_cast<nsCycleCollector*>(aData);
+  return cc->IsGCThingWhiteInCCGraph(aPtr);
+}
+
+bool nsCycleCollector::IsGCThingWhiteInCCGraph(JS::GCCellPtr aPtr) {
+  PtrInfo* pinfo = mGraph.FindNode(aPtr.asCell());
+  if (!pinfo) {
+    return false;
+  }
+
+  MOZ_ASSERT(pinfo->mParticipant);
+  bool isWhite = pinfo->mColor == white;
+
+  MOZ_ASSERT_IF(isWhite, pinfo->IsGrayJS());
+  return isWhite;
+}
+
+void nsCycleCollector::ClearWhiteJSWeakRefTargets() {
+  // Clear the targets of JS WeakRef objects whose target is part of a cycle
+  // that we're about to unlink.
+  JSRuntime* runtime = Runtime()->Runtime();
+  JS::MaybeClearWeakRefTargets(runtime, &::IsGCThingWhiteInCCGraph, this);
 }
 
 ////////////////////////
@@ -3344,6 +3422,7 @@ nsCycleCollector::nsCycleCollector()
       mEventTarget(GetCurrentSerialEventTarget()),
 #endif
       mWhiteNodeCount(0),
+      mKnownSnowWhiteCount(0),
       mBeforeUnlinkCB(nullptr),
       mForgetSkippableCB(nullptr),
       mUnmergedNeeded(0),
@@ -3436,12 +3515,32 @@ void nsCycleCollector::CheckThreadSafety() {
 #endif
 }
 
+static void SendNeedGCTelemetry(bool needGC) {
+  if (NS_IsMainThread()) {
+    glean::cycle_collector::need_gc
+        .EnumGet(static_cast<glean::cycle_collector::NeedGcLabel>(needGC))
+        .Add();
+    return;
+  }
+
+  glean::cycle_collector::worker_need_gc
+      .EnumGet(static_cast<glean::cycle_collector::WorkerNeedGcLabel>(needGC))
+      .Add();
+}
+
 // The cycle collector uses the mark bitmap to discover what JS objects are
-// reachable only from XPConnect roots that might participate in cycles. We ask
-// the JS runtime whether we need to force a GC before this CC. It should only
-// be true when UnmarkGray has run out of stack. We also force GCs on shutdown
-// to collect cycles involving both DOM and JS, and in WantAllTraces CCs to
-// prevent hijinks from ForgetSkippable and compartmental GCs.
+// reachable only from XPConnect roots that might participate in cycles.
+//
+// That data might not currently be valid, requiring a GC to restore it. This is
+// rare in practice and is caused by an OOM during gray unmarking or aborting GC
+// part way through marking.
+//
+// We also force GCs on shutdown to collect cycles involving both DOM and JS,
+// and in WantAllTraces CCs to prevent hijinks from ForgetSkippable and
+// compartmental GCs.
+//
+// If we don't need to GC we still need to fix up the gray bits since gray
+// unmarking doesn't trace through weakmaps. We don't need to do this after GC.
 void nsCycleCollector::FixGrayBits(bool aIsShutdown, TimeLog& aTimeLog) {
   CheckThreadSafety();
 
@@ -3449,42 +3548,34 @@ void nsCycleCollector::FixGrayBits(bool aIsShutdown, TimeLog& aTimeLog) {
     return;
   }
 
-  // If we're not forcing a GC anyways due to shutdown or an all traces CC,
-  // check to see if we still need to do one to fix the gray bits.
-  if (!(aIsShutdown || (mLogger && mLogger->IsAllTraces()))) {
-    mCCJSRuntime->FixWeakMappingGrayBits();
-    aTimeLog.Checkpoint("FixWeakMappingGrayBits");
+  bool grayBitsInvalid = !mCCJSRuntime->AreGCGrayBitsValid();
 
-    bool needGC = !mCCJSRuntime->AreGCGrayBitsValid();
-    // Only do a telemetry ping for non-shutdown CCs.
-    CC_TELEMETRY(_NEED_GC, needGC);
-    if (!needGC) {
-      return;
-    }
+  bool wantAllTraces = mLogger && mLogger->IsAllTraces();
+
+  if (!aIsShutdown && !wantAllTraces) {
+    SendNeedGCTelemetry(grayBitsInvalid);
+  }
+
+  if (!aIsShutdown && !wantAllTraces && !grayBitsInvalid) {
+    // No need to GC. We only need to fix up the gray bits.
+    mCCJSRuntime->FixWeakMappingGrayBits();
+    aTimeLog.Checkpoint("FixGrayBits::FixWeakMappingGrayBits");
+    return;
   }
 
   mResults.mForcedGC = true;
 
-  uint32_t count = 0;
-  do {
-    if (aIsShutdown) {
-      mCCJSRuntime->GarbageCollect(JS::GCOptions::Shutdown,
-                                   JS::GCReason::SHUTDOWN_CC);
-    } else {
-      mCCJSRuntime->GarbageCollect(JS::GCOptions::Normal,
-                                   JS::GCReason::CC_FORCED);
-    }
+  JS::GCOptions options = JS::GCOptions::Normal;
+  JS::GCReason reason = JS::GCReason::CC_FORCED;
+  if (aIsShutdown) {
+    options = JS::GCOptions::Shutdown;
+    reason = JS::GCReason::SHUTDOWN_CC;
+  }
 
-    mCCJSRuntime->FixWeakMappingGrayBits();
+  mCCJSRuntime->GarbageCollect(options, reason);
+  MOZ_ASSERT(mCCJSRuntime->AreGCGrayBitsValid());
 
-    // It's possible that FixWeakMappingGrayBits will hit OOM when unmarking
-    // gray and we will have to go round again. The second time there should not
-    // be any weak mappings to fix up so the loop body should run at most twice.
-    MOZ_RELEASE_ASSERT(count < 2);
-    count++;
-  } while (!mCCJSRuntime->AreGCGrayBitsValid());
-
-  aTimeLog.Checkpoint("FixGrayBits");
+  aTimeLog.Checkpoint("FixGrayBits::GarbageCollect");
 }
 
 bool nsCycleCollector::IsIncrementalGCInProgress() {
@@ -3507,11 +3598,14 @@ void nsCycleCollector::CleanupAfterCollection() {
   mGraph.Clear();
   timeLog.Checkpoint("CleanupAfterCollection::mGraph.Clear()");
 
+  FreeSnowWhite(true);
+  timeLog.Checkpoint("Collect::FreeSnowWhite");
+
   TimeStamp endTime = TimeStamp::Now();
-  uint32_t interval = (uint32_t)((endTime - mCollectionStart).ToMilliseconds());
+  TimeDuration interval = endTime - mCollectionStart;
 #ifdef COLLECT_TIME_DEBUG
-  printf("cc: total cycle collector time was %ums in %u slices\n", interval,
-         mResults.mNumSlices);
+  printf("cc: total cycle collector time was %ums in %u slices\n",
+         (uint32_t)interval.ToMilliseconds(), mResults.mNumSlices);
   printf(
       "cc: visited %u ref counted and %u GCed objects, freed %d ref counted "
       "and %d GCed objects",
@@ -3525,10 +3619,24 @@ void nsCycleCollector::CleanupAfterCollection() {
   printf(".\ncc: \n");
 #endif
 
-  CC_TELEMETRY(, interval);
-  CC_TELEMETRY(_VISITED_REF_COUNTED, mResults.mVisitedRefCounted);
-  CC_TELEMETRY(_VISITED_GCED, mResults.mVisitedGCed);
-  CC_TELEMETRY(_COLLECTED, mWhiteNodeCount);
+  if (NS_IsMainThread()) {
+    glean::cycle_collector::time.ProcessGet().AccumulateRawDuration(interval);
+    glean::cycle_collector::visited_ref_counted.AccumulateSingleSample(
+        mResults.mVisitedRefCounted);
+    glean::cycle_collector::visited_gced.AccumulateSingleSample(
+        mResults.mVisitedGCed);
+    glean::cycle_collector::collected.AccumulateSingleSample(mWhiteNodeCount);
+  } else {
+    glean::cycle_collector::worker_time.ProcessGet().AccumulateRawDuration(
+        interval);
+    glean::cycle_collector::worker_visited_ref_counted.AccumulateSingleSample(
+        mResults.mVisitedRefCounted);
+    glean::cycle_collector::worker_visited_gced.AccumulateSingleSample(
+        mResults.mVisitedGCed);
+    glean::cycle_collector::worker_collected.AccumulateSingleSample(
+        mWhiteNodeCount);
+  }
+
   timeLog.Checkpoint("CleanupAfterCollection::telemetry");
 
   PROFILER_MARKER(
@@ -3565,6 +3673,7 @@ void nsCycleCollector::ShutdownCollect() {
     // clear them out before we run the CC again or finish shutting down.
     ccJSContext->PerformMicroTaskCheckPoint(true);
     ccJSContext->ProcessStableStateQueue();
+    ccJSContext->ClearUncaughtRejectionObservers();
   }
 
   // This warning would happen very frequently, so don't do it unless we're
@@ -3595,6 +3704,9 @@ bool nsCycleCollector::Collect(CCReason aReason, ccIsManual aIsManual,
   }
   mActivelyCollecting = true;
 
+  js::CommitPendingWrapperPreservations(
+      CycleCollectedJSContext::Get()->Context());
+
   MOZ_ASSERT(!IsIncrementalGCInProgress());
 
   bool startedIdle = IsIdle();
@@ -3602,7 +3714,11 @@ bool nsCycleCollector::Collect(CCReason aReason, ccIsManual aIsManual,
 
   // If the CC started idle, it will call BeginCollection, which
   // will do FreeSnowWhite, so it doesn't need to be done here.
-  if (!startedIdle) {
+  //
+  // If we're in CleanupPhase, we want to clear the graph before
+  // FreeSnowWhite runs, so that we don't need to remove objects from the graph
+  // one by one. CleanupAfterCollection will call FreeSnowWhite.
+  if (!startedIdle && mIncrementalPhase != CleanupPhase) {
     TimeLog timeLog;
     FreeSnowWhite(true);
     timeLog.Checkpoint("Collect::FreeSnowWhite");
@@ -3750,6 +3866,25 @@ bool nsCycleCollector::ShouldMergeZones(ccIsManual aIsManual) {
   }
 }
 
+void nsCycleCollector::MaybeInitLogger(bool aIsShutdown, bool aForGC) {
+  if (mLogger) {
+    return;
+  }
+
+  if (!mParams.LogThisCC(mShutdownCount)) {
+    return;
+  }
+
+  if (aForGC && !mParams.LogThisGC()) {
+    return;
+  }
+
+  mLogger = new nsCycleCollectorLogger(mParams.LogThisGC());
+  if (mParams.AllTracesThisCC(aIsShutdown)) {
+    mLogger->SetAllTraces();
+  }
+}
+
 void nsCycleCollector::BeginCollection(
     CCReason aReason, ccIsManual aIsManual,
     nsICycleCollectorListener* aManualListener) {
@@ -3776,14 +3911,7 @@ void nsCycleCollector::BeginCollection(
   if (aManualListener) {
     aManualListener->AsLogger(getter_AddRefs(mLogger));
   }
-
   aManualListener = nullptr;
-  if (!mLogger && mParams.LogThisCC(mShutdownCount)) {
-    mLogger = new nsCycleCollectorLogger(mParams.LogThisGC());
-    if (mParams.AllTracesThisCC(isShutdown)) {
-      mLogger->SetAllTraces();
-    }
-  }
 
   CycleCollectorResults ignoredResults;
   mozilla::CycleCollectorStats* stats = sCollectorData.get()->mStats.get();
@@ -3804,6 +3932,8 @@ void nsCycleCollector::BeginCollection(
   FinishAnyIncrementalGCInProgress();
   timeLog.Checkpoint("Pre-FixGrayBits finish IGC");
 
+  MaybeInitLogger(isShutdown, /* aForGC = */ true);
+
   FixGrayBits(isShutdown, timeLog);
   if (mCCJSRuntime) {
     mCCJSRuntime->CheckGrayBits();
@@ -3812,6 +3942,7 @@ void nsCycleCollector::BeginCollection(
   FreeSnowWhite(true);
   timeLog.Checkpoint("BeginCollection FreeSnowWhite");
 
+  MaybeInitLogger(isShutdown, /* aForGC = */ false);
   if (mLogger && NS_FAILED(mLogger->Begin())) {
     mLogger = nullptr;
   }
@@ -4017,6 +4148,13 @@ void NS_CycleCollectorSuspect3(void* aPtr, nsCycleCollectionParticipant* aCp,
   SuspectAfterShutdown(aPtr, aCp, aRefCnt, aShouldDelete);
 }
 
+void NS_CycleCollectableHasRefCntZero() {
+  CollectorData* data = sCollectorData.get();
+  if (data && data->mCollector) {
+    data->mCollector->NewSnowWhiteObjectAdded();
+  }
+}
+
 void ClearNurseryPurpleBuffer() {
   MOZ_ASSERT(NS_IsMainThread(), "Wrong thread!");
   CollectorData* data = sCollectorData.get();
@@ -4122,6 +4260,15 @@ bool nsCycleCollector_doDeferredDeletion() {
   MOZ_ASSERT(data->mContext);
 
   return data->mCollector->FreeSnowWhite(false);
+}
+
+bool nsCycleCollector_maybeDoDeferredDeletion() {
+  CollectorData* data = sCollectorData.get();
+  if (!data || !data->mCollector) {
+    return false;
+  }
+
+  return data->mCollector->MaybeFreeSnowWhite();
 }
 
 bool nsCycleCollector_doDeferredDeletionWithBudget(SliceBudget& aBudget) {

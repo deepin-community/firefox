@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -92,7 +91,7 @@ var security = {
     if (secInfo.succeededCertChain.length) {
       certChainArray = secInfo.succeededCertChain;
     } else {
-      certChainArray = secInfo.failedCertChain;
+      certChainArray = secInfo.handshakeCertificates;
     }
 
     retval = {
@@ -225,7 +224,7 @@ var security = {
   viewPasswords() {
     LoginHelper.openPasswordManager(window, {
       filterString: this.windowInfo.hostName,
-      entryPoint: "pageinfo",
+      entryPoint: "Pageinfo",
     });
   },
 };
@@ -306,7 +305,7 @@ async function securityOnLoad(uri, windowInfo) {
     document.getElementById("security-privacy-sitedata-row").hidden = true;
   }
 
-  if (realmHasPasswords(uri)) {
+  if (await realmHasPasswords(uri)) {
     document.l10n.setAttributes(
       document.getElementById("security-privacy-passwords-value"),
       "saved-passwords-yes"
@@ -394,8 +393,8 @@ function setText(id, value) {
  * Return true iff realm (proto://host:port) (extracted from uri) has
  * saved passwords
  */
-function realmHasPasswords(uri) {
-  return Services.logins.countLogins(uri.prePath, "", "") > 0;
+async function realmHasPasswords(uri) {
+  return (await Services.logins.countLoginsAsync(uri.prePath, "", "")) > 0;
 }
 
 /**

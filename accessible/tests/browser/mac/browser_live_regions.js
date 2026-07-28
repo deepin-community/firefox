@@ -161,5 +161,43 @@ addAccessibleTask(
     });
     await liveRegionChanged;
     ok(true, "changed aria-label");
+
+    liveRegionChanged = waitForMacEvent("AXLiveRegionChanged", "live");
+    await SpecialPowers.spawn(browser, [], () => {
+      content.document.getElementById("live").firstChild.data = "The hour is ";
+    });
+    await liveRegionChanged;
+    ok(true, "changed text leaf contents");
+
+    liveRegionChanged = waitForMacEvent("AXLiveRegionChanged", "live");
+    await SpecialPowers.spawn(browser, [], () => {
+      content.document.getElementById("live").firstChild.data = "";
+    });
+    await liveRegionChanged;
+    ok(true, "delete text leaf contents");
+  }
+);
+
+/**
+ * Test live region announcements caused by clicking a button that modifies a region.
+ */
+addAccessibleTask(
+  `
+  <div id="status-container" aria-live="polite" aria-label="">
+  </div>
+
+  <button id="clickme" onClick="(function(){document.getElementById('status-container').setAttribute('aria-label', 'hello world');})()">
+    Add something!
+  </button>
+  `,
+  async (browser, accDoc) => {
+    let liveRegionChanged = waitForMacEvent(
+      "AXLiveRegionChanged",
+      "status-container"
+    );
+    const button = getNativeInterface(accDoc, "clickme");
+    button.performAction("AXPress");
+    await liveRegionChanged;
+    ok(true, "aria-label was changed, and event was fired");
   }
 );

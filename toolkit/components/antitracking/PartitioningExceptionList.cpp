@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -169,7 +167,9 @@ bool PartitioningExceptionList::OriginMatchesPattern(
 
   nsAutoCString scheme, originNoScheme;
   nsresult rv = GetSchemeFromOrigin(aOrigin, scheme, originNoScheme);
-  NS_ENSURE_SUCCESS(rv, false);
+  if (NS_FAILED(rv)) {
+    return false;
+  }
 
   // Always strict match scheme.
   if (scheme != aPattern.mScheme) {
@@ -201,7 +201,9 @@ nsresult PartitioningExceptionList::GetExceptionListPattern(
   nsAutoCString originPatternNoScheme;
   nsresult rv = GetSchemeFromOrigin(aOriginPattern, aPattern.mScheme,
                                     originPatternNoScheme);
-  NS_ENSURE_SUCCESS(rv, rv);
+  if (NS_FAILED(rv)) {
+    return rv;
+  }
 
   if (StringBeginsWith(originPatternNoScheme, "*"_ns)) {
     NS_ENSURE_TRUE(originPatternNoScheme.Length() > 2, NS_ERROR_INVALID_ARG);
@@ -213,7 +215,7 @@ nsresult PartitioningExceptionList::GetExceptionListPattern(
   }
 
   aPattern.mIsWildCard = false;
-  aPattern.mSuffix = originPatternNoScheme;
+  aPattern.mSuffix = std::move(originPatternNoScheme);
 
   return NS_OK;
 }

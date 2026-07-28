@@ -855,6 +855,7 @@ const TEST_DATA = [
           "scale(1) rotate(-270deg); } } )",
         priority: "",
         offsets: [0, 1036],
+        isCustomProperty: true,
       },
     ],
   },
@@ -1205,13 +1206,6 @@ const TEST_DATA = [
         offsets: [7, 18],
         declarationText: "color: red;",
       },
-      {
-        name: "background",
-        value: "gold",
-        priority: "",
-        offsets: [121, 138],
-        declarationText: "background: gold;",
-      },
     ],
   },
 
@@ -1259,13 +1253,6 @@ const TEST_DATA = [
         offsets: [7, 18],
         declarationText: "color: red;",
       },
-      {
-        name: "border-color",
-        value: "cyan",
-        priority: "",
-        offsets: [114, 132],
-        declarationText: "border-color: cyan",
-      },
     ],
   },
 
@@ -1290,20 +1277,6 @@ const TEST_DATA = [
         offsets: [7, 18],
         declarationText: "color: red;",
       },
-      {
-        name: "background",
-        value: "gold",
-        priority: "",
-        offsets: [70, 87],
-        declarationText: "background: gold;",
-      },
-      {
-        name: "border-color",
-        value: "cyan",
-        priority: "",
-        offsets: [138, 156],
-        declarationText: "border-color: cyan",
-      },
     ],
   },
 
@@ -1324,13 +1297,6 @@ const TEST_DATA = [
         priority: "",
         offsets: [7, 18],
         declarationText: "color: red;",
-      },
-      {
-        name: "background",
-        value: "gold",
-        priority: "",
-        offsets: [88, 105],
-        declarationText: "background: gold;",
       },
     ],
   },
@@ -1354,13 +1320,6 @@ const TEST_DATA = [
         offsets: [7, 18],
         declarationText: "color: red;",
       },
-      {
-        name: "background",
-        value: "gold",
-        priority: "",
-        offsets: [105, 122],
-        declarationText: "background: gold;",
-      },
     ],
   },
 
@@ -1380,13 +1339,6 @@ const TEST_DATA = [
         priority: "",
         offsets: [7, 18],
         declarationText: "color: red;",
-      },
-      {
-        name: "background",
-        value: "gold",
-        priority: "",
-        offsets: [87, 104],
-        declarationText: "background: gold;",
       },
     ],
   },
@@ -1408,13 +1360,6 @@ const TEST_DATA = [
         priority: "",
         offsets: [7, 18],
         declarationText: "color: red;",
-      },
-      {
-        name: "background",
-        value: "gold",
-        priority: "",
-        offsets: [93, 110],
-        declarationText: "background: gold;",
       },
     ],
   },
@@ -1495,6 +1440,74 @@ const TEST_DATA = [
       },
     ],
   },
+
+  /***** Testing Custom Properties rules *****/
+  {
+    input: `
+      --foo: 1;
+      --bar: 2;
+      --foobar: calc( var(--foo, 3) * var(--bar, 4));
+      --empty: ;
+      width: var(--foobar, var(--fallback));
+      -moz-appearance: none;
+      --: 5;
+    `,
+    expected: [
+      {
+        name: "--foo",
+        value: "1",
+        priority: "",
+        offsets: [7, 16],
+        declarationText: "--foo: 1;",
+        isCustomProperty: true,
+      },
+      {
+        name: "--bar",
+        value: "2",
+        priority: "",
+        offsets: [23, 32],
+        declarationText: "--bar: 2;",
+        isCustomProperty: true,
+      },
+      {
+        name: "--foobar",
+        value: "calc( var(--foo, 3) * var(--bar, 4))",
+        priority: "",
+        offsets: [39, 86],
+        declarationText: "--foobar: calc( var(--foo, 3) * var(--bar, 4));",
+        isCustomProperty: true,
+      },
+      {
+        name: "--empty",
+        value: "",
+        priority: "",
+        offsets: [93, 103],
+        declarationText: "--empty: ;",
+        isCustomProperty: true,
+      },
+      {
+        name: "width",
+        value: "var(--foobar, var(--fallback))",
+        priority: "",
+        offsets: [110, 148],
+        declarationText: "width: var(--foobar, var(--fallback));",
+      },
+      {
+        name: "-moz-appearance",
+        value: "none",
+        priority: "",
+        offsets: [155, 177],
+        declarationText: "-moz-appearance: none;",
+      },
+      {
+        name: "--",
+        value: "5",
+        priority: "",
+        offsets: [184, 190],
+        declarationText: "--: 5;",
+      },
+    ],
+  },
 ];
 
 function run_test() {
@@ -1527,7 +1540,7 @@ function run_basic_tests() {
       }
     }
     if (output) {
-      assertOutput(test.input, output, test.expected);
+      assertDeclarations(test.input, output, test.expected);
     }
   }
 }
@@ -1601,40 +1614,43 @@ function run_named_tests() {
   }
 }
 
-function assertOutput(input, actual, expected) {
-  if (actual.length === expected.length) {
-    for (let i = 0; i < expected.length; i++) {
-      Assert.ok(!!actual[i]);
+function assertDeclarations(input, actualDeclarations, expectedDeclarations) {
+  if (actualDeclarations.length === expectedDeclarations.length) {
+    for (let i = 0; i < expectedDeclarations.length; i++) {
+      const actual = actualDeclarations[i];
+      const expected = expectedDeclarations[i];
+      Assert.ok(!!actual);
       info(
         "Check that the output item has the expected name, " +
           "value and priority"
       );
-      Assert.equal(actual[i].name, expected[i].name, "Expected name");
-      Assert.equal(actual[i].value, expected[i].value, "Expected value");
-      Assert.equal(
-        actual[i].priority,
-        expected[i].priority,
-        "Expected priority"
-      );
-      deepEqual(actual[i].offsets, expected[i].offsets, "Expected offsets");
-      if ("commentOffsets" in expected[i]) {
+      Assert.equal(actual.name, expected.name, "Expected name");
+      Assert.equal(actual.value, expected.value, "Expected value");
+      Assert.equal(actual.priority, expected.priority, "Expected priority");
+      deepEqual(actual.offsets, expected.offsets, "Expected offsets");
+      if ("commentOffsets" in expected) {
         deepEqual(
-          actual[i].commentOffsets,
-          expected[i].commentOffsets,
+          actual.commentOffsets,
+          expected.commentOffsets,
           "Expected commentOffsets"
         );
       }
 
-      if (expected[i].declarationText) {
+      if (expected.declarationText) {
         Assert.equal(
-          input.substring(expected[i].offsets[0], expected[i].offsets[1]),
-          expected[i].declarationText,
+          input.substring(expected.offsets[0], expected.offsets[1]),
+          expected.declarationText,
           "Expected declarationText"
         );
       }
+      Assert.equal(
+        actual.isCustomProperty,
+        expected.isCustomProperty,
+        "Expected isCustomProperty"
+      );
     }
   } else {
-    for (const prop of actual) {
+    for (const prop of actualDeclarations) {
       info(
         "Actual output contained: {name: " +
           prop.name +
@@ -1645,6 +1661,6 @@ function assertOutput(input, actual, expected) {
           "}"
       );
     }
-    Assert.equal(actual.length, expected.length);
+    Assert.equal(actualDeclarations.length, expectedDeclarations.length);
   }
 }

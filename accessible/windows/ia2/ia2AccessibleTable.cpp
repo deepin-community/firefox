@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,7 +13,6 @@
 #include "mozilla/a11y/TableAccessible.h"
 #include "nsCOMPtr.h"
 #include "nsString.h"
-#include "Statistics.h"
 
 using namespace mozilla::a11y;
 
@@ -34,7 +30,6 @@ ia2AccessibleTable::QueryInterface(REFIID iid, void** ppv) {
   *ppv = nullptr;
 
   if (IID_IAccessibleTable == iid) {
-    statistics::IAccessibleTableUsed();
     *ppv = static_cast<IAccessibleTable*>(this);
     (reinterpret_cast<IUnknown*>(*ppv))->AddRef();
     return S_OK;
@@ -309,7 +304,7 @@ ia2AccessibleTable::get_selectedChildren(long aMaxChildren, long** aChildren,
   uint32_t maxCells = cellIndices.Length();
   if (maxCells == 0) return S_FALSE;
 
-  *aChildren = static_cast<LONG*>(moz_xmalloc(sizeof(LONG) * maxCells));
+  *aChildren = static_cast<LONG*>(::CoTaskMemAlloc(sizeof(LONG) * maxCells));
   *aNChildren = maxCells;
   for (uint32_t i = 0; i < maxCells; i++) (*aChildren)[i] = cellIndices[i];
 
@@ -516,7 +511,7 @@ ia2AccessibleTable::get_selectedColumns(long** aColumns, long* aNColumns) {
   uint32_t maxCols = colIndices.Length();
   if (maxCols == 0) return S_FALSE;
 
-  *aColumns = static_cast<LONG*>(moz_xmalloc(sizeof(LONG) * maxCols));
+  *aColumns = static_cast<LONG*>(::CoTaskMemAlloc(sizeof(LONG) * maxCols));
   *aNColumns = maxCols;
   for (uint32_t i = 0; i < maxCols; i++) (*aColumns)[i] = colIndices[i];
 
@@ -538,7 +533,7 @@ ia2AccessibleTable::get_selectedRows(long** aRows, long* aNRows) {
   uint32_t maxRows = rowIndices.Length();
   if (maxRows == 0) return S_FALSE;
 
-  *aRows = static_cast<LONG*>(moz_xmalloc(sizeof(LONG) * maxRows));
+  *aRows = static_cast<LONG*>(::CoTaskMemAlloc(sizeof(LONG) * maxRows));
   *aNRows = maxRows;
   for (uint32_t i = 0; i < maxRows; i++) (*aRows)[i] = rowIndices[i];
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,23 +8,25 @@
 // include math.h to pick up definition of M_ maths defines e.g. M_PI
 #include <math.h>
 
+#include <algorithm>
+
 #include "DrawMode.h"
 #include "ImgDrawResult.h"
 #include "gfx2DGlue.h"
 #include "gfxMatrix.h"
 #include "gfxPoint.h"
 #include "gfxRect.h"
+#include "mozilla/EnumSet.h"
+#include "mozilla/ISVGDisplayableFrame.h"
 #include "mozilla/gfx/Rect.h"
-#include "nsAlgorithm.h"
+#include "nsCOMPtr.h"
 #include "nsChangeHint.h"
 #include "nsColor.h"
-#include "nsCOMPtr.h"
 #include "nsID.h"
 #include "nsIFrame.h"
 #include "nsISupports.h"
 #include "nsMathUtils.h"
 #include "nsStyleStruct.h"
-#include <algorithm>
 
 class gfxContext;
 class nsFrameList;
@@ -57,18 +57,12 @@ class GeneralPattern;
 }  // namespace gfx
 }  // namespace mozilla
 
-// maximum dimension of an offscreen surface - choose so that
-// the surface size doesn't overflow a 32-bit signed int using
-// 4 bytes per pixel; in line with Factory::CheckSurfaceSize
-// In fact Macs can't even manage that
-#define NS_SVG_OFFSCREEN_MAX_DIMENSION 4096
-
-#define SVG_HIT_TEST_FILL 0x01
-#define SVG_HIT_TEST_STROKE 0x02
-
 bool NS_SVGNewGetBBoxEnabled();
 
 namespace mozilla {
+
+enum class SVGHitTestFlag { Fill, Stroke };
+using SVGHitTestFlags = EnumSet<SVGHitTestFlag>;
 
 /**
  * Sometimes we need to distinguish between an empty box and a box
@@ -216,6 +210,7 @@ class SVGUtils final {
             length - length to be converted
   */
   static float ObjectSpace(const gfxRect& aRect,
+                           const dom::UserSpaceMetrics& aMetrics,
                            const SVGAnimatedLength* aLength);
 
   /* Computes the input length in terms of user space coordinates.
@@ -265,7 +260,8 @@ class SVGUtils final {
    * Notify the descendants of aFrame of a change to one of their ancestors
    * that might affect them.
    */
-  static void NotifyChildrenOfSVGChange(nsIFrame* aFrame, uint32_t aFlags);
+  static void NotifyChildrenOfSVGChange(
+      nsIFrame* aFrame, ISVGDisplayableFrame::ChangeFlags aFlags);
 
   /*
    * Convert a surface size to an integer for use by thebes
@@ -293,7 +289,8 @@ class SVGUtils final {
    * the viewport established by aFrame.
    */
   static gfxRect GetClipRectForFrame(const nsIFrame* aFrame, float aX, float aY,
-                                     float aWidth, float aHeight);
+                                     float aWidth, float aHeight,
+                                     SVGBBoxFlags aFlags = {});
 
   /* Using group opacity instead of fill or stroke opacity on a
    * geometry object seems to be a common authoring mistake.  If we're
@@ -310,48 +307,12 @@ class SVGUtils final {
    *
    * If the bbox is empty, this will return a singular matrix.
    *
-   * @param aFlags One or more of the BBoxFlags values defined below.
+   * @param aFlags One or more of the SVGBBoxFlags values defined below.
    */
   static gfxMatrix AdjustMatrixForUnits(const gfxMatrix& aMatrix,
                                         const SVGAnimatedEnumeration* aUnits,
-                                        nsIFrame* aFrame, uint32_t aFlags);
+                                        nsIFrame* aFrame, SVGBBoxFlags aFlags);
 
-  enum BBoxFlags {
-    eBBoxIncludeFill = 1 << 0,
-    // Include the geometry of the fill even when the fill does not
-    // actually render (e.g. when fill="none" or fill-opacity="0")
-    eBBoxIncludeFillGeometry = 1 << 1,
-    eBBoxIncludeStroke = 1 << 2,
-    // Include the geometry of the stroke even when the stroke does not
-    // actually render (e.g. when stroke="none" or stroke-opacity="0")
-    eBBoxIncludeStrokeGeometry = 1 << 3,
-    eBBoxIncludeMarkers = 1 << 4,
-    eBBoxIncludeClipped = 1 << 5,
-    // Normally a getBBox call on outer-<svg> should only return the
-    // bounds of the elements children. This flag will cause the
-    // element's bounds to be returned instead.
-    eUseFrameBoundsForOuterSVG = 1 << 6,
-    // https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
-    eForGetClientRects = 1 << 7,
-    // If the given frame is an HTML element, only include the region of the
-    // given frame, instead of all continuations of it, while computing bbox if
-    // this flag is set.
-    eIncludeOnlyCurrentFrameForNonSVGElement = 1 << 8,
-    // This flag is only has an effect when the target is a <use> element.
-    // getBBox returns the bounds of the elements children in user space if
-    // this flag is set; Otherwise, getBBox returns the union bounds in
-    // the coordinate system formed by the <use> element.
-    eUseUserSpaceOfUseElement = 1 << 9,
-    // For a frame with a clip-path, if this flag is set then the result
-    // will not be clipped to the bbox of the content inside the clip-path.
-    eDoNotClipToBBoxOfContentInsideClipPath = 1 << 10,
-    // For some cases, e.g. when using transform-box: stroke-box, we may have
-    // the cyclical dependency if any of the elements in the subtree has
-    // non-scaling-stroke. In this case, we should break it and use
-    // transform-box:fill-box instead.
-    // https://github.com/w3c/csswg-drafts/issues/9640
-    eAvoidCycleIfNonScalingStroke = 1 << 11,
-  };
   /**
    * This function in primarily for implementing the SVG DOM function getBBox()
    * and the SVG attribute value 'objectBoundingBox'.  However, it has been
@@ -362,7 +323,7 @@ class SVGUtils final {
    *
    * @param aFrame The frame of the element for which the bounds are to be
    *   obtained.
-   * @param aFlags One or more of the BBoxFlags values defined above.
+   * @param aFlags One or more of the SVGBBoxFlags values defined above.
    * @param aToBoundsSpace If not specified the returned rect is in aFrame's
    *   element's "user space". A matrix can optionally be pass to specify a
    *   transform from aFrame's user space to the bounds space of interest
@@ -372,7 +333,7 @@ class SVGUtils final {
   static gfxRect GetBBox(nsIFrame* aFrame,
                          // If the default arg changes, update the handling for
                          // ObjectBoundingBoxProperty() in the implementation.
-                         uint32_t aFlags = eBBoxIncludeFillGeometry,
+                         SVGBBoxFlags aFlags = SVGBBoxFlag::IncludeFillGeometry,
                          const gfxMatrix* aToBoundsSpace = nullptr);
 
   /*
@@ -404,6 +365,7 @@ class SVGUtils final {
   static gfxRect GetRelativeRect(uint16_t aUnits,
                                  const SVGAnimatedLength* aXYWH,
                                  const gfxRect& aBBox,
+                                 const SVGElement* aElement,
                                  const dom::UserSpaceMetrics& aMetrics);
 
   static bool OuterSVGIsCallingReflowSVG(nsIFrame* aFrame);
@@ -421,6 +383,12 @@ class SVGUtils final {
    */
   static bool GetNonScalingStrokeTransform(const nsIFrame* aFrame,
                                            gfxMatrix* aUserToOuterSVG);
+
+  /**
+   * We need to track whether content has non-scaling-stroke because we can't
+   * asynchronously animate it with a scaling transform.
+   */
+  static void UpdateNonScalingStrokeStateBit(nsIFrame* aFrame);
 
   /**
    * Compute the maximum possible device space stroke extents of a path given
@@ -447,8 +415,7 @@ class SVGUtils final {
    * the range of valid integers.
    */
   static int32_t ClampToInt(double aVal) {
-    return NS_lround(
-        std::max(double(INT32_MIN), std::min(double(INT32_MAX), aVal)));
+    return NS_lround(std::clamp(aVal, double(INT32_MIN), double(INT32_MAX)));
   }
 
   /**
@@ -461,7 +428,7 @@ class SVGUtils final {
   }
 
   static nscolor GetFallbackOrPaintColor(
-      const ComputedStyle&, StyleSVGPaint nsStyleSVG::*aFillOrStroke,
+      const ComputedStyle&, StyleSVGPaint nsStyleSVG::* aFillOrStroke,
       nscolor aDefaultContextFallbackColor);
 
   static void MakeFillPatternFor(nsIFrame* aFrame, gfxContext* aContext,
@@ -497,7 +464,7 @@ class SVGUtils final {
    * into account the type of element and the value of the 'pointer-events'
    * property on the element.
    */
-  static uint16_t GetGeometryHitTestFlags(const nsIFrame* aFrame);
+  static SVGHitTestFlags GetGeometryHitTestFlags(const nsIFrame* aFrame);
 
   static FillRule ToFillRule(StyleFillRule aFillRule) {
     return aFillRule == StyleFillRule::Evenodd ? FillRule::FILL_EVEN_ODD
@@ -618,14 +585,6 @@ class SVGUtils final {
    * its usual dev pixels to SVG user units/CSS px to keep the SVG code happy.
    */
   static gfxMatrix GetCSSPxToDevPxMatrix(const nsIFrame* aNonSVGFrame);
-
-  /**
-   * It is a replacement of
-   * SVGElement::PrependLocalTransformsTo(eUserSpaceToParent).
-   * If no CSS transform is involved, they should behave exactly the same;
-   * if there are CSS transforms, this one will take them into account
-   * while SVGElement::PrependLocalTransformsTo won't.
-   */
   static gfxMatrix GetTransformMatrixInUserSpace(const nsIFrame* aFrame);
 };
 

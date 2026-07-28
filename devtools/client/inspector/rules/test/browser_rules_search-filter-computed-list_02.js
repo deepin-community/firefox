@@ -32,19 +32,23 @@ async function testAddTextInFilter(inspector, view) {
   await setSearchFilter(view, SEARCH);
 
   info("Check that the correct rules are visible");
-  is(view.element.children.length, 2, "Should have 2 rules.");
+  assertDisplayedRulesCount(view, 2);
   is(
-    getRuleViewRuleEditor(view, 0).rule.selectorText,
+    getRuleViewRuleEditorAt(view, 0).rule.selectorText,
     "element",
     "First rule is inline element."
   );
 
-  const rule = getRuleViewRuleEditor(view, 1).rule;
+  const rule = getRuleViewRuleEditorAt(view, 1).rule;
   const ruleEditor = getTextProperty(view, 1, { margin: "4px 0px" }).editor;
   const computed = ruleEditor.computed;
 
   is(rule.selectorText, "#testid", "Second rule is #testid.");
-  ok(ruleEditor.expander.getAttribute("open"), "Expander is open.");
+  is(
+    ruleEditor.expander.getAttribute("aria-expanded"),
+    "true",
+    "Expander is open."
+  );
   ok(
     !ruleEditor.container.classList.contains("ruleview-highlight"),
     "margin text property is not highlighted."
@@ -76,23 +80,28 @@ async function testRemoveTextInFilter(inspector, view) {
   const searchField = view.searchField;
 
   searchField.focus();
+  const onRuleviewFiltered = inspector.once("ruleview-filtered");
   EventUtils.synthesizeKey("VK_BACK_SPACE", {}, win);
-  await inspector.once("ruleview-filtered");
+  await onRuleviewFiltered;
 
   info("Check that the correct rules are visible");
-  is(view.element.children.length, 2, "Should have 2 rules.");
+  assertDisplayedRulesCount(view, 2);
   is(
-    getRuleViewRuleEditor(view, 0).rule.selectorText,
+    getRuleViewRuleEditorAt(view, 0).rule.selectorText,
     "element",
     "First rule is inline element."
   );
 
-  const rule = getRuleViewRuleEditor(view, 1).rule;
+  const rule = getRuleViewRuleEditorAt(view, 1).rule;
   const ruleEditor = getTextProperty(view, 1, { margin: "4px 0px" }).editor;
   const computed = ruleEditor.computed;
 
   is(rule.selectorText, "#testid", "Second rule is #testid.");
-  ok(!ruleEditor.expander.getAttribute("open"), "Expander is closed.");
+  is(
+    ruleEditor.expander.getAttribute("aria-expanded"),
+    "false",
+    "Expander is closed."
+  );
   ok(
     ruleEditor.container.classList.contains("ruleview-highlight"),
     "margin text property is correctly highlighted."

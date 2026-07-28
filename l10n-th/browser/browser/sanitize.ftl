@@ -59,10 +59,7 @@ history-section-label = ประวัติ
 item-history-and-downloads =
     .label = ประวัติการเรียกดูและการดาวน์โหลด
     .accesskey = ป
-item-history-form-data-downloads =
-    .label = ประวัติ
-    .accesskey = ป
-item-history-form-data-downloads-description = ล้างเว็บไซต์และประวัติการดาวน์โหลด ข้อมูลแบบฟอร์มที่บันทึกไว้ และการค้นหา
+item-history-and-downloads-description2 = ล้างประวัติไซต์และการดาวน์โหลด
 item-cookies =
     .label = คุกกี้
     .accesskey = ค
@@ -98,7 +95,11 @@ item-form-search-history =
 item-site-prefs =
     .label = การตั้งค่าไซต์
     .accesskey = ไ
-item-site-prefs-description = กลับค่าการกำหนดสิทธิ์และการกำหนดลักษณะไซต์ของคุณเป็นการตั้งค่าดั้งเดิม
+item-formdata-prefs =
+    .label = ข้อมูลแบบฟอร์มที่บันทึกไว้
+    .accesskey = แ
+item-formdata-description = ล้างข้อมูลต่างๆ เช่น ชื่อ อีเมล และรายการอื่นๆ ที่คุณป้อนในแบบฟอร์ม
+item-site-prefs-description = กลับค่าการกำหนดสิทธิ์และค่าปรับแต่งไซต์ของคุณเป็นการตั้งค่าดั้งเดิม
 data-section-label = ข้อมูล
 item-site-settings =
     .label = การตั้งค่าไซต์
@@ -127,3 +128,6 @@ sanitize-everything-warning = ประวัติทั้งหมดจะ�
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = รายการที่เลือกทั้งหมดจะถูกล้าง
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = กำลังคำนวณ…

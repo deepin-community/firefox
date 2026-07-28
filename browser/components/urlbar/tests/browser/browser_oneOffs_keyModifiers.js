@@ -34,12 +34,12 @@ add_setup(async function () {
   engine = await SearchTestUtils.installOpenSearchEngine({
     url: getRootDirectory(gTestPath) + TEST_ENGINE_BASENAME,
   });
-  await Services.search.moveEngine(engine, 0);
+  await SearchService.moveEngine(engine, 0);
 
   await SpecialPowers.pushPrefEnv({
     set: [
       ["browser.search.separatePrivateDefault.ui.enabled", false],
-      ["browser.urlbar.suggest.quickactions", false],
+      ["browser.urlbar.scotchBonnet.enableOverride", false],
     ],
   });
 

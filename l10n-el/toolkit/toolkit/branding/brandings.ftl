@@ -31,33 +31,60 @@
 -relay-brand-name = Firefox Relay
 -relay-brand-short-name = Relay
 -fakespot-brand-name = Fakespot
+-solo-ai-brand-name = Solo
+-thunderbird-brand-name = Mozilla Thunderbird
+-thunderbird-brand-short-name = Thunderbird
+-mdn-brand-name = MDN Web Docs
+-yelp-brand-name = Yelp
+
+##
+
 # Note the name of the website is capitalized.
 -fakespot-website-name = Fakespot.com
 # The particle "by" can be localized, "Fakespot" and "Mozilla" should not be localized or transliterated.
 -fakespot-brand-full-name = Fakespot από τη Mozilla
 # “Suggest” can be localized, “Firefox” must be treated as a brand
 # and kept in English.
--firefox-suggest-brand-name = Προτάσεις Firefox
+-firefox-suggest-brand-name =
+    { $case ->
+        [gen] Προτάσεων Firefox
+       *[nom] Προτάσεις Firefox
+    }
 # ”Home" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefox-home-brand-name =
     { $case ->
-       *[nom]
-            { $capitalization ->
-               *[upper] Αρχική Firefox
-                [lower] αρχική Firefox
-            }
         [gen]
             { $capitalization ->
-               *[upper] Αρχικής Firefox
                 [lower] αρχικής Firefox
+               *[upper] Αρχικής Firefox
+            }
+       *[nom]
+            { $capitalization ->
+                [lower] αρχική Firefox
+               *[upper] Αρχική Firefox
             }
     }
 # View" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
--firefoxview-brand-name = Προβολή Firefox
+-firefoxview-brand-name =
+    { $case ->
+        [gen] Προβολής Firefox
+       *[nom] Προβολή Firefox
+    }
 # Firefox Labs is the name for a page in Settings to allow users to learn about
 # experimental and in-development features, and turn those features on and off.
 # The "Labs" portion can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefoxlabs-brand-name = Firefox Labs
+-smart-window-brand-name =
+    { $form ->
+        [lowerSingularNom] έξυπνο παράθυρο
+        [upperSingularGen] Έξυπνου παραθύρου
+        [lowerSingularGen] έξυπνου παραθύρου
+        [upperPluralNom] Έξυπνα παράθυρα
+        [lowerPluralNom] έξυπνα παράθυρα
+        [upperPluralGen] Έξυπνων παραθύρων
+        [lowerPluralGen] έξυπνων παραθύρων
+       *[upperSingularNom] Έξυπνο παράθυρο
+    }

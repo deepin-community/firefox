@@ -81,8 +81,6 @@
  *            record that should be updated.
  */
 
-export let FormHistory;
-
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 const lazy = {};
@@ -117,7 +115,7 @@ var Prefs = {
     this._initialized = true;
 
     this._prefBranch = Services.prefs.getBranch("browser.formfill.");
-    this._prefBranch.addObserver("", this, true);
+    this._prefBranch.addObserver("", this);
 
     this._agedWeight = this._prefBranch.getIntPref("agedWeight");
     this._boundaryWeight = this._prefBranch.getIntPref("boundaryWeight");
@@ -172,10 +170,7 @@ var Prefs = {
     }
   },
 
-  QueryInterface: ChromeUtils.generateQI([
-    "nsIObserver",
-    "nsISupportsWeakReference",
-  ]),
+  QueryInterface: ChromeUtils.generateQI(["nsIObserver"]),
 };
 
 function log(aMessage) {
@@ -1011,7 +1006,7 @@ var DB = {
   },
 };
 
-FormHistory = {
+export let FormHistory = {
   get db() {
     return DB.conn;
   },
@@ -1147,6 +1142,15 @@ FormHistory = {
   },
 
   /**
+   * @typedef {object} FormHistoryResultType
+   * @property {string} text
+   * @property {string} guid
+   * @property {string} textLowerCase
+   * @property {number} frecency
+   * @property {number} totalScore
+   */
+
+  /**
    * Gets results for the autocomplete widget.
    *
    * @param {string} searchString The string to search for.
@@ -1155,7 +1159,7 @@ FormHistory = {
    *   - source
    * @param {Function} [isCancelled] optional function that can return true
    *   to cancel result retrieval
-   * @returns {Promise<Array>}
+   * @returns {Promise<FormHistoryResultType[]>}
    *   An array of results. If the search was canceled it will be an empty array.
    */
   async getAutoCompleteResults(searchString, params, isCancelled) {
@@ -1253,6 +1257,7 @@ FormHistory = {
       where +
       "ORDER BY ROUND(frecency * boundaryBonuses) DESC, UPPER(value) ASC";
 
+    /** @type {FormHistoryResultType[]} */
     let results = [];
     const conn = await this.db;
     await conn.executeCached(query, params, (row, cancel) => {
@@ -1287,7 +1292,7 @@ FormHistory = {
     supportsDeletedTable = val;
   },
 
-  // The remaining methods are called by FormHistoryStartup.js
+  // The remaining methods are called by FormHistoryStartup.sys.mjs
   async expireOldEntries() {
     log("expireOldEntries");
 

@@ -138,11 +138,28 @@ pub struct StreamParams {
     pub channels: c_uint,
     pub layout: ffi::cubeb_channel_layout,
     pub prefs: ffi::cubeb_stream_prefs,
+    pub input_params: ffi::cubeb_input_processing_params,
 }
 
 impl From<&cubeb::StreamParamsRef> for StreamParams {
     fn from(x: &cubeb::StreamParamsRef) -> StreamParams {
         unsafe { *(x.as_ptr() as *mut StreamParams) }
+    }
+}
+
+impl StreamParams {
+    pub fn frame_size_in_bytes(&self) -> usize {
+        let format = self.format.into();
+        let sample_size = match format {
+            cubeb::SampleFormat::S16LE
+            | cubeb::SampleFormat::S16BE
+            | cubeb::SampleFormat::S16NE => 2usize,
+            cubeb::SampleFormat::Float32LE
+            | cubeb::SampleFormat::Float32BE
+            | cubeb::SampleFormat::Float32NE => 4usize,
+        };
+        let channel_count = self.channels as usize;
+        sample_size * channel_count
     }
 }
 
@@ -202,7 +219,7 @@ pub struct RegisterDeviceCollectionChanged {
 // ServerConn::process_msg doesn't have a catch-all case.
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ServerMessage {
-    ClientConnect(u32),
+    ClientConnect,
     ClientDisconnect,
 
     ContextGetBackendId,
@@ -274,11 +291,7 @@ pub enum ClientMessage {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum CallbackReq {
-    Data {
-        nframes: isize,
-        input_frame_size: usize,
-        output_frame_size: usize,
-    },
+    Data { nframes: isize },
     State(ffi::cubeb_state),
     DeviceChange,
 }
@@ -486,7 +499,7 @@ impl Drop for RemoteHandle {
         unsafe {
             if let Some(target_handle) = self.target_handle {
                 if let Err(e) = crate::close_target_handle(target_handle, self.target) {
-                    trace!("RemoteHandle failed to close target handle: {:?}", e);
+                    trace!("RemoteHandle failed to close target handle: {e:?}");
                 }
             }
         }
@@ -626,6 +639,7 @@ mod test {
             channels: 32,
             layout: ffi::CUBEB_LAYOUT_3F1_LFE,
             prefs: ffi::CUBEB_STREAM_PREF_LOOPBACK,
+            input_params: ffi::CUBEB_INPUT_PROCESSING_PARAM_NONE,
         };
         let wrapped = ::cubeb::StreamParams::from(raw);
         let params = StreamParams::from(wrapped.as_ref());

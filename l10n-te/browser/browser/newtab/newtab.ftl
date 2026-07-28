@@ -8,11 +8,57 @@
 newtab-page-title = కొత్త ట్యాబు
 newtab-settings-button =
     .title = మీ కొత్త ట్యాబు పేజీని మలచుకోండి
+newtab-settings-dialog-label =
+    .aria-label = అమరికలు
 newtab-personalize-icon-label =
     .title = కొత్త ట్యాబును వ్యక్తిగతీకరించుకోండి
     .aria-label = కొత్త ట్యాబును వ్యక్తిగతీకరించుకోండి
 newtab-personalize-dialog-label =
     .aria-label = వ్యక్తిగతీకరించు
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-title =
+    .label = ముంగిలిపేజీ
+home-homepage-new-tabs =
+    .label = కొత్త ట్యాబు
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } వరుస
+           *[other] { $num } వరుసలు
+        }
+home-restore-defaults-srd =
+    .label = అప్రమేయాలను పునరుద్ధరించు
+    .accesskey = R
+home-mode-choice-default-fx-srd =
+    .label = { -firefox-home-brand-name } (అప్రమేయం)
+home-mode-choice-custom-srd =
+    .label = అభిమత URLలు…
+home-mode-choice-blank-srd =
+    .label = ఖాళీ పేజీ
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = ప్రాయోజిక కథనాలు
+home-prefs-highlights-option-visited-pages-srd =
+    .label = చూసిన పేజీలు
+home-prefs-highlights-options-bookmarks-srd =
+    .label = ఇష్టాంశాలు
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = ఇటీవలి దింపుకోలు
+home-prefs-recent-activity-header-srd =
+    .label = ఇటీవలి కార్యకలాపం
+home-prefs-recent-activity-select =
+    .aria-label = ఇటీవలి కార్యకలాపం
+home-prefs-weather-header-srd =
+    .label = వాతావరణం
 
 ## Search box component.
 
@@ -20,13 +66,12 @@ newtab-personalize-dialog-label =
 newtab-search-box-search-button =
     .title = వెతకండి
     .aria-label = వెతకండి
-
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = { $engine }‌తో వెతకండి లేదా చిరునామాను ఇవ్వండి
 newtab-search-box-handoff-text-no-engine = వెతకండి లేదా చిరునామాను ఇవ్వండి
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = { $engine }‌తో వెతకండి లేదా చిరునామాను ఇవ్వండి
     .title = { $engine }‌తో వెతకండి లేదా చిరునామాను ఇవ్వండి
@@ -35,25 +80,22 @@ newtab-search-box-handoff-input-no-engine =
     .placeholder = వెతకండి లేదా చిరునామాను ఇవ్వండి
     .title = వెతకండి లేదా చిరునామాను ఇవ్వండి
     .aria-label = వెతకండి లేదా చిరునామాను ఇవ్వండి
-
 newtab-search-box-text = జాలంలో వెతకండి
 newtab-search-box-input =
     .placeholder = జాలంలో వెతకండి
     .aria-label = జాలంలో వెతకండి
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = శోధన యంత్రాన్ని జోడించండి
 newtab-topsites-edit-topsites-header = టాప్ సైట్ను సవరించండి
 newtab-topsites-title-label = శీర్షిక
 newtab-topsites-title-input =
     .placeholder = శీర్షికను నమోదు చేయండి
-
 newtab-topsites-url-label = చిరునామా
 newtab-topsites-url-input =
     .placeholder = URL ను టైప్ చేయండి లేదా అతికించండి
 newtab-topsites-url-validation = చెల్లుబాటు అయ్యే URL అవసరం
-
 newtab-topsites-image-url-label = అభిమత చిత్రపు చిరునామా
 newtab-topsites-use-image-link = అభిమత చిత్రాన్ని వాడు…
 newtab-topsites-image-validation = చిత్రాన్ని లోడు చెయ్యలేకపోయాం. మరో చిరునామా ప్రయత్నించండి.
@@ -82,15 +124,13 @@ newtab-topsite-sponsored = ప్రాయోజితం
 newtab-menu-section-tooltip =
     .title = మెనూని తెరువు
     .aria-label = మెనూని తెరువు
-
 # Tooltip for dismiss button
 newtab-dismiss-button-tooltip =
     .title = తీసివేయి
     .aria-label = తీసివేయి
-
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = మెనూని తెరువు
     .aria-label = { $title } కోసం సందర్భోచిత మెనూని తెరవు
@@ -112,6 +152,8 @@ newtab-menu-save-to-pocket = { -pocket-brand-name } కి సేవ్ చే�
 newtab-menu-delete-pocket = { -pocket-brand-name } నుండి తొలగించు
 newtab-menu-archive-pocket = { -pocket-brand-name }లో ఆర్కయివ్ చెయ్యి
 newtab-menu-show-privacy-info = మా స్పాన్సర్లు & మీ అంతరంగికత
+# Context menu option to open a support page explaining the New Tab personalization features and privacy controls.
+newtab-menu-section-learn-more = ఇంకా తెలుసుకోండి
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -155,21 +197,18 @@ newtab-label-removed-bookmark = ఇష్టాంశం తొలగించ�
 newtab-label-recommended = ట్రెండింగ్
 newtab-label-saved = { -pocket-brand-name }లో భద్రపరచినది
 newtab-label-download = దింపుకున్నవి
-
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · ప్రాయోజితం
-
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = { $sponsor }చే ప్రాయోజితం
-
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } నిమి
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -198,16 +237,18 @@ newtab-section-expand-section-label =
 newtab-section-header-topsites = మేటి సైట్లు
 newtab-section-header-recent-activity = ఇటీవలి కార్యకలాపం
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider }చే సిఫార్సు చేయబడినది
+newtab-section-header-stories = ఆలోచింపజేసే కథనాలు
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = మీ కోసం నేటి ఎంపికలు
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = విహారించడం మొదలుపెట్టండి, మీరు ఈమధ్య చూసిన లేదా ఇష్టపడిన గొప్ప వ్యాసాలను, వీడియోలను, ఇతర పేజీలను ఇక్కడ చూపిస్తాం.
-
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = మీరు పట్టుబడ్డారు. { $provider } నుండి మరింత అగ్ర కథనాల కోసం తరువాత తనిఖీ చేయండి. వేచి ఉండలేరా? జాలములోని అంతటి నుండి మరింత గొప్ప కథనాలను కనుగొనడానికి ప్రసిద్ధ అంశం ఎంచుకోండి.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -224,14 +265,13 @@ newtab-pocket-read-more = ప్రముఖ అంశాలు:
 newtab-pocket-more-recommendations = మరిన్ని సిఫారసులు
 newtab-pocket-learn-more = ఇంకా తెలుసుకోండి
 newtab-pocket-cta-button = { -pocket-brand-name } పొందండి
-
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
-
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = భద్రపరుచు
 
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = ఇలాంటివి మరిన్ని
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -242,11 +282,100 @@ newtab-error-fallback-refresh-link = మళ్ళీ ప్రయత్నిం
 ## Customization Menu
 
 newtab-custom-shortcuts-subtitle = మీరు భద్రపరచుకున్న లేదా చూసిన సైట్లు
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] { $num } వరుస
+           *[other] { $num } వరుసలు
+        }
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } వరుస
        *[other] { $num } వరుసలు
     }
+newtab-custom-stories-personalized-toggle =
+    .label = కథనాలు
 newtab-custom-pocket-sponsored = ప్రాయోజిక కథనాలు
 newtab-custom-recent-title = ఇటీవలి కార్యకలాపం
+newtab-custom-weather-toggle =
+    .label = వాతావరణం
+    .description = నేటి వాతావరణ అంచనా
+newtab-custom-widget-lists-toggle =
+    .label = జాబితాలు
 newtab-custom-close-button = మూసివేయి
+
+## Solid Colors
+
+#  (developer note): @nova-cleanup(remove-string): Remove old "Solid colors" string once Nova lands. The simplified "Colors" string will take over
+newtab-wallpaper-category-title-colors = నిండు రంగులు
+newtab-wallpaper-blue = నీలం
+newtab-wallpaper-light-blue = లేత నీలం
+newtab-wallpaper-light-green = లేత ఆకుపచ్చ
+newtab-wallpaper-green = పచ్చ
+newtab-wallpaper-yellow = పసుపు
+newtab-wallpaper-red = ఎరుపు
+newtab-wallpaper-dark-blue = ముదురు నీలం
+newtab-wallpaper-dark-green = ముదురాకుపచ్చ
+
+## Firefox
+
+newtab-wallpaper-category-title-photographs = ఛాయాచిత్రాలు
+newtab-wallpaper-beach-at-sunrise = ఉషాతీరం
+newtab-wallpaper-beach-at-sunset = సంధ్యాతీరం
+newtab-wallpaper-feature-highlight-button = అర్థమైంది
+
+## New Tab Weather
+
+newtab-weather-menu-temperature-units = ఉష్ణోగ్రత యూనిట్లు
+newtab-weather-menu-temperature-option-celsius = సెల్సియస్
+newtab-weather-menu-learn-more = ఇంకా తెలుసుకోండి
+newtab-weather-opt-in-yes =
+    .label = అవును
+
+## Topic Labels
+
+newtab-topic-label-business = వ్యాపారం
+newtab-topic-label-career = వృత్తి
+newtab-topic-label-education = విద్య
+newtab-topic-label-arts = వినోదం
+newtab-topic-label-food = ఆహారం
+newtab-topic-label-health = ఆరోగ్యం
+newtab-topic-label-hobbies = ఆటలు
+newtab-topic-label-government = రాజకీయాలు
+newtab-topic-label-education-science = విజ్ఞానం
+newtab-topic-label-sports = క్రీడలు
+newtab-topic-label-tech = సాంకేతికం
+newtab-topic-label-travel = ప్రయాణం
+newtab-topic-label-home = ఇల్లు & తోట
+
+## Topic Selection Modal
+
+newtab-topic-selection-save-button = భద్రపరుచు
+newtab-topic-selection-cancel-button = రద్దుచేయి
+newtab-topic-selection-button-maybe-later = బహుశా తర్వాత
+newtab-topic-selection-button-update-interests = మీ ఆసక్తులను తాజాకరించండి
+newtab-topic-selection-button-pick-interests = మీ ఆసక్తులను ఎంచుకోండి
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-requires-payment-subscription-learn-more = ఇంకా తెలుసుకోండి
+newtab-report-cancel = రద్దుచేయి
+
+## Strings for task / to-do list productivity widget
+
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = కొత్తది
+newtab-widget-lists-label-beta =
+    .label = బీటా
+newtab-widget-lists-menu-learn-more = ఇంకా తెలుసుకోండి
+newtab-widget-lists-input-menu-delete = తొలగించు
+
+## Strings introduced by the Nova redesign of the Timer widget
+
+newtab-widget-timer-menu-learn-more = ఇంకా తెలుసుకోండి

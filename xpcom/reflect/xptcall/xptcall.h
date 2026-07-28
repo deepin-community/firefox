@@ -1,12 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* Public declarations for xptcall. */
 
-#ifndef xptcall_h___
-#define xptcall_h___
+#ifndef xptcall_h_
+#define xptcall_h_
 
 #include "nscore.h"
 #include "nsISupports.h"
@@ -75,7 +74,7 @@ struct nsXPTCVariant {
 
   // Clear to a valid, null state.
   nsXPTCVariant() {
-    memset(this, 0, sizeof(nsXPTCVariant));
+    memset((void*)this, 0, sizeof(nsXPTCVariant));
     type = nsXPTType::T_VOID;
   }
 
@@ -113,7 +112,7 @@ static_assert(offsetof(nsXPTCVariant, val) == offsetof(nsXPTCVariant, ext),
 #define XPT_CHECK_SIZEOF(xpt, type)                                            \
   static_assert(sizeof(nsXPTCVariant::ExtendedVal) >= sizeof(type),            \
                 "nsXPTCVariant::ext not big enough for " #xpt " (" #type ")"); \
-  static_assert(MOZ_ALIGNOF(nsXPTCVariant::ExtendedVal) >= MOZ_ALIGNOF(type),  \
+  static_assert(alignof(nsXPTCVariant::ExtendedVal) >= alignof(type),          \
                 "nsXPTCVariant::ext not aligned enough for " #xpt " (" #type   \
                 ")");
 XPT_FOR_EACH_TYPE(XPT_CHECK_SIZEOF)
@@ -170,4 +169,4 @@ extern "C" nsresult NS_InvokeByIndex(nsISupports* that, uint32_t methodIndex,
                                      uint32_t paramCount,
                                      nsXPTCVariant* params);
 
-#endif /* xptcall_h___ */
+#endif /* xptcall_h_ */

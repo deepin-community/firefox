@@ -1,26 +1,18 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "DOMSVGTransform.h"
 
+#include "SVGAnimatedTransformList.h"
+#include "SVGAttrTearoffTable.h"
 #include "mozAutoDocUpdate.h"
+#include "mozilla/DebugOnly.h"
 #include "mozilla/dom/DOMMatrix.h"
 #include "mozilla/dom/DOMMatrixBinding.h"
 #include "mozilla/dom/SVGMatrix.h"
 #include "mozilla/dom/SVGTransformBinding.h"
-#include "mozilla/DebugOnly.h"
-#include "mozilla/FloatingPoint.h"
-#include "mozilla/Maybe.h"
 #include "nsError.h"
-#include "SVGAnimatedTransformList.h"
-#include "SVGAttrTearoffTable.h"
-
-namespace {
-const double kRadPerDegree = 2.0 * M_PI / 360.0;
-}  // namespace
 
 namespace mozilla::dom {
 
@@ -95,12 +87,12 @@ DOMSVGTransform::DOMSVGTransform(const gfxMatrix& aMatrix)
       mTransform(new SVGTransform(aMatrix)) {}
 
 DOMSVGTransform::DOMSVGTransform(const DOMMatrix2DInit& aMatrix,
-                                 ErrorResult& rv)
+                                 ErrorResult& aRv)
     : mList(nullptr),
       mListIndex(0),
       mIsAnimValItem(false),
       mTransform(new SVGTransform()) {
-  SetMatrix(aMatrix, rv);
+  SetMatrix(aMatrix, aRv);
 }
 
 DOMSVGTransform::DOMSVGTransform(const SVGTransform& aTransform)
@@ -139,25 +131,23 @@ float DOMSVGTransform::Angle() const { return Transform().Angle(); }
 void DOMSVGTransform::SetMatrix(const DOMMatrix2DInit& aMatrix,
                                 ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    aRv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
-  RefPtr<DOMMatrixReadOnly> matrix =
-      DOMMatrixReadOnly::FromMatrix(GetParentObject(), aMatrix, aRv);
+  auto matrix2D = DOMMatrixReadOnly::ToValidatedMatrixDouble(aMatrix, aRv);
   if (aRv.Failed()) {
     return;
   }
-  const gfxMatrix* matrix2D = matrix->GetInternal2D();
-  if (!matrix2D->IsFinite()) {
+  if (!matrix2D.IsFinite()) {
     aRv.ThrowTypeError<MSG_NOT_FINITE>("Matrix setter");
     return;
   }
-  SetMatrix(*matrix2D);
+  SetMatrix(matrix2D);
 }
 
-void DOMSVGTransform::SetTranslate(float tx, float ty, ErrorResult& rv) {
+void DOMSVGTransform::SetTranslate(float tx, float ty, ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -170,9 +160,9 @@ void DOMSVGTransform::SetTranslate(float tx, float ty, ErrorResult& rv) {
   Transform().SetTranslate(tx, ty);
 }
 
-void DOMSVGTransform::SetScale(float sx, float sy, ErrorResult& rv) {
+void DOMSVGTransform::SetScale(float sx, float sy, ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -185,9 +175,9 @@ void DOMSVGTransform::SetScale(float sx, float sy, ErrorResult& rv) {
 }
 
 void DOMSVGTransform::SetRotate(float angle, float cx, float cy,
-                                ErrorResult& rv) {
+                                ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -203,9 +193,9 @@ void DOMSVGTransform::SetRotate(float angle, float cx, float cy,
   Transform().SetRotate(angle, cx, cy);
 }
 
-void DOMSVGTransform::SetSkewX(float angle, ErrorResult& rv) {
+void DOMSVGTransform::SetSkewX(float angle, ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -215,7 +205,7 @@ void DOMSVGTransform::SetSkewX(float angle, ErrorResult& rv) {
   }
 
   if (!std::isfinite(tan(angle * kRadPerDegree))) {
-    rv.ThrowRangeError<MSG_INVALID_TRANSFORM_ANGLE_ERROR>();
+    aRv.ThrowRangeError<MSG_INVALID_TRANSFORM_ANGLE_ERROR>();
     return;
   }
 
@@ -224,9 +214,9 @@ void DOMSVGTransform::SetSkewX(float angle, ErrorResult& rv) {
   MOZ_ASSERT(NS_SUCCEEDED(result), "SetSkewX unexpectedly failed");
 }
 
-void DOMSVGTransform::SetSkewY(float angle, ErrorResult& rv) {
+void DOMSVGTransform::SetSkewY(float angle, ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -236,7 +226,7 @@ void DOMSVGTransform::SetSkewY(float angle, ErrorResult& rv) {
   }
 
   if (!std::isfinite(tan(angle * kRadPerDegree))) {
-    rv.ThrowRangeError<MSG_INVALID_TRANSFORM_ANGLE_ERROR>();
+    aRv.ThrowRangeError<MSG_INVALID_TRANSFORM_ANGLE_ERROR>();
     return;
   }
 
@@ -265,13 +255,14 @@ void DOMSVGTransform::RemovingFromList() {
   MOZ_ASSERT(!mTransform,
              "Item in list also has another non-list value associated with it");
 
-  mTransform = MakeUnique<SVGTransform>(InternalItem());
+  mTransform = std::make_unique<SVGTransform>(InternalItem());
   mList = nullptr;
   mIsAnimValItem = false;
 }
 
 SVGTransform& DOMSVGTransform::InternalItem() {
-  SVGAnimatedTransformList* alist = Element()->GetAnimatedTransformList();
+  SVGAnimatedTransformList* alist =
+      Element()->GetExistingAnimatedTransformList();
   return mIsAnimValItem && alist->mAnimVal ? (*alist->mAnimVal)[mListIndex]
                                            : alist->mBaseVal[mListIndex];
 }
@@ -282,7 +273,8 @@ const SVGTransform& DOMSVGTransform::InternalItem() const {
 
 #ifdef DEBUG
 bool DOMSVGTransform::IndexIsValid() {
-  SVGAnimatedTransformList* alist = Element()->GetAnimatedTransformList();
+  SVGAnimatedTransformList* alist =
+      Element()->GetExistingAnimatedTransformList();
   return (mIsAnimValItem && mListIndex < alist->GetAnimValue().Length()) ||
          (!mIsAnimValItem && mListIndex < alist->GetBaseValue().Length());
 }

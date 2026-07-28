@@ -3,29 +3,35 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+from typing import Optional, Union
+
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.schema import Schema
-from voluptuous import Any, Optional, Required
+
+from gecko_taskgraph.transforms.task import TaskDescriptionSchema
 
 transforms = TransformSequence()
 
-bootstrap_schema = Schema(
-    {
-        # Name of the bootstrap task.
-        Required("name"): str,
-        # Name of the docker image. Ideally, we'd also have tasks for mac and windows,
-        # but we unfortunately don't have workers barebones enough for such testing
-        # to be satisfactory.
-        Required("image"): Any(str, {"in-tree": str}),
-        # Initialization commands.
-        Required("pre-commands"): [str],
-        # relative path (from config.path) to the file task was defined in
-        Optional("task-from"): str,
-    }
-)
+
+class InTreeImageSchema(Schema):
+    in_tree: str
 
 
-transforms.add_validate(bootstrap_schema)
+class BootstrapSchema(Schema, kw_only=True):
+    # Name of the bootstrap task.
+    name: str
+    # Name of the docker image. Ideally, we'd also have tasks for mac and windows,
+    # but we unfortunately don't have workers barebones enough for such testing
+    # to be satisfactory.
+    image: Union[str, InTreeImageSchema]
+    # Initialization commands.
+    pre_commands: list[str]
+    # relative path (from config.path) to the file task was defined in
+    task_from: Optional[str] = None
+    run_on_repo_type: TaskDescriptionSchema.__annotations__["run_on_repo_type"] = None
+
+
+transforms.add_validate(BootstrapSchema)
 
 
 @transforms.add
@@ -55,8 +61,10 @@ def bootstrap_tasks(config, tasks):
                 # MOZ_AUTOMATION changes the behavior, and we want something closer to user
                 # machines.
                 "unset MOZ_AUTOMATION",
-                f"curl -O {head_repo}/raw-file/{head_rev}/python/mozboot/bin/bootstrap.py",
-                f"python3 bootstrap.py --no-interactive --application-choice {app}",
+                f"curl --retry 5 -L -f -O {head_repo}/raw-file/{head_rev}/python/mozboot/bin/bootstrap.py",
+                # We keep using git-cinnabar here because we rely on being able to pull
+                # the head revision from Mercurial.
+                f"python3 bootstrap.py --vcs=git-cinnabar --no-interactive --application-choice {app}",
                 "cd mozilla-unified",
                 # After bootstrap, configure should go through without its own auto-bootstrap.
                 "./mach configure --enable-bootstrap=no-update",
@@ -98,7 +106,8 @@ def bootstrap_tasks(config, tasks):
                     "tier": 2,
                 },
                 "run-on-projects": ["trunk"],
-                "worker-type": "b-linux-gcp",
+                "run-on-repo-type": task.get("run-on-repo-type", ["git", "hg"]),
+                "worker-type": "b-linux",
                 "worker": {
                     "implementation": "docker-worker",
                     "docker-image": image,

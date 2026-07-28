@@ -26,9 +26,6 @@ add_setup(async function () {
     await PlacesTestUtils.promiseAsyncUpdates();
     await SiteDataTestUtils.clear();
   });
-  await SpecialPowers.pushPrefEnv({
-    set: [["privacy.sanitize.useOldClearHistoryDialog", false]],
-  });
 });
 
 /**
@@ -84,7 +81,7 @@ async function validateDataSizes(ClearHistoryDialogHelper) {
  * Helper function to simulate switching timespan selections and
  * validate data sizes before and after clearing
  *
- * @param {Object}
+ * @param {object}
  *    clearCookies - boolean
  *    clearDownloads - boolean
  *    clearCaches - boolean
@@ -108,7 +105,7 @@ async function clearAndValidateDataSizes({
     await validateDataSizes(this);
     this.checkPrefCheckbox("cache", clearCache);
     this.checkPrefCheckbox("cookiesAndStorage", clearCookies);
-    this.checkPrefCheckbox("historyFormDataAndDownloads", clearDownloads);
+    this.checkPrefCheckbox("browsingHistoryAndDownloads", clearDownloads);
     this.selectDuration(timespan);
     this.acceptDialog();
   };

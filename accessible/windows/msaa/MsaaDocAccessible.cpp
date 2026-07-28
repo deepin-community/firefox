@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,8 +10,6 @@
 #include "nsAccessibilityService.h"
 #include "nsAccUtils.h"
 #include "nsWinUtils.h"
-#include "Statistics.h"
-#include "sdnDocAccessible.h"
 #include "mozilla/a11y/Role.h"
 #include "ISimpleDOM.h"
 
@@ -53,12 +49,6 @@ MsaaDocAccessible* MsaaDocAccessible::GetFromOwned(Accessible* aAcc) {
 
 // IUnknown
 IMPL_IUNKNOWN_QUERY_HEAD(MsaaDocAccessible)
-if (aIID == IID_ISimpleDOMDocument && LocalAcc()) {
-  statistics::ISimpleDOMUsed();
-  *aInstancePtr = static_cast<ISimpleDOMDocument*>(new sdnDocAccessible(this));
-  static_cast<IUnknown*>(*aInstancePtr)->AddRef();
-  return S_OK;
-}
 IMPL_IUNKNOWN_QUERY_TAIL_INHERITED(ia2AccessibleHypertext)
 
 STDMETHODIMP

@@ -1,6 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package org.mozilla.focus.settings.permissions
 
 import android.os.Bundle
@@ -15,6 +16,9 @@ import org.mozilla.focus.settings.permissions.permissionoptions.SitePermission
 import org.mozilla.focus.settings.permissions.permissionoptions.SitePermissionOptionsStorage
 import org.mozilla.focus.state.AppAction
 
+/**
+ * Settings fragment for managing site permissions.
+ */
 class SitePermissionsFragment : BaseSettingsFragment() {
 
     @VisibleForTesting

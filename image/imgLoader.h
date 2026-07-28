@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,8 +6,8 @@
 #ifndef mozilla_image_imgLoader_h
 #define mozilla_image_imgLoader_h
 
-#include "mozilla/Attributes.h"
 #include "mozilla/CORSMode.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/EnumSet.h"
 #include "mozilla/UniquePtr.h"
@@ -27,6 +26,10 @@
 #include "nsIThreadRetargetableStreamListener.h"
 #include "imgIRequest.h"
 #include "mozilla/dom/CacheExpirationTime.h"
+#ifdef NIGHTLY_BUILD
+#  include "mozilla/dom/IntegrityPolicyWAICT.h"
+#  include "mozilla/dom/ResourceHasher.h"
+#endif
 
 class imgLoader;
 class imgRequestProxy;
@@ -48,6 +51,8 @@ class imgCacheEntry {
 
   imgCacheEntry(imgLoader* loader, imgRequest* request,
                 bool aForcePrincipalCheck);
+
+  imgCacheEntry(const imgCacheEntry&) = delete;
 
   uint32_t GetDataSize() const { return mDataSize; }
   void SetDataSize(uint32_t aDataSize) {
@@ -120,9 +125,6 @@ class imgCacheEntry {
   void UpdateCache(int32_t diff = 0);
   void SetEvicted(bool evict) { mEvicted = evict; }
   void SetHasNoProxies(bool hasNoProxies);
-
-  // Private, unimplemented copy constructor.
-  imgCacheEntry(const imgCacheEntry&);
   ~imgCacheEntry();
 
  private:  // data
@@ -140,14 +142,12 @@ class imgCacheEntry {
   bool mHasNotified : 1;
 };
 
-#include <vector>
-
-#define NS_IMGLOADER_CID                             \
-  { /* c1354898-e3fe-4602-88a7-c4520c21cb4e */       \
-    0xc1354898, 0xe3fe, 0x4602, {                    \
-      0x88, 0xa7, 0xc4, 0x52, 0x0c, 0x21, 0xcb, 0x4e \
-    }                                                \
-  }
+#define NS_IMGLOADER_CID                      \
+  {/* c1354898-e3fe-4602-88a7-c4520c21cb4e */ \
+   0xc1354898,                                \
+   0xe3fe,                                    \
+   0x4602,                                    \
+   {0x88, 0xa7, 0xc4, 0x52, 0x0c, 0x21, 0xcb, 0x4e}}
 
 class imgCacheQueue {
  public:
@@ -243,6 +243,45 @@ class imgLoader final : public imgILoader,
   imgLoader();
   nsresult Init();
 
+  /**
+   * Clear cache that matches the specified filters.
+   * If called on the parent process, clear cache from all processes.
+   * If called in the content process, clear cache within the process.
+   *
+   * @param aPrivateLoader
+   *        If specified and true, clear private loader.
+   *        If specified and false, clear normal loader.
+   *        If not specified, clear both loaders.
+   *        Has no effect with aPrincipal.
+   * @param aChrome
+   *        If specified and true, clear chrome cache.
+   *        If specified and false, clear content cache.
+   *        If not specified, clear both.
+   *        Has no effect with aPrincipal, aSchemelessSite or aURL.
+   * @param aPrincipal
+   *        If specified, clear cache from the same origin and the same
+   *        originAttributes of the passed principal.
+   *        Exclusive with aSchemelessSite and aURL.
+   * @param aSchemelessSite
+   *        If specified, clear cache which match the the given site.
+   *        If this is specified, aPattern should also be specified.
+   *        Exclusive with aPrincipal and aURL.
+   * @param aPattern
+   *        The pattern used with aSchemelessSite.
+   * @param aURL
+   *        If specified, clear cache for given URL.
+   *        Exclusive with aPrincipal and aschemelesssite.
+   */
+  static nsresult ClearCache(
+      mozilla::Maybe<bool> aPrivateLoader = mozilla::Nothing(),
+      mozilla::Maybe<bool> aChrome = mozilla::Nothing(),
+      const mozilla::Maybe<nsCOMPtr<nsIPrincipal>>& aPrincipal =
+          mozilla::Nothing(),
+      const mozilla::Maybe<nsCString>& aSchemelessSite = mozilla::Nothing(),
+      const mozilla::Maybe<mozilla::OriginAttributesPattern>& aPattern =
+          mozilla::Nothing(),
+      const mozilla::Maybe<nsCString>& aURL = mozilla::Nothing());
+
   bool IsImageAvailable(nsIURI*, nsIPrincipal* aTriggeringPrincipal,
                         mozilla::CORSMode, mozilla::dom::Document*);
 
@@ -287,6 +326,7 @@ class imgLoader final : public imgILoader,
 
   enum class ClearOption {
     ChromeOnly,
+    ContentOnly,
     UnusedOnly,
   };
   using ClearOptions = mozilla::EnumSet<ClearOption>;
@@ -336,8 +376,11 @@ class imgLoader final : public imgILoader,
 
   void VerifyCacheSizes();
 
-  nsresult RemoveEntriesInternal(nsIPrincipal* aPrincipal,
-                                 const nsACString* aBaseDomain);
+  nsresult RemoveEntriesInternal(
+      const mozilla::Maybe<nsCOMPtr<nsIPrincipal>>& aPrincipal,
+      const mozilla::Maybe<nsCString>& aSchemelessSite,
+      const mozilla::Maybe<mozilla::OriginAttributesPattern>& aPattern,
+      const mozilla::Maybe<nsCString>& aURL);
 
   // The image loader maintains a hash table of all imgCacheEntries. However,
   // only some of them will be evicted from the cache: those who have no
@@ -435,6 +478,9 @@ class imgLoader final : public imgILoader,
 class ProxyListener : public nsIThreadRetargetableStreamListener {
  public:
   explicit ProxyListener(nsIStreamListener* dest);
+#ifdef NIGHTLY_BUILD
+  explicit ProxyListener(nsIStreamListener* dest, bool aIsWAICTEnabled);
+#endif
 
   /* additional members */
   NS_DECL_THREADSAFE_ISUPPORTS
@@ -446,6 +492,13 @@ class ProxyListener : public nsIThreadRetargetableStreamListener {
   virtual ~ProxyListener();
 
   nsCOMPtr<nsIStreamListener> mDestListener;
+#ifdef NIGHTLY_BUILD
+  const bool mIsWAICTEnabled = false;
+  mozilla::Mutex mHasherMutex{"ProxyListener::mHasherMutex"};
+  RefPtr<mozilla::dom::ResourceHasher> mResourceHasher
+      MOZ_GUARDED_BY(mHasherMutex);
+  nsTArray<uint8_t> mBufferedImageWAICT MOZ_GUARDED_BY(mHasherMutex);
+#endif
 };
 
 /**

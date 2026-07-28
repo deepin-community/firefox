@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,7 +11,6 @@
 #ifndef mozilla_Bootstrap_h
 #define mozilla_Bootstrap_h
 
-#include "mozilla/Maybe.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/UniquePtrExtensions.h"
@@ -22,14 +20,6 @@
 
 #ifdef MOZ_WIDGET_ANDROID
 #  include "jni.h"
-
-namespace mozilla {
-struct StaticXREAppData;
-}
-
-extern "C" NS_EXPORT void GeckoStart(JNIEnv* aEnv, char** argv, int argc,
-                                     const mozilla::StaticXREAppData& aAppData,
-                                     bool xpcshell, const char* outFilePath);
 #endif
 
 #if defined(XP_WIN) && defined(MOZ_SANDBOX)
@@ -54,6 +44,12 @@ struct BootstrapConfig {
    * When the pointer above is non-null, may indicate the directory where
    * application files are, relative to the XRE. */
   const char* appDataPath;
+#if defined(MOZ_WIDGET_ANDROID)
+  /* Crash notification socket used by Breakpad. */
+  int crashChildNotificationSocket;
+  /* Crash socket used to communicate with the crash helper. */
+  int crashHelperSocket;
+#endif
 };
 
 /**
@@ -63,11 +59,11 @@ struct BootstrapConfig {
  */
 class Bootstrap {
  protected:
-  Bootstrap() {}
+  Bootstrap() = default;
 
   // Because of allocator mismatches, code outside libxul shouldn't delete a
   // Bootstrap instance. Use Dispose().
-  virtual ~Bootstrap() {}
+  virtual ~Bootstrap() = default;
 
   /**
    * Destroy and deallocate this Bootstrap instance.
@@ -79,7 +75,7 @@ class Bootstrap {
    */
   class BootstrapDelete {
    public:
-    constexpr BootstrapDelete() {}
+    constexpr BootstrapDelete() = default;
     void operator()(Bootstrap* aPtr) const { aPtr->Dispose(); }
   };
 
@@ -89,8 +85,6 @@ class Bootstrap {
   virtual void NS_LogInit() = 0;
 
   virtual void NS_LogTerm() = 0;
-
-  virtual void XRE_TelemetryAccumulate(int aID, uint32_t aSample) = 0;
 
   virtual void XRE_StartupTimelineRecord(int aEvent,
                                          mozilla::TimeStamp aWhen) = 0;
@@ -109,12 +103,9 @@ class Bootstrap {
   virtual void XRE_EnableSameExecutableForContentProc() = 0;
 
 #ifdef MOZ_WIDGET_ANDROID
-  virtual void GeckoStart(JNIEnv* aEnv, char** argv, int argc,
-                          const StaticXREAppData& aAppData, bool xpcshell,
-                          const char* outFilePath) = 0;
+  virtual void XRE_SetGeckoThreadEnv(JNIEnv* aEnv) = 0;
 
-  virtual void XRE_SetAndroidChildFds(JNIEnv* aEnv,
-                                      const XRE_AndroidChildFds& fds) = 0;
+  virtual void XRE_SetAndroidChildFds(JNIEnv* aEnv, jintArray aFds) = 0;
 #  ifdef MOZ_PROFILE_GENERATE
   virtual void XRE_WriteLLVMProfData() = 0;
 #  endif
@@ -144,6 +135,12 @@ using BootstrapError = Variant<nsresult, DLErrorType>;
 
 using BootstrapResult = ::mozilla::Result<Bootstrap::UniquePtr, BootstrapError>;
 
+#ifdef XPCOM_GLUE
+typedef void (*GetBootstrapType)(Bootstrap::UniquePtr&);
+BootstrapResult GetBootstrap(
+    const char* aXPCOMFile = nullptr,
+    LibLoadingStrategy aLibLoadingStrategy = LibLoadingStrategy::NoReadAhead);
+#else
 /**
  * Creates and returns the singleton instance of the bootstrap object.
  * @param `b` is an outparam. We use a parameter and not a return value
@@ -151,12 +148,6 @@ using BootstrapResult = ::mozilla::Result<Bootstrap::UniquePtr, BootstrapError>;
  *        "C" linkage. On failure this will be null.
  * @note This function may only be called once and will crash if called again.
  */
-#ifdef XPCOM_GLUE
-typedef void (*GetBootstrapType)(Bootstrap::UniquePtr&);
-BootstrapResult GetBootstrap(
-    const char* aXPCOMFile = nullptr,
-    LibLoadingStrategy aLibLoadingStrategy = LibLoadingStrategy::NoReadAhead);
-#else
 extern "C" NS_EXPORT void NS_FROZENCALL
 XRE_GetBootstrap(Bootstrap::UniquePtr& b);
 

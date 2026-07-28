@@ -1,16 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SharedWorkerParent.h"
+
 #include "SharedWorkerManager.h"
 #include "SharedWorkerService.h"
 #include "mozilla/dom/RemoteWorkerTypes.h"
 #include "mozilla/ipc/BackgroundParent.h"
 #include "mozilla/ipc/BackgroundUtils.h"
-#include "mozilla/Unused.h"
 
 namespace mozilla {
 
@@ -63,7 +61,7 @@ IPCResult SharedWorkerParent::RecvClose() {
     mWorkerManagerWrapper = nullptr;
   }
 
-  Unused << Send__delete__(this);
+  (void)Send__delete__(this);
   return IPC_OK();
 }
 
@@ -158,7 +156,19 @@ void SharedWorkerParent::ErrorPropagation(nsresult aError) {
     return;
   }
 
-  Unused << SendError(aError);
+  (void)SendError(aError);
+}
+
+void SharedWorkerParent::MismatchOptionsErrorPropagation() {
+  AssertIsOnBackgroundThread();
+  MOZ_ASSERT(mStatus == ePending || mStatus == eClosed);
+
+  // Already gone.
+  if (mStatus == eClosed) {
+    return;
+  }
+
+  (void)SendError(ErrorMismatchOptions());
 }
 
 }  // namespace dom

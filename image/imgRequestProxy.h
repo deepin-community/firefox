@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -21,12 +20,12 @@
 
 #include "IProgressObserver.h"
 
-#define NS_IMGREQUESTPROXY_CID                       \
-  { /* 20557898-1dd2-11b2-8f65-9c462ee2bc95 */       \
-    0x20557898, 0x1dd2, 0x11b2, {                    \
-      0x8f, 0x65, 0x9c, 0x46, 0x2e, 0xe2, 0xbc, 0x95 \
-    }                                                \
-  }
+#define NS_IMGREQUESTPROXY_CID                \
+  {/* 20557898-1dd2-11b2-8f65-9c462ee2bc95 */ \
+   0x20557898,                                \
+   0x1dd2,                                    \
+   0x11b2,                                    \
+   {0x8f, 0x65, 0x9c, 0x46, 0x2e, 0xe2, 0xbc, 0x95}}
 
 class imgCacheValidator;
 class imgINotificationObserver;
@@ -54,7 +53,7 @@ class imgRequestProxy : public mozilla::PreloaderBase,
   typedef mozilla::image::Image Image;
   typedef mozilla::image::ProgressTracker ProgressTracker;
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IMGREQUESTPROXY_CID)
+  NS_INLINE_DECL_STATIC_IID(NS_IMGREQUESTPROXY_CID)
   MOZ_DECLARE_REFCOUNTED_TYPENAME(imgRequestProxy)
   NS_DECL_ISUPPORTS
   NS_DECL_IMGIREQUEST
@@ -201,7 +200,7 @@ class imgRequestProxy : public mozilla::PreloaderBase,
                         Document* aLoadingDocument, bool aSyncNotify,
                         imgRequestProxy** aClone);
 
-  virtual imgRequestProxy* NewClonedProxy();
+  virtual already_AddRefed<imgRequestProxy> NewClonedProxy();
 
  public:
   NS_FORWARD_SAFE_NSITIMEDCHANNEL(TimedChannel())
@@ -245,14 +244,11 @@ class imgRequestProxy : public mozilla::PreloaderBase,
   // interfaces as image loads proceed.
   bool mPendingNotify : 1;
   bool mValidating : 1;
-  bool mHadListener : 1;
 };
 
 inline nsISupports* ToSupports(imgRequestProxy* p) {
   return NS_ISUPPORTS_CAST(imgIRequest*, p);
 }
-
-NS_DEFINE_STATIC_IID_ACCESSOR(imgRequestProxy, NS_IMGREQUESTPROXY_CID)
 
 // Used for static image proxies for which no requests are available, so
 // certain behaviours must be overridden to compensate.
@@ -269,7 +265,7 @@ class imgRequestProxyStatic : public imgRequestProxy {
       bool* aHadCrossOriginRedirects) override;
 
  protected:
-  imgRequestProxy* NewClonedProxy() override;
+  already_AddRefed<imgRequestProxy> NewClonedProxy() override;
 
   // Our principal. We have to cache it, rather than accessing the underlying
   // request on-demand, because static proxies don't have an underlying request.

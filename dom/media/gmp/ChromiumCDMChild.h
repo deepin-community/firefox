@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,16 +5,18 @@
 #ifndef ChromiumCDMChild_h_
 #define ChromiumCDMChild_h_
 
-#include "content_decryption_module.h"
-#include "mozilla/gmp/PChromiumCDMChild.h"
 #include "SimpleMap.h"
 #include "WidevineVideoFrame.h"
+#include "content_decryption_module.h"
+#include "mozilla/gmp/PChromiumCDMChild.h"
 
 namespace mozilla::gmp {
 
 class GMPContentChild;
 
-class ChromiumCDMChild : public PChromiumCDMChild, public cdm::Host_10 {
+class ChromiumCDMChild final : public PChromiumCDMChild,
+                               public cdm::Host_10,
+                               public cdm::Host_11 {
  public:
   // Mark AddRef and Release as `final`, as they overload pure virtual
   // implementations in PChromiumCDMChild.
@@ -23,12 +24,12 @@ class ChromiumCDMChild : public PChromiumCDMChild, public cdm::Host_10 {
 
   explicit ChromiumCDMChild(GMPContentChild* aPlugin);
 
-  void Init(cdm::ContentDecryptionModule_10* aCDM,
+  void Init(cdm::ContentDecryptionModule_11* aCDM,
             const nsACString& aStorageId);
 
   void TimerExpired(void* aContext);
 
-  // cdm::Host_10 implementation
+  // cdm::Host_10/cdm::Host_11 implementation
   cdm::Buffer* Allocate(uint32_t aCapacity) override;
   void SetTimer(int64_t aDelayMs, void* aContext) override;
   cdm::Time GetCurrentWallTime() override;
@@ -59,14 +60,19 @@ class ChromiumCDMChild : public PChromiumCDMChild, public cdm::Host_10 {
   void OnDeferredInitializationDone(cdm::StreamType aStreamType,
                                     cdm::Status aDecoderStatus) override {}
   void RequestStorageId(uint32_t aVersion) override;
+  void ReportMetrics(cdm::MetricName aMetricName, uint64_t aValue) override;
   cdm::FileIO* CreateFileIO(cdm::FileIOClient* aClient) override;
   void OnInitialized(bool aSuccess) override;
-  // end cdm::Host_10 specific methods
+  // end cdm::Host_10/cdm::Host_11 specific methods
 
   void GiveBuffer(ipc::Shmem&& aBuffer);
 
  protected:
   ~ChromiumCDMChild();
+
+  cdm::Exception ClampException(cdm::Exception aValue) const;
+  cdm::Status ClampStatus(cdm::Status aValue, cdm::Status aFallback) const;
+  cdm::KeyStatus ClampKeyStatus(cdm::KeyStatus aValue) const;
 
   bool OnResolveNewSessionPromiseInternal(uint32_t aPromiseId,
                                           const nsACString& aSessionId);
@@ -84,10 +90,11 @@ class ChromiumCDMChild : public PChromiumCDMChild, public cdm::Host_10 {
   ipc::IPCResult RecvSetServerCertificate(
       const uint32_t& aPromiseId, nsTArray<uint8_t>&& aServerCert) override;
   ipc::IPCResult RecvCreateSessionAndGenerateRequest(
-      const uint32_t& aPromiseId, const uint32_t& aSessionType,
-      const uint32_t& aInitDataType, nsTArray<uint8_t>&& aInitData) override;
+      const uint32_t& aPromiseId, const cdm::SessionType& aSessionType,
+      const cdm::InitDataType& aInitDataType,
+      nsTArray<uint8_t>&& aInitData) override;
   ipc::IPCResult RecvLoadSession(const uint32_t& aPromiseId,
-                                 const uint32_t& aSessionType,
+                                 const cdm::SessionType& aSessionType,
                                  const nsACString& aSessionId) override;
   ipc::IPCResult RecvUpdateSession(const uint32_t& aPromiseId,
                                    const nsACString& aSessionId,
@@ -123,7 +130,7 @@ class ChromiumCDMChild : public PChromiumCDMChild, public cdm::Host_10 {
   void CallOnMessageLoopThread(const char* const, MethodType, ParamType&&...);
 
   GMPContentChild* mPlugin = nullptr;
-  cdm::ContentDecryptionModule_10* mCDM = nullptr;
+  cdm::ContentDecryptionModule_11* mCDM = nullptr;
 
   typedef SimpleMap<int64_t, uint64_t, ThreadSafePolicy> DurationMap;
   DurationMap mFrameDurations;

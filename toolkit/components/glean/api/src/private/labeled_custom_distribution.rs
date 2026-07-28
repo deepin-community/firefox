@@ -4,11 +4,19 @@
 
 use inherent::inherent;
 
-use glean::traits::CustomDistribution;
-
 use crate::ipc::with_ipc_payload;
-use crate::private::{CustomDistributionMetric, DistributionData, MetricId};
+use crate::private::{
+    BaseMetric, BaseMetricId, BaseMetricResult, CustomDistributionMetric, DistributionData,
+    MetricMetadataGetterImpl,
+};
+use glean::traits::CustomDistribution;
 use std::collections::HashMap;
+
+#[cfg(feature = "with_gecko")]
+use super::profiler_utils::{
+    truncate_vector_for_marker, DistributionMetricMarker, DistributionValues,
+    TelemetryProfilerCategory,
+};
 
 /// A custom_distribution metric that knows it's a labeled custom distribution's submetric.
 ///
@@ -17,15 +25,24 @@ use std::collections::HashMap;
 #[derive(Clone)]
 pub enum LabeledCustomDistributionMetric {
     Parent(CustomDistributionMetric),
-    Child { id: MetricId, label: String },
+    Child { id: BaseMetricId, label: String },
 }
+
+define_metric_metadata_getter!(
+    CustomDistributionMetric,
+    LabeledCustomDistributionMetric,
+    CUSTOM_DISTRIBUTION_MAP,
+    LABELED_CUSTOM_DISTRIBUTION_MAP
+);
+
+define_metric_namer!(LabeledCustomDistributionMetric, LABELED);
 
 impl LabeledCustomDistributionMetric {
     #[cfg(test)]
-    pub(crate) fn metric_id(&self) -> MetricId {
+    pub(crate) fn metric_id(&self) -> crate::private::MetricId {
         match self {
             LabeledCustomDistributionMetric::Parent(p) => p.metric_id(),
-            LabeledCustomDistributionMetric::Child { id, .. } => *id,
+            LabeledCustomDistributionMetric::Child { id, .. } => (*id).into(),
         }
     }
 }
@@ -36,6 +53,17 @@ impl CustomDistribution for LabeledCustomDistributionMetric {
         match self {
             LabeledCustomDistributionMetric::Parent(p) => p.accumulate_samples_signed(samples),
             LabeledCustomDistributionMetric::Child { id, label } => {
+                #[cfg(feature = "with_gecko")]
+                gecko_profiler::lazy_add_marker!(
+                    "CustomDistribution::accumulate",
+                    TelemetryProfilerCategory,
+                    DistributionMetricMarker::<LabeledCustomDistributionMetric, i64>::new(
+                        (*id).into(),
+                        Some(label.clone()),
+                        DistributionValues::Samples(truncate_vector_for_marker(&samples)),
+                    )
+                );
+
                 with_ipc_payload(move |payload| {
                     if let Some(map) = payload.labeled_custom_samples.get_mut(id) {
                         if let Some(v) = map.get_mut(label) {
@@ -57,6 +85,17 @@ impl CustomDistribution for LabeledCustomDistributionMetric {
         match self {
             LabeledCustomDistributionMetric::Parent(p) => p.accumulate_single_sample_signed(sample),
             LabeledCustomDistributionMetric::Child { id, label } => {
+                #[cfg(feature = "with_gecko")]
+                gecko_profiler::lazy_add_marker!(
+                    "CustomDistribution::accumulate",
+                    TelemetryProfilerCategory,
+                    DistributionMetricMarker::<LabeledCustomDistributionMetric, i64>::new(
+                        (*id).into(),
+                        Some(label.clone()),
+                        DistributionValues::Sample(sample),
+                    )
+                );
+
                 with_ipc_payload(move |payload| {
                     if let Some(map) = payload.labeled_custom_samples.get_mut(id) {
                         if let Some(v) = map.get_mut(label) {
@@ -74,18 +113,6 @@ impl CustomDistribution for LabeledCustomDistributionMetric {
         }
     }
 
-    pub fn test_get_value<'a, S: Into<Option<&'a str>>>(
-        &self,
-        ping_name: S,
-    ) -> Option<DistributionData> {
-        match self {
-            LabeledCustomDistributionMetric::Parent(p) => p.test_get_value(ping_name),
-            LabeledCustomDistributionMetric::Child { id, .. } => {
-                panic!("Cannot get test value for labeled_custom_distribution {:?} in non-parent process!", id)
-            }
-        }
-    }
-
     pub fn test_get_num_recorded_errors(&self, error: glean::ErrorType) -> i32 {
         match self {
             LabeledCustomDistributionMetric::Parent(p) => p.test_get_num_recorded_errors(error),
@@ -93,6 +120,34 @@ impl CustomDistribution for LabeledCustomDistributionMetric {
                 "Cannot get the number of recorded errors for labeled_custom_distribution {:?} in non-parent process!",
                 id
             ),
+        }
+    }
+}
+
+#[inherent]
+impl glean::TestGetValue for LabeledCustomDistributionMetric {
+    type Output = DistributionData;
+
+    pub fn test_get_value(&self, ping_name: Option<String>) -> Option<DistributionData> {
+        match self {
+            LabeledCustomDistributionMetric::Parent(p) => p.test_get_value(ping_name),
+            LabeledCustomDistributionMetric::Child { id, .. } => {
+                panic!("Cannot get test value for labeled_custom_distribution {:?} in non-parent process!", id)
+            }
+        }
+    }
+}
+
+impl BaseMetric for LabeledCustomDistributionMetric {
+    type BaseMetricT = CustomDistributionMetric;
+    fn get_base_metric<'a>(&'a self) -> BaseMetricResult<'a, Self::BaseMetricT> {
+        match self {
+            LabeledCustomDistributionMetric::Parent(custom_distribution_metric) => {
+                BaseMetricResult::BaseMetric(&custom_distribution_metric)
+            }
+            LabeledCustomDistributionMetric::Child { id, label } => {
+                BaseMetricResult::IndexLabelPair(*id, &label)
+            }
         }
     }
 }
@@ -123,9 +178,23 @@ mod test {
         {
             // scope for need_ipc RAII
             let _raii = ipc::test_set_need_ipc(true);
+
+            // clear the per-process submetric cache,
+            // or else we'll be given the parent-process child metric.
+            {
+                let mut map =
+                    crate::metrics::__glean_metric_maps::submetric_maps::CUSTOM_DISTRIBUTION_MAP
+                        .write()
+                        .expect("Write lock for CUSTOM_DISTRIBUTION_MAP was poisoned");
+                map.clear();
+            }
+
             let child_metric = parent_metric.get(label);
 
-            let metric_id = child_metric.metric_id();
+            let metric_id = child_metric
+                .metric_id()
+                .base_metric_id()
+                .expect("Cannot perform IPC calls without a BaseMetricId");
 
             child_metric.accumulate_single_sample_signed(42);
 
@@ -141,6 +210,16 @@ mod test {
                     "Stored the correct value in the ipc payload"
                 );
             });
+
+            // clear the per-process submetric cache again,
+            // or else we'll be given the child-process child metric below.
+            {
+                let mut map =
+                    crate::metrics::__glean_metric_maps::submetric_maps::CUSTOM_DISTRIBUTION_MAP
+                        .write()
+                        .expect("Write lock for CUSTOM_DISTRIBUTION_MAP was poisoned");
+                map.clear();
+            }
         }
 
         assert!(

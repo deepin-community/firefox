@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=8 et :
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,8 +10,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
-#include <stdint.h>
-#include <stdarg.h>
 
 #if defined(MOZ_ASAN) || defined(FUZZING)
 #  include <signal.h>
@@ -37,10 +32,16 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 // bits to use decoding vaapitest() return values.
-constexpr int CODEC_HW_H264 = 1 << 4;
-constexpr int CODEC_HW_VP8 = 1 << 5;
-constexpr int CODEC_HW_VP9 = 1 << 6;
-constexpr int CODEC_HW_AV1 = 1 << 7;
+constexpr int CODEC_HW_DEC_H264 = 1 << 4;
+constexpr int CODEC_HW_ENC_H264 = 1 << 5;
+constexpr int CODEC_HW_DEC_VP8 = 1 << 6;
+constexpr int CODEC_HW_ENC_VP8 = 1 << 7;
+constexpr int CODEC_HW_DEC_VP9 = 1 << 8;
+constexpr int CODEC_HW_ENC_VP9 = 1 << 9;
+constexpr int CODEC_HW_DEC_AV1 = 1 << 10;
+constexpr int CODEC_HW_ENC_AV1 = 1 << 11;
+constexpr int CODEC_HW_DEC_HEVC = 1 << 12;
+constexpr int CODEC_HW_ENC_HEVC = 1 << 13;
 
 // childgltest is declared inside extern "C" so that the name is not mangled.
 // The name is used in build/valgrind/x86_64-pc-linux-gnu.sup to suppress
@@ -61,6 +62,9 @@ static constexpr struct {
     MAP(VP9Profile2),
     MAP(AV1Profile0),
     MAP(AV1Profile1),
+    MAP(HEVCMain),
+    MAP(HEVCMain10),
+    MAP(HEVCMain12),
 #undef MAP
 };
 
@@ -165,7 +169,9 @@ static void vaapitest(const char* aRenderDevicePath) {
     }
     numEntryPoints = MIN(numEntryPoints, maxEntryPoints);
     for (int entry = 0; entry < numEntryPoints; entry++) {
-      if (entryPoints[entry] != VAEntrypointVLD) {
+      bool decoder = entryPoints[entry] == VAEntrypointVLD;
+      bool encoder = entryPoints[entry] == VAEntrypointEncSlice;
+      if (!decoder && !encoder) {
         continue;
       }
       VAConfigID config = VA_INVALID_ID;
@@ -176,13 +182,15 @@ static void vaapitest(const char* aRenderDevicePath) {
         log("Profile: %s\n", profstr);
         // VAProfileName returns null on failure, making the below calls safe
         if (!strncmp(profstr, "H264", 4)) {
-          codecs |= CODEC_HW_H264;
+          codecs |= decoder ? CODEC_HW_DEC_H264 : CODEC_HW_ENC_H264;
         } else if (!strncmp(profstr, "VP8", 3)) {
-          codecs |= CODEC_HW_VP8;
+          codecs |= decoder ? CODEC_HW_DEC_VP8 : CODEC_HW_ENC_VP8;
         } else if (!strncmp(profstr, "VP9", 3)) {
-          codecs |= CODEC_HW_VP9;
+          codecs |= decoder ? CODEC_HW_DEC_VP9 : CODEC_HW_ENC_VP9;
         } else if (!strncmp(profstr, "AV1", 3)) {
-          codecs |= CODEC_HW_AV1;
+          codecs |= decoder ? CODEC_HW_DEC_AV1 : CODEC_HW_ENC_AV1;
+        } else if (!strncmp(profstr, "HEVC", 4)) {
+          codecs |= decoder ? CODEC_HW_DEC_HEVC : CODEC_HW_ENC_HEVC;
         } else {
           record_warning("VA-API test unknown profile.");
         }
@@ -217,13 +225,14 @@ static void PrintUsage() {
 }
 
 int main(int argc, char** argv) {
-  struct option longOptions[] = {{"help", no_argument, NULL, 'h'},
-                                 {"drm", required_argument, NULL, 'd'},
-                                 {NULL, 0, NULL, 0}};
+  struct option longOptions[] = {{"help", no_argument, nullptr, 'h'},
+                                 {"drm", required_argument, nullptr, 'd'},
+                                 {nullptr, 0, nullptr, 0}};
   const char* shortOptions = "hd:";
   int c;
   const char* drmDevice = nullptr;
-  while ((c = getopt_long(argc, argv, shortOptions, longOptions, NULL)) != -1) {
+  while ((c = getopt_long(argc, argv, shortOptions, longOptions, nullptr)) !=
+         -1) {
     switch (c) {
       case 'd':
         drmDevice = optarg;

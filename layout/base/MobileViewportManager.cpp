@@ -1,11 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "MobileViewportManager.h"
 
+#include "UnitTransforms.h"
+#include "gfxPlatform.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/ToString.h"
 #include "mozilla/dom/Document.h"
@@ -14,9 +14,7 @@
 #include "mozilla/dom/InteractiveWidget.h"
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
-#include "nsViewManager.h"
 #include "nsViewportInfo.h"
-#include "UnitTransforms.h"
 
 mozilla::LazyLogModule MobileViewportManager::gLog("apz.mobileviewport");
 #define MVM_LOG(...) \
@@ -50,7 +48,7 @@ MobileViewportManager::MobileViewportManager(MVMContext* aContext,
   mContext->AddEventListener(FULLSCREEN_CHANGED, this, false);
   mContext->AddEventListener(LOAD, this, true);
 
-  mContext->AddObserver(this, BEFORE_FIRST_PAINT.Data(), false);
+  mContext->AddObserver(this, BEFORE_FIRST_PAINT.get(), false);
 
   // We need to initialize the display size and the CSS viewport size before
   // the initial reflow happens.
@@ -67,7 +65,7 @@ void MobileViewportManager::Destroy() {
   mContext->RemoveEventListener(FULLSCREEN_CHANGED, this, false);
   mContext->RemoveEventListener(LOAD, this, true);
 
-  mContext->RemoveObserver(this, BEFORE_FIRST_PAINT.Data());
+  mContext->RemoveObserver(this, BEFORE_FIRST_PAINT.get());
 
   mContext->Destroy();
   mContext = nullptr;
@@ -352,7 +350,7 @@ void MobileViewportManager::UpdateResolutionForViewportSizeChange(
   //    viewport tag is added or removed)
   // 4. neither screen size nor CSS viewport changes
 
-  if (!aDisplayWidthChangeRatio) {
+  if (!aDisplayWidthChangeRatio || mContext->IsDocumentFullscreen()) {
     UpdateVisualViewportSize(zoom);
     return;
   }
@@ -413,7 +411,7 @@ void MobileViewportManager::UpdateResolutionForViewportSizeChange(
   //     +---+
 
   // Conveniently, the denominator is c clamped to a..b.
-  float denominator = clamped(c, a, b);
+  float denominator = std::clamp(c, a, b);
 
   float adjustedRatio = d / denominator;
   CSSToScreenScale adjustedZoom = ScaleZoomWithDisplayWidth(
@@ -648,6 +646,12 @@ void MobileViewportManager::RefreshViewportSize(bool aForceAdjustResolution) {
     return;
   }
 
+  // Now it's time to update the keyboard height
+  if (mPendingKeyboardHeight) {
+    mKeyboardHeight = *mPendingKeyboardHeight;
+    mPendingKeyboardHeight.reset();
+  }
+
   nsViewportInfo viewportInfo =
       mContext->GetViewportInfo(GetLayoutDisplaySize());
   MVM_LOG("%p: viewport info has zooms min=%f max=%f default=%f,valid=%d\n",
@@ -751,6 +755,21 @@ CSSSize MobileViewportManager::GetIntrinsicCompositionSize() const {
   return ScreenSize(compositionSize) / intrinsicScale;
 }
 
+CSSToScreenScale MobileViewportManager::GetIntrinsicScaleForFixedViewport()
+    const {
+  const ScreenIntSize displaySize = GetLayoutDisplaySize();
+  const ScreenIntSize compositionSize = GetCompositionSize(displaySize);
+  const nsViewportInfo viewportInfo = mContext->GetViewportInfo(displaySize);
+
+  CSSSize contentSize{};
+  if (Maybe<CSSRect> scrollableRect =
+          mContext->CalculateScrollableRectForRSF()) {
+    contentSize = scrollableRect->Size();
+  }
+
+  return ComputeIntrinsicScale(viewportInfo, compositionSize, contentSize);
+}
+
 ParentLayerSize MobileViewportManager::GetCompositionSizeWithoutDynamicToolbar()
     const {
   return ViewAs<ParentLayerPixel>(
@@ -760,10 +779,11 @@ ParentLayerSize MobileViewportManager::GetCompositionSizeWithoutDynamicToolbar()
 
 void MobileViewportManager::UpdateKeyboardHeight(
     ScreenIntCoord aKeyboardHeight) {
-  if (aKeyboardHeight == mKeyboardHeight) {
+  if (mPendingKeyboardHeight == Some(aKeyboardHeight)) {
     return;
   }
-  mKeyboardHeight = aKeyboardHeight;
+
+  mPendingKeyboardHeight = Some(aKeyboardHeight);
   mInvalidViewport = true;
 }
 
@@ -793,4 +813,14 @@ ScreenIntSize MobileViewportManager::GetDisplaySizeForVisualViewport() const {
       break;
   }
   return displaySize;
+}
+
+nsRect MobileViewportManager::InitialVisibleArea() {
+  UpdateSizesBeforeReflow();
+
+  // Basically mMobileViewportSize should not be empty, but we somehow create
+  // a MobileViewportManager for the transient about blank document of each
+  // window actor, in such cases the document viewer size is empty, thus we
+  // return an empty rectangle here.
+  return nsRect(nsPoint(), CSSSize::ToAppUnits(mMobileViewportSize));
 }

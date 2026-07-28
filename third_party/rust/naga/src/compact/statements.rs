@@ -1,6 +1,9 @@
+use alloc::{vec, vec::Vec};
+
 use super::functions::FunctionTracer;
 use super::FunctionMap;
 use crate::arena::Handle;
+use crate::compact::handle_set_map::HandleMap;
 
 impl FunctionTracer<'_> {
     pub fn trace_block(&mut self, block: &[crate::Statement]) {
@@ -79,15 +82,30 @@ impl FunctionTracer<'_> {
                             self.expressions_used.insert(result);
                         }
                     }
+                    St::ImageAtomic {
+                        image,
+                        coordinate,
+                        array_index,
+                        fun: _,
+                        value,
+                    } => {
+                        self.expressions_used.insert(image);
+                        self.expressions_used.insert(coordinate);
+                        if let Some(array_index) = array_index {
+                            self.expressions_used.insert(array_index);
+                        }
+                        self.expressions_used.insert(value);
+                    }
                     St::WorkGroupUniformLoad { pointer, result } => {
                         self.expressions_used.insert(pointer);
                         self.expressions_used.insert(result);
                     }
                     St::Call {
-                        function: _,
+                        function,
                         ref arguments,
                         result,
                     } => {
+                        self.trace_call(function);
                         for expr in arguments {
                             self.expressions_used.insert(*expr);
                         }
@@ -125,19 +143,38 @@ impl FunctionTracer<'_> {
                             | crate::GatherMode::Shuffle(index)
                             | crate::GatherMode::ShuffleDown(index)
                             | crate::GatherMode::ShuffleUp(index)
-                            | crate::GatherMode::ShuffleXor(index) => {
+                            | crate::GatherMode::ShuffleXor(index)
+                            | crate::GatherMode::QuadBroadcast(index) => {
                                 self.expressions_used.insert(index);
                             }
+                            crate::GatherMode::QuadSwap(_) => {}
                         }
                         self.expressions_used.insert(argument);
                         self.expressions_used.insert(result);
                     }
+                    St::CooperativeStore { target, ref data } => {
+                        self.expressions_used.insert(target);
+                        self.expressions_used.insert(data.pointer);
+                        self.expressions_used.insert(data.stride);
+                    }
+                    St::RayPipelineFunction(func) => match func {
+                        crate::RayPipelineFunction::TraceRay {
+                            acceleration_structure,
+                            descriptor,
+                            payload,
+                        } => {
+                            self.expressions_used.insert(acceleration_structure);
+                            self.expressions_used.insert(descriptor);
+                            self.expressions_used.insert(payload);
+                        }
+                    },
 
                     // Trivial statements.
                     St::Break
                     | St::Continue
                     | St::Kill
-                    | St::Barrier(_)
+                    | St::ControlBarrier(_)
+                    | St::MemoryBarrier(_)
                     | St::Return { value: None } => {}
                 }
             }
@@ -176,13 +213,25 @@ impl FunctionTracer<'_> {
             Qf::Proceed { result } => {
                 self.expressions_used.insert(result);
             }
+            Qf::GenerateIntersection { hit_t } => {
+                self.expressions_used.insert(hit_t);
+            }
+            Qf::ConfirmIntersection => {}
             Qf::Terminate => {}
         }
     }
 }
 
 impl FunctionMap {
-    pub fn adjust_body(&self, function: &mut crate::Function) {
+    /// Adjust statements in the body of `function`.
+    ///
+    /// Adjusts expressions using `self.expressions`, and adjusts calls to other
+    /// functions using `function_map`.
+    pub fn adjust_body(
+        &self,
+        function: &mut crate::Function,
+        function_map: &HandleMap<crate::Function>,
+    ) {
         let block = &mut function.body;
         let mut worklist: Vec<&mut [crate::Statement]> = vec![block];
         let adjust = |handle: &mut Handle<crate::Expression>| {
@@ -261,6 +310,20 @@ impl FunctionMap {
                             adjust(result);
                         }
                     }
+                    St::ImageAtomic {
+                        ref mut image,
+                        ref mut coordinate,
+                        ref mut array_index,
+                        fun: _,
+                        ref mut value,
+                    } => {
+                        adjust(image);
+                        adjust(coordinate);
+                        if let Some(ref mut array_index) = *array_index {
+                            adjust(array_index);
+                        }
+                        adjust(value);
+                    }
                     St::WorkGroupUniformLoad {
                         ref mut pointer,
                         ref mut result,
@@ -269,10 +332,11 @@ impl FunctionMap {
                         adjust(result);
                     }
                     St::Call {
-                        function: _,
+                        ref mut function,
                         ref mut arguments,
                         ref mut result,
                     } => {
+                        function_map.adjust(function);
                         for expr in arguments {
                             adjust(expr);
                         }
@@ -316,17 +380,39 @@ impl FunctionMap {
                             | crate::GatherMode::Shuffle(ref mut index)
                             | crate::GatherMode::ShuffleDown(ref mut index)
                             | crate::GatherMode::ShuffleUp(ref mut index)
-                            | crate::GatherMode::ShuffleXor(ref mut index) => adjust(index),
+                            | crate::GatherMode::ShuffleXor(ref mut index)
+                            | crate::GatherMode::QuadBroadcast(ref mut index) => adjust(index),
+                            crate::GatherMode::QuadSwap(_) => {}
                         }
                         adjust(argument);
                         adjust(result);
                     }
+                    St::CooperativeStore {
+                        ref mut target,
+                        ref mut data,
+                    } => {
+                        adjust(target);
+                        adjust(&mut data.pointer);
+                        adjust(&mut data.stride);
+                    }
+                    St::RayPipelineFunction(ref mut func) => match *func {
+                        crate::RayPipelineFunction::TraceRay {
+                            ref mut acceleration_structure,
+                            ref mut descriptor,
+                            ref mut payload,
+                        } => {
+                            adjust(acceleration_structure);
+                            adjust(descriptor);
+                            adjust(payload);
+                        }
+                    },
 
                     // Trivial statements.
                     St::Break
                     | St::Continue
                     | St::Kill
-                    | St::Barrier(_)
+                    | St::ControlBarrier(_)
+                    | St::MemoryBarrier(_)
                     | St::Return { value: None } => {}
                 }
             }
@@ -365,6 +451,10 @@ impl FunctionMap {
             Qf::Proceed { ref mut result } => {
                 self.expressions.adjust(result);
             }
+            Qf::GenerateIntersection { ref mut hit_t } => {
+                self.expressions.adjust(hit_t);
+            }
+            Qf::ConfirmIntersection => {}
             Qf::Terminate => {}
         }
     }

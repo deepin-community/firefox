@@ -10,12 +10,13 @@
 add_task(
   async function test_full_page_translations_panel_recent_language_memory_with_multiple_windows() {
     const window1 = window;
+    await focusWindow(window1);
     const { runInPage, resolveDownloads, cleanup } = await loadTestPage({
       page: SPANISH_PAGE_URL,
       languagePairs: LANGUAGE_PAIRS,
     });
 
-    const window2 = await BrowserTestUtils.openNewBrowserWindow();
+    const window2 = await openNewFocusedBrowserWindow();
 
     const testPage2 = await loadTestPage({
       win: window2,
@@ -30,13 +31,13 @@ add_task(
       "The button is available."
     );
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(runInPage);
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(runInPage);
 
     await FullPageTranslationsTestUtils.openPanel({
       win: window1,
       expectedFromLanguage: "es",
       expectedToLanguage: "en",
-      onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
+      onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewIntro,
     });
 
     await FullPageTranslationsTestUtils.changeSelectedToLanguage({
@@ -50,10 +51,12 @@ add_task(
       downloadHandler: resolveDownloads,
     });
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "uk",
-      runInPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "uk",
+        runInPage,
+      }
     );
 
     await FullPageTranslationsTestUtils.openPanel({
@@ -63,7 +66,7 @@ add_task(
 
     await focusWindow(window2);
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(
       testPage2.runInPage
     );
 
@@ -92,10 +95,12 @@ add_task(
 
     await focusWindow(window1);
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "uk",
-      runInPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "uk",
+        runInPage,
+      }
     );
 
     await FullPageTranslationsTestUtils.openPanel({
@@ -108,10 +113,12 @@ add_task(
       win: window1,
     });
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "fr",
-      runInPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "fr",
+        runInPage,
+      }
     );
 
     await testPage2.cleanup();

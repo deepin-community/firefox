@@ -11,11 +11,12 @@ import android.view.View
 import android.view.WindowManager
 import androidx.annotation.Px
 import androidx.annotation.VisibleForTesting
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.ViewRootForInspector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -33,6 +34,8 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mozilla.components.compose.cfr.CFRPopup.IndicatorDirection.DOWN
@@ -40,6 +43,7 @@ import mozilla.components.compose.cfr.CFRPopup.IndicatorDirection.UP
 import mozilla.components.compose.cfr.CFRPopup.PopupAlignment.BODY_CENTERED_IN_SCREEN
 import mozilla.components.compose.cfr.CFRPopup.PopupAlignment.BODY_TO_ANCHOR_CENTER
 import mozilla.components.compose.cfr.CFRPopup.PopupAlignment.BODY_TO_ANCHOR_START
+import mozilla.components.compose.cfr.CFRPopup.PopupAlignment.BODY_TO_ANCHOR_START_WITH_OFFSET
 import mozilla.components.compose.cfr.CFRPopup.PopupAlignment.INDICATOR_CENTERED_IN_ANCHOR
 import mozilla.components.compose.cfr.CFRPopupShape.Companion
 import mozilla.components.compose.cfr.helper.DisplayOrientationListener
@@ -81,6 +85,7 @@ internal data class PopupHorizontalBounds(
  * @param title Optional [Text] composable to show just above the popup text.
  * @param text [Text] already styled and ready to be shown in the popup.
  * @param action Optional other composable to show just below the popup text.
+ * @param mainDispatcher [CoroutineDispatcher] used for scheduling coroutines.
  */
 @SuppressLint("ViewConstructor") // Intended to be used only in code, don't need a View constructor
 internal class CFRPopupFullscreenLayout(
@@ -90,6 +95,7 @@ internal class CFRPopupFullscreenLayout(
     private val title: @Composable (() -> Unit)? = null,
     private val text: @Composable (() -> Unit),
     private val action: @Composable (() -> Unit) = {},
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
 ) : AbstractComposeView(anchor.context), ViewRootForInspector {
     private val windowManager = anchor.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -160,7 +166,7 @@ internal class CFRPopupFullscreenLayout(
         val popupBounds = computePopupHorizontalBounds(
             anchorMiddleXCoord = anchorXCoordMiddle,
             arrowIndicatorWidth = Pixels(Companion.getIndicatorBaseWidthForHeight(indicatorArrowHeight.value)),
-            screenWidth = Pixels(LocalConfiguration.current.screenWidthDp.dp.toPx()),
+            screenWidth = Pixels(LocalWindowInfo.current.containerSize.width),
             layoutDirection = LocalConfiguration.current.layoutDirection,
         )
 
@@ -201,8 +207,11 @@ internal class CFRPopupFullscreenLayout(
                     dismiss()
                     onDismiss(true)
                 },
-                popupWidth = if (shouldCenterPopup(LocalConfiguration.current.screenWidthDp.dp.toPx())) {
-                    (LocalConfiguration.current.screenWidthDp - 2 * CFRPopup.DEFAULT_HORIZONTAL_VIEWPORT_MARGIN_DP).dp
+                popupWidth = if (shouldCenterPopup(LocalWindowInfo.current.containerSize.width)) {
+                    with(LocalDensity.current) {
+                        LocalWindowInfo.current.containerSize.width.toDp() -
+                            (2 * CFRPopup.DEFAULT_HORIZONTAL_VIEWPORT_MARGIN_DP).dp
+                    }
                 } else {
                     properties.popupWidth
                 },
@@ -277,7 +286,6 @@ internal class CFRPopupFullscreenLayout(
      * @param layoutDirection the layout direction of the anchor layout.
      */
     @VisibleForTesting
-    @Suppress("LongMethod")
     internal fun computePopupHorizontalBounds(
         anchorMiddleXCoord: Pixels,
         arrowIndicatorWidth: Pixels,
@@ -311,6 +319,10 @@ internal class CFRPopupFullscreenLayout(
         var startCoord = when (properties.popupAlignment) {
             BODY_TO_ANCHOR_START -> {
                 Pixels(anchor.x.roundToInt() + leftInsets.value)
+            }
+
+            BODY_TO_ANCHOR_START_WITH_OFFSET -> {
+                Pixels(anchor.x.roundToInt() + leftInsets.value + properties.popupStartOffset.toPx())
             }
 
             BODY_TO_ANCHOR_CENTER -> {
@@ -393,6 +405,9 @@ internal class CFRPopupFullscreenLayout(
         var startCoord = when (properties.popupAlignment) {
             BODY_TO_ANCHOR_START -> {
                 Pixels(anchor.x.roundToInt() + anchor.width + leftInsets.value)
+            }
+            BODY_TO_ANCHOR_START_WITH_OFFSET -> {
+                Pixels(anchor.x.roundToInt() + anchor.width + leftInsets.value + properties.popupStartOffset.toPx())
             }
             BODY_TO_ANCHOR_CENTER -> {
                 val anchorEndCoord = anchor.x.roundToInt() + anchor.width
@@ -477,6 +492,7 @@ internal class CFRPopupFullscreenLayout(
     ): Pixels {
         return when (properties.popupAlignment) {
             BODY_TO_ANCHOR_START,
+            BODY_TO_ANCHOR_START_WITH_OFFSET,
             BODY_TO_ANCHOR_CENTER,
             -> Pixels(properties.indicatorArrowStartOffset.toPx())
             BODY_CENTERED_IN_SCREEN,
@@ -526,7 +542,7 @@ internal class CFRPopupFullscreenLayout(
 
     private fun getDisplayOrientationListener(context: Context) = DisplayOrientationListener(context) {
         dismiss()
-        anchor.toScope().launch {
+        anchor.toScope(mainDispatcher = mainDispatcher).launch {
             delay(SHOW_AFTER_SCREEN_ORIENTATION_CHANGE_DELAY)
             show()
         }

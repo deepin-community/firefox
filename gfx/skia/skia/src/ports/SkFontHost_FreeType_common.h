@@ -16,6 +16,7 @@
 #include "src/core/SkScalerContext.h"
 
 class SkCanvas;
+class SkPathBuilder;
 
 // These are forward declared to avoid pimpl but also hide the FreeType implementation.
 typedef struct FT_FaceRec_* FT_Face;
@@ -25,7 +26,7 @@ typedef signed long FT_Pos;
 #ifdef SK_DEBUG
 const char* SkTraceFtrGetError(int);
 #define SK_TRACEFTR(ERR, MSG, ...) \
-    SkDebugf("%s:%d:1: error: 0x%x '%s' " MSG "\n", __FILE__, __LINE__, ERR, \
+    SkDebugf("%s:%d:1: error: 0x%x '%s' " MSG "\n", __FILE__, __LINE__, (uint32_t)ERR, \
             SkTraceFtrGetError((int)(ERR)), __VA_ARGS__)
 #else
 #define SK_TRACEFTR(ERR, ...) do { sk_ignore_unused_variable(ERR); } while (false)
@@ -55,7 +56,7 @@ struct SkScalerContextFTUtils {
                       SkSpan<SkColor> palette, SkCanvas*) const;
     void generateGlyphImage(FT_Face, const SkGlyph&, void*, const SkMatrix& bitmapTransform,
                             const SkMaskGamma::PreBlend&) const;
-    bool generateGlyphPath(FT_Face, SkPath*) const;
+    bool generateGlyphPath(FT_Face, SkPathBuilder*) const;
 
     /** Computes a bounding box for a COLRv1 glyph.
      *
@@ -66,7 +67,7 @@ struct SkScalerContextFTUtils {
     static bool computeColrV1GlyphBoundingBox(FT_Face, SkGlyphID, SkRect* bounds);
 
 private:
-    bool generateFacePath(FT_Face, SkGlyphID, LoadGlyphFlags, SkPath*) const;
+    bool generateFacePath(FT_Face, SkGlyphID, LoadGlyphFlags, SkPathBuilder*) const;
 };
 
 #endif // SKFONTHOST_FREETYPE_COMMON_H_

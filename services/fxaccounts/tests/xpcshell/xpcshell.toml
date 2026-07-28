@@ -1,9 +1,11 @@
 [DEFAULT]
+run-if = [
+  "os != 'android'",
+]
 head = "head.js ../../../common/tests/unit/head_helpers.js ../../../common/tests/unit/head_http.js"
 firefox-appdir = "browser"
 skip-if = [
-  "os == 'android'",
-  "appname == 'thunderbird' && !nightly_build"
+  "!sync",
 ]
 support-files = [
   "!/services/common/tests/unit/head_helpers.js",
@@ -16,12 +18,16 @@ support-files = [
 
 ["test_accounts_device_registration.js"]
 
+["test_browser_lifetime.js"]
+
 ["test_client.js"]
 
 ["test_commands.js"]
 
 ["test_commands_closetab.js"]
-skip-if = ["appname == 'thunderbird'"]
+skip-if = [
+  "appname == 'thunderbird'",
+]
 
 ["test_credentials.js"]
 
@@ -46,6 +52,11 @@ skip-if = ["appname == 'thunderbird'"]
 ["test_push_service.js"]
 
 ["test_storage_manager.js"]
+
+["test_sync_warning_dialogs.js"]
+skip-if = [
+  "appname == 'thunderbird'",
+]
 
 ["test_telemetry.js"]
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,6 @@
 
 #include <utility>
 
-#include "mozilla/Attributes.h"
 #include "mozilla/SimpleEnumerator.h"
 #include "nsArray.h"
 #include "nsArrayEnumerator.h"
@@ -19,7 +16,6 @@
 
 using mozilla::MakeRefPtr;
 using mozilla::SimpleEnumerator;
-using mozilla::Unused;
 
 extern "C" {
 
@@ -253,11 +249,9 @@ void nsHashPropertyBagBase::CopyFrom(nsIPropertyBag* aOther) {
       for (auto& property : SimpleEnumerator<nsIProperty>(enumerator)) {
         nsString name;
         nsCOMPtr<nsIVariant> value;
-        Unused << NS_WARN_IF(NS_FAILED(property->GetName(name)));
-        Unused << NS_WARN_IF(
-            NS_FAILED(property->GetValue(getter_AddRefs(value))));
-        Unused << NS_WARN_IF(
-            NS_FAILED(aTo->SetProperty(std::move(name), value)));
+        (void)NS_WARN_IF(NS_FAILED(property->GetName(name)));
+        (void)NS_WARN_IF(NS_FAILED(property->GetValue(getter_AddRefs(value))));
+        (void)NS_WARN_IF(NS_FAILED(aTo->SetProperty(std::move(name), value)));
       }
     } else {
       NS_WARNING("Unable to copy nsIPropertyBag");

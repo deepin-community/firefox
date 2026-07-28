@@ -3,13 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Page title
-about-processes-title = Upravitelj procesima
+about-processes-title = Upravljač procesa
 # The Actions column
 about-processes-column-action =
     .title = Radnje
 
 ## Tooltips
 
+about-processes-shutdown-process =
+    .title = Isključi kartice i prekini proces
 about-processes-shutdown-tab =
     .title = Zatvori karticu
 
@@ -24,6 +26,7 @@ about-processes-column-cpu-total = CPU
 ##    $pid (String) The process id of this process, assigned by the OS.
 
 about-processes-browser-process = { -brand-short-name } ({ $pid })
+about-processes-web-process = Dijeljeni web proces ({ $pid })
 about-processes-file-process = Datoteke ({ $pid })
 about-processes-extension-process = Proširenja ({ $pid })
 about-processes-privilegedabout-process = Informacije o stranicama ({ $pid })
@@ -33,6 +36,13 @@ about-processes-gmp-plugin-process = Gecko medijski dodaci ({ $pid })
 about-processes-gpu-process = GPU ({ $pid })
 about-processes-vr-process = VR ({ $pid })
 about-processes-socket-process = Mreža ({ $pid })
+about-processes-utility-process = Uslužni program ({ $pid })
+about-processes-inference-process = Zaključivanje ({ $pid })
+# Unknown process names
+# Variables:
+#    $pid (String) The process id of this process, assigned by the OS.
+#    $type (String) The raw type for this process.
+about-processes-unknown-process = Drugo: { $type } ({ $pid })
 
 ## Isolated process names
 ## Variables:
@@ -69,12 +79,18 @@ about-processes-utility-actor-windows-file-dialog = Dijalog za datoteke za Windo
 ##    $unit (String) The unit in which to display $total. See the definitions
 ##                   of `duration-unit-*`.
 
+# Common case.
+about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+    .title = Ukupno vrijeme CPU-a: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (mjerenje)
 # Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
 # This case only occurs on Windows where the precision of the CPU times is low.
 about-processes-cpu-almost-idle = < 0,1 %
     .title = Ukupno vrijeme procesora: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+# Special case: process or thread is currently idle.
+about-processes-cpu-fully-idle = neaktivno
+    .title = Ukupno vrijeme CPU-a: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:
@@ -87,6 +103,8 @@ about-processes-cpu-almost-idle = < 0,1 %
 ##    $deltaUnit (String) The unit in which to display $delta. See the definitions
 ##                        of `memory-unit-*`.
 
+# Special case: no change.
+about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
 
 ## Duration units
 

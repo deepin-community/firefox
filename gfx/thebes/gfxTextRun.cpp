@@ -1,34 +1,36 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=4 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "gfxTextRun.h"
-#include "gfxGlyphExtents.h"
-#include "gfxHarfBuzzShaper.h"
-#include "gfxPlatformFontList.h"
-#include "gfxUserFontSet.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/gfx/PathHelpers.h"
-#include "mozilla/ServoStyleSet.h"
-#include "mozilla/Sprintf.h"
-#include "mozilla/StaticPresData.h"
 
+#include "gfx2DGlue.h"
 #include "gfxContext.h"
 #include "gfxFontConstants.h"
 #include "gfxFontMissingGlyphs.h"
+#include "gfxGlyphExtents.h"
+#include "gfxHarfBuzzShaper.h"
+#include "gfxPlatformFontList.h"
 #include "gfxScriptItemizer.h"
-#include "nsUnicodeProperties.h"
-#include "nsStyleConsts.h"
-#include "nsStyleUtil.h"
-#include "mozilla/Likely.h"
-#include "gfx2DGlue.h"
+#include "gfxUserFontSet.h"
+#include "mozilla/ClearOnShutdown.h"
+#include "mozilla/dom/WorkerCommon.h"
+#include "mozilla/gfx/2D.h"
 #include "mozilla/gfx/Logging.h"  // for gfxCriticalError
+#include "mozilla/gfx/PathHelpers.h"
+#include "mozilla/intl/Locale.h"
 #include "mozilla/intl/String.h"
 #include "mozilla/intl/UnicodeProperties.h"
+#include "mozilla/Likely.h"
+#include "mozilla/MruCache.h"
+#include "mozilla/ServoStyleSet.h"
+#include "mozilla/Sprintf.h"
+#include "mozilla/StaticPresData.h"
 #include "mozilla/UniquePtr.h"
-#include "mozilla/Unused.h"
+#include "nsLayoutUtils.h"
+#include "nsStyleConsts.h"
+#include "nsStyleUtil.h"
+#include "nsUnicodeProperties.h"
 #include "SharedFontList-impl.h"
 #include "TextDrawTarget.h"
 
@@ -161,8 +163,6 @@ gfxTextRun::gfxTextRun(const gfxTextRunFactory::Parameters* aParams,
       mUserData(aParams->mUserData),
       mFontGroup(aFontGroup),
       mFlags2(aFlags2),
-      mReleasedFontGroup(false),
-      mReleasedFontGroupSkippedDrawing(false),
       mShapingState(eShapingState_Normal) {
   NS_ASSERTION(mAppUnitsPerDevUnit > 0, "Invalid app unit scale");
   NS_ADDREF(mFontGroup);
@@ -198,37 +198,13 @@ gfxTextRun::~gfxTextRun() {
   mFlags2 = ~nsTextFrameUtils::Flags();
 #endif
 
-  // The cached ellipsis textrun (if any) in a fontgroup will have already
-  // been told to release its reference to the group, so we mustn't do that
-  // again here.
-  if (!mReleasedFontGroup) {
 #ifndef RELEASE_OR_BETA
-    gfxTextPerfMetrics* tp = mFontGroup->GetTextPerfMetrics();
-    if (tp) {
-      tp->current.textrunDestr++;
-    }
-#endif
-    NS_RELEASE(mFontGroup);
+  gfxTextPerfMetrics* tp = mFontGroup->GetTextPerfMetrics();
+  if (tp) {
+    tp->current.textrunDestr++;
   }
-}
-
-void gfxTextRun::ReleaseFontGroup() {
-  NS_ASSERTION(!mReleasedFontGroup, "doubly released!");
-
-  // After dropping our reference to the font group, we'll no longer be able
-  // to get up-to-date results for ShouldSkipDrawing().  Store the current
-  // value in mReleasedFontGroupSkippedDrawing.
-  //
-  // (It doesn't actually matter that we can't get up-to-date results for
-  // ShouldSkipDrawing(), since the only text runs that we call
-  // ReleaseFontGroup() for are ellipsis text runs, and we ask the font
-  // group for a new ellipsis text run each time we want to draw one,
-  // and ensure that the cached one is cleared in ClearCachedData() when
-  // font loading status changes.)
-  mReleasedFontGroupSkippedDrawing = mFontGroup->ShouldSkipDrawing();
-
+#endif
   NS_RELEASE(mFontGroup);
-  mReleasedFontGroup = true;
 }
 
 bool gfxTextRun::SetPotentialLineBreaks(Range aRange,
@@ -326,14 +302,16 @@ gfxTextRun::LigatureData gfxTextRun::ComputeLigatureData(
   if (aProvider && (mFlags & gfx::ShapedTextFlags::TEXT_ENABLE_SPACING)) {
     gfxFont::Spacing spacing;
     if (aPartRange.start == result.mRange.start) {
-      aProvider->GetSpacing(Range(aPartRange.start, aPartRange.start + 1),
-                            &spacing);
-      result.mPartWidth += spacing.mBefore;
+      if (aProvider->GetSpacing(Range(aPartRange.start, aPartRange.start + 1),
+                                &spacing)) {
+        result.mPartWidth += spacing.mBefore;
+      }
     }
     if (aPartRange.end == result.mRange.end) {
-      aProvider->GetSpacing(Range(aPartRange.end - 1, aPartRange.end),
-                            &spacing);
-      result.mPartWidth += spacing.mAfter;
+      if (aProvider->GetSpacing(Range(aPartRange.end - 1, aPartRange.end),
+                                &spacing)) {
+        result.mPartWidth += spacing.mAfter;
+      }
     }
   }
 
@@ -355,15 +333,16 @@ int32_t gfxTextRun::GetAdvanceForGlyphs(Range aRange) const {
   return advance;
 }
 
-static void GetAdjustedSpacing(
+// Returns false if there is definitely no spacing to apply.
+static bool GetAdjustedSpacing(
     const gfxTextRun* aTextRun, gfxTextRun::Range aRange,
     const gfxTextRun::PropertyProvider& aProvider,
     gfxTextRun::PropertyProvider::Spacing* aSpacing) {
   if (aRange.start >= aRange.end) {
-    return;
+    return false;
   }
 
-  aProvider.GetSpacing(aRange, aSpacing);
+  bool result = aProvider.GetSpacing(aRange, aSpacing);
 
 #ifdef DEBUG
   // Check to see if we have spacing inside ligatures
@@ -382,6 +361,8 @@ static void GetAdjustedSpacing(
     }
   }
 #endif
+
+  return result;
 }
 
 bool gfxTextRun::GetAdjustedSpacingArray(
@@ -395,8 +376,11 @@ bool gfxTextRun::GetAdjustedSpacingArray(
   }
   auto spacingOffset = aSpacingRange.start - aRange.start;
   memset(aSpacing->Elements(), 0, sizeof(gfxFont::Spacing) * spacingOffset);
-  GetAdjustedSpacing(this, aSpacingRange, *aProvider,
-                     aSpacing->Elements() + spacingOffset);
+  if (!GetAdjustedSpacing(this, aSpacingRange, *aProvider,
+                          aSpacing->Elements() + spacingOffset)) {
+    aSpacing->Clear();
+    return false;
+  }
   memset(aSpacing->Elements() + spacingOffset + aSpacingRange.Length(), 0,
          sizeof(gfxFont::Spacing) * (aRange.end - aSpacingRange.end));
   return true;
@@ -567,9 +551,7 @@ void gfxTextRun::Draw(const Range aRange, const gfx::Point aPt,
   NS_ASSERTION(aParams.drawMode == DrawMode::GLYPH_PATH || !aParams.callbacks,
                "callback must not be specified unless using GLYPH_PATH");
 
-  bool skipDrawing =
-      !mDontSkipDrawing && (mFontGroup ? mFontGroup->ShouldSkipDrawing()
-                                       : mReleasedFontGroupSkippedDrawing);
+  bool skipDrawing = !mDontSkipDrawing && mFontGroup->ShouldSkipDrawing();
   auto* textDrawer = aParams.context->GetTextDrawer();
   if (aParams.drawMode & DrawMode::GLYPH_FILL) {
     DeviceColor currentColor;
@@ -857,8 +839,6 @@ void gfxTextRun::GetLineHeightMetrics(Range aRange, gfxFloat& aAscent,
   aDescent = accumulatedMetrics.mDescent;
 }
 
-#define MEASUREMENT_BUFFER_SIZE 100
-
 void gfxTextRun::ClassifyAutoHyphenations(uint32_t aStart, Range aRange,
                                           nsTArray<HyphenType>& aHyphenBuffer,
                                           HyphenationState* aWordState) {
@@ -940,9 +920,10 @@ uint32_t gfxTextRun::BreakAndMeasureText(
 
   NS_ASSERTION(aStart + aMaxLength <= GetLength(), "Substring out of range");
 
-  Range bufferRange(
-      aStart, aStart + std::min<uint32_t>(aMaxLength, MEASUREMENT_BUFFER_SIZE));
-  PropertyProvider::Spacing spacingBuffer[MEASUREMENT_BUFFER_SIZE];
+  constexpr uint32_t kMeasurementBufferSize = 100;
+  Range bufferRange(aStart,
+                    aStart + std::min(aMaxLength, kMeasurementBufferSize));
+  PropertyProvider::Spacing spacingBuffer[kMeasurementBufferSize];
   bool haveSpacing = !!(mFlags & gfx::ShapedTextFlags::TEXT_ENABLE_SPACING);
   if (haveSpacing) {
     GetAdjustedSpacing(this, bufferRange, aProvider, spacingBuffer);
@@ -996,7 +977,7 @@ uint32_t gfxTextRun::BreakAndMeasureText(
       uint32_t oldHyphenBufferLength = hyphenBuffer.Length();
       bufferRange.start = i;
       bufferRange.end =
-          std::min(aStart + aMaxLength, i + MEASUREMENT_BUFFER_SIZE);
+          std::min(aStart + aMaxLength, i + kMeasurementBufferSize);
       // For spacing, we always overwrite the old data with the newly
       // fetched one. However, for hyphenation, hyphenation data sometimes
       // depends on the context in every word (if "hyphens: auto" is set).
@@ -1225,15 +1206,16 @@ gfxFloat gfxTextRun::GetAdvanceWidth(
     uint32_t i;
     AutoTArray<PropertyProvider::Spacing, 200> spacingBuffer;
     if (spacingBuffer.AppendElements(aRange.Length(), fallible)) {
-      GetAdjustedSpacing(this, ligatureRange, *aProvider,
-                         spacingBuffer.Elements());
-      for (i = 0; i < ligatureRange.Length(); ++i) {
-        PropertyProvider::Spacing* space = &spacingBuffer[i];
-        result += space->mBefore + space->mAfter;
-      }
-      if (aSpacing) {
-        aSpacing->mBefore = spacingBuffer[0].mBefore;
-        aSpacing->mAfter = spacingBuffer.LastElement().mAfter;
+      if (GetAdjustedSpacing(this, ligatureRange, *aProvider,
+                             spacingBuffer.Elements())) {
+        for (i = 0; i < ligatureRange.Length(); ++i) {
+          PropertyProvider::Spacing* space = &spacingBuffer[i];
+          result += space->mBefore + space->mAfter;
+        }
+        if (aSpacing) {
+          aSpacing->mBefore = spacingBuffer[0].mBefore;
+          aSpacing->mAfter = spacingBuffer.LastElement().mAfter;
+        }
       }
     }
   }
@@ -1558,7 +1540,7 @@ void gfxTextRun::SetSpaceGlyph(gfxFont* aFont, DrawTarget* aDrawTarget,
   gfxFontShaper::RoundingFlags roundingFlags =
       aFont->GetRoundOffsetsToPixels(aDrawTarget);
   aFont->ProcessSingleSpaceShapedWord(
-      aDrawTarget, vertical, mAppUnitsPerDevUnit, flags, roundingFlags,
+      vertical, mAppUnitsPerDevUnit, flags, roundingFlags,
       [&](gfxShapedWord* aShapedWord) {
         const GlyphRun* prevRun = TrailingGlyphRun();
         bool isCJK = prevRun && prevRun->mFont == aFont &&
@@ -1838,42 +1820,27 @@ void gfxTextRun::Dump(FILE* out) {
 }
 #endif
 
-gfxFontGroup::gfxFontGroup(nsPresContext* aPresContext,
+gfxFontGroup::gfxFontGroup(FontVisibilityProvider* aFontVisibilityProvider,
                            const StyleFontFamilyList& aFontFamilyList,
                            const gfxFontStyle* aStyle, nsAtom* aLanguage,
                            bool aExplicitLanguage,
                            gfxTextPerfMetrics* aTextPerf,
                            gfxUserFontSet* aUserFontSet, gfxFloat aDevToCssSize,
                            StyleFontVariantEmoji aVariantEmoji)
-    : mPresContext(aPresContext),  // Note that aPresContext may be null!
+    : mFontVisibilityProvider(
+          aFontVisibilityProvider),  // Note that mFontVisibilityProvider may be
+                                     // null!
       mFamilyList(aFontFamilyList),
       mStyle(*aStyle),
       mLanguage(aLanguage),
-      mUnderlineOffset(UNDERLINE_OFFSET_NOT_SET),
-      mHyphenWidth(-1),
       mDevToCssSize(aDevToCssSize),
       mUserFontSet(aUserFontSet),
       mTextPerf(aTextPerf),
-      mLastPrefLang(eFontPrefLang_Western),
       mPageLang(gfxPlatformFontList::GetFontPrefLangFor(aLanguage)),
-      mLastPrefFirstFont(false),
-      mSkipDrawing(false),
-      mExplicitLanguage(aExplicitLanguage) {
-  switch (aVariantEmoji) {
-    case StyleFontVariantEmoji::Normal:
-    case StyleFontVariantEmoji::Unicode:
-      break;
-    case StyleFontVariantEmoji::Text:
-      mEmojiPresentation = eFontPresentation::Text;
-      break;
-    case StyleFontVariantEmoji::Emoji:
-      mEmojiPresentation = eFontPresentation::EmojiExplicit;
-      break;
-  }
+      mExplicitLanguage(aExplicitLanguage),
+      mFontVariantEmoji(aVariantEmoji) {
   // We don't use SetUserFontSet() here, as we want to unconditionally call
-  // BuildFontList() rather than only do UpdateUserFonts() if it changed.
-  mCurrGeneration = GetGeneration();
-  BuildFontList();
+  // EnsureFontList() rather than only do UpdateUserFonts() if it changed.
 }
 
 gfxFontGroup::~gfxFontGroup() {
@@ -1882,16 +1849,69 @@ gfxFontGroup::~gfxFontGroup() {
 }
 
 static StyleGenericFontFamily GetDefaultGeneric(nsAtom* aLanguage) {
+  // If we're running on a worker thread, always return sans-serif as default
+  // (matching the canvas2d default font), rather than potentially accessing
+  // prefs.
+  if (dom::GetCurrentThreadWorkerPrivate()) {
+    return StyleGenericFontFamily::SansSerif;
+  }
   return StaticPresData::Get()
       ->GetFontPrefsForLang(aLanguage)
       ->GetDefaultGeneric();
 }
 
-void gfxFontGroup::BuildFontList() {
-  // initialize fonts in the font family list
+class DeferredClearResolvedFonts final : public nsIRunnable {
+ public:
+  NS_DECL_THREADSAFE_ISUPPORTS
+
+  DeferredClearResolvedFonts() = delete;
+  explicit DeferredClearResolvedFonts(
+      const DeferredClearResolvedFonts& aOther) = delete;
+  explicit DeferredClearResolvedFonts(
+      nsTArray<gfxFontGroup::FamilyFace>&& aFontList)
+      : mFontList(std::move(aFontList)) {}
+
+ protected:
+  virtual ~DeferredClearResolvedFonts() = default;
+
+  NS_IMETHOD Run(void) override {
+    mFontList.Clear();
+    return NS_OK;
+  }
+
+  nsTArray<gfxFontGroup::FamilyFace> mFontList;
+};
+
+NS_IMPL_ISUPPORTS(DeferredClearResolvedFonts, nsIRunnable)
+
+void gfxFontGroup::EnsureFontList() {
+  // Ensure resolved font instances are valid; discard them if necessary.
+  auto* pfl = gfxPlatformFontList::PlatformFontList();
+  if (mFontListGeneration != pfl->GetGeneration()) {
+    // Forget cached fonts that may no longer be valid.
+    mLastPrefFamily = FontFamily();
+    mLastPrefFont = nullptr;
+    mDefaultFont = nullptr;
+    mResolvedFonts = false;
+  }
+
+  // If we have already resolved the font list, just return.
+  if (mResolvedFonts) {
+    return;
+  }
+
+  // Discard existing fonts; but if we're in servo traversal, defer the actual
+  // deletion.
+  // XXX(jfkthame) is this really necessary, or is the assertion in
+  // ~gfxUserFontFamily() obsolete?
+  if (gfxFontUtils::IsInServoTraversal()) {
+    NS_DispatchToMainThread(new DeferredClearResolvedFonts(std::move(mFonts)));
+  } else {
+    mFonts.Clear();
+  }
+
+  // (Re-)build the list of fonts.
   AutoTArray<FamilyAndGeneric, 10> fonts;
-  gfxPlatformFontList* pfl = gfxPlatformFontList::PlatformFontList();
-  mFontListGeneration = pfl->GetGeneration();
 
   // lookup fonts in the fontlist
   for (const StyleSingleFontFamily& name : mFamilyList.list.AsSpan()) {
@@ -1909,7 +1929,7 @@ void gfxFontGroup::BuildFontList() {
           generic != StyleGenericFontFamily::SystemUi) {
         mFallbackGeneric = generic;
       }
-      pfl->AddGenericFonts(mPresContext, generic, mLanguage, fonts);
+      pfl->AddGenericFonts(mFontVisibilityProvider, generic, mLanguage, fonts);
       if (mTextPerf) {
         mTextPerf->current.genericLookups++;
       }
@@ -1920,8 +1940,8 @@ void gfxFontGroup::BuildFontList() {
   if (mFallbackGeneric == StyleGenericFontFamily::None && !mStyle.systemFont) {
     auto defaultLanguageGeneric = GetDefaultGeneric(mLanguage);
 
-    pfl->AddGenericFonts(mPresContext, defaultLanguageGeneric, mLanguage,
-                         fonts);
+    pfl->AddGenericFonts(mFontVisibilityProvider, defaultLanguageGeneric,
+                         mLanguage, fonts);
     if (mTextPerf) {
       mTextPerf->current.genericLookups++;
     }
@@ -1935,6 +1955,9 @@ void gfxFontGroup::BuildFontList() {
       AddFamilyToFontList(f.mFamily.mUnshared, f.mGeneric);
     }
   }
+
+  mFontListGeneration = pfl->GetGeneration();
+  mResolvedFonts = true;
 }
 
 void gfxFontGroup::AddPlatformFont(const nsACString& aName, bool aQuotedName,
@@ -1955,7 +1978,8 @@ void gfxFontGroup::AddPlatformFont(const nsACString& aName, bool aQuotedName,
 
   // Not known in the user font set ==> check system fonts
   gfxPlatformFontList::PlatformFontList()->FindAndAddFamilies(
-      mPresContext, StyleGenericFontFamily::None, aName, &aFamilyList,
+      mFontVisibilityProvider, StyleGenericFontFamily::None, aName,
+      &aFamilyList,
       aQuotedName ? gfxPlatformFontList::FindFamiliesFlags::eQuotedFamilyName
                   : gfxPlatformFontList::FindFamiliesFlags(0),
       &mStyle, mLanguage.get(), mDevToCssSize);
@@ -1990,17 +2014,8 @@ void gfxFontGroup::AddFamilyToFontList(gfxFontFamily* aFamily,
 void gfxFontGroup::AddFamilyToFontList(fontlist::Family* aFamily,
                                        StyleGenericFontFamily aGeneric) {
   gfxPlatformFontList* pfl = gfxPlatformFontList::PlatformFontList();
-  if (!aFamily->IsInitialized()) {
-    if (ServoStyleSet* set = gfxFontUtils::CurrentServoStyleSet()) {
-      // If we need to initialize a Family record, but we're on a style
-      // worker thread, we have to defer it.
-      set->AppendTask(PostTraversalTask::InitializeFamily(aFamily));
-      set->AppendTask(PostTraversalTask::FontInfoUpdate(set));
-      return;
-    }
-    if (!pfl->InitializeFamily(aFamily)) {
-      return;
-    }
+  if (!aFamily->IsInitialized() && !pfl->InitializeFamily(aFamily)) {
+    return;
   }
   AutoTArray<fontlist::Face*, 4> faceList;
   aFamily->FindAllFacesForStyle(pfl->SharedFontList(), mStyle, faceList);
@@ -2119,7 +2134,7 @@ already_AddRefed<gfxFont> gfxFontGroup::GetDefaultFont() {
   }
 
   gfxPlatformFontList* pfl = gfxPlatformFontList::PlatformFontList();
-  FontFamily family = pfl->GetDefaultFont(mPresContext, &mStyle);
+  FontFamily family = pfl->GetDefaultFont(mFontVisibilityProvider, &mStyle);
   MOZ_ASSERT(!family.IsNull(),
              "invalid default font returned by GetDefaultFont");
 
@@ -2128,7 +2143,7 @@ already_AddRefed<gfxFont> gfxFontGroup::GetDefaultFont() {
     fontlist::Family* fam = family.mShared;
     if (!fam->IsInitialized()) {
       // If this fails, FindFaceForStyle will just safely return nullptr
-      Unused << pfl->InitializeFamily(fam);
+      (void)pfl->InitializeFamily(fam);
     }
     fontlist::Face* face = fam->FindFaceForStyle(pfl->SharedFontList(), mStyle);
     if (face) {
@@ -2161,7 +2176,7 @@ already_AddRefed<gfxFont> gfxFontGroup::GetDefaultFont() {
       for (uint32_t i = 0; i < numFonts; ++i) {
         fontlist::Family* fam = &families[i];
         if (!fam->IsInitialized()) {
-          Unused << pfl->InitializeFamily(fam);
+          (void)pfl->InitializeFamily(fam);
         }
         fontlist::Face* face =
             fam->FindFaceForStyle(pfl->SharedFontList(), mStyle);
@@ -2228,8 +2243,7 @@ already_AddRefed<gfxFont> gfxFontGroup::GetDefaultFont() {
 
 already_AddRefed<gfxFont> gfxFontGroup::GetFirstValidFont(
     uint32_t aCh, StyleGenericFontFamily* aGeneric, bool* aIsFirst) {
-  // Ensure cached font instances are valid.
-  CheckForUpdatedPlatformList();
+  EnsureFontList();
 
   uint32_t count = mFonts.Length();
   bool loading = false;
@@ -2313,6 +2327,7 @@ already_AddRefed<gfxFont> gfxFontGroup::GetFirstValidFont(
 }
 
 already_AddRefed<gfxFont> gfxFontGroup::GetFirstMathFont() {
+  EnsureFontList();
   uint32_t count = mFonts.Length();
   for (uint32_t i = 0; i < count; ++i) {
     RefPtr<gfxFont> font = GetFontAt(i);
@@ -2506,6 +2521,111 @@ template already_AddRefed<gfxTextRun> gfxFontGroup::MakeTextRun(
     gfx::ShapedTextFlags aFlags, nsTextFrameUtils::Flags aFlags2,
     gfxMissingFontRecorder* aMFR);
 
+// ComputeRanges instantiation (used by
+// gfxPlatformFontList::ListFontsUsedForString).
+template void gfxFontGroup::ComputeRanges(nsTArray<TextRange>&, const char16_t*,
+                                          uint32_t, Script,
+                                          gfx::ShapedTextFlags);
+
+// Helper to get a hashtable that maps tags to Script codes, created on first
+// use.
+static const nsTHashMap<nsUint32HashKey, Script>* ScriptTagToCodeTable() {
+  using TableT = nsTHashMap<nsUint32HashKey, Script>;
+
+  // Initialize our static var by creating the hashtable and populating it with
+  // all the valid codes.
+  // According to
+  // https://en.cppreference.com/w/cpp/language/storage_duration#Static_block_variables:
+  // "If multiple threads attempt to initialize the same static local variable
+  // concurrently, the initialization occurs exactly once."
+  static UniquePtr<TableT> sScriptTagToCode = []() {
+    auto tagToCode = MakeUnique<TableT>(size_t(Script::NUM_SCRIPT_CODES));
+    Script scriptCount =
+        Script(std::min<int>(UnicodeProperties::GetMaxNumberOfScripts() + 1,
+                             int(Script::NUM_SCRIPT_CODES)));
+    for (Script s = Script::ARABIC; s < scriptCount;
+         s = Script(static_cast<int>(s) + 1)) {
+      uint32_t tag = GetScriptTagForCode(s);
+      if (tag != HB_SCRIPT_UNKNOWN) {
+        tagToCode->InsertOrUpdate(tag, s);
+      }
+    }
+    // Clearing the UniquePtr at shutdown will free the table. The call to
+    // ClearOnShutdown has to be done on the main thread, even if this
+    // initialization happens from a worker.
+    if (NS_IsMainThread()) {
+      ClearOnShutdown(&sScriptTagToCode);
+    } else {
+      NS_DispatchToMainThread(
+          NS_NewRunnableFunction("ClearOnShutdown(sScriptTagToCode)",
+                                 []() { ClearOnShutdown(&sScriptTagToCode); }));
+    }
+    return tagToCode;
+  }();
+
+  return sScriptTagToCode.get();
+}
+
+static Script ResolveScriptForLang(const nsAtom* aLanguage, Script aDefault) {
+  // Cache for lang-to-script lookups, to avoid constantly needing to parse
+  // and resolve the lang code from scratch.
+  class LangScriptCache
+      : public MruCache<const nsAtom*, std::pair<const nsAtom*, Script>,
+                        LangScriptCache> {
+   public:
+    static HashNumber Hash(const nsAtom* const& aKey) { return aKey->hash(); }
+    static bool Match(const nsAtom* const& aKey,
+                      const std::pair<const nsAtom*, Script>& aValue) {
+      return aKey == aValue.first;
+    }
+  };
+
+  static LangScriptCache sCache;
+  static RWLock sLock("LangScriptCache lock");
+
+  MOZ_ASSERT(aDefault != Script::INVALID &&
+             aDefault < Script::NUM_SCRIPT_CODES);
+
+  {
+    // Try to use a cached value without taking an exclusive lock.
+    AutoReadLock lock(sLock);
+    auto p = sCache.Lookup(aLanguage);
+    if (p) {
+      return p.Data().second;
+    }
+  }
+
+  // Didn't find an existing entry, so lock the cache and do a full
+  // lookup-and-update.
+  AutoWriteLock lock(sLock);
+  auto p = sCache.Lookup(aLanguage);
+  if (p) {
+    return p.Data().second;
+  }
+
+  Script script = aDefault;
+  nsAutoCString lang;
+  aLanguage->ToUTF8String(lang);
+  Locale locale;
+  if (LocaleParser::TryParse(lang, locale).isOk()) {
+    if (locale.Script().Missing()) {
+      (void)locale.AddLikelySubtags();
+    }
+    if (locale.Script().Present()) {
+      Span span = locale.Script().Span();
+      MOZ_ASSERT(span.Length() == 4);
+      uint32_t tag = TRUETYPE_TAG(span[0], span[1], span[2], span[3]);
+      Script localeScript;
+      if (ScriptTagToCodeTable()->Get(tag, &localeScript)) {
+        script = localeScript;
+      }
+    }
+  }
+  p.Set(std::pair(aLanguage, script));
+
+  return script;
+}
+
 template <typename T>
 void gfxFontGroup::InitTextRun(DrawTarget* aDrawTarget, gfxTextRun* aTextRun,
                                const T* aString, uint32_t aLength,
@@ -2552,37 +2672,14 @@ void gfxFontGroup::InitTextRun(DrawTarget* aDrawTarget, gfxTextRun* aTextRun,
   do {
     redo = false;
 
-    if (sizeof(T) == sizeof(uint8_t) && !transformedString) {
-      if (MOZ_UNLIKELY(MOZ_LOG_TEST(log, LogLevel::Warning))) {
-        nsAutoCString lang;
-        mLanguage->ToUTF8String(lang);
-        nsAutoCString str((const char*)aString, aLength);
-        nsAutoCString styleString;
-        mStyle.style.ToString(styleString);
-        auto defaultLanguageGeneric = GetDefaultGeneric(mLanguage);
-        MOZ_LOG(
-            log, LogLevel::Warning,
-            ("(%s) fontgroup: [%s] default: %s lang: %s script: %d "
-             "len %d weight: %g stretch: %g%% style: %s size: %6.2f %zu-byte "
-             "TEXTRUN [%s] ENDTEXTRUN\n",
-             (mStyle.systemFont ? "textrunui" : "textrun"),
-             FamilyListToString(mFamilyList).get(),
-             (defaultLanguageGeneric == StyleGenericFontFamily::Serif
-                  ? "serif"
-                  : (defaultLanguageGeneric == StyleGenericFontFamily::SansSerif
-                         ? "sans-serif"
-                         : "none")),
-             lang.get(), static_cast<int>(Script::LATIN), aLength,
-             mStyle.weight.ToFloat(), mStyle.stretch.ToFloat(),
-             styleString.get(), mStyle.size, sizeof(T), str.get()));
-      }
+    // split into script runs so that script can potentially influence
+    // the font matching process below
+    gfxScriptItemizer scriptRuns;
+    const char16_t* textPtr = nullptr;
 
-      // the text is still purely 8-bit; bypass the script-run itemizer
-      // and treat it as a single Latin run
-      InitScriptRun(aDrawTarget, aTextRun, aString, 0, aLength, Script::LATIN,
-                    aMFR);
+    if (sizeof(T) == sizeof(uint8_t) && !transformedString) {
+      scriptRuns.SetText(aString, aLength);
     } else {
-      const char16_t* textPtr;
       if (transformedString) {
         textPtr = transformedString.get();
       } else {
@@ -2591,40 +2688,58 @@ void gfxFontGroup::InitTextRun(DrawTarget* aDrawTarget, gfxTextRun* aTextRun,
         textPtr = reinterpret_cast<const char16_t*>(aString);
       }
 
-      // split into script runs so that script can potentially influence
-      // the font matching process below
-      gfxScriptItemizer scriptRuns(textPtr, aLength);
+      scriptRuns.SetText(textPtr, aLength);
+    }
 
-      uint32_t runStart = 0, runLimit = aLength;
-      Script runScript = Script::LATIN;
-      while (scriptRuns.Next(runStart, runLimit, runScript)) {
-        if (MOZ_UNLIKELY(MOZ_LOG_TEST(log, LogLevel::Warning))) {
-          nsAutoCString lang;
-          mLanguage->ToUTF8String(lang);
-          nsAutoCString styleString;
-          mStyle.style.ToString(styleString);
-          auto defaultLanguageGeneric = GetDefaultGeneric(mLanguage);
-          uint32_t runLen = runLimit - runStart;
-          MOZ_LOG(log, LogLevel::Warning,
-                  ("(%s) fontgroup: [%s] default: %s lang: %s script: %d "
-                   "len %d weight: %g stretch: %g%% style: %s size: %6.2f "
-                   "%zu-byte TEXTRUN [%s] ENDTEXTRUN\n",
-                   (mStyle.systemFont ? "textrunui" : "textrun"),
-                   FamilyListToString(mFamilyList).get(),
-                   (defaultLanguageGeneric == StyleGenericFontFamily::Serif
-                        ? "serif"
-                        : (defaultLanguageGeneric ==
-                                   StyleGenericFontFamily::SansSerif
-                               ? "sans-serif"
-                               : "none")),
-                   lang.get(), static_cast<int>(runScript), runLen,
-                   mStyle.weight.ToFloat(), mStyle.stretch.ToFloat(),
-                   styleString.get(), mStyle.size, sizeof(T),
-                   NS_ConvertUTF16toUTF8(textPtr + runStart, runLen).get()));
-        }
+    while (gfxScriptItemizer::Run run = scriptRuns.Next()) {
+      if (MOZ_UNLIKELY(MOZ_LOG_TEST(log, LogLevel::Warning))) {
+        nsAutoCString lang;
+        mLanguage->ToUTF8String(lang);
+        nsAutoCString styleString;
+        mStyle.style.ToString(styleString);
+        auto defaultLanguageGeneric = GetDefaultGeneric(mLanguage);
+        MOZ_LOG(
+            log, LogLevel::Warning,
+            ("(%s) fontgroup: [%s] default: %s lang: %s script: %d "
+             "len %d weight: %g stretch: %g%% style: %s size: %6.2f "
+             "%zu-byte TEXTRUN [%s] ENDTEXTRUN\n",
+             (mStyle.systemFont ? "textrunui" : "textrun"),
+             FamilyListToString(mFamilyList).get(),
+             (defaultLanguageGeneric == StyleGenericFontFamily::Serif
+                  ? "serif"
+                  : (defaultLanguageGeneric == StyleGenericFontFamily::SansSerif
+                         ? "sans-serif"
+                         : "none")),
+             lang.get(), static_cast<int>(run.mScript), run.mLength,
+             mStyle.weight.ToFloat(), mStyle.stretch.ToFloat(),
+             styleString.get(), mStyle.size, sizeof(T),
+             textPtr
+                 ? NS_ConvertUTF16toUTF8(textPtr + run.mOffset, run.mLength)
+                       .get()
+                 : nsPromiseFlatCString(
+                       nsDependentCSubstring(
+                           reinterpret_cast<const char*>(aString) + run.mOffset,
+                           run.mLength))
+                       .get()));
+      }
 
-        InitScriptRun(aDrawTarget, aTextRun, textPtr + runStart, runStart,
-                      runLimit - runStart, runScript, aMFR);
+      // If COMMON or INHERITED was not resolved, try to use the language code
+      // to guess a likely script.
+      if (run.mScript <= Script::INHERITED) {
+        // This assumes Script codes begin with COMMON and INHERITED, preceding
+        // codes for any "real" scripts.
+        MOZ_ASSERT(
+            run.mScript == Script::COMMON || run.mScript == Script::INHERITED,
+            "unexpected Script code!");
+        run.mScript = ResolveScriptForLang(mLanguage, run.mScript);
+      }
+
+      if (textPtr) {
+        InitScriptRun(aDrawTarget, aTextRun, textPtr + run.mOffset, run.mOffset,
+                      run.mLength, run.mScript, aMFR);
+      } else {
+        InitScriptRun(aDrawTarget, aTextRun, aString + run.mOffset, run.mOffset,
+                      run.mLength, run.mScript, aMFR);
       }
     }
 
@@ -2763,9 +2878,9 @@ void gfxFontGroup::InitScriptRun(DrawTarget* aDrawTarget, gfxTextRun* aTextRun,
                      syntheticLower, syntheticUpper)) {
         // fallback for small-caps variant glyphs
         if (!matchedFont->InitFakeSmallCapsRun(
-                mPresContext, aDrawTarget, aTextRun, aString + runStart,
-                aOffset + runStart, matchedLength, range.matchType,
-                range.orientation, aRunScript,
+                mFontVisibilityProvider, aDrawTarget, aTextRun,
+                aString + runStart, aOffset + runStart, matchedLength,
+                range.matchType, range.orientation, aRunScript,
                 mExplicitLanguage ? mLanguage.get() : nullptr, syntheticLower,
                 syntheticUpper)) {
           matchedFont = nullptr;
@@ -2878,45 +2993,29 @@ void gfxFontGroup::InitScriptRun(DrawTarget* aDrawTarget, gfxTextRun* aTextRun,
   }
 }
 
-gfxTextRun* gfxFontGroup::GetEllipsisTextRun(
+already_AddRefed<gfxTextRun> gfxFontGroup::MakeEllipsisTextRun(
     int32_t aAppUnitsPerDevPixel, gfx::ShapedTextFlags aFlags,
-    LazyReferenceDrawTargetGetter& aRefDrawTargetGetter) {
+    DrawTarget* aRefDrawTarget) {
   MOZ_ASSERT(!(aFlags & ~ShapedTextFlags::TEXT_ORIENT_MASK),
              "flags here should only be used to specify orientation");
-  if (mCachedEllipsisTextRun &&
-      (mCachedEllipsisTextRun->GetFlags() &
-       ShapedTextFlags::TEXT_ORIENT_MASK) == aFlags &&
-      mCachedEllipsisTextRun->GetAppUnitsPerDevUnit() == aAppUnitsPerDevPixel) {
-    return mCachedEllipsisTextRun.get();
-  }
-
   // Use a Unicode ellipsis if the font supports it,
   // otherwise use three ASCII periods as fallback.
   RefPtr<gfxFont> firstFont = GetFirstValidFont();
   nsString ellipsis =
       firstFont->HasCharacter(kEllipsisChar[0])
-          ? nsDependentString(kEllipsisChar, ArrayLength(kEllipsisChar) - 1)
+          ? nsDependentString(kEllipsisChar, std::size(kEllipsisChar) - 1)
           : nsDependentString(kASCIIPeriodsChar,
-                              ArrayLength(kASCIIPeriodsChar) - 1);
+                              std::size(kASCIIPeriodsChar) - 1);
 
-  RefPtr<DrawTarget> refDT = aRefDrawTargetGetter.GetRefDrawTarget();
-  Parameters params = {refDT,   nullptr, nullptr,
-                       nullptr, 0,       aAppUnitsPerDevPixel};
-  mCachedEllipsisTextRun =
-      MakeTextRun(ellipsis.BeginReading(), ellipsis.Length(), &params, aFlags,
-                  nsTextFrameUtils::Flags(), nullptr);
-  if (!mCachedEllipsisTextRun) {
-    return nullptr;
-  }
-  // don't let the presence of a cached ellipsis textrun prolong the
-  // fontgroup's life
-  mCachedEllipsisTextRun->ReleaseFontGroup();
-  return mCachedEllipsisTextRun.get();
+  Parameters params = {aRefDrawTarget, nullptr, nullptr,
+                       nullptr,        0,       aAppUnitsPerDevPixel};
+  return MakeTextRun(ellipsis.BeginReading(), ellipsis.Length(), &params,
+                     aFlags, nsTextFrameUtils::Flags(), nullptr);
 }
 
 already_AddRefed<gfxFont> gfxFontGroup::FindFallbackFaceForChar(
     gfxFontFamily* aFamily, uint32_t aCh, uint32_t aNextCh,
-    eFontPresentation aPresentation) {
+    FontPresentation aPresentation) {
   GlobalFontMatch data(aCh, aNextCh, mStyle, aPresentation);
   aFamily->SearchAllFontsForChar(&data);
   gfxFontEntry* fe = data.mBestMatch;
@@ -2928,7 +3027,7 @@ already_AddRefed<gfxFont> gfxFontGroup::FindFallbackFaceForChar(
 
 already_AddRefed<gfxFont> gfxFontGroup::FindFallbackFaceForChar(
     fontlist::Family* aFamily, uint32_t aCh, uint32_t aNextCh,
-    eFontPresentation aPresentation) {
+    FontPresentation aPresentation) {
   auto* pfl = gfxPlatformFontList::PlatformFontList();
   auto* list = pfl->SharedFontList();
 
@@ -2952,7 +3051,7 @@ already_AddRefed<gfxFont> gfxFontGroup::FindFallbackFaceForChar(
 
 already_AddRefed<gfxFont> gfxFontGroup::FindFallbackFaceForChar(
     const FamilyFace& aFamily, uint32_t aCh, uint32_t aNextCh,
-    eFontPresentation aPresentation) {
+    FontPresentation aPresentation) {
   if (aFamily.IsSharedFamily()) {
     return FindFallbackFaceForChar(aFamily.SharedFamily(), aCh, aNextCh,
                                    aPresentation);
@@ -3065,40 +3164,43 @@ already_AddRefed<gfxFont> gfxFontGroup::FindFontForChar(
   // list calls for; but if it's a potential emoji codepoint, we need to check
   // if there's a variation selector specifically asking for Text-style or
   // Emoji-style rendering and look for a suitable font.
-  eFontPresentation presentation = eFontPresentation::Any;
-  EmojiPresentation emojiPresentation = GetEmojiPresentation(aCh);
-  if (emojiPresentation != TextOnly) {
+  FontPresentation presentation = FontPresentation::Any;
+  if (EmojiPresentation emojiPresentation = GetEmojiPresentation(aCh);
+      emojiPresentation != TextOnly) {
     // Default presentation from the font-variant-emoji property.
-    presentation = mEmojiPresentation;
+    if (mFontVariantEmoji == StyleFontVariantEmoji::Emoji) {
+      presentation = FontPresentation::EmojiExplicit;
+    } else if (mFontVariantEmoji == StyleFontVariantEmoji::Text) {
+      presentation = FontPresentation::TextExplicit;
+    }
+    // If there wasn't an explicit font-variant-emoji setting, default to
+    // what Unicode prefers for this character.
+    if (presentation == FontPresentation::Any) {
+      if (emojiPresentation == EmojiPresentation::TextDefault) {
+        presentation = FontPresentation::TextDefault;
+      } else {
+        presentation = FontPresentation::EmojiDefault;
+      }
+    }
     // If the prefer-emoji selector is present, or if it's a default-emoji
     // char and the prefer-text selector is NOT present, or if there's a
     // skin-tone modifier, we specifically look for a font with a color
     // glyph.
     // If the prefer-text selector is present, we specifically look for a
     // font that will provide a monochrome glyph.
-    // Otherwise, we'll accept either color or monochrome font-family
-    // entries, so that a color font can be explicitly applied via font-
-    // family even to characters that are not inherently emoji-style.
-    if (aNextCh == kVariationSelector16 ||
-        (aNextCh >= kEmojiSkinToneFirst && aNextCh <= kEmojiSkinToneLast) ||
+    if (aNextCh == kVariationSelector16 || IsEmojiSkinToneModifier(aNextCh) ||
         gfxFontUtils::IsEmojiFlagAndTag(aCh, aNextCh)) {
       // Emoji presentation is explicitly requested by a variation selector
       // or the presence of a skin-tone codepoint.
-      presentation = eFontPresentation::EmojiExplicit;
-    } else if (emojiPresentation == EmojiPresentation::EmojiDefault &&
-               aNextCh != kVariationSelector15) {
-      // Emoji presentation is the default for this Unicode character. but we
-      // will allow an explicitly-specified webfont to apply to it,
-      // regardless of its glyph type.
-      presentation = eFontPresentation::EmojiDefault;
+      presentation = FontPresentation::EmojiExplicit;
     } else if (aNextCh == kVariationSelector15) {
       // Text presentation is explicitly requested.
-      presentation = eFontPresentation::Text;
+      presentation = FontPresentation::TextExplicit;
     }
   }
 
   if (!isJoinControl && !wasJoinCauser && !isVarSelector &&
-      !nextIsVarSelector && presentation == eFontPresentation::Any) {
+      !nextIsVarSelector && presentation == FontPresentation::Any) {
     RefPtr<gfxFont> firstFont = GetFontAt(0, aCh, &loading);
     if (firstFont) {
       if (firstFont->HasCharacter(aCh) ||
@@ -3159,29 +3261,40 @@ already_AddRefed<gfxFont> gfxFontGroup::FindFontForChar(
 
   // Used to remember the first "candidate" font that would provide a fallback
   // text-style rendering if no color glyph can be found.
-  // If we decide NOT to return this font, we must AddRef/Release it to ensure
-  // that it goes into the global font cache as a candidate for deletion.
-  // This is done for us by CheckCandidate, but any code path that returns
-  // WITHOUT calling CheckCandidate needs to handle it explicitly.
   RefPtr<gfxFont> candidateFont;
   FontMatchType candidateMatchType;
 
   // Handle a candidate font that could support the character, returning true
   // if we should go ahead and return |f|, false to continue searching.
-  // If there is already a saved candidate font, and the new candidate is
-  // accepted, we AddRef/Release the existing candidate so it won't leak.
   auto CheckCandidate = [&](gfxFont* f, FontMatchType t) -> bool {
-    // If no preference, then just accept the font.
-    if (presentation == eFontPresentation::Any ||
-        (presentation == eFontPresentation::EmojiDefault &&
-         f->GetFontEntry()->IsUserFont())) {
+    // If a given character is a Private Use Area Unicode codepoint, user
+    // agents must only match font families named in the font-family list that
+    // are not generic families.
+    if (t.generic != StyleGenericFontFamily::None && IsPUA(aCh)) {
+      return false;
+    }
+    // If no preference, or if it's an explicitly-named family in the fontgroup
+    // and font-variant-emoji is 'normal', then we accept the font.
+    if (presentation == FontPresentation::Any ||
+        (!IsExplicitPresentation(presentation) &&
+         t.kind == FontMatchType::Kind::kFontGroup &&
+         t.generic == StyleGenericFontFamily::None &&
+         mFontVariantEmoji == StyleFontVariantEmoji::Normal &&
+         !gfxFontUtils::IsRegionalIndicator(aCh))) {
       *aMatchType = t;
       return true;
     }
     // Does the candidate font provide a color glyph for the current character?
-    bool hasColorGlyph = f->HasColorGlyphFor(aCh, aNextCh);
+    bool hasColorGlyph =
+        f->HasColorGlyphFor(aCh, aNextCh) ||
+        (!nextIsVarSelector && f->HasColorGlyphFor(aCh, kVariationSelector16));
     // If the provided glyph matches the preference, accept the font.
-    if (hasColorGlyph == PrefersColor(presentation)) {
+    if (hasColorGlyph == PrefersColor(presentation) &&
+        // Exception: if this is an emoji flag+tag letters sequence, and the
+        // following codepoint (the first tag) is missing from the font, we
+        // don't want to use this font as it will fail to present the cluster.
+        (!hasColorGlyph || !gfxFontUtils::IsEmojiFlagAndTag(aCh, aNextCh) ||
+         f->HasCharacter(aNextCh))) {
       *aMatchType = t;
       return true;
     }
@@ -3190,7 +3303,8 @@ already_AddRefed<gfxFont> gfxFontGroup::FindFontForChar(
     // we'll assume it knows what it is doing (eg Twemoji Mozilla keycap
     // sequences).
     // TODO: reconsider all this as part of any fix for bug 543200.
-    if (aNextCh == kVariationSelector16 && emojiPresentation == TextDefault &&
+    if (aNextCh == kVariationSelector16 &&
+        GetEmojiPresentation(aCh) == EmojiPresentation::TextDefault &&
         f->HasCharacter(aNextCh) && f->GetFontEntry()->TryGetColorGlyphs()) {
       return true;
     }
@@ -3329,8 +3443,9 @@ already_AddRefed<gfxFont> gfxFontGroup::FindFontForChar(
   // Also don't attempt any fallback for control characters or noncharacters,
   // where we won't be rendering a glyph anyhow, or for codepoints where global
   // fallback has already noted a failure.
-  FontVisibility level =
-      mPresContext ? mPresContext->GetFontVisibility() : FontVisibility::User;
+  FontVisibility level = mFontVisibilityProvider
+                             ? mFontVisibilityProvider->GetFontVisibility()
+                             : FontVisibility::User;
   auto* pfl = gfxPlatformFontList::PlatformFontList();
   if (pfl->SkipFontFallbackForChar(level, aCh) ||
       (!StaticPrefs::gfx_font_rendering_fallback_unassigned_chars() &&
@@ -3363,8 +3478,8 @@ already_AddRefed<gfxFont> gfxFontGroup::FindFontForChar(
   // For fallback searches, we don't want to use a color-emoji font unless
   // emoji-style presentation is specifically required, so we map Any to
   // Text here.
-  if (presentation == eFontPresentation::Any) {
-    presentation = eFontPresentation::Text;
+  if (presentation == FontPresentation::Any) {
+    presentation = FontPresentation::TextDefault;
   }
 
   // 3. use fallback fonts
@@ -3459,14 +3574,29 @@ void gfxFontGroup::ComputeRanges(nsTArray<TextRange>& aRanges, const T* aString,
     // FindFontForChar method for the most common case, where the first
     // font in the list supports the current char, and it is not one of
     // the special cases where FindFontForChar will attempt to propagate
-    // the font selected for an adjacent character.
+    // the font selected for an adjacent character, and does not need to
+    // consider emoji vs text presentation.
     if ((font = GetFontAt(0, ch)) != nullptr && font->HasCharacter(ch) &&
-        (sizeof(T) == sizeof(uint8_t) ||
-         (!IsClusterExtender(ch) && ch != NARROW_NO_BREAK_SPACE &&
-          !gfxFontUtils::IsJoinControl(ch) &&
-          !gfxFontUtils::IsJoinCauser(prevCh) &&
-          !gfxFontUtils::IsVarSelector(ch) &&
-          GetEmojiPresentation(ch) == TextOnly))) {
+        (
+            // In 8-bit text, we can unconditionally accept the first font if
+            // font-variant-emoji is 'normal', or if the character does not
+            // have the emoji property; there cannot be adjacent characters
+            // that would affect it.
+            (sizeof(T) == sizeof(uint8_t) &&
+             (mFontVariantEmoji == StyleFontVariantEmoji::Normal ||
+              GetEmojiPresentation(ch) == TextOnly)) ||
+            // For 16-bit text, we need to consider cluster extenders etc.
+            (sizeof(T) == sizeof(char16_t) &&
+             (!IsClusterExtender(ch) && ch != NARROW_NO_BREAK_SPACE &&
+              !gfxFontUtils::IsJoinControl(ch) &&
+              !gfxFontUtils::IsJoinCauser(prevCh) &&
+              !gfxFontUtils::IsVarSelector(ch) &&
+              (GetEmojiPresentation(ch) == TextOnly ||
+               (!(IsEmojiPresentationSelector(nextCh) ||
+                  IsEmojiSkinToneModifier(nextCh) ||
+                  gfxFontUtils::IsEmojiFlagAndTag(ch, nextCh)) &&
+                mFontVariantEmoji == StyleFontVariantEmoji::Normal &&
+                mFonts[0].Generic() == StyleGenericFontFamily::None)))))) {
       matchType = {FontMatchType::Kind::kFontGroup, mFonts[0].Generic()};
     } else {
       font =
@@ -3617,26 +3747,22 @@ void gfxFontGroup::SetUserFontSet(gfxUserFontSet* aUserFontSet) {
 }
 
 uint64_t gfxFontGroup::GetGeneration() {
-  if (!mUserFontSet) return 0;
-  return mUserFontSet->GetGeneration();
+  return mUserFontSet ? mUserFontSet->GetGeneration() : 0;
 }
 
 uint64_t gfxFontGroup::GetRebuildGeneration() {
-  if (!mUserFontSet) return 0;
-  return mUserFontSet->GetRebuildGeneration();
+  return mUserFontSet ? mUserFontSet->GetRebuildGeneration() : 0;
 }
 
 void gfxFontGroup::UpdateUserFonts() {
   if (mCurrGeneration < GetRebuildGeneration()) {
     // fonts in userfont set changed, need to redo the fontlist
-    mFonts.Clear();
+    mResolvedFonts = false;
     ClearCachedData();
-    BuildFontList();
     mCurrGeneration = GetGeneration();
   } else if (mCurrGeneration != GetGeneration()) {
     // load state change occurred, verify load state and validity of fonts
     ClearCachedData();
-
     uint32_t len = mFonts.Length();
     for (uint32_t i = 0; i < len; i++) {
       FamilyFace& ff = mFonts[i];
@@ -3645,26 +3771,34 @@ void gfxFontGroup::UpdateUserFonts() {
       }
       ff.CheckState(mSkipDrawing);
     }
-
     mCurrGeneration = GetGeneration();
   }
 }
 
 bool gfxFontGroup::ContainsUserFont(const gfxUserFontEntry* aUserFont) {
   UpdateUserFonts();
-  // search through the fonts list for a specific user font
-  uint32_t len = mFonts.Length();
-  for (uint32_t i = 0; i < len; i++) {
-    FamilyFace& ff = mFonts[i];
-    if (ff.EqualsUserFont(aUserFont)) {
-      return true;
+
+  // If we have resolved the font list to concrete font faces, search through
+  // the list for a specific user font face.
+  if (mResolvedFonts) {
+    uint32_t len = mFonts.Length();
+    for (uint32_t i = 0; i < len; i++) {
+      FamilyFace& ff = mFonts[i];
+      if (ff.EqualsUserFont(aUserFont)) {
+        return true;
+      }
     }
+    return false;
   }
-  return false;
+
+  // If the font list is currently not resolved, we assume it might use the
+  // given face. (This method is only called when we have already seen that
+  // the family name is present in the list.)
+  return true;
 }
 
 already_AddRefed<gfxFont> gfxFontGroup::WhichPrefFontSupportsChar(
-    uint32_t aCh, uint32_t aNextCh, eFontPresentation aPresentation) {
+    uint32_t aCh, uint32_t aNextCh, FontPresentation aPresentation) {
   eFontPrefLang charLang;
   gfxPlatformFontList* pfl = gfxPlatformFontList::PlatformFontList();
 
@@ -3694,8 +3828,8 @@ already_AddRefed<gfxFont> gfxFontGroup::WhichPrefFontSupportsChar(
         mFallbackGeneric != StyleGenericFontFamily::None
             ? mFallbackGeneric
             : pfl->GetDefaultGeneric(currentLang);
-    gfxPlatformFontList::PrefFontList* families =
-        pfl->GetPrefFontsLangGroup(mPresContext, generic, currentLang);
+    gfxPlatformFontList::PrefFontList* families = pfl->GetPrefFontsLangGroup(
+        mFontVisibilityProvider, generic, currentLang);
     NS_ASSERTION(families, "no pref font families found");
 
     // find the first pref font that includes the character
@@ -3720,7 +3854,7 @@ already_AddRefed<gfxFont> gfxFontGroup::WhichPrefFontSupportsChar(
       if (family.mShared) {
         fontlist::Family* fam = family.mShared;
         if (!fam->IsInitialized()) {
-          Unused << pfl->InitializeFamily(fam);
+          (void)pfl->InitializeFamily(fam);
         }
         fontlist::Face* face =
             fam->FindFaceForStyle(pfl->SharedFontList(), mStyle);
@@ -3741,7 +3875,7 @@ already_AddRefed<gfxFont> gfxFontGroup::WhichPrefFontSupportsChar(
         if (!prefFont) {
           continue;
         }
-        if (aPresentation == eFontPresentation::EmojiExplicit &&
+        if (aPresentation == FontPresentation::EmojiExplicit &&
             !prefFont->HasColorGlyphFor(aCh, aNextCh)) {
           continue;
         }
@@ -3771,15 +3905,15 @@ already_AddRefed<gfxFont> gfxFontGroup::WhichPrefFontSupportsChar(
 
 already_AddRefed<gfxFont> gfxFontGroup::WhichSystemFontSupportsChar(
     uint32_t aCh, uint32_t aNextCh, Script aRunScript,
-    eFontPresentation aPresentation) {
+    FontPresentation aPresentation) {
   FontVisibility visibility;
   return gfxPlatformFontList::PlatformFontList()->SystemFindFontForChar(
-      mPresContext, aCh, aNextCh, aRunScript, aPresentation, &mStyle,
+      mFontVisibilityProvider, aCh, aNextCh, aRunScript, aPresentation, &mStyle,
       &visibility);
 }
 
 gfxFont::Metrics gfxFontGroup::GetMetricsForCSSUnits(
-    gfxFont::Orientation aOrientation) {
+    gfxFont::Orientation aOrientation, StyleQueryFontMetricsFlags aFlags) {
   bool isFirst;
   RefPtr<gfxFont> font = GetFirstValidFont(0x20, nullptr, &isFirst);
   auto metrics = font->GetMetrics(aOrientation);
@@ -3787,7 +3921,8 @@ gfxFont::Metrics gfxFontGroup::GetMetricsForCSSUnits(
   // If the font we used to get metrics was not the first in the list,
   // or if it doesn't support the ZERO character, check for the font that
   // does support ZERO and use its metrics for the 'ch' unit.
-  if (!isFirst || !font->HasCharacter('0')) {
+  if ((aFlags & StyleQueryFontMetricsFlags::NEEDS_CH) &&
+      (!isFirst || !font->HasCharacter('0'))) {
     RefPtr<gfxFont> zeroFont = GetFirstValidFont('0');
     if (zeroFont != font) {
       const auto& zeroMetrics = zeroFont->GetMetrics(aOrientation);
@@ -3796,7 +3931,8 @@ gfxFont::Metrics gfxFontGroup::GetMetricsForCSSUnits(
   }
 
   // Likewise for the WATER ideograph character used as the basis for 'ic'.
-  if (!isFirst || !font->HasCharacter(0x6C34)) {
+  if ((aFlags & StyleQueryFontMetricsFlags::NEEDS_IC) &&
+      (!isFirst || !font->HasCharacter(0x6C34))) {
     RefPtr<gfxFont> icFont = GetFirstValidFont(0x6C34);
     if (icFont != font) {
       const auto& icMetrics = icFont->GetMetrics(aOrientation);
@@ -3807,15 +3943,33 @@ gfxFont::Metrics gfxFontGroup::GetMetricsForCSSUnits(
   return metrics;
 }
 
-void gfxMissingFontRecorder::Flush() {
-  static bool mNotifiedFontsInitialized = false;
-  static uint32_t mNotifiedFonts[gfxMissingFontRecorder::kNumScriptBitsWords];
-  if (!mNotifiedFontsInitialized) {
-    memset(&mNotifiedFonts, 0, sizeof(mNotifiedFonts));
-    mNotifiedFontsInitialized = true;
+class DeferredNotifyMissingFonts final : public nsIRunnable {
+ public:
+  NS_DECL_THREADSAFE_ISUPPORTS
+
+  explicit DeferredNotifyMissingFonts(nsString&& aScriptList)
+      : mScriptList(std::move(aScriptList)) {}
+
+ protected:
+  virtual ~DeferredNotifyMissingFonts() = default;
+
+  NS_IMETHOD Run(void) override {
+    nsCOMPtr<nsIObserverService> service = GetObserverService();
+    service->NotifyObservers(nullptr, "font-needed", mScriptList.get());
+    return NS_OK;
   }
 
+  nsString mScriptList;
+};
+
+NS_IMPL_ISUPPORTS(DeferredNotifyMissingFonts, nsIRunnable)
+
+void gfxMissingFontRecorder::Flush() {
+  static uint32_t mNotifiedFonts[gfxMissingFontRecorder::kNumScriptBitsWords];
+  static StaticMutex sNotifiedFontsMutex;
+
   nsAutoString fontNeeded;
+  sNotifiedFontsMutex.Lock();
   for (uint32_t i = 0; i < kNumScriptBitsWords; ++i) {
     mMissingFonts[i] &= ~mNotifiedFonts[i];
     if (!mMissingFonts[i]) {
@@ -3840,8 +3994,15 @@ void gfxMissingFontRecorder::Flush() {
     }
     mMissingFonts[i] = 0;
   }
+  sNotifiedFontsMutex.Unlock();
+
   if (!fontNeeded.IsEmpty()) {
-    nsCOMPtr<nsIObserverService> service = GetObserverService();
-    service->NotifyObservers(nullptr, "font-needed", fontNeeded.get());
+    if (NS_IsMainThread()) {
+      nsCOMPtr<nsIObserverService> service = GetObserverService();
+      service->NotifyObservers(nullptr, "font-needed", fontNeeded.get());
+    } else {
+      NS_DispatchToMainThread(
+          new DeferredNotifyMissingFonts(std::move(fontNeeded)));
+    }
   }
 }

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,6 +11,7 @@
 #include "mozilla/IntegerRange.h"       // for IntegerRange
 #include "mozilla/Maybe.h"              // for Maybe
 #include "mozilla/Result.h"             // for Result<>
+#include "mozilla/dom/DataTransfer.h"   // for dom::DataTransfer
 #include "mozilla/dom/Element.h"        // for dom::Element
 #include "mozilla/dom/HTMLBRElement.h"  // for dom::HTMLBRElement
 #include "mozilla/dom/Selection.h"      // for dom::Selection
@@ -100,6 +100,10 @@ class MOZ_STACK_CLASS CaretPoint {
     aPointToPutCaret = mCaretPoint;
     return true;
   }
+  bool CopyCaretPointTo(CaretPoint& aCaretPoint,
+                        const SuggestCaretOptions& aOptions) const {
+    return CopyCaretPointTo(aCaretPoint.mCaretPoint, aOptions);
+  }
   bool MoveCaretPointTo(EditorDOMPoint& aPointToPutCaret,
                         const SuggestCaretOptions& aOptions) {
     MOZ_ASSERT(!aOptions.contains(SuggestCaret::AndIgnoreTrivialError));
@@ -111,6 +115,10 @@ class MOZ_STACK_CLASS CaretPoint {
     }
     aPointToPutCaret = UnwrapCaretPoint();
     return true;
+  }
+  bool MoveCaretPointTo(CaretPoint& aCaretPoint,
+                        const SuggestCaretOptions& aOptions) {
+    return MoveCaretPointTo(aCaretPoint.mCaretPoint, aOptions);
   }
   bool CopyCaretPointTo(EditorDOMPoint& aPointToPutCaret,
                         const EditorBase& aEditorBase,
@@ -138,13 +146,15 @@ class MOZ_STACK_CLASS CaretPoint {
  private:
   EditorDOMPoint mCaretPoint;
   bool mutable mHandledCaretPoint = false;
+
+  friend class AutoTrackDOMPoint;
 };
 
 /***************************************************************************
  * EditActionResult is useful to return the handling state of edit sub actions
  * without out params.
  */
-class MOZ_STACK_CLASS EditActionResult final {
+class MOZ_STACK_CLASS EditActionResult {
  public:
   bool Canceled() const { return mCanceled; }
   bool Handled() const { return mHandled; }
@@ -158,8 +168,6 @@ class MOZ_STACK_CLASS EditActionResult final {
     mHandled |= aOther.mHandled;
     return *this;
   }
-
-  EditActionResult& operator|=(const MoveNodeResult& aMoveNodeResult);
 
   static EditActionResult IgnoredResult() {
     return EditActionResult(false, false);
@@ -176,14 +184,17 @@ class MOZ_STACK_CLASS EditActionResult final {
   EditActionResult(EditActionResult&&) = default;
   EditActionResult& operator=(EditActionResult&&) = default;
 
- private:
-  bool mCanceled = false;
-  bool mHandled = false;
-
+ protected:
   EditActionResult(bool aCanceled, bool aHandled)
       : mCanceled(aCanceled), mHandled(aHandled) {}
 
   EditActionResult() : mCanceled(false), mHandled(false) {}
+
+  void UnmarkAsCanceled() { mCanceled = false; }
+
+ private:
+  bool mCanceled = false;
+  bool mHandled = false;
 };
 
 /***************************************************************************
@@ -208,16 +219,21 @@ class MOZ_STACK_CLASS CreateNodeResultBase final : public CaretPoint {
                                 EditorDOMPoint&& aCandidateCaretPoint)
       : CaretPoint(std::move(aCandidateCaretPoint)), mNode(&aNode) {}
 
-  explicit CreateNodeResultBase(RefPtr<NodeType>&& aNode)
-      : mNode(std::move(aNode)) {}
-  explicit CreateNodeResultBase(RefPtr<NodeType>&& aNode,
+  template <typename NT>
+  explicit CreateNodeResultBase(RefPtr<NT>&& aNode)
+      : mNode(std::forward<RefPtr<NT>>(aNode)) {}
+  template <typename NT>
+  explicit CreateNodeResultBase(RefPtr<NT>&& aNode,
                                 const EditorDOMPoint& aCandidateCaretPoint)
-      : CaretPoint(aCandidateCaretPoint), mNode(std::move(aNode)) {
+      : CaretPoint(aCandidateCaretPoint),
+        mNode(std::forward<RefPtr<NT>>(aNode)) {
     MOZ_ASSERT(mNode);
   }
-  explicit CreateNodeResultBase(RefPtr<NodeType>&& aNode,
+  template <typename NT>
+  explicit CreateNodeResultBase(RefPtr<NT>&& aNode,
                                 EditorDOMPoint&& aCandidateCaretPoint)
-      : CaretPoint(std::move(aCandidateCaretPoint)), mNode(std::move(aNode)) {
+      : CaretPoint(std::move(aCandidateCaretPoint)),
+        mNode(std::forward<RefPtr<NT>>(aNode)) {
     MOZ_ASSERT(mNode);
   }
 
@@ -266,15 +282,15 @@ class MOZ_STACK_CLASS InsertTextResult final : public CaretPoint {
   explicit InsertTextResult(const EditorDOMPointType& aEndOfInsertedText)
       : CaretPoint(EditorDOMPoint()),
         mEndOfInsertedText(aEndOfInsertedText.template To<EditorDOMPoint>()) {}
-  explicit InsertTextResult(EditorDOMPointInText&& aEndOfInsertedText)
+  explicit InsertTextResult(EditorDOMPoint&& aEndOfInsertedText)
       : CaretPoint(EditorDOMPoint()),
         mEndOfInsertedText(std::move(aEndOfInsertedText)) {}
   template <typename PT, typename CT>
-  InsertTextResult(EditorDOMPointInText&& aEndOfInsertedText,
+  InsertTextResult(EditorDOMPoint&& aEndOfInsertedText,
                    const EditorDOMPointBase<PT, CT>& aCaretPoint)
       : CaretPoint(aCaretPoint.template To<EditorDOMPoint>()),
         mEndOfInsertedText(std::move(aEndOfInsertedText)) {}
-  InsertTextResult(EditorDOMPointInText&& aEndOfInsertedText,
+  InsertTextResult(EditorDOMPoint&& aEndOfInsertedText,
                    CaretPoint&& aCaretPoint)
       : CaretPoint(std::move(aCaretPoint)),
         mEndOfInsertedText(std::move(aEndOfInsertedText)) {
@@ -285,12 +301,12 @@ class MOZ_STACK_CLASS InsertTextResult final : public CaretPoint {
         mEndOfInsertedText(std::move(aOther.mEndOfInsertedText)) {}
 
   [[nodiscard]] bool Handled() const { return mEndOfInsertedText.IsSet(); }
-  const EditorDOMPointInText& EndOfInsertedTextRef() const {
+  const EditorDOMPoint& EndOfInsertedTextRef() const {
     return mEndOfInsertedText;
   }
 
  private:
-  EditorDOMPointInText mEndOfInsertedText;
+  EditorDOMPoint mEndOfInsertedText;
 };
 
 /***************************************************************************
@@ -330,6 +346,43 @@ class MOZ_STACK_CLASS AutoSelectionRangeArray final {
   }
 
   AutoTArray<mozilla::OwningNonNull<nsRange>, 8> mRanges;
+};
+
+/******************************************************************************
+ * AutoTrackDataTransferForPaste keeps track of whether the paste event handler
+ * in JS has modified the clipboard.
+ *****************************************************************************/
+class MOZ_STACK_CLASS AutoTrackDataTransferForPaste {
+ public:
+  MOZ_CAN_RUN_SCRIPT AutoTrackDataTransferForPaste(
+      const EditorBase& aEditorBase,
+      RefPtr<dom::DataTransfer>& aDataTransferForPaste)
+      : mEditorBase(aEditorBase),
+        mDataTransferForPaste(aDataTransferForPaste.get_address()) {
+    mEditorBase.GetDocument()->ClearClipboardCopyTriggered();
+  }
+
+  ~AutoTrackDataTransferForPaste() { FlushAndStopTracking(); }
+
+ private:
+  void FlushAndStopTracking() {
+    if (!mDataTransferForPaste ||
+        !mEditorBase.GetDocument()->IsClipboardCopyTriggered()) {
+      return;
+    }
+    // The paste event copied new data to the clipboard, so we need to use
+    // that data to paste into the DOM element below.
+    if (*mDataTransferForPaste) {
+      (*mDataTransferForPaste)->ClearForPaste();
+    }
+    // Just null this out so this data won't be used and we will get it directly
+    // from the clipboard in the future.
+    *mDataTransferForPaste = nullptr;
+    mDataTransferForPaste = nullptr;
+  }
+
+  MOZ_KNOWN_LIVE const EditorBase& mEditorBase;
+  RefPtr<dom::DataTransfer>* mDataTransferForPaste;
 };
 
 class EditorUtils final {
@@ -414,7 +467,11 @@ class EditorUtils final {
 
   /**
    * IsNewLinePreformatted() checks whether the linefeed characters are
-   * preformatted or collapsible white-spaces.  This does NOT flush layout.
+   * preformatted or white-spaces.  This does NOT flush layout.
+   * Be aware that even if this returns false, the linefeed characters may be
+   * rendered as non-collapsible white-spaces.  Therefore, if you want to check
+   * whether linefeeds are collapsible or not, you should refer the result of
+   * IsWhiteSpacePreformatted().
    */
   static bool IsNewLinePreformatted(const nsIContent& aContent);
 
@@ -446,10 +503,10 @@ class EditorUtils final {
    * computed with nsFrameSelection that also requires flushed layout
    * information.
    */
-  template <typename SelectionOrAutoRangeArray>
+  template <typename SelectionOrAutoClonedRangeArray>
   static bool IsFrameSelectionRequiredToExtendSelection(
       nsIEditor::EDirection aDirectionAndAmount,
-      SelectionOrAutoRangeArray& aSelectionOrAutoRangeArray) {
+      SelectionOrAutoClonedRangeArray& aSelectionOrAutoClonedRangeArray) {
     switch (aDirectionAndAmount) {
       case nsIEditor::eNextWord:
       case nsIEditor::ePreviousWord:
@@ -458,7 +515,7 @@ class EditorUtils final {
         return true;
       case nsIEditor::ePrevious:
       case nsIEditor::eNext:
-        return aSelectionOrAutoRangeArray.IsCollapsed();
+        return aSelectionOrAutoClonedRangeArray.IsCollapsed();
       default:
         return false;
     }

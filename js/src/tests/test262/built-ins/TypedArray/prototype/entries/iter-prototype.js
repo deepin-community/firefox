@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -17,8 +16,8 @@ features: [Symbol.iterator, TypedArray]
 
 var ArrayIteratorProto = Object.getPrototypeOf([][Symbol.iterator]());
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([0, 42, 64]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([0, 42, 64]));
   var iter = sample.entries();
 
   assert.sameValue(Object.getPrototypeOf(iter), ArrayIteratorProto);

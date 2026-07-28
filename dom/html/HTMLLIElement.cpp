@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/HTMLLIElement.h"
-#include "mozilla/dom/HTMLLIElementBinding.h"
 
 #include "mozilla/MappedDeclarationsBuilder.h"
+#include "mozilla/dom/HTMLLIElementBinding.h"
 #include "nsGkAtoms.h"
 #include "nsStyleConsts.h"
 
@@ -20,18 +18,19 @@ HTMLLIElement::~HTMLLIElement() = default;
 NS_IMPL_ELEMENT_CLONE(HTMLLIElement)
 
 // https://html.spec.whatwg.org/#lists
-const nsAttrValue::EnumTable HTMLLIElement::kULTypeTable[] = {
+const nsAttrValue::EnumTableEntry HTMLLIElement::kULTypeTable[] = {
     {"none", ListStyle::None},
     {"disc", ListStyle::Disc},
     {"circle", ListStyle::Circle},
     {"square", ListStyle::Square},
-    {nullptr, 0}};
+};
 
 // https://html.spec.whatwg.org/#lists
-const nsAttrValue::EnumTable HTMLLIElement::kOLTypeTable[] = {
+const nsAttrValue::EnumTableEntry HTMLLIElement::kOLTypeTable[] = {
     {"A", ListStyle::UpperAlpha}, {"a", ListStyle::LowerAlpha},
     {"I", ListStyle::UpperRoman}, {"i", ListStyle::LowerRoman},
-    {"1", ListStyle::Decimal},    {nullptr, 0}};
+    {"1", ListStyle::Decimal},
+};
 
 bool HTMLLIElement::ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
                                    const nsAString& aValue,

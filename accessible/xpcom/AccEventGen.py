@@ -98,7 +98,7 @@ def print_header_file(fd, conf, incdirs):
                 fd.write("  NS_DECL_%s\n" % iface.name.upper())
 
             fd.write("\nprivate:\n")
-            fd.write("  ~%s() {}\n\n" % classname)
+            fd.write("  ~%s() =default;\n\n" % classname)
             for a in attributes:
                 fd.write("  %s\n" % attributeVariableTypeAndName(a))
             fd.write("};\n\n")
@@ -132,7 +132,7 @@ def print_cpp_file(fd, conf, incdirs):
     includes = []
     for e in conf.simple_events:
         if e not in includes:
-            includes.append(("nsIAccessible%s" % e))
+            includes.append("nsIAccessible%s" % e)
 
     types = []
     for e in conf.simple_events:

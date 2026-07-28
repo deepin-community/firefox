@@ -366,8 +366,8 @@ pub struct Device {
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct RemoteDirEntry {
     depth: usize,
-    metadata: RemoteMetadata,
-    name: String,
+    pub metadata: RemoteMetadata,
+    pub name: String,
 }
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
@@ -401,15 +401,13 @@ impl Device {
 
         // check for rooted devices
         let uid_check = |id: String| id.contains("uid=0");
-        device.adbd_root = device
-            .execute_host_shell_command("id")
-            .map_or(false, uid_check);
+        device.adbd_root = device.execute_host_shell_command("id").is_ok_and(uid_check);
         device.su_0_root = device
             .execute_host_shell_command("su 0 id")
-            .map_or(false, uid_check);
+            .is_ok_and(uid_check);
         device.su_c_root = device
             .execute_host_shell_command("su -c id")
-            .map_or(false, uid_check);
+            .is_ok_and(uid_check);
         device.is_rooted = device.adbd_root || device.su_0_root || device.su_c_root;
 
         device.storage = match storage {
@@ -591,8 +589,8 @@ impl Device {
         package: &str,
         activity: &str,
         am_start_args: &[T],
-    ) -> Result<bool> {
-        let mut am_start = format!("am start -W -n {}/{}", package, activity);
+    ) -> Result<u32> {
+        let mut am_start = format!("am start -S -W -n {}/{}", package, activity);
 
         for arg in am_start_args {
             am_start.push(' ');
@@ -603,8 +601,35 @@ impl Device {
             };
         }
 
-        self.execute_host_shell_command(&am_start)
-            .map(|v| v.contains("Complete"))
+        let output = self.execute_host_shell_command(&am_start)?;
+        if !output.contains("Complete") {
+            return Err(DeviceError::Adb(format!(
+                "Failed to launch {}/{}: {}",
+                package, activity, output
+            )));
+        }
+
+        let pid_output = self.execute_host_shell_command(&format!("pidof {}", package))?;
+        // pidof may return multiple space-separated PIDs when the app has
+        // multiple processes (e.g. content processes). Take the first one,
+        // which is the main process.
+        pid_output
+            .trim()
+            .split_whitespace()
+            .next()
+            .ok_or_else(|| {
+                DeviceError::Adb(format!(
+                    "Process for package '{}' not running after launch",
+                    package
+                ))
+            })?
+            .parse::<u32>()
+            .map_err(|_| {
+                DeviceError::Adb(format!(
+                    "Process for package '{}' not running after launch",
+                    package
+                ))
+            })
     }
 
     pub fn force_stop(&self, package: &str) -> Result<()> {
@@ -1013,7 +1038,7 @@ impl Device {
 
             let tail = path
                 .strip_prefix(source)
-                .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+                .map_err(|e| io::Error::other(e.to_string()))?;
 
             let dest = append_components(dest_dir, tail)?;
             self.push(&mut file, &dest, mode)?;
@@ -1042,18 +1067,12 @@ pub(crate) fn append_components(
 
     for component in tail.components() {
         if let Component::Normal(segment) = component {
-            let utf8 = segment.to_str().ok_or_else(|| {
-                io::Error::new(
-                    io::ErrorKind::Other,
-                    "Could not represent path segment as UTF-8",
-                )
-            })?;
+            let utf8 = segment
+                .to_str()
+                .ok_or_else(|| io::Error::other("Could not represent path segment as UTF-8"))?;
             buf.push(utf8);
         } else {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Unexpected path component".to_owned(),
-            ));
+            return Err(io::Error::other("Unexpected path component".to_owned()));
         }
     }
 

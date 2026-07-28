@@ -12,12 +12,16 @@ crashes-id = ID do relatório
 crashes-send-date = Enviado
 crashes-all-reports = Todos os relatórios de falha
 crashes-no-config = Esta aplicação não está configurada para mostrar os relatórios de falha.
-support-addons-title = Extras
+support-addons-title = Complementos
 support-addons-name = Nome
 support-addons-type = Tipo
 support-addons-enabled = Ativado
 support-addons-version = Versão
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Localização
 legacy-user-stylesheets-title = Folhas de estilo de utilizador legadas
 legacy-user-stylesheets-enabled = Ativo
 legacy-user-stylesheets-stylesheet-types = Folhas de estilo
@@ -132,6 +136,10 @@ place-database-stats-efficiency-perc = Eficiência (%)
 place-database-stats-sequentiality-perc = Sequencialidade (%)
 place-database-integrity = Integridade
 place-database-verify-integrity = Verificar integridade
+place-database-last-idle-maintenance-data = Data da última manutenção em modo inativo
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Data do último vacuum
+place-database-last-integrity-corruption-date = Data da última corrupção de integridade
 a11y-title = Acessibilidade
 a11y-activated = Ativa
 a11y-force-disabled = Impedir acessibilidade
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Enumeração de base de dados
 
 media-codec-support-sw-decoding = Descodificação por Software
 media-codec-support-hw-decoding = Descodificação por Hardware
+media-codec-support-sw-encoding = Codificação por software
+media-codec-support-hw-encoding = Codificação por hardware
 media-codec-support-codec-name = Nome do Codec
 media-codec-support-supported = Suportado
 media-codec-support-unsupported = Não suportado

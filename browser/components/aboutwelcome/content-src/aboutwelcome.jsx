@@ -4,9 +4,8 @@
 
 import React from "react";
 import ReactDOM from "react-dom";
-import { AboutWelcomeUtils } from "./lib/aboutwelcome-utils.mjs";
-import { MultiStageAboutWelcome } from "./components/MultiStageAboutWelcome";
-import { ReturnToAMO } from "./components/ReturnToAMO";
+import { MultiStageUtils } from "../../asrouter/content-src/lib/multistage-utils.mjs";
+import { MultiStageAboutWelcome } from "../../asrouter/content-src/components/MultiStageAboutWelcome";
 
 class AboutWelcome extends React.PureComponent {
   constructor(props) {
@@ -30,7 +29,7 @@ class AboutWelcome extends React.PureComponent {
         const { domComplete, domInteractive } = performance
           .getEntriesByType("navigation")
           .pop();
-        AboutWelcomeUtils.sendImpressionTelemetry(this.props.messageId, {
+        MultiStageUtils.sendImpressionTelemetry(this.props.messageId, {
           domComplete,
           domInteractive,
           mountStart: performance.getEntriesByName("mount").pop().startTime,
@@ -57,21 +56,14 @@ class AboutWelcome extends React.PureComponent {
 
   render() {
     const { props } = this;
-    if (props.template === "return_to_amo") {
-      return (
-        <ReturnToAMO
-          message_id={props.messageId}
-          type={props.type}
-          name={props.name}
-          url={props.url}
-          iconURL={props.iconURL}
-          themeScreenshots={props.screenshots}
-          metricsFlowUri={this.state.metricsFlowUri}
-        />
-      );
-    }
     return (
       <MultiStageAboutWelcome
+        addonId={props.addonId}
+        addonType={props.type}
+        addonName={props.name || ""}
+        addonURL={props.url}
+        addonIconURL={props.iconURL}
+        themeScreenshots={props.screenshots}
         message_id={props.messageId}
         defaultScreens={props.screens}
         updateHistory={!props.disableHistoryUpdates}
@@ -82,6 +74,8 @@ class AboutWelcome extends React.PureComponent {
         startScreen={props.startScreen || 0}
         appAndSystemLocaleInfo={props.appAndSystemLocaleInfo}
         ariaRole={props.aria_role}
+        requireAction={props.requireAction}
+        gateInitialPaint={true}
       />
     );
   }
@@ -109,6 +103,17 @@ function ComputeTelemetryInfo(welcomeContent, experimentId, branchId) {
 }
 
 async function retrieveRenderContent() {
+  // If supported, wait for Nimbus to be ready (or a maximum timeout to be
+  // reached) before loading about:welcome.
+  if (document.location.href === "about:welcome" && window.AWWaitForNimbus) {
+    try {
+      await window.AWWaitForNimbus();
+    } catch (e) {
+      // If Nimbus gating throws, proceed with whatever feature state we
+      // currently have.
+      console.error("AWWaitForNimbus failed", e);
+    }
+  }
   // Feature config includes RTAMO attribution data if exists
   // else below data in order specified
   // user prefs

@@ -26,9 +26,9 @@ async function rightClickOpenInNewTabAndReturnContent(selector) {
   );
   await loaded;
 
-  const generatedBlobURL = await ContentTask.spawn(
+  const generatedBlobURL = await SpecialPowers.spawn(
     gBrowser.selectedBrowser,
-    { selector },
+    [{ selector }],
     async args => {
       return content.document.getElementById(args.selector).href;
     }
@@ -69,9 +69,9 @@ async function rightClickOpenInNewTabAndReturnContent(selector) {
 
   await BrowserTestUtils.switchTab(gBrowser, gBrowser.tabs[1]);
 
-  let blobDataFromContent = await ContentTask.spawn(
+  let blobDataFromContent = await SpecialPowers.spawn(
     gBrowser.selectedBrowser,
-    null,
+    [],
     async function () {
       while (!content.document.querySelector("body pre")) {
         await new Promise(resolve =>
@@ -106,9 +106,9 @@ async function openInNewTabAndReturnContent(selector) {
   );
   await loaded;
 
-  const generatedBlobURL = await ContentTask.spawn(
+  const generatedBlobURL = await SpecialPowers.spawn(
     gBrowser.selectedBrowser,
-    { selector },
+    [{ selector }],
     async args => {
       return content.document.getElementById(args.selector).href;
     }
@@ -119,9 +119,9 @@ async function openInNewTabAndReturnContent(selector) {
     generatedBlobURL
   );
 
-  let blobDataFromContent = await ContentTask.spawn(
+  let blobDataFromContent = await SpecialPowers.spawn(
     gBrowser.selectedBrowser,
-    null,
+    [],
     async function () {
       while (!content.document.querySelector("body pre")) {
         await new Promise(resolve =>
@@ -142,9 +142,8 @@ async function openInNewTabAndReturnContent(selector) {
 }
 
 add_task(async function test_rightclick_open_bloburl_in_new_tab() {
-  let blobDataFromLoadedPage = await rightClickOpenInNewTabAndReturnContent(
-    "blob-url-link"
-  );
+  let blobDataFromLoadedPage =
+    await rightClickOpenInNewTabAndReturnContent("blob-url-link");
   is(
     blobDataFromLoadedPage,
     blobDataAsString,
@@ -164,9 +163,8 @@ add_task(async function test_rightclick_open_bloburl_referrer_in_new_tab() {
 });
 
 add_task(async function test_open_bloburl_in_new_tab() {
-  let blobDataFromLoadedPage = await openInNewTabAndReturnContent(
-    "blob-url-link"
-  );
+  let blobDataFromLoadedPage =
+    await openInNewTabAndReturnContent("blob-url-link");
   is(
     blobDataFromLoadedPage,
     blobDataAsString,

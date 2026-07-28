@@ -6,13 +6,13 @@ certificate-viewer-certificate-section-title = Πιστοποιητικό
 
 ## Error messages
 
-certificate-viewer-error-message = Δεν μπορέσαμε να βρούμε τις πληροφορίες του πιστοποιητικού, ή το πιστοποιητικό έχει καταστραφεί. Παρακαλούμε δοκιμάστε ξανά.
+certificate-viewer-error-message = Δεν μπορέσαμε να βρούμε τις πληροφορίες του πιστοποιητικού, ή το πιστοποιητικό έχει καταστραφεί. Δοκιμάστε ξανά.
 certificate-viewer-error-title = Κάτι πήγε στραβά.
 
 ## Certificate information labels
 
 certificate-viewer-algorithm = Αλγόριθμος
-certificate-viewer-certificate-authority = Αρχή πιστοποιητικού
+certificate-viewer-certificate-authority = Αρχή πιστοποίησης
 certificate-viewer-cipher-suite = Σουίτα κρυπτογράφησης
 certificate-viewer-common-name = Κοινό όνομα
 certificate-viewer-email-address = Διεύθυνση email
@@ -36,10 +36,17 @@ certificate-viewer-key-size = Μέγεθος κλειδιού
 certificate-viewer-inc-locality = Περιοχή εταιρείας
 certificate-viewer-locality = Περιοχή
 certificate-viewer-location = Τοποθεσία
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Όνομα αρχείου καταγραφής
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID καταγραφής
 certificate-viewer-method = Μέθοδος
 certificate-viewer-modulus = Μέτρο
 certificate-viewer-name = Όνομα
+certificate-viewer-surname = Επώνυμο
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Όνομα
 certificate-viewer-not-after = Όχι μετά
 certificate-viewer-not-before = Όχι πριν
 certificate-viewer-organization = Εταιρεία
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = Πληροφορίες αρχής (AIA)
 certificate-viewer-certificate-policies = Πολιτικές πιστοποιητικού
 certificate-viewer-embedded-scts = Ενσωματωμένα SCT
 certificate-viewer-crl-endpoints = Τελικά σημεία CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Λήψη
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (πιστοποιητικό)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (αλυσίδα)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Αυτή η επέκταση έχει επισημανθεί ως κρίσιμη, πράγμα που σημαίνει ότι οι πελάτες πρέπει να απορρίψουν το πιστοποιητικό εάν δεν το καταλαβαίνουν.
@@ -112,6 +117,8 @@ certificate-viewer-export = Εξαγωγή
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (άγνωστο)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certificate
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

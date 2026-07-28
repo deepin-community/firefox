@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } пытает
 autofill-edit-payment-method-os-prompt-macos = показать сохранённую информацию о способе оплаты
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } пытается показать сохранённую информацию о способе оплаты. Подтвердите ниже доступ к этой учётной записи Windows.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } пытается показать сохранённую информацию о способе оплаты.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Настройки автозаполнения форм
 autofill-options-link-osx = Настройки автозаполнения форм
 
@@ -81,3 +81,6 @@ autofill-category-name = имя
 autofill-category-organization = организация
 autofill-category-tel = телефон
 autofill-category-email = эл. почта
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } обнаружил незащищённый сайт. Автозаполнение форм временно отключено.

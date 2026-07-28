@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -224,23 +223,23 @@ function add_tests() {
     SEC_ERROR_OCSP_UNKNOWN_CERT,
     true
   );
+  // If the server staples an OCSP response that doesn't contain a status for
+  // the server certificate, we defer returning the error and attempt to fetch
+  // a more suitable response. If that fails, the deferred error is returned.
   add_ocsp_test(
     "ocsp-stapling-good-other.example.com",
     MOZILLA_PKIX_ERROR_OCSP_RESPONSE_FOR_CERT_MISSING,
+    true,
     true
   );
   // If the server doesn't staple an OCSP response, we continue as normal
   // (this means that even though stapling is enabled, we expect an OCSP
   // request).
-  add_connection_test(
+  add_ocsp_test(
     "ocsp-stapling-none.example.com",
     PRErrorCodeSuccess,
-    function () {
-      gExpectOCSPRequest = true;
-      clearOCSPCache();
-      clearSessionCache();
-      Services.prefs.setBoolPref("security.ssl.enable_ocsp_stapling", true);
-    }
+    true,
+    true
   );
   add_ocsp_test(
     "ocsp-stapling-empty.example.com",
@@ -339,11 +338,9 @@ function add_tests() {
 }
 
 function check_ocsp_stapling_telemetry() {
-  let histogram = Services.telemetry
-    .getHistogramById("SSL_OCSP_STAPLING")
-    .snapshot();
+  let histogram = Glean.ssl.ocspStapling.testGetValue();
   equal(
-    histogram.values[0],
+    histogram.values[0] || 0,
     0,
     "Should have 0 connections for unused histogram bucket 0"
   );
@@ -372,6 +369,9 @@ function check_ocsp_stapling_telemetry() {
 
 function run_test() {
   do_get_profile();
+  Services.fog.initializeFOG();
+  Services.fog.testResetFOG();
+
   Services.prefs.setIntPref("security.OCSP.enabled", 1);
   // This test may sometimes fail on android due to an OCSP request timing out.
   // That aspect of OCSP requests is not what we're testing here, so we can just

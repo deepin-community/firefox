@@ -3,7 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## Import Logins Autocomplete
+### Import Logins Autocomplete
+
 
 ## Variables:
 ##   $host (String) - Host name of the current site.
@@ -17,6 +18,3 @@ autocomplete-import-logins-chromium =
 autocomplete-import-logins-chromium-edge =
     <div data-l10n-name="line1">Gānakāj sa gayi’ìt sēsiûn riña Microsoft Edge</div>
     <div data-l10n-name="line2">guendâ { $host } nī a’ngô nej sîtio</div>
-
-##
-

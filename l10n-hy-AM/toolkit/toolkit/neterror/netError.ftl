@@ -5,27 +5,31 @@
 
 ## Error page titles
 
-neterror-page-title = Էջը բեռնելու խնդիր
+neterror-page-title = Էջի բեռնման խնդիր
 certerror-page-title = Զգուշացում․ Հավանական ավտանգության վտանգ է առկա
 certerror-sts-page-title = Չկապվեց․ Անվտանգության հնարավոր պոտենցիալ
 neterror-blocked-by-policy-page-title = Արգելափակված էջ
 neterror-captive-portal-page-title = Մուտք գործել ցանց
 neterror-dns-not-found-title = Սպասարկիչը չի գտնվել
 neterror-malformed-uri-page-title = Անվավեր URL
+general-body-title = Զգույշ եղեք։ Ինչ-որ բան այն չէ։
+problem-with-this-site-title = Կարծես թե այս կայքի հետ կապված խնդիր կա
 
 ## Error page actions
 
-neterror-advanced-button = Լրացուցիչ…
+neterror-advanced-button = Ընդլայնված…
 neterror-copy-to-clipboard-button = Պատճենել սեղմատախտակին
 neterror-learn-more-link = Իմանալ ավելին…
 neterror-open-portal-login-page-button = Բացել ցանց մուտք գործելու էջը
 neterror-override-exception-button = Ընդունել վտանգը և շարունակել
-neterror-pref-reset-button = Վերականգնել հիմնական կարգավորումները
+neterror-pref-reset-button = Վերականգնել սկզբնադիր կարգավորումները
 neterror-return-to-previous-page-button = Հետ գնալ
-neterror-return-to-previous-page-recommended-button = Հետ գնալ (առաջարկվում է)
+neterror-return-to-previous-page-recommended-button = Գնալ ետ (խորհուրդ է տրվում)
+neterror-try-again-button-2 = Կրկին փորձել
+    .accesskey = T
 neterror-try-again-button = Կրկին փորձել
 neterror-settings-button = Փոխել DNS-ի կարգավորումները
-neterror-view-certificate-link = Զննել Արտոնագիրը
+neterror-view-certificate-link = Տեսնել արտոնագիրը
 
 ##
 
@@ -38,11 +42,14 @@ neterror-generic-error = { -brand-short-name }-ը ինչ-որ պատճառով �
 neterror-load-error-try-again = Հնարավոր է՝ կայքը անհասանելի է կամ գերբեռնված է: Կրկին փորձեք մի քանի րոպե  անց:
 neterror-load-error-connection = Եթե չի ստացվում բացել որևէ էջ, ստուգեք ձեր համակարգչի  ցանցային միացումը:
 neterror-load-error-firewall = Եթե ձեր համակարգիչը կամ ցանցը ապահովագրված է firewall-ով, համոզվեք, որ  { -brand-short-name }-ը ունի ցանցին միանալու արտոնություն:
+neterror-http-error-page = Ստուգեք՝ արդյոք կայքի հասցեն ճիշտ եք մուտքագրել։
 neterror-captive-portal = Դուք պետք է մուտք գործեք այս ցանց, որ կարողանաք մուտք գործել համացանց։
 neterror-dns-not-found-hint-header = <strong>Եթե ճիշտ հասցե եք մուտքագրել, ապա կարող եք՝</strong>
 neterror-dns-not-found-hint-try-again = Փորձեք ավելի ուշ
 neterror-dns-not-found-hint-check-network = Ստուգեք կապակցումը համացանցին
 neterror-dns-not-found-hint-firewall = Ստուգեք, որ { -brand-short-name }-ն ունի համացանց մուտք գործելու թույլտվություն (դուք կարող եք կապված լինել, բայց firewall-ի հետևում)
+neterror-dns-not-found-offline-hint-header = <strong>Ի՞նչ կարող եք անել։</strong>
+neterror-dns-not-found-offline-hint-different-device = Փորձեք կապակցվել այլ սարքից։
 
 ## TRR-only specific messages
 ## Variables:
@@ -56,14 +63,14 @@ neterror-dns-not-found-bad-trr-url = Անվավեր URL:
 ## Variables:
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
-neterror-dns-not-found-native-fallback-heuristic = DNS՝ HTTPS-ի միջոցովը անջատված է ձեր  ցանցում:
+neterror-dns-not-found-native-fallback-heuristic = DNS-ը HTTPS-ի միջովն անջատված է Ձեր ցանցում:
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name }-ը անկարող է միանալ { $trrDomain }-ին:
 
 ##
 
 neterror-file-not-found-filename = Ստուգեք ֆայլի անունը մեծատառերի կամ այլ տպագրական սխալների համար:
 neterror-file-not-found-moved = Ստուգեք, թե արդյոք ֆայլը չի տեղափոխվել, անվանափոխվել կամ ջնջվել:
-neterror-access-denied = Հնարավոր է՝ այն հեռացվել է, տեղափոխվել կամ նիշքի թույլտվությունները կանխել են մատչումը։
+neterror-access-denied = Հնարավոր է՝ այն հեռացվել է, տեղափոխվել կամ ֆայլի թույլտվությունները կանխել են մատչումը։
 neterror-unknown-protocol = Այս հասցեն բացելու համար ձեզ հավանաբար անհրաժեշտ է ձեռք բերել այլ ծրագիր:
 neterror-redirect-loop = Այս խնդիրը երբեմն կարող է ծագել cookie-ների  անջատումից կամ մերժումից:
 neterror-unknown-socket-type-psm-installed = Ստուգեք և համոզվեք, որ ձեր համակարգը ունի տեղակայված Անվտանգության  Անձնական Կառավարիչ:
@@ -97,7 +104,7 @@ certerror-mitm = <b>{ $hostname }</b>֊ը ամենայն հավանականու�
 neterror-corrupted-content-intro = Ընթացիկ էջը չի կարող ցուցադրվել, քանզի տեղի է ունեցնել փոխանցման սխալ։
 neterror-corrupted-content-contact-website = Կապնվեք վեբ կայիք հեղինակների հետ՝ նրանց այս մասին հաղորդելու համար։
 # Do not translate "SSL_ERROR_UNSUPPORTED_VERSION".
-neterror-sslv3-used = Լրացուցիչ՝ SSL_ERROR_UNSUPPORTED_VERSION
+neterror-sslv3-used = Ընդլայնված՝ SSL_ERROR_UNSUPPORTED_VERSION
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 neterror-inadequate-security-intro = <b>{ $hostname }</b> օգտագործում է անվտանգ տեխնոլոգիա, որը հնացած է և խոցելի հարձակումների համար: Հարձակվողը կարող է հեշտությամբ հայտնաբերել տեղեկություններ, որոնք ձեր կարծիքով ապահով են: Կայքի վարիչը պետք է նախ ուղղի սպասարկիչը, որպեսզի կարողանաք այցելել կայքը:
@@ -111,7 +118,7 @@ neterror-network-protocol-error-intro = Էջը, որ ցանկանում եք դ�
 neterror-network-protocol-error-contact-website = Կապնվեք կայքի սեփականատերերի հետ՝  նրանց այդ մասին հաղորդելու համար:
 certerror-expired-cert-second-para = Հնարավոր է, որ կայքի վկայագրի ժամկետն ավարտվել է, ինչը կանխում է { -brand-short-name }֊ին ապահով կերպով միացումից: Եթե այցելեք այս կայք, ապա հարձակվողները կարող են փորձել գողանալ Ձեր գաղտնաբառերի, էլ֊փոստի կամ վարկային քարտի տվյալների նման տեղեկատվություններ:
 certerror-expired-cert-sts-second-para = Հնարավոր է կայքի վկայագրի ժամկետն ավարտվել է, ինչն էլ թույլ չի տալիս { -brand-short-name }֊ին միանալ ապահով կերպով:
-certerror-what-can-you-do-about-it-title = Ի՞նչ կարող եք անել դրա վերաբերյալ։
+certerror-what-can-you-do-about-it-title = Ի՞նչ կարող եք անել։
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 # $now (Date) - The current datetime, to be formatted as a date
@@ -129,3 +136,18 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Եթե դուք ծանոթ 
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> ունի անվտանգության քաղաքականություն, որը կոչվում է HTTP Strict Transport Security (HSTS), ինչը նշանակում է, որ { -brand-short-name } կարող է միայն ապահով կերպով միանալու դրան։ Դուք չեք կարող բացառություն ավելացնել այս կայք այցելելու համար։
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Սխալի կոդ՝ { $responsestatus } { $responsestatustext }
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name }-ը չկարողացավ անվտանգ կապակցում հաստատել { $hostname } սպասարկիչի հետ։
+fp-neterror-offline-intro = { -brand-short-name }-ը չի կարողանում կապակցվել <strong>{ $hostname } </strong> սպասարկիչի հետ:
+fp-neterror-offline-intro-2 = { -brand-short-name }-ը չի կարողանում միանալ <strong>{ $hostname } </strong> հասցեով գտնվող սերվերին։
+fp-neterror-net-timeout-intro = <strong>{ $hostname }</strong> սպասարկիչը չափազանց երկար է պատասխանում։
+fp-neterror-offline-what-can-you-do-body = Փորձեք կապակցվել այլ սարքից։ Ստուգեք ձեր մոդեմը կամ երթուղիչը։ Անջատեք և վերամիացեք Wi-Fi-ին։
+fp-neterror-vpn-error-description = Փորձեք կրկին մի քանի րոպեից։
+fp-neterror-denied-port-access = Այս հասցեն օգտագործում է ցանցային պորտ, որը սովորաբար նախատեսված է զննարկման համար։ { -brand-short-name }-ը չեղարկեց հարցումը՝ Ձեր պաշտպանության նկատառումից ելնելով։

@@ -1,11 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "NativeFontResourceFreeType.h"
 #include "UnscaledFontFreeType.h"
+
+#include "mozilla/fallible.h"
 
 namespace mozilla::gfx {
 
@@ -21,7 +21,7 @@ NativeFontResourceFreeType::~NativeFontResourceFreeType() = default;
 
 template <class T>
 already_AddRefed<T> NativeFontResourceFreeType::CreateInternal(
-    uint8_t* aFontData, uint32_t aDataLength, FT_Library aFTLibrary) {
+    const uint8_t* aFontData, uint32_t aDataLength, FT_Library aFTLibrary) {
   if (!aFontData || !aDataLength) {
     return nullptr;
   }
@@ -37,7 +37,7 @@ already_AddRefed<T> NativeFontResourceFreeType::CreateInternal(
 
 #ifdef MOZ_WIDGET_ANDROID
 already_AddRefed<NativeFontResourceFreeType> NativeFontResourceFreeType::Create(
-    uint8_t* aFontData, uint32_t aDataLength, FT_Library aFTLibrary) {
+    const uint8_t* aFontData, uint32_t aDataLength, FT_Library aFTLibrary) {
   return CreateInternal<NativeFontResourceFreeType>(aFontData, aDataLength,
                                                     aFTLibrary);
 }
@@ -82,7 +82,8 @@ already_AddRefed<UnscaledFont> NativeFontResourceFontconfig::CreateUnscaledFont(
 }
 
 already_AddRefed<NativeFontResourceFontconfig>
-NativeFontResourceFontconfig::Create(uint8_t* aFontData, uint32_t aDataLength,
+NativeFontResourceFontconfig::Create(const uint8_t* aFontData,
+                                     uint32_t aDataLength,
                                      FT_Library aFTLibrary) {
   return CreateInternal<NativeFontResourceFontconfig>(aFontData, aDataLength,
                                                       aFTLibrary);

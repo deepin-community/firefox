@@ -1,16 +1,18 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <objc/objc-runtime.h>
 
+#include "nsChangeObserver.h"
+#include "nsCocoaFeatures.h"
+#include "nsCocoaUtils.h"
+#include "nsCocoaWindow.h"
 #include "nsMenuBarX.h"
-#include "nsMenuX.h"
+#include "nsMenuGroupOwnerX.h"
 #include "nsMenuItemX.h"
 #include "nsMenuUtilsX.h"
-#include "nsCocoaUtils.h"
-#include "nsChildView.h"
+#include "nsMenuX.h"
 
 #include "nsCOMPtr.h"
 #include "nsString.h"
@@ -19,7 +21,7 @@
 #include "nsThreadUtils.h"
 
 #include "nsIContent.h"
-#include "nsIWidget.h"
+#include "nsIShellService.h"
 #include "mozilla/dom/Document.h"
 #include "nsIAppStartup.h"
 #include "nsIStringBundle.h"
@@ -27,6 +29,8 @@
 
 #include "mozilla/Components.h"
 #include "mozilla/dom/Element.h"
+#include "mozilla/glean/WidgetCocoaMetrics.h"
+#include "mozilla/browser/NimbusFeatures.h"
 
 using namespace mozilla;
 using mozilla::dom::Element;
@@ -36,6 +40,11 @@ nsMenuBarX* nsMenuBarX::sLastGeckoMenuBarPainted = nullptr;
 NSMenu* sApplicationMenu = nil;
 BOOL sApplicationMenuIsFallback = NO;
 BOOL gSomeMenuBarPainted = NO;
+
+// Controls whether or not native menu items should invoke their commands. See
+// class comments for `GeckoNSMenuItem` and `GeckoNSMenu` below for an
+// explanation of why this switch is necessary.
+static BOOL gMenuItemsExecuteCommands = YES;
 
 // defined in nsCocoaWindow.mm.
 extern BOOL sTouchBarIsInitialized;
@@ -47,6 +56,7 @@ extern BOOL sTouchBarIsInitialized;
 // (instance variable).
 static nsIContent* sAboutItemContent = nullptr;
 static nsIContent* sPrefItemContent = nullptr;
+static nsIContent* sSetAsDefaultItemContent = nullptr;
 static nsIContent* sAccountItemContent = nullptr;
 static nsIContent* sQuitItemContent = nullptr;
 
@@ -61,6 +71,14 @@ static nsIContent* sQuitItemContent = nullptr;
     mApplicationMenu = aApplicationMenu;
   }
   return self;
+}
+
+- (void)setSetAsDefaultMenuItem:(NSMenuItem*)menuItem {
+  mSetAsDefaultMenuItem = menuItem;
+}
+
+- (NSMenuItem*)setAsDefaultMenuItem {
+  return mSetAsDefaultMenuItem;
 }
 
 - (void)menuWillOpen:(NSMenu*)menu {
@@ -128,6 +146,10 @@ nsMenuBarX::~nsMenuBarX() {
   }
 
   if (mApplicationMenuDelegate) {
+    if (sApplicationMenu &&
+        sApplicationMenu.delegate == mApplicationMenuDelegate) {
+      sApplicationMenu.delegate = nil;
+    }
     [mApplicationMenuDelegate release];
   }
 
@@ -155,13 +177,15 @@ void nsMenuBarX::ConstructFallbackNativeMenus() {
     return;
   }
 
-  nsCOMPtr<nsIStringBundle> stringBundle;
-
   nsCOMPtr<nsIStringBundleService> bundleSvc =
       do_GetService(NS_STRINGBUNDLE_CONTRACTID);
+  if (!bundleSvc) {
+    return;
+  }
+
+  nsCOMPtr<nsIStringBundle> stringBundle;
   bundleSvc->CreateBundle("chrome://global/locale/fallbackMenubar.properties",
                           getter_AddRefs(stringBundle));
-
   if (!stringBundle) {
     return;
   }
@@ -191,9 +215,9 @@ void nsMenuBarX::ConstructFallbackNativeMenus() {
   }
   sApplicationMenu.delegate = mApplicationMenuDelegate;
   NSMenuItem* quitMenuItem =
-      [[[NSMenuItem alloc] initWithTitle:labelStr
-                                  action:@selector(menuItemHit:)
-                           keyEquivalent:keyStr] autorelease];
+      [[[GeckoNSMenuItem alloc] initWithTitle:labelStr
+                                       action:@selector(menuItemHit:)
+                                keyEquivalent:keyStr] autorelease];
   quitMenuItem.target = nsMenuBarX::sNativeEventTarget;
   quitMenuItem.tag = eCommand_ID_Quit;
   [sApplicationMenu addItem:quitMenuItem];
@@ -278,13 +302,12 @@ void nsMenuBarX::ObserveAttributeChanged(mozilla::dom::Document* aDocument,
 
 void nsMenuBarX::ObserveContentRemoved(mozilla::dom::Document* aDocument,
                                        nsIContent* aContainer,
-                                       nsIContent* aChild,
-                                       nsIContent* aPreviousSibling) {
+                                       nsIContent* aChild) {
   nsINode* parent = NODE_FROM(aContainer, aDocument);
   MOZ_ASSERT(parent);
-  const Maybe<uint32_t> index = parent->ComputeIndexOf(aPreviousSibling);
+  const Maybe<uint32_t> index = parent->ComputeIndexOf(aChild);
   MOZ_ASSERT(*index != UINT32_MAX);
-  RemoveMenuAtIndex(index.isSome() ? *index + 1u : 0u);
+  RemoveMenuAtIndex(index.valueOr(0u));
 }
 
 void nsMenuBarX::ObserveContentInserted(mozilla::dom::Document* aDocument,
@@ -431,6 +454,8 @@ static bool RemoveProblematicMenuItems(NSMenu* aMenu) {
   NSMutableArray* itemsToRemove =
       [NSMutableArray arrayWithCapacity:problematicMenuItemCount];
 
+  bool didRemoveItems = false;
+
   for (NSInteger i = 0; i < aMenu.numberOfItems; i++) {
     NSMenuItem* item = [aMenu itemAtIndex:i];
 
@@ -440,12 +465,11 @@ static bool RemoveProblematicMenuItems(NSMenu* aMenu) {
       [itemsToRemove addObject:@(i)];
     }
 
-    if (item.hasSubmenu && RemoveProblematicMenuItems(item.submenu)) {
-      return true;
+    if (item.hasSubmenu) {
+      didRemoveItems |= RemoveProblematicMenuItems(item.submenu);
     }
   }
 
-  bool didRemoveItems = false;
   for (NSNumber* index in [itemsToRemove reverseObjectEnumerator]) {
     [aMenu removeItemAtIndex:index.integerValue];
     didRemoveItems = true;
@@ -456,6 +480,13 @@ static bool RemoveProblematicMenuItems(NSMenu* aMenu) {
 
 nsresult nsMenuBarX::Paint() {
   NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
+
+  if (!NSApp.active && gSomeMenuBarPainted) {
+    // Early exit if the app isn't active, and we already have a menubar.
+    // This is because we can't safely set the NSApp.mainMenu property in
+    // such a case. We early exit so we also don't invoke any side effects.
+    return NS_OK;
+  }
 
   // Don't try to optimize anything in this painting by checking
   // sLastGeckoMenuBarPainted because the menubar can be manipulated by
@@ -479,7 +510,15 @@ nsresult nsMenuBarX::Paint() {
   NS_OBJC_END_TRY_ABORT_BLOCK;
   NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
 
-  RemoveProblematicMenuItems(mNativeMenu);
+  // If the user switches to another app and back to the last open window, we
+  // should not remove the problematic menu items again or the emoji picker
+  // would not be able to be opened again via shortcuts. This should be the only
+  // time that `sLastGeckoMenuBarPainted` is checked in this method, since other
+  // optimizations could interfere with menu manipulations by native dialogs and
+  // similar (see comment above).
+  if (nsMenuBarX::sLastGeckoMenuBarPainted != this) {
+    RemoveProblematicMenuItems(mNativeMenu);
+  }
 
   NS_OBJC_END_TRY_ABORT_BLOCK;
   NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
@@ -500,6 +539,26 @@ nsresult nsMenuBarX::Paint() {
   NS_OBJC_END_TRY_ABORT_BLOCK;
 }
 
+// Dispatching the paint of the menu bar prevents crashes when macOS is actively
+// enumerating the menu items in `NSApp.mainMenu`. Crash data indicates that
+// this is largely limited to < macOS 14, and this async call has an unwelcome
+// side effect of displaying a grey/disabled menubar sometimes when switching
+// back to the app. So we limit the async call by macOS version number.
+void nsMenuBarX::PaintAsync() {
+  NS_DispatchToCurrentThread(
+      NewRunnableMethod("PaintMenuBar", this, &nsMenuBarX::Paint));
+}
+
+void nsMenuBarX::PaintAsyncIfNeeded() {
+  if (nsCocoaFeatures::OnSonomaOrLater()) {
+    // Sync is safe enough on macOS 14 and beyond.
+    Paint();
+  } else {
+    // Needed for macOS 13 and earlier.
+    PaintAsync();
+  }
+}
+
 /* static */
 void nsMenuBarX::ResetNativeApplicationMenu() {
   NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
@@ -514,7 +573,10 @@ void nsMenuBarX::ResetNativeApplicationMenu() {
 
 void nsMenuBarX::SetNeedsRebuild() { mNeedsRebuild = true; }
 
+#define NS_SHELLSERVICE_CONTRACTID "@mozilla.org/browser/shell-service;1"
 void nsMenuBarX::ApplicationMenuOpened() {
+  glean::widget::mac_application_menu_opened.Add(1);
+
   if (mNeedsRebuild) {
     if (!mMenuArray.IsEmpty()) {
       ResetNativeApplicationMenu();
@@ -522,6 +584,27 @@ void nsMenuBarX::ApplicationMenuOpened() {
     }
     mNeedsRebuild = false;
   }
+
+#ifdef MOZ_BUILD_APP_IS_BROWSER
+  // Only show if Set as Default Browser item if Nimbus allows.
+  if (NimbusFeatures::GetBool("macAppMenuSetAsDefault"_ns, "shown"_ns, false)) {
+    bool isDefaultBrowser = false;
+
+    nsCOMPtr<nsIShellService> shell(do_GetService(NS_SHELLSERVICE_CONTRACTID));
+    if (!shell) {
+      NS_WARNING("Couldn't get ShellService to check default browser state");
+    } else {
+      // Only show the Set as Default Browser item if not default.
+      shell->IsDefaultBrowser(false, &isDefaultBrowser);
+    }
+
+    [[mApplicationMenuDelegate setAsDefaultMenuItem]
+        setHidden:isDefaultBrowser];
+  } else {
+    // Nimbus wants it hidden
+    [[mApplicationMenuDelegate setAsDefaultMenuItem] setHidden:true];
+  }
+#endif
 }
 
 bool nsMenuBarX::PerformKeyEquivalent(NSEvent* aEvent) {
@@ -592,9 +675,25 @@ void nsMenuBarX::AquifyMenuBar() {
     // remove prefs item and its separator, but save off the pref content node
     // so we can invoke its command later.
     HideItem(domDoc, u"menu_PrefsSeparator"_ns);
-    mPrefItemContent = HideItem(domDoc, u"menu_preferences"_ns);
+
+    // Ventura changed the name of the "Preferences" menu item to "Settings"
+    // so store the correct one and hide the other.
+    if (nsCocoaFeatures::OnVenturaOrLater()) {
+      HideItem(domDoc, u"menu_preferences"_ns);
+      mPrefItemContent = HideItem(domDoc, u"menu_settings"_ns);
+    } else {
+      mPrefItemContent = HideItem(domDoc, u"menu_preferences"_ns);
+      HideItem(domDoc, u"menu_settings"_ns);
+    }
+
     if (!sPrefItemContent) {
       sPrefItemContent = mPrefItemContent;
+    }
+
+    // remove Set As Default item.
+    mSetAsDefaultItemContent = HideItem(domDoc, u"menu_setAsDefault"_ns);
+    if (!sSetAsDefaultItemContent) {
+      sSetAsDefaultItemContent = mSetAsDefaultItemContent;
     }
 
     // remove Account Settings item.
@@ -631,8 +730,7 @@ NSMenuItem* nsMenuBarX::CreateNativeAppMenuItem(nsMenuX* aMenu,
 
   // Check collapsed rather than hidden since the app menu items are always
   // hidden in AquifyMenuBar.
-  if (menuItem->AttrValueIs(kNameSpaceID_None, nsGkAtoms::collapsed,
-                            nsGkAtoms::_true, eCaseMatters)) {
+  if (menuItem->GetBoolAttr(nsGkAtoms::collapsed)) {
     return nil;
   }
 
@@ -681,9 +779,9 @@ NSMenuItem* nsMenuBarX::CreateNativeAppMenuItem(nsMenuX* aMenu,
   }
 
   // put together the actual NSMenuItem
-  NSMenuItem* newMenuItem = [[NSMenuItem alloc] initWithTitle:labelString
-                                                       action:aAction
-                                                keyEquivalent:keyEquiv];
+  NSMenuItem* newMenuItem = [[GeckoNSMenuItem alloc] initWithTitle:labelString
+                                                            action:aAction
+                                                     keyEquivalent:keyEquiv];
 
   newMenuItem.tag = aTag;
   newMenuItem.target = aTarget;
@@ -713,6 +811,8 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
     = About This App       = <- aboutName
     ========================
     = Preferences...       = <- menu_preferences
+    = Set As Default       = <- menu_setAsDefault    Only if browser is not
+                                                     default
     = Account Settings     = <- menu_accountmgr      Only on Thunderbird
     ========================
     = Services     >       = <- menu_mac_services    <- (do not define key
@@ -727,7 +827,7 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
     = Quit                 = <- menu_FileQuitItem
     ========================
 
-    If any of them are ommitted from the application's DOM, we just don't add
+    If any of them are omitted from the application's DOM, we just don't add
     them. We always add a "Quit" item, but if an app developer does not provide
     a DOM node with the right ID for the Quit item, we add it in English. App
     developers need only add each node with a label and a key equivalent (if
@@ -738,7 +838,7 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
              key="open_prefs_key"/>
 
     We need to use this system for localization purposes, until we have a better
-    way to define the Application menu to be used on Mac OS X.
+    way to define the Application menu to be used on macOS.
   */
 
   if (sApplicationMenu) {
@@ -774,8 +874,11 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
 
     // Add the Preferences menu item
     itemBeingAdded = CreateNativeAppMenuItem(
-        aMenu, u"menu_preferences"_ns, @selector(menuItemHit:),
-        eCommand_ID_Prefs, nsMenuBarX::sNativeEventTarget);
+        aMenu,
+        nsCocoaFeatures::OnVenturaOrLater() ? u"menu_settings"_ns
+                                            : u"menu_preferences"_ns,
+        @selector(menuItemHit:), eCommand_ID_Prefs,
+        nsMenuBarX::sNativeEventTarget);
     if (itemBeingAdded) {
       [sApplicationMenu addItem:itemBeingAdded];
       [itemBeingAdded release];
@@ -794,6 +897,20 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
       itemBeingAdded = nil;
     }
 
+#ifdef MOZ_BUILD_APP_IS_BROWSER
+    // Add the Set As Default menu item
+    itemBeingAdded = CreateNativeAppMenuItem(
+        aMenu, u"menu_setAsDefault"_ns, @selector(menuItemHit:),
+        eCommand_ID_SetAsDefault, nsMenuBarX::sNativeEventTarget);
+    if (itemBeingAdded) {
+      [sApplicationMenu addItem:itemBeingAdded];
+      [mApplicationMenuDelegate setSetAsDefaultMenuItem:itemBeingAdded];
+
+      [itemBeingAdded release];
+      itemBeingAdded = nil;
+    }
+#endif
+
     // Add separator after Preferences menu
     if (addPrefsSeparator) {
       [sApplicationMenu addItem:[NSMenuItem separatorItem]];
@@ -805,10 +922,11 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
     if (itemBeingAdded) {
       [sApplicationMenu addItem:itemBeingAdded];
 
-      // set this menu item up as the Mac OS X Services menu
-      NSMenu* servicesMenu = [[GeckoServicesNSMenu alloc] initWithTitle:@""];
+      // set this menu item up as the macOS Services menu
+      NSMenu* servicesMenu = [[GeckoNSMenu alloc] initWithTitle:@""];
       itemBeingAdded.submenu = servicesMenu;
       NSApp.servicesMenu = servicesMenu;
+      [servicesMenu release];
 
       [itemBeingAdded release];
       itemBeingAdded = nil;
@@ -896,9 +1014,9 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
       // the current application does not have a DOM node for "Quit". Add one
       // anyway, in English.
       NSMenuItem* defaultQuitItem =
-          [[[NSMenuItem alloc] initWithTitle:@"Quit"
-                                      action:@selector(menuItemHit:)
-                               keyEquivalent:@"q"] autorelease];
+          [[[GeckoNSMenuItem alloc] initWithTitle:@"Quit"
+                                           action:@selector(menuItemHit:)
+                                    keyEquivalent:@"q"] autorelease];
       defaultQuitItem.target = nsMenuBarX::sNativeEventTarget;
       defaultQuitItem.tag = eCommand_ID_Quit;
       [sApplicationMenu addItem:defaultQuitItem];
@@ -908,15 +1026,38 @@ void nsMenuBarX::CreateApplicationMenu(nsMenuX* aMenu) {
   NS_OBJC_END_TRY_ABORT_BLOCK;
 }
 
+// Objective-C class used for menu items to allow Gecko to override their
+// standard behavior in order to stop key equivalents from firing in certain
+// instances. When gMenuItemsExecuteCommands is NO, we return a dummy target and
+// action instead of the actual target and action.
+@implementation GeckoNSMenuItem
+
+- (id)target {
+  id realTarget = super.target;
+  if (gMenuItemsExecuteCommands) {
+    return realTarget;
+  }
+  return realTarget ? self : nil;
+}
+
+- (SEL)action {
+  SEL realAction = super.action;
+  if (gMenuItemsExecuteCommands) {
+    return realAction;
+  }
+  return realAction ? @selector(_doNothing:) : nullptr;
+}
+
+- (void)_doNothing:(id)aSender {
+}
+
+@end
+
 //
 // Objective-C class used to allow us to have keyboard commands
 // look like they are doing something but actually do nothing.
 // We allow mouse actions to work normally.
 //
-
-// Controls whether or not native menu items should invoke their commands.
-static BOOL gMenuItemsExecuteCommands = YES;
-
 @implementation GeckoNSMenu
 
 // Keyboard commands should not cause menu items to invoke their
@@ -925,7 +1066,7 @@ static BOOL gMenuItemsExecuteCommands = YES;
 // go through the mechanics so they'll give the proper visual
 // feedback.
 - (BOOL)performKeyEquivalent:(NSEvent*)aEvent {
-  // We've noticed that Mac OS X expects this check in subclasses before
+  // We've noticed that macOS expects this check in subclasses before
   // calling NSMenu's "performKeyEquivalent:".
   //
   // There is no case in which we'd need to do anything or return YES
@@ -945,8 +1086,14 @@ static BOOL gMenuItemsExecuteCommands = YES;
 
   NSResponder* firstResponder = keyWindow.firstResponder;
 
-  gMenuItemsExecuteCommands = NO;
+  if ([keyWindow isKindOfClass:[BaseWindow class]]) {
+    gMenuItemsExecuteCommands = NO;
+  }
+
+  NS_OBJC_BEGIN_TRY_IGNORE_BLOCK
   [super performKeyEquivalent:aEvent];
+  NS_OBJC_END_TRY_IGNORE_BLOCK
+
   gMenuItemsExecuteCommands = YES;  // return to default
 
   // Return YES if we invoked a command and there is now no key window or we
@@ -964,6 +1111,46 @@ static BOOL gMenuItemsExecuteCommands = YES;
   return [super performKeyEquivalent:aEvent];
 }
 
+- (void)addItem:(NSMenuItem*)aNewItem {
+  [self _overrideClassOfMenuItem:aNewItem];
+  [super addItem:aNewItem];
+}
+
+- (NSMenuItem*)addItemWithTitle:(NSString*)aString
+                         action:(SEL)aSelector
+                  keyEquivalent:(NSString*)aKeyEquiv {
+  NSMenuItem* newItem = [super addItemWithTitle:aString
+                                         action:aSelector
+                                  keyEquivalent:aKeyEquiv];
+  [self _overrideClassOfMenuItem:newItem];
+  return newItem;
+}
+
+- (void)insertItem:(NSMenuItem*)aNewItem atIndex:(NSInteger)aIndex {
+  [self _overrideClassOfMenuItem:aNewItem];
+  [super insertItem:aNewItem atIndex:aIndex];
+}
+
+- (NSMenuItem*)insertItemWithTitle:(NSString*)aString
+                            action:(SEL)aSelector
+                     keyEquivalent:(NSString*)aKeyEquiv
+                           atIndex:(NSInteger)aIndex {
+  NSMenuItem* newItem = [super insertItemWithTitle:aString
+                                            action:aSelector
+                                     keyEquivalent:aKeyEquiv
+                                           atIndex:aIndex];
+  [self _overrideClassOfMenuItem:newItem];
+  return newItem;
+}
+
+- (void)_overrideClassOfMenuItem:(NSMenuItem*)aMenuItem {
+  if ([aMenuItem class] == [NSMenuItem class]) {
+    // See class comment for `GeckoNSMenuItem` above for an explanation of why
+    // we do this.
+    object_setClass(aMenuItem, [GeckoNSMenuItem class]);
+  }
+}
+
 @end
 
 //
@@ -974,9 +1161,9 @@ static BOOL gMenuItemsExecuteCommands = YES;
 
 // called when some menu item in this menu gets hit
 - (IBAction)menuItemHit:(id)aSender {
-  if (!gMenuItemsExecuteCommands) {
-    return;
-  }
+  // We should never get here when we do not want menu items to execute their
+  // commands.
+  MOZ_RELEASE_ASSERT(gMenuItemsExecuteCommands);
 
   if (![aSender isKindOfClass:[NSMenuItem class]]) {
     return;
@@ -992,10 +1179,9 @@ static BOOL gMenuItemsExecuteCommands = YES;
 
   if (representedObject) {
     menuGroupOwner = representedObject.menuGroupOwner;
-    if (!menuGroupOwner) {
-      return;
+    if (menuGroupOwner) {
+      menuBar = menuGroupOwner->GetMenuBar();
     }
-    menuBar = menuGroupOwner->GetMenuBar();
   }
 
   // Notify containing menu about the fact that a menu item will be activated.
@@ -1020,7 +1206,10 @@ static BOOL gMenuItemsExecuteCommands = YES;
     if (menuBar && menuBar->mAboutItemContent) {
       mostSpecificContent = menuBar->mAboutItemContent;
     }
-    nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags, button);
+    if (mostSpecificContent) {
+      nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags,
+                                      button);
+    }
     return;
   }
   if (tag == eCommand_ID_Prefs) {
@@ -1028,15 +1217,34 @@ static BOOL gMenuItemsExecuteCommands = YES;
     if (menuBar && menuBar->mPrefItemContent) {
       mostSpecificContent = menuBar->mPrefItemContent;
     }
-    nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags, button);
+    if (mostSpecificContent) {
+      nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags,
+                                      button);
+    }
     return;
   }
+  if (tag == eCommand_ID_SetAsDefault) {
+    nsIContent* mostSpecificContent = sSetAsDefaultItemContent;
+    if (menuBar && menuBar->mSetAsDefaultItemContent) {
+      mostSpecificContent = menuBar->mSetAsDefaultItemContent;
+    }
+
+    if (mostSpecificContent) {
+      nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags,
+                                      button);
+    }
+    return;
+  }
+
   if (tag == eCommand_ID_Account) {
     nsIContent* mostSpecificContent = sAccountItemContent;
     if (menuBar && menuBar->mAccountItemContent) {
       mostSpecificContent = menuBar->mAccountItemContent;
     }
-    nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags, button);
+    if (mostSpecificContent) {
+      nsMenuUtilsX::DispatchCommandTo(mostSpecificContent, modifierFlags,
+                                      button);
+    }
     return;
   }
   if (tag == eCommand_ID_HideApp) {
@@ -1089,80 +1297,6 @@ static BOOL gMenuItemsExecuteCommands = YES;
                                        button);
       }
     }
-  }
-}
-
-@end
-
-// Objective-C class used for menu items on the Services menu to allow Gecko
-// to override their standard behavior in order to stop key equivalents from
-// firing in certain instances. When gMenuItemsExecuteCommands is NO, we return
-// a dummy target and action instead of the actual target and action.
-
-@implementation GeckoServicesNSMenuItem
-
-- (id)target {
-  id realTarget = super.target;
-  if (gMenuItemsExecuteCommands) {
-    return realTarget;
-  }
-  return realTarget ? self : nil;
-}
-
-- (SEL)action {
-  SEL realAction = super.action;
-  if (gMenuItemsExecuteCommands) {
-    return realAction;
-  }
-  return realAction ? @selector(_doNothing:) : nullptr;
-}
-
-- (void)_doNothing:(id)aSender {
-}
-
-@end
-
-// Objective-C class used as the Services menu so that Gecko can override the
-// standard behavior of the Services menu in order to stop key equivalents
-// from firing in certain instances.
-
-@implementation GeckoServicesNSMenu
-
-- (void)addItem:(NSMenuItem*)aNewItem {
-  [self _overrideClassOfMenuItem:aNewItem];
-  [super addItem:aNewItem];
-}
-
-- (NSMenuItem*)addItemWithTitle:(NSString*)aString
-                         action:(SEL)aSelector
-                  keyEquivalent:(NSString*)aKeyEquiv {
-  NSMenuItem* newItem = [super addItemWithTitle:aString
-                                         action:aSelector
-                                  keyEquivalent:aKeyEquiv];
-  [self _overrideClassOfMenuItem:newItem];
-  return newItem;
-}
-
-- (void)insertItem:(NSMenuItem*)aNewItem atIndex:(NSInteger)aIndex {
-  [self _overrideClassOfMenuItem:aNewItem];
-  [super insertItem:aNewItem atIndex:aIndex];
-}
-
-- (NSMenuItem*)insertItemWithTitle:(NSString*)aString
-                            action:(SEL)aSelector
-                     keyEquivalent:(NSString*)aKeyEquiv
-                           atIndex:(NSInteger)aIndex {
-  NSMenuItem* newItem = [super insertItemWithTitle:aString
-                                            action:aSelector
-                                     keyEquivalent:aKeyEquiv
-                                           atIndex:aIndex];
-  [self _overrideClassOfMenuItem:newItem];
-  return newItem;
-}
-
-- (void)_overrideClassOfMenuItem:(NSMenuItem*)aMenuItem {
-  if ([aMenuItem class] == [NSMenuItem class]) {
-    object_setClass(aMenuItem, [GeckoServicesNSMenuItem class]);
   }
 }
 

@@ -312,10 +312,15 @@ addAccessibleTask(
  * Test caching of the editable state.
  */
 addAccessibleTask(
-  `<div id="div" contenteditable></div>`,
+  `
+<div id="div" contenteditable><p id="p">hello</p></div>
+<input id="input">
+  `,
   async function (browser, docAcc) {
     const div = findAccessibleChildByID(docAcc, "div");
+    const p = findAccessibleChildByID(docAcc, "p");
     testStates(div, 0, EXT_STATE_EDITABLE, 0, 0);
+    testStates(p, 0, EXT_STATE_EDITABLE, 0, 0);
     // Ensure that a contentEditable descendant doesn't cause editable to be
     // exposed on the document.
     testStates(docAcc, STATE_READONLY, 0, 0, EXT_STATE_EDITABLE);
@@ -337,7 +342,7 @@ addAccessibleTask(
       waitForStateChange(docAcc, STATE_READONLY, true, false),
     ]);
     await invokeContentTask(browser, [], () => {
-      content.document.body.contentEditable = false;
+      content.document.body.contentEditable = "inherit";
     });
     await stateChanged;
     testStates(docAcc, STATE_READONLY, 0, 0, EXT_STATE_EDITABLE);
@@ -349,6 +354,7 @@ addAccessibleTask(
     });
     await stateChanged;
     testStates(div, 0, 0, 0, EXT_STATE_EDITABLE);
+    testStates(p, 0, 0, 0, EXT_STATE_EDITABLE);
 
     info("Setting contentEditable on div");
     stateChanged = waitForStateChange(div, EXT_STATE_EDITABLE, true, true);
@@ -379,6 +385,20 @@ addAccessibleTask(
     });
     await stateChanged;
     testStates(docAcc, STATE_READONLY, 0, 0, EXT_STATE_EDITABLE);
+
+    const input = findAccessibleChildByID(docAcc, "input");
+    testStates(input, 0, EXT_STATE_EDITABLE, STATE_UNAVAILABLE, 0);
+    info("Setting disabled on input");
+    stateChanged = waitForEvents({
+      expected: [stateChangeEventArgs(input, STATE_UNAVAILABLE, true)],
+      unexpected: [
+        stateChangeEventArgs(input, EXT_STATE_EDITABLE, false, true),
+      ],
+    });
+    await invokeContentTask(browser, [], () => {
+      content.document.getElementById("input").disabled = true;
+    });
+    await stateChanged;
   },
   { topLevel: true, iframe: true, remoteIframe: true, chrome: true }
 );
@@ -394,10 +414,13 @@ addAccessibleTask(
     // This iframe won't finish loading. Thus, it will get the stale state and
     // won't fire a document load complete event. We use the reorder event on
     // the iframe to know when the document has been created.
-    let reordered = waitForEvent(EVENT_REORDER, iframe);
+    let reordered = waitForEvent(
+      EVENT_REORDER,
+      event => event.accessible === iframe && event.accessible.firstChild
+    );
     await invokeContentTask(browser, [], () => {
       content.document.getElementById("iframe").src =
-        'data:text/html,<img src="http://example.com/a11y/accessible/tests/mochitest/events/slow_image.sjs">';
+        "https://example.com/browser/accessible/tests/browser/events/slow_doc.sjs?second";
     });
     const iframeDoc = (await reordered).accessible.firstChild;
     testStates(iframeDoc, STATE_BUSY, EXT_STATE_STALE, 0, 0);
@@ -405,66 +428,12 @@ addAccessibleTask(
     info("Finishing load of iframe doc");
     let loadCompleted = waitForEvent(EVENT_DOCUMENT_LOAD_COMPLETE, iframeDoc);
     await fetch(
-      "https://example.com/a11y/accessible/tests/mochitest/events/slow_image.sjs?complete"
+      "https://example.com/browser/accessible/tests/browser/events/slow_doc.sjs?scriptFinish"
     );
     await loadCompleted;
     testStates(iframeDoc, 0, 0, STATE_BUSY, EXT_STATE_STALE);
   },
   { topLevel: true, chrome: true }
-);
-
-/**
- * Test implicit selected state.
- */
-addAccessibleTask(
-  `
-<div role="tablist">
-  <div id="noSel" role="tab" tabindex="0">noSel</div>
-  <div id="selFalse" role="tab" aria-selected="false" tabindex="0">selFalse</div>
-</div>
-<div role="listbox" aria-multiselectable="true">
-  <div id="multiNoSel" role="option" tabindex="0">multiNoSel</div>
-</div>
-<div role="grid">
-  <div role="row">
-    <div id="gridcell" role="gridcell" tabindex="0">gridcell</div>
-  </div>
-</div>
-  `,
-  async function (browser, docAcc) {
-    const noSel = findAccessibleChildByID(docAcc, "noSel");
-    testStates(noSel, 0, 0, STATE_FOCUSED | STATE_SELECTED, 0);
-    info("Focusing noSel");
-    let focused = waitForEvent(EVENT_FOCUS, noSel);
-    noSel.takeFocus();
-    await focused;
-    testStates(noSel, STATE_FOCUSED | STATE_SELECTED, 0, 0, 0);
-
-    const selFalse = findAccessibleChildByID(docAcc, "selFalse");
-    testStates(selFalse, 0, 0, STATE_FOCUSED | STATE_SELECTED, 0);
-    info("Focusing selFalse");
-    focused = waitForEvent(EVENT_FOCUS, selFalse);
-    selFalse.takeFocus();
-    await focused;
-    testStates(selFalse, STATE_FOCUSED, 0, STATE_SELECTED, 0);
-
-    const multiNoSel = findAccessibleChildByID(docAcc, "multiNoSel");
-    testStates(multiNoSel, 0, 0, STATE_FOCUSED | STATE_SELECTED, 0);
-    info("Focusing multiNoSel");
-    focused = waitForEvent(EVENT_FOCUS, multiNoSel);
-    multiNoSel.takeFocus();
-    await focused;
-    testStates(multiNoSel, STATE_FOCUSED, 0, STATE_SELECTED, 0);
-
-    const gridcell = findAccessibleChildByID(docAcc, "gridcell");
-    testStates(gridcell, 0, 0, STATE_FOCUSED | STATE_SELECTED, 0);
-    info("Focusing gridcell");
-    focused = waitForEvent(EVENT_FOCUS, gridcell);
-    gridcell.takeFocus();
-    await focused;
-    testStates(gridcell, STATE_FOCUSED, 0, STATE_SELECTED, 0);
-  },
-  { topLevel: true, iframe: true, remoteIframe: true, chrome: true }
 );
 
 /**
@@ -580,19 +549,6 @@ addAccessibleTask(
   <div id="popover2" popover>popover2</div>
   <button id="toggle5">toggle5</button>
 </template></div>
-<script>
-  const toggle1 = document.getElementById("toggle1");
-  const popover1 = document.getElementById("popover1");
-  toggle1.popoverTargetElement = popover1;
-  const toggle3 = document.getElementById("toggle3");
-  const shadow = document.getElementById("shadowHost").shadowRoot;
-  const toggle4 = shadow.getElementById("toggle4");
-  const popover2 = shadow.getElementById("popover2");
-  toggle3.popoverTargetElement = popover2;
-  toggle4.popoverTargetElement = popover2;
-  const toggle5 = shadow.getElementById("toggle5");
-  toggle5.popoverTargetElement = popover1;
-</script>
   `,
   async function (browser, docAcc) {
     const toggle1 = findAccessibleChildByID(docAcc, "toggle1");
@@ -690,7 +646,24 @@ addAccessibleTask(
     // toggle4 is in the same shadow DOM as popover2.
     testStates(toggle4, STATE_COLLAPSED);
   },
-  { chrome: true, topLevel: true }
+  {
+    chrome: true,
+    topLevel: true,
+    contentSetup: async function contentSetup() {
+      const doc = content.document;
+      const toggle1 = doc.getElementById("toggle1");
+      const popover1 = doc.getElementById("popover1");
+      toggle1.popoverTargetElement = popover1;
+      const toggle3 = doc.getElementById("toggle3");
+      const shadow = doc.getElementById("shadowHost").shadowRoot;
+      const toggle4 = shadow.getElementById("toggle4");
+      const popover2 = shadow.getElementById("popover2");
+      toggle3.popoverTargetElement = popover2;
+      toggle4.popoverTargetElement = popover2;
+      const toggle5 = shadow.getElementById("toggle5");
+      toggle5.popoverTargetElement = popover1;
+    },
+  }
 );
 
 /**
@@ -754,6 +727,7 @@ addAccessibleTask(
 </fieldset>
 <div id="ariaDisabled" aria-disabled="true" role="button">ariaDisabled</div>
 <input id="enabled">
+<div id="ariaDisabledGroup" aria-disabled="true"><input id="inAriaDisabledGroup"></div>
   `,
   async function testUnavailable(browser, docAcc) {
     const input = findAccessibleChildByID(docAcc, "input");
@@ -816,6 +790,129 @@ addAccessibleTask(
     // Test a control that is initially enabled.
     const enabled = findAccessibleChildByID(docAcc, "enabled");
     testStates(enabled, 0, 0, STATE_UNAVAILABLE);
+
+    const ariaDisabledGroup = findAccessibleChildByID(
+      docAcc,
+      "ariaDisabledGroup"
+    );
+    const inAriaDisabledGroup = findAccessibleChildByID(
+      docAcc,
+      "inAriaDisabledGroup"
+    );
+    testStates(ariaDisabledGroup, STATE_UNAVAILABLE);
+    testStates(inAriaDisabledGroup, STATE_UNAVAILABLE);
+    info("Enabling ariaDisabledGroup");
+    changed = waitForStateChange(ariaDisabledGroup, STATE_UNAVAILABLE, false);
+    await invokeSetAttribute(
+      browser,
+      "ariaDisabledGroup",
+      "aria-disabled",
+      null
+    );
+    await changed;
+    testStates(ariaDisabledGroup, 0, 0, STATE_UNAVAILABLE);
+    testStates(inAriaDisabledGroup, 0, 0, STATE_UNAVAILABLE);
   },
   { chrome: true, topLevel: true }
+);
+
+/**
+ * Test the protected state.
+ */
+addAccessibleTask(
+  `
+<input id="input">
+<input id="inputPassword" type="password">
+<textarea id="textareaPassword" type="password"></textarea>
+  `,
+  async function testProtected(browser, docAcc) {
+    const input = findAccessibleChildByID(docAcc, "input");
+    testStates(input, 0, 0, STATE_PROTECTED);
+    const inputPassword = findAccessibleChildByID(docAcc, "inputPassword");
+    testStates(inputPassword, STATE_PROTECTED);
+    // type="password" is not valid on textarea.
+    const textareaPassword = findAccessibleChildByID(
+      docAcc,
+      "textareaPassword"
+    );
+    testStates(textareaPassword, 0, 0, STATE_PROTECTED);
+  },
+  { chrome: true, topLevel: true }
+);
+
+/**
+ * Test the selectable text state.
+ */
+addAccessibleTask(
+  `
+<p id="selectableP">selectableP</p>
+<p id="unselectableP" style="user-select: none;">unselectableP</p>
+  `,
+  async function testSelectableText(browser, docAcc) {
+    testStates(docAcc, 0, EXT_STATE_SELECTABLE_TEXT);
+    const selectableP = findAccessibleChildByID(docAcc, "selectableP");
+    testStates(selectableP, 0, EXT_STATE_SELECTABLE_TEXT);
+    const unselectableP = findAccessibleChildByID(docAcc, "unselectableP");
+    testStates(unselectableP, 0, 0, 0, EXT_STATE_SELECTABLE_TEXT);
+  },
+  { chrome: true, topLevel: true }
+);
+
+/**
+ * Test the selectable text state on an unselectable body.
+ */
+addAccessibleTask(
+  `
+<style>
+body {
+  user-select: none;
+}
+<p id="p">p</p>
+  `,
+  async function testSelectableTextUnselectableBody(browser, docAcc) {
+    testStates(docAcc, 0, 0, 0, EXT_STATE_SELECTABLE_TEXT);
+    const p = findAccessibleChildByID(docAcc, "p");
+    testStates(p, 0, 0, 0, EXT_STATE_SELECTABLE_TEXT);
+  },
+  {
+    chrome: true,
+    topLevel: true,
+  }
+);
+
+/**
+ * Test the expanded and expandable states using aria-expanded
+ */
+addAccessibleTask(
+  `
+<div id="menuitem-true" role="menuitem" aria-expanded="true"></div>
+<div id="listbox-true" role="listbox" aria-expanded="true"></div>
+<div id="menuitem-false" role="menuitem" aria-expanded="false"></div>
+<div id="listbox-false" role="listbox" aria-expanded="false"></div>
+<button id="button-true" aria-expanded="true"></button>
+<button id="button-false" aria-expanded="false"></button>
+  `,
+  async function testExpanded(browser, docAcc) {
+    const menuitemTrue = findAccessibleChildByID(docAcc, "menuitem-true");
+    testStates(menuitemTrue, STATE_EXPANDED, EXT_STATE_EXPANDABLE);
+
+    const listboxTrue = findAccessibleChildByID(docAcc, "listbox-true");
+    testStates(listboxTrue, 0, 0, STATE_EXPANDED, EXT_STATE_EXPANDABLE);
+
+    const menuitemFalse = findAccessibleChildByID(docAcc, "menuitem-false");
+    testStates(menuitemFalse, STATE_COLLAPSED, EXT_STATE_EXPANDABLE);
+
+    const listboxFalse = findAccessibleChildByID(docAcc, "listbox-false");
+    testStates(listboxFalse, 0, 0, STATE_COLLAPSED, EXT_STATE_EXPANDABLE);
+
+    const buttonTrue = findAccessibleChildByID(docAcc, "button-true");
+    testStates(buttonTrue, STATE_EXPANDED, EXT_STATE_EXPANDABLE);
+
+    const buttonFalse = findAccessibleChildByID(docAcc, "button-false");
+    testStates(buttonFalse, STATE_COLLAPSED, EXT_STATE_EXPANDABLE);
+  },
+  {
+    chrome: true,
+    topLevel: true,
+  }
 );

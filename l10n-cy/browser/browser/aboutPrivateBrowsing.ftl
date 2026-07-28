@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Gadael i { -brand-short-na
 about-private-browsing-cookie-banners-promo-heading = Mae { -brand-short-name } yn gofalu am faneri cwci drostoch chi
 about-private-browsing-cookie-banners-promo-body = Rydyn ni nawr yn gwrthod llawer o faneri cwci yn awtomatig er mwyn i chi brofi llai o dracio a gallu mynd nôl i bori di drafferth.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Peidio â gadael unrhyw olion ar y ddyfais hon
 about-private-browsing-felt-privacy-v1-info-body = Mae { -brand-short-name } yn dileu eich cwcis, hanes, a data gwefan pan fyddwch yn cau eich holl ffenestri preifat.
 about-private-browsing-felt-privacy-v1-info-link = Pwy all weld fy ngweithgarwch?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Mae cau eich holl ffenestri preifat yn dileu eich cwcis, hanes a data gwefan.
+about-private-browsing-nova-info-link = Pwy sy'n dal i allu gweld beth rwy'n gwneud?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Bydd eich hanes pori'n cael ei ddileu
+about-private-browsing-nova-info-subheader = Byddwn yn dileu eich holl chwilio a mewngofnodi pan fyddwch yn cau'r ffenestr hon. Mae diogeledd cynhenid { -brand-short-name } ymlaen yma hefyd, fel rhwystro tracwyr.

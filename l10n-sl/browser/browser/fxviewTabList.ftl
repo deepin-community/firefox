@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Premakni na konec
     .accesskey = k
 fxviewtabrow-move-tab-window = Premakni v novo okno
     .accesskey = o
+fxviewtabrow-send-to-device = Pošlji na napravo
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Pošlji na mobilno napravo
+    .accesskey = n
 fxviewtabrow-send-tab = Pošlji zavihek na napravo
     .accesskey = P
 fxviewtabrow-pin-tab = Pripni zavihek
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Povrni glasnost zavihka
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Možnosti zavihka { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Utišaj { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Povrni zvok { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Utišaj zavihek
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Povrni glasnost zavihka
+fxviewtabrow-send-to-mobile-connect-device = Za pošiljanje zavihkov povežite drugo napravo
+fxviewtabrow-send-to-mobile-device-missing2 = Ne vidite svoje naprave?
+fxviewtabrow-send-to-mobile-not-verified = Račun ni potrjen
+fxviewtabrow-send-to-mobile-verify-account = Potrdite svoj račun
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Za pošiljanje zavihkov se prijavite
+fxviewtabrow-send-to-mobile-turn-on-sync = Za pošiljanje zavihkov vklopite sinhronizacijo

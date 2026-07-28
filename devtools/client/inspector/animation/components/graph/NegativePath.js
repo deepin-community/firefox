@@ -6,8 +6,8 @@
 
 const {
   PureComponent,
-} = require("resource://devtools/client/shared/vendor/react.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 
 const {
@@ -63,7 +63,7 @@ class NegativePath extends PureComponent {
     }
 
     const simulatedElement = simulatedAnimation.effect.target;
-    const win = simulatedElement.ownerGlobal;
+    const win = simulatedElement.documentGlobal;
     const endTime = simulatedAnimation.effect.getComputedTiming().endTime;
 
     // Set the underlying opacity to zero so that if we sample the animation's output

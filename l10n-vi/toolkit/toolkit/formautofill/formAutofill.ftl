@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } đang muốn
 autofill-edit-payment-method-os-prompt-macos = hiển thị thông tin phương thức thanh toán được lưu trữ
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } đang muốn hiển thị thông tin phương thức thanh toán được lưu trữ. Xác nhận quyền truy cập vào tài khoản Windows này bên dưới.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } đang muốn hiển thị thông tin phương thức thanh toán được lưu trữ.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Tùy chọn tự động điền mẫu
 autofill-options-link-osx = Tùy chỉnh tự động điền mẫu
 
@@ -81,3 +81,6 @@ autofill-category-name = tên
 autofill-category-organization = tổ chức
 autofill-category-tel = điện thoại
 autofill-category-email = thư điện tử
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } đã phát hiện một trang web không an toàn. Tự động điền biểu mẫu tạm thời bị tắt.

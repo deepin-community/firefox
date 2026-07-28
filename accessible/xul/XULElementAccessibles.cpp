@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -42,11 +41,10 @@ void XULLabelAccessible::Shutdown() {
   HyperTextAccessible::Shutdown();
 }
 
-void XULLabelAccessible::DispatchClickEvent(nsIContent* aContent,
-                                            uint32_t aActionIndex) const {
+void XULLabelAccessible::DispatchClickEvent(uint32_t aActionIndex) const {
   // Bug 1578140: For labels inside buttons, The base implementation of
   // DispatchClickEvent doesn't fire a command event on the button.
-  RefPtr<nsXULElement> el = nsXULElement::FromNodeOrNull(aContent);
+  RefPtr<nsXULElement> el = nsXULElement::FromNodeOrNull(mContent);
   if (el) {
     el->Click(mozilla::dom::CallerType::System);
   }
@@ -134,7 +132,7 @@ role XULTooltipAccessible::NativeRole() const { return roles::TOOLTIP; }
 XULLinkAccessible::XULLinkAccessible(nsIContent* aContent, DocAccessible* aDoc)
     : XULLabelAccessible(aContent, aDoc) {}
 
-XULLinkAccessible::~XULLinkAccessible() {}
+XULLinkAccessible::~XULLinkAccessible() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // XULLinkAccessible: LocalAccessible
@@ -147,10 +145,7 @@ void XULLinkAccessible::Value(nsString& aValue) const {
 
 ENameValueFlag XULLinkAccessible::NativeName(nsString& aName) const {
   mContent->AsElement()->GetAttr(nsGkAtoms::value, aName);
-  if (!aName.IsEmpty()) return eNameOK;
-
-  nsTextEquivUtils::GetNameFromSubtree(this, aName);
-  return aName.IsEmpty() ? eNameOK : eNameFromSubtree;
+  return eNameOK;
 }
 
 role XULLinkAccessible::NativeRole() const { return roles::LINK; }

@@ -57,7 +57,21 @@ about-processes-inference-process = 推斷（{ $pid }）
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
 #    $type (String) The raw type for this process.
-about-processes-unknown-process = 其他: { $type }（{ $pid }）
+about-processes-unknown-process = 其他：{ $type }（{ $pid }）
+
+## Properties of isolated web processes
+
+about-processes-web-isolated-property-private = 隱私視窗
+about-processes-web-isolated-property-serviceworker = serviceworker
+about-processes-web-isolated-property-jit-disabled = 已停用 JIT
+about-processes-web-isolated-property-with-coop-coep = 跨來源隔離
+
+## Isolated process names
+## Variables:
+##    $origin (String) The domain name for this process.
+##    $properties (String) A formatted list of properties from the above strings.
+
+about-processes-web-isolated-process2 = { $origin }（{ $properties }）
 
 ## Isolated process names
 ## Variables:
@@ -84,7 +98,7 @@ about-processes-with-coop-coep-process-private = { $origin } — 隱私（{ $pid
 #                   Can be an empty string if the process is idle.
 about-processes-active-threads =
     { $active ->
-       *[other] { $active } 個忙碌的執行緒，共 { $number } 個: { $list }
+       *[other] { $active } 個忙碌的執行緒，共 { $number } 個：{ $list }
     }
 # Single-line summary of threads (idle process)
 # Variables:
@@ -105,17 +119,17 @@ about-processes-thread-name-and-id = { $name }
 # Tab
 # Variables:
 #   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
-about-processes-tab-name = 分頁: { $name }
+about-processes-tab-name = 分頁：{ $name }
 about-processes-preloaded-tab = 預先載入的新分頁
 # Single subframe
 # Variables:
 #   $url (String) The full url of this subframe.
-about-processes-frame-name-one = 子畫框: { $url }
+about-processes-frame-name-one = 子畫框：{ $url }
 # Group of subframes
 # Variables:
 #   $number (Number) The number of subframes in this group. Always ≥ 1.
 #   $shortUrl (String) The shared prefix for the subframes in the group.
-about-processes-frame-name-many = 子畫框（{ $number }）: { $shortUrl }
+about-processes-frame-name-many = 子畫框（{ $number }）：{ $shortUrl }
 
 ## Utility process actor names
 
@@ -128,6 +142,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windows Utils
 about-processes-utility-actor-windows-file-dialog = Windows 檔案對話框
+about-processes-utility-actor-pkcs11-module = 安全性模組輔助器
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -140,16 +155,16 @@ about-processes-utility-actor-windows-file-dialog = Windows 檔案對話框
 
 # Common case.
 about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
-    .title = 總 CPU 時間: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+    .title = 總 CPU 時間：{ NUMBER($total, maximumFractionDigits: 0) } { $unit }
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = （測量中）
 # Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
 # This case only occurs on Windows where the precision of the CPU times is low.
 about-processes-cpu-almost-idle = < 0.1%
-    .title = 總 CPU 時間: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+    .title = 總 CPU 時間：{ NUMBER($total, maximumFractionDigits: 0) } { $unit }
 # Special case: process or thread is currently idle.
 about-processes-cpu-fully-idle = 閒置
-    .title = 總 CPU 時間: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+    .title = 總 CPU 時間：{ NUMBER($total, maximumFractionDigits: 0) } { $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

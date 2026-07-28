@@ -11,12 +11,12 @@ screenshots-instructions = Потяните мышью или щёлкните �
 screenshots-cancel-button = Отмена
 screenshots-save-visible-button = Сохранить видимую область
 screenshots-save-page-button = Сохранить всю страницу
-screenshots-download-button = Загрузить
-screenshots-download-button-tooltip = Загрузить снимок экрана
+screenshots-download-button = Скачать
+screenshots-download-button-tooltip = Скачать снимок экрана
 screenshots-copy-button = Копировать
 screenshots-copy-button-tooltip = Копировать снимок экрана в буфер обмена
 screenshots-download-button-title =
-    .title = Загрузить снимок экрана
+    .title = Скачать снимок экрана
 screenshots-copy-button-title =
     .title = Копировать снимок экрана в буфер обмена
 screenshots-cancel-button-title =
@@ -63,9 +63,14 @@ screenshots-component-copy-button-2 = Копировать
     .aria-label = Копировать
 # Variables
 #   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
-screenshots-component-download-button-2 = Загрузить
-    .title = Загрузить ({ $shortcut })
-    .aria-label = Загрузить
+screenshots-component-download-button-2 = Скачать
+    .title = Скачать ({ $shortcut })
+    .aria-label = Скачать
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = Скриншот
+    .tooltiptext = Сделать скриншот ({ $shortcut })
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

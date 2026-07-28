@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } yrittää k�
 autofill-edit-payment-method-os-prompt-macos = näyttää tallennettuja maksutapatietoja
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } yrittää näyttää tallennettuja maksutapatietoja. Vahvista pääsy tälle Windows-tilille alapuolella.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } yrittää näyttää tallennettuja maksutapatietoja.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Lomakkeiden automaattitäytön asetukset
 autofill-options-link-osx = Lomakkeiden automaattitäytön asetukset
 
@@ -81,3 +81,6 @@ autofill-category-name = nimi
 autofill-category-organization = organisaatio
 autofill-category-tel = puhelin
 autofill-category-email = sähköposti
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } on havainnut suojaamattoman sivuston. Lomakkeiden automaattitäyttö on väliaikaisesti pois käytöstä.

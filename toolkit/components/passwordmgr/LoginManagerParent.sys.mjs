@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { FirefoxRelayTelemetry } from "resource://gre/modules/FirefoxRelayTelemetry.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const LoginInfo = new Components.Constructor(
@@ -161,7 +160,7 @@ Services.ppmm.addMessageListener("PasswordManager:findRecipes", message => {
  * Lazily create a Map of origins to array of browsers with importable logins.
  *
  * @param {origin} formOrigin
- * @returns {Object?} containing array of migration browsers and experiment state.
+ * @returns {object?} containing array of migration browsers and experiment state.
  */
 async function getImportableLogins(formOrigin) {
   // Include the experiment state for data and UI decisions; otherwise skip
@@ -171,9 +170,8 @@ async function getImportableLogins(formOrigin) {
     lazy.LoginHelper.showAutoCompleteImport;
   return state
     ? {
-        browsers: await lazy.ChromeMigrationUtils.getImportableLogins(
-          formOrigin
-        ),
+        browsers:
+          await lazy.ChromeMigrationUtils.getImportableLogins(formOrigin),
         state,
       }
     : null;
@@ -348,7 +346,7 @@ export class LoginManagerParent extends JSWindowActorParent {
       }
 
       case "PasswordManager:removeLogin": {
-        this.#onRemoveLogin(data.login);
+        await this.#onRemoveLogin(data.login);
         break;
       }
 
@@ -407,13 +405,13 @@ export class LoginManagerParent extends JSWindowActorParent {
     }
   }
 
-  #onRemoveLogin(login) {
+  async #onRemoveLogin(login) {
     login = lazy.LoginHelper.vanillaObjectToLogin(login);
-    Services.logins.removeLogin(login);
+    Services.logins.removeLoginAsync(login);
   }
 
   #onOpenImportableLearnMore() {
-    const window = this.getRootBrowser().ownerGlobal;
+    const window = this.getRootBrowser().documentGlobal;
     window.openTrustedLinkIn(
       Services.urlFormatter.formatURLPref("app.support.baseURL") +
         "password-import",
@@ -454,7 +452,7 @@ export class LoginManagerParent extends JSWindowActorParent {
     } else {
       // Open the migration wizard pre-selecting the appropriate browser.
       lazy.MigrationUtils.showMigrationWizard(
-        this.getRootBrowser().ownerGlobal,
+        this.getRootBrowser().documentGlobal,
         {
           entrypoint: lazy.MigrationUtils.MIGRATION_ENTRYPOINTS.PASSWORDS,
           migratorKey: browserId,
@@ -464,7 +462,7 @@ export class LoginManagerParent extends JSWindowActorParent {
   }
 
   #onOpenPreferences(hostname, entryPoint) {
-    const window = this.getRootBrowser().ownerGlobal;
+    const window = this.getRootBrowser().documentGlobal;
     lazy.LoginHelper.openPasswordManager(window, {
       filterString: hostname,
       entryPoint,
@@ -534,13 +532,13 @@ export class LoginManagerParent extends JSWindowActorParent {
   async #getRecipesForHost(origin) {
     let recipes;
     if (origin) {
-      try {
-        const formHost = new URL(origin).host;
-        let recipeManager = await LoginManagerParent.recipeParentPromise;
-        recipes = recipeManager.getRecipesForHost(formHost);
-      } catch (ex) {
+      const formHost = URL.parse(origin)?.host;
+      if (!formHost) {
         // Some schemes e.g. chrome aren't supported by URL
+        return [];
       }
+      let recipeManager = await LoginManagerParent.recipeParentPromise;
+      recipes = recipeManager.getRecipesForHost(formHost);
     }
 
     return recipes ?? [];
@@ -792,7 +790,7 @@ export class LoginManagerParent extends JSWindowActorParent {
     if (!hasBeenTypePassword) {
       autocompleteItems.push(
         ...(await lazy.FirefoxRelay.autocompleteItemsAsync({
-          formOrigin,
+          origin: formOrigin,
           scenarioName,
           hasInput: !!searchStringLower.length,
         }))
@@ -927,11 +925,7 @@ export class LoginManagerParent extends JSWindowActorParent {
 
     generatedPW.autocompleteShown = true;
 
-    Services.telemetry.recordEvent(
-      "pwmgr",
-      "autocomplete_shown",
-      "generatedpassword"
-    );
+    Glean.pwmgr.autocompleteShownGeneratedpassword.record();
   }
 
   /**
@@ -989,11 +983,11 @@ export class LoginManagerParent extends JSWindowActorParent {
       dismissedPrompt,
     }
   ) {
-    function recordLoginUse(login) {
-      Services.logins.recordPasswordUse(
+    async function recordLoginUse(login) {
+      await Services.logins.recordPasswordUseAsync(
         login,
         browser && lazy.PrivateBrowsingUtils.isBrowserPrivate(browser),
-        login.username ? "form_login" : "form_password",
+        login.username ? "FormLogin" : "FormPassword",
         !!autoFilledLoginGuid
       );
     }
@@ -1040,7 +1034,7 @@ export class LoginManagerParent extends JSWindowActorParent {
         lazy.log(
           "The filled login matches the form submission. Nothing to change."
         );
-        recordLoginUse(loginsForGuid[0]);
+        await recordLoginUse(loginsForGuid[0]);
         return;
       }
     }
@@ -1065,7 +1059,7 @@ export class LoginManagerParent extends JSWindowActorParent {
         existingLogin = logins[0];
 
         if (existingLogin.password == formLogin.password) {
-          recordLoginUse(existingLogin);
+          await recordLoginUse(existingLogin);
           lazy.log(
             "Not prompting to save/change since we have no username and the only saved password matches the new password."
           );
@@ -1090,7 +1084,7 @@ export class LoginManagerParent extends JSWindowActorParent {
     const prompter = this._getPrompter(browser);
 
     if (!canMatchExistingLogin) {
-      prompter.promptToChangePasswordWithUsernames(
+      await prompter.promptToChangePasswordWithUsernames(
         promptBrowser,
         logins,
         formLogin
@@ -1127,7 +1121,7 @@ export class LoginManagerParent extends JSWindowActorParent {
           this.possibleValues
         );
       } else {
-        recordLoginUse(existingLogin);
+        await recordLoginUse(existingLogin);
       }
 
       return;
@@ -1158,8 +1152,8 @@ export class LoginManagerParent extends JSWindowActorParent {
    * @param {string} formOrigin
    * @param {string} options.formActionOrigin
    * @param {string?} options.autoFilledLoginGuid
-   * @param {Object} options.newPasswordField
-   * @param {Object?} options.usernameField
+   * @param {object} options.newPasswordField
+   * @param {object?} options.usernameField
    * @param {Element?} options.oldPasswordField
    * @param {boolean} [options.triggeredByFillingGenerated = false]
    */
@@ -1283,11 +1277,7 @@ export class LoginManagerParent extends JSWindowActorParent {
 
         // Record telemetry for the first edit
         if (!generatedPW.edited) {
-          Services.telemetry.recordEvent(
-            "pwmgr",
-            "filled_field_edited",
-            "generatedpassword"
-          );
+          Glean.pwmgr.filledFieldEditedGeneratedpassword.record();
           lazy.log("filled_field_edited telemetry event recorded.");
           generatedPW.edited = true;
         }
@@ -1301,11 +1291,7 @@ export class LoginManagerParent extends JSWindowActorParent {
           );
         }
         // record first use of this generated password
-        Services.telemetry.recordEvent(
-          "pwmgr",
-          "autocomplete_field",
-          "generatedpassword"
-        );
+        Glean.pwmgr.autocompleteFieldGeneratedpassword.record();
         lazy.log("autocomplete_field telemetry event recorded.");
         generatedPW.filled = true;
       }
@@ -1397,7 +1383,7 @@ export class LoginManagerParent extends JSWindowActorParent {
       ) {
         lazy.log("Updating auto-saved login.");
 
-        Services.logins.modifyLogin(
+        await Services.logins.modifyLoginAsync(
           existingLogin,
           lazy.LoginHelper.newPropertyBag({
             password: formLogin.password,
@@ -1469,7 +1455,8 @@ export class LoginManagerParent extends JSWindowActorParent {
       } else {
         lazy.log("No change to existing login.");
         // is there a doorhanger we should update?
-        let popupNotifications = promptBrowser.ownerGlobal.PopupNotifications;
+        let popupNotifications =
+          promptBrowser.documentGlobal.PopupNotifications;
         let notif = popupNotifications.getNotification("password", browser);
         lazy.log(
           `_onPasswordEditedOrGenerated: Has doorhanger? ${
@@ -1516,7 +1503,7 @@ export class LoginManagerParent extends JSWindowActorParent {
   }
 
   async searchAutoCompleteEntries(searchString, data) {
-    return this.doAutocompleteSearch(data.formOrigin, data);
+    return this.doAutocompleteSearch(this.origin, data);
   }
 
   onAutoCompleteEntryHovered(_message, _data) {
@@ -1542,11 +1529,10 @@ export class LoginManagerParent extends JSWindowActorParent {
       }
 
       case "PasswordManager:offerRelayIntegration": {
-        FirefoxRelayTelemetry.recordRelayOfferedEvent(
-          "clicked",
-          data.telemetry.flowId,
-          data.telemetry.scenarioName
-        );
+        Glean.relayIntegration.clickedOfferRelay.record({
+          value: data.telemetry.flowId,
+          scenario: data.telemetry.scenarioName,
+        });
         const username = await this.#offerRelayIntegration(this.origin);
         if (username) {
           this.sendAsyncMessage("PasswordManager:FillRelayUsername", username);
@@ -1555,10 +1541,10 @@ export class LoginManagerParent extends JSWindowActorParent {
       }
 
       case "PasswordManager:generateRelayUsername": {
-        FirefoxRelayTelemetry.recordRelayUsernameFilledEvent(
-          "clicked",
-          data.telemetry.flowId
-        );
+        Glean.relayIntegration.clickedFillUsername.record({
+          value: data.telemetry.flowId,
+          error_code: 0,
+        });
         const username = await this.#generateRelayUsername(this.origin);
         if (username) {
           this.sendAsyncMessage("PasswordManager:FillRelayUsername", username);

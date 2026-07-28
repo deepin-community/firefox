@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,9 +6,9 @@
 #define mozilla_DOMEventTargetHelper_h_
 
 #include "mozilla/Attributes.h"
-#include "mozilla/dom/EventTarget.h"
 #include "mozilla/GlobalTeardownObserver.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/dom/EventTarget.h"
 #include "nsAtom.h"
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
@@ -38,12 +36,8 @@ class Event;
 enum class CallerType : uint32_t;
 }  // namespace dom
 
-#define NS_DOMEVENTTARGETHELPER_IID                  \
-  {                                                  \
-    0xa28385c6, 0x9451, 0x4d7e, {                    \
-      0xa3, 0xdd, 0xf4, 0xb6, 0x87, 0x2f, 0xa4, 0x76 \
-    }                                                \
-  }
+#define NS_DOMEVENTTARGETHELPER_IID \
+  {0xa28385c6, 0x9451, 0x4d7e, {0xa3, 0xdd, 0xf4, 0xb6, 0x87, 0x2f, 0xa4, 0x76}}
 
 class DOMEventTargetHelper : public dom::EventTarget,
                              public GlobalTeardownObserver {
@@ -73,10 +67,10 @@ class DOMEventTargetHelper : public dom::EventTarget,
 
   nsresult PostHandleEvent(EventChainPostVisitor& aVisitor) override;
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_DOMEVENTTARGETHELPER_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_DOMEVENTTARGETHELPER_IID)
 
-  nsIGlobalObject* GetOwnerGlobal() const override {
-    return GlobalTeardownObserver::GetOwnerGlobal();
+  nsIGlobalObject* GetRelevantGlobal() const override {
+    return GlobalTeardownObserver::GetRelevantGlobal();
   }
 
   static DOMEventTargetHelper* FromSupports(nsISupports* aSupports) {
@@ -98,8 +92,6 @@ class DOMEventTargetHelper : public dom::EventTarget,
   bool HasListenersFor(const nsAString& aType) const;
 
   bool HasListenersFor(nsAtom* aTypeWithOn) const;
-
-  nsPIDOMWindowOuter* GetOwnerGlobalForBindingsInternal() override;
 
   // Like GetOwner, but only returns non-null if the window being returned is
   // current (in the "current document" sense of the HTML spec).
@@ -146,8 +138,6 @@ class DOMEventTargetHelper : public dom::EventTarget,
 
   bool mIsKeptAlive = false;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(DOMEventTargetHelper, NS_DOMEVENTTARGETHELPER_IID)
 
 }  // namespace mozilla
 

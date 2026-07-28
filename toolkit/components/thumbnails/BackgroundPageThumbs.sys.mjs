@@ -14,8 +14,6 @@ const SETTLE_WAIT_TIME = 2500;
 // For testing, the above timeout is excessive, and makes our tests overlong.
 const TESTING_SETTLE_WAIT_TIME = 0;
 
-const TELEMETRY_HISTOGRAM_ID_PREFIX = "FX_THUMBNAILS_BG_";
-
 const ABOUT_NEWTAB_SEGREGATION_PREF =
   "privacy.usercontext.about_newtab_segregation.enabled";
 
@@ -46,31 +44,44 @@ export const BackgroundPageThumbs = {
    *
    * The page is loaded anonymously, and plug-ins are disabled.
    *
-   * @param url      The URL to capture.
-   * @param options  An optional object that configures the capture.  Its
-   *                 properties are the following, and all are optional:
-   * @opt onDone     A function that will be asynchronously called when the
-   *                 capture is complete or times out.  It's called as
-   *                   onDone(url),
-   *                 where `url` is the captured URL.
-   * @opt timeout    The capture will time out after this many milliseconds have
-   *                 elapsed after the capture has progressed to the head of
-   *                 the queue and started.  Defaults to 30000 (30 seconds).
-   * @opt isImage    If true, backgroundPageThumbsContent will attempt to render
-   *                 the url directly to canvas. Note that images will mostly get
-   *                 detected and rendered as such anyway, but this will ensure it.
-   * @opt targetWidth The target width when capturing an image.
-   * @opt backgroundColor The background colour when capturing an image.
-   * @opt dontStore  If set to true, the image blob won't be stored to disk, an
-   *                 object will instead be passed as third argument to onDone:
-   *                 {
-   *                   data: an ArrayBuffer containing the data
-   *                   contentType: the data content-type
-   *                   originalUrl: the originally requested url
-   *                   currentUrl: the final url after redirects
-   *                 }
-   * @opt contentType can be set to an image contentType for the capture,
-   *                  defaults to PageThumbs.contentType.
+   * @param url
+   *   The URL to capture.
+   * @param {object} [options]
+   *   An optional object that configures the capture.
+   * @param {Function} [options.onDone]
+   *   A function that will be asynchronously called when the capture is
+   *   complete or times out.  It's called as onDone(url), where `url` is the
+   *   captured URL.
+   * @param {number} [options.timeout]
+   *   The capture will time out after this many milliseconds have elapsed after
+   *   the capture has progressed to the head of the queue and started. Defaults
+   *   to 30000 (30 seconds).
+   * @param {boolean} [options.isImage]
+   *   If true, backgroundPageThumbsContent will attempt to render the url
+   *   directly to canvas. Note that images will mostly get detected and rendered
+   *   as such anyway, but this will ensure it.
+   * @param {number} [options.targetWidth]
+   *   The target width when capturing an image.
+   * @param {string} [options.backgroundColor]
+   *   The background colour when capturing an image.
+   * @param {boolean} [options.dontStore]
+   *   If set to true, the image blob won't be stored to disk, an object will
+   *   instead be passed as third argument to onDone:
+   *   ```
+   *   {
+   *     data: an ArrayBuffer containing the data
+   *     contentType: the data content-type
+   *     originalUrl: the originally requested url
+   *     currentUrl: the final url after redirects
+   *   }
+   *   ```
+   * @param {string} [options.contentType]
+   *   Can be set to an image contentType for the capture, defaults to
+   *   PageThumbs.contentType.
+   * @param {number} [options.settleWaitTime]
+   *   Milliseconds to wait after the page reports loaded before capturing, to
+   *   allow for in-page redirects. Defaults to 2500. Set to 0 when capturing a
+   *   direct image URL where no settle is needed.
    */
   capture(url, options = {}) {
     if (!PageThumbs._prefEnabled()) {
@@ -82,7 +93,9 @@ export const BackgroundPageThumbs = {
     this._captureQueue = this._captureQueue || [];
     this._capturesByURL = this._capturesByURL || new Map();
 
-    tel("QUEUE_SIZE_ON_CAPTURE", this._captureQueue.length);
+    Glean.thumbnails.queueSizeOnCapture.accumulateSingleSample(
+      this._captureQueue.length
+    );
 
     // We want to avoid duplicate captures for the same URL.  If there is an
     // existing one, we just add the callback to that one and we are done.
@@ -324,7 +337,7 @@ export const BackgroundPageThumbs = {
         Components.isSuccessCode(status) ||
         status === Cr.NS_BINDING_ABORTED
       ) {
-        this._thumbBrowser.ownerGlobal.requestIdleCallback(() => {
+        this._thumbBrowser.documentGlobal.requestIdleCallback(() => {
           currentCapture.pageLoaded(this._thumbBrowser);
         });
       } else {
@@ -547,7 +560,9 @@ Capture.prototype = {
    */
   start(browser) {
     this.startDate = new Date();
-    tel("CAPTURE_QUEUE_TIME_MS", this.startDate - this.creationDate);
+    Glean.thumbnails.captureQueueTime.accumulateSingleSample(
+      this.startDate - this.creationDate
+    );
 
     let fallbackTimeout = Cu.isInAutomation
       ? TESTING_CAPTURE_TIMEOUT
@@ -591,7 +606,8 @@ Capture.prototype = {
             this._done(browser, null, TEL_CAPTURE_DONE_BAD_URI);
           }
         },
-        () => {
+        err => {
+          console.error(err);
           // The query can fail when a crash occurs while loading. The error causes
           // thumbnail crash tests to fail with an uninteresting error message.
         }
@@ -618,9 +634,14 @@ Capture.prototype = {
       return;
     }
 
-    let waitTime = Cu.isInAutomation
-      ? TESTING_SETTLE_WAIT_TIME
-      : SETTLE_WAIT_TIME;
+    let waitTime;
+    if (this.options.settleWaitTime !== undefined) {
+      waitTime = this.options.settleWaitTime;
+    } else if (Cu.isInAutomation) {
+      waitTime = TESTING_SETTLE_WAIT_TIME;
+    } else {
+      waitTime = SETTLE_WAIT_TIME;
+    }
 
     // There was additional activity, so restart the wait timer
     if (this.redirectTimer) {
@@ -642,7 +663,7 @@ Capture.prototype = {
     let pageLoadTime = new Date() - this._pageLoadStartTime;
     let canvasDrawStartTime = new Date();
 
-    let canvas = PageThumbs.createCanvas(aBrowser.ownerGlobal, 1, 1);
+    let canvas = PageThumbs.createCanvas(aBrowser.documentGlobal, 1, 1);
     try {
       await PageThumbs.captureToCanvas(
         aBrowser,
@@ -677,8 +698,8 @@ Capture.prototype = {
     });
 
     this._done(aBrowser, imageData, TEL_CAPTURE_DONE_OK, {
-      CAPTURE_PAGE_LOAD_TIME_MS: pageLoadTime,
-      CAPTURE_CANVAS_DRAW_TIME_MS: canvasDrawTime,
+      pageLoadTime,
+      canvasDrawTime,
     });
   },
 
@@ -716,13 +737,16 @@ Capture.prototype = {
       throw new Error("A done reason must be given.");
     }
 
-    tel("CAPTURE_DONE_REASON_2", reason);
+    Glean.thumbnails.captureDoneReason2.accumulateSingleSample(reason);
 
     if (telemetry) {
       // Telemetry is currently disabled in the content process (bug 680508).
-      for (let id in telemetry) {
-        tel(id, telemetry[id]);
-      }
+      Glean.thumbnails.capturePageLoadTime.accumulateSingleSample(
+        telemetry.pageLoadTime
+      );
+      Glean.thumbnails.captureCanvasDrawTime.accumulateSingleSample(
+        telemetry.canvasDrawTime
+      );
     }
 
     let done = (info = null) => {
@@ -772,17 +796,6 @@ Capture.prototype = {
 };
 
 Capture.nextID = 0;
-
-/**
- * Adds a value to one of this module's telemetry histograms.
- *
- * @param histogramID  This is prefixed with this module's ID.
- * @param value        The value to add.
- */
-function tel(histogramID, value) {
-  let id = TELEMETRY_HISTOGRAM_ID_PREFIX + histogramID;
-  Services.telemetry.getHistogramById(id).add(value);
-}
 
 function schedule(callback) {
   Services.tm.dispatchToMainThread(callback);

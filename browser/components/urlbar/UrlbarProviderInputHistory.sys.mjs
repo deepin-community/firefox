@@ -12,27 +12,26 @@
 import {
   UrlbarProvider,
   UrlbarUtils,
-} from "resource:///modules/UrlbarUtils.sys.mjs";
+} from "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs";
 
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
-  UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
-  UrlbarProviderOpenTabs: "resource:///modules/UrlbarProviderOpenTabs.sys.mjs",
-  UrlbarResult: "resource:///modules/UrlbarResult.sys.mjs",
+  UrlbarPrefs: "moz-src:///browser/components/urlbar/UrlbarPrefs.sys.mjs",
+  UrlbarProviderOpenTabs:
+    "moz-src:///browser/components/urlbar/UrlbarProviderOpenTabs.sys.mjs",
+  UrlbarResult: "moz-src:///browser/components/urlbar/UrlbarResult.sys.mjs",
 });
 
-// Constants to support an alternative frecency algorithm.
-const PAGES_USE_ALT_FRECENCY = Services.prefs.getBoolPref(
-  "places.frecency.pages.alternative.featureGate",
-  false
-);
-const PAGES_FRECENCY_FIELD = PAGES_USE_ALT_FRECENCY
-  ? "alt_frecency"
-  : "frecency";
-
-const SQL_ADAPTIVE_QUERY = `/* do not warn (bug 487789) */
+ChromeUtils.defineLazyGetter(lazy, "SQL_ADAPTIVE_QUERY", () => {
+  // Constants to support an alternative frecency algorithm.
+  const PAGES_USE_ALT_FRECENCY =
+    lazy.PlacesUtils.history.isAlternativeFrecencyEnabled;
+  const PAGES_FRECENCY_FIELD = PAGES_USE_ALT_FRECENCY
+    ? "alt_frecency"
+    : "frecency";
+  return `/* do not warn (bug 487789) */
    SELECT h.url,
           h.title,
           EXISTS(SELECT 1 FROM moz_bookmarks WHERE fk = h.id) AS bookmarked,
@@ -45,7 +44,8 @@ const SQL_ADAPTIVE_QUERY = `/* do not warn (bug 487789) */
             WHERE b.fk = h.id
           ) AS tags,
           t.open_count,
-          t.userContextId
+          t.userContextId,
+          h.last_visit_date
    FROM (
      SELECT ROUND(MAX(use_count) * (1 + (input = :search_string)), 1) AS rank,
             place_id
@@ -65,24 +65,14 @@ const SQL_ADAPTIVE_QUERY = `/* do not warn (bug 487789) */
                             NULL)
    ORDER BY rank DESC, ${PAGES_FRECENCY_FIELD} DESC
    LIMIT :maxResults`;
+});
 
 /**
  * Class used to create the provider.
  */
-class ProviderInputHistory extends UrlbarProvider {
+export class UrlbarProviderInputHistory extends UrlbarProvider {
   /**
-   * Unique name for the provider, used by the context to filter on providers.
-   *
-   * @returns {string}
-   */
-  get name() {
-    return "InputHistory";
-  }
-
-  /**
-   * The type of the provider, must be one of UrlbarUtils.PROVIDER_TYPE.
-   *
-   * @returns {UrlbarUtils.PROVIDER_TYPE}
+   * @returns {Values<typeof UrlbarUtils.PROVIDER_TYPE>}
    */
   get type() {
     return UrlbarUtils.PROVIDER_TYPE.PROFILE;
@@ -94,9 +84,8 @@ class ProviderInputHistory extends UrlbarProvider {
    * with this provider, to save on resources.
    *
    * @param {UrlbarQueryContext} queryContext The query context object
-   * @returns {boolean} Whether this provider should be invoked for the search.
    */
-  isActive(queryContext) {
+  async isActive(queryContext) {
     return (
       (lazy.UrlbarPrefs.get("suggest.history") ||
         lazy.UrlbarPrefs.get("suggest.bookmark") ||
@@ -106,13 +95,11 @@ class ProviderInputHistory extends UrlbarProvider {
   }
 
   /**
-   * Starts querying. Extended classes should return a Promise resolved when the
-   * provider is done searching AND returning results.
+   * Starts querying.
    *
-   * @param {UrlbarQueryContext} queryContext The query context object
-   * @param {Function} addCallback Callback invoked by the provider to add a new
-   *        result. A UrlbarResult should be passed to it.
-   * @returns {Promise}
+   * @param {UrlbarQueryContext} queryContext
+   * @param {(provider: UrlbarProvider, result: UrlbarResult) => void} addCallback
+   *   Callback invoked by the provider to add a new result.
    */
   async startQuery(queryContext, addCallback) {
     let instance = this.queryInstance;
@@ -137,35 +124,36 @@ class ProviderInputHistory extends UrlbarProvider {
         ? row.getResultByName("bookmark_title")
         : null;
       const tags = row.getResultByName("tags") || "";
-
+      let lastVisitPRTime = row.getResultByName("last_visit_date");
+      let lastVisit = lastVisitPRTime
+        ? lazy.PlacesUtils.toDate(lastVisitPRTime).getTime()
+        : undefined;
       let resultTitle = historyTitle;
+
       if (openPageCount > 0 && lazy.UrlbarPrefs.get("suggest.openpage")) {
         if (url == queryContext.currentPage) {
           // Don't suggest switching to the current page.
           continue;
         }
-        let payload = lazy.UrlbarResult.payloadAndSimpleHighlights(
-          queryContext.tokens,
-          {
-            url: [url, UrlbarUtils.HIGHLIGHT.TYPED],
-            title: [resultTitle, UrlbarUtils.HIGHLIGHT.TYPED],
+        let userContextId = row.getResultByName("userContextId") || 0;
+        let result = new lazy.UrlbarResult({
+          type: UrlbarUtils.RESULT_TYPE.TAB_SWITCH,
+          source: UrlbarUtils.RESULT_SOURCE.TABS,
+          payload: {
+            url,
+            title: resultTitle,
             icon: UrlbarUtils.getIconForUrl(url),
-            userContextId: row.getResultByName("userContextId") || 0,
-          }
-        );
-        if (
-          lazy.UrlbarPrefs.getScotchBonnetPref("secondaryActions.featureGate")
-        ) {
-          payload[0].action = {
-            key: "tabswitch",
-            l10nId: "urlbar-result-action-switch-tab",
-          };
-        }
-        let result = new lazy.UrlbarResult(
-          UrlbarUtils.RESULT_TYPE.TAB_SWITCH,
-          UrlbarUtils.RESULT_SOURCE.TABS,
-          ...payload
-        );
+            userContextId,
+            lastVisit,
+            action: lazy.UrlbarPrefs.get("secondaryActions.switchToTab")
+              ? UrlbarUtils.createTabSwitchSecondaryAction(userContextId)
+              : undefined,
+          },
+          highlights: {
+            url: UrlbarUtils.HIGHLIGHT.TYPED,
+            title: UrlbarUtils.HIGHLIGHT.TYPED,
+          },
+        });
         addCallback(this, result);
         continue;
       }
@@ -189,13 +177,13 @@ class ProviderInputHistory extends UrlbarProvider {
 
       let isBlockable = resultSource == UrlbarUtils.RESULT_SOURCE.HISTORY;
 
-      let result = new lazy.UrlbarResult(
-        UrlbarUtils.RESULT_TYPE.URL,
-        resultSource,
-        ...lazy.UrlbarResult.payloadAndSimpleHighlights(queryContext.tokens, {
-          url: [url, UrlbarUtils.HIGHLIGHT.TYPED],
-          title: [resultTitle, UrlbarUtils.HIGHLIGHT.TYPED],
-          tags: [resultTags, UrlbarUtils.HIGHLIGHT.TYPED],
+      let result = new lazy.UrlbarResult({
+        type: UrlbarUtils.RESULT_TYPE.URL,
+        source: resultSource,
+        payload: {
+          url,
+          title: resultTitle,
+          tags: resultTags,
           icon: UrlbarUtils.getIconForUrl(url),
           isBlockable,
           blockL10n: isBlockable
@@ -205,8 +193,14 @@ class ProviderInputHistory extends UrlbarProvider {
             ? Services.urlFormatter.formatURLPref("app.support.baseURL") +
               "awesome-bar-result-menu"
             : undefined,
-        })
-      );
+          lastVisit,
+        },
+        highlights: {
+          url: UrlbarUtils.HIGHLIGHT.TYPED,
+          title: UrlbarUtils.HIGHLIGHT.TYPED,
+          tags: UrlbarUtils.HIGHLIGHT.TYPED,
+        },
+      });
 
       addCallback(this, result);
     }
@@ -241,22 +235,19 @@ class ProviderInputHistory extends UrlbarProvider {
    */
   _getAdaptiveQuery(queryContext) {
     return [
-      SQL_ADAPTIVE_QUERY,
+      lazy.SQL_ADAPTIVE_QUERY,
       {
         parent: lazy.PlacesUtils.tagsFolderId,
         search_string: queryContext.lowerCaseSearchString,
         matchBehavior: Ci.mozIPlacesAutoComplete.MATCH_ANYWHERE,
         searchBehavior: lazy.UrlbarPrefs.get("defaultBehavior"),
-        userContextId: lazy.UrlbarPrefs.get("switchTabs.searchAllContainers")
-          ? lazy.UrlbarProviderOpenTabs.getUserContextIdForOpenPagesTable(
-              null,
-              queryContext.isPrivate
-            )
-          : queryContext.userContextId,
+        userContextId:
+          lazy.UrlbarProviderOpenTabs.getUserContextIdForOpenPagesTable(
+            null,
+            queryContext.isPrivate
+          ),
         maxResults: queryContext.maxResults,
       },
     ];
   }
 }
-
-export var UrlbarProviderInputHistory = new ProviderInputHistory();

@@ -12,6 +12,7 @@ const { MESSAGE_CATEGORY } = require("resource://devtools/shared/constants.js");
 const httpServer = createTestHTTPServer();
 httpServer.registerPathHandler(`/test_css_messages.html`, (req, res) => {
   res.setStatusLine(req.httpVersion, 200, "OK");
+  res.setHeader("Content-Type", "text/html");
   res.write(`<meta charset=utf8>
     <style>
       html {
@@ -37,9 +38,8 @@ async function testWatchingCssMessages() {
   // Open a test tab
   const tab = await addTab(TEST_URI);
 
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   const receivedMessages = [];
   const { onAvailable, onAllMessagesReceived } = setupOnAvailableFunction(
@@ -85,21 +85,23 @@ async function testWatchingCachedCssMessages() {
   // for CSS messages, we need to set the cssErrorReportingEnabled flag on the docShell.
   await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.docShell.cssErrorReportingEnabled = true;
+    ChromeUtils.clearResourceCache({
+      types: ["stylesheet"],
+    });
   });
 
   // Setting the docShell flag only indicates to the Parser that from now on, it should
   // emit warnings. But it does not automatically emit warnings for the existing CSS
   // errors in the stylesheets. So here we reload the tab, which will make the Parser
   // parse the stylesheets again, this time emitting warnings.
-  await reloadBrowser();
+  await reloadSelectedTab();
   // and trigger more CSS warnings
   await triggerCSSWarning(tab);
 
   // At this point, all messages should be in the ConsoleService cache, and we can begin
   // to watch and check that we do retrieve those messages.
-  const { client, resourceCommand, targetCommand } = await initResourceCommand(
-    tab
-  );
+  const { client, resourceCommand, targetCommand } =
+    await initResourceCommand(tab);
 
   const receivedMessages = [];
   const { onAvailable } = setupOnAvailableFunction(
@@ -205,7 +207,7 @@ function setupOnAvailableFunction(
  * Sets invalid values for width and height on the document's body style attribute.
  */
 function triggerCSSWarning(tab) {
-  return ContentTask.spawn(tab.linkedBrowser, null, function frameScript() {
+  return SpecialPowers.spawn(tab.linkedBrowser, [], function frameScript() {
     content.document.body.style.width = "red";
     content.document.body.style.height = "blue";
   });

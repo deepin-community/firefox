@@ -4,19 +4,19 @@
 
 package mozilla.components.lib.crash.notification
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import mozilla.components.lib.crash.Crash
 import mozilla.components.lib.crash.CrashReporter
 import mozilla.components.lib.crash.R
 import mozilla.components.lib.crash.prompt.CrashPrompt
-import mozilla.components.support.base.android.NotificationsDelegate
 import mozilla.components.support.base.ids.SharedIdsHelper
-import mozilla.components.support.utils.PendingIntentUtils
 
 private const val NOTIFICATION_SDK_LEVEL = 29 // On Android Q+ we show a notification instead of a prompt
 
@@ -29,20 +29,20 @@ internal class CrashNotification(
     private val context: Context,
     private val crash: Crash,
     private val configuration: CrashReporter.PromptConfiguration,
-    private val notificationsDelegate: NotificationsDelegate,
+    private val notificationManagerCompat: NotificationManagerCompat = NotificationManagerCompat.from(context),
 ) {
     fun show() {
         val pendingIntent = PendingIntent.getActivity(
             context,
             SharedIdsHelper.getNextIdForTag(context, PENDING_INTENT_TAG),
             CrashPrompt.createIntent(context, crash),
-            getNotificationFlag(),
+            PendingIntent.FLAG_IMMUTABLE,
         )
 
         val channel = ensureChannelExists(context)
 
         val title = if (crash is Crash.NativeCodeCrash &&
-            crash.processType == Crash.NativeCodeCrash.PROCESS_TYPE_BACKGROUND_CHILD
+            crash.processVisibility == Crash.NativeCodeCrash.PROCESS_VISIBILITY_BACKGROUND_CHILD
         ) {
             context.getString(
                 R.string.mozac_lib_crash_background_process_notification_title,
@@ -68,7 +68,14 @@ internal class CrashNotification(
             .setAutoCancel(true)
             .build()
 
-        notificationsDelegate.notify(NOTIFICATION_TAG, NOTIFICATION_ID, notification)
+        @SuppressLint("NotifyUsage") // we cannot request permissions if app already crashed
+        if (notificationManagerCompat.areNotificationsEnabled()) {
+            notificationManagerCompat.notify(
+                NOTIFICATION_TAG,
+                NOTIFICATION_ID,
+                notification,
+            )
+        }
     }
 
     companion object {
@@ -87,8 +94,8 @@ internal class CrashNotification(
 
                 // We may not be able to launch an activity if a background process crash occurs
                 // while the application is in the background.
-                crash is Crash.NativeCodeCrash && crash.processType ==
-                    Crash.NativeCodeCrash.PROCESS_TYPE_BACKGROUND_CHILD -> true
+                crash is Crash.NativeCodeCrash && crash.processVisibility ==
+                    Crash.NativeCodeCrash.PROCESS_VISIBILITY_BACKGROUND_CHILD -> true
 
                 // An uncaught exception is crashing the app and we may not be able to launch an activity from here.
                 crash is Crash.UncaughtExceptionCrash -> true
@@ -99,23 +106,19 @@ internal class CrashNotification(
         }
 
         fun ensureChannelExists(context: Context): String {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val notificationManager: NotificationManager = context.getSystemService(
-                    Context.NOTIFICATION_SERVICE,
-                ) as NotificationManager
+            val notificationManager: NotificationManager = context.getSystemService(
+                Context.NOTIFICATION_SERVICE,
+            ) as NotificationManager
 
-                val channel = NotificationChannel(
-                    NOTIFICATION_CHANNEL_ID,
-                    context.getString(R.string.mozac_lib_crash_channel),
-                    NotificationManager.IMPORTANCE_DEFAULT,
-                )
+            val channel = NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                context.getString(R.string.mozac_lib_crash_channel),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            )
 
-                notificationManager.createNotificationChannel(channel)
-            }
+            notificationManager.createNotificationChannel(channel)
 
             return NOTIFICATION_CHANNEL_ID
         }
     }
-
-    private fun getNotificationFlag() = PendingIntentUtils.defaultFlags
 }

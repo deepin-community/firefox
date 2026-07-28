@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,6 +6,7 @@
  * http://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html
  * http://w3c.github.io/push-api/
  * https://notifications.spec.whatwg.org/
+ * https://wicg.github.io/cookie-store/#ServiceWorkerGlobalScope
  *
  * You are granted a license to use, reproduce and create derivative works of
  * this document.
@@ -47,3 +47,11 @@ partial interface ServiceWorkerGlobalScope {
 // Mixin the WebExtensions API globals (the actual properties are only available to
 // extension service workers, locked behind a Func="extensions::ExtensionAPIAllowed" annotation).
 ServiceWorkerGlobalScope includes ExtensionGlobalsMixin;
+
+// https://wicg.github.io/cookie-store/#ServiceWorkerGlobalScope
+partial interface ServiceWorkerGlobalScope {
+  [SameObject, Pref="dom.cookieStore.enabled"] readonly attribute CookieStore cookieStore;
+
+  [Pref="dom.cookieStore.enabled"]
+  attribute EventHandler oncookiechange;
+};

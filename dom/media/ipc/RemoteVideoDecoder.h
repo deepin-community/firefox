@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef include_dom_media_ipc_RemoteVideoDecoderChild_h
 #define include_dom_media_ipc_RemoteVideoDecoderChild_h
 #include "RemoteDecoderChild.h"
-#include "RemoteDecoderManagerChild.h"
 #include "RemoteDecoderParent.h"
+#include "RemoteMediaManagerChild.h"
 
 namespace mozilla::layers {
 class BufferRecycleBin;
@@ -19,7 +17,7 @@ class KnowsCompositorVideo : public layers::KnowsCompositor {
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(KnowsCompositorVideo, override)
 
-  layers::TextureForwarder* GetTextureForwarder() override;
+  RefPtr<layers::TextureForwarder> GetTextureForwarder() override;
   layers::LayersIPCActor* GetLayersIPCActor() override;
 
   static already_AddRefed<KnowsCompositorVideo> TryCreateForIdentifier(
@@ -34,14 +32,14 @@ using mozilla::ipc::IPCResult;
 
 class RemoteVideoDecoderChild : public RemoteDecoderChild {
  public:
-  explicit RemoteVideoDecoderChild(RemoteDecodeIn aLocation);
+  explicit RemoteVideoDecoderChild(RemoteMediaIn aLocation);
 
   MOZ_IS_CLASS_INIT MediaResult
   InitIPDL(const VideoInfo& aVideoInfo, float aFramerate,
            const CreateDecoderParams::OptionSet& aOptions,
            mozilla::Maybe<layers::TextureFactoryIdentifier> aIdentifier,
            const Maybe<uint64_t>& aMediaEngineId,
-           const Maybe<TrackingId>& aTrackingId);
+           const Maybe<TrackingId>& aTrackingId, PRemoteCDMActor* aCDM);
 
   MediaResult ProcessOutput(DecodedOutputIPDL&& aDecodedData) override;
 
@@ -52,11 +50,12 @@ class RemoteVideoDecoderChild : public RemoteDecoderChild {
 class RemoteVideoDecoderParent final : public RemoteDecoderParent {
  public:
   RemoteVideoDecoderParent(
-      RemoteDecoderManagerParent* aParent, const VideoInfo& aVideoInfo,
+      RemoteMediaManagerParent* aParent, const VideoInfo& aVideoInfo,
       float aFramerate, const CreateDecoderParams::OptionSet& aOptions,
       const Maybe<layers::TextureFactoryIdentifier>& aIdentifier,
       nsISerialEventTarget* aManagerThread, TaskQueue* aDecodeTaskQueue,
-      const Maybe<uint64_t>& aMediaEngineId, Maybe<TrackingId> aTrackingId);
+      const Maybe<uint64_t>& aMediaEngineId, Maybe<TrackingId> aTrackingId,
+      RemoteCDMParent* aCDM);
 
  protected:
   IPCResult RecvConstruct(ConstructResolver&& aResolver) override;

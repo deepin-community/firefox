@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 /* globals getExtensionSidebarActors, expectNoSuchActorIDs, testSetExpressionSidebarPanel */
@@ -72,18 +70,22 @@ add_task(async function test_devtools_panels_elements_sidebar() {
   );
 
   async function devtools_page() {
-    const sidebar1 = await browser.devtools.panels.elements.createSidebarPane(
-      "Test Sidebar 1"
-    );
-    const sidebar2 = await browser.devtools.panels.elements.createSidebarPane(
-      "Test Sidebar 2"
-    );
-    const sidebar3 = await browser.devtools.panels.elements.createSidebarPane(
-      "Test Sidebar 3"
-    );
-    const sidebar4 = await browser.devtools.panels.elements.createSidebarPane(
-      "Test Sidebar 4"
-    );
+    const sidebar1 =
+      await browser.devtools.panels.elements.createSidebarPane(
+        "Test Sidebar 1"
+      );
+    const sidebar2 =
+      await browser.devtools.panels.elements.createSidebarPane(
+        "Test Sidebar 2"
+      );
+    const sidebar3 =
+      await browser.devtools.panels.elements.createSidebarPane(
+        "Test Sidebar 3"
+      );
+    const sidebar4 =
+      await browser.devtools.panels.elements.createSidebarPane(
+        "Test Sidebar 4"
+      );
 
     const onShownListener = (event, sidebarInstance) => {
       browser.test.sendMessage(`devtools_sidebar_${event}`, sidebarInstance);

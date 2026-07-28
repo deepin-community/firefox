@@ -13,11 +13,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <optional>
 #include <string>
 #include <vector>
 
-#include "absl/types/optional.h"
-#include "rtc_base/protobuf_utils.h"
+#include "absl/strings/string_view.h"
 #include "rtc_base/system/file_wrapper.h"
 #include "test/gtest.h"
 #include "test/testsupport/file_utils.h"
@@ -36,7 +36,7 @@ class RtcEventLogAnalyzerBindingsTest : public ::testing::Test {
     webrtc::FileWrapper file = webrtc::FileWrapper::OpenReadOnly(file_name);
     ASSERT_TRUE(file.is_open());
 
-    absl::optional<size_t> file_size = file.FileSize();
+    std::optional<size_t> file_size = file.FileSize();
     ASSERT_TRUE(file_size.has_value());
     constexpr size_t kMaxFileSize = 1'000'000;
     ASSERT_GT(*file_size, 0u);
@@ -66,8 +66,8 @@ TEST_F(RtcEventLogAnalyzerBindingsTest, OutgoingBitrateChart) {
 
   // Parse output as charts.
   webrtc::analytics::ChartCollection collection;
-  bool success =
-      collection.ParseFromArray(output.data(), static_cast<int>(output_size));
+  bool success = collection.ParseFromString(
+      absl::string_view(output.data(), static_cast<int>(output_size)));
   ASSERT_TRUE(success);
   ASSERT_EQ(collection.charts().size(), 1);
   EXPECT_EQ(collection.charts(0).title(), "Outgoing RTP bitrate");
@@ -88,8 +88,8 @@ TEST_F(RtcEventLogAnalyzerBindingsTest, NetWorkDelayFeedbackChart) {
 
   // Parse output as charts.
   webrtc::analytics::ChartCollection collection;
-  bool success =
-      collection.ParseFromArray(output.data(), static_cast<int>(output_size));
+  bool success = collection.ParseFromString(
+      absl::string_view(output.data(), static_cast<int>(output_size)));
   ASSERT_TRUE(success);
   ASSERT_EQ(collection.charts().size(), 1);
   EXPECT_EQ(collection.charts(0).title(),

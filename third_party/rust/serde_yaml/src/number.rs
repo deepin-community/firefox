@@ -1,10 +1,11 @@
-use crate::Error;
+use crate::de;
+use crate::error::{self, Error, ErrorImpl};
 use serde::de::{Unexpected, Visitor};
 use serde::{forward_to_deserialize_any, Deserialize, Deserializer, Serialize, Serializer};
 use std::cmp::Ordering;
-use std::fmt::{self, Debug, Display};
+use std::fmt::{self, Display};
 use std::hash::{Hash, Hasher};
-use std::i64;
+use std::str::FromStr;
 
 /// Represents a YAML number, whether integer or floating point.
 #[derive(Clone, PartialEq, PartialOrd)]
@@ -15,7 +16,7 @@ pub struct Number {
 // "N" is a prefix of "NegInt"... this is a false positive.
 // https://github.com/Manishearth/rust-clippy/issues/1241
 #[allow(clippy::enum_variant_names)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 enum N {
     PosInt(u64),
     /// Always less than zero.
@@ -32,16 +33,13 @@ impl Number {
     /// return the integer value.
     ///
     /// ```
-    /// # use std::i64;
-    /// #
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// #
+    /// # fn main() -> serde_yaml::Result<()> {
     /// let big = i64::MAX as u64 + 10;
-    /// let v = yaml(r#"
+    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
     /// a: 64
     /// b: 9223372036854775817
     /// c: 256.0
-    /// "#);
+    /// "#)?;
     ///
     /// assert!(v["a"].is_i64());
     ///
@@ -50,6 +48,8 @@ impl Number {
     ///
     /// // Numbers with a decimal point are not considered integers.
     /// assert!(!v["c"].is_i64());
+    /// # Ok(())
+    /// # }
     /// ```
     #[inline]
     #[allow(clippy::cast_sign_loss)]
@@ -67,13 +67,12 @@ impl Number {
     /// return the integer value.
     ///
     /// ```
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// #
-    /// let v = yaml(r#"
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
     /// a: 64
     /// b: -64
     /// c: 256.0
-    /// "#);
+    /// "#)?;
     ///
     /// assert!(v["a"].is_u64());
     ///
@@ -82,6 +81,8 @@ impl Number {
     ///
     /// // Numbers with a decimal point are not considered integers.
     /// assert!(!v["c"].is_u64());
+    /// # Ok(())
+    /// # }
     /// ```
     #[inline]
     pub fn is_u64(&self) -> bool {
@@ -100,20 +101,20 @@ impl Number {
     /// `is_u64` return false but this is not a guarantee in the future.
     ///
     /// ```
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// #
-    /// let v = yaml(r#"
-    /// ---
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
     /// a: 256.0
     /// b: 64
     /// c: -64
-    /// "#);
+    /// "#)?;
     ///
     /// assert!(v["a"].is_f64());
     ///
     /// // Integers.
     /// assert!(!v["b"].is_f64());
     /// assert!(!v["c"].is_f64());
+    /// # Ok(())
+    /// # }
     /// ```
     #[inline]
     pub fn is_f64(&self) -> bool {
@@ -127,21 +128,19 @@ impl Number {
     /// None otherwise.
     ///
     /// ```
-    /// # use std::i64;
-    /// #
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// #
+    /// # fn main() -> serde_yaml::Result<()> {
     /// let big = i64::MAX as u64 + 10;
-    /// let v = yaml(r#"
-    /// ---
+    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
     /// a: 64
     /// b: 9223372036854775817
     /// c: 256.0
-    /// "#);
+    /// "#)?;
     ///
     /// assert_eq!(v["a"].as_i64(), Some(64));
     /// assert_eq!(v["b"].as_i64(), None);
     /// assert_eq!(v["c"].as_i64(), None);
+    /// # Ok(())
+    /// # }
     /// ```
     #[inline]
     pub fn as_i64(&self) -> Option<i64> {
@@ -162,18 +161,18 @@ impl Number {
     /// None otherwise.
     ///
     /// ```
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// #
-    /// let v = yaml(r#"
-    /// ---
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
     /// a: 64
     /// b: -64
     /// c: 256.0
-    /// "#);
+    /// "#)?;
     ///
     /// assert_eq!(v["a"].as_u64(), Some(64));
     /// assert_eq!(v["b"].as_u64(), None);
     /// assert_eq!(v["c"].as_u64(), None);
+    /// # Ok(())
+    /// # }
     /// ```
     #[inline]
     pub fn as_u64(&self) -> Option<u64> {
@@ -186,26 +185,32 @@ impl Number {
     /// Represents the number as f64 if possible. Returns None otherwise.
     ///
     /// ```
-    /// #
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// let v = yaml(r#"
-    /// ---
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// let v: serde_yaml::Value = serde_yaml::from_str(r#"
     /// a: 256.0
     /// b: 64
     /// c: -64
-    /// "#);
+    /// "#)?;
     ///
     /// assert_eq!(v["a"].as_f64(), Some(256.0));
     /// assert_eq!(v["b"].as_f64(), Some(64.0));
     /// assert_eq!(v["c"].as_f64(), Some(-64.0));
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// ```
-    /// # use std::f64;
-    /// # fn yaml(i: &str) -> serde_yaml::Value { serde_yaml::from_str(i).unwrap() }
-    /// assert_eq!(yaml(".inf").as_f64(), Some(f64::INFINITY));
-    /// assert_eq!(yaml("-.inf").as_f64(), Some(f64::NEG_INFINITY));
-    /// assert!(yaml(".nan").as_f64().unwrap().is_nan());
+    /// # fn main() -> serde_yaml::Result<()> {
+    /// let v: serde_yaml::Value = serde_yaml::from_str(".inf")?;
+    /// assert_eq!(v.as_f64(), Some(f64::INFINITY));
+    ///
+    /// let v: serde_yaml::Value = serde_yaml::from_str("-.inf")?;
+    /// assert_eq!(v.as_f64(), Some(f64::NEG_INFINITY));
+    ///
+    /// let v: serde_yaml::Value = serde_yaml::from_str(".nan")?;
+    /// assert!(v.as_f64().unwrap().is_nan());
+    /// # Ok(())
+    /// # }
     /// ```
     #[inline]
     pub fn as_f64(&self) -> Option<f64> {
@@ -219,8 +224,6 @@ impl Number {
     /// Returns true if this value is NaN and false otherwise.
     ///
     /// ```
-    /// # use std::f64;
-    /// #
     /// # use serde_yaml::Number;
     /// #
     /// assert!(!Number::from(256.0).is_nan());
@@ -245,8 +248,6 @@ impl Number {
     /// false otherwise.
     ///
     /// ```
-    /// # use std::f64;
-    /// #
     /// # use serde_yaml::Number;
     /// #
     /// assert!(!Number::from(256.0).is_infinite());
@@ -270,8 +271,6 @@ impl Number {
     /// Returns true if this number is neither infinite nor NaN.
     ///
     /// ```
-    /// # use std::f64;
-    /// #
     /// # use serde_yaml::Number;
     /// #
     /// assert!(Number::from(256.0).is_finite());
@@ -293,11 +292,11 @@ impl Number {
     }
 }
 
-impl fmt::Display for Number {
+impl Display for Number {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self.n {
-            N::PosInt(i) => Display::fmt(&i, formatter),
-            N::NegInt(i) => Display::fmt(&i, formatter),
+            N::PosInt(i) => formatter.write_str(itoa::Buffer::new().format(i)),
+            N::NegInt(i) => formatter.write_str(itoa::Buffer::new().format(i)),
             N::Float(f) if f.is_nan() => formatter.write_str(".nan"),
             N::Float(f) if f.is_infinite() => {
                 if f.is_sign_negative() {
@@ -306,14 +305,24 @@ impl fmt::Display for Number {
                     formatter.write_str(".inf")
                 }
             }
-            N::Float(f) => Display::fmt(&f, formatter),
+            N::Float(f) => formatter.write_str(ryu::Buffer::new().format_finite(f)),
         }
     }
 }
 
-impl Debug for Number {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        Debug::fmt(&self.n, formatter)
+impl FromStr for Number {
+    type Err = Error;
+
+    fn from_str(repr: &str) -> Result<Self, Self::Err> {
+        if let Ok(result) = de::visit_int(NumberVisitor, repr) {
+            return result;
+        }
+        if !de::digits_but_not_number(repr) {
+            if let Some(float) = de::parse_f64(repr) {
+                return Ok(float.into());
+            }
+        }
+        Err(error::new(ErrorImpl::FailedToParseNumber))
     }
 }
 
@@ -398,37 +407,37 @@ impl Serialize for Number {
     }
 }
 
+struct NumberVisitor;
+
+impl<'de> Visitor<'de> for NumberVisitor {
+    type Value = Number;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a number")
+    }
+
+    #[inline]
+    fn visit_i64<E>(self, value: i64) -> Result<Number, E> {
+        Ok(value.into())
+    }
+
+    #[inline]
+    fn visit_u64<E>(self, value: u64) -> Result<Number, E> {
+        Ok(value.into())
+    }
+
+    #[inline]
+    fn visit_f64<E>(self, value: f64) -> Result<Number, E> {
+        Ok(value.into())
+    }
+}
+
 impl<'de> Deserialize<'de> for Number {
     #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Number, D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct NumberVisitor;
-
-        impl<'de> Visitor<'de> for NumberVisitor {
-            type Value = Number;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a number")
-            }
-
-            #[inline]
-            fn visit_i64<E>(self, value: i64) -> Result<Number, E> {
-                Ok(value.into())
-            }
-
-            #[inline]
-            fn visit_u64<E>(self, value: u64) -> Result<Number, E> {
-                Ok(value.into())
-            }
-
-            #[inline]
-            fn visit_f64<E>(self, value: f64) -> Result<Number, E> {
-                Ok(value.into())
-            }
-        }
-
         deserializer.deserialize_any(NumberVisitor)
     }
 }
@@ -508,26 +517,28 @@ macro_rules! from_unsigned {
     };
 }
 
-macro_rules! from_float {
-    ($($float_ty:ident)*) => {
-        $(
-            impl From<$float_ty> for Number {
-                #[inline]
-                fn from(f: $float_ty) -> Self {
-                    Number { n: N::Float(f as f64) }
-                }
-            }
-        )*
+from_signed!(i8 i16 i32 i64 isize);
+from_unsigned!(u8 u16 u32 u64 usize);
+
+impl From<f32> for Number {
+    fn from(f: f32) -> Self {
+        Number::from(f as f64)
     }
 }
 
-from_signed!(i8 i16 i32 i64 isize);
-from_unsigned!(u8 u16 u32 u64 usize);
-from_float!(f32 f64);
+impl From<f64> for Number {
+    fn from(mut f: f64) -> Self {
+        if f.is_nan() {
+            // Destroy NaN sign, signaling, and payload. YAML only has one NaN.
+            f = f64::NAN.copysign(1.0);
+        }
+        Number { n: N::Float(f) }
+    }
+}
 
 // This is fine, because we don't _really_ implement hash for floats
 // all other hash functions should work as expected
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl Hash for Number {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self.n {

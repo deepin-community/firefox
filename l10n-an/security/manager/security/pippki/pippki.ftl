@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Veyer
 download-cert-view-text = Examinar o certificau d'a CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = Emitiu por: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Almagazenau en: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Recordar ista decisión
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Clau d'a copia de seguranza d'o certificau (unatra vegada):
 set-password-reminder = Important: si ixuplida a clau d'a copia de seguranza d'o certificau no podrá restablir-la mas entabant.  Alce-la en un puesto seguro.
-
-## Protected authentication alert
-

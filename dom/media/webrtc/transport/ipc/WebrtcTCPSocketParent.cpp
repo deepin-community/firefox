@@ -1,15 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 ft=cpp : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebrtcTCPSocketParent.h"
 
-#include "mozilla/net/NeckoParent.h"
-
 #include "WebrtcTCPSocket.h"
 #include "WebrtcTCPSocketLog.h"
+#include "mozilla/net/NeckoParent.h"
 
 using namespace mozilla::dom;
 using namespace mozilla::ipc;
@@ -90,7 +87,7 @@ void WebrtcTCPSocketParent::OnClose(nsresult aReason) {
   LOG(("WebrtcTCPSocketParent::OnClose %p\n", this));
 
   if (mChannel) {
-    Unused << SendOnClose(aReason);
+    (void)SendOnClose(aReason);
   }
 
   CleanupChannel();

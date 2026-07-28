@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,22 +9,24 @@
  * MOZ_WM_* messages
  ****************************************************************************/
 
-// A magic APP message that can be sent to quit, sort of like a
-// QUERYENDSESSION/ENDSESSION, but without the query.
-#define MOZ_WM_APP_QUIT (WM_APP + 0x0300)
 // accessibility priming
 #define MOZ_WM_STARTA11Y (WM_APP + 0x0302)
-// Our internal message for WM_MOUSEWHEEL, WM_MOUSEHWHEEL, WM_VSCROLL and
-// WM_HSCROLL
-#define MOZ_WM_MOUSEVWHEEL (WM_APP + 0x0310)
-#define MOZ_WM_MOUSEHWHEEL (WM_APP + 0x0311)
-#define MOZ_WM_VSCROLL (WM_APP + 0x0312)
-#define MOZ_WM_HSCROLL (WM_APP + 0x0313)
-#define MOZ_WM_MOUSEWHEEL_FIRST MOZ_WM_MOUSEVWHEEL
-#define MOZ_WM_MOUSEWHEEL_LAST MOZ_WM_HSCROLL
+
+// From Firefox 5 (2011) to Firefox 137 (2025), these were internal messages for
+// WM_MOUSEWHEEL, WM_MOUSEHWHEEL, WM_VSCROLL, and WM_HSCROLL, used to work
+// around issues with out-of-process NPAPI plugins.
+//
+// (There may yet be old third-party apps that unwisely send these messages
+// directly to our windows to cause scrolling; we should probably avoid reusing
+// them for a while, so as not to have to worry about that.)
+#define MOZ_WM_MOUSE_RESERVED_UNUSED_0 (WM_APP + 0x0310)
+#define MOZ_WM_MOUSE_RESERVED_UNUSED_1 (WM_APP + 0x0311)
+#define MOZ_WM_MOUSE_RESERVED_UNUSED_2 (WM_APP + 0x0312)
+#define MOZ_WM_MOUSE_RESERVED_UNUSED_3 (WM_APP + 0x0313)
+
 // If TSFTextStore needs to notify TSF/TIP of layout change later, this
 // message is posted.
-#define MOZ_WM_NOTIY_TSF_OF_LAYOUT_CHANGE (WM_APP + 0x0315)
+#define MOZ_WM_NOTIFY_TSF_OF_LAYOUT_CHANGE (WM_APP + 0x0315)
 // Internal message used in correcting backwards clock skew
 #define MOZ_WM_SKEWFIX (WM_APP + 0x0316)
 // Internal message used for rolling up popups for dmanip events

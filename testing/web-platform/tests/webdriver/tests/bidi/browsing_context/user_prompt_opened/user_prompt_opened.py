@@ -1,5 +1,4 @@
 import pytest
-from tests.support.sync import AsyncPoll
 from webdriver.error import TimeoutException
 
 
@@ -8,7 +7,7 @@ pytestmark = pytest.mark.asyncio
 USER_PROMPT_OPENED_EVENT = "browsingContext.userPromptOpened"
 
 
-async def test_unsubscribe(bidi_session, inline, new_tab):
+async def test_unsubscribe(bidi_session, inline, new_tab, wait_for_bidi_events):
     await bidi_session.session.subscribe(events=[USER_PROMPT_OPENED_EVENT])
     await bidi_session.session.unsubscribe(events=[USER_PROMPT_OPENED_EVENT])
 
@@ -27,9 +26,8 @@ async def test_unsubscribe(bidi_session, inline, new_tab):
         url=inline("<script>window.alert('test')</script>"),
     )
 
-    wait = AsyncPoll(bidi_session, timeout=0.5)
     with pytest.raises(TimeoutException):
-        await wait.until(lambda _: len(events) > 0)
+        await wait_for_bidi_events(events, 1, timeout=0.5)
 
     remove_listener()
 
@@ -111,6 +109,7 @@ async def test_subscribe_to_one_context(
     subscribe_events,
     inline,
     wait_for_event,
+    wait_for_bidi_events,
     wait_for_future_safe,
     type_hint,
 ):
@@ -141,9 +140,8 @@ async def test_subscribe_to_one_context(
     )
 
     # Make sure we don't receive this event.
-    wait = AsyncPoll(bidi_session, timeout=0.5)
     with pytest.raises(TimeoutException):
-        await wait.until(lambda _: len(events) > 0)
+        await wait_for_bidi_events(events, 1, timeout=0.5)
 
     # Open a prompt in the subscribed context.
     await bidi_session.browsing_context.navigate(
@@ -197,7 +195,7 @@ async def test_iframe(
     event = await wait_for_future_safe(on_entry)
 
     assert event == {
-        "context": new_tab["context"],
+        "context": frame["context"],
         "type": "alert",
         "handler": "dismiss",
         "message": "in iframe",

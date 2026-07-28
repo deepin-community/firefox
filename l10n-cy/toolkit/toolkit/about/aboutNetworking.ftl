@@ -12,6 +12,13 @@ about-networking-dns-trr-url = URL DoH
 about-networking-dns-trr-mode = Modd DoH
 about-networking-dns-suffix = Ôl-ddodiad DNS
 about-networking-websockets = WebSockets
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Tarddiad
+about-networking-alt-svc-alternate = Arall
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Wedi'i ddilysu
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Allwedd Ynysu
 about-networking-refresh = Adnewyddu
 about-networking-auto-refresh = Adnewyddu pob 3 eiliad
 about-networking-hostname = Enw Gwesteiwr
@@ -39,6 +46,7 @@ about-networking-dns-lookup = Chwilio DNS
 about-networking-dns-lookup-button = Datrys
 about-networking-dns-domain = Parth:
 about-networking-dns-lookup-table-column = IPau
+about-networking-dns-https-rrs-lookup-table-column = RR HTTPS
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = Statws RCWN
 about-networking-rcwn-status = Statws RCWN
@@ -64,6 +72,3 @@ about-networking-moved-about-logging = Mae'r dudalen hon wedi'i symud i <a data-
 
 about-networking-networkid-is-up = Mae'r cyswllt ar i fyny
 about-networking-networkid-status-known = Mae statws y cyswllt yn hysbys
-
-##
-

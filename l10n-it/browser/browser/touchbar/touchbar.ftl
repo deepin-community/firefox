@@ -19,7 +19,6 @@ open-location = Inserisci un indirizzo o avvia una ricerca
 share = Condividi
 close-window = Chiudi finestra
 open-sidebar = Barre laterali
-
 # This string describes shortcuts for search.
 search-popover = Scorciatoie ricerca
 # Describes searches limited to a specific scope
@@ -33,5 +32,3 @@ search-history = Cronologia
 search-opentabs = Schede aperte
 search-tags = Etichette
 search-titles = Titoli
-
-##

@@ -45,7 +45,7 @@ const tests = [
     file: "mozilla-ns.xml",
     name: "mozilla-ns",
     description: "An engine using mozilla namespace",
-    // mozilla-ns.xml also specifies a MozParam. However, they are only
+    // mozilla-ns.xml also specifies a MozParam. However, they were only
     // valid for app-provided engines, and hence the param should not show
     // here.
     searchUrl: "https://example.com/search?q=foo",
@@ -54,8 +54,8 @@ const tests = [
 
 add_setup(async function () {
   Services.fog.initializeFOG();
-  useHttpServer("opensearch");
-  await Services.search.init();
+  useHttpServer();
+  await SearchService.init();
 });
 
 for (const test of tests) {
@@ -66,22 +66,14 @@ for (const test of tests) {
       SearchUtils.TOPIC_ENGINE_MODIFIED
     );
     let engine = await SearchTestUtils.installOpenSearchEngine({
-      url: gDataUrl + test.file,
+      url: `${gHttpURL}/opensearch/${test.file}`,
     });
     await promiseEngineAdded;
     Assert.ok(engine, "Should have installed the engine.");
 
     Assert.equal(engine.name, test.name, "Should have the correct name");
-    Assert.equal(
-      engine.description,
-      test.description,
-      "Should have a description"
-    );
 
-    Assert.equal(
-      engine.wrappedJSObject._loadPath,
-      `[http]localhost/${test.file}`
-    );
+    Assert.equal(engine._loadPath, `[http]localhost/${test.file}`);
 
     Assert.equal(
       engine.queryCharset,
@@ -130,16 +122,18 @@ for (const test of tests) {
 
 add_task(async function test_telemetry_reporting() {
   // Use an engine from the previous tests.
-  let engine = Services.search.getEngineByName("simple");
-  Services.search.defaultEngine = engine;
+  let engine = SearchService.getEngineByName("simple");
+  await SearchService.setDefault(engine, SearchService.CHANGE_REASON.UNKNOWN);
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "other",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: "other-simple",
       displayName: "simple",
       loadPath: "[http]localhost/simple.xml",
       submissionUrl: "blank:",
-      verified: "verified",
     },
   });
 });

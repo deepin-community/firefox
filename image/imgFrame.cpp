@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,9 +15,8 @@
 #include "gfxUtils.h"
 
 #include "MainThreadUtils.h"
-#include "mozilla/CheckedInt.h"
 #include "mozilla/gfx/Tools.h"
-#include "mozilla/Likely.h"
+#include "mozilla/EndianUtils.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/StaticPrefs_browser.h"
@@ -145,7 +142,8 @@ imgFrame::~imgFrame() {
 nsresult imgFrame::InitForDecoder(const nsIntSize& aImageSize,
                                   SurfaceFormat aFormat, bool aNonPremult,
                                   const Maybe<AnimationParams>& aAnimParams,
-                                  bool aShouldRecycle) {
+                                  bool aShouldRecycle,
+                                  uint32_t* aImageDataLength) {
   // Assert for properties that should be verified by decoders,
   // warn for properties related to bad content.
   if (!SurfaceCache::IsLegalSize(aImageSize)) {
@@ -217,10 +215,15 @@ nsresult imgFrame::InitForDecoder(const nsIntSize& aImageSize,
     }
   }
 
+  if (aImageDataLength) {
+    *aImageDataLength = GetImageDataLength();
+  }
+
   return NS_OK;
 }
 
-nsresult imgFrame::InitForDecoderRecycle(const AnimationParams& aAnimParams) {
+nsresult imgFrame::InitForDecoderRecycle(const AnimationParams& aAnimParams,
+                                         uint32_t* aImageDataLength) {
   // We want to recycle this frame, but there is no guarantee that consumers are
   // done with it in a timely manner. Let's ensure they are done with it first.
   MonitorAutoLock lock(mMonitor);
@@ -262,7 +265,7 @@ nsresult imgFrame::InitForDecoderRecycle(const AnimationParams& aAnimParams) {
     // is still in use for some other purpose, it won't be returned to the pool
     // and its owner can hold onto it forever without additional impact here.
     int32_t refreshInterval =
-        std::max(std::min(nsRefreshDriver::DefaultInterval(), 20), 4);
+        std::clamp(nsRefreshDriver::DefaultInterval(), 4, 20);
     TimeDuration waitInterval =
         TimeDuration::FromMilliseconds(refreshInterval >> 2);
     TimeStamp timeout =
@@ -286,6 +289,10 @@ nsresult imgFrame::InitForDecoderRecycle(const AnimationParams& aAnimParams) {
   mBlendMethod = aAnimParams.mBlendMethod;
   mDisposalMethod = aAnimParams.mDisposalMethod;
   mDirtyRect = GetRect();
+
+  if (aImageDataLength) {
+    *aImageDataLength = GetImageDataLength();
+  }
 
   return NS_OK;
 }
@@ -391,7 +398,10 @@ nsresult imgFrame::InitWithDrawable(gfxDrawable* aDrawable,
 
 DrawableFrameRef imgFrame::DrawableRef() { return DrawableFrameRef(this); }
 
-RawAccessFrameRef imgFrame::RawAccessRef() { return RawAccessFrameRef(this); }
+RawAccessFrameRef imgFrame::RawAccessRef(
+    gfx::DataSourceSurface::MapType aMapType) {
+  return RawAccessFrameRef(this, aMapType);
+}
 
 imgFrame::SurfaceWithFormat imgFrame::SurfaceForDrawing(
     bool aDoPartialDecode, bool aDoTile, ImageRegion& aRegion,
@@ -400,8 +410,8 @@ imgFrame::SurfaceWithFormat imgFrame::SurfaceForDrawing(
   mMonitor.AssertCurrentThreadOwns();
 
   if (!aDoPartialDecode) {
-    return SurfaceWithFormat(new gfxSurfaceDrawable(aSurface, mImageSize),
-                             mFormat);
+    return SurfaceWithFormat(
+        MakeAndAddRef<gfxSurfaceDrawable>(aSurface, mImageSize), mFormat);
   }
 
   gfxRect available =
@@ -423,8 +433,9 @@ imgFrame::SurfaceWithFormat imgFrame::SurfaceForDrawing(
     target->FillRect(ToRect(aRegion.Intersect(available).Rect()), pattern);
 
     RefPtr<SourceSurface> newsurf = target->Snapshot();
-    return SurfaceWithFormat(new gfxSurfaceDrawable(newsurf, mImageSize),
-                             target->GetFormat());
+    return SurfaceWithFormat(
+        MakeAndAddRef<gfxSurfaceDrawable>(newsurf, mImageSize),
+        target->GetFormat());
   }
 
   // Not tiling, and we have a surface, so we can account for
@@ -432,8 +443,8 @@ imgFrame::SurfaceWithFormat imgFrame::SurfaceForDrawing(
   aRegion = aRegion.Intersect(available);
   IntSize availableSize(mDecoded.Width(), mDecoded.Height());
 
-  return SurfaceWithFormat(new gfxSurfaceDrawable(aSurface, availableSize),
-                           mFormat);
+  return SurfaceWithFormat(
+      MakeAndAddRef<gfxSurfaceDrawable>(aSurface, availableSize), mFormat);
 }
 
 bool imgFrame::Draw(gfxContext* aContext, const ImageRegion& aRegion,
@@ -584,36 +595,6 @@ uint32_t imgFrame::GetImageBytesPerRow() const {
 
 uint32_t imgFrame::GetImageDataLength() const {
   return GetImageBytesPerRow() * mImageSize.height;
-}
-
-void imgFrame::GetImageData(uint8_t** aData, uint32_t* aLength) const {
-  MonitorAutoLock lock(mMonitor);
-  GetImageDataInternal(aData, aLength);
-}
-
-void imgFrame::GetImageDataInternal(uint8_t** aData, uint32_t* aLength) const {
-  mMonitor.AssertCurrentThreadOwns();
-  MOZ_ASSERT(mRawSurface);
-
-  if (mRawSurface) {
-    // TODO: This is okay for now because we only realloc shared surfaces on
-    // the main thread after decoding has finished, but if animations want to
-    // read frame data off the main thread, we will need to reconsider this.
-    *aData = mRawSurface->GetData();
-    MOZ_ASSERT(*aData,
-               "mRawSurface is non-null, but GetData is null in GetImageData");
-  } else {
-    *aData = nullptr;
-  }
-
-  *aLength = GetImageDataLength();
-}
-
-uint8_t* imgFrame::GetImageData() const {
-  uint8_t* data;
-  uint32_t length;
-  GetImageData(&data, &length);
-  return data;
 }
 
 void imgFrame::FinalizeSurface() {

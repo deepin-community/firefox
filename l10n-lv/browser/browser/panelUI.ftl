@@ -7,7 +7,7 @@
 
 # The overflow menu is the menu that appears if you click the chevron (>> button) in the location bar.
 customize-menu-unpin-from-overflowmenu =
-    .label = Atslēgt no izvēlnes
+    .label = Atspraust no izvēlnes
     .accesskey = U
 customize-menu-add-to-toolbar =
     .label = Pievienot rīkjoslai
@@ -18,7 +18,7 @@ customize-menu-add-to-overflowmenu =
 
 ## Forget Button
 
-# The forget button can be added to the toolbar or overflow menu via the cutomization menu.
+# The forget button can be added to the toolbar or overflow menu via the customization menu.
 panic-button-thankyou-msg1 = Jūsu nesenā vēsture ir notīrīta.
 panic-button-thankyou-msg2 = Sērfojiet droši!
 panic-button-thankyou-button =

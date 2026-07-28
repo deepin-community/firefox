@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -41,7 +40,7 @@ nsresult nsSimpleNestedURI::SetPathQueryRef(const nsACString& aPathQueryRef) {
   rv = nsSimpleURI::SetPathQueryRef(aPathQueryRef);
   NS_ENSURE_SUCCESS(rv, rv);
   // If the regular SetPathQueryRef worked, also set it on the inner URI
-  mInnerURI = inner;
+  mInnerURI = std::move(inner);
   return NS_OK;
 }
 
@@ -54,7 +53,7 @@ nsresult nsSimpleNestedURI::SetQuery(const nsACString& aQuery) {
   rv = nsSimpleURI::SetQuery(aQuery);
   NS_ENSURE_SUCCESS(rv, rv);
   // If the regular SetQuery worked, also set it on the inner URI
-  mInnerURI = inner;
+  mInnerURI = std::move(inner);
   return NS_OK;
 }
 
@@ -67,7 +66,7 @@ nsresult nsSimpleNestedURI::SetRef(const nsACString& aRef) {
   rv = nsSimpleURI::SetRef(aRef);
   NS_ENSURE_SUCCESS(rv, rv);
   // If the regular SetRef worked, also set it on the inner URI
-  mInnerURI = inner;
+  mInnerURI = std::move(inner);
   return NS_OK;
 }
 
@@ -108,8 +107,7 @@ nsSimpleNestedURI::Write(nsIObjectOutputStream* aStream) {
   return rv;
 }
 
-NS_IMETHODIMP_(void)
-nsSimpleNestedURI::Serialize(mozilla::ipc::URIParams& aParams) {
+void nsSimpleNestedURI::Serialize(mozilla::ipc::URIParams& aParams) {
   using namespace mozilla::ipc;
 
   SimpleNestedURIParams params;
@@ -163,7 +161,8 @@ nsresult nsSimpleNestedURI::EqualsInternal(
 
   if (other) {
     bool correctScheme;
-    nsresult rv = other->SchemeIs(mScheme.get(), &correctScheme);
+    nsresult rv =
+        other->SchemeIs(PromiseFlatCString(Scheme()).get(), &correctScheme);
     NS_ENSURE_SUCCESS(rv, rv);
 
     if (correctScheme) {
@@ -184,28 +183,12 @@ nsresult nsSimpleNestedURI::EqualsInternal(
 }
 
 /* virtual */
-nsSimpleURI* nsSimpleNestedURI::StartClone(
-    nsSimpleURI::RefHandlingEnum refHandlingMode, const nsACString& newRef) {
+already_AddRefed<nsSimpleURI> nsSimpleNestedURI::StartClone() {
   NS_ENSURE_TRUE(mInnerURI, nullptr);
 
-  nsCOMPtr<nsIURI> innerClone;
-  nsresult rv = NS_OK;
-  if (refHandlingMode == eHonorRef) {
-    innerClone = mInnerURI;
-  } else if (refHandlingMode == eReplaceRef) {
-    rv = NS_GetURIWithNewRef(mInnerURI, newRef, getter_AddRefs(innerClone));
-  } else {
-    rv = NS_GetURIWithoutRef(mInnerURI, getter_AddRefs(innerClone));
-  }
+  RefPtr<nsSimpleNestedURI> url = new nsSimpleNestedURI(mInnerURI);
 
-  if (NS_FAILED(rv)) {
-    return nullptr;
-  }
-
-  nsSimpleNestedURI* url = new nsSimpleNestedURI(innerClone);
-  SetRefOnClone(url, refHandlingMode, newRef);
-
-  return url;
+  return url.forget();
 }
 
 // Queries this list of interfaces. If none match, it queries mURI.

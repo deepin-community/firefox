@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,7 +17,7 @@
 #include "mozilla/StaticMutex.h"
 #include "mozilla/PodOperations.h"
 #include "nsThreadUtils.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/SecuritySandboxMetrics.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
 // Distinguish architectures for the telemetry key.
@@ -103,11 +101,9 @@ SandboxReporter* SandboxReporter::Singleton() {
   return sSingleton.get();
 }
 
-void SandboxReporter::GetClientFileDescriptorMapping(int* aSrcFd,
-                                                     int* aDstFd) const {
+int SandboxReporter::GetClientFileDescriptor() const {
   MOZ_ASSERT(mClientFd >= 0);
-  *aSrcFd = mClientFd;
-  *aDstFd = kSandboxReporterFileDesc;
+  return mClientFd;
 }
 
 // This function is mentioned in Histograms.json; keep that in mind if
@@ -224,7 +220,7 @@ static void SubmitToTelemetry(const SandboxReport& aReport) {
       key.AppendInt(aReport.mSyscall);
   }
 
-  Telemetry::Accumulate(Telemetry::SANDBOX_REJECTED_SYSCALLS, key);
+  glean::sandbox::rejected_syscalls.Get(key).Add(1);
 }
 
 void SandboxReporter::AddOne(const SandboxReport& aReport) {

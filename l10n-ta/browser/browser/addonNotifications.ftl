@@ -4,10 +4,6 @@
 
 xpinstall-prompt = { -brand-short-name } இணையதளத்தை நீங்கள் உங்கள் கணினியில் மென்பொருள் நிறுவலுக்கு கேட்பதிலிருந்து தடுக்கிறது.
 
-## Variables:
-##   $host (String): The hostname of the site the add-on is being installed from.
-
-
 ##
 
 xpinstall-prompt-dont-allow =
@@ -30,7 +26,6 @@ xpinstall-disabled = மென்பொருள் நிறுவுதல் 
 xpinstall-disabled-button =
     .label = செயல்படுத்து
     .accesskey = n
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { -brand-short-name } இல் { $addonName } சேர்க்கப்பட்டது
@@ -48,7 +43,6 @@ addon-downloading-and-verifying =
        *[other] { $addonCount } கூடுதல் இணைப்புகளை பதிவிறக்கி சரிபார்க்கிறது…
     }
 addon-download-verifying = சரிபார்க்கிறது
-
 addon-install-cancel-button =
     .label = ரத்து
     .accesskey = C

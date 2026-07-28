@@ -22,10 +22,11 @@ text-action-copy =
     .accesskey = Պ
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Պատճենել առանց կայքի հետագծման
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Պատճենել մաքուր հղումը
     .accesskey = n
 text-action-paste =
     .label = Փակցնել
@@ -43,6 +44,8 @@ text-action-select-all =
     .accesskey = բ
 text-action-select-all-shortcut =
     .key = A
+text-action-spell-no-suggestions =
+    .label = Ուղղագրության առաջարկներ չկան
 text-action-spell-add-to-dictionary =
     .label = Ավելացնել բառարանում
     .accesskey = o
@@ -60,3 +63,17 @@ text-action-spell-dictionaries =
     .accesskey = L
 text-action-search-text-box-clear =
     .title = Մաքրել
+text-action-highlight-selection =
+    .label = Գունանշել ընտրածը
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = Ավելացնել մեկնաբանություն ընտրությանը
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Պատճենել հղումը ընդգծման համար
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Պատճենել մաքուր հղումը գունանշելու համար

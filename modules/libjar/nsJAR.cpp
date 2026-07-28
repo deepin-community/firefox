@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +9,6 @@
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Omnijar.h"
-#include "mozilla/Unused.h"
 
 #ifdef XP_UNIX
 #  include <sys/stat.h>
@@ -135,8 +132,7 @@ nsJAR::OpenInner(nsIZipReader* aZipReader, const nsACString& aZipEntry) {
   {
     nsJAR* outerJAR = static_cast<nsJAR*>(aZipReader);
     RecursiveMutexAutoLock outerLock(outerJAR->mLock);
-    rv = nsZipHandle::Init(outerJAR->mZip.get(),
-                           PromiseFlatCString(aZipEntry).get(),
+    rv = nsZipHandle::Init(outerJAR->mZip.get(), aZipEntry,
                            getter_AddRefs(handle));
     NS_ENSURE_SUCCESS(rv, rv);
   }
@@ -191,8 +187,7 @@ nsJAR::Test(const nsACString& aEntryName) {
   if (!mZip) {
     return NS_ERROR_FAILURE;
   }
-  return mZip->Test(
-      aEntryName.IsEmpty() ? nullptr : PromiseFlatCString(aEntryName).get());
+  return mZip->Test(aEntryName);
 }
 
 NS_IMETHODIMP
@@ -205,7 +200,7 @@ nsJAR::Extract(const nsACString& aEntryName, nsIFile* outFile) {
   }
 
   LOG(("Extract[%p] %s", this, PromiseFlatCString(aEntryName).get()));
-  nsZipItem* item = mZip->GetItem(PromiseFlatCString(aEntryName).get());
+  nsZipItem* item = mZip->GetItem(aEntryName);
   NS_ENSURE_TRUE(item, NS_ERROR_FILE_NOT_FOUND);
 
   // Remove existing file or directory so we set permissions correctly.
@@ -245,12 +240,12 @@ nsJAR::GetEntry(const nsACString& aEntryName, nsIZipEntry** result) {
   if (!mZip) {
     return NS_ERROR_FAILURE;
   }
-  nsZipItem* zipItem = mZip->GetItem(PromiseFlatCString(aEntryName).get());
+  nsZipItem* zipItem = mZip->GetItem(aEntryName);
   NS_ENSURE_TRUE(zipItem, NS_ERROR_FILE_NOT_FOUND);
 
-  nsJARItem* jarItem = new nsJARItem(zipItem);
+  RefPtr<nsJARItem> jarItem = new nsJARItem(zipItem);
 
-  NS_ADDREF(*result = jarItem);
+  *result = jarItem.forget().take();
   return NS_OK;
 }
 
@@ -261,7 +256,7 @@ nsJAR::HasEntry(const nsACString& aEntryName, bool* result) {
   if (!mZip) {
     return NS_ERROR_FAILURE;
   }
-  *result = mZip->GetItem(PromiseFlatCString(aEntryName).get()) != nullptr;
+  *result = mZip->GetItem(aEntryName) != nullptr;
   return NS_OK;
 }
 
@@ -280,9 +275,10 @@ nsJAR::FindEntries(const nsACString& aPattern,
       aPattern.IsEmpty() ? nullptr : PromiseFlatCString(aPattern).get(), &find);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  nsIUTF8StringEnumerator* zipEnum = new nsJAREnumerator(find);
+  RefPtr<nsIUTF8StringEnumerator> zipEnum = new nsJAREnumerator(find);
 
-  NS_ADDREF(*result = zipEnum);
+  // Callers use getter_addrefs
+  *result = zipEnum.forget().take();
   return NS_OK;
 }
 
@@ -300,12 +296,10 @@ nsJAR::GetInputStream(const nsACString& aEntryName, nsIInputStream** result) {
   const nsCString& entry = PromiseFlatCString(aEntryName);
   if (*entry.get()) {
     // First check if item exists in jar
-    item = mZip->GetItem(entry.get());
+    item = mZip->GetItem(entry);
     if (!item) return NS_ERROR_FILE_NOT_FOUND;
   }
-  nsJARInputStream* jis = new nsJARInputStream();
-  // addref now so we can call InitFile/InitDirectory()
-  NS_ADDREF(*result = jis);
+  RefPtr<nsJARInputStream> jis = new nsJARInputStream();
 
   nsresult rv = NS_OK;
   if (!item || item->IsDirectory()) {
@@ -314,8 +308,9 @@ nsJAR::GetInputStream(const nsACString& aEntryName, nsIInputStream** result) {
     RefPtr<nsZipHandle> fd = mZip->GetFD();
     rv = jis->InitFile(fd, mZip->GetData(item), item);
   }
-  if (NS_FAILED(rv)) {
-    NS_RELEASE(*result);
+  if (NS_SUCCEEDED(rv)) {
+    // Callers use getter_addrefs
+    *result = jis.forget().take();
   }
   return rv;
 }
@@ -861,7 +856,7 @@ nsZipReaderCache::Observe(nsISupports* aSubject, const char* aTopic,
       file = do_QueryInterface(aSubject);
     } else if (aSomeData) {
       nsDependentString fileName(aSomeData);
-      Unused << NS_NewLocalFile(fileName, false, getter_AddRefs(file));
+      (void)NS_NewLocalFile(fileName, getter_AddRefs(file));
     }
 
     if (!file) return NS_OK;

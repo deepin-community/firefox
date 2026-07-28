@@ -7,8 +7,6 @@
 add_task(async function testTotalTransferredSize() {
   // Clear cache, so we see expected number of cached requests.
   Services.cache2.clear();
-  // Disable rcwn to make cache behavior deterministic.
-  await pushPref("network.http.rcwn.enabled", false);
 
   const {
     getFormattedSize,
@@ -25,7 +23,7 @@ add_task(async function testTotalTransferredSize() {
   const { getDisplayedRequestsSummary } = windowRequire(
     "devtools/client/netmonitor/src/selectors/index"
   );
-  const { L10N } = windowRequire("devtools/client/netmonitor/src/utils/l10n");
+  const l10n = new Localization(["devtools/client/netmonitor.ftl"], true);
 
   store.dispatch(Actions.batchEnable(false));
 
@@ -58,10 +56,14 @@ add_task(async function testTotalTransferredSize() {
     ".requests-list-network-summary-transfer"
   ).textContent;
   info("Current summary transfer: " + valueTransfer);
-  const expectedTransfer = L10N.getFormatStrWithNumbers(
-    "networkMenu.summary.transferred",
-    getFormattedSize(requestsSummary.contentSize),
-    getFormattedSize(requestsSummary.transferredSize)
+  const expectedTransfer = l10n.formatValueSync(
+    "network-menu-summary-transferred",
+    {
+      formattedContentSize: getFormattedSize(requestsSummary.contentSize),
+      formattedTransferredSize: getFormattedSize(
+        requestsSummary.transferredSize
+      ),
+    }
   );
 
   is(
@@ -92,8 +94,10 @@ add_task(async function testTotalTransferredSizeWithServiceWorkerRequests() {
 
   store.dispatch(Actions.batchEnable(false));
 
+  const expectedRequests = 4;
+
   info("Performing requests before service worker...");
-  await performRequests(monitor, tab, 1);
+  await performRequests(monitor, tab, expectedRequests);
 
   info("Registering the service worker...");
   await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
@@ -101,7 +105,7 @@ add_task(async function testTotalTransferredSizeWithServiceWorkerRequests() {
   });
 
   info("Performing requests which are intercepted by service worker...");
-  await performRequests(monitor, tab, 1);
+  await performRequests(monitor, tab, expectedRequests);
 
   let displayedServiceWorkerRequests = 0;
   //let totalRequestsTransferredSize = 0;
@@ -121,7 +125,7 @@ add_task(async function testTotalTransferredSizeWithServiceWorkerRequests() {
 
   is(
     displayedServiceWorkerRequests,
-    4,
+    expectedRequests,
     "Number of service worker requests displayed is correct"
   );
 

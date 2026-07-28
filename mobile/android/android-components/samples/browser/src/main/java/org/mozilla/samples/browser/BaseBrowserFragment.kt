@@ -15,7 +15,6 @@ import androidx.fragment.app.Fragment
 import kotlinx.coroutines.flow.mapNotNull
 import mozilla.components.browser.state.selector.findCustomTabOrSelectedTab
 import mozilla.components.browser.toolbar.display.DisplayToolbar
-import mozilla.components.feature.app.links.AppLinksFeature
 import mozilla.components.feature.downloads.DownloadsFeature
 import mozilla.components.feature.downloads.manager.FetchDownloadManager
 import mozilla.components.feature.privatemode.feature.SecureWindowFeature
@@ -35,6 +34,7 @@ import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.ktx.android.arch.lifecycle.addObservers
 import mozilla.components.support.ktx.kotlinx.coroutines.flow.ifAnyChanged
 import mozilla.components.support.locale.ActivityContextWrapper
+import mozilla.components.support.utils.DefaultDownloadFileUtils
 import mozilla.components.support.utils.ext.requestInPlacePermissions
 import org.mozilla.samples.browser.databinding.FragmentBrowserBinding
 import org.mozilla.samples.browser.downloads.DownloadService
@@ -53,7 +53,6 @@ abstract class BaseBrowserFragment : Fragment(), UserInteractionHandler, Activit
     private val toolbarFeature = ViewBoundFeatureWrapper<ToolbarFeature>()
     private val contextMenuIntegration = ViewBoundFeatureWrapper<ContextMenuIntegration>()
     private val downloadsFeature = ViewBoundFeatureWrapper<DownloadsFeature>()
-    private val appLinksFeature = ViewBoundFeatureWrapper<AppLinksFeature>()
     private val promptFeature = ViewBoundFeatureWrapper<PromptFeature>()
     private val findInPageIntegration = ViewBoundFeatureWrapper<FindInPageIntegration>()
     private val sitePermissionsFeature = ViewBoundFeatureWrapper<SitePermissionsFeature>()
@@ -146,6 +145,9 @@ abstract class BaseBrowserFragment : Fragment(), UserInteractionHandler, Activit
                         )
                     }
                 },
+                downloadFileUtils = DefaultDownloadFileUtils(
+                    context = requireContext(),
+                ),
             ),
             owner = this,
             view = binding.root,
@@ -162,19 +164,6 @@ abstract class BaseBrowserFragment : Fragment(), UserInteractionHandler, Activit
                 contextMenuUseCases = components.contextMenuUseCases,
                 parentView = binding.root,
                 sessionId = sessionId,
-            ),
-            owner = this,
-            view = binding.root,
-        )
-
-        appLinksFeature.set(
-            feature = AppLinksFeature(
-                context = requireContext(),
-                store = components.store,
-                sessionId = sessionId,
-                fragmentManager = parentFragmentManager,
-                launchInApp = { components.preferences.getBoolean(DefaultComponents.PREF_LAUNCH_EXTERNAL_APP, false) },
-                loadUrlUseCase = components.sessionUseCases.loadUrl,
             ),
             owner = this,
             view = binding.root,
@@ -222,6 +211,8 @@ abstract class BaseBrowserFragment : Fragment(), UserInteractionHandler, Activit
                     persistentStorage = SitePermissionsRules.Action.ASK_TO_ALLOW,
                     mediaKeySystemAccess = SitePermissionsRules.Action.ASK_TO_ALLOW,
                     crossOriginStorageAccess = SitePermissionsRules.Action.ASK_TO_ALLOW,
+                    localDeviceAccess = SitePermissionsRules.Action.ASK_TO_ALLOW,
+                    localNetworkAccess = SitePermissionsRules.Action.ASK_TO_ALLOW,
                 ),
                 onNeedToRequestPermissions = { permissions ->
                     requestInPlacePermissions(REQUEST_KEY_SITE_PERMISSIONS, permissions) { result ->
@@ -303,6 +294,7 @@ abstract class BaseBrowserFragment : Fragment(), UserInteractionHandler, Activit
     }
     override fun onDestroyView() {
         super.onDestroyView()
+
         binding.engineView.setActivityContext(null)
         _binding = null
     }

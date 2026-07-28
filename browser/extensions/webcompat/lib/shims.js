@@ -4,7 +4,7 @@
 
 "use strict";
 
-/* globals browser, module, onMessageFromTab */
+/* globals browser, debugLog, InterventionHelpers, module, onMessageFromTab */
 
 // To grant shims access to bundled logo images without risking
 // exposing our moz-extension URL, we have the shim request them via
@@ -12,27 +12,10 @@
 // on tabs where a shim using a given logo happens to be active).
 const LogosBaseURL = "https://smartblock.firefox.etp/";
 
-const releaseBranchPromise = browser.appConstants.getReleaseBranch();
+const releaseBranch = browser.appConstants.getReleaseBranch();
 
-const platformPromise = browser.runtime.getPlatformInfo().then(info => {
-  return info.os === "android" ? "android" : "desktop";
-});
-
-let debug = async function () {
-  if ((await releaseBranchPromise) !== "release_or_beta") {
-    console.debug.apply(this, arguments);
-  }
-};
-let error = async function () {
-  if ((await releaseBranchPromise) !== "release_or_beta") {
-    console.error.apply(this, arguments);
-  }
-};
-let warn = async function () {
-  if ((await releaseBranchPromise) !== "release_or_beta") {
-    console.warn.apply(this, arguments);
-  }
-};
+const platform =
+  browser.appConstants.getPlatform() === "android" ? "android" : "desktop";
 
 class Shim {
   constructor(opts, manager) {
@@ -47,6 +30,7 @@ class Shim {
     this.hiddenInAboutCompat = opts.hiddenInAboutCompat;
     this.hosts = opts.hosts;
     this.id = opts.id;
+    this.isMissingFiles = opts.isMissingFiles;
     this.logos = opts.logos || [];
     this.matches = [];
     this.name = opts.name;
@@ -55,26 +39,23 @@ class Shim {
     this.onlyIfDFPIActive = opts.onlyIfDFPIActive;
     this.onlyIfPrivateBrowsing = opts.onlyIfPrivateBrowsing;
     this._options = opts.options || {};
+    this.webExposedShimHelpers = opts.webExposedShimHelpers;
     this.needsShimHelpers = opts.needsShimHelpers;
     this.platform = opts.platform || "all";
     this.runFirst = opts.runFirst;
     this.unblocksOnOptIn = unblocksOnOptIn;
     this.requestStorageAccessForRedirect = opts.requestStorageAccessForRedirect;
-    this.shouldUseScriptingAPI =
-      browser.aboutConfigPrefs.getBoolPrefSync("useScriptingAPI");
-    debug(
-      `WebCompat Shim ${this.id} will be injected using ${
-        this.shouldUseScriptingAPI ? "scripting" : "contentScripts"
-      } API`
-    );
+    this.isSmartblockEmbedShim = opts.isSmartblockEmbedShim || false;
 
     this._hostOptIns = new Set();
+    this._pBModeHostOptIns = new Set();
 
     this._disabledByConfig = opts.disabled;
     this._disabledGlobally = false;
     this._disabledForSession = false;
     this._disabledByPlatform = false;
     this._disabledByReleaseBranch = false;
+    this._disabledBySmartblockEmbedPref = false;
 
     this._activeOnTabs = new Set();
     this._showedOptInOnTabs = new Set();
@@ -83,26 +64,15 @@ class Shim {
 
     this.redirectsRequests = !!this.file && matches?.length;
 
-    // NOTE: _contentScriptRegistrations is an array of string ids when
-    // shouldUseScriptingAPI is true and an array of script handles returned
-    // by contentScripts.register otherwise.
     this._contentScriptRegistrations = [];
 
     this.contentScripts = contentScripts || [];
     for (const script of this.contentScripts) {
       if (typeof script.css === "string") {
-        script.css = [
-          this.shouldUseScriptingAPI
-            ? `/shims/${script.css}`
-            : { file: `/shims/${script.css}` },
-        ];
+        script.css = [`/shims/${script.css}`];
       }
       if (typeof script.js === "string") {
-        script.js = [
-          this.shouldUseScriptingAPI
-            ? `/shims/${script.js}`
-            : { file: `/shims/${script.js}` },
-        ];
+        script.js = [`/shims/${script.js}`];
       }
     }
 
@@ -118,39 +88,37 @@ class Shim {
     }
 
     browser.aboutConfigPrefs.onPrefChange.addListener(async () => {
-      const value = await browser.aboutConfigPrefs.getPref(pref);
+      const value = browser.aboutConfigPrefs.getPref(pref);
       this._disabledPrefValue = value;
-      this._onEnabledStateChanged();
+      this._onEnabledStateChanged({ alsoClearResourceCache: true });
     }, pref);
 
-    this.ready = Promise.all([
-      browser.aboutConfigPrefs.getPref(pref),
-      platformPromise,
-      releaseBranchPromise,
-    ]).then(([disabledPrefValue, platform, branch]) => {
-      this._disabledPrefValue = disabledPrefValue;
+    this._disabledPrefValue = browser.aboutConfigPrefs.getPref(pref);
 
-      this._disabledByPlatform =
-        this.platform !== "all" && this.platform !== platform;
+    this._disabledByPlatform =
+      this.platform !== "all" && this.platform !== platform;
 
-      this._disabledByReleaseBranch = false;
-      for (const supportedBranchAndPlatform of this.branches || []) {
-        const [supportedBranch, supportedPlatform] =
-          supportedBranchAndPlatform.split(":");
-        if (
-          (!supportedPlatform || supportedPlatform == platform) &&
-          supportedBranch != branch
-        ) {
-          this._disabledByReleaseBranch = true;
-        }
+    this._disabledByReleaseBranch = false;
+    for (const supportedBranchAndPlatform of this.branches || []) {
+      const [supportedBranch, supportedPlatform] =
+        supportedBranchAndPlatform.split(":");
+      if (
+        (supportedPlatform && supportedPlatform != platform) ||
+        supportedBranch != releaseBranch
+      ) {
+        this._disabledByReleaseBranch = true;
       }
+    }
 
-      this._preprocessOptions(platform, branch);
-      this._onEnabledStateChanged();
+    this._preprocessOptions();
+
+    // Don't register content scripts individually during startup.
+    this.ready = this._onEnabledStateChanged({
+      alsoToggleContentScripts: false,
     });
   }
 
-  _preprocessOptions(platform, branch) {
+  _preprocessOptions() {
     // options may be any value, but can optionally be gated for specified
     // platform/branches, if in the format `{value, branches, platform}`
     this.options = {};
@@ -158,7 +126,7 @@ class Shim {
       if (v?.value) {
         if (
           (!v.platform || v.platform === platform) &&
-          (!v.branches || v.branches.includes(branch))
+          (!v.branches || v.branches.includes(releaseBranch))
         ) {
           this.options[k] = v.value;
         }
@@ -169,12 +137,20 @@ class Shim {
   }
 
   get enabled() {
+    if (this.isMissingFiles) {
+      return false;
+    }
+
     if (this._disabledGlobally || this._disabledForSession) {
       return false;
     }
 
     if (this._disabledPrefValue !== undefined) {
       return !this._disabledPrefValue;
+    }
+
+    if (this.isSmartblockEmbedShim && this._disabledBySmartblockEmbedPref) {
+      return false;
     }
 
     return (
@@ -185,6 +161,10 @@ class Shim {
   }
 
   get disabledReason() {
+    if (this.isMissingFiles) {
+      return "missingFiles";
+    }
+
     if (this._disabledGlobally) {
       return "globalPref";
     }
@@ -198,6 +178,10 @@ class Shim {
         return "pref";
       }
       return false;
+    }
+
+    if (this.isSmartblockEmbedShim && this._disabledBySmartblockEmbedPref) {
+      return "smartblockEmbedDisabledByPref";
     }
 
     if (this._disabledByConfig) {
@@ -215,11 +199,20 @@ class Shim {
     return false;
   }
 
+  get disabledBySmartblockEmbedPref() {
+    return this._disabledBySmartblockEmbedPref;
+  }
+
+  set disabledBySmartblockEmbedPref(value) {
+    this._disabledBySmartblockEmbedPref = value;
+    this._onEnabledStateChanged({ alsoClearResourceCache: true });
+  }
+
   onAllShimsEnabled() {
     const wasEnabled = this.enabled;
     this._disabledGlobally = false;
     if (!wasEnabled) {
-      this._onEnabledStateChanged();
+      this._onEnabledStateChanged({ alsoClearResourceCache: true });
     }
   }
 
@@ -227,7 +220,7 @@ class Shim {
     const wasEnabled = this.enabled;
     this._disabledGlobally = true;
     if (wasEnabled) {
-      this._onEnabledStateChanged();
+      this._onEnabledStateChanged({ alsoClearResourceCache: true });
     }
   }
 
@@ -235,7 +228,7 @@ class Shim {
     const wasEnabled = this.enabled;
     this._disabledForSession = false;
     if (!wasEnabled) {
-      this._onEnabledStateChanged();
+      this._onEnabledStateChanged({ alsoClearResourceCache: true });
     }
   }
 
@@ -243,94 +236,37 @@ class Shim {
     const wasEnabled = this.enabled;
     this._disabledForSession = true;
     if (wasEnabled) {
-      this._onEnabledStateChanged();
+      this._onEnabledStateChanged({ alsoClearResourceCache: true });
     }
   }
 
-  async _onEnabledStateChanged() {
+  async _onEnabledStateChanged({
+    alsoClearResourceCache = false,
+    alsoToggleContentScripts = true,
+  } = {}) {
     this.manager?.onShimStateChanged(this.id);
     if (!this.enabled) {
-      await this._unregisterContentScripts();
-      return this._revokeRequestsInETP();
-    }
-    await this._registerContentScripts();
-    return this._allowRequestsInETP();
-  }
-
-  async _registerContentScripts() {
-    if (
-      this.contentScripts.length &&
-      !this._contentScriptRegistrations.length
-    ) {
-      const matches = [];
-      let idx = 0;
-      for (const options of this.contentScripts) {
-        matches.push(options.matches);
-        if (this.shouldUseScriptingAPI) {
-          // Some shims includes more than one script (e.g. Blogger one contains
-          // a content script to be run on document_start and one to be run
-          // on document_end.
-          options.id = `shim-${this.id}-${idx++}`;
-          options.persistAcrossSessions = false;
-          // Having to call getRegisteredContentScripts each time we are going to
-          // register a Shim content script is suboptimal, but avoiding that
-          // may require a bit more changes (e.g. rework both Injections, Shim and Shims
-          // classes to more easily register all content scripts with a single
-          // call to the scripting API methods when the background script page is loading
-          // and one per injection or shim being enabled from the AboutCompatBroker).
-          // In the short term we call getRegisteredContentScripts and restrict it to
-          // the script id we are about to register.
-          let isAlreadyRegistered = false;
-          try {
-            const registeredScripts =
-              await browser.scripting.getRegisteredContentScripts({
-                ids: [options.id],
-              });
-            isAlreadyRegistered = !!registeredScripts.length;
-          } catch (ex) {
-            console.error(
-              "Retrieve WebCompat GoFaster registered content scripts failed: ",
-              ex
-            );
-          }
-          try {
-            if (!isAlreadyRegistered) {
-              await browser.scripting.registerContentScripts([options]);
-            }
-            this._contentScriptRegistrations.push(options.id);
-          } catch (ex) {
-            console.error(
-              "Registering WebCompat Shim content scripts failed: ",
-              options,
-              ex
-            );
-          }
-        } else {
-          const reg = await browser.contentScripts.register(options);
-          this._contentScriptRegistrations.push(reg);
-        }
+      if (alsoToggleContentScripts) {
+        await this.manager._unregisterContentScriptsForShims([this]);
       }
-      const urls = Array.from(new Set(matches.flat()));
-      debug("Enabling content scripts for these URLs:", urls);
+      return this._revokeRequestsInETP(alsoClearResourceCache);
     }
+    if (alsoToggleContentScripts) {
+      await this.manager._registerContentScriptsForShims([this]);
+    }
+    return this._allowRequestsInETP(alsoClearResourceCache);
   }
 
-  async _unregisterContentScripts() {
-    if (this.shouldUseScriptingAPI) {
-      const ids = this._contentScriptRegistrations;
-      await browser.scripting.unregisterContentScripts({ ids });
-    } else {
-      for (const registration of this._contentScriptRegistrations) {
-        registration.unregister();
-      }
-    }
-    this._contentScriptRegistrations = [];
-  }
-
-  async _allowRequestsInETP() {
-    const matches = this.matches.map(m => m.patterns).flat();
-    if (matches.length) {
-      await browser.trackingProtection.shim(this.id, matches);
+  async _allowRequestsInETP(alsoClearResourceCache) {
+    let modified = false;
+    const matchEntries = this.matches.map(({ patterns, types }) => ({
+      patterns,
+      types,
+    }));
+    if (matchEntries.length) {
+      // ensure requests shimmed in both PB and non-PB modes
+      await browser.trackingProtection.shim(this.id, matchEntries);
+      modified = true;
     }
 
     if (this._hostOptIns.size) {
@@ -339,14 +275,36 @@ class Shim {
         await browser.trackingProtection.allow(
           this.id,
           this._optInPatterns,
+          false,
           Array.from(this._hostOptIns)
         );
+        modified = true;
       }
+    }
+
+    if (this._pBModeHostOptIns.size) {
+      const optIns = this.getApplicableOptIns();
+      if (optIns.length) {
+        await browser.trackingProtection.allow(
+          this.id,
+          this._optInPatterns,
+          true,
+          Array.from(this._pBModeHostOptIns)
+        );
+        modified = true;
+      }
+    }
+
+    if (this._haveCheckedEnabledPrefs && alsoClearResourceCache && modified) {
+      this.clearResourceCache();
     }
   }
 
-  _revokeRequestsInETP() {
-    return browser.trackingProtection.revoke(this.id);
+  async _revokeRequestsInETP(alsoClearResourceCache) {
+    await browser.trackingProtection.revoke(this.id);
+    if (this._haveCheckedEnabledPrefs && alsoClearResourceCache) {
+      this.clearResourceCache();
+    }
   }
 
   setActiveOnTab(tabId, active = true) {
@@ -418,17 +376,15 @@ class Shim {
         continue;
       }
       const { branches, patterns, platforms } = unblock;
-      if (platforms?.length) {
-        const platform = await platformPromise;
-        if (platform !== "all" && !platforms.includes(platform)) {
-          continue;
-        }
+      if (
+        platforms?.length &&
+        platform !== "all" &&
+        !platforms.includes(platform)
+      ) {
+        continue;
       }
-      if (branches?.length) {
-        const branch = await releaseBranchPromise;
-        if (!branches.includes(branch)) {
-          continue;
-        }
+      if (branches?.length && !branches.includes(releaseBranch)) {
+        continue;
       }
       optins.push.apply(optins, patterns);
     }
@@ -436,21 +392,28 @@ class Shim {
     return optins;
   }
 
-  async onUserOptIn(host) {
+  async onUserOptIn(host, isPrivateMode) {
     const optins = await this.getApplicableOptIns();
+    const activeHostOptIns = isPrivateMode
+      ? this._pBModeHostOptIns
+      : this._hostOptIns;
     if (optins.length) {
-      this.userHasOptedIn = true;
-      this._hostOptIns.add(host);
+      activeHostOptIns.add(host);
       await browser.trackingProtection.allow(
         this.id,
         optins,
-        Array.from(this._hostOptIns)
+        isPrivateMode,
+        Array.from(activeHostOptIns)
       );
+      this.clearResourceCache();
     }
   }
 
-  hasUserOptedInAlready(host) {
-    return this._hostOptIns.has(host);
+  hasUserOptedInAlready(host, isPrivateMode) {
+    const activeHostOptIns = isPrivateMode
+      ? this._pBModeHostOptIns
+      : this._hostOptIns;
+    return activeHostOptIns.has(host);
   }
 
   showOptInWarningOnce(tabId, origin) {
@@ -468,16 +431,69 @@ class Shim {
       })
       .catch(() => {});
   }
+
+  async onUserOptOut(host, isPrivateMode) {
+    const optIns = await this.getApplicableOptIns();
+    const activeHostOptIns = isPrivateMode
+      ? this._pBModeHostOptIns
+      : this._hostOptIns;
+    if (optIns.length) {
+      activeHostOptIns.delete(host);
+      await browser.trackingProtection.allow(
+        this.id,
+        optIns,
+        isPrivateMode,
+        Array.from(activeHostOptIns)
+      );
+      this.clearResourceCache();
+    }
+  }
+
+  async clearUserOptIns(forPrivateMode) {
+    const optIns = await this.getApplicableOptIns();
+    const activeHostOptIns = forPrivateMode
+      ? this._pBModeHostOptIns
+      : this._hostOptIns;
+    if (optIns.length) {
+      activeHostOptIns.clear();
+      await browser.trackingProtection.allow(
+        this.id,
+        optIns,
+        forPrivateMode,
+        Array.from(activeHostOptIns)
+      );
+      this.clearResourceCache();
+    }
+  }
+
+  clearResourceCache() {
+    return browser.trackingProtection.clearResourceCache();
+  }
 }
 
 class Shims {
   constructor(availableShims) {
+    this._originalShims = availableShims;
+
     if (!browser.trackingProtection) {
       console.error("Required experimental add-on APIs for shims unavailable");
       return;
     }
 
-    this._registerShims(availableShims);
+    let shims = availableShims;
+    if (browser.appConstants.isInAutomation()) {
+      const override = browser.aboutConfigPrefs.getPref("test_shims");
+      if (override) {
+        shims = JSON.parse(override);
+      }
+    }
+
+    this.#initialize(shims);
+  }
+
+  async #initialize(shims) {
+    this._readyPromise = new Promise(done => (this._resolveReady = done));
+    await this._registerShims(shims);
 
     onMessageFromTab(this._onMessageFromShim.bind(this));
 
@@ -485,7 +501,73 @@ class Shims {
     browser.aboutConfigPrefs.onPrefChange.addListener(() => {
       this._checkEnabledPref();
     }, this.ENABLED_PREF);
-    this._haveCheckedEnabledPref = this._checkEnabledPref();
+
+    this.SMARTBLOCK_EMBEDS_ENABLED_PREF = `smartblockEmbeds.enabled`;
+    browser.aboutConfigPrefs.onPrefChange.addListener(() => {
+      this._checkSmartblockEmbedsEnabledPref();
+    }, this.SMARTBLOCK_EMBEDS_ENABLED_PREF);
+
+    // NOTE: Methods that uses the prefs should await
+    //       _haveCheckedEnabledPrefsPromise, in order to make sure the
+    //       prefs are all read.
+    //       Methods that potentially clears the resource cache should check
+    //       _haveCheckedEnabledPrefs, in order to avoid clearing the
+    //       resource cache during the startup.
+    this._haveCheckedEnabledPrefs = false;
+    this._haveCheckedEnabledPrefsPromise = Promise.all([
+      this._checkEnabledPref(),
+      this._checkSmartblockEmbedsEnabledPref(),
+    ]);
+    this._haveCheckedEnabledPrefsPromise.then(() => {
+      this._haveCheckedEnabledPrefs = true;
+    });
+
+    // handles unblock message coming in from protections panel
+    browser.trackingProtection.onSmartBlockEmbedUnblock.addListener(
+      async (tabId, shimId, hostname) => {
+        const shim = this.shims.get(shimId);
+        if (!shim) {
+          console.warn("Smartblock shim not found", { tabId, shimId });
+          return;
+        }
+        const isPB = (await browser.tabs.get(tabId)).incognito;
+        await shim.onUserOptIn(hostname, isPB);
+
+        // send request to shim to remove placeholders and replace with original embeds
+        await browser.tabs.sendMessage(tabId, {
+          shimId,
+          topic: "smartblock:unblock-embed",
+        });
+      }
+    );
+
+    // handles reblock message coming in from protections panel
+    browser.trackingProtection.onSmartBlockEmbedReblock.addListener(
+      async (tabId, shimId, hostname) => {
+        const shim = this.shims.get(shimId);
+        if (!shim) {
+          console.warn("Smartblock shim not found", { tabId, shimId });
+          return;
+        }
+        const isPB = (await browser.tabs.get(tabId)).incognito;
+        await shim.onUserOptOut(hostname, isPB);
+
+        // a browser reload is required to reload the shim in the case where the shim gets unloaded
+        // i.e. after user unblocks, then closes and revisits the page while shim is still allowed
+        browser.tabs.reload(tabId);
+      }
+    );
+
+    // handles data clearing on private browsing mode end
+    browser.trackingProtection.onPrivateSessionEnd.addListener(() => {
+      for (const shim of this.shims.values()) {
+        shim.clearUserOptIns(true);
+      }
+    });
+  }
+
+  ready() {
+    return this._readyPromise;
   }
 
   bindAboutCompatBroker(broker) {
@@ -530,10 +612,34 @@ class Shims {
     return shims;
   }
 
-  _registerShims(shims) {
+  async onRemoteSettingsUpdate(updatedShims) {
+    const oldReadyPromise = this._readyPromise;
+    this._readyPromise = new Promise(done => (this._resolveReady = done));
+    await oldReadyPromise;
+    await this._updateShims(updatedShims);
+  }
+
+  async _updateShims(updatedShims) {
+    await this._unregisterShims();
+    await this._registerShims(updatedShims);
+    this._checkEnabledPref();
+    await this.ready();
+  }
+
+  async _resetToDefaultShims() {
+    await this._updateShims(this._originalShims);
+  }
+
+  async _registerShims(shims) {
     if (this.shims) {
       throw new Error("_registerShims has already been called");
     }
+
+    this._registeredShimListeners = [];
+    const registerShimListener = (api, listener, ...args) => {
+      api.addListener(listener, ...args);
+      this._registeredShimListeners.push([api, listener]);
+    };
 
     this.shims = new Map();
     for (const shimOpts of shims) {
@@ -543,10 +649,15 @@ class Shims {
       }
     }
 
+    // Batch-register the content scripts during startup to improve IPC performance.
+    await this._registerContentScriptsForShims(this.shims.values(), true);
+
     // Register onBeforeRequest listener which handles storage access requests
     // on matching redirects.
     let redirectTargetUrls = Array.from(shims.values())
-      .filter(shim => shim.requestStorageAccessForRedirect)
+      .filter(
+        shim => !shim.isMissingFiles && shim.requestStorageAccessForRedirect
+      )
       .flatMap(shim => shim.requestStorageAccessForRedirect)
       .map(([, dstUrl]) => dstUrl);
 
@@ -554,10 +665,14 @@ class Shims {
     redirectTargetUrls = Array.from(new Set(redirectTargetUrls));
 
     if (redirectTargetUrls.length) {
-      debug("Registering redirect listener for requestStorageAccess helper", {
-        redirectTargetUrls,
-      });
-      browser.webRequest.onBeforeRequest.addListener(
+      debugLog(
+        "Registering redirect listener for requestStorageAccess helper",
+        {
+          redirectTargetUrls,
+        }
+      );
+      registerShimListener(
+        browser.webRequest.onBeforeRequest,
         this._onRequestStorageAccessRedirect.bind(this),
         { urls: redirectTargetUrls, types: ["main_frame"] },
         ["blocking"]
@@ -578,6 +693,9 @@ class Shims {
     const allHeaderChangingMatchTypePatterns = new Map();
     const allLogos = [];
     for (const shim of this.shims.values()) {
+      if (shim.isMissingFiles) {
+        continue;
+      }
       const { logos, matches } = shim;
       allLogos.push(...logos);
       for (const { patterns, target, types } of matches || []) {
@@ -596,19 +714,20 @@ class Shims {
       const urls = Array.from(new Set(allLogos)).map(l => {
         return `${LogosBaseURL}${l}`;
       });
-      debug("Allowing access to these logos:", urls);
+      debugLog("Allowing access to these logos:", urls);
       const unmarkShimsActive = tabId => {
         for (const shim of this.shims.values()) {
           shim.setActiveOnTab(tabId, false);
         }
       };
-      browser.tabs.onRemoved.addListener(unmarkShimsActive);
-      browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
+      registerShimListener(browser.tabs.onRemoved, unmarkShimsActive);
+      registerShimListener(browser.tabs.onUpdated, (tabId, changeInfo) => {
         if (changeInfo.discarded || changeInfo.url) {
           unmarkShimsActive(tabId);
         }
       });
-      browser.webRequest.onBeforeRequest.addListener(
+      registerShimListener(
+        browser.webRequest.onBeforeRequest,
         this._redirectLogos.bind(this),
         { urls, types: ["image"] },
         ["blocking"]
@@ -621,13 +740,15 @@ class Shims {
         { patterns },
       ] of allHeaderChangingMatchTypePatterns.entries()) {
         const urls = Array.from(patterns);
-        debug("Shimming these", type, "URLs:", urls);
-        browser.webRequest.onBeforeSendHeaders.addListener(
+        debugLog("Shimming these", type, "URLs:", urls);
+        registerShimListener(
+          browser.webRequest.onBeforeSendHeaders,
           this._onBeforeSendHeaders.bind(this),
           { urls, types: [type] },
           ["blocking", "requestHeaders"]
         );
-        browser.webRequest.onHeadersReceived.addListener(
+        registerShimListener(
+          browser.webRequest.onHeadersReceived,
           this._onHeadersReceived.bind(this),
           { urls, types: [type] },
           ["blocking", "responseHeaders"]
@@ -636,32 +757,36 @@ class Shims {
     }
 
     if (!allMatchTypePatterns.size) {
-      debug("Skipping shims; none enabled");
+      debugLog("Skipping shims; none enabled");
       return;
     }
 
     for (const [type, { patterns }] of allMatchTypePatterns.entries()) {
       const urls = Array.from(patterns);
-      debug("Shimming these", type, "URLs:", urls);
+      debugLog("Shimming these", type, "URLs:", urls);
 
-      browser.webRequest.onBeforeRequest.addListener(
+      registerShimListener(
+        browser.webRequest.onBeforeRequest,
         this._ensureShimForRequestOnTab.bind(this),
-        { urls, types: [type] },
+        { urls },
         ["blocking"]
       );
     }
   }
 
-  async _checkEnabledPref() {
-    await browser.aboutConfigPrefs.getPref(this.ENABLED_PREF).then(value => {
-      if (value === undefined) {
-        browser.aboutConfigPrefs.setPref(this.ENABLED_PREF, true);
-      } else if (value === false) {
-        this.enabled = false;
-      } else {
-        this.enabled = true;
+  _unregisterShims() {
+    this.enabled = false;
+    if (this._registeredShimListeners) {
+      for (let [api, listener] of this._registeredShimListeners) {
+        api.removeListener(listener);
       }
-    });
+      this._registeredShimListeners = undefined;
+    }
+    this.shims = undefined;
+  }
+
+  async _checkEnabledPref() {
+    this.enabled = browser.aboutConfigPrefs.getPref(this.ENABLED_PREF, true);
   }
 
   get enabled() {
@@ -673,6 +798,8 @@ class Shims {
       return;
     }
 
+    // resolveReady may change while we're updating
+    const resolveReady = this._resolveReady;
     this._enabled = enabled;
 
     for (const shim of this.shims.values()) {
@@ -682,6 +809,32 @@ class Shims {
         shim.onAllShimsDisabled();
       }
     }
+    resolveReady();
+  }
+
+  async _checkSmartblockEmbedsEnabledPref() {
+    this.smartblockEmbedsEnabled = browser.aboutConfigPrefs.getPref(
+      this.SMARTBLOCK_EMBEDS_ENABLED_PREF,
+      true
+    );
+  }
+
+  get smartblockEmbedsEnabled() {
+    return this._smartblockEmbedsEnabled;
+  }
+
+  set smartblockEmbedsEnabled(value) {
+    if (value === this._smartblockEmbedsEnabled) {
+      return;
+    }
+
+    this._smartblockEmbedsEnabled = value;
+
+    for (const shim of this.shims.values()) {
+      if (shim.isSmartblockEmbedShim) {
+        shim.disabledBySmartblockEmbedPref = !this._smartblockEmbedsEnabled;
+      }
+    }
   }
 
   async _onRequestStorageAccessRedirect({
@@ -689,7 +842,7 @@ class Shims {
     url: dstUrl,
     tabId,
   }) {
-    debug("Detected redirect", { srcUrl, dstUrl, tabId });
+    debugLog("Detected redirect", { srcUrl, dstUrl, tabId });
 
     // Check if a shim needs to request storage access for this redirect. This
     // handler is called when the *source url* matches a shims redirect pattern,
@@ -717,9 +870,8 @@ class Shims {
           // Only get the dFPI state for the first shim which requires it.
           if (isDFPIActive === null) {
             const tabIsPB = (await browser.tabs.get(tabId)).incognito;
-            isDFPIActive = await browser.trackingProtection.isDFPIActive(
-              tabIsPB
-            );
+            isDFPIActive =
+              await browser.trackingProtection.isDFPIActive(tabIsPB);
           }
           if (!isDFPIActive) {
             return;
@@ -756,7 +908,7 @@ class Shims {
       requestStorageAccessOrigin,
       warning,
     });
-    debug("requestStorageAccess callback", {
+    debugLog("requestStorageAccess callback", {
       success,
       requestStorageAccessOrigin,
       srcUrl,
@@ -771,7 +923,15 @@ class Shims {
     const { shimId, message } = payload;
 
     // Ignore unknown messages (for instance, from about:compat).
-    if (message !== "getOptions" && message !== "optIn") {
+    if (
+      message !== "getOptions" &&
+      message !== "optIn" &&
+      message !== "embedClicked" &&
+      message !== "smartblockEmbedReplaced" &&
+      message !== "smartblockGetFluentString" &&
+      message !== "checkFacebookLoginStatus" &&
+      message !== "shouldShowEmbedContentInPlaceholders"
+    ) {
       return undefined;
     }
 
@@ -791,16 +951,16 @@ class Shims {
     if (message === "getOptions") {
       return Object.assign(
         {
-          platform: await platformPromise,
-          releaseBranch: await releaseBranchPromise,
+          platform,
+          releaseBranch,
         },
         shim.options
       );
     } else if (message === "optIn") {
       try {
-        await shim.onUserOptIn(new URL(url).hostname);
+        await shim.onUserOptIn(new URL(url).hostname, tab.incognito);
         const origin = new URL(tab.url).origin;
-        warn(
+        debugLog(
           "** User opted in for",
           shim.name,
           "shim on",
@@ -815,13 +975,38 @@ class Shims {
         console.error(err);
         throw new Error("error");
       }
+    } else if (message === "embedClicked") {
+      browser.trackingProtection.openProtectionsPanel(id);
+    } else if (message === "smartblockEmbedReplaced") {
+      browser.trackingProtection.incrementSmartblockEmbedShownTelemetry();
+    } else if (message === "smartblockGetFluentString") {
+      return await browser.trackingProtection.getSmartBlockEmbedFluentString(
+        id,
+        shimId,
+        new URL(url).hostname
+      );
+    } else if (message === "checkFacebookLoginStatus") {
+      // Verify that the user is logged in to Facebook by checking the c_user
+      // cookie.
+      let cookie = await browser.cookies.get({
+        url: "https://www.facebook.com",
+        name: "c_user",
+      });
+
+      // If the cookie is found, the user is logged in to Facebook.
+      return cookie != null;
+    } else if (message === "shouldShowEmbedContentInPlaceholders") {
+      // Only show embed content in placeholders if the Sanitizer API is available.
+      // setHTML is available in Firefox 148+.
+      // TODO(Bug 2010092): Remove when `documentElement.setHTML` becomes available in esr.
+      return true;
     }
 
     return undefined;
   }
 
   async _redirectLogos(details) {
-    await this._haveCheckedEnabledPref;
+    await this._haveCheckedEnabledPrefsPromise;
 
     if (!this.enabled) {
       return { cancel: true };
@@ -857,7 +1042,7 @@ class Shims {
   }
 
   async _onHeadersReceived(details) {
-    await this._haveCheckedEnabledPref;
+    await this._haveCheckedEnabledPrefsPromise;
 
     for (const shim of this.shims.values()) {
       await shim.ready;
@@ -891,7 +1076,7 @@ class Shims {
   }
 
   async _onBeforeSendHeaders(details) {
-    await this._haveCheckedEnabledPref;
+    await this._haveCheckedEnabledPrefsPromise;
 
     const { frameId, requestHeaders, tabId } = details;
 
@@ -927,7 +1112,7 @@ class Shims {
         browser.tabs
           .get(tabId)
           .then(({ url }) => {
-            debug(
+            debugLog(
               `Google Trends dFPI fix used on tab ${tabId} frame ${frameId} (${url})`
             );
           })
@@ -946,8 +1131,9 @@ class Shims {
     return { requestHeaders };
   }
 
+  // eslint-disable-next-line complexity
   async _ensureShimForRequestOnTab(details) {
-    await this._haveCheckedEnabledPref;
+    await this._haveCheckedEnabledPrefsPromise;
 
     if (!this.enabled) {
       return undefined;
@@ -966,8 +1152,10 @@ class Shims {
 
     // We need to base our checks not on the frame's host, but the tab's.
     const topHost = new URL((await browser.tabs.get(tabId)).url).hostname;
+    const isPB = (await browser.tabs.get(details.tabId)).incognito;
     const unblocked = await browser.trackingProtection.wasRequestUnblocked(
-      requestId
+      requestId,
+      isPB
     );
 
     let match;
@@ -980,7 +1168,6 @@ class Shims {
       }
 
       if (shim.onlyIfDFPIActive || shim.onlyIfPrivateBrowsing) {
-        const isPB = (await browser.tabs.get(details.tabId)).incognito;
         if (!isPB && shim.onlyIfPrivateBrowsing) {
           continue;
         }
@@ -1011,8 +1198,8 @@ class Shims {
 
         // If the user has already opted in for this shim, all requests it covers
         // should be allowed; no need for a shim anymore.
-        if (shim.hasUserOptedInAlready(topHost)) {
-          warn(
+        if (shim.hasUserOptedInAlready(topHost, isPB)) {
+          console.warn(
             `Allowing tracking ${type} ${url} on tab ${tabId} frame ${frameId} due to opt-in`
           );
           shim.showOptInWarningOnce(tabId, new URL(originUrl).origin);
@@ -1031,12 +1218,20 @@ class Shims {
       // complete via local redirect. Shims should gracefully handle this as well.
 
       const { target } = match;
-      const { bug, file, id, name, needsShimHelpers } = shimToApply;
+      const { bug, file, id, name } = shimToApply;
+
+      // Determine whether we should inject helper scripts into the page.
+      // webExposedShimHelpers is an optional list of helpers to provide
+      // directly to the website (see script injection below). If not used shims
+      // should pass an empty array to disable this functionality.
+      const needsShimHelpers =
+        shimToApply.webExposedShimHelpers || shimToApply.needsShimHelpers;
+
       runFirst = shimToApply.runFirst;
 
       const redirect = target || file;
 
-      warn(
+      console.warn(
         `Shimming tracking ${type} ${url} on tab ${tabId} frame ${frameId} with ${
           redirect || runFirst
         }`
@@ -1046,6 +1241,16 @@ class Shims {
 
       let needConsoleMessage = true;
 
+      if (shimToApply.isSmartblockEmbedShim) {
+        try {
+          await browser.tabs.executeScript(tabId, {
+            file: `/lib/smartblock_embeds_helper.js`,
+            frameId,
+            runAt: "document_start",
+          });
+        } catch (_) {}
+      }
+
       if (runFirst) {
         try {
           await browser.tabs.executeScript(tabId, {
@@ -1053,6 +1258,7 @@ class Shims {
             frameId,
             runAt: "document_start",
           });
+          shimToApply.setActiveOnTab(tabId);
         } catch (_) {}
       }
 
@@ -1096,15 +1302,97 @@ class Shims {
     // Sanity check: if no shims end up handling this request,
     // yet it was meant to be blocked by ETP, then block it now.
     if (unblocked) {
-      error(`unexpected: ${url} not shimmed on tab ${tabId} frame ${frameId}`);
+      console.error(
+        `unexpected: ${url} not shimmed on tab ${tabId} frame ${frameId}`
+      );
       return { cancel: true };
     }
 
     if (!runFirst) {
-      debug(`ignoring ${url} on tab ${tabId} frame ${frameId}`);
+      debugLog(`ignoring ${url} on tab ${tabId} frame ${frameId}`);
     }
     return undefined;
   }
+
+  async _registerContentScriptsForShims(
+    shims,
+    alsoClearObsoleteContentScripts
+  ) {
+    const contentScriptsToRegister = [];
+
+    for (const shim of shims) {
+      if (
+        shim.disabledReason ||
+        !shim.contentScripts.length ||
+        shim._contentScriptRegistrations.length
+      ) {
+        continue;
+      }
+
+      shim._contentScriptRegistrations = [];
+      for (const options of shim.contentScripts) {
+        // Some shims includes more than one script (e.g. Blogger one contains
+        // a content script to be run on document_start and one to be run
+        // on document_end.
+        const id = `SmartBlock shim for ${shim.id}: ${JSON.stringify(options)}`;
+        shim._contentScriptRegistrations.push(id);
+        contentScriptsToRegister.push(
+          Object.assign(
+            {
+              id,
+              persistAcrossSessions: true,
+            },
+            options
+          )
+        );
+      }
+    }
+
+    // If we're still booting up, we need to clean out any persisted content
+    // scripts for which the intervention has been removed, before we register
+    // the ones we have chosen to activate above.
+    if (alsoClearObsoleteContentScripts) {
+      const info = await InterventionHelpers.ensureOnlyTheseContentScripts(
+        contentScriptsToRegister,
+        "SmartBlock shim"
+      );
+      if (browser.appConstants.isInAutomation()) {
+        this._lastEnabledInfo = info;
+      }
+    } else {
+      await InterventionHelpers.registerContentScripts(
+        contentScriptsToRegister,
+        "SmartBlock"
+      );
+    }
+
+    if (alsoClearObsoleteContentScripts) {
+      // If we're still booting up, we need to clean out any persisted content
+      // scripts for which the intervention has been removed, before we register
+      // the ones we have chosen to activate above.
+    }
+  }
+
+  async _unregisterContentScriptsForShims(shims) {
+    const ids = [];
+    for (const shim of shims ?? this.shims.values()) {
+      ids.push(...shim._contentScriptRegistrations);
+      shim._contentScriptRegistrations = [];
+    }
+    try {
+      await browser.scripting.unregisterContentScripts({ ids });
+    } catch (_) {
+      for (const id of ids) {
+        try {
+          await browser.scripting.unregisterContentScripts({ ids: [id] });
+        } catch (e) {
+          console.error(`Error while unregistering shim content script`, id, e);
+        }
+      }
+    }
+  }
 }
 
-module.exports = Shims;
+if (typeof module !== "undefined") {
+  module.exports = Shims;
+}

@@ -7,10 +7,6 @@ search-header =
     .placeholder = Mirar en addons.mozilla.org
     .searchbuttonlabel = Mirar
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -174,29 +170,6 @@ addon-install-from-file-filter-name = Complementos
 addon-open-about-debugging = Depurar complementos
     .accesskey = p
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addons-heading-search-input =
@@ -209,7 +182,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } ye incompatible con { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -224,12 +197,8 @@ details-notification-unsigned2 =
     .message = No s'ha puesto verificar { $name } ta o suyo uso en { -brand-short-name }. Contine con cudiau.
 details-notification-unsigned-link = Mas información
 details-notification-blocked = S'ha desactivau { $name } por problemas de seguranza u estabilidat.
-details-notification-blocked2 =
-    .message = S'ha desactivau { $name } por problemas de seguranza u estabilidat.
 details-notification-blocked-link = Mas información
 details-notification-softblocked = Se conoix que { $name } causa de problemas de seguranza u estabilidat.
-details-notification-softblocked2 =
-    .message = Se conoix que { $name } causa de problemas de seguranza u estabilidat.
 details-notification-softblocked-link = Mas información
 details-notification-gmp-pending = { $name } S'instalará en breus.
 details-notification-gmp-pending2 =

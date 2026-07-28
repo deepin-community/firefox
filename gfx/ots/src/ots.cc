@@ -102,11 +102,18 @@ bool CheckTag(uint32_t tag_value) {
 
 namespace {
 
-#define OTS_MSG_TAG_(level,otf_,msg_,tag_) \
-  (OTS_MESSAGE_(level,otf_,"%c%c%c%c: %s", OTS_UNTAG(tag_), msg_), false)
+// ots_msg_tag emits the tag as hex if it is not valid, to avoid putting NUL or
+// other non-printables into the message string.
+static inline void ots_msg_tag(int level, const ots::FontFile* otf, const char* msg, uint32_t tag) {
+  if (ots::CheckTag(tag)) {
+    OTS_MESSAGE_(level, otf, "%c%c%c%c: %s", OTS_UNTAG(tag), msg);
+  } else {
+    OTS_MESSAGE_(level, otf, "<%08X>: %s", tag, msg);
+  }
+}
 
 // Generate a message with or without a table tag, when 'header' is the FontFile pointer
-#define OTS_FAILURE_MSG_TAG(msg_,tag_) OTS_MSG_TAG_(0, header, msg_, tag_)
+#define OTS_FAILURE_MSG_TAG(msg_,tag_) (ots_msg_tag(0, header, msg_, tag_), false)
 #define OTS_FAILURE_MSG_HDR(...)       OTS_FAILURE_MSG_(header, __VA_ARGS__)
 #define OTS_WARNING_MSG_HDR(...)       OTS_WARNING_MSG_(header, __VA_ARGS__)
 
@@ -728,10 +735,13 @@ bool ProcessGeneric(ots::FontFile *header,
   ots::Table *loca = font->GetTable(OTS_TAG_LOCA);
   ots::Table *cff  = font->GetTable(OTS_TAG_CFF);
   ots::Table *cff2 = font->GetTable(OTS_TAG_CFF2);
-  ots::OpenTypeMAXP *maxp = static_cast<ots::OpenTypeMAXP*>(
-    font->GetTypedTable(OTS_TAG_MAXP));
 
   if (glyf && loca) {
+    ots::OpenTypeMAXP *maxp = static_cast<ots::OpenTypeMAXP*>(
+      font->GetTypedTable(OTS_TAG_MAXP));
+    if (!maxp) {
+      return OTS_FAILURE_MSG_TAG("missing maxp table", OTS_TAG_MAXP);
+    }
     if (font->version != 0x000010000) {
       OTS_WARNING_MSG_HDR("wrong sfntVersion for glyph data");
       font->version = 0x000010000;
@@ -745,6 +755,11 @@ bool ProcessGeneric(ots::FontFile *header,
     if (cff2)
        cff2->Drop("font contains both CFF and glyf/loca tables");
   } else if (cff || cff2) {
+    ots::OpenTypeMAXP *maxp = static_cast<ots::OpenTypeMAXP*>(
+      font->GetTypedTable(OTS_TAG_MAXP));
+    if (!maxp) {
+      return OTS_FAILURE_MSG_TAG("missing maxp table", OTS_TAG_MAXP);
+    }
     if (font->version != OTS_TAG('O','T','T','O')) {
       OTS_WARNING_MSG_HDR("wrong sfntVersion for glyph data");
       font->version = OTS_TAG('O','T','T','O');
@@ -1003,6 +1018,12 @@ bool Font::ParseTable(const TableEntry& table_entry, const uint8_t* data,
       ret = table->Parse(table_data, table_length);
       if (ret)
         AddTable(table_entry, table);
+      else if (action == TABLE_ACTION_SANITIZE_SOFT) {
+        // We're dropping the table (having reported whatever errors we found),
+        // but do not return failure, so that processing continues.
+        delete table;
+        ret = true;
+      }
     }
   }
 
@@ -1059,7 +1080,7 @@ bool Table::ShouldSerialize() {
 void Table::Message(int level, const char *format, va_list va) {
   char msg[206] = { OTS_UNTAG(m_tag), ':', ' ' };
   std::vsnprintf(msg + 6, 200, format, va);
-  m_font->file->context->Message(level, msg);
+  m_font->file->context->Message(level, "%s", msg);
 }
 
 bool Table::Error(const char *format, ...) {

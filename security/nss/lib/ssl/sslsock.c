@@ -97,7 +97,8 @@ static sslOptions ssl_defaults = {
     .enableTls13BackendEch = PR_FALSE,
     .callExtensionWriterOnEchInner = PR_FALSE,
     .enableGrease = PR_FALSE,
-    .enableChXtnPermutation = PR_FALSE
+    .enableChXtnPermutation = PR_FALSE,
+    .dbLoadCertChain = PR_TRUE,
 };
 
 /*
@@ -124,8 +125,9 @@ sslSessionIDLookupFunc ssl_sid_lookup;
 
 static PRDescIdentity ssl_layer_id;
 
-PRBool locksEverDisabled; /* implicitly PR_FALSE */
-PRBool ssl_force_locks;   /* implicitly PR_FALSE */
+static PRCallOnceType ssl_setDefaultsFromEnvironment = { 0 };
+
+PRBool ssl_force_locks = PR_FALSE;
 int ssl_lock_readers = 1; /* default true. */
 char ssl_debug;
 char ssl_trace;
@@ -133,11 +135,8 @@ FILE *ssl_trace_iob;
 
 #ifdef NSS_ALLOW_SSLKEYLOGFILE
 FILE *ssl_keylog_iob;
-PZLock *ssl_keylog_lock;
+PRLock *ssl_keylog_lock;
 #endif
-
-char lockStatus[] = "Locks are ENABLED.  ";
-#define LOCKSTATUS_OFFSET 10 /* offset of ENABLED */
 
 /* SRTP_NULL_HMAC_SHA1_80 and SRTP_NULL_HMAC_SHA1_32 are not implemented. */
 static const PRUint16 srtpCiphers[] = {
@@ -159,15 +158,23 @@ static const PRUint16 srtpCiphers[] = {
         ssl_grp_ffdhe_##size, size, ssl_kea_dh, \
             SEC_OID_TLS_FFDHE_##size, PR_TRUE   \
     }
+#define HYGROUP(first, second, size, first_oid, second_oid, assumeSupported) \
+    {                                                                        \
+        ssl_grp_kem_##first##second, size, ssl_kea_ecdh_hybrid,              \
+            SEC_OID_##first_oid##second_oid, assumeSupported                 \
+    }
 
 const sslNamedGroupDef ssl_named_groups[] = {
-    /* Note that 256 for 25519 is a lie, but we only use it for checking bit
-     * security and expect 256 bits there (not 255). */
+    /* Note that 256 for 25519 and x25519mlkem786 is a lie, but we only use it
+     * for checking bit security and expect 256 bits there (not 255). */
+    HYGROUP(mlkem768, x25519, 256, MLKEM768, X25519, PR_TRUE),
     { ssl_grp_ec_curve25519, 256, ssl_kea_ecdh, SEC_OID_CURVE25519, PR_TRUE },
     ECGROUP(secp256r1, 256, SECP256R1, PR_TRUE),
     ECGROUP(secp384r1, 384, SECP384R1, PR_TRUE),
     ECGROUP(secp521r1, 521, SECP521R1, PR_TRUE),
-    { ssl_grp_kem_xyber768d00, 256, ssl_kea_ecdh_hybrid, SEC_OID_XYBER768D00, PR_TRUE },
+    HYGROUP(secp256r1, mlkem768, 256, SECP256R1, MLKEM768, PR_TRUE),
+    HYGROUP(secp384r1, mlkem1024, 256, SECP384R1, MLKEM1024, PR_TRUE),
+    { ssl_grp_kem_xyber768d00, 256, ssl_kea_ecdh_hybrid, SEC_OID_XYBER768D00, PR_FALSE },
     FFGROUP(2048),
     FFGROUP(3072),
     FFGROUP(4096),
@@ -200,10 +207,12 @@ PR_STATIC_ASSERT(SSL_NAMED_GROUP_COUNT == PR_ARRAY_SIZE(ssl_named_groups));
 
 #undef ECGROUP
 #undef FFGROUP
+#undef HYGROUP
 
 /* forward declarations. */
 static sslSocket *ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant variant);
 static SECStatus ssl_MakeLocks(sslSocket *ss);
+static PRStatus ssl_SetDefaultsFromEnvironmentCallOnce(void);
 static void ssl_SetDefaultsFromEnvironment(void);
 static PRStatus ssl_PushIOLayer(sslSocket *ns, PRFileDesc *stack,
                                 PRDescIdentity id);
@@ -270,6 +279,231 @@ ssl_FindSocket(PRFileDesc *fd)
     return ss;
 }
 
+/*
+ * Copy all model-copyable socket configuration from |src| to |dst|.
+ *
+ * This covers options, cipher suites, certificates, keys, ECH, PSK,
+ * anti-replay, trust anchors, callbacks, and protocol settings — i.e.
+ * everything that SSL_ImportFD (via ssl_DupSocket) and SSL_ReconfigFD
+ * need to transfer from a model socket.
+ *
+ * For heap-owned fields, any existing resources in |dst| are freed
+ * before replacement, so this is safe to call on both freshly-created
+ * and live sockets.
+ *
+ * If |replaceCallbacks| is true, all callbacks are copied unconditionally
+ * (appropriate for ssl_DupSocket where |dst| is freshly created).
+ * If false, each callback is only overwritten when |src| has a non-NULL
+ * value, preserving any existing callbacks on |dst| (appropriate for
+ * SSL_ReconfigFD where the application has already registered callbacks
+ * on the live socket).
+ *
+ * Connection-level state (peerID, url, timeouts, security info,
+ * handshake state) is NOT copied — callers handle those as needed.
+ */
+static SECStatus
+ssl_CopySocketConfig(sslSocket *dst, sslSocket *src, PRBool replaceCallbacks)
+{
+    SECStatus rv;
+
+    /* Options — struct copy, then deep-copy the nextProtoNego SECItem
+     * to give each socket its own buffer (avoids double-free).
+     * Zero the SECItem before the deep copy so that on allocation
+     * failure dst does not retain a shallow pointer to src's buffer
+     * (which would cause a double-free when dst is freed). */
+    SECITEM_FreeItem(&dst->opt.nextProtoNego, PR_FALSE);
+    dst->opt = src->opt;
+    dst->opt.nextProtoNego.data = NULL;
+    dst->opt.nextProtoNego.len = 0;
+    rv = SECITEM_CopyItem(NULL, &dst->opt.nextProtoNego,
+                          &src->opt.nextProtoNego);
+    if (rv != SECSuccess) {
+        return SECFailure;
+    }
+
+    dst->vrange = src->vrange;
+    dst->now = src->now;
+    dst->nowArg = src->nowArg;
+
+    /* Cipher suite configuration (all fixed-size value arrays). */
+    PORT_Memcpy(dst->cipherSuites, src->cipherSuites,
+                sizeof(src->cipherSuites));
+    PORT_Memcpy(dst->ssl3.dtlsSRTPCiphers, src->ssl3.dtlsSRTPCiphers,
+                sizeof(PRUint16) * src->ssl3.dtlsSRTPCipherCount);
+    dst->ssl3.dtlsSRTPCipherCount = src->ssl3.dtlsSRTPCipherCount;
+    PORT_Memcpy(dst->ssl3.signatureSchemes, src->ssl3.signatureSchemes,
+                sizeof(dst->ssl3.signatureSchemes[0]) *
+                    src->ssl3.signatureSchemeCount);
+    dst->ssl3.signatureSchemeCount = src->ssl3.signatureSchemeCount;
+    dst->ssl3.downgradeCheckVersion = src->ssl3.downgradeCheckVersion;
+    dst->ssl3.dheWeakGroupEnabled = src->ssl3.dheWeakGroupEnabled;
+
+    PORT_Memcpy(dst->ssl3.supportedCertCompressionAlgorithms,
+                src->ssl3.supportedCertCompressionAlgorithms,
+                sizeof(dst->ssl3.supportedCertCompressionAlgorithms[0]) *
+                    src->ssl3.supportedCertCompressionAlgorithmsCount);
+    dst->ssl3.supportedCertCompressionAlgorithmsCount =
+        src->ssl3.supportedCertCompressionAlgorithmsCount;
+
+    if (dst->opt.useSecurity) {
+        PRCList *cursor;
+
+        /* Server certificates (free old, deep-copy new). */
+        while (!PR_CLIST_IS_EMPTY(&dst->serverCerts)) {
+            cursor = PR_LIST_TAIL(&dst->serverCerts);
+            PR_REMOVE_LINK(cursor);
+            ssl_FreeServerCert((sslServerCert *)cursor);
+        }
+        for (cursor = PR_NEXT_LINK(&src->serverCerts);
+             cursor != &src->serverCerts;
+             cursor = PR_NEXT_LINK(cursor)) {
+            sslServerCert *sc = ssl_CopyServerCert((sslServerCert *)cursor);
+            if (!sc) {
+                return SECFailure;
+            }
+            PR_APPEND_LINK(&sc->link, &dst->serverCerts);
+        }
+
+        /* Ephemeral key pairs (free old, deep-copy new). */
+        ssl_FreeEphemeralKeyPairs(dst);
+        for (cursor = PR_NEXT_LINK(&src->ephemeralKeyPairs);
+             cursor != &src->ephemeralKeyPairs;
+             cursor = PR_NEXT_LINK(cursor)) {
+            sslEphemeralKeyPair *skp = ssl_CopyEphemeralKeyPair(
+                (sslEphemeralKeyPair *)cursor);
+            if (!skp) {
+                return SECFailure;
+            }
+            PR_APPEND_LINK(&skp->link, &dst->ephemeralKeyPairs);
+        }
+
+        /* Extension hooks (free old, deep-copy new). */
+        while (!PR_CLIST_IS_EMPTY(&dst->extensionHooks)) {
+            cursor = PR_LIST_TAIL(&dst->extensionHooks);
+            PR_REMOVE_LINK(cursor);
+            PORT_Free(cursor);
+        }
+        for (cursor = PR_NEXT_LINK(&src->extensionHooks);
+             cursor != &src->extensionHooks;
+             cursor = PR_NEXT_LINK(cursor)) {
+            sslCustomExtensionHooks *sh = PORT_ZNew(sslCustomExtensionHooks);
+            if (!sh) {
+                return SECFailure;
+            }
+            *sh = *(sslCustomExtensionHooks *)cursor;
+            PR_APPEND_LINK(&sh->link, &dst->extensionHooks);
+        }
+
+        PORT_Memcpy((void *)dst->namedGroupPreferences,
+                    src->namedGroupPreferences,
+                    sizeof(dst->namedGroupPreferences));
+        dst->additionalShares = src->additionalShares;
+
+        /* Trust anchor names (free old, deep-copy new). */
+        if (dst->ssl3.ca_list) {
+            CERT_FreeDistNames(dst->ssl3.ca_list);
+            dst->ssl3.ca_list = NULL;
+        }
+        if (src->ssl3.ca_list) {
+            dst->ssl3.ca_list = CERT_DupDistNames(src->ssl3.ca_list);
+            if (!dst->ssl3.ca_list) {
+                return SECFailure;
+            }
+        }
+
+        /* ECH configuration (free old, deep-copy new). */
+        tls13_DestroyEchConfigs(&dst->echConfigs);
+        SECKEY_DestroyPrivateKey(dst->echPrivKey);
+        SECKEY_DestroyPublicKey(dst->echPubKey);
+        dst->echPrivKey = NULL;
+        dst->echPubKey = NULL;
+        rv = tls13_CopyEchConfigs(&src->echConfigs, &dst->echConfigs);
+        if (rv != SECSuccess) {
+            return SECFailure;
+        }
+        if (src->echPrivKey && src->echPubKey) {
+            dst->echPrivKey = SECKEY_CopyPrivateKey(src->echPrivKey);
+            dst->echPubKey = SECKEY_CopyPublicKey(src->echPubKey);
+            if (!dst->echPrivKey || !dst->echPubKey) {
+                return SECFailure;
+            }
+        }
+
+        /* Anti-replay context (refcounted). */
+        if (dst->antiReplay) {
+            tls13_ReleaseAntiReplayContext(dst->antiReplay);
+            dst->antiReplay = NULL;
+        }
+        if (src->antiReplay) {
+            dst->antiReplay = tls13_RefAntiReplayContext(src->antiReplay);
+            PORT_Assert(dst->antiReplay);
+            if (!dst->antiReplay) {
+                return SECFailure;
+            }
+        }
+
+        /* External PSK (free old, deep-copy new). */
+        if (dst->psk) {
+            tls13_DestroyPsk(dst->psk);
+            dst->psk = NULL;
+        }
+        if (src->psk) {
+            dst->psk = tls13_CopyPsk(src->psk);
+            if (!dst->psk) {
+                return SECFailure;
+            }
+        }
+
+        /* Callbacks — not owned by the socket, shallow copy.
+         * When replaceCallbacks is false (SSL_ReconfigFD), only
+         * overwrite if the model has a non-NULL value, so that the
+         * application's existing callbacks on the live socket are
+         * preserved for any callback the model does not set. */
+        if (replaceCallbacks || src->authCertificate) {
+            dst->authCertificate = src->authCertificate;
+            dst->authCertificateArg = src->authCertificateArg;
+        }
+        if (replaceCallbacks || src->getClientAuthData) {
+            dst->getClientAuthData = src->getClientAuthData;
+            dst->getClientAuthDataArg = src->getClientAuthDataArg;
+        }
+        if (replaceCallbacks || src->sniSocketConfig) {
+            dst->sniSocketConfig = src->sniSocketConfig;
+            dst->sniSocketConfigArg = src->sniSocketConfigArg;
+        }
+        if (replaceCallbacks || src->alertReceivedCallback) {
+            dst->alertReceivedCallback = src->alertReceivedCallback;
+            dst->alertReceivedCallbackArg = src->alertReceivedCallbackArg;
+        }
+        if (replaceCallbacks || src->alertSentCallback) {
+            dst->alertSentCallback = src->alertSentCallback;
+            dst->alertSentCallbackArg = src->alertSentCallbackArg;
+        }
+        if (replaceCallbacks || src->handleBadCert) {
+            dst->handleBadCert = src->handleBadCert;
+            dst->badCertArg = src->badCertArg;
+        }
+        if (replaceCallbacks || src->handshakeCallback) {
+            dst->handshakeCallback = src->handshakeCallback;
+            dst->handshakeCallbackData = src->handshakeCallbackData;
+        }
+        if (replaceCallbacks || src->pkcs11PinArg)
+            dst->pkcs11PinArg = src->pkcs11PinArg;
+
+        /* These callbacks are part of protocol configuration (set via
+         * SSL_SetNextProtoNego, SSL_SetCanFalseStartCallback, etc.)
+         * rather than event handlers, so always copy them. */
+        dst->nextProtoCallback = src->nextProtoCallback;
+        dst->nextProtoArg = src->nextProtoArg;
+        dst->canFalseStartCallback = src->canFalseStartCallback;
+        dst->canFalseStartCallbackData = src->canFalseStartCallbackData;
+        dst->resumptionTokenCallback = src->resumptionTokenCallback;
+        dst->resumptionTokenContext = src->resumptionTokenContext;
+    }
+
+    return SECSuccess;
+}
+
 static sslSocket *
 ssl_DupSocket(sslSocket *os)
 {
@@ -281,15 +515,11 @@ ssl_DupSocket(sslSocket *os)
         return NULL;
     }
 
-    ss->opt = os->opt;
-    ss->opt.useSocks = PR_FALSE;
-    rv = SECITEM_CopyItem(NULL, &ss->opt.nextProtoNego, &os->opt.nextProtoNego);
+    rv = ssl_CopySocketConfig(ss, os, PR_TRUE);
     if (rv != SECSuccess) {
         goto loser;
     }
-    ss->vrange = os->vrange;
-    ss->now = os->now;
-    ss->nowArg = os->nowArg;
+    ss->opt.useSocks = PR_FALSE;
 
     ss->peerID = !os->peerID ? NULL : PORT_Strdup(os->peerID);
     ss->url = !os->url ? NULL : PORT_Strdup(os->url);
@@ -300,110 +530,7 @@ ssl_DupSocket(sslSocket *os)
     ss->cTimeout = os->cTimeout;
     ss->dbHandle = os->dbHandle;
 
-    /* copy ssl2&3 policy & prefs, even if it's not selected (yet) */
-    PORT_Memcpy(ss->cipherSuites, os->cipherSuites, sizeof os->cipherSuites);
-    PORT_Memcpy(ss->ssl3.dtlsSRTPCiphers, os->ssl3.dtlsSRTPCiphers,
-                sizeof(PRUint16) * os->ssl3.dtlsSRTPCipherCount);
-    ss->ssl3.dtlsSRTPCipherCount = os->ssl3.dtlsSRTPCipherCount;
-    PORT_Memcpy(ss->ssl3.signatureSchemes, os->ssl3.signatureSchemes,
-                sizeof(ss->ssl3.signatureSchemes[0]) *
-                    os->ssl3.signatureSchemeCount);
-    ss->ssl3.signatureSchemeCount = os->ssl3.signatureSchemeCount;
-    ss->ssl3.downgradeCheckVersion = os->ssl3.downgradeCheckVersion;
-
-    ss->ssl3.dheWeakGroupEnabled = os->ssl3.dheWeakGroupEnabled;
-
     if (ss->opt.useSecurity) {
-        PRCList *cursor;
-
-        for (cursor = PR_NEXT_LINK(&os->serverCerts);
-             cursor != &os->serverCerts;
-             cursor = PR_NEXT_LINK(cursor)) {
-            sslServerCert *sc = ssl_CopyServerCert((sslServerCert *)cursor);
-            if (!sc)
-                goto loser;
-            PR_APPEND_LINK(&sc->link, &ss->serverCerts);
-        }
-
-        for (cursor = PR_NEXT_LINK(&os->ephemeralKeyPairs);
-             cursor != &os->ephemeralKeyPairs;
-             cursor = PR_NEXT_LINK(cursor)) {
-            sslEphemeralKeyPair *okp = (sslEphemeralKeyPair *)cursor;
-            sslEphemeralKeyPair *skp = ssl_CopyEphemeralKeyPair(okp);
-            if (!skp)
-                goto loser;
-            PR_APPEND_LINK(&skp->link, &ss->ephemeralKeyPairs);
-        }
-
-        for (cursor = PR_NEXT_LINK(&os->extensionHooks);
-             cursor != &os->extensionHooks;
-             cursor = PR_NEXT_LINK(cursor)) {
-            sslCustomExtensionHooks *oh = (sslCustomExtensionHooks *)cursor;
-            sslCustomExtensionHooks *sh = PORT_ZNew(sslCustomExtensionHooks);
-            if (!sh) {
-                goto loser;
-            }
-            *sh = *oh;
-            PR_APPEND_LINK(&sh->link, &ss->extensionHooks);
-        }
-
-        /*
-         * XXX the preceding CERT_ and SECKEY_ functions can fail and return NULL.
-         * XXX We should detect this, and not just march on with NULL pointers.
-         */
-        ss->authCertificate = os->authCertificate;
-        ss->authCertificateArg = os->authCertificateArg;
-        ss->getClientAuthData = os->getClientAuthData;
-        ss->getClientAuthDataArg = os->getClientAuthDataArg;
-        ss->sniSocketConfig = os->sniSocketConfig;
-        ss->sniSocketConfigArg = os->sniSocketConfigArg;
-        ss->alertReceivedCallback = os->alertReceivedCallback;
-        ss->alertReceivedCallbackArg = os->alertReceivedCallbackArg;
-        ss->alertSentCallback = os->alertSentCallback;
-        ss->alertSentCallbackArg = os->alertSentCallbackArg;
-        ss->handleBadCert = os->handleBadCert;
-        ss->badCertArg = os->badCertArg;
-        ss->handshakeCallback = os->handshakeCallback;
-        ss->handshakeCallbackData = os->handshakeCallbackData;
-        ss->canFalseStartCallback = os->canFalseStartCallback;
-        ss->canFalseStartCallbackData = os->canFalseStartCallbackData;
-        ss->pkcs11PinArg = os->pkcs11PinArg;
-        ss->nextProtoCallback = os->nextProtoCallback;
-        ss->nextProtoArg = os->nextProtoArg;
-        PORT_Memcpy((void *)ss->namedGroupPreferences,
-                    os->namedGroupPreferences,
-                    sizeof(ss->namedGroupPreferences));
-        ss->additionalShares = os->additionalShares;
-        ss->resumptionTokenCallback = os->resumptionTokenCallback;
-        ss->resumptionTokenContext = os->resumptionTokenContext;
-
-        rv = tls13_CopyEchConfigs(&os->echConfigs, &ss->echConfigs);
-        if (rv != SECSuccess) {
-            goto loser;
-        }
-        if (os->echPrivKey && os->echPubKey) {
-            ss->echPrivKey = SECKEY_CopyPrivateKey(os->echPrivKey);
-            ss->echPubKey = SECKEY_CopyPublicKey(os->echPubKey);
-            if (!ss->echPrivKey || !ss->echPubKey) {
-                goto loser;
-            }
-        }
-
-        if (os->antiReplay) {
-            ss->antiReplay = tls13_RefAntiReplayContext(os->antiReplay);
-            PORT_Assert(ss->antiReplay); /* Can't fail. */
-            if (!ss->antiReplay) {
-                goto loser;
-            }
-        }
-        if (os->psk) {
-            ss->psk = tls13_CopyPsk(os->psk);
-            if (!ss->psk) {
-                goto loser;
-            }
-        }
-
-        /* Create security data */
         rv = ssl_CopySecurityInfo(ss, os);
         if (rv != SECSuccess) {
             goto loser;
@@ -422,11 +549,11 @@ ssl_DestroyLocks(sslSocket *ss)
 {
     /* Destroy locks. */
     if (ss->firstHandshakeLock) {
-        PZ_DestroyMonitor(ss->firstHandshakeLock);
+        PR_DestroyMonitor(ss->firstHandshakeLock);
         ss->firstHandshakeLock = NULL;
     }
     if (ss->ssl3HandshakeLock) {
-        PZ_DestroyMonitor(ss->ssl3HandshakeLock);
+        PR_DestroyMonitor(ss->ssl3HandshakeLock);
         ss->ssl3HandshakeLock = NULL;
     }
     if (ss->specLock) {
@@ -435,19 +562,19 @@ ssl_DestroyLocks(sslSocket *ss)
     }
 
     if (ss->recvLock) {
-        PZ_DestroyLock(ss->recvLock);
+        PR_DestroyLock(ss->recvLock);
         ss->recvLock = NULL;
     }
     if (ss->sendLock) {
-        PZ_DestroyLock(ss->sendLock);
+        PR_DestroyLock(ss->sendLock);
         ss->sendLock = NULL;
     }
     if (ss->xmitBufLock) {
-        PZ_DestroyMonitor(ss->xmitBufLock);
+        PR_DestroyMonitor(ss->xmitBufLock);
         ss->xmitBufLock = NULL;
     }
     if (ss->recvBufLock) {
-        PZ_DestroyMonitor(ss->recvBufLock);
+        PR_DestroyMonitor(ss->recvBufLock);
         ss->recvBufLock = NULL;
     }
 }
@@ -778,10 +905,15 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRIntn val)
             if (val && ssl_force_locks)
                 val = PR_FALSE; /* silent override */
             ss->opt.noLocks = val;
-            if (val) {
-                locksEverDisabled = PR_TRUE;
-                strcpy(lockStatus + LOCKSTATUS_OFFSET, "DISABLED.");
-            } else if (!holdingLocks) {
+
+            if (val && holdingLocks) {
+                /* If we're disabling locks and locks were previously enabled. */
+                PR_ExitMonitor((ss)->ssl3HandshakeLock);
+                PR_ExitMonitor((ss)->firstHandshakeLock);
+                ssl_DestroyLocks(ss);
+                holdingLocks = PR_FALSE;
+            } else if (!val && !holdingLocks) {
+                /* If we're enabling locks and locks were previously disabled. */
                 rv = ssl_MakeLocks(ss);
                 if (rv != SECSuccess) {
                     ss->opt.noLocks = PR_TRUE;
@@ -902,6 +1034,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRIntn val)
             ss->opt.enableChXtnPermutation = val;
             break;
 
+        case SSL_DB_LOAD_CERTIFICATE_CHAIN:
+            ss->opt.dbLoadCertChain = val;
+            break;
+
         default:
             PORT_SetError(SEC_ERROR_INVALID_ARGS);
             rv = SECFailure;
@@ -913,8 +1049,8 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRIntn val)
      * regardless of the current value of ss->opt.noLocks.
      */
     if (holdingLocks) {
-        PZ_ExitMonitor((ss)->ssl3HandshakeLock);
-        PZ_ExitMonitor((ss)->firstHandshakeLock);
+        PR_ExitMonitor((ss)->ssl3HandshakeLock);
+        PR_ExitMonitor((ss)->firstHandshakeLock);
     }
 
     return rv;
@@ -1059,6 +1195,15 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 which, PRIntn *pVal)
         case SSL_SUPPRESS_END_OF_EARLY_DATA:
             val = ss->opt.suppressEndOfEarlyData;
             break;
+        case SSL_ENABLE_GREASE:
+            val = ss->opt.enableGrease;
+            break;
+        case SSL_ENABLE_CH_EXTENSION_PERMUTATION:
+            val = ss->opt.enableChXtnPermutation;
+            break;
+        case SSL_DB_LOAD_CERTIFICATE_CHAIN:
+            val = ss->opt.dbLoadCertChain;
+            break;
         default:
             PORT_SetError(SEC_ERROR_INVALID_ARGS);
             rv = SECFailure;
@@ -1176,6 +1321,9 @@ SSL_OptionGetDefault(PRInt32 which, PRIntn *pVal)
         case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
             val = ssl_defaults.enableSignedCertTimestamps;
             break;
+        case SSL_REQUIRE_DH_NAMED_GROUPS:
+            val = ssl_defaults.requireDHENamedGroups;
+            break;
         case SSL_ENABLE_0RTT_DATA:
             val = ssl_defaults.enable0RttData;
             break;
@@ -1199,6 +1347,15 @@ SSL_OptionGetDefault(PRInt32 which, PRIntn *pVal)
             break;
         case SSL_SUPPRESS_END_OF_EARLY_DATA:
             val = ssl_defaults.suppressEndOfEarlyData;
+            break;
+        case SSL_ENABLE_GREASE:
+            val = ssl_defaults.enableGrease;
+            break;
+        case SSL_ENABLE_CH_EXTENSION_PERMUTATION:
+            val = ssl_defaults.enableChXtnPermutation;
+            break;
+        case SSL_DB_LOAD_CERTIFICATE_CHAIN:
+            val = ssl_defaults.dbLoadCertChain;
             break;
         default:
             PORT_SetError(SEC_ERROR_INVALID_ARGS);
@@ -1314,10 +1471,6 @@ SSL_OptionSetDefault(PRInt32 which, PRIntn val)
             if (val && ssl_force_locks)
                 val = PR_FALSE; /* silent override */
             ssl_defaults.noLocks = val;
-            if (val) {
-                locksEverDisabled = PR_TRUE;
-                strcpy(lockStatus + LOCKSTATUS_OFFSET, "DISABLED.");
-            }
             break;
 
         case SSL_ENABLE_SESSION_TICKETS:
@@ -1378,7 +1531,9 @@ SSL_OptionSetDefault(PRInt32 which, PRIntn val)
         case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
             ssl_defaults.enableSignedCertTimestamps = val;
             break;
-
+        case SSL_REQUIRE_DH_NAMED_GROUPS:
+            ssl_defaults.requireDHENamedGroups = val;
+            break;
         case SSL_ENABLE_0RTT_DATA:
             ssl_defaults.enable0RttData = val;
             break;
@@ -1414,7 +1569,15 @@ SSL_OptionSetDefault(PRInt32 which, PRIntn val)
         case SSL_SUPPRESS_END_OF_EARLY_DATA:
             ssl_defaults.suppressEndOfEarlyData = val;
             break;
-
+        case SSL_ENABLE_GREASE:
+            ssl_defaults.enableGrease = val;
+            break;
+        case SSL_ENABLE_CH_EXTENSION_PERMUTATION:
+            ssl_defaults.enableChXtnPermutation = val;
+            break;
+        case SSL_DB_LOAD_CERTIFICATE_CHAIN:
+            ssl_defaults.dbLoadCertChain = val;
+            break;
         default:
             PORT_SetError(SEC_ERROR_INVALID_ARGS);
             return SECFailure;
@@ -2417,7 +2580,6 @@ PRFileDesc *
 SSL_ReconfigFD(PRFileDesc *model, PRFileDesc *fd)
 {
     sslSocket *sm = NULL, *ss = NULL;
-    PRCList *cursor;
     SECStatus rv;
 
     if (model == NULL) {
@@ -2437,144 +2599,24 @@ SSL_ReconfigFD(PRFileDesc *model, PRFileDesc *fd)
         return NULL;
     }
 
-    ss->opt = sm->opt;
-    ss->vrange = sm->vrange;
-    ss->now = sm->now;
-    ss->nowArg = sm->nowArg;
-    PORT_Memcpy(ss->cipherSuites, sm->cipherSuites, sizeof sm->cipherSuites);
-    PORT_Memcpy(ss->ssl3.dtlsSRTPCiphers, sm->ssl3.dtlsSRTPCiphers,
-                sizeof(PRUint16) * sm->ssl3.dtlsSRTPCipherCount);
-    ss->ssl3.dtlsSRTPCipherCount = sm->ssl3.dtlsSRTPCipherCount;
-    PORT_Memcpy(ss->ssl3.signatureSchemes, sm->ssl3.signatureSchemes,
-                sizeof(ss->ssl3.signatureSchemes[0]) *
-                    sm->ssl3.signatureSchemeCount);
-    ss->ssl3.signatureSchemeCount = sm->ssl3.signatureSchemeCount;
-    ss->ssl3.downgradeCheckVersion = sm->ssl3.downgradeCheckVersion;
+    rv = ssl_CopySocketConfig(ss, sm, PR_FALSE);
+    if (rv != SECSuccess) {
+        return NULL;
+    }
 
     if (!ss->opt.useSecurity) {
         PORT_SetError(SEC_ERROR_INVALID_ARGS);
         return NULL;
     }
-    while (!PR_CLIST_IS_EMPTY(&ss->serverCerts)) {
-        cursor = PR_LIST_TAIL(&ss->serverCerts);
-        PR_REMOVE_LINK(cursor);
-        ssl_FreeServerCert((sslServerCert *)cursor);
-    }
-    for (cursor = PR_NEXT_LINK(&sm->serverCerts);
-         cursor != &sm->serverCerts;
-         cursor = PR_NEXT_LINK(cursor)) {
-        sslServerCert *sc = ssl_CopyServerCert((sslServerCert *)cursor);
-        if (!sc)
-            return NULL;
-        PR_APPEND_LINK(&sc->link, &ss->serverCerts);
-    }
 
-    ssl_FreeEphemeralKeyPairs(ss);
-    for (cursor = PR_NEXT_LINK(&sm->ephemeralKeyPairs);
-         cursor != &sm->ephemeralKeyPairs;
-         cursor = PR_NEXT_LINK(cursor)) {
-        sslEphemeralKeyPair *mkp = (sslEphemeralKeyPair *)cursor;
-        sslEphemeralKeyPair *skp = ssl_CopyEphemeralKeyPair(mkp);
-        if (!skp)
-            return NULL;
-        PR_APPEND_LINK(&skp->link, &ss->ephemeralKeyPairs);
-    }
-
-    while (!PR_CLIST_IS_EMPTY(&ss->extensionHooks)) {
-        cursor = PR_LIST_TAIL(&ss->extensionHooks);
-        PR_REMOVE_LINK(cursor);
-        PORT_Free(cursor);
-    }
-    for (cursor = PR_NEXT_LINK(&sm->extensionHooks);
-         cursor != &sm->extensionHooks;
-         cursor = PR_NEXT_LINK(cursor)) {
-        sslCustomExtensionHooks *hook = (sslCustomExtensionHooks *)cursor;
-        rv = SSL_InstallExtensionHooks(ss->fd, hook->type,
-                                       hook->writer, hook->writerArg,
-                                       hook->handler, hook->handlerArg);
-        if (rv != SECSuccess) {
-            return NULL;
-        }
-    }
-
-    PORT_Memcpy((void *)ss->namedGroupPreferences,
-                sm->namedGroupPreferences,
-                sizeof(ss->namedGroupPreferences));
-    ss->additionalShares = sm->additionalShares;
-
-    /* copy trust anchor names */
-    if (sm->ssl3.ca_list) {
-        if (ss->ssl3.ca_list) {
-            CERT_FreeDistNames(ss->ssl3.ca_list);
-        }
-        ss->ssl3.ca_list = CERT_DupDistNames(sm->ssl3.ca_list);
-        if (!ss->ssl3.ca_list) {
-            return NULL;
-        }
-    }
-
-    /* Copy ECH. */
-    tls13_DestroyEchConfigs(&ss->echConfigs);
-    SECKEY_DestroyPrivateKey(ss->echPrivKey);
-    SECKEY_DestroyPublicKey(ss->echPubKey);
-    rv = tls13_CopyEchConfigs(&sm->echConfigs, &ss->echConfigs);
+    /* Reset handshake PSKs on the target socket, re-populating from
+     * the (newly copied) external PSK if present.  Pass |ss| (not
+     * |sm|) so that selectedPsk is cleared on the correct socket. */
+    ss->xtnData.selectedPsk = NULL;
+    rv = tls13_ResetHandshakePsks(ss, &ss->ssl3.hs.psks);
     if (rv != SECSuccess) {
         return NULL;
     }
-    if (sm->echPrivKey && sm->echPubKey) {
-        /* Might be client (no keys). */
-        ss->echPrivKey = SECKEY_CopyPrivateKey(sm->echPrivKey);
-        ss->echPubKey = SECKEY_CopyPublicKey(sm->echPubKey);
-        if (!ss->echPrivKey || !ss->echPubKey) {
-            return NULL;
-        }
-    }
-
-    /* Copy anti-replay context. */
-    if (ss->antiReplay) {
-        tls13_ReleaseAntiReplayContext(ss->antiReplay);
-        ss->antiReplay = NULL;
-    }
-    if (sm->antiReplay) {
-        ss->antiReplay = tls13_RefAntiReplayContext(sm->antiReplay);
-        PORT_Assert(ss->antiReplay);
-        if (!ss->antiReplay) {
-            return NULL;
-        }
-    }
-
-    tls13_ResetHandshakePsks(sm, &ss->ssl3.hs.psks);
-
-    if (sm->authCertificate)
-        ss->authCertificate = sm->authCertificate;
-    if (sm->authCertificateArg)
-        ss->authCertificateArg = sm->authCertificateArg;
-    if (sm->getClientAuthData)
-        ss->getClientAuthData = sm->getClientAuthData;
-    if (sm->getClientAuthDataArg)
-        ss->getClientAuthDataArg = sm->getClientAuthDataArg;
-    if (sm->sniSocketConfig)
-        ss->sniSocketConfig = sm->sniSocketConfig;
-    if (sm->sniSocketConfigArg)
-        ss->sniSocketConfigArg = sm->sniSocketConfigArg;
-    if (sm->alertReceivedCallback) {
-        ss->alertReceivedCallback = sm->alertReceivedCallback;
-        ss->alertReceivedCallbackArg = sm->alertReceivedCallbackArg;
-    }
-    if (sm->alertSentCallback) {
-        ss->alertSentCallback = sm->alertSentCallback;
-        ss->alertSentCallbackArg = sm->alertSentCallbackArg;
-    }
-    if (sm->handleBadCert)
-        ss->handleBadCert = sm->handleBadCert;
-    if (sm->badCertArg)
-        ss->badCertArg = sm->badCertArg;
-    if (sm->handshakeCallback)
-        ss->handshakeCallback = sm->handshakeCallback;
-    if (sm->handshakeCallbackData)
-        ss->handshakeCallbackData = sm->handshakeCallbackData;
-    if (sm->pkcs11PinArg)
-        ss->pkcs11PinArg = sm->pkcs11PinArg;
 
     return fd;
 }
@@ -3275,7 +3317,7 @@ ssl_GetPeerName(PRFileDesc *fd, PRNetAddr *addr)
 }
 
 /*
-*/
+ */
 SECStatus
 ssl_GetPeerInfo(sslSocket *ss)
 {
@@ -3871,27 +3913,39 @@ loser:
 static SECStatus
 ssl_MakeLocks(sslSocket *ss)
 {
-    ss->firstHandshakeLock = PZ_NewMonitor(nssILockSSL);
+    PR_ASSERT(!ss->firstHandshakeLock);
+    ss->firstHandshakeLock = PR_NewMonitor();
     if (!ss->firstHandshakeLock)
         goto loser;
-    ss->ssl3HandshakeLock = PZ_NewMonitor(nssILockSSL);
+
+    PR_ASSERT(!ss->ssl3HandshakeLock);
+    ss->ssl3HandshakeLock = PR_NewMonitor();
     if (!ss->ssl3HandshakeLock)
         goto loser;
+
+    PR_ASSERT(!ss->specLock);
     ss->specLock = NSSRWLock_New(SSL_LOCK_RANK_SPEC, NULL);
     if (!ss->specLock)
         goto loser;
-    ss->recvBufLock = PZ_NewMonitor(nssILockSSL);
+
+    PR_ASSERT(!ss->recvBufLock);
+    ss->recvBufLock = PR_NewMonitor();
     if (!ss->recvBufLock)
         goto loser;
-    ss->xmitBufLock = PZ_NewMonitor(nssILockSSL);
+
+    PR_ASSERT(!ss->xmitBufLock);
+    ss->xmitBufLock = PR_NewMonitor();
     if (!ss->xmitBufLock)
         goto loser;
     ss->writerThread = NULL;
     if (ssl_lock_readers) {
-        ss->recvLock = PZ_NewLock(nssILockSSL);
+        PR_ASSERT(!ss->recvLock);
+        ss->recvLock = PR_NewLock();
         if (!ss->recvLock)
             goto loser;
-        ss->sendLock = PZ_NewLock(nssILockSSL);
+
+        PR_ASSERT(!ss->sendLock);
+        ss->sendLock = PR_NewLock();
         if (!ss->sendLock)
             goto loser;
     }
@@ -3907,92 +3961,93 @@ loser:
 
 #define LOWER(x) (x | 0x20) /* cheap ToLower function ignores LOCALE */
 
+static PRStatus
+ssl_SetDefaultsFromEnvironmentCallOnce(void)
+{
+#if defined(NSS_HAVE_GETENV)
+    char *ev;
+#ifdef DEBUG
+    ssl_trace_iob = NULL;
+    ev = PR_GetEnvSecure("SSLDEBUGFILE");
+    if (ev && ev[0]) {
+        ssl_trace_iob = fopen(ev, "w");
+    }
+    if (!ssl_trace_iob) {
+        ssl_trace_iob = stderr;
+    }
+#ifdef TRACE
+    ev = PR_GetEnvSecure("SSLTRACE");
+    if (ev && ev[0]) {
+        ssl_trace = atoi(ev);
+        SSL_TRACE(("SSL: tracing set to %d", ssl_trace));
+    }
+#endif /* TRACE */
+    ev = PR_GetEnvSecure("SSLDEBUG");
+    if (ev && ev[0]) {
+        ssl_debug = atoi(ev);
+        SSL_TRACE(("SSL: debugging set to %d", ssl_debug));
+    }
+#endif /* DEBUG */
+#ifdef NSS_ALLOW_SSLKEYLOGFILE
+    ssl_keylog_iob = NULL;
+    ev = PR_GetEnvSecure("SSLKEYLOGFILE");
+    if (ev && ev[0]) {
+        ssl_keylog_iob = fopen(ev, "a");
+        if (!ssl_keylog_iob) {
+            SSL_TRACE(("SSL: failed to open key log file"));
+        } else {
+            if (ftell(ssl_keylog_iob) == 0) {
+                fputs("# SSL/TLS secrets log file, generated by NSS\n",
+                      ssl_keylog_iob);
+            }
+            SSL_TRACE(("SSL: logging SSL/TLS secrets to %s", ev));
+            ssl_keylog_lock = PR_NewLock();
+            if (!ssl_keylog_lock) {
+                SSL_TRACE(("SSL: failed to create key log lock"));
+                fclose(ssl_keylog_iob);
+                ssl_keylog_iob = NULL;
+            }
+        }
+    }
+#endif
+    ev = PR_GetEnvSecure("SSLFORCELOCKS");
+    if (ev && ev[0] == '1') {
+        ssl_force_locks = PR_TRUE;
+        ssl_defaults.noLocks = 0;
+        SSL_TRACE(("SSL: force_locks set to %d", ssl_force_locks));
+    }
+    ev = PR_GetEnvSecure("NSS_SSL_ENABLE_RENEGOTIATION");
+    if (ev) {
+        if (ev[0] == '1' || LOWER(ev[0]) == 'u')
+            ssl_defaults.enableRenegotiation = SSL_RENEGOTIATE_UNRESTRICTED;
+        else if (ev[0] == '0' || LOWER(ev[0]) == 'n')
+            ssl_defaults.enableRenegotiation = SSL_RENEGOTIATE_NEVER;
+        else if (ev[0] == '2' || LOWER(ev[0]) == 'r')
+            ssl_defaults.enableRenegotiation = SSL_RENEGOTIATE_REQUIRES_XTN;
+        else if (ev[0] == '3' || LOWER(ev[0]) == 't')
+            ssl_defaults.enableRenegotiation = SSL_RENEGOTIATE_TRANSITIONAL;
+        SSL_TRACE(("SSL: enableRenegotiation set to %d",
+                   ssl_defaults.enableRenegotiation));
+    }
+    ev = PR_GetEnvSecure("NSS_SSL_REQUIRE_SAFE_NEGOTIATION");
+    if (ev && ev[0] == '1') {
+        ssl_defaults.requireSafeNegotiation = PR_TRUE;
+        SSL_TRACE(("SSL: requireSafeNegotiation set to %d",
+                   PR_TRUE));
+    }
+    ev = PR_GetEnvSecure("NSS_SSL_CBC_RANDOM_IV");
+    if (ev && ev[0] == '0') {
+        ssl_defaults.cbcRandomIV = PR_FALSE;
+        SSL_TRACE(("SSL: cbcRandomIV set to 0"));
+    }
+#endif /* NSS_HAVE_GETENV */
+    return PR_SUCCESS;
+}
+
 static void
 ssl_SetDefaultsFromEnvironment(void)
 {
-#if defined(NSS_HAVE_GETENV)
-    static int firsttime = 1;
-
-    if (firsttime) {
-        char *ev;
-        firsttime = 0;
-#ifdef DEBUG
-        ssl_trace_iob = NULL;
-        ev = PR_GetEnvSecure("SSLDEBUGFILE");
-        if (ev && ev[0]) {
-            ssl_trace_iob = fopen(ev, "w");
-        }
-        if (!ssl_trace_iob) {
-            ssl_trace_iob = stderr;
-        }
-#ifdef TRACE
-        ev = PR_GetEnvSecure("SSLTRACE");
-        if (ev && ev[0]) {
-            ssl_trace = atoi(ev);
-            SSL_TRACE(("SSL: tracing set to %d", ssl_trace));
-        }
-#endif /* TRACE */
-        ev = PR_GetEnvSecure("SSLDEBUG");
-        if (ev && ev[0]) {
-            ssl_debug = atoi(ev);
-            SSL_TRACE(("SSL: debugging set to %d", ssl_debug));
-        }
-#endif /* DEBUG */
-#ifdef NSS_ALLOW_SSLKEYLOGFILE
-        ssl_keylog_iob = NULL;
-        ev = PR_GetEnvSecure("SSLKEYLOGFILE");
-        if (ev && ev[0]) {
-            ssl_keylog_iob = fopen(ev, "a");
-            if (!ssl_keylog_iob) {
-                SSL_TRACE(("SSL: failed to open key log file"));
-            } else {
-                if (ftell(ssl_keylog_iob) == 0) {
-                    fputs("# SSL/TLS secrets log file, generated by NSS\n",
-                          ssl_keylog_iob);
-                }
-                SSL_TRACE(("SSL: logging SSL/TLS secrets to %s", ev));
-                ssl_keylog_lock = PR_NewLock();
-                if (!ssl_keylog_lock) {
-                    SSL_TRACE(("SSL: failed to create key log lock"));
-                    fclose(ssl_keylog_iob);
-                    ssl_keylog_iob = NULL;
-                }
-            }
-        }
-#endif
-        ev = PR_GetEnvSecure("SSLFORCELOCKS");
-        if (ev && ev[0] == '1') {
-            ssl_force_locks = PR_TRUE;
-            ssl_defaults.noLocks = 0;
-            strcpy(lockStatus + LOCKSTATUS_OFFSET, "FORCED.  ");
-            SSL_TRACE(("SSL: force_locks set to %d", ssl_force_locks));
-        }
-        ev = PR_GetEnvSecure("NSS_SSL_ENABLE_RENEGOTIATION");
-        if (ev) {
-            if (ev[0] == '1' || LOWER(ev[0]) == 'u')
-                ssl_defaults.enableRenegotiation = SSL_RENEGOTIATE_UNRESTRICTED;
-            else if (ev[0] == '0' || LOWER(ev[0]) == 'n')
-                ssl_defaults.enableRenegotiation = SSL_RENEGOTIATE_NEVER;
-            else if (ev[0] == '2' || LOWER(ev[0]) == 'r')
-                ssl_defaults.enableRenegotiation = SSL_RENEGOTIATE_REQUIRES_XTN;
-            else if (ev[0] == '3' || LOWER(ev[0]) == 't')
-                ssl_defaults.enableRenegotiation = SSL_RENEGOTIATE_TRANSITIONAL;
-            SSL_TRACE(("SSL: enableRenegotiation set to %d",
-                       ssl_defaults.enableRenegotiation));
-        }
-        ev = PR_GetEnvSecure("NSS_SSL_REQUIRE_SAFE_NEGOTIATION");
-        if (ev && ev[0] == '1') {
-            ssl_defaults.requireSafeNegotiation = PR_TRUE;
-            SSL_TRACE(("SSL: requireSafeNegotiation set to %d",
-                       PR_TRUE));
-        }
-        ev = PR_GetEnvSecure("NSS_SSL_CBC_RANDOM_IV");
-        if (ev && ev[0] == '0') {
-            ssl_defaults.cbcRandomIV = PR_FALSE;
-            SSL_TRACE(("SSL: cbcRandomIV set to 0"));
-        }
-    }
-#endif /* NSS_HAVE_GETENV */
+    PR_CallOnce(&ssl_setDefaultsFromEnvironment, ssl_SetDefaultsFromEnvironmentCallOnce);
 }
 
 const sslNamedGroupDef *

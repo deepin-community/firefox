@@ -14,7 +14,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.focus.GleanMetrics.Metrics
-import org.mozilla.focus.telemetry.startuptelemetry.AppStartReasonProvider.StartReason
 
 private val logger = Logger("AppStartReasonProvider")
 
@@ -28,6 +27,9 @@ private val logger = Logger("AppStartReasonProvider")
  */
 class AppStartReasonProvider {
 
+    /**
+     * Possible reasons why the application was started.
+     */
     enum class StartReason {
         /** We don't know yet what caused this [Application] instance to be started. */
         TO_BE_DETERMINED,

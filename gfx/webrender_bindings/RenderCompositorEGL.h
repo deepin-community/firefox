@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -46,7 +44,7 @@ class RenderCompositorEGL : public RenderCompositor {
   void SetBufferDamageRegion(const wr::DeviceIntRect* aRects,
                              size_t aNumRects) override;
 
-  ipc::FileDescriptor GetAndResetReleaseFence() override;
+  RefPtr<layers::Fence> GetAndResetReleaseFence() override;
 
  protected:
   EGLSurface CreateEGLSurface();
@@ -66,7 +64,7 @@ class RenderCompositorEGL : public RenderCompositor {
   // Release fence is a fence that is used for waiting until usage/composite of
   // AHardwareBuffer is ended. The fence is delivered to client side via
   // ImageBridge. It is used only on android.
-  ipc::FileDescriptor mReleaseFenceFd;
+  RefPtr<layers::Fence> mReleaseFence;
 };
 
 }  // namespace wr

@@ -5,91 +5,104 @@
 package org.mozilla.fenix.ui
 
 import androidx.core.net.toUri
+import androidx.test.filters.SdkSuppress
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.AppAndSystemHelper.setNetworkEnabled
+import org.mozilla.fenix.helpers.FenixTestRule
 import org.mozilla.fenix.helpers.HomeActivityTestRule
-import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.browserScreen
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
+import androidx.compose.ui.test.junit4.v2.AndroidComposeTestRule as AndroidComposeTestRuleV2
 
 /**
  * Tests to verify some main UI flows with Network connection off
  *
  */
 
-class NoNetworkAccessStartupTests : TestSetup() {
+class NoNetworkAccessStartupTests {
+    @get:Rule(order = 0)
+    val fenixTestRule: FenixTestRule = FenixTestRule()
 
-    @get:Rule
-    val activityTestRule = HomeActivityTestRule.withDefaultSettingsOverrides(launchActivity = false)
+    @get:Rule(order = 1)
+    val composeTestRule =
+        AndroidComposeTestRuleV2(
+            HomeActivityTestRule.withDefaultSettingsOverrides(launchActivity = false),
+        ) { it.activity }
 
     // Test running on beta/release builds in CI:
     // caution when making changes to it, so they don't block the builds
     // Based on STR from https://github.com/mozilla-mobile/fenix/issues/16886
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2240542
     @Test
+    @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=1987355")
     fun noNetworkConnectionStartupTest() {
         setNetworkEnabled(false)
 
-        activityTestRule.launchActivity(null)
+        composeTestRule.activityRule.launchActivity(null)
 
-        homeScreen {
+        homeScreen(composeTestRule) {
             verifyHomeScreen()
         }
     }
 
     // Based on STR from https://github.com/mozilla-mobile/fenix/issues/16886
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2240722
+    @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=1987355")
     @Test
     fun networkInterruptedFromBrowserToHomeTest() {
         val url = "example.com"
 
-        activityTestRule.launchActivity(null)
+        composeTestRule.activityRule.launchActivity(null)
 
-        navigationToolbar {
+        navigationToolbar(composeTestRule) {
         }.enterURLAndEnterToBrowser(url.toUri()) {}
 
         setNetworkEnabled(false)
 
-        browserScreen {
+        browserScreen(composeTestRule) {
         }.goToHomescreen {
             verifyHomeScreen()
         }
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2240723
+    @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=1987355")
     @Test
     fun testPageReloadAfterNetworkInterrupted() {
         val url = "example.com"
 
-        activityTestRule.launchActivity(null)
+        composeTestRule.activityRule.launchActivity(null)
 
-        navigationToolbar {
+        navigationToolbar(composeTestRule) {
         }.enterURLAndEnterToBrowser(url.toUri()) {}
 
         setNetworkEnabled(false)
 
-        browserScreen {
+        browserScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.refreshPage { }
+        }.clickRefreshButton { }
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2240721
+    @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=1987355")
+    @SdkSuppress(minSdkVersion = 34)
     @SmokeTest
     @Test
     fun testSignInPageWithNoNetworkConnection() {
         setNetworkEnabled(false)
 
-        activityTestRule.launchActivity(null)
+        composeTestRule.activityRule.launchActivity(null)
 
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
-        }.openTurnOnSyncMenu {
+        }.clickSettingsButton {
+        }.openTurnOnSyncMenu(composeTestRule) {
             tapOnUseEmailToSignIn()
-            browserScreen {
+            browserScreen(composeTestRule) {
                 verifyUrl("firefox.com")
             }
         }

@@ -65,7 +65,7 @@ downloads-cmd-always-use-system-default-named =
 # We can use the same accesskey as downloads-cmd-always-use-system-default.
 # Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-open-similar-files =
-    .label = افتح الملفات المشابهة دائما
+    .label = افتح الملفات المشابهة دائمًا
     .accesskey = ئ
 downloads-cmd-show-button-2 =
     .tooltiptext =
@@ -182,6 +182,18 @@ downloads-history =
 # that we are showing the details of a single download.
 downloads-details =
     .title = تفاصيل التنزيل
+
+## These strings are displayed in the private browsing view of the downloads panel
+
+downloads-private-browsing-details =
+    .title = تبقى الملفات على جهازك
+downloads-private-browsing-message = يمكن لأي شخص يستخدم هذا الجهاز رؤية التنزيلات، حتى عندما تغلق جميع النوافذ الخاصة.
+downloads-private-browsing-delete-button =
+    .label = حذف الملفات تلقائيًا
+    .accesskey = ذ
+downloads-private-browsing-accept-button =
+    .label = فهمت
+    .accesskey = ه
 
 ## Displayed when a site attempts to automatically download many files.
 ## Variables:

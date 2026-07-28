@@ -9,7 +9,7 @@ places-open-in-tab =
     .label = Otwórz w nowej karcie
     .accesskey = w
 places-open-in-container-tab =
-    .label = Otwórz w nowej karcie z kontekstem
+    .label = Otwórz w nowej karcie w kontenerze
     .accesskey = k
 places-open-all-bookmarks =
     .label = Otwórz wszystkie zakładki
@@ -98,7 +98,7 @@ places-delete-page =
            *[other] Usuń te strony
         }
     .accesskey = s
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Zakładki zarządzane przez administratora
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -267,3 +267,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = System zakładek i historii nie będzie działał, ponieważ jeden z plików programu { -brand-short-name } jest używany przez inną aplikację. Niektóre programy związane z bezpieczeństwem mogą powodować ten problem.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Udostępnij folder
+    .badge = Nowe

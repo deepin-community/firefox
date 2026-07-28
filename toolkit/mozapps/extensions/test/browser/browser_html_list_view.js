@@ -118,7 +118,10 @@ add_task(async function testExtensionList() {
     "extension-enable-addon-button-label",
     "The toggle has the enable label"
   );
-  ok(disableToggle.getAttribute("aria-label"), "There's an aria-label");
+  ok(
+    disableToggle.buttonEl.getAttribute("aria-label"),
+    "There's an aria-label"
+  );
   ok(!disableToggle.hidden, "The toggle is visible");
 
   let disabled = BrowserTestUtils.waitForEvent(list, "move");
@@ -137,7 +140,10 @@ add_task(async function testExtensionList() {
     "extension-enable-addon-button-label",
     "The button has the same enable label"
   );
-  ok(disableToggle.getAttribute("aria-label"), "There's an aria-label");
+  ok(
+    disableToggle.buttonEl.getAttribute("aria-label"),
+    "There's an aria-label"
+  );
 
   // Remove the add-on.
   let removeButton = card.querySelector('[action="remove"]');
@@ -458,7 +464,7 @@ add_task(async function testOpenDetailFromNameKeyboard() {
   is(
     card.addonNameEl.textContent,
     "Detail extension",
-    "The right detail view is laoded"
+    "The right detail view is loaded"
   );
 
   await extension.unload();
@@ -743,18 +749,16 @@ add_task(async function testSideloadRemoveButton() {
   ok(removeButton.disabled, "Remove is disabled");
   ok(!removeButton.hidden, "Remove is visible");
 
-  // Remove but cancel.
+  // Verify it cannot be uninstalled even if the remove button is somehow
+  // enabled (regression test for bug 1658768). When disabled, the click
+  // would trivially not register, so we temporarily enable the button.
+  removeButton.disabled = false;
   let prevented = BrowserTestUtils.waitForEvent(card, "remove-disabled");
-  // We intentionally turn off this a11y check, because the following click
-  // is purposefully targeting a disabled control to confirm the click event
-  // won't come through. It is not meant to be interactive and is not expected
-  // to be accessible, therefore the rule check shall be ignored by a11y_checks.
-  AccessibilityUtils.setEnv({ mustHaveAccessibleRule: false });
   removeButton.click();
-  AccessibilityUtils.resetEnv();
   await prevented;
+  removeButton.disabled = true;
 
-  // reopen the panel
+  // Reopen the panel.
   panelOpened = BrowserTestUtils.waitForEvent(moreOptionsPanel, "shown");
   EventUtils.synthesizeMouseAtCenter(moreOptionsButton, {}, win);
   await panelOpened;
@@ -955,17 +959,26 @@ add_task(async function testDisabledDimming() {
   EventUtils.synthesizeMouseAtCenter(pageHeader, {}, win);
   AccessibilityUtils.resetEnv();
 
-  const checkOpacity = (card, expected, msg) => {
-    let { opacity } = card.ownerGlobal.getComputedStyle(card.firstElementChild);
-    let normalize = val => Math.floor(val * 10);
-    is(normalize(opacity), normalize(expected), msg);
+  const normalize = val => Math.floor(val * 10);
+  const getOpacity = card => {
+    let { opacity } = card.documentGlobal.getComputedStyle(
+      card.firstElementChild
+    );
+    return normalize(opacity);
   };
-  const waitForTransition = card =>
+  const checkOpacity = (card, expected, msg) => {
+    is(getOpacity(card), normalize(expected), msg);
+  };
+  const waitForOpacityTransitionEnd = (card, waitForOpacity) =>
     BrowserTestUtils.waitForEvent(
       card.firstElementChild,
       "transitionend",
       /* capture = */ false,
-      e => e.propertyName === "opacity" && e.target.classList.contains("card")
+      e => {
+        const isCardOpacity =
+          e.propertyName === "opacity" && e.target.classList.contains("card");
+        return isCardOpacity && getOpacity(card) === normalize(waitForOpacity);
+      }
     );
 
   let card = getCardByAddonId(doc, id);
@@ -982,14 +995,14 @@ add_task(async function testDisabledDimming() {
   checkOpacity(card, "0.6", "The opacity is dimmed when disabled");
 
   // Click on the menu button, this should un-dim the card.
-  let transitionEnded = waitForTransition(card);
+  let transitionEnded = waitForOpacityTransitionEnd(card, "1");
   let moreOptionsButton = card.querySelector(".more-options-button");
   EventUtils.synthesizeMouseAtCenter(moreOptionsButton, {}, win);
   await transitionEnded;
   checkOpacity(card, "1", "The opacity is 1 when the menu is open");
 
   // Close the menu, opacity should return.
-  transitionEnded = waitForTransition(card);
+  transitionEnded = waitForOpacityTransitionEnd(card, "0.6");
   // We intentionally turn off this a11y check, because the following click
   // is purposefully targeting a non-interactive element to dismiss the opened
   // menu with a mouse which can be done by assistive technology and keyboard

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,22 +23,6 @@ class TrackInfo;
 class MediaByteBuffer;
 
 namespace dom {
-
-struct VideoColorSpaceInternal {
-  explicit VideoColorSpaceInternal(const VideoColorSpaceInit& aColorSpaceInit);
-  VideoColorSpaceInternal() = default;
-  VideoColorSpaceInit ToColorSpaceInit() const;
-
-  bool operator==(const VideoColorSpaceInternal& aOther) const {
-    return mFullRange == aOther.mFullRange && mMatrix == aOther.mMatrix &&
-           mPrimaries == aOther.mPrimaries && mTransfer == aOther.mTransfer;
-  }
-
-  Maybe<bool> mFullRange;
-  Maybe<VideoMatrixCoefficients> mMatrix;
-  Maybe<VideoColorPrimaries> mPrimaries;
-  Maybe<VideoTransferCharacteristics> mTransfer;
-};
 
 class VideoDecoderConfigInternal {
  public:

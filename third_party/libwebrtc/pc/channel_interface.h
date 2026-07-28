@@ -11,27 +11,28 @@
 #ifndef PC_CHANNEL_INTERFACE_H_
 #define PC_CHANNEL_INTERFACE_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
+#include "absl/functional/any_invocable.h"
 #include "absl/strings/string_view.h"
 #include "api/jsep.h"
 #include "api/media_types.h"
+#include "api/rtc_error.h"
 #include "media/base/media_channel.h"
+#include "media/base/stream_params.h"
 #include "pc/rtp_transport_internal.h"
+#include "pc/session_description.h"
 
 namespace webrtc {
 class Call;
+class RtpPacketReceived;
 class VideoBitrateAllocatorFactory;
+class VideoChannel;
+class VoiceChannel;
 }  // namespace webrtc
 
-namespace cricket {
-
-class VoiceChannel;
-class VideoChannel;
-class MediaContentDescription;
-struct MediaConfig;
+namespace webrtc {
 
 // A Channel is a construct that groups media streams of the same type
 // (audio or video), both outgoing and incoming.
@@ -47,7 +48,7 @@ struct MediaConfig;
 class ChannelInterface {
  public:
   virtual ~ChannelInterface() = default;
-  virtual cricket::MediaType media_type() const = 0;
+  virtual MediaType media_type() const = 0;
 
   virtual VideoChannel* AsVideoChannel() = 0;
   virtual VoiceChannel* AsVoiceChannel() = 0;
@@ -76,17 +77,20 @@ class ChannelInterface {
   virtual void Enable(bool enable) = 0;
 
   // Used for latency measurements.
-  virtual void SetFirstPacketReceivedCallback(
-      std::function<void()> callback) = 0;
+  virtual void SetFirstPacketReceivedCallback_n(
+      absl::AnyInvocable<void(const RtpPacketReceived&) &&> callback) = 0;
+  virtual void SetFirstPacketSentCallback_n(
+      absl::AnyInvocable<void() &&> callback) = 0;
+
+  // Used to unmute.
+  virtual void SetPacketReceivedCallback_n(
+      absl::AnyInvocable<void(const RtpPacketReceived&)> callback) = 0;
 
   // Channel control
-  virtual bool SetLocalContent(const MediaContentDescription* content,
-                               webrtc::SdpType type,
-                               std::string& error_desc) = 0;
-  virtual bool SetRemoteContent(const MediaContentDescription* content,
-                                webrtc::SdpType type,
-                                std::string& error_desc) = 0;
-  virtual bool SetPayloadTypeDemuxingEnabled(bool enabled) = 0;
+  virtual RTCError SetLocalContent(const MediaContentDescription* content,
+                                   SdpType type) = 0;
+  virtual RTCError SetRemoteContent(const MediaContentDescription* content,
+                                    SdpType type) = 0;
 
   // Access to the local and remote streams that were set on the channel.
   virtual const std::vector<StreamParams>& local_streams() const = 0;
@@ -97,9 +101,10 @@ class ChannelInterface {
   //   * An RtpTransport without encryption.
   //   * An SrtpTransport for SDES.
   //   * A DtlsSrtpTransport for DTLS-SRTP.
-  virtual bool SetRtpTransport(webrtc::RtpTransportInternal* rtp_transport) = 0;
+  virtual bool SetRtpTransport(RtpTransportInternal* rtp_transport) = 0;
 };
 
-}  // namespace cricket
+}  //  namespace webrtc
+
 
 #endif  // PC_CHANNEL_INTERFACE_H_

@@ -1,14 +1,14 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsHttpResponseHead_h__
-#define nsHttpResponseHead_h__
+#ifndef nsHttpResponseHead_h_
+#define nsHttpResponseHead_h_
 
 #include "nsHttpHeaderArray.h"
 #include "nsHttp.h"
 #include "nsString.h"
+#include "mozilla/MemoryReporting.h"
 #include "mozilla/RecursiveMutex.h"
 
 #ifdef Status
@@ -41,6 +41,7 @@ class nsHttpResponseHead {
   nsHttpResponseHead() = default;
 
   nsHttpResponseHead(const nsHttpResponseHead& aOther);
+  nsHttpResponseHead(nsHttpResponseHead&& aOther);
   nsHttpResponseHead& operator=(const nsHttpResponseHead& aOther);
 
   void Enter() const MOZ_CAPABILITY_ACQUIRE(mRecursiveMutex) {
@@ -51,7 +52,7 @@ class nsHttpResponseHead {
   }
   void AssertMutexOwned() const { mRecursiveMutex.AssertCurrentThreadIn(); }
 
-  HttpVersion Version();
+  HttpVersion Version() const;
   uint16_t Status() const;
   void StatusText(nsACString& aStatusText);
   int64_t ContentLength();
@@ -71,6 +72,8 @@ class nsHttpResponseHead {
 
   [[nodiscard]] nsresult SetHeader(const nsACString& h, const nsACString& v,
                                    bool m = false);
+  [[nodiscard]] nsresult SetHeaderOverride(const nsHttpAtom& h,
+                                           const nsACString& v);
   [[nodiscard]] nsresult SetHeader(const nsHttpAtom& h, const nsACString& v,
                                    bool m = false);
   [[nodiscard]] nsresult GetHeader(const nsHttpAtom& h, nsACString& v) const;
@@ -146,6 +149,17 @@ class nsHttpResponseHead {
   bool HasContentCharset();
   bool GetContentTypeOptionsHeader(nsACString& aOutput);
 
+  size_t SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const {
+    return aMallocSizeOf(this) + SizeOfExcludingThis(aMallocSizeOf);
+  }
+
+  size_t SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const {
+    RecursiveMutexAutoLock monitor(mRecursiveMutex);
+    return mStatusText.SizeOfExcludingThisIfUnshared(aMallocSizeOf) +
+           mContentType.SizeOfExcludingThisIfUnshared(aMallocSizeOf) +
+           mContentCharset.SizeOfExcludingThisIfUnshared(aMallocSizeOf);
+  }
+
  private:
   [[nodiscard]] nsresult SetHeader_locked(const nsHttpAtom& atom,
                                           const nsACString& h,
@@ -158,6 +172,9 @@ class nsHttpResponseHead {
   // Parses a content-length header-value as described in
   // https://fetch.spec.whatwg.org/#content-length-header
   nsresult ParseResponseContentLength(const nsACString& aHeaderStr)
+      MOZ_REQUIRES(mRecursiveMutex);
+  void ParseContentTypeValue(const nsHttpAtom& aAtom,
+                             const nsACString& aContentTypeValue)
       MOZ_REQUIRES(mRecursiveMutex);
 
   nsresult ParseStatusLine_locked(const nsACString& line)
@@ -197,9 +214,16 @@ class nsHttpResponseHead {
   }
 
   bool NoCache_locked() const MOZ_REQUIRES(mRecursiveMutex) {
-    // We ignore Pragma: no-cache if Cache-Control is set.
     MOZ_ASSERT_IF(mCacheControlNoCache, mHasCacheControl);
-    return mHasCacheControl ? mCacheControlNoCache : mPragmaNoCache;
+    // Normally we would ignore Pragma: no-cache if Cache-Control is set.
+    // But since all other browsers treat the existence of Pragma: no-cache
+    // as a signal to not-cache even when it conflicts with Cache-Control
+    // it is safer just to do the same. Previous behaviour where Pragma
+    // was ignored when Cache-Control was present resulted in several
+    // web-compat issues (Bug 1937766)
+    // However, the presence of cacheControl immutable indicates that
+    // pragma: no-cache is incorrectly added to the response.
+    return (mPragmaNoCache && !mCacheControlImmutable) || mCacheControlNoCache;
   }
 
  private:
@@ -209,6 +233,7 @@ class nsHttpResponseHead {
   uint16_t mStatus MOZ_GUARDED_BY(mRecursiveMutex){200};
   nsCString mStatusText MOZ_GUARDED_BY(mRecursiveMutex);
   int64_t mContentLength MOZ_GUARDED_BY(mRecursiveMutex){-1};
+  nsCString mContentTypeBuffer MOZ_GUARDED_BY(mRecursiveMutex);
   nsCString mContentType MOZ_GUARDED_BY(mRecursiveMutex);
   nsCString mContentCharset MOZ_GUARDED_BY(mRecursiveMutex);
   bool mHasCacheControl MOZ_GUARDED_BY(mRecursiveMutex){false};
@@ -236,4 +261,4 @@ class nsHttpResponseHead {
 }  // namespace net
 }  // namespace mozilla
 
-#endif  // nsHttpResponseHead_h__
+#endif  // nsHttpResponseHead_h_

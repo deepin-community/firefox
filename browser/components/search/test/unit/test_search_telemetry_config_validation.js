@@ -6,9 +6,11 @@
 ChromeUtils.defineESModuleGetters(this, {
   AppConstants: "resource://gre/modules/AppConstants.sys.mjs",
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
-  TELEMETRY_SETTINGS_KEY: "resource:///modules/SearchSERPTelemetry.sys.mjs",
+  TELEMETRY_SETTINGS_KEY:
+    "moz-src:///browser/components/search/SearchSERPTelemetry.sys.mjs",
   JsonSchema: "resource://gre/modules/JsonSchema.sys.mjs",
-  SearchEngineSelector: "resource://gre/modules/SearchEngineSelector.sys.mjs",
+  SearchEngineSelector:
+    "moz-src:///toolkit/components/search/SearchEngineSelector.sys.mjs",
 });
 
 /**
@@ -45,7 +47,7 @@ function disallowAdditionalProperties(section) {
     return;
   }
 
-  if (section.type == "object") {
+  if (section.type == "object" && (!"additionalProperties") in section) {
     section.additionalProperties = false;
   }
   for (let value of Object.values(section)) {
@@ -116,10 +118,9 @@ add_task(async function test_search_config_codes_in_search_telemetry() {
         `Should have the base partner code ${engine.base.partnerCode} listed in the search telemetry 'taggedCodes'`
       );
     } else {
-      Assert.equal(
-        telemetryEntry.telemetryId,
-        "baidu",
-        "Should only not have a base partner code for Baidu"
+      Assert.ok(
+        ["google", "baidu"].includes(telemetryEntry.telemetryId),
+        "Should only not have a base partner code for Google and Baidu"
       );
     }
 
@@ -130,6 +131,17 @@ add_task(async function test_search_config_codes_in_search_telemetry() {
             telemetryEntry.taggedCodes.includes(variant.partnerCode),
             `Should have the partner code ${variant.partnerCode} listed in the search telemetry 'taggedCodes'`
           );
+        }
+
+        if (variant.subVariants) {
+          for (let subVariant of variant.subVariants) {
+            if ("partnerCode" in subVariant) {
+              Assert.ok(
+                telemetryEntry.taggedCodes.includes(subVariant.partnerCode),
+                `Should have the partner code ${subVariant.partnerCode} listed in the search telemetry 'taggedCodes'`
+              );
+            }
+          }
         }
       }
     }

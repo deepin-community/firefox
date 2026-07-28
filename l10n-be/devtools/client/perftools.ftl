@@ -33,11 +33,33 @@ perftools-description-local-build =
     Калі вы прафілюеце зборку, якую вы зкампілявалі самі, на гэтай
     машыне, калі ласка, дадайце objdir вашай зборкі ў спіс ніжэй, каб
     яго можна было выкарыстоўваць для пошуку інфармацыі пра сімвалы.
+perftools-pick-local-build-directory = Выберыце каталог зборкі
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Інтэрвал выбаркі:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } мс
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } Б
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } КіБ
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } МіБ
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } ГіБ
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } ТіБ
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } ПіБ
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } ЕіБ
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ЗіБ
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } ЁіБ
 
 ##
 
@@ -68,6 +90,14 @@ perftools-button-restart = Перазапусціць
 perftools-button-add-directory = Дадаць каталог
 perftools-button-remove-directory = Выдаліць абранае
 perftools-button-edit-settings = Змянiць налады...
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Дадатковыя дзеянні
+perftools-menu-more-actions-restart-with-profiling = Перазапусціць { -brand-shorter-name } з уключаным прафіляваннем запуску
+perftools-menu-more-actions-copy-for-startup = Скапіяваць зменныя асяроддзя для прафілявання запуску
+perftools-menu-more-actions-copy-for-perf-tests = Скапіяваць параметры для тэстаў прадукцыйнасці
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -141,6 +171,8 @@ perftools-presets-graphics-label = Графіка
 perftools-presets-graphics-description = Папярэднія налады для даследавання хібаў графікі ў { -brand-shorter-name }.
 perftools-presets-media-label = Медыя
 perftools-presets-media-description2 = Папярэднія налады для даследавання хібаў гуку і відэа ў { -brand-shorter-name }.
+perftools-presets-ml-label = Машыннае навучанне
+perftools-presets-ml-description2 = Папярэднія налады для даследавання хібаў машыннага навучання ў { -brand-shorter-name }.
 perftools-presets-networking-label = Сетка
 perftools-presets-networking-description = Папярэднія налады для даследавання сеткавых хібаў у { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -148,7 +180,6 @@ perftools-presets-power-label = Сілкаванне
 perftools-presets-power-description = Папярэднія налады для даследавання хібаў спажывання энергіі ў { -brand-shorter-name }, з невялікімі выдаткамі.
 perftools-presets-debug-label = Адладка
 perftools-presets-debug-description = Папярэднія налады для адладкі ў { -brand-shorter-name }. Вялікія накладныя выдаткі, выкарыстоўвайце не для павышэння прадукцыйнасці, а для канцэнтрацыі ўвагі на разуменні паводзін браўзера.
+perftools-presets-web-compat-label = Вэб-сумяшчальнасць
+perftools-presets-web-compat-description = Рэкамендаваныя папярэднія налады для адладкі праблем сумяшчальнасці ў сайтах, а не для сачэння за хуткадзейнасцю.
 perftools-presets-custom-label = Адмысловыя
-
-##
-

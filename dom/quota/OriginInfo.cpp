@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,35 +12,35 @@
 
 namespace mozilla::dom::quota {
 
+// This constructor is called from the "QuotaManager IO" thread and so we
+// can't check if the principal has a WebExtensionPolicy instance associated
+// to it, and even besides that if the extension is currently disabled (and so
+// no WebExtensionPolicy instance would actually exist) its stored data
+// shouldn't be cleared until the extension is uninstalled and so here we
+// resort to check the origin scheme instead to initialize mIsExtension.
 OriginInfo::OriginInfo(GroupInfo* aGroupInfo, const nsACString& aOrigin,
                        const nsACString& aStorageOrigin, bool aIsPrivate,
                        const ClientUsageArray& aClientUsages, uint64_t aUsage,
-                       int64_t aAccessTime, bool aPersisted,
-                       bool aDirectoryExists)
-    : mClientUsages(aClientUsages.Clone()),
-      mGroupInfo(aGroupInfo),
+                       int64_t aAccessTime, int32_t aMaintenanceDate,
+                       bool aPersisted, bool aDirectoryExists)
+    : mGroupInfo(aGroupInfo),
       mOrigin(aOrigin),
       mStorageOrigin(aStorageOrigin),
-      mUsage(aUsage),
       mAccessTime(aAccessTime),
+      mMaintenanceDate(aMaintenanceDate),
       mIsPrivate(aIsPrivate),
       mAccessed(false),
       mPersisted(aPersisted),
-      mDirectoryExists(aDirectoryExists) {
+      mIsExtension(StringBeginsWith(aOrigin, "moz-extension://"_ns)),
+      mDirectoryExists(aDirectoryExists),
+      mClientUsages(aClientUsages),
+      mUsage(aUsage) {
   MOZ_ASSERT(aGroupInfo);
   MOZ_ASSERT_IF(!aIsPrivate, aOrigin == aStorageOrigin);
   MOZ_ASSERT_IF(aIsPrivate, aOrigin != aStorageOrigin);
   MOZ_ASSERT(aClientUsages.Length() == Client::TypeMax());
   MOZ_ASSERT_IF(aPersisted,
                 aGroupInfo->mPersistenceType == PERSISTENCE_TYPE_DEFAULT);
-
-  // This constructor is called from the "QuotaManager IO" thread and so
-  // we can't check if the principal has a WebExtensionPolicy instance
-  // associated to it, and even besides that if the extension is currently
-  // disabled (and so no WebExtensionPolicy instance would actually exist)
-  // its stored data shouldn't be cleared until the extension is uninstalled
-  // and so here we resort to check the origin scheme instead.
-  mIsExtension = StringBeginsWith(mOrigin, "moz-extension://"_ns);
 
 #ifdef DEBUG
   QuotaManager* quotaManager = QuotaManager::Get();
@@ -68,10 +66,17 @@ OriginMetadata OriginInfo::FlattenToOriginMetadata() const {
           mGroupInfo->mPersistenceType};
 }
 
+OriginStateMetadata OriginInfo::LockedFlattenToOriginStateMetadata() const {
+  AssertCurrentThreadOwnsQuotaMutex();
+
+  return {mAccessTime, mMaintenanceDate, mAccessed, mPersisted};
+}
+
 FullOriginMetadata OriginInfo::LockedFlattenToFullOriginMetadata() const {
   AssertCurrentThreadOwnsQuotaMutex();
 
-  return {FlattenToOriginMetadata(), mPersisted, mAccessTime};
+  return {FlattenToOriginMetadata(), LockedFlattenToOriginStateMetadata(),
+          mClientUsages, mUsage, kCurrentQuotaVersion};
 }
 
 nsresult OriginInfo::LockedBindToStatement(
@@ -98,6 +103,8 @@ nsresult OriginInfo::LockedBindToStatement(
   QM_TRY(MOZ_TO_RESULT(aStatement->BindInt64ByName("usage"_ns, mUsage)));
   QM_TRY(MOZ_TO_RESULT(
       aStatement->BindInt64ByName("last_access_time"_ns, mAccessTime)));
+  QM_TRY(MOZ_TO_RESULT(aStatement->BindInt32ByName("last_maintenance_date"_ns,
+                                                   mMaintenanceDate)));
   QM_TRY(MOZ_TO_RESULT(aStatement->BindInt32ByName("accessed"_ns, mAccessed)));
   QM_TRY(
       MOZ_TO_RESULT(aStatement->BindInt32ByName("persisted"_ns, mPersisted)));
@@ -172,6 +179,167 @@ void OriginInfo::LockedPersist() {
   // Remove Usage from GroupInfo
   AssertNoUnderflow(mGroupInfo->mUsage, mUsage);
   mGroupInfo->mUsage -= mUsage;
+}
+
+void OriginInfo::LockedTruncateUsages(Client::Type aClientType,
+                                      uint64_t aDelta) {
+  AssertCurrentThreadOwnsQuotaMutex();
+
+  QuotaManager* quotaManager = QuotaManager::Get();
+  MOZ_ASSERT(quotaManager);
+
+  AssertNoUnderflow(quotaManager->mTemporaryStorageUsage, aDelta);
+  quotaManager->mTemporaryStorageUsage -= aDelta;
+
+  if (!LockedPersisted()) {
+    AssertNoUnderflow(mGroupInfo->mUsage, aDelta);
+    mGroupInfo->mUsage -= aDelta;
+  }
+
+  AssertNoUnderflow(mUsage, aDelta);
+  mUsage -= aDelta;
+
+  MOZ_ASSERT(mClientUsages[aClientType].isSome());
+  AssertNoUnderflow(mClientUsages[aClientType].value(), aDelta);
+  mClientUsages[aClientType] =
+      Some(mClientUsages[aClientType].value() - aDelta);
+};
+
+Maybe<bool> OriginInfo::LockedUpdateUsages(Client::Type aClientType,
+                                           uint64_t aDelta) {
+  AssertCurrentThreadOwnsQuotaMutex();
+
+  QuotaManager* quotaManager = QuotaManager::Get();
+  MOZ_ASSERT(quotaManager);
+
+  const auto& complementaryPersistenceTypes =
+      ComplementaryPersistenceTypes(mGroupInfo->mPersistenceType);
+
+  AssertNoOverflow(mClientUsages[aClientType].valueOr(0), aDelta);
+  uint64_t newClientUsage = mClientUsages[aClientType].valueOr(0) + aDelta;
+
+  AssertNoOverflow(mUsage, aDelta);
+  uint64_t newUsage = mUsage + aDelta;
+
+  // Temporary storage has no limit for origin usage (there's a group and the
+  // global limit though).
+
+  uint64_t newGroupUsage = mGroupInfo->mUsage;
+  if (!LockedPersisted()) {
+    AssertNoOverflow(mGroupInfo->mUsage, aDelta);
+    newGroupUsage += aDelta;
+
+    uint64_t groupUsage = mGroupInfo->mUsage;
+    for (const auto& complementaryPersistenceType :
+         complementaryPersistenceTypes) {
+      const auto& complementaryGroupInfo =
+          mGroupInfo->mGroupInfoPair->LockedGetGroupInfo(
+              complementaryPersistenceType);
+
+      if (complementaryGroupInfo) {
+        AssertNoOverflow(groupUsage, complementaryGroupInfo->mUsage);
+        groupUsage += complementaryGroupInfo->mUsage;
+      }
+    }
+
+    // Temporary storage has a hard limit for group usage (20 % of the global
+    // limit).
+    AssertNoOverflow(groupUsage, aDelta);
+    if (groupUsage + aDelta > quotaManager->GetGroupLimit()) {
+      return Some(false);
+    }
+  }
+
+  AssertNoOverflow(quotaManager->mTemporaryStorageUsage, aDelta);
+  uint64_t newTemporaryStorageUsage =
+      quotaManager->mTemporaryStorageUsage + aDelta;
+
+  if (newTemporaryStorageUsage <= quotaManager->mTemporaryStorageLimit) {
+    mClientUsages[aClientType] = Some(newClientUsage);
+
+    mUsage = newUsage;
+    if (!LockedPersisted()) {
+      mGroupInfo->mUsage = newGroupUsage;
+    }
+    quotaManager->mTemporaryStorageUsage = newTemporaryStorageUsage;
+
+    return Some(true);
+  }
+
+  return Nothing();
+}
+
+bool OriginInfo::LockedUpdateUsagesForEviction(Client::Type aClientType,
+                                               uint64_t aDelta) {
+  AssertCurrentThreadOwnsQuotaMutex();
+
+  QuotaManager* quotaManager = QuotaManager::Get();
+  MOZ_ASSERT(quotaManager);
+
+  AssertNoOverflow(mUsage, aDelta);
+  uint64_t newUsage = mUsage + aDelta;
+
+  AssertNoOverflow(mClientUsages[aClientType].valueOr(0), aDelta);
+  uint64_t newClientUsage = mClientUsages[aClientType].valueOr(0) + aDelta;
+
+  AssertNoOverflow(quotaManager->mTemporaryStorageUsage, aDelta);
+  uint64_t newTemporaryStorageUsage =
+      quotaManager->mTemporaryStorageUsage + aDelta;
+
+  uint64_t newGroupUsage = mGroupInfo->mUsage;
+  if (!LockedPersisted()) {
+    AssertNoOverflow(mGroupInfo->mUsage, aDelta);
+    newGroupUsage += aDelta;
+
+    uint64_t groupUsage = mGroupInfo->mUsage;
+
+    const auto& complementaryPersistenceTypes =
+        ComplementaryPersistenceTypes(mGroupInfo->mPersistenceType);
+    for (const auto& complementaryPersistenceType :
+         complementaryPersistenceTypes) {
+      const auto& complementaryGroupInfo =
+          mGroupInfo->mGroupInfoPair->LockedGetGroupInfo(
+              complementaryPersistenceType);
+
+      if (complementaryGroupInfo) {
+        AssertNoOverflow(groupUsage, complementaryGroupInfo->mUsage);
+        groupUsage += complementaryGroupInfo->mUsage;
+      }
+    }
+
+    AssertNoOverflow(groupUsage, aDelta);
+    if (groupUsage + aDelta > quotaManager->GetGroupLimit()) {
+      // Unfortunately some other thread increased the group usage in the
+      // meantime and we are not below the group limit anymore.
+      return false;
+    }
+  }
+
+  AssertNoOverflow(quotaManager->mTemporaryStorageUsage, aDelta);
+  newTemporaryStorageUsage = quotaManager->mTemporaryStorageUsage + aDelta;
+
+  NS_ASSERTION(newTemporaryStorageUsage <= quotaManager->mTemporaryStorageLimit,
+               "How come?!");
+
+  // Ok, we successfully freed enough space and the operation can continue
+  // without throwing the quota error.
+  mClientUsages[aClientType] = Some(newClientUsage);
+
+  mUsage = newUsage;
+  if (!LockedPersisted()) {
+    MOZ_ASSERT(mGroupInfo);
+    mGroupInfo->mUsage = newGroupUsage;
+  }
+  quotaManager->mTemporaryStorageUsage = newTemporaryStorageUsage;
+
+  return true;
+};
+
+void OriginInfo::LockedDirectoryCreated() {
+  AssertCurrentThreadOwnsQuotaMutex();
+  MOZ_ASSERT(!mDirectoryExists);
+
+  mDirectoryExists = true;
 }
 
 }  // namespace mozilla::dom::quota

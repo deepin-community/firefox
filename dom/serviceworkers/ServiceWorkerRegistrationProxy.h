@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +5,13 @@
 #ifndef moz_dom_ServiceWorkerRegistrationProxy_h
 #define moz_dom_ServiceWorkerRegistrationProxy_h
 
-#include "mozilla/dom/PServiceWorkerRegistrationParent.h"
-#include "nsProxyRelease.h"
 #include "ServiceWorkerRegistrationDescriptor.h"
 #include "ServiceWorkerRegistrationListener.h"
 #include "ServiceWorkerUtils.h"
+#include "mozilla/dom/ClientInfo.h"
+#include "mozilla/dom/PServiceWorkerRegistrationParent.h"
+#include "mozilla/dom/notification/NotificationUtils.h"
+#include "nsProxyRelease.h"
 
 namespace mozilla::dom {
 
@@ -28,6 +28,7 @@ class ServiceWorkerRegistrationProxy final
 
   // Main thread only
   ServiceWorkerRegistrationDescriptor mDescriptor;
+  ClientInfo mListeningClientInfo;
   nsMainThreadPtrHandle<ServiceWorkerRegistrationInfo> mReg;
 
   ~ServiceWorkerRegistrationProxy();
@@ -65,8 +66,9 @@ class ServiceWorkerRegistrationProxy final
       const ServiceWorkerRegistrationDescriptor& aDescriptor) override;
 
  public:
-  explicit ServiceWorkerRegistrationProxy(
-      const ServiceWorkerRegistrationDescriptor& aDescriptor);
+  ServiceWorkerRegistrationProxy(
+      const ServiceWorkerRegistrationDescriptor& aDescriptor,
+      const ClientInfo& aForClient);
 
   void Init(ServiceWorkerRegistrationParent* aActor);
 
@@ -82,6 +84,9 @@ class ServiceWorkerRegistrationProxy final
   RefPtr<GenericPromise> SetNavigationPreloadHeader(const nsACString& aHeader);
 
   RefPtr<NavigationPreloadStatePromise> GetNavigationPreloadState();
+
+  RefPtr<notification::NotificationsPromise> GetNotifications(
+      const nsAString& aTag);
 
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(ServiceWorkerRegistrationProxy,
                                         override);

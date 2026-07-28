@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Pytanje zmólkow - běžny cas / { $se
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Toś ten { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Toś ten { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Toś ten { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Zarědowanje
+about-debugging-sidebar-setup-title =
+    .title = Zarědowanje
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -200,7 +208,7 @@ about-debugging-browser-version-too-old-fennec = Toś ta wersija Firefox njamó�
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $localVersion } is the version of your current browser (same format)
-about-debugging-browser-version-too-recent = Zwězany wobglědowak jo aktualnjejšy ({ $runtimeVersion }, buildID { $runtimeID }) lěc waš { -brand-shorter-name } ({ $localVersion }, buildID { $localID }). To jo njepódpěrana konfiguracija a móžo zawinowaś, až wuwijaŕske rědy njefunkcioněruju. Pšosym aktualizěrujśo Firefox. <a>Rozwězanje problemow</a>
+about-debugging-browser-version-too-recent = Zwězany wobglědowak jo aktualnjejšy ({ $runtimeVersion }, buildID { $runtimeID }) ako waš { -brand-shorter-name } ({ $localVersion }, buildID { $localID }). To jo njepódpěrana konfiguracija a móžo zawinowaś, až wuwijaŕske rědy njefunkcioněruju. Pšosym aktualizěrujśo Firefox. <a>Rozwězanje problemow</a>
 # Displayed for runtime info in runtime pages.
 # { $name } is brand name such as "Firefox Nightly"
 # { $version } is version such as "64.0a1"
@@ -215,7 +223,7 @@ about-debugging-connection-prompt-enable-button = Zwiskowe napominanje zmóžni�
 # "devtools.debugger.prompt-connection" is true on the target runtime.
 about-debugging-connection-prompt-disable-button = Zwiskowe napominanje znjemóžniś
 # Title of a modal dialog displayed on remote runtime pages after clicking on the Profile Runtime button.
-about-debugging-profiler-dialog-title2 = Profilowaŕ
+about-debugging-profiler-dialog-title2 = Wugbaśowa analyza
 # Clicking on the header of a debug target category will expand or collapse the debug
 # target items in the category. This text is used as ’title’ attribute of the header,
 # to describe this feature.
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Słužba za eksterne powěsći
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Póchad
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Pśeglědanje service worker jo tuchylu znjemóžnjone za multiprocesowy { -brand-shorter-name }
@@ -325,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Multiprocesowe rědy
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Głowny proces a wopśimjeśowe procese za celowy wobglědowak
+about-debugging-message-error-icon =
+    .alt = Zmólkowy symbol
+about-debugging-message-info-icon =
+    .alt = Informaciski symbol
+about-debugging-message-warning-icon =
+    .alt = Warnowański symbol
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Powěźeńku zacyniś
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Powěźeńku zacyniś
@@ -334,3 +354,5 @@ about-debugging-message-details-label-error = Zmólkowe drobnostki
 about-debugging-message-details-label-warning = Warnowańske drobnostki
 # Label text used for default state of details of message component.
 about-debugging-message-details-label = Drobnostki
+about-debugging-sidebar =
+    .heading = Pytanje za zmólkami

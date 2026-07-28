@@ -2,14 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } приватно прелистување
+edit-popup-settings2 =
+    .label = Управувај со поставките за скокачки прозорци и пренасочувања од трети страни…
+    .accesskey = У
 
 ##
 
@@ -121,8 +124,11 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = Обележете ја оваа страница ({ $shortcut })
 
-## Page Action Context Menu
+## Searchbar context menu
 
+clear-search-history =
+    .label = Исчисти ја историјата од пребарувањата
+    .accesskey = И
 
 ## Auto-hide Context Menu
 
@@ -181,11 +187,6 @@ search-one-offs-tabs =
     .tooltiptext = Јазичиња ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Историја ({ $restrict })
-
-## QuickActions are shown in the urlbar as the user types a matching string
-## The -cmd- strings are comma separated list of keywords that will match
-## the action.
-
 
 ## Bookmark Panel
 
@@ -259,7 +260,7 @@ identity-ev-owner-label = Сертификат издаден на:
 identity-description-custom-root2 = Mozilla не го препознава издавачот на овој сертификат. Можеби е додаден од вашиот оперативен систем или од администратор.
 identity-remove-cert-exception =
     .label = Отстрани исклучок
-    .accesskey = Д
+    .accesskey = р
 identity-description-insecure = Вашата врска со оваа страница не е приватна. Информациите што ги доставувате може да ги гледаат други (како лозинки, пораки, кредитни картички, итн.).
 identity-description-insecure-login-forms = Податоците што ги внесувате за најава на оваа страница не се безбедни и би можеле да бидат злоупотребени.
 identity-description-weak-cipher-intro = Вашата врска со ова мрежно место користи слаба енкрипција и не е приватна.
@@ -272,10 +273,10 @@ identity-description-active-loaded = Ова мрежно место има со�
 identity-description-active-loaded-insecure = Податоците што ги споделувате со ова место би можеле да бидат видливи за други (како на пример: лозинки, пораки, кредитни картички и сл.).
 identity-disable-mixed-content-blocking =
     .label = Исклучи заштита за сега
-    .accesskey = Д
+    .accesskey = И
 identity-enable-mixed-content-blocking =
-    .label = Активирај заштита
-    .accesskey = Б
+    .label = Овозможи заштита
+    .accesskey = О
 identity-more-info-link-text =
     .label = Повеќе информации
 
@@ -356,9 +357,6 @@ sharing-warning-proceed-to-tab =
 sharing-warning-disable-for-session =
     .label = Оневозможи заштита за споделување за оваа сесија
 
-## DevTools F12 popup
-
-
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
@@ -412,13 +410,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Проширување:
+urlbar-go-button2 =
+    .title = Ја отвора адресата во локациската лента
 urlbar-go-button =
     .tooltiptext = Ја отвора адресата во локациската лента
 urlbar-page-action-button =
     .tooltiptext = Активности на страница
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -466,6 +467,20 @@ urlbar-result-action-calculator-result = = { $result }
 
 ## Strings used for buttons in the urlbar
 
+urlbar-searchmode-bookmarks =
+    .label = Обележувачи
+urlbar-searchmode-tabs =
+    .label = Јазичиња
+urlbar-searchmode-history =
+    .label = Историја
+urlbar-searchmode-bookmarks2 = Обележувачи
+urlbar-searchmode-tabs2 = Јазичиња
+urlbar-searchmode-history2 = Историја
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = Додадете „{ $engineName }“
+    .title = Додајте пребарувач „{ $engineName }“
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -487,14 +502,6 @@ urlbar-group-firefox-suggest =
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
     .label = Предлози за { $engine }
-
-## Reader View toolbar buttons
-
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -596,7 +603,7 @@ repair-text-encoding-button =
     .label = Поправете го кодирањето на текстот
     .tooltiptext = Одберете го точното кодирање на текст од содржината на страницата
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -644,6 +651,10 @@ eme-notifications-drm-content-playing-dismiss-accesskey = Д
 
 panel-save-update-username = Корисничко име
 panel-save-update-password = Лозинка
+panel-save-update-username-2 =
+    .label = Корисничко име
+panel-save-update-password-2 =
+    .label = Лозинка
 
 ##
 
@@ -669,18 +680,18 @@ popups-infobar-dont-show-message =
     .label = Не ја покажувај оваа порака кога се блокираат скокачки прозорци
     .accesskey = Н
 edit-popup-settings =
-    .label = Управувајте со поставките за скокачки прозорци…
-    .accesskey = М
+    .label = Управувај со поставките за скокачки прозорци…
+    .accesskey = У
 picture-in-picture-hide-toggle =
-    .label = Сокриј го менувачот слика-во-слика
-    .accesskey = Х
+    .label = Скриј го копчето за слика-во-слика
+    .accesskey = к
 
 ## Since the default position for PiP controls does not change for RTL layout,
 ## right-to-left languages should use "Left" and "Right" as in the English strings,
 
 picture-in-picture-move-toggle-right =
-    .label = Преместете го копчето „Слика во слика“ на десната страна
-    .accesskey = R
+    .label = Премести го копчето за слика-во-слика на десната страна
+    .accesskey = р
 picture-in-picture-move-toggle-left =
     .label = Преместете го копчето „Слика во слика“ на левата страна
     .accesskey = Л
@@ -729,29 +740,12 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Отворете ги претходните јазичиња?</strong> Можете да ја вратите претходната сесија од менито на апликацијата { -brand-short-name } <img data-l10n-name="icon"/>, под Историја.
 restore-session-startup-suggestion-button = Покажи ми како.
 
-## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = За да го подобриме вашето доживување { -brand-short-name } автоматски испраќа некои податоци до { -vendor-short-name }.
 data-reporting-notification-button =
     .label = Што споделувам?
     .accesskey = с
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -760,9 +754,6 @@ refresh-blocked-redirect-label = { -brand-short-name } спречи оваа с�
 refresh-blocked-allow =
     .label = Дозволи
     .accesskey = Д
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

@@ -15,7 +15,7 @@ function sendCommandAsync(command) {
   });
 }
 
-/*
+/**
  * Run an xpcshell subprocess and crash it.
  *
  * @param setup
@@ -41,7 +41,6 @@ function sendCommandAsync(command) {
  *       If true, the subprocess may return with a zero exit code.
  *       Certain types of crashes may not cause the process to
  *       exit with an error.
- *
  */
 async function do_crash(setup, callback, canReturnZero) {
   // get current process filename (xpcshell)
@@ -103,24 +102,25 @@ function getMinidump() {
   return null;
 }
 
-function getMinidumpAnalyzerPath() {
+function getCrashReporterPath() {
+  const binPrefix =
+    AppConstants.platform === "macosx"
+      ? "crashreporter.app/Contents/MacOS/"
+      : "";
   const binSuffix = AppConstants.platform === "win" ? ".exe" : "";
-  const exeName = "minidump-analyzer" + binSuffix;
+  const exeName = binPrefix + "crashreporter" + binSuffix;
 
   let exe = Services.dirsvc.get("GreBinD", Ci.nsIFile);
-  exe.append(exeName);
+  exe.appendRelativePath(exeName);
 
   return exe;
 }
 
-function runMinidumpAnalyzer(dumpFile, additionalArgs) {
-  let bin = getMinidumpAnalyzerPath();
+function runMinidumpAnalyzer(dumpFile) {
+  let bin = getCrashReporterPath();
   let process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
   process.init(bin);
-  let args = [];
-  if (additionalArgs) {
-    args = args.concat(additionalArgs);
-  }
+  let args = ["--analyze"];
   args.push(dumpFile.path);
   process.run(true /* blocking */, args, args.length);
 }
@@ -157,6 +157,8 @@ async function handleMinidump(callback) {
 
   Assert.ok(extrafile.exists());
   let extra = await IOUtils.readJSON(extrafile.path);
+  // No matter how we crash, there should always be a crash id
+  Assert.ok("CrashEventID" in extra);
 
   if (callback) {
     await callback(minidump, extra, extrafile, memoryfile);
@@ -253,7 +255,7 @@ async function do_triggered_content_crash(trigger, callback) {
   }
 }
 
-/*
+/**
  * Run the `crash` backgroundtask subprocess, crashing it in the
  * specified manner.
  *
@@ -273,7 +275,6 @@ async function do_triggered_content_crash(trigger, callback) {
  *       If true, the subprocess may return with a zero exit code.
  *       Certain types of crashes may not cause the process to
  *       exit with an error.
- *
  */
 async function do_backgroundtask_crash(
   crashType,

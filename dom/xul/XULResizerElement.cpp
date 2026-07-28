@@ -1,19 +1,17 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/XULResizerElement.h"
-#include "mozilla/dom/XULResizerElementBinding.h"
 
 #include "mozilla/EventDispatcher.h"
+#include "mozilla/MouseEvents.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/DocumentInlines.h"
-#include "mozilla/MouseEvents.h"
+#include "mozilla/dom/XULResizerElementBinding.h"
 #include "nsContentUtils.h"
-#include "nsICSSDeclaration.h"
+#include "nsDOMCSSDeclaration.h"
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsPresContext.h"
@@ -72,8 +70,7 @@ XULResizerElement::Direction XULResizerElement::GetDirection() {
      {-1, -1}, {0, -1}, {1, -1},
      {-1,  0},          {1,  0},
      {-1,  1}, {0,  1}, {1,  1},
-     {-1,  1},          {1,  1}
-      // clang-format on
+     {-1,  1},          {1,  1}  // clang-format on
   };
 
   const auto* frame = GetPrimaryFrame();
@@ -117,7 +114,7 @@ Maybe<nsSize> XULResizerElement::GetCurrentSize() const {
   if (!frame) {
     return Nothing();
   }
-  return Some(frame->StylePosition()->mBoxSizing == StyleBoxSizing::Content
+  return Some(frame->StylePosition()->mBoxSizing == StyleBoxSizing::ContentBox
                   ? frame->GetContentRect().Size()
                   : frame->GetRect().Size());
 }
@@ -293,7 +290,7 @@ void XULResizerElement::ResizeContent(nsIContent* aContent,
   if (!inlineStyleContent) {
     return;
   }
-  nsCOMPtr<nsICSSDeclaration> decl = inlineStyleContent->Style();
+  nsCOMPtr<nsDOMCSSDeclaration> decl = inlineStyleContent->Style();
   if (aOriginalSizeInfo) {
     decl->GetPropertyValue("width"_ns, aOriginalSizeInfo->width);
     decl->GetPropertyValue("height"_ns, aOriginalSizeInfo->height);
@@ -332,7 +329,7 @@ void XULResizerElement::MaybePersistOriginalSize(nsIContent* aContent,
       nsGkAtoms::_moz_original_size, sizeInfo.get(),
       nsINode::DeleteProperty<XULResizerElement::SizeInfo>);
   if (NS_SUCCEEDED(rv)) {
-    Unused << sizeInfo.release();
+    (void)sizeInfo.release();
   }
 }
 

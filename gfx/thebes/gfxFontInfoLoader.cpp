@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -71,23 +70,6 @@ class AsyncFontInfoLoader : public Runnable {
  private:
   RefPtr<FontInfoData> mFontInfo;
   RefPtr<FontInfoLoadCompleteEvent> mCompleteEvent;
-};
-
-class ShutdownThreadEvent : public Runnable {
-  virtual ~ShutdownThreadEvent() = default;
-
- public:
-  NS_INLINE_DECL_REFCOUNTING_INHERITED(ShutdownThreadEvent, Runnable)
-
-  explicit ShutdownThreadEvent(nsIThread* aThread)
-      : mozilla::Runnable("ShutdownThreadEvent"), mThread(aThread) {}
-  NS_IMETHOD Run() override {
-    mThread->Shutdown();
-    return NS_OK;
-  }
-
- private:
-  nsCOMPtr<nsIThread> mThread;
 };
 
 // runs on main thread after async font info loading is done
@@ -180,7 +162,7 @@ void gfxFontInfoLoader::StartLoader(uint32_t aDelay) {
     mTimer = NS_NewTimer();
     mTimer->InitWithNamedFuncCallback(DelayedStartCallback, this, aDelay,
                                       nsITimer::TYPE_ONE_SHOT,
-                                      "gfxFontInfoLoader::StartLoader");
+                                      "gfxFontInfoLoader::StartLoader"_ns);
     mState = stateTimerOnDelay;
     return;
   }
@@ -281,8 +263,9 @@ void gfxFontInfoLoader::CancelLoader() {
   if (mFontInfo)  // null during any initial delay
     mFontInfo->mCanceled = true;
   if (mFontLoaderThread) {
-    NS_DispatchToMainThread(new ShutdownThreadEvent(mFontLoaderThread));
-    mFontLoaderThread = nullptr;
+    NS_DispatchToMainThread(NS_NewRunnableFunction(
+        __func__,
+        [thread = std::move(mFontLoaderThread)]() { thread->Shutdown(); }));
   }
   RemoveShutdownObserver();
   CleanupLoader();

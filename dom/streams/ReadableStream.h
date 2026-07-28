@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,7 +12,7 @@
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/IterableIterator.h"
 #include "mozilla/dom/QueuingStrategyBinding.h"
-#include "mozilla/dom/ReadableStreamController.h"
+#include "mozilla/dom/ReadableStreamControllerBase.h"
 #include "mozilla/dom/ReadableStreamDefaultController.h"
 #include "mozilla/dom/UnderlyingSourceCallbackHelpers.h"
 #include "nsCycleCollectionParticipant.h"
@@ -78,12 +76,14 @@ class ReadableStream : public nsISupports, public nsWrapperCache {
       UnderlyingSourceAlgorithmsBase* aAlgorithms, ErrorResult& aRv);
 
   // Slot Getter/Setters:
-  MOZ_KNOWN_LIVE ReadableStreamController* Controller() { return mController; }
+  MOZ_KNOWN_LIVE ReadableStreamControllerBase* Controller() {
+    return mController;
+  }
   ReadableStreamDefaultController* DefaultController() {
     MOZ_ASSERT(mController && mController->IsDefault());
     return mController->AsDefault();
   }
-  void SetController(ReadableStreamController& aController) {
+  void SetController(ReadableStreamControllerBase& aController) {
     MOZ_ASSERT(!mController);
     mController = &aController;
   }
@@ -101,7 +101,9 @@ class ReadableStream : public nsISupports, public nsWrapperCache {
   ReaderState State() const { return mState; }
   void SetState(const ReaderState& aState) { mState = aState; }
 
-  JS::Value StoredError() const { return mStoredError; }
+  void GetStoredError(JSContext* aCx, JS::MutableHandle<JS::Value> aStoredError,
+                      ErrorResult& aRv) const;
+  JS::Value UnsafeStoredError() const { return mStoredError; }
   void SetStoredError(JS::Handle<JS::Value> aStoredError) {
     mStoredError = aStoredError;
   }
@@ -184,6 +186,10 @@ class ReadableStream : public nsISupports, public nsWrapperCache {
   already_AddRefed<mozilla::dom::ReadableStreamDefaultReader> GetReader(
       ErrorResult& aRv);
 
+  // https://streams.spec.whatwg.org/#readablestream-cancel
+  MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> CancelNative(
+      JSContext* aCx, JS::Handle<JS::Value> aReason, ErrorResult& aRv);
+
   // IDL layer functions
 
   nsIGlobalObject* GetParentObject() const { return mGlobal; }
@@ -244,7 +250,7 @@ class ReadableStream : public nsISupports, public nsWrapperCache {
 
   // Internal Slots:
  private:
-  RefPtr<ReadableStreamController> mController;
+  RefPtr<ReadableStreamControllerBase> mController;
   bool mDisturbed = false;
   RefPtr<ReadableStreamGenericReader> mReader;
   ReaderState mState = ReaderState::Readable;
@@ -252,40 +258,6 @@ class ReadableStream : public nsISupports, public nsWrapperCache {
 
   HoldDropJSObjectsCaller mHoldDropCaller;
 };
-
-namespace streams_abstract {
-
-bool IsReadableStreamLocked(ReadableStream* aStream);
-
-double ReadableStreamGetNumReadRequests(ReadableStream* aStream);
-
-void ReadableStreamError(JSContext* aCx, ReadableStream* aStream,
-                         JS::Handle<JS::Value> aValue, ErrorResult& aRv);
-
-MOZ_CAN_RUN_SCRIPT void ReadableStreamClose(JSContext* aCx,
-                                            ReadableStream* aStream,
-                                            ErrorResult& aRv);
-
-MOZ_CAN_RUN_SCRIPT void ReadableStreamFulfillReadRequest(
-    JSContext* aCx, ReadableStream* aStream, JS::Handle<JS::Value> aChunk,
-    bool done, ErrorResult& aRv);
-
-void ReadableStreamAddReadRequest(ReadableStream* aStream,
-                                  ReadRequest* aReadRequest);
-void ReadableStreamAddReadIntoRequest(ReadableStream* aStream,
-                                      ReadIntoRequest* aReadIntoRequest);
-
-MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> ReadableStreamCancel(
-    JSContext* aCx, ReadableStream* aStream, JS::Handle<JS::Value> aError,
-    ErrorResult& aRv);
-
-already_AddRefed<ReadableStreamDefaultReader>
-AcquireReadableStreamDefaultReader(ReadableStream* aStream, ErrorResult& aRv);
-
-bool ReadableStreamHasBYOBReader(ReadableStream* aStream);
-bool ReadableStreamHasDefaultReader(ReadableStream* aStream);
-
-}  // namespace streams_abstract
 
 }  // namespace mozilla::dom
 

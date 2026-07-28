@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-// vim:ts=4 sw=2 sts=2 et cin:
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,9 +11,6 @@
 
 #include "nsNetUtil.h"
 
-#include "FileChannelChild.h"
-
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/net/NeckoCommon.h"
 
 // URL file handling, copied and modified from
@@ -151,8 +146,8 @@ nsFileProtocolHandler::ReadShellLink(nsIFile* aFile, nsIURI** aURI) {
     return NS_ERROR_FAILURE;
   }
   nsCOMPtr<nsIFile> linkedFile;
-  MOZ_TRY(NS_NewLocalFile(nsDependentString(lpTemp), false,
-                          getter_AddRefs(linkedFile)));
+  MOZ_TRY(
+      NS_NewLocalFile(nsDependentString(lpTemp), getter_AddRefs(linkedFile)));
   return NS_NewFileURI(aURI, linkedFile);
 #else
   return NS_ERROR_NOT_AVAILABLE;
@@ -170,11 +165,17 @@ nsFileProtocolHandler::NewChannel(nsIURI* uri, nsILoadInfo* aLoadInfo,
                                   nsIChannel** result) {
   nsresult rv;
 
-  RefPtr<nsFileChannel> chan;
-  if (mozilla::net::IsNeckoChild()) {
-    chan = new mozilla::net::FileChannelChild(uri);
-  } else {
-    chan = new nsFileChannel(uri);
+  RefPtr<nsFileChannel> chan = new nsFileChannel(uri);
+
+  // file URLs with hostnames should be considered an error
+  // Before bug 1507354 file URLs ignored the host part. So we intentionally
+  // fail the channel if the file URL has a host to prevent any security issues
+  // that might arise.
+  nsAutoCString host;
+  rv = uri->GetHost(host);
+  NS_ENSURE_SUCCESS(rv, rv);
+  if (NS_WARN_IF(!host.IsEmpty())) {
+    return NS_ERROR_FAILURE;
   }
 
   // set the loadInfo on the new channel ; must do this

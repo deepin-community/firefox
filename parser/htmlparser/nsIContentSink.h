@@ -1,9 +1,8 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef nsIContentSink_h___
-#define nsIContentSink_h___
+#ifndef nsIContentSink_h_
+#define nsIContentSink_h_
 
 /**
  * MODULE NOTES:
@@ -21,19 +20,14 @@
 #include "nsString.h"
 #include "mozilla/FlushType.h"
 #include "mozilla/NotNull.h"
-#include "nsIDTD.h"
 
 class nsParserBase;
 namespace mozilla {
 class Encoding;
 }
 
-#define NS_ICONTENT_SINK_IID                         \
-  {                                                  \
-    0xcf9a7cbb, 0xfcbc, 0x4e13, {                    \
-      0x8e, 0xf5, 0x18, 0xef, 0x2d, 0x3d, 0x58, 0x29 \
-    }                                                \
-  }
+#define NS_ICONTENT_SINK_IID \
+  {0xcf9a7cbb, 0xfcbc, 0x4e13, {0x8e, 0xf5, 0x18, 0xef, 0x2d, 0x3d, 0x58, 0x29}}
 
 class nsIContentSink : public nsISupports {
  protected:
@@ -42,7 +36,7 @@ class nsIContentSink : public nsISupports {
   using NotNull = mozilla::NotNull<T>;
 
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_ICONTENT_SINK_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_ICONTENT_SINK_IID)
 
   /**
    * This method is called by the parser when it is entered from
@@ -61,7 +55,7 @@ class nsIContentSink : public nsISupports {
    *
    * @update 5/7/98 gess
    */
-  NS_IMETHOD WillBuildModel(nsDTDMode aDTDMode) { return NS_OK; }
+  NS_IMETHOD WillBuildModel() { return NS_OK; }
 
   /**
    * This method gets called when the parser concludes the process
@@ -130,6 +124,8 @@ class nsIContentSink : public nsISupports {
    */
   virtual bool IsScriptExecuting() { return false; }
 
+  virtual void ContinueParsingDocumentAfterCurrentScript() {};
+
   /**
    * Posts a runnable that continues parsing.
    */
@@ -138,6 +134,4 @@ class nsIContentSink : public nsISupports {
   virtual void InitialTranslationCompleted() {}
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(nsIContentSink, NS_ICONTENT_SINK_IID)
-
-#endif /* nsIContentSink_h___ */
+#endif /* nsIContentSink_h_ */

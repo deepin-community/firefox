@@ -48,7 +48,7 @@ about-webauthn-results-pin-blocked-error = Error: Il non ha plus tentativas disp
 about-webauthn-results-pin-not-set-error = Error: PIN non preparate. Iste operation besonia del protection de PIN.
 about-webauthn-results-pin-too-short-error = Error: le PIN fornite es troppo curte.
 about-webauthn-results-pin-too-long-error = Error: le PIN fornite es troppo longe.
-about-webauthn-results-pin-auth-blocked-error = Error: Il habeva troppe tentativas fallite in un rango e le authentication del PIN ha essite temporarimente blocate. Tu apparato besonia de un cyclo de extinction (distaccar le spina e re-inserer lo).
+about-webauthn-results-pin-auth-blocked-error = Error: Il habeva troppo de tentativas fallite in sequentia e le authentication per PIN ha essite temporarimente blocate. Tu apparato require un cyclo de currente (disconnecte lo del prisa e reconnecte lo).
 about-webauthn-results-cancelled-by-user-error = Error: Operation cancellate per le usator.
 
 ## Labels
@@ -87,17 +87,17 @@ about-webauthn-auth-option-clientpin = PIN del cliente
 about-webauthn-auth-option-rk = Clave residente
 about-webauthn-auth-option-plat = Apparato del platteforma
 # pinUvAuthToken should not be translated.
-about-webauthn-auth-option-pinuvauthtoken = Permissos del commando (pinUvAuthToken)
+about-webauthn-auth-option-pinuvauthtoken = Permissiones del commando (pinUvAuthToken)
 # MakeCredential and GetAssertion should not be translated.
-about-webauthn-auth-option-nomcgapermissionswithclientpin = Nulle MakeCredential/GetAssertion permissos con le PIN cliente
+about-webauthn-auth-option-nomcgapermissionswithclientpin = Necun permission MakeCredential/GetAssertion con le PIN del cliente
 about-webauthn-auth-option-largeblobs = Large blobs
 about-webauthn-auth-option-ep = Attestation de interprisa
 about-webauthn-auth-option-bioenroll = Registration biometric
 # FIDO_2_1_PRE should not be translated.
 about-webauthn-auth-option-userverificationmgmtpreview = Prototypo de registration biometric (FIDO_2_1_PRE)
-about-webauthn-auth-option-uvbioenroll = Permisso de registration biometric
+about-webauthn-auth-option-uvbioenroll = Permission de registration biometric
 about-webauthn-auth-option-authnrcfg = Configuration del authenticator
-about-webauthn-auth-option-uvacfg = Permisso de configuration authenticator
+about-webauthn-auth-option-uvacfg = Permission de configuration del authenticator
 about-webauthn-auth-option-credmgmt = Gestion de credentiales
 about-webauthn-auth-option-credentialmgmtpreview = Sempre require verification del usator
 about-webauthn-auth-option-setminpinlength = Definir le longor minime del PIN

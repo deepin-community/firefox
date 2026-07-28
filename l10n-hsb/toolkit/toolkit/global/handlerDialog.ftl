@@ -20,6 +20,17 @@ permission-dialog-description-file-app = Tutej dataji dowolić, wotkaz typa { $s
 permission-dialog-description-extension-app = Rozšěrjenju { $extension } dowolić, wotkaz typa { $scheme } z { $appName } wočinić?
 permission-dialog-description-system-app = Wotkaz { $scheme } z { $appName } wočinić?
 permission-dialog-description-system-noapp = Wotkaz { $scheme } wočinić?
+# Header on a permission prompt, asking the user if they should allow the website to continue.
+wallet-custom-scheme-warning-heading =
+    .heading = Tutomu sydłu dowolić, wašu digitalnu móšeń wočinić?
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host-app = Wočinjenje wotkaza <strong>{ $scheme }</strong> <strong>{ $host }</strong> dowoluje, wašu woprawdźitu identitu z <strong>{ $appName }</strong> požadać. Pokročujće jenož, jeli tutomu sydłu dowěrjeće.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-app = Wočinjenje wotkaza <strong>{ $scheme }</strong> tutomu sydłu dowoluje, wašu woprawdźitu identitu z <strong>{ $appName }</strong> požadać. Pokročujće jenož, jeli tutomu sydłu dowěrjeće.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host = Wočinjenje wotkaza <strong>{ $scheme }</strong> <strong>{ $host }</strong> dowoluje, wašu woprawdźitu identitu z wašeje digitalneje móšnje požadać. Pokročujće jenož, jeli tutomu sydłu dowěrjeće.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning = Wočinjenje wotkaza <strong>{ $scheme }</strong> tutomu sydłu dowoluje, wašu woprawdźitu identitu z wašeje digitalneje móšnje požadać. Pokročujće jenož, jeli tutomu sydłu dowěrjeće.
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start

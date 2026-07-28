@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } корбар
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Хатбаракҳои худро дар куҷое, ки набошед, ҳамоҳанг кунед.
 cfr-doorhanger-bookmark-fxa-body = Бозёфти олӣ! Акнун дар дастгоҳҳои мобилии худ бе ин хатбарак намонед. Бо { -fxaccount-brand-name } оғоз кунед.
@@ -68,10 +68,17 @@ cfr-doorhanger-bookmark-fxa-link-text = Хатбаракҳо ҳозир ҳамо
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Тугмаи «Пӯшидан»
     .title = Пӯшидан
+fxa-adoption-addresses-backup-title = Биёед барои нишониҳои нигоҳдошташудаи шумо нусхаи эҳтиётиро таҳия намоем
+fxa-adoption-addresses-backup-subtitle = Нишониҳои нигоҳдошташудаи худро тавассути ҳамоҳангсозии онҳо бо дастгоҳҳои худ ва истифода аз рамзгузорӣ муҳофизат намоед.
+fxa-adoption-credit-cards-backup-title = Биёед барои тарзҳои пардохти шумо нусхаи эҳтиётиро таҳия намоем
+fxa-adoption-credit-cards-backup-subtitle = Тарзҳои пардохти худро тавассути ҳамоҳангсозии онҳо бо дастгоҳҳои худ ва истифода аз рамзгузорӣ муҳофизат намоед.
+fxa-adoption-bookmarks-treatment-backup-title = Биёед хатбаракҳои шуморо дар нусхаи эҳтиётӣ нигоҳ дорем
+fxa-adoption-bookmarks-treatment-backup-subtitle = Хатбаракҳои худро тавассути ҳамоҳангсозии онҳо бо дастгоҳҳои худ ва истифода аз рамзгузорӣ муҳофизат намоед.
+fxa-adoption-primary-button-label = Бақайдгирӣ
 
 ## Protections panel
 
-cfr-protections-panel-header = Тамошокунӣ бе пайгирӣ
+cfr-protections-panel-header = Тамошобинӣ бе пайгирӣ
 cfr-protections-panel-body = Маълумоти худро бо худ нигоҳ доред. «{ -brand-short-name }» шуморо аз бисёр васоити пайгирие, ки фаъолияти шуморо дар онлайн пайгирӣ мекунанд, муҳофизат менамояд.
 cfr-protections-panel-link-text = Маълумоти бештар
 
@@ -101,7 +108,7 @@ cfr-doorhanger-milestone-close-button = Пӯшидан
 
 ## DOH Message
 
-cfr-doorhanger-doh-body = Махфияти шумо муҳим аст. Акнун браузери «{ -brand-short-name }» дархостҳои «DNS»-и шуморо ба хидмати шарик ба таври бехатар интиқол медиҳад, то ки шуморо ҳангоми тамошокунӣ муҳофизат кунад.
+cfr-doorhanger-doh-body = Махфияти шумо муҳим аст. Акнун браузери «{ -brand-short-name }» дархостҳои «DNS»-и шуморо ба хидмати шарик ба таври бехатар интиқол медиҳад, то ки шуморо ҳангоми тамошобинӣ муҳофизат кунад.
 cfr-doorhanger-doh-header = Ҷустуҷӯҳои DNS-и рамзгузоришуда ва бехатартар
 cfr-doorhanger-doh-primary-button-2 = Хуб
     .accesskey = Х
@@ -123,7 +130,7 @@ cfr-doorhanger-video-support-primary-button = Ҳозир навсозӣ куне
 
 # This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Чунин менамояд, ки шумо Wi-Fi-и ҷамъиятиро истифода мебаред
-spotlight-public-wifi-vpn-body = Барои пинҳон кардани ҷойгиршавӣ ва фаъолияти тамошокунии худ, истифодаи шабакаи хусусии маҷозиро ба назар гиред. Он барои муҳофизат кардани шумо ҳангоми кор бо сомонаҳо дар ҷойҳои ҷамъиятӣ, масалан дар фурудгоҳҳо ва қаҳвахонаҳо, кумак мерасонад.
+spotlight-public-wifi-vpn-body = Барои пинҳон кардани ҷойгиршавӣ ва фаъолияти тамошобинии худ, истифодаи шабакаи хусусии маҷозиро ба назар гиред. Он барои муҳофизат кардани шумо ҳангоми кор бо сомонаҳо дар ҷойҳои ҷамъиятӣ, масалан дар фурудгоҳҳо ва қаҳвахонаҳо, кумак мерасонад.
 spotlight-public-wifi-vpn-primary-button = Бо { -mozilla-vpn-brand-name } хусусияти худро нигоҳ доред
     .accesskey = Б
 spotlight-public-wifi-vpn-link = Ҳоло не
@@ -175,7 +182,7 @@ firefoxview-cfr-primarybutton = Озмоед
 firefoxview-cfr-secondarybutton = Ҳоло не
     .accesskey = Ҳ
 firefoxview-cfr-header-v2 = Ба он ҷое, ки шумо ба қарибӣ тамошо кардаед, тез баргардонед
-firefoxview-cfr-body-v2 = Варақаҳои ба наздикӣ пӯшидашударо барқарор кунед, аз он ҷумла бо { -firefoxview-brand-name } аз як дастгоҳ ба дастгоҳии дигар бефосила гузаред.
+firefoxview-cfr-body-v2 = Варақаҳои ба наздикӣ пӯшидашударо барқарор кунед, аз он ҷумла бо «{ -firefoxview-brand-name }» аз як дастгоҳ ба дастгоҳи дигар бефосила гузаред.
 
 ## Firefox View Spotlight
 
@@ -190,7 +197,7 @@ firefoxview-spotlight-promo-secondarybutton = Нодида гузарондан
 colorways-cfr-primarybutton = Нақшу нигореро интихоб намоед
     .accesskey = Н
 # "shades" refers to the different color options available to users in colorways.
-colorways-cfr-body = Браузери худро бо ин сояҳои истисноии «{ -brand-short-name }» ранг кунед, аз садоҳое, ки фарҳанги тамошокуниро дигаргун карданд, илҳом гирифтанд.
+colorways-cfr-body = Браузери худро бо ин сояҳои истисноии «{ -brand-short-name }» ранг кунед, аз садоҳое, ки фарҳанги тамошобиниро дигаргун карданд, илҳом гирифтанд.
 colorways-cfr-header-28days = Нақшу нигорҳои садоҳои мустақил дар 16 январ хомӯш мешаванд
 colorways-cfr-header-14days = Нақшу нигорҳои садоҳои мустақил пас аз ду ҳафта хомӯш мешаванд
 colorways-cfr-header-7days = Нақшу нигорҳои садоҳои мустақил дар охири ҳафтаи ҷорӣ хомӯш мешаванд
@@ -225,6 +232,20 @@ fox-doodle-pin-secondary = Ҳоло не
 set-default-pdf-handler-headline = <strong>Акнун файлҳои PDF-и шумо дар «{ -brand-short-name }» кушода мешаванд.</strong> Шаклҳоро мустақиман дар браузери худ таҳрир кунед ё ба онҳо имзо гузоред. Барои тағйир додани ин имкон, калимаи «PDF»-ро дар танзимот пайдо кунед.
 set-default-pdf-handler-primary = Фаҳмидам
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Ба хати нуқтадор имзои худро гузоред — ё ба ҷойи дилхоҳ имзо гузоред!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Расм кашед, нависед ё имзои худро бор кунед, пас онро айнан дар ҷойи дилхоҳ гузоред. Барои истифодаи такрорӣ имзоҳои дилхоҳи ҳудро нигоҳ доред.
+annotations-make-default-pdf-handler-title = Браузери «{ -brand-short-name }»-ро ҳамчун муҳаррири «PDF»-и пешфарзи худ истифода мебаред?
+annotations-make-default-pdf-handler-subtitle = Ҳар дафъае, ки шумо файли «PDF»-ро мекушоед, шумо ба абзорҳои мо дастрасӣ пайдо мекунед.
+annotations-make-default-pdf-primary-cta-label = Ҳамчун пешфарз танзим кардан
+annotations-make-default-pdf-next-label = Навбатӣ
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Шумо мехоҳед, ки дар оянда аз дастгоҳи дигари нав истифода баред?
@@ -243,15 +264,18 @@ device-migration-fxa-spotlight-older-device-header = Оромии дил аз «
 device-migration-fxa-spotlight-older-device-body = Ҳисобе маълумоти муҳими шуморо дар ҳар дастгоҳе, ки шумо пайваст мекунед, нав ва ҳифзшуда нигоҳ медорад.
 device-migration-fxa-spotlight-older-device-primary-button = Эҷод кардани ҳисоб
 device-migration-fxa-spotlight-getting-new-device-header-2 = Шумо мехоҳед, ки дар оянда аз дастгоҳи дигари нав истифода баред?
-device-migration-fxa-spotlight-getting-new-device-body-2 = Ҳангоми оғози кор бо дастгоҳи нав шумо метавонед бо иҷро кардани якчанд қадами одӣ ҳамаи хатбаракҳо, таърих ва ниҳонвожаҳои худро ба браузери нав бурда расонед.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Ҳангоми оғози кор бо дастгоҳи нав шумо метавонед бо иҷро кардани якчанд қадами оддӣ ҳамаи хатбаракҳо, таърих ва ниҳонвожаҳои худро ба браузери нав бурда расонед.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Тарзи таҳия кардани нусхаи эҳтиётии маълумоти ман
+device-migration-fxa-spotlight-sync-header = Ҳатто як сонияро аз даст надода, Интернетро истифода баред
+device-migration-fxa-spotlight-sync-body = Ҳамаи маълумоти муҳими худро бо рамзгузорӣ ҳамоҳанг созед - масалан, хатбаракҳо ва ниҳонвожаҳо. Дар ҳар ҷое, ки шумо аз «{ -brand-product-name }» истифода мебаред, шумо метавонед ҳар гуна маводро ба даст оред.
+device-migration-fxa-spotlight-sync-primary-button = Оғози кор
 
 ## Set as Default PDF Reader Infobar
 
 # The question portion of the following message should have the <strong> and </strong> tags surrounding it.
 pdf-default-notification-message = <strong>Барномаи «{ -brand-short-name }»-ро ҳамчун хонандаи пешфарзи файлҳои PDF танзим мекунед?</strong> Барои хондан ва таҳрир кардани файлҳои PDF, ки ба компютери шумо нигоҳ дошта шудаанд, аз барномаи { -brand-short-name } истифода баред.
 pdf-default-notification-set-default-button =
-    .label = Ҳамчун стандартӣ танзим кардан
+    .label = Ҳамчун пешфарз танзим кардан
 pdf-default-notification-decline-button =
     .label = Ҳоло не
 
@@ -271,6 +295,13 @@ launch-on-login-infobar-final-message = <strong>Ҳар вақте ки шумо 
 launch-on-login-infobar-final-reject-button = Не, ташаккур
     .accesskey = Н
 
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-primary-button = Нигоҳ доштан ва пӯшидани «{ -brand-short-name }»
+
 ## Tail Fox Set Default Spotlight
 
 # This title is displayed together with the picture of a running fox with a long tail.
@@ -281,3 +312,146 @@ tail-fox-spotlight-title = Васоити пайгирии безоркунан�
 tail-fox-spotlight-subtitle = Ба васоити пайгирии таблиғотии безоркунанда хайрбод гӯед ва ба таҷрибаи бехатартар ва Интернети босуръат  мубаддал шавед.
 tail-fox-spotlight-primary-button = Кушодани пайвандҳои ман ба воситаи «{ -brand-short-name }»
 tail-fox-spotlight-secondary-button = Ҳоло не
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Аз санаи 14 январи соли 2025 сар карда, версияҳои куҳнаи браузери «{ -brand-short-name }» метавонанд бо мушкилиҳо кор кунанд.</strong>
+root-certificate-succession-infobar-march-message = <strong>Барои идома додани истифодаи «{ -brand-short-name }» пас аз 14 марти соли 2025 браузери худро навсозӣ кунед.</strong>
+root-certificate-succession-infobar-link = Чаро ба ман навсозӣ лозим аст?
+root-certificate-succession-infobar-primary-button =
+    .label = Ҳозир навсозӣ кунед
+    .accesskey = Ҳ
+root-certificate-succession-infobar-secondary-button =
+    .label = Дертар
+    .accesskey = Д
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Шумо як навсозии муҳимро барои «{ -brand-short-name }» аз даст додед
+root-certificate-windows-background-notification-subtitle = Агар шумо навсозӣ накунед, баъзе қисмҳои браузер ба наздикӣ кор намекунанд. Ҳоли ҳозир барои гирифтани муҳофизат ва хусусиятҳои охирини мо вақти мувофиқ омад.
+root-certificate-windows-background-notification-learn-more-button = Маълумоти бештар
+root-certificate-windows-background-notification-update-button = Навсозӣ кардани «{ -brand-short-name }»
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Пӯшидан
+    .aria-label = Пӯшидан
+fxa-menu-message-sign-up-button = Бақайдгирӣ
+fxa-menu-message-sign-in-button = Ворид шудан
+fxa-menu-message-sync-button = Оғози ҳамоҳангсозӣ
+fxa-menu-message-sync-devices-primary-text = Ҳамаи дастгоҳҳои худро ҳамоҳанг созед
+fxa-menu-message-sync-devices-secondary-text = Маълумоти худро дарҳол ба даст оред — барои мисол, хатбаракҳо ва ниҳонвожаҳо — дар ҳамаи ҷойҳое, ки шумо аз «{ -brand-short-name }» истифода мебаред.
+fxa-menu-message-sync-devices-secondary-text2 = Хатбаракҳо, ниҳонвожаҳо ва маълумоти дигари худро дарҳол ба даст оред — дар ҳамаи ҷойҳое, ки шумо ба «{ -brand-short-name }» ворид мешавед.
+fxa-menu-message-sync-devices-collapsed-text = Ҳамаи дастгоҳҳои худро ҳамоҳанг созед
+fxa-menu-message-backup-data-primary-text = Сохтани нусхаи эҳтиётии маълумоти браузери шумо
+fxa-menu-message-backup-data-secondary-text = Хатбаракҳо, ниҳонвожаҳо ва маълумоти дигарро дар ҳамаи дастгоҳҳои худ ба таври худкор муҳофизат намоед.
+fxa-menu-message-backup-data-collapsed-text = Сохтани нусхаи эҳтиётии маълумоти браузер
+fxa-menu-message-backup-sync-primary-text = Маълумоти худро ба таври бехатар нигоҳ доред ва ҳамоҳанг созед
+fxa-menu-message-backup-sync-secondary-text = Ҳамоҳангсозӣ барои қисми зиёди маълумоти шумо нусхаи эҳтиётиро эҷод мекунад, то шумо тавонед дар ҳамаи ҷойҳое, ки шумо аз «{ -brand-short-name }» истифода мебаред, ба онҳо дастрасӣ пайдо намоед.
+fxa-menu-message-backup-sync-collapsed-text = Ҳамоҳангсозӣ ва сохтани нусхаи эҳтиётии маълумот
+fxa-menu-message-mobile-primary-text = Варақаҳоро ба талефони худ фиристонед
+fxa-menu-message-mobile-secondary-text = Ҳангоми ҳамоҳангсозии варақаҳои браузери худ бо дастгоҳи мобилӣ, фавран аз он ҷое, ки шумо мондаед, идома диҳед.
+fxa-menu-message-mobile-collapsed-text = Бо телефони худ ҳамоҳанг созед
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Бозгаштатон муборак
+multi-cta-fox-doodle-set-default-checkbox = Танзим кардани «{ -brand-short-name }» ба сурати пешфарз
+multi-cta-fox-doodle-pin-startmenu-checkbox = Васл кардани «{ -brand-short-name }» ба менюи «Оғоз»
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Нигоҳ доштани «{ -brand-short-name }» дар қароргоҳ
+       *[other] Васл кардани «{ -brand-short-name }» ба навори вазифа
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Оғоз кардани тамошо
+multi-cta-fox-doodle-main-browser-primary-button-label = Таъин кардани «{ -brand-short-name }» ҳамчун браузери асосии ман
+multi-cta-fox-doodle-quick-reminder-subtitle = Ин хотиррасонии фаврӣ дар бораи он аст, ки шумо ҳамеша метавонед браузери дӯстдоштаи худро, ки ба махфият нигаронида шудааст, танҳо бо зер кардани як тугма ба даст оред.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Браузери дӯстдоштаи худро, ки ба махфият нигаронида шудааст, танҳо бо зер кардани як тугма ба даст оред. Браузери «{ -brand-short-name }»-ро ҳамчун браузери пешфарзии худ барои кушодани пайвандҳо таъин кунед ва онро ба мустақари худ пайваст намоед.
+       *[other] Браузери дӯстдоштаи худро, ки ба махфият нигаронида шудааст, танҳо бо зер кардани як тугма ба даст оред. Браузери «{ -brand-short-name }»-ро ҳамчун браузери пешфарзии худ барои кушодани пайвандҳо таъин кунед ва онро ба навори вазифаҳои худ васл намоед.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Браузери дӯстдоштаи худро, ки ба махфият нигаронида шудааст, танҳо бо зер кардани як тугма ба даст оред. Браузери «{ -brand-short-name }»-ро ҳамчун браузери пешфарзии худ барои кушодани пайвандҳо таъин кунед ва онро ба навори вазифаҳо ва менюи «Оғози кор» васл намоед.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Ба наздикӣ аз «Windows 10» ба версияи навтар мегузаред?
+windows-10-eos-sync-spotlight-subtitle = Барои ниҳонвожаҳо ва хатбаракҳои худ нусхаи эҳтиётиро таҳия кунед, то шумо тавонед омода шуда, ба ҳар гуна дастгоҳ бо осоиш гузаред.
+windows-10-eos-sync-spotlight-primary-label = Барои «{ -brand-short-name }»-и худ нусхаи эҳтиётиро таҳия намоед
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Низоми худро ба версияи «Windows 11» такмил медиҳед? Хатбаракҳо ва ниҳонвожаҳои худро аз даст надиҳед.
+windows-10-eos-sync-toast-subtitle = Барои маълумоти шахсии худ нусхаи эҳтиётиро таҳия кунед, то ки браузери «{ -brand-short-name }» дар вақти дилхоҳ барои кор дар ин компютер ё ягон дастгоҳи дигар омода шавад.
+windows-10-eos-sync-toast-primary-label = Оғози кор
+windows-10-eos-sync-toast-secondary-label = Баъдтар ёдоварӣ кунед
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = Браузери «{ -brand-product-name }» нисбат ба браузерҳои дигари ширкатҳои бузурги технологӣ (BigTech) пешакӣ насб карда нашудааст. Моҳияти масъала дар ин аст.
+windows-10-eos-challenger-sync-callout-subtitle = Вақте ки шумо нусхаи эҳтиётии хатбаракҳо ва ниҳонвожаҳои худро аз браузери «{ -brand-product-name }» таҳия мекунед, ба шумо насб кардани браузери интихобшуда дар дастгоҳи дигар осонтар мешавад.
+windows-10-eos-challenger-pin-callout-subtitle = Браузери «{ -brand-shorter-name }»-ро ба навори вазифаи худ васл кунед, то ки браузери интихобкардаи шумо ҳамеша дар вақти дилхоҳ аз он ҷой дастрас шавад.
+windows-10-eos-challenger-sync-primary-button = Таҳия кардани нусхаи эҳтиётии «{ -brand-shorter-name }»
+windows-10-eos-challenger-pin-primary-button = Васл кардани «{ -brand-shorter-name }»
+windows-10-eos-sync-callout-privacy-screen-1-title = Браузери «{ -brand-product-name }» криптомайнерҳо, васоити пайгирии шабакаҳои иҷтимоӣ ва хонандаи нақши ангуштонро манъ мекунад.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Васоити пайгирӣ наметавонанд, ки дастгоҳи шуморо муайян кунанд ё дар саросари Интернет шуморо пайгирӣ намоянд — зеро ки мо ба онҳо иҷозат намедиҳем.
+windows-10-eos-sync-callout-privacy-screen-2-title = Ниҳонвожаҳо ва хатбаракҳои худро барои дастгоҳи навбатии худ муҳофизат кунед.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Таҳияи нусхаи эҳтиётии «{ -brand-shorter-name }» амали интиқоли маълумоти шахсӣ ва танзимоти махфияти шуморо осон мегардонад.
+windows-10-eos-sync-callout-privacy-info-button = Нигаред, ки чӣ баста шудааст
+windows-10-eos-callout-addons-title = Аз ҷузъҳои иловагӣ истифода баред: такмилҳои осон, натиҷаҳои баланд
+windows-10-eos-callout-addons-subtitle = Ин васеъшавиҳо бо мақсади фароҳам овардани муҳити ороми корӣ, баланд бардоштани самаранокӣ ва ҳифзи маълумот интихоб шудаанд.
+windows-10-eos-callout-addons-primary-button = Интихобҳои моро бинед
+windows-10-eos-sync-callout-addons-title = Вақте ки шумо аз «Windows 10» ба версияи нав мегузаред, васеъшавиҳои худро аз даст надиҳед.
+windows-10-eos-sync-callout-addons-subtitle = Ҳозир браузери худро ҳамоҳанг созед, то васеъшавиҳои «{ -brand-product-name }» ҳамеша дастрас бошанд, ҳатто пас аз иваз кардани дастгоҳ.
+windows-10-eos-sync-callout-next-button = Навбатӣ
+windows-10-eos-sync-callout-get-started-button = Оғози кор
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Варақаҳои амудӣ ва гурӯҳҳои варақаҳо дар ин ҷой қарор доранд!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Аз рӯйи дархостҳои маълум, браузери «{ -brand-product-name }» барои таъмини шумо бо таҷрибаи тамошобинии бодиққат ва нағз баpoҳмoндашyда якчанд хусусияти навро илова кард.
+windows-10-eos-feature-toast-whats-new-button = Бинед, ки чӣ нав аст
+windows-10-eos-feature-toast-dismiss-button = Нодида гузарондан
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-primary-button = Фаъол кардани нусхаи эҳтиётӣ
+    .accesskey = Ф
+windows-10-eos-global-infobar-learn-more-link = Маълумоти бештар
+    .accessKey = М
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Муҳофизати ҷиддӣ аз пайгирӣ метавонад боиси кори нодурусти сомонаҳо гардад.</strong> Мушкилиҳои умумиро тавассути кушодани унсурҳои муҳимме, ки метавонанд васоити пайгириро дар бар гиранд, ҳал кунед.
+etp-strict-exceptions-infobar-learn-more = Маълумоти бештар
+etp-strict-exceptions-infobar-button = Татбиқ кардани ислоҳҳо
+    .accesskey = Т
+etp-strict-exceptions-infobar-not-now = Ҳоло не
+    .accesskey = Ҳ
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = «{ -brand-short-name }» браузери пешфарзи шумо намебошад
+set-default-menu-message-simple-layout-title-variant = «{ -brand-short-name }» браузери асосии шумо намебошад
+set-default-menu-message-row-layout-title = Таъин кардани «{ -brand-short-name }» ҳамчун браузери асосии шахсӣ
+set-default-menu-message-row-layout-title-variant = Таъин кардани «{ -brand-short-name }» ҳамчун браузери пешфарзи шахсӣ
+set-default-menu-message-row-layout-subtitle = Ҳар вақте ки шумо бо Интернет кор мекунед, суръат, амният ва махфиятро ба даст оред.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] «{ -brand-short-name }»-ро дар дасти худ нигоҳ доред — онро ҳамчун браузери пешфарзи шахсӣ истифода баред ва ба мустақари худ ҷойгир кунед.
+       *[other] «{ -brand-short-name }»-ро дар дасти худ нигоҳ доред — онро ҳамчун браузери пешфарзи шахсӣ истифода баред ва ба навори вазифаи худ ҷойгир кунед.
+    }
+set-default-menu-message-primary-button = Ҳамчун пешфарз танзим кардан
+set-default-menu-message-primary-button-variant = Гузоштан ҳамчун браузери асосӣ
+
+## Firefox Relay 50 Masks Announcement
+
+relay-50-masks-announcement-secondary-button = Нодида гузарондан
+    .accesskey = Н

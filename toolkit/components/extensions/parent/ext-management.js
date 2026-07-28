@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,7 +21,7 @@ XPCOMUtils.defineLazyServiceGetter(
   this,
   "promptService",
   "@mozilla.org/prompter;1",
-  "nsIPromptService"
+  Ci.nsIPromptService
 );
 
 var { ExtensionError } = ExtensionUtils;
@@ -42,7 +40,7 @@ const installType = addon => {
     return "sideload";
   } else if (addon.isSystem) {
     return "other";
-  } else if (addon.isInstalledByEnterprisePolicy) {
+  } else if (Services.policies?.isAddonRequiredByPolicy(addon.id)) {
     return "admin";
   }
   return "normal";
@@ -97,7 +95,7 @@ const getExtensionInfoForAddon = (extension, addon) => {
 const allowedTypes = ["theme", "extension"];
 
 function checkAllowedAddon(addon) {
-  if (addon.isSystem || addon.isAPIExtension) {
+  if (addon.isSystem) {
     return false;
   }
   if (addon.type == "extension" && !addon.isWebExtension) {
@@ -308,13 +306,17 @@ this.management = class extends ExtensionAPIPersistent {
           if (!addon) {
             throw new ExtensionError(`No such addon ${id}`);
           }
-          if (addon.type !== "theme") {
-            throw new ExtensionError("setEnabled applies only to theme addons");
-          }
-          if (addon.isSystem) {
+
+          if (
+            addon.type !== "theme" &&
+            !Services.policies?.isAddonRequiredByPolicy(extension.id)
+          ) {
             throw new ExtensionError(
-              "setEnabled cannot be used with a system addon"
+              "setEnabled can only be used for themes or by addons installed by enterprise policy"
             );
+          }
+          if (!checkAllowedAddon(addon)) {
+            throw new ExtensionError("setEnabled not allowed for this addon");
           }
           if (enabled) {
             await addon.enable();

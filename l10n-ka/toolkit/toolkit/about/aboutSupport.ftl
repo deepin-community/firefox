@@ -15,6 +15,10 @@ support-addons-type = სახეობა
 support-addons-enabled = ჩართულია
 support-addons-version = ვერსია
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = მდებარეობა
 legacy-user-stylesheets-title = მომხმარებლის სტილის მოძველებული ცხრილები
 legacy-user-stylesheets-enabled = მოქმედი
 legacy-user-stylesheets-stylesheet-types = სტილის ცხრილები
@@ -56,7 +60,7 @@ app-basics-profile-dir =
     }
 app-basics-enabled-plugins = ჩართული მოდულები
 app-basics-build-config = ანაწყობის კონფიგურაცია
-app-basics-user-agent = მომხმარებლის პროგრამა
+app-basics-user-agent = მომხმარებლის წარმდგენი
 app-basics-os = სისტემა
 app-basics-os-theme = სისტემის იერსახე
 # Rosetta is Apple's translation process to run apps containing x86_64
@@ -64,7 +68,7 @@ app-basics-os-theme = სისტემის იერსახე
 app-basics-rosetta = Rosetta-ს თარგმნილი
 app-basics-memory-use = გამოყენებული მეხსიერება
 app-basics-performance = წარმადობა
-app-basics-service-workers = დარეგისტრებული Service Worker-ები
+app-basics-service-workers = დარეგისტრებული Service Worker
 app-basics-third-party = გარეშე მოდულები
 app-basics-profiles = პროფილები
 app-basics-launcher-process-status = გამშვები პროცესი
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = შედეგიანობა (%)
 place-database-stats-sequentiality-perc = თანმიმდევრულობა (%)
 place-database-integrity = მთლიანობა
 place-database-verify-integrity = მთლიანობის გადამოწმება
+place-database-last-idle-maintenance-data = უქმი ტექნიკური სამუშაოების ბოლო თარიღი
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = ბოლო წმენდის თარიღი
+place-database-last-integrity-corruption-date = მთლიანობის დარღვევის ბოლო თარიღი
 a11y-title = დამხმარე საშუალებები
 a11y-activated = მოქმედი
 a11y-force-disabled = დამხმარე საშუალებების აკრძალვა
@@ -172,7 +180,7 @@ media-device-format = ფორმატი
 media-device-channels = არხები
 media-device-rate = სიხშირე
 media-device-latency = დაყოვნება
-media-capabilities-title = მასალის შესაძლებლობები
+media-capabilities-title = მასალის დამუშავების შესაძლებლობები
 media-codec-support-info = მშიფრავის მხარდაჭერის შესახებ
 # List all the entries of the database.
 media-capabilities-enumerate = მონაცემთა ბაზის გამოთვლა
@@ -181,6 +189,8 @@ media-capabilities-enumerate = მონაცემთა ბაზის გ�
 
 media-codec-support-sw-decoding = პროგრამული გაშიფვრა
 media-codec-support-hw-decoding = აპარატურული გაშიფვრა
+media-codec-support-sw-encoding = პროგრამული დაშიფვრა
+media-codec-support-hw-encoding = აპარატურული დაშიფვრა
 media-codec-support-codec-name = მშიფრავის დასახელება
 media-codec-support-supported = მხარდაჭერილი
 media-codec-support-unsupported = მხარდაუჭერელი
@@ -193,17 +203,20 @@ media-codec-support-lack-of-extension = გაფართოების ჩა
 
 media-content-decryption-modules-title = შიგთავსის გაშიფვრის მოდულების შესახებ
 media-key-system-name = გასაღების სისტემის სახელი
-media-video-robustness = ვიდეოსფაილის ხელშეუხებლობა
+media-video-robustness = ვიდეოფაილის ხელშეუხებლობა
 media-audio-robustness = ხმოვანი ფაილის ხელშეუხებლობა
 media-cdm-capabilities = შესაძლებლობები
 # Clear Lead isn't defined in the spec, which means the the first few seconds
 # are not encrypted. It allows playback to start without having to wait for
 # license response, improving video start time and user experience.
-media-cdm-clear-lead = დაუშიფრავად დაწყება
+media-cdm-clear-lead = დაუშიფრავად წამოწყება
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = HDCP 2.2 თავსებადობა
 
 ##
 
-intl-title = საერთაშორისობა და ენებზე მორგება
+intl-title = საერთაშორისობა და ენებისთვის მორგება
 intl-app-title = პროგრამის პარამეტრები
 intl-locales-requested = მოთხოვნილი ენები
 intl-locales-available = ხელმისაწვდომი ენები
@@ -211,7 +224,7 @@ intl-locales-supported = პროგრამის ენები
 intl-locales-default = ნაგულისხმევი ენა
 intl-os-title = საოპერაციო სისტემა
 intl-os-prefs-system-locales = სისტემის ენები
-intl-regional-prefs = რეგიონული პარამეტრები
+intl-regional-prefs = სამხარეო პარამეტრები
 
 ## Remote Debugging
 ##
@@ -279,6 +292,7 @@ try-newer-driver = შეზღუდულია თქვენი გრა�
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType პარამეტრები
 compositing = გამოსახულების დამუშავება
+support-font-determination = შრიფტის ჩვენების გასამართი მონაცემები
 hardware-h264 = აპარატურული H264 გაშიფვრა
 main-thread-no-omtc = მთავარი ნაკადი, OMTC-ს გარეშე
 yes = დიახ
@@ -314,8 +328,8 @@ webgl2-renderer = WebGL2 დრაივერი გამოსახვის
 webgl2-version = WebGL 2 დრაივერის ვერსია
 webgl2-driver-extensions = WebGL 2 დრაივერის გაფართოებები
 webgl2-extensions = WebGL 2 გაფართოებები
-webgpu-default-adapter = WebGPU-ის ნაგულისხმევი მოწყობილობა
-webgpu-fallback-adapter = WebGPU-ის სათადარიგო მოწყობილობა
+webgpu-default-adapter = WebGPU – ნაგულისხმევი მოწყობილობა
+webgpu-fallback-adapter = WebGPU – სათადარიგო მოწყობილობა
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = შეზღუდულთა სიაშია, შემდეგი მიზეზის გამო: <a data-l10n-name="bug-link">ხარვეზი { $bugNumber }</a>
@@ -331,7 +345,7 @@ gpu-device-reset = მოწყობილობის ხელახალი
 gpu-device-reset-button = მოწყობილობაზე პარამეტრების ჩამოყრის ამოქმედება
 uses-tiling = მოზაიკურად
 content-uses-tiling = მოზაიკურად (შიგთავსი)
-off-main-thread-paint-enabled = გენერირება ძირითადი ნაკადის მიღმა, ჩართულია
+off-main-thread-paint-enabled = გამოსახვა ძირითადი ნაკადის მიღმა მოქმედია
 off-main-thread-paint-worker-count = ძირითადი ნაკადის მიღმა გენერირების ათვლა
 target-frame-rate = კადრის სასურველი სიხშირე
 min-lib-versions = მოსალოდნელი მინიმალური ვერსია
@@ -340,6 +354,9 @@ has-seccomp-bpf = Seccomp-BPF (სისტემური გამოძახ
 has-seccomp-tsync = Seccomp ნაკადის სინქრონიზაცია
 has-user-namespaces = მომხმარებლის სახელის სივრცეები
 has-privileged-user-namespaces = მომხმარებლის სახელთა სივრცეები უპირატესობის მქონე პროცესებისთვის
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — ეს შესაძლებლობა არაა ნებადართული თქვენს სისტემაში. შეიძლება ზღუდავდეს უსაფრთხოების საშუალებებს, რომელთაც იყენებს { -brand-short-name }.
 can-sandbox-content = შიგთავსის პროცესის გამიჯვნა
 can-sandbox-media = მედიამოდულის გამიჯვნა
 content-sandbox-level = შიგთავსის პროცესის გამიჯვნის დონე
@@ -378,14 +395,14 @@ fission-status-enabled-by-user-pref = ჩართული მომხმა�
 fission-status-disabled-by-user-pref = გამორთული მომხმარებლის მიერ
 fission-status-disabled-by-e10s-other = E10s გამორთული
 fission-status-enabled-by-rollout = ჩართულია თანდათანობითი დანერგვით
-async-pan-zoom = ასინქრონული პანორამირება/ზომის ცვლილება
+async-pan-zoom = ასინქრონული გაშლა/ზომის ცვლა
 apz-none = არაა
-wheel-enabled = რგოლით შეყვანა ჩართულია
-touch-enabled = შეხებით შეტანა ჩართულია
+wheel-enabled = რგოლით შეყვანა მოქმედია
+touch-enabled = შეხებით შეტანა მოქმედია
 drag-enabled = გადაადგილების ზოლის გადატანა შესაძლებელია
-keyboard-enabled = კლავიატურა ჩართულია
-autoscroll-enabled = თვითგადაადგილება ჩართულია
-zooming-enabled = ორი თითით გლუვი მოახლოება და დაშორება ჩართულია
+keyboard-enabled = კლავიატურა მოქმედია
+autoscroll-enabled = თვითგადაადგილება მოქმედია
+zooming-enabled = ორი თითით გლუვი მოახლოება მოქმედია
 
 ## Variables
 ## $preferenceKey (string) - String ID of preference
@@ -408,6 +425,20 @@ support-printing-modified-settings = ამობეჭდვის შეცვ
 support-printing-prefs-name = სახელი
 support-printing-prefs-value = მნიშვნელობა
 
+## Remote Settings sections
+
+support-remote-settings-title = დაშორებული პარამეტრები
+support-remote-settings-status = მდგომარეობა
+support-remote-settings-status-ok = გამართული
+# Status when synchronization is not working.
+support-remote-settings-status-broken = გაუმართავი
+support-remote-settings-last-check = ბოლო შემოწმება
+support-remote-settings-local-timestamp = ადგილობრივი დროის ნიშნული
+support-remote-settings-sync-history = ისტორია
+support-remote-settings-sync-history-status = მდგომარეობა
+support-remote-settings-sync-history-datetime = თარიღი
+support-remote-settings-sync-history-infos = ცნობები
+
 ## Normandy sections
 
 support-remote-experiments-title = დაშორებული კვლევები
@@ -424,3 +455,15 @@ pointing-device-mouse = თაგვი
 pointing-device-touchscreen = ხელშესახები ეკრანი
 pointing-device-pen-digitizer = კალმიანი პლანშეტი
 pointing-device-none = მიმთითებელი მოწყობილობა არა
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = შიგთავსის გარჩევა (DLP)
+content-analysis-active = მოქმედი
+content-analysis-connected-to-agent = მიერთებულია სამეთვალყურეო
+content-analysis-agent-path = სამეთვალყურეოს მდებარეობა
+content-analysis-agent-failed-signature-verification = სამეთვალყურეოს უშედეგო დამოწმება
+content-analysis-request-count = მოთხოვნის რაოდენობა

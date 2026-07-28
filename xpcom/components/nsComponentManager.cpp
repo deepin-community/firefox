@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -81,7 +79,7 @@ class AutoIDString : public nsAutoCStringN<NSID_LENGTH> {
   explicit AutoIDString(const nsID& aID) {
     SetLength(NSID_LENGTH - 1);
     aID.ToProvidedString(
-        *reinterpret_cast<char(*)[NSID_LENGTH]>(BeginWriting()));
+        *reinterpret_cast<char (*)[NSID_LENGTH]>(BeginWriting()));
   }
 };
 
@@ -367,7 +365,6 @@ nsresult nsComponentManagerImpl::Init() {
     // We are going to assume that only a select few (see below) process types
     // want to load chrome manifests, and that any new process types will not
     // want to load them, because they're not going to be executing JS.
-    case GeckoProcessType_RemoteSandboxBroker:
     default:
       loadChromeManifests = false;
       break;
@@ -399,7 +396,7 @@ nsresult nsComponentManagerImpl::Init() {
     RefPtr<nsZipArchive> greOmnijar =
         mozilla::Omnijar::GetReader(mozilla::Omnijar::GRE);
     if (greOmnijar) {
-      cl->location.Init(greOmnijar, "chrome.manifest");
+      cl->location.Init(greOmnijar, "chrome.manifest"_ns);
     } else {
       nsCOMPtr<nsIFile> lf = CloneAndAppend(greDir, "chrome.manifest"_ns);
       cl->location.Init(lf);
@@ -410,7 +407,7 @@ nsresult nsComponentManagerImpl::Init() {
     if (appOmnijar) {
       cl = sModuleLocations->AppendElement();
       cl->type = NS_APP_LOCATION;
-      cl->location.Init(appOmnijar, "chrome.manifest");
+      cl->location.Init(appOmnijar, "chrome.manifest"_ns);
     } else {
       bool equals = false;
       appDir->Equals(greDir, &equals);
@@ -508,7 +505,7 @@ static void DoRegisterManifest(NSLocationType aType, FileLocation& aFile,
   if (result.isOk()) {
     nsCString buf(result.unwrap());
     ParseManifest(aType, aFile, buf.BeginWriting(), aChromeOnly);
-  } else if (NS_BOOTSTRAPPED_LOCATION != aType) {
+  } else {
     nsCString uri;
     aFile.GetURIString(uri);
     LogMessage("Could not read chrome manifest '%s'.", uri.get());
@@ -524,7 +521,7 @@ void nsComponentManagerImpl::RegisterManifest(NSLocationType aType,
 void nsComponentManagerImpl::ManifestManifest(ManifestProcessingContext& aCx,
                                               int aLineNo, char* const* aArgv) {
   char* file = aArgv[0];
-  FileLocation f(aCx.mFile, file);
+  FileLocation f(aCx.mFile, nsDependentCString(file));
   RegisterManifest(aCx.mType, f, aCx.mChromeOnly);
 }
 
@@ -1422,65 +1419,6 @@ nsresult NS_GetComponentRegistrar(nsIComponentRegistrar** aResult) {
 }
 
 NS_IMETHODIMP
-nsComponentManagerImpl::AddBootstrappedManifestLocation(nsIFile* aLocation) {
-  NS_ENSURE_ARG_POINTER(aLocation);
-
-  nsString path;
-  nsresult rv = aLocation->GetPath(path);
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-
-  if (Substring(path, path.Length() - 4).EqualsLiteral(".xpi")) {
-    return XRE_AddJarManifestLocation(NS_BOOTSTRAPPED_LOCATION, aLocation);
-  }
-
-  nsCOMPtr<nsIFile> manifest = CloneAndAppend(aLocation, "chrome.manifest"_ns);
-  return XRE_AddManifestLocation(NS_BOOTSTRAPPED_LOCATION, manifest);
-}
-
-NS_IMETHODIMP
-nsComponentManagerImpl::RemoveBootstrappedManifestLocation(nsIFile* aLocation) {
-  NS_ENSURE_ARG_POINTER(aLocation);
-
-  nsCOMPtr<nsIChromeRegistry> cr = mozilla::services::GetChromeRegistry();
-  if (!cr) {
-    return NS_ERROR_FAILURE;
-  }
-
-  nsString path;
-  nsresult rv = aLocation->GetPath(path);
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-
-  nsComponentManagerImpl::ComponentLocation elem;
-  elem.type = NS_BOOTSTRAPPED_LOCATION;
-
-  if (Substring(path, path.Length() - 4).EqualsLiteral(".xpi")) {
-    elem.location.Init(aLocation, "chrome.manifest");
-  } else {
-    nsCOMPtr<nsIFile> lf = CloneAndAppend(aLocation, "chrome.manifest"_ns);
-    elem.location.Init(lf);
-  }
-
-  // Remove reference.
-  nsComponentManagerImpl::sModuleLocations->RemoveElement(
-      elem, ComponentLocationComparator());
-
-  rv = cr->CheckForNewChrome();
-  return rv;
-}
-
-NS_IMETHODIMP
-nsComponentManagerImpl::GetComponentJSMs(nsIUTF8StringEnumerator** aJSMs) {
-  nsCOMPtr<nsIUTF8StringEnumerator> result =
-      StaticComponents::GetComponentJSMs();
-  result.forget(aJSMs);
-  return NS_OK;
-}
-
-NS_IMETHODIMP
 nsComponentManagerImpl::GetComponentESModules(
     nsIUTF8StringEnumerator** aESModules) {
   nsCOMPtr<nsIUTF8StringEnumerator> result =
@@ -1523,25 +1461,6 @@ XRE_AddManifestLocation(NSLocationType aType, nsIFile* aLocation) {
       nsComponentManagerImpl::sModuleLocations->AppendElement();
   c->type = aType;
   c->location.Init(aLocation);
-
-  if (nsComponentManagerImpl::gComponentManager &&
-      nsComponentManagerImpl::NORMAL ==
-          nsComponentManagerImpl::gComponentManager->mStatus) {
-    nsComponentManagerImpl::gComponentManager->RegisterManifest(
-        aType, c->location, false);
-  }
-
-  return NS_OK;
-}
-
-EXPORT_XPCOM_API(nsresult)
-XRE_AddJarManifestLocation(NSLocationType aType, nsIFile* aLocation) {
-  nsComponentManagerImpl::InitializeModuleLocations();
-  nsComponentManagerImpl::ComponentLocation* c =
-      nsComponentManagerImpl::sModuleLocations->AppendElement();
-
-  c->type = aType;
-  c->location.Init(aLocation, "chrome.manifest");
 
   if (nsComponentManagerImpl::gComponentManager &&
       nsComponentManagerImpl::NORMAL ==

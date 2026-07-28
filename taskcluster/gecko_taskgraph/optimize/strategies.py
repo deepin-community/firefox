@@ -3,13 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+import datetime
+import functools
 import logging
 
 import mozpack.path as mozpath
 from mozbuild.base import MozbuildObject
-from mozbuild.util import memoize
 from taskgraph.optimize.base import OptimizationStrategy, register_strategy
-from taskgraph.util.path import match as match_path
+from taskgraph.optimize.strategies import IndexSearch
+from taskgraph.util.parameterization import resolve_timestamps
 
 from gecko_taskgraph.optimize.mozlint import SkipUnlessMozlint
 
@@ -18,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @register_strategy("skip-unless-schedules")
 class SkipUnlessSchedules(OptimizationStrategy):
-    @memoize
+    @functools.cache
     def scheduled_by_push(self, files_changed):
         mbo = MozbuildObject.from_environment()
         # the decision task has a sparse checkout, so, mozbuild_reader will use
@@ -51,7 +53,7 @@ class SkipUnlessHasRelevantTests(OptimizationStrategy):
     in child directories of a modified file.
     """
 
-    @memoize
+    @functools.cache
     def get_changed_dirs(self, files_changed):
         changed = map(mozpath.dirname, files_changed)
         # Filter out empty directories (from files modified in the root).
@@ -66,42 +68,52 @@ class SkipUnlessHasRelevantTests(OptimizationStrategy):
             for t in task.attributes["test_manifests"]:
                 if t.startswith(d):
                     logger.debug(
-                        "{} runs a test path ({}) contained by a modified file ({})".format(
-                            task.label, t, d
-                        )
+                        f"{task.label} runs a test path ({t}) contained by a modified file ({d})"
                     )
                     return False
         return True
 
 
-# TODO: This overwrites upstream Taskgraph's `skip-unless-changed`
-# optimization. Once the firefox-android migration is landed and we upgrade
-# upstream Taskgraph to a version that doesn't call files_changed.check`, this
-# class can be deleted. Also remove the `taskgraph.optimize.base.registry` tweak
-# in `gecko_taskgraph.register` at the same time.
-@register_strategy("skip-unless-changed")
-class SkipUnlessChanged(OptimizationStrategy):
-    def check(self, files_changed, patterns):
-        for pattern in patterns:
-            for path in files_changed:
-                if match_path(path, pattern):
-                    return True
-        return False
+register_strategy("skip-unless-mozlint", args=("tools/lint",))(SkipUnlessMozlint)
 
-    def should_remove_task(self, task, params, file_patterns):
-        # pushlog_id == -1 - this is the case when run from a cron.yml job or on a git repository
-        if params.get("repository_type") == "hg" and params.get("pushlog_id") == -1:
-            return False
 
-        changed = self.check(params["files_changed"], file_patterns)
-        if not changed:
-            logger.debug(
-                'no files found matching a pattern in `skip-unless-changed` for "{}"'.format(
-                    task.label
-                )
-            )
+@register_strategy("skip-unless-missing")
+class SkipUnlessMissing(OptimizationStrategy):
+    """Skips a task unless it is missing from a specified index.
+
+    This simply defers to Taskgraph's `index-search` optimization. The reason
+    we need this shim is because replacement and removal optimizations can't be
+    joined together in a composite strategy as removal and replacement happen
+    at different times.
+    """
+
+    index_search = IndexSearch()
+
+    def _convert_datetime_str(self, dt):
+        if dt.endswith("Z"):
+            dt = dt[:-1]
+
+        return datetime.datetime.fromisoformat(dt).strftime(self.index_search.fmt)
+
+    def should_remove_task(self, task, params, index):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        deadline = self._convert_datetime_str(
+            resolve_timestamps(now, task.task["deadline"])
+        )
+        return bool(
+            self.index_search.should_replace_task(task, params, deadline, [index])
+        )
+
+
+@register_strategy("skip-constrained")
+class SkipConstrained(OptimizationStrategy):
+    """Skips tasks on constrained worker pools.
+
+    Always skips tasks that are on pools with capacity issues, typically
+    hardware.
+    """
+
+    def should_remove_task(self, task, params, _):
+        if task.task["provisionerId"] == "releng-hardware":
             return True
         return False
-
-
-register_strategy("skip-unless-mozlint", args=("tools/lint",))(SkipUnlessMozlint)

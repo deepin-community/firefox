@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -59,15 +58,13 @@ includes: [nans.js, testTypedArray.js, compareArray.js]
 features: [TypedArray]
 ---*/
 
-function body(FloatArray) {
+testWithTypedArrayConstructors(function body(FloatArray) {
   var first = new FloatArray(NaNs);
   var second = new FloatArray(NaNs);
   var firstBytes = new Uint8Array(first.buffer);
   var secondBytes = new Uint8Array(second.buffer);
 
   assert(compareArray(firstBytes, secondBytes));
-}
-
-testWithTypedArrayConstructors(body, floatArrayConstructors);
+}, floatArrayConstructors);
 
 reportCompare(0, 0);

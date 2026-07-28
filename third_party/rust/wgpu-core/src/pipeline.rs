@@ -1,21 +1,36 @@
+use alloc::{
+    borrow::{Cow, ToOwned},
+    boxed::Box,
+    string::String,
+    sync::Arc,
+    vec::Vec,
+};
+use core::{marker::PhantomData, mem::ManuallyDrop, num::NonZeroU32};
+
+use arrayvec::ArrayVec;
+use naga::error::ShaderError;
+use thiserror::Error;
+use wgt::error::{ErrorType, WebGpuError};
+
 pub use crate::pipeline_cache::PipelineCacheValidationError;
 use crate::{
-    binding_model::{CreateBindGroupLayoutError, CreatePipelineLayoutError, PipelineLayout},
+    binding_model::{
+        BindGroupLayout, CreateBindGroupLayoutError, CreatePipelineLayoutError,
+        GetBindGroupLayoutError, PipelineLayout,
+    },
     command::ColorAttachmentError,
     device::{Device, DeviceError, MissingDownlevelFlags, MissingFeatures, RenderPassContext},
     id::{PipelineCacheId, PipelineLayoutId, ShaderModuleId},
-    resource::{Labeled, TrackingData},
-    resource_log, validation, Label,
+    resource::{InvalidResourceError, Labeled, TrackingData},
+    resource_log,
+    validation::{self, ShaderMetaData},
+    Label,
 };
-use arrayvec::ArrayVec;
-use naga::error::ShaderError;
-use std::{borrow::Cow, marker::PhantomData, mem::ManuallyDrop, num::NonZeroU32, sync::Arc};
-use thiserror::Error;
 
 /// Information about buffer bindings, which
 /// is validated against the shader (and pipeline)
 /// at draw time as opposed to initialization time.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct LateSizedBufferGroup {
     // The order has to match `BindGroup::late_buffer_binding_sizes`.
     pub(crate) shader_sizes: Vec<wgt::BufferAddress>,
@@ -41,14 +56,17 @@ pub enum ShaderModuleSource<'a> {
 pub struct ShaderModuleDescriptor<'a> {
     pub label: Label<'a>,
     #[cfg_attr(feature = "serde", serde(default))]
-    pub shader_bound_checks: wgt::ShaderBoundChecks,
+    pub runtime_checks: wgt::ShaderRuntimeChecks,
 }
+
+pub type ShaderModuleDescriptorPassthrough<'a> =
+    wgt::CreateShaderModuleDescriptorPassthrough<'a, Label<'a>>;
 
 #[derive(Debug)]
 pub struct ShaderModule {
     pub(crate) raw: ManuallyDrop<Box<dyn hal::DynShaderModule>>,
     pub(crate) device: Arc<Device>,
-    pub(crate) interface: Option<validation::Interface>,
+    pub(crate) interface: ShaderMetaData,
     /// The `label` from the descriptor used to create the resource.
     pub(crate) label: String,
 }
@@ -76,14 +94,32 @@ impl ShaderModule {
 
     pub(crate) fn finalize_entry_point_name(
         &self,
-        stage_bit: wgt::ShaderStages,
+        stage: naga::ShaderStage,
         entry_point: Option<&str>,
     ) -> Result<String, validation::StageError> {
-        match &self.interface {
-            Some(interface) => interface.finalize_entry_point_name(stage_bit, entry_point),
-            None => entry_point
-                .map(|ep| ep.to_string())
-                .ok_or(validation::StageError::NoEntryPointFound),
+        match self.interface {
+            ShaderMetaData::Interface(ref interface) => {
+                interface.finalize_entry_point_name(stage, entry_point)
+            }
+            ShaderMetaData::Passthrough(ref interface) => {
+                if let Some(ep) = entry_point {
+                    if interface.entry_point_names.contains(ep) {
+                        Ok(ep.to_owned())
+                    } else {
+                        Err(validation::StageError::MissingEntryPoint(ep.to_owned()))
+                    }
+                } else {
+                    if interface.entry_point_names.len() != 1 {
+                        return Err(validation::StageError::MultipleEntryPointsFound);
+                    }
+                    Ok(interface
+                        .entry_point_names
+                        .iter()
+                        .next()
+                        .unwrap()
+                        .to_owned())
+                }
+            }
         }
     }
 }
@@ -117,14 +153,42 @@ pub enum CreateShaderModuleError {
         group: u32,
         limit: u32,
     },
+    #[error("Generic shader passthrough does not contain any code compatible with this backend.")]
+    NotCompiledForBackend,
+    #[error(
+        "Generic passthrough shaders which use GLSL or DXIL must contain exactly one entry point."
+    )]
+    IncorrectPassthroughEntryPointCount,
+}
+
+impl WebGpuError for CreateShaderModuleError {
+    fn webgpu_error_type(&self) -> ErrorType {
+        match self {
+            Self::Device(e) => e.webgpu_error_type(),
+            Self::MissingFeatures(e) => e.webgpu_error_type(),
+
+            Self::Generation => ErrorType::Internal,
+
+            Self::Validation(..)
+            | Self::InvalidGroupIndex { .. }
+            | Self::IncorrectPassthroughEntryPointCount
+            | Self::NotCompiledForBackend => ErrorType::Validation,
+            #[cfg(feature = "wgsl")]
+            Self::Parsing(..) => ErrorType::Validation,
+            #[cfg(feature = "glsl")]
+            Self::ParsingGlsl(..) => ErrorType::Validation,
+            #[cfg(feature = "spirv")]
+            Self::ParsingSpirV(..) => ErrorType::Validation,
+        }
+    }
 }
 
 /// Describes a programmable pipeline stage.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct ProgrammableStageDescriptor<'a> {
+pub struct ProgrammableStageDescriptor<'a, SM = ShaderModuleId> {
     /// The compiled shader module for this stage.
-    pub module: ShaderModuleId,
+    pub module: SM,
     /// The name of the entry point in the compiled shader. The name is selected using the
     /// following logic:
     ///
@@ -139,7 +203,7 @@ pub struct ProgrammableStageDescriptor<'a> {
     /// the key must be the constant's identifier name.
     ///
     /// The value may represent any of WGSL's concrete scalar types.
-    pub constants: Cow<'a, naga::back::PipelineConstants>,
+    pub constants: naga::back::PipelineConstants,
     /// Whether workgroup scoped memory will be initialized with zero values for this stage.
     ///
     /// This is required by the WebGPU spec, but may have overhead which can be avoided
@@ -147,32 +211,9 @@ pub struct ProgrammableStageDescriptor<'a> {
     pub zero_initialize_workgroup_memory: bool,
 }
 
-/// Describes a programmable pipeline stage.
-#[derive(Clone, Debug)]
-pub struct ResolvedProgrammableStageDescriptor<'a> {
-    /// The compiled shader module for this stage.
-    pub module: Arc<ShaderModule>,
-    /// The name of the entry point in the compiled shader. The name is selected using the
-    /// following logic:
-    ///
-    /// * If `Some(name)` is specified, there must be a function with this name in the shader.
-    /// * If a single entry point associated with this stage must be in the shader, then proceed as
-    ///   if `Some(…)` was specified with that entry point's name.
-    pub entry_point: Option<Cow<'a, str>>,
-    /// Specifies the values of pipeline-overridable constants in the shader module.
-    ///
-    /// If an `@id` attribute was specified on the declaration,
-    /// the key must be the pipeline constant ID as a decimal ASCII number; if not,
-    /// the key must be the constant's identifier name.
-    ///
-    /// The value may represent any of WGSL's concrete scalar types.
-    pub constants: Cow<'a, naga::back::PipelineConstants>,
-    /// Whether workgroup scoped memory will be initialized with zero values for this stage.
-    ///
-    /// This is required by the WebGPU spec, but may have overhead which can be avoided
-    /// for cross-platform applications
-    pub zero_initialize_workgroup_memory: bool,
-}
+/// cbindgen:ignore
+pub type ResolvedProgrammableStageDescriptor<'a> =
+    ProgrammableStageDescriptor<'a, Arc<ShaderModule>>;
 
 /// Number of implicit bind groups derived at pipeline creation.
 pub type ImplicitBindGroupCount = u8;
@@ -180,52 +221,54 @@ pub type ImplicitBindGroupCount = u8;
 #[derive(Clone, Debug, Error)]
 #[non_exhaustive]
 pub enum ImplicitLayoutError {
-    #[error("The implicit_pipeline_ids arg is required")]
-    MissingImplicitPipelineIds,
-    #[error("Missing IDs for deriving {0} bind groups")]
-    MissingIds(ImplicitBindGroupCount),
     #[error("Unable to reflect the shader {0:?} interface")]
     ReflectionError(wgt::ShaderStages),
     #[error(transparent)]
     BindGroup(#[from] CreateBindGroupLayoutError),
     #[error(transparent)]
     Pipeline(#[from] CreatePipelineLayoutError),
+    #[error("Unable to create implicit pipeline layout from passthrough shader stage: {0:?}")]
+    Passthrough(wgt::ShaderStages),
+}
+
+impl WebGpuError for ImplicitLayoutError {
+    fn webgpu_error_type(&self) -> ErrorType {
+        match self {
+            Self::ReflectionError(_) => ErrorType::Validation,
+            Self::BindGroup(e) => e.webgpu_error_type(),
+            Self::Pipeline(e) => e.webgpu_error_type(),
+            Self::Passthrough(_) => ErrorType::Validation,
+        }
+    }
 }
 
 /// Describes a compute pipeline.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct ComputePipelineDescriptor<'a> {
+pub struct ComputePipelineDescriptor<
+    'a,
+    PLL = PipelineLayoutId,
+    SM = ShaderModuleId,
+    PLC = PipelineCacheId,
+> {
     pub label: Label<'a>,
     /// The layout of bind groups for this pipeline.
-    pub layout: Option<PipelineLayoutId>,
+    pub layout: Option<PLL>,
     /// The compiled compute stage and its entry point.
-    pub stage: ProgrammableStageDescriptor<'a>,
+    pub stage: ProgrammableStageDescriptor<'a, SM>,
     /// The pipeline cache to use when creating this pipeline.
-    pub cache: Option<PipelineCacheId>,
+    pub cache: Option<PLC>,
 }
 
-/// Describes a compute pipeline.
-#[derive(Clone, Debug)]
-pub struct ResolvedComputePipelineDescriptor<'a> {
-    pub label: Label<'a>,
-    /// The layout of bind groups for this pipeline.
-    pub layout: Option<Arc<PipelineLayout>>,
-    /// The compiled compute stage and its entry point.
-    pub stage: ResolvedProgrammableStageDescriptor<'a>,
-    /// The pipeline cache to use when creating this pipeline.
-    pub cache: Option<Arc<PipelineCache>>,
-}
+/// cbindgen:ignore
+pub type ResolvedComputePipelineDescriptor<'a> =
+    ComputePipelineDescriptor<'a, Arc<PipelineLayout>, Arc<ShaderModule>, Arc<PipelineCache>>;
 
 #[derive(Clone, Debug, Error)]
 #[non_exhaustive]
 pub enum CreateComputePipelineError {
     #[error(transparent)]
     Device(#[from] DeviceError),
-    #[error("Pipeline layout is invalid")]
-    InvalidLayout,
-    #[error("Cache is invalid")]
-    InvalidCache,
     #[error("Unable to derive an implicit layout")]
     Implicit(#[from] ImplicitLayoutError),
     #[error("Error matching shader requirements against the pipeline")]
@@ -236,6 +279,22 @@ pub enum CreateComputePipelineError {
     PipelineConstants(String),
     #[error(transparent)]
     MissingDownlevelFlags(#[from] MissingDownlevelFlags),
+    #[error(transparent)]
+    InvalidResource(#[from] InvalidResourceError),
+}
+
+impl WebGpuError for CreateComputePipelineError {
+    fn webgpu_error_type(&self) -> ErrorType {
+        match self {
+            Self::Device(e) => e.webgpu_error_type(),
+            Self::InvalidResource(e) => e.webgpu_error_type(),
+            Self::MissingDownlevelFlags(e) => e.webgpu_error_type(),
+            Self::Implicit(e) => e.webgpu_error_type(),
+            Self::Stage(e) => e.webgpu_error_type(),
+            Self::Internal(_) => ErrorType::Internal,
+            Self::PipelineConstants(_) => ErrorType::Validation,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -245,6 +304,7 @@ pub struct ComputePipeline {
     pub(crate) device: Arc<Device>,
     pub(crate) _shader_module: Arc<ShaderModule>,
     pub(crate) late_sized_buffer_groups: ArrayVec<LateSizedBufferGroup, { hal::MAX_BIND_GROUPS }>,
+    pub(crate) immediate_slots_required: naga::valid::ImmediateSlots,
     /// The `label` from the descriptor used to create the resource.
     pub(crate) label: String,
     pub(crate) tracking_data: TrackingData,
@@ -271,6 +331,13 @@ impl ComputePipeline {
     pub(crate) fn raw(&self) -> &dyn hal::DynComputePipeline {
         self.raw.as_ref()
     }
+
+    pub fn get_bind_group_layout(
+        self: &Arc<Self>,
+        index: u32,
+    ) -> Result<Arc<BindGroupLayout>, GetBindGroupLayoutError> {
+        self.layout.get_bind_group_layout(index, self.into())
+    }
 }
 
 #[derive(Clone, Debug, Error)]
@@ -282,16 +349,14 @@ pub enum CreatePipelineCacheError {
     Validation(#[from] PipelineCacheValidationError),
     #[error(transparent)]
     MissingFeatures(#[from] MissingFeatures),
-    #[error("Internal error: {0}")]
-    Internal(String),
 }
 
-impl From<hal::PipelineCacheError> for CreatePipelineCacheError {
-    fn from(value: hal::PipelineCacheError) -> Self {
-        match value {
-            hal::PipelineCacheError::Device(device) => {
-                CreatePipelineCacheError::Device(device.into())
-            }
+impl WebGpuError for CreatePipelineCacheError {
+    fn webgpu_error_type(&self) -> ErrorType {
+        match self {
+            Self::Device(e) => e.webgpu_error_type(),
+            Self::Validation(e) => e.webgpu_error_type(),
+            Self::MissingFeatures(e) => e.webgpu_error_type(),
         }
     }
 }
@@ -339,53 +404,92 @@ pub struct VertexBufferLayout<'a> {
     pub attributes: Cow<'a, [wgt::VertexAttribute]>,
 }
 
-/// Describes the vertex process in a render pipeline.
-#[derive(Clone, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct VertexState<'a> {
-    /// The compiled vertex stage and its entry point.
-    pub stage: ProgrammableStageDescriptor<'a>,
-    /// The format of any vertex buffers used with this pipeline.
-    pub buffers: Cow<'a, [VertexBufferLayout<'a>]>,
+/// A null vertex buffer layout that may be placed in unused slots.
+impl Default for VertexBufferLayout<'_> {
+    fn default() -> Self {
+        Self {
+            array_stride: Default::default(),
+            step_mode: Default::default(),
+            attributes: Cow::Borrowed(&[]),
+        }
+    }
 }
 
 /// Describes the vertex process in a render pipeline.
 #[derive(Clone, Debug)]
-pub struct ResolvedVertexState<'a> {
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct VertexState<'a, SM = ShaderModuleId> {
     /// The compiled vertex stage and its entry point.
-    pub stage: ResolvedProgrammableStageDescriptor<'a>,
+    pub stage: ProgrammableStageDescriptor<'a, SM>,
     /// The format of any vertex buffers used with this pipeline.
-    pub buffers: Cow<'a, [VertexBufferLayout<'a>]>,
+    pub buffers: Cow<'a, [Option<VertexBufferLayout<'a>>]>,
 }
+
+/// cbindgen:ignore
+pub type ResolvedVertexState<'a> = VertexState<'a, Arc<ShaderModule>>;
 
 /// Describes fragment processing in a render pipeline.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct FragmentState<'a> {
+pub struct FragmentState<'a, SM = ShaderModuleId> {
     /// The compiled fragment stage and its entry point.
-    pub stage: ProgrammableStageDescriptor<'a>,
+    pub stage: ProgrammableStageDescriptor<'a, SM>,
     /// The effect of draw calls on the color aspect of the output target.
     pub targets: Cow<'a, [Option<wgt::ColorTargetState>]>,
 }
 
-/// Describes fragment processing in a render pipeline.
+/// cbindgen:ignore
+pub type ResolvedFragmentState<'a> = FragmentState<'a, Arc<ShaderModule>>;
+
+/// Describes the task shader in a mesh shader pipeline.
 #[derive(Clone, Debug)]
-pub struct ResolvedFragmentState<'a> {
-    /// The compiled fragment stage and its entry point.
-    pub stage: ResolvedProgrammableStageDescriptor<'a>,
-    /// The effect of draw calls on the color aspect of the output target.
-    pub targets: Cow<'a, [Option<wgt::ColorTargetState>]>,
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct TaskState<'a, SM = ShaderModuleId> {
+    /// The compiled task stage and its entry point.
+    pub stage: ProgrammableStageDescriptor<'a, SM>,
+}
+
+pub type ResolvedTaskState<'a> = TaskState<'a, Arc<ShaderModule>>;
+
+/// Describes the mesh shader in a mesh shader pipeline.
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct MeshState<'a, SM = ShaderModuleId> {
+    /// The compiled mesh stage and its entry point.
+    pub stage: ProgrammableStageDescriptor<'a, SM>,
+}
+
+pub type ResolvedMeshState<'a> = MeshState<'a, Arc<ShaderModule>>;
+
+/// Describes a vertex processor for either a conventional or mesh shading
+/// pipeline architecture.
+///
+/// This is not a public API. It is for use by `player` only. The public APIs
+/// are [`VertexState`], [`TaskState`], and [`MeshState`].
+///
+/// cbindgen:ignore
+#[doc(hidden)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum RenderPipelineVertexProcessor<'a, SM = ShaderModuleId> {
+    Vertex(VertexState<'a, SM>),
+    Mesh(Option<TaskState<'a, SM>>, MeshState<'a, SM>),
 }
 
 /// Describes a render (graphics) pipeline.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct RenderPipelineDescriptor<'a> {
+pub struct RenderPipelineDescriptor<
+    'a,
+    PLL = PipelineLayoutId,
+    SM = ShaderModuleId,
+    PLC = PipelineCacheId,
+> {
     pub label: Label<'a>,
     /// The layout of bind groups for this pipeline.
-    pub layout: Option<PipelineLayoutId>,
+    pub layout: Option<PLL>,
     /// The vertex processing state for this pipeline.
-    pub vertex: VertexState<'a>,
+    pub vertex: VertexState<'a, SM>,
     /// The properties of the pipeline at the primitive assembly and rasterization level.
     #[cfg_attr(feature = "serde", serde(default))]
     pub primitive: wgt::PrimitiveState,
@@ -396,36 +500,125 @@ pub struct RenderPipelineDescriptor<'a> {
     #[cfg_attr(feature = "serde", serde(default))]
     pub multisample: wgt::MultisampleState,
     /// The fragment processing state for this pipeline.
-    pub fragment: Option<FragmentState<'a>>,
+    pub fragment: Option<FragmentState<'a, SM>>,
     /// If the pipeline will be used with a multiview render pass, this indicates how many array
     /// layers the attachments will have.
-    pub multiview: Option<NonZeroU32>,
+    pub multiview_mask: Option<NonZeroU32>,
     /// The pipeline cache to use when creating this pipeline.
-    pub cache: Option<PipelineCacheId>,
+    pub cache: Option<PLC>,
 }
-
-/// Describes a render (graphics) pipeline.
+/// Describes a mesh shader pipeline.
 #[derive(Clone, Debug)]
-pub struct ResolvedRenderPipelineDescriptor<'a> {
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct MeshPipelineDescriptor<
+    'a,
+    PLL = PipelineLayoutId,
+    SM = ShaderModuleId,
+    PLC = PipelineCacheId,
+> {
     pub label: Label<'a>,
     /// The layout of bind groups for this pipeline.
-    pub layout: Option<Arc<PipelineLayout>>,
-    /// The vertex processing state for this pipeline.
-    pub vertex: ResolvedVertexState<'a>,
+    pub layout: Option<PLL>,
+    /// The task processing state for this pipeline.
+    pub task: Option<TaskState<'a, SM>>,
+    /// The mesh processing state for this pipeline
+    pub mesh: MeshState<'a, SM>,
     /// The properties of the pipeline at the primitive assembly and rasterization level.
+    #[cfg_attr(feature = "serde", serde(default))]
     pub primitive: wgt::PrimitiveState,
     /// The effect of draw calls on the depth and stencil aspects of the output target, if any.
+    #[cfg_attr(feature = "serde", serde(default))]
     pub depth_stencil: Option<wgt::DepthStencilState>,
     /// The multi-sampling properties of the pipeline.
+    #[cfg_attr(feature = "serde", serde(default))]
     pub multisample: wgt::MultisampleState,
     /// The fragment processing state for this pipeline.
-    pub fragment: Option<ResolvedFragmentState<'a>>,
+    pub fragment: Option<FragmentState<'a, SM>>,
     /// If the pipeline will be used with a multiview render pass, this indicates how many array
     /// layers the attachments will have.
     pub multiview: Option<NonZeroU32>,
     /// The pipeline cache to use when creating this pipeline.
-    pub cache: Option<Arc<PipelineCache>>,
+    pub cache: Option<PLC>,
 }
+
+/// Describes a render (graphics) pipeline, with either conventional or mesh
+/// shading architecture.
+///
+/// This is not a public API. It is for use by `player` only. The public APIs
+/// are [`RenderPipelineDescriptor`] and [`MeshPipelineDescriptor`].
+///
+/// cbindgen:ignore
+#[doc(hidden)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct GeneralRenderPipelineDescriptor<
+    'a,
+    PLL = PipelineLayoutId,
+    SM = ShaderModuleId,
+    PLC = PipelineCacheId,
+> {
+    pub label: Label<'a>,
+    /// The layout of bind groups for this pipeline.
+    pub layout: Option<PLL>,
+    /// The vertex processing state for this pipeline.
+    pub vertex: RenderPipelineVertexProcessor<'a, SM>,
+    /// The properties of the pipeline at the primitive assembly and rasterization level.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub primitive: wgt::PrimitiveState,
+    /// The effect of draw calls on the depth and stencil aspects of the output target, if any.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub depth_stencil: Option<wgt::DepthStencilState>,
+    /// The multi-sampling properties of the pipeline.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub multisample: wgt::MultisampleState,
+    /// The fragment processing state for this pipeline.
+    pub fragment: Option<FragmentState<'a, SM>>,
+    /// If the pipeline will be used with a multiview render pass, this indicates how many array
+    /// layers the attachments will have.
+    pub multiview_mask: Option<NonZeroU32>,
+    /// The pipeline cache to use when creating this pipeline.
+    pub cache: Option<PLC>,
+}
+impl<'a, PLL, SM, PLC> From<RenderPipelineDescriptor<'a, PLL, SM, PLC>>
+    for GeneralRenderPipelineDescriptor<'a, PLL, SM, PLC>
+{
+    fn from(value: RenderPipelineDescriptor<'a, PLL, SM, PLC>) -> Self {
+        Self {
+            label: value.label,
+            layout: value.layout,
+            vertex: RenderPipelineVertexProcessor::Vertex(value.vertex),
+            primitive: value.primitive,
+            depth_stencil: value.depth_stencil,
+            multisample: value.multisample,
+            fragment: value.fragment,
+            multiview_mask: value.multiview_mask,
+            cache: value.cache,
+        }
+    }
+}
+impl<'a, PLL, SM, PLC> From<MeshPipelineDescriptor<'a, PLL, SM, PLC>>
+    for GeneralRenderPipelineDescriptor<'a, PLL, SM, PLC>
+{
+    fn from(value: MeshPipelineDescriptor<'a, PLL, SM, PLC>) -> Self {
+        Self {
+            label: value.label,
+            layout: value.layout,
+            vertex: RenderPipelineVertexProcessor::Mesh(value.task, value.mesh),
+            primitive: value.primitive,
+            depth_stencil: value.depth_stencil,
+            multisample: value.multisample,
+            fragment: value.fragment,
+            multiview_mask: value.multiview,
+            cache: value.cache,
+        }
+    }
+}
+
+/// Not a public API. For use by `player` only.
+///
+/// cbindgen:ignore
+pub type ResolvedGeneralRenderPipelineDescriptor<'a> =
+    GeneralRenderPipelineDescriptor<'a, Arc<PipelineLayout>, Arc<ShaderModule>, Arc<PipelineCache>>;
 
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -451,10 +644,20 @@ pub enum ColorStateError {
         pipeline: validation::NumericType,
         shader: validation::NumericType,
     },
-    #[error("Blend factors for {0:?} must be `One`")]
-    InvalidMinMaxBlendFactors(wgt::BlendComponent),
     #[error("Invalid write mask {0:?}")]
     InvalidWriteMask(wgt::ColorWrites),
+    #[error("Using the blend factor {factor:?} for render target {target} is not possible. Only the first render target may be used when dual-source blending.")]
+    BlendFactorOnUnsupportedTarget {
+        factor: wgt::BlendFactor,
+        target: u32,
+    },
+    #[error(
+        "Blend factor {factor:?} for render target {target} is not valid. Blend factor must be `one` when using min/max blend operations."
+    )]
+    InvalidMinMaxBlendFactor {
+        factor: wgt::BlendFactor,
+        target: u32,
+    },
 }
 
 #[derive(Clone, Debug, Error)]
@@ -462,12 +665,20 @@ pub enum ColorStateError {
 pub enum DepthStencilStateError {
     #[error("Format {0:?} is not renderable")]
     FormatNotRenderable(wgt::TextureFormat),
+    #[error("Format {0:?} is not a depth/stencil format")]
+    FormatNotDepthOrStencil(wgt::TextureFormat),
     #[error("Format {0:?} does not have a depth aspect, but depth test/write is enabled")]
     FormatNotDepth(wgt::TextureFormat),
     #[error("Format {0:?} does not have a stencil aspect, but stencil test/write is enabled")]
     FormatNotStencil(wgt::TextureFormat),
     #[error("Sample count {0} is not supported by format {1:?} on this device. The WebGPU spec guarantees {2:?} samples are supported by this format. With the TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES feature your device supports {3:?}.")]
     InvalidSampleCount(u32, wgt::TextureFormat, Vec<u32>, Vec<u32>),
+    #[error("Depth bias is not compatible with non-triangle topology {0:?}")]
+    DepthBiasWithIncompatibleTopology(wgt::PrimitiveTopology),
+    #[error("Depth compare function must be specified for depth format {0:?}")]
+    MissingDepthCompare(wgt::TextureFormat),
+    #[error("Depth write enabled must be specified for depth format {0:?}")]
+    MissingDepthWriteEnabled(wgt::TextureFormat),
 }
 
 #[derive(Clone, Debug, Error)]
@@ -477,10 +688,6 @@ pub enum CreateRenderPipelineError {
     ColorAttachment(#[from] ColorAttachmentError),
     #[error(transparent)]
     Device(#[from] DeviceError),
-    #[error("Pipeline layout is invalid")]
-    InvalidLayout,
-    #[error("Pipeline cache is invalid")]
-    InvalidCache,
     #[error("Unable to derive an implicit layout")]
     Implicit(#[from] ImplicitLayoutError),
     #[error("Color state [{0}] is invalid")]
@@ -491,11 +698,21 @@ pub enum CreateRenderPipelineError {
     InvalidSampleCount(u32),
     #[error("The number of vertex buffers {given} exceeds the limit {limit}")]
     TooManyVertexBuffers { given: u32, limit: u32 },
+    #[error("The number of bind groups + vertex buffers {given} exceeds the limit {limit}")]
+    TooManyBindGroupsPlusVertexBuffers { given: u32, limit: u32 },
     #[error("The total number of vertex attributes {given} exceeds the limit {limit}")]
     TooManyVertexAttributes { given: u32, limit: u32 },
+    #[error("Vertex attribute location {given} must be less than limit {limit}")]
+    VertexAttributeLocationTooLarge { given: u32, limit: u32 },
     #[error("Vertex buffer {index} stride {given} exceeds the limit {limit}")]
     VertexStrideTooLarge { index: u32, given: u32, limit: u32 },
-    #[error("Vertex buffer {index} stride {stride} does not respect `VERTEX_STRIDE_ALIGNMENT`")]
+    #[error("Vertex attribute at location {location} stride {given} exceeds the limit {limit}")]
+    VertexAttributeStrideTooLarge {
+        location: wgt::ShaderLocation,
+        given: u32,
+        limit: u32,
+    },
+    #[error("Vertex buffer {index} stride {stride} does not respect `VERTEX_ALIGNMENT`")]
     UnalignedVertexStride {
         index: u32,
         stride: wgt::BufferAddress,
@@ -536,20 +753,50 @@ pub enum CreateRenderPipelineError {
     },
     #[error("In the provided shader, the type given for group {group} binding {binding} has a size of {size}. As the device does not support `DownlevelFlags::BUFFER_BINDINGS_NOT_16_BYTE_ALIGNED`, the type must have a size that is a multiple of 16 bytes.")]
     UnalignedShader { group: u32, binding: u32, size: u64 },
-    #[error("Using the blend factor {factor:?} for render target {target} is not possible. Only the first render target may be used when dual-source blending.")]
-    BlendFactorOnUnsupportedTarget {
-        factor: wgt::BlendFactor,
-        target: u32,
-    },
-    #[error("Pipeline expects the shader entry point to make use of dual-source blending.")]
-    PipelineExpectsShaderToUseDualSourceBlending,
-    #[error("Shader entry point expects the pipeline to make use of dual-source blending.")]
-    ShaderExpectsPipelineToUseDualSourceBlending,
+    #[error("Dual-source blending requires exactly one color target, but {count} color targets are present")]
+    DualSourceBlendingWithMultipleColorTargets { count: usize },
     #[error("{}", concat!(
         "At least one color attachment or depth-stencil attachment was expected, ",
         "but no render target for the pipeline was specified."
     ))]
     NoTargetSpecified,
+    #[error(transparent)]
+    InvalidResource(#[from] InvalidResourceError),
+}
+
+impl WebGpuError for CreateRenderPipelineError {
+    fn webgpu_error_type(&self) -> ErrorType {
+        match self {
+            Self::Device(e) => e.webgpu_error_type(),
+            Self::InvalidResource(e) => e.webgpu_error_type(),
+            Self::MissingFeatures(e) => e.webgpu_error_type(),
+            Self::MissingDownlevelFlags(e) => e.webgpu_error_type(),
+
+            Self::Internal { .. } => ErrorType::Internal,
+
+            Self::ColorAttachment(_)
+            | Self::Implicit(_)
+            | Self::ColorState(_, _)
+            | Self::DepthStencilState(_)
+            | Self::InvalidSampleCount(_)
+            | Self::TooManyVertexBuffers { .. }
+            | Self::TooManyBindGroupsPlusVertexBuffers { .. }
+            | Self::TooManyVertexAttributes { .. }
+            | Self::VertexAttributeLocationTooLarge { .. }
+            | Self::VertexStrideTooLarge { .. }
+            | Self::UnalignedVertexStride { .. }
+            | Self::InvalidVertexAttributeOffset { .. }
+            | Self::ShaderLocationClash(_)
+            | Self::StripIndexFormatForNonStripTopology { .. }
+            | Self::ConservativeRasterizationNonFillPolygonMode
+            | Self::Stage { .. }
+            | Self::UnalignedShader { .. }
+            | Self::DualSourceBlendingWithMultipleColorTargets { .. }
+            | Self::NoTargetSpecified
+            | Self::PipelineConstants { .. }
+            | Self::VertexAttributeStrideTooLarge { .. } => ErrorType::Validation,
+        }
+    }
 }
 
 bitflags::bitflags! {
@@ -594,12 +841,17 @@ pub struct RenderPipeline {
     pub(crate) _shader_modules: ArrayVec<Arc<ShaderModule>, { hal::MAX_CONCURRENT_SHADER_STAGES }>,
     pub(crate) pass_context: RenderPassContext,
     pub(crate) flags: PipelineFlags,
+    pub(crate) topology: wgt::PrimitiveTopology,
     pub(crate) strip_index_format: Option<wgt::IndexFormat>,
-    pub(crate) vertex_steps: Vec<VertexStep>,
+    pub(crate) vertex_steps: Vec<Option<VertexStep>>,
     pub(crate) late_sized_buffer_groups: ArrayVec<LateSizedBufferGroup, { hal::MAX_BIND_GROUPS }>,
+    pub(crate) immediate_slots_required: naga::valid::ImmediateSlots,
     /// The `label` from the descriptor used to create the resource.
     pub(crate) label: String,
     pub(crate) tracking_data: TrackingData,
+    /// Whether this is a mesh shader pipeline
+    pub(crate) is_mesh: bool,
+    pub(crate) has_task_shader: bool,
 }
 
 impl Drop for RenderPipeline {
@@ -622,5 +874,12 @@ crate::impl_trackable!(RenderPipeline);
 impl RenderPipeline {
     pub(crate) fn raw(&self) -> &dyn hal::DynRenderPipeline {
         self.raw.as_ref()
+    }
+
+    pub fn get_bind_group_layout(
+        self: &Arc<Self>,
+        index: u32,
+    ) -> Result<Arc<BindGroupLayout>, GetBindGroupLayoutError> {
+        self.layout.get_bind_group_layout(index, self.into())
     }
 }

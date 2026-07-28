@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,17 +5,17 @@
 #ifndef mozilla_dom_HTMLFormElement_h
 #define mozilla_dom_HTMLFormElement_h
 
+#include "js/friend/DOMProxy.h"  // JS::ExpandoAndGeneration
 #include "mozilla/AsyncEventDispatcher.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/PopupBlocker.h"
 #include "mozilla/dom/RadioGroupContainer.h"
-#include "nsIFormControl.h"
 #include "nsGenericHTMLElement.h"
-#include "nsThreadUtils.h"
+#include "nsIFormControl.h"
 #include "nsInterfaceHashtable.h"
-#include "js/friend/DOMProxy.h"  // JS::ExpandoAndGeneration
+#include "nsThreadUtils.h"
 
 class nsIMutableArray;
 class nsIURI;
@@ -190,7 +188,7 @@ class HTMLFormElement final : public nsGenericHTMLElement {
    * submission. In that case the form will defer the submission until the
    * script handler returns and the return value is known.
    */
-  void OnSubmitClickBegin(Element* aOriginatingElement);
+  void OnSubmitClickBegin();
   void OnSubmitClickEnd();
 
   /**
@@ -229,13 +227,6 @@ class HTMLFormElement final : public nsGenericHTMLElement {
    */
   // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230)
   MOZ_CAN_RUN_SCRIPT_BOUNDARY nsresult ConstructEntryList(FormData*);
-
-  /**
-   * Implements form[name]. Returns form controls in this form with the correct
-   * value of the name attribute.
-   */
-  already_AddRefed<nsISupports> FindNamedItem(const nsAString& aName,
-                                              nsWrapperCache** aCache);
 
   // WebIDL
 
@@ -336,18 +327,11 @@ class HTMLFormElement final : public nsGenericHTMLElement {
 
   Element* IndexedGetter(uint32_t aIndex, bool& aFound);
 
+  already_AddRefed<nsISupports> ResolveName(const nsAString&);
   already_AddRefed<nsISupports> NamedGetter(const nsAString& aName,
                                             bool& aFound);
 
   void GetSupportedNames(nsTArray<nsString>& aRetval);
-
-#ifdef DEBUG
-  static void AssertDocumentOrder(
-      const nsTArray<nsGenericHTMLFormElement*>& aControls, nsIContent* aForm);
-  static void AssertDocumentOrder(
-      const nsTArray<RefPtr<nsGenericHTMLFormElement>>& aControls,
-      nsIContent* aForm);
-#endif
 
   JS::ExpandoAndGeneration mExpandoAndGeneration;
 
@@ -410,14 +394,12 @@ class HTMLFormElement final : public nsGenericHTMLElement {
   nsresult SubmitDialog(DialogFormSubmission* aFormSubmission);
 
   /**
-   * Notify any submit observers of the submit.
+   * Dispatch a DOMFormBeforeSubmit chrome-only event.
    *
-   * @param aActionURL the URL being submitted to
    * @param aCancelSubmit out param where submit observers can specify that the
    *        submit should be cancelled.
    */
-  nsresult NotifySubmitObservers(nsIURI* aActionURL, bool* aCancelSubmit,
-                                 bool aEarlyNotify);
+  nsresult DispatchBeforeSubmitChromeOnlyEvent(bool* aCancelSubmit);
 
   /**
    * If this form submission is secure -> insecure, ask the user if they want
@@ -428,12 +410,6 @@ class HTMLFormElement final : public nsGenericHTMLElement {
    */
   nsresult DoSecureToInsecureSubmitCheck(nsIURI* aActionURL,
                                          bool* aCancelSubmit);
-
-  /**
-   * Find form controls in this form with the correct value in the name
-   * attribute.
-   */
-  already_AddRefed<nsISupports> DoResolveName(const nsAString& aName);
 
   /**
    * Check the form validity following this algorithm:

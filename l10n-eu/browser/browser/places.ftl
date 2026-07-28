@@ -98,7 +98,7 @@ places-delete-page =
            *[other] Ezabatu orriak
         }
     .accesskey = E
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Kudeatutako laster-markak
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -108,8 +108,8 @@ managed-bookmarks-subfolder =
 other-bookmarks-folder =
     .label = Beste laster-markak
 places-show-in-folder =
-    .label = Erakutsi Finder-en
-    .accesskey = F
+    .label = Erakutsi karpetan
+    .accesskey = k
 # Variables:
 # $count (number) - The number of elements being selected for removal.
 places-delete-bookmark =
@@ -266,3 +266,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = Laster-marken eta historiaren sistema ezingo da erabili beste aplikazio bat ari delako erabiltzen { -brand-short-name }(r)en fitxategietako bat. Zenbait segurtasun-softwarek arazo hau sor dezakete.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Partekatu karpeta
+    .badge = Berria

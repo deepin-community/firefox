@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const { AddonTestUtils } = ChromeUtils.importESModule(
@@ -201,9 +199,8 @@ add_task(async function test_delete() {
   );
 
   extension.sendMessage("delete-all");
-  [historyClearedCount, removedUrls] = await extension.awaitMessage(
-    "history-cleared"
-  );
+  [historyClearedCount, removedUrls] =
+    await extension.awaitMessage("history-cleared");
   equal(
     historyClearedCount,
     2,

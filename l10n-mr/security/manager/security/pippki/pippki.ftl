@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = दृश्य
 download-cert-view-text = CA प्रमाणपत्राचे परिक्षण करा
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = जारी करणारे: { $issuedB
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = संग्रहित: { $storedOn }
-client-auth-cert-remember-box =
-    .label = हा निर्णय लक्षात ठेवा
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = प्रतिकृती पासवर्ड प्रमाणपत्र (पुन्हा):
 set-password-reminder = महत्वाचे: आपण प्रतिकृती पासवर्ड प्रमाणपत्र विसरलात तर याची प्रतिकृती पुनःस्थापित करता येणार नाही.  कृपया सुरक्षित ठिकाणी त्याची नोंद करा.
-
-## Protected authentication alert
-

@@ -17,22 +17,26 @@ export class LoadURIDelegateChild extends GeckoViewActorChild {
     debug`handleLoadError: uri=${aUri && aUri.spec}
                              displaySpec=${aUri && aUri.displaySpec}
                              error=${aError}`;
-    if (aUri && lazy.LoadURIDelegate.isSafeBrowsingError(aError)) {
-      const message = {
-        type: "GeckoView:ContentBlocked",
-        uri: aUri.spec,
-        error: aError,
-      };
+    let errorClass = 0;
+    try {
+      const nssErrorsService = Cc[
+        "@mozilla.org/nss_errors_service;1"
+      ].getService(Ci.nsINSSErrorsService);
+      errorClass = nssErrorsService.getErrorClass(aError);
+    } catch (e) {}
 
-      this.eventDispatcher.sendRequest(message);
-    }
+    const msg = {
+      uri: aUri && aUri.spec,
+      error: aError,
+      errorModule: aErrorModule,
+      errorClass,
+    };
+
+    let errorPagePromise = this.sendQuery("GeckoView:OnLoadError", msg);
 
     return lazy.LoadURIDelegate.handleLoadError(
       this.contentWindow,
-      this.eventDispatcher,
-      aUri,
-      aError,
-      aErrorModule
+      errorPagePromise
     );
   }
 }

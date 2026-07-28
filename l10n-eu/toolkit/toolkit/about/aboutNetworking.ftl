@@ -4,6 +4,7 @@
 
 about-networking-title = Sareari buruz
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = Garbitu HTTP cachea
 about-networking-sockets = Socketak
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Garbitu DNS cachea
@@ -11,6 +12,13 @@ about-networking-dns-trr-url = DoH URLa
 about-networking-dns-trr-mode = DoH modua
 about-networking-dns-suffix = DNS aurrizkia
 about-networking-websockets = WebSocketak
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Jatorria
+about-networking-alt-svc-alternate = Ordezkoa
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Balidatuta
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Isolamendu gakoa
 about-networking-refresh = Berritu
 about-networking-auto-refresh = Berritu automatikoki 3 segundoro
 about-networking-hostname = Ostalari-izena
@@ -38,6 +46,7 @@ about-networking-dns-lookup = DNS bilaketa
 about-networking-dns-lookup-button = Ebatzi
 about-networking-dns-domain = Domeinua:
 about-networking-dns-lookup-table-column = IPak
+about-networking-dns-https-rrs-lookup-table-column = HTTP RRak
 about-networking-dns-https-rr-lookup-table-column = HTTP RRak
 about-networking-rcwn = RCWN estatistikak
 about-networking-rcwn-status = RCWN egoera
@@ -63,6 +72,3 @@ about-networking-moved-about-logging = Orri hau lekuz aldatu da <a data-l10n-nam
 
 about-networking-networkid-is-up = Konexioa aktibatuta dago
 about-networking-networkid-status-known = Konexioaren egoera ezaguna da
-
-##
-

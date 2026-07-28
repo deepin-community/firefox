@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = ရှုမြင်ချက်
 download-cert-view-text = CA လက်မှတ်ကို စစ်ဆေးပါ
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = ထုတ်ပေးထားသူ- { $is
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = သိမ်းထားသောနေရာ- { $storedOn }
-client-auth-cert-remember-box =
-    .label = ယခု ဆုံးဖြတ်ချက်အား မှတ်ထားပါ
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = လက်မှတ် သိမ်းဆည်းတဲ့ စကားဝှက် (ပြန်ရေးပါ) -
 set-password-reminder = Important: If you forget your certificate backup password, you will not be able to restore this backup later.  Please record it in a safe location.
-
-## Protected authentication alert
-

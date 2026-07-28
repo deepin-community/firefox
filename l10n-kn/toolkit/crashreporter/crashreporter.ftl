@@ -2,11 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-crashreporter-title = ಕುಸಿತ ವರದಿಗಾರ
-crashreporter-crash-message = { -brand-short-name } ಗೆ ಒಂದು ತೊಂದರೆ ಎದುರಾಗಿ ಅದು ಕುಸಿತಗೊಂಡಿದೆ.
 crashreporter-plea = ತೊಂದರೆಯನ್ನು ಪತ್ತೆ ಹಚ್ಚಲು ಹಾಗು ಅದನ್ನು ನಿವಾರಿಸುವಲ್ಲಿ ನಮಗೆ ನೆರವು ನೀಡಲು, ನೀವು ಒಂದು ಕುಸಿತ ವರದಿಯನ್ನು ಕಳುಹಿಸಬಹುದು.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = ವಿವರಗಳು: { $details }
 crashreporter-no-run-message = ಈ ಅನ್ವಯವು ಕುಸಿತಗೊಂಡ ತಕ್ಷಣ ಅದರ ಮಾರಾಟಗಾರರಿಗೆ ಒಂದು ಕುಸಿತದ ವರದಿಯನ್ನು ಸಲ್ಲಿಸಲು ಅನುವಾಗಿದೆ. ಆದರೆ ಅದು ನೇರವಾಗಿ ಹಾಗೆ ಮಾಡಬಾರದು.
 crashreporter-button-details = ವಿವರಗಳು…
 crashreporter-view-report-title = ವರದಿಯ ವಿಷಯ

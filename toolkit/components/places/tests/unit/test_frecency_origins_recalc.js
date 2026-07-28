@@ -9,14 +9,32 @@ add_task(async function test() {
   const now = new Date();
   const host = "mozilla.org";
   const url = `https://${host}/test/`;
+
+  // Wait for the initial kickoff to complete, then pause recalculation to
+  // avoid races between background tasks and assertions.
+  let initSubject = {};
+  PlacesFrecencyRecalculator.observe(
+    initSubject,
+    "test-alternative-frecency-init",
+    ""
+  );
+  await initSubject.promise;
+  PlacesFrecencyRecalculator.observe(
+    null,
+    "test-pause-frecency-recalculation",
+    ""
+  );
+
   await PlacesTestUtils.addVisits([
     {
       url,
       visitDate: now,
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
     {
       url,
       visitDate: new Date(new Date().setDate(now.getDate() - 30)),
+      transition: PlacesUtils.history.TRANSITION_TYPED,
     },
   ]);
   Assert.equal(
@@ -37,6 +55,12 @@ add_task(async function test() {
     1,
     "Alt frecency should be calculated"
   );
+
+  PlacesFrecencyRecalculator.observe(
+    null,
+    "test-resume-frecency-recalculation",
+    ""
+  );
   await PlacesFrecencyRecalculator.recalculateAnyOutdatedFrecencies();
   let alt_frecency = await PlacesTestUtils.getDatabaseValue(
     "moz_origins",
@@ -48,7 +72,8 @@ add_task(async function test() {
     "frecency",
     { host }
   );
-  // Remove only one visit (otherwise the page would be orphaned).
+
+  info("Remove only one visit (otherwise the page would be orphaned).");
   await PlacesUtils.history.removeVisitsByFilter({
     beginDate: new Date(now.valueOf() - 10000),
     endDate: new Date(now.valueOf() + 10000),
@@ -85,10 +110,20 @@ add_task(async function test() {
     "alternative frecency should have decreased"
   );
 
-  // Add another page to the same host.
+  info("Add another page to the same host.");
   const url2 = `https://${host}/second/`;
-  await PlacesTestUtils.addVisits(url2);
-  // Remove the first page.
+
+  PlacesFrecencyRecalculator.observe(
+    null,
+    "test-pause-frecency-recalculation",
+    ""
+  );
+
+  await PlacesTestUtils.addVisits({
+    url: url2,
+    transition: PlacesUtils.history.TRANSITION_TYPED,
+  });
+  info("Remove the first page.");
   await PlacesUtils.history.remove(url);
   Assert.equal(
     await PlacesTestUtils.getDatabaseValue("moz_origins", "recalc_frecency", {
@@ -105,5 +140,88 @@ add_task(async function test() {
     ),
     1,
     "Alt frecency should be calculated"
+  );
+
+  PlacesFrecencyRecalculator.observe(
+    null,
+    "test-resume-frecency-recalculation",
+    ""
+  );
+});
+
+add_task(async function test_frecency_decay() {
+  const url = new URL("https://example.com/");
+  async function checkRecalcFields(value) {
+    // Since we use concurrent connections, we must await for the table update.
+    await TestUtils.waitForCondition(
+      async () =>
+        (await PlacesTestUtils.getDatabaseValue(
+          "moz_origins",
+          "recalc_frecency",
+          {
+            host: url.host,
+          }
+        )) == value,
+      `Frecency should ${value ? "" : "not "}have been calculated`
+    );
+    Assert.equal(
+      await PlacesTestUtils.getDatabaseValue(
+        "moz_origins",
+        "recalc_alt_frecency",
+        { host: url.host }
+      ),
+      value,
+      `Alternative frecency should ${value ? "" : "not "}have been calculated`
+    );
+  }
+
+  const now = new Date();
+  // Add a very old visit, then a recent one.
+  await PlacesTestUtils.addVisits([
+    {
+      url,
+      visitDate: new Date(new Date().setDate(now.getDate() - 100)),
+      transition: PlacesUtils.history.TRANSITION_TYPED,
+    },
+    { url, visitDate: now, transition: PlacesUtils.history.TRANSITION_TYPED },
+  ]);
+  info("Recalculate frecencies.");
+  await PlacesFrecencyRecalculator.recalculateAnyOutdatedFrecencies();
+  let frecency = await PlacesTestUtils.getDatabaseValue(
+    "moz_origins",
+    "frecency",
+    { host: "example.com" }
+  );
+  Assert.greater(frecency, 1, "Frecency should be set");
+  await checkRecalcFields(0);
+  Assert.ok(
+    !(await PlacesUtils.metadata.get(
+      "origins_frecency_last_decay_timestamp",
+      0
+    )),
+    "Check meta key has not been set."
+  );
+
+  info("Simulate idle-daily topic to the component");
+  await PlacesUtils.metadata.set("origins_frecency_last_decay_timestamp", 0);
+  PlacesFrecencyRecalculator.observe(null, "idle-daily");
+  await PlacesFrecencyRecalculator.pendingOriginsDecayPromise;
+  // Nothing should have changed.
+  await checkRecalcFields(0);
+
+  info("Remove the most recent visit");
+  await PlacesUtils.history.removeVisitsByFilter({
+    beginDate: new Date(new Date().setDate(now.getDate() - 10)),
+    endDate: now,
+  });
+
+  info("Simulate idle-daily topic to the component");
+  await PlacesUtils.metadata.set("origins_frecency_last_decay_timestamp", 0);
+  PlacesFrecencyRecalculator.observe(null, "idle-daily");
+  await PlacesFrecencyRecalculator.pendingOriginsDecayPromise;
+  await checkRecalcFields(1);
+  Assert.ok(
+    await PlacesUtils.metadata.get("origins_frecency_last_decay_timestamp", 0),
+    "Check meta key has been set."
   );
 });

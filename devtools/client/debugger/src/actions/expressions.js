@@ -13,7 +13,9 @@ import {
   getCurrentThread,
   isMapScopesEnabled,
 } from "../selectors/index";
-import { PROMISE } from "./utils/middleware/promise";
+const {
+  PROMISE,
+} = require("resource://devtools/client/shared/redux/middleware/promise.js");
 import { wrapExpression } from "../utils/expressions";
 import { features } from "../utils/prefs";
 
@@ -52,7 +54,7 @@ export function autocomplete(input, cursor) {
       return;
     }
     const thread = getCurrentThread(getState());
-    const selectedFrame = getSelectedFrame(getState(), thread);
+    const selectedFrame = getSelectedFrame(getState());
     const result = await client.autocomplete(input, cursor, selectedFrame?.id);
     // Pass both selectedFrame and thread in case selectedFrame is null
     dispatch({ type: "AUTOCOMPLETE", selectedFrame, thread, input, result });
@@ -93,8 +95,7 @@ export function deleteExpression(expression) {
 
 export function evaluateExpressionsForCurrentContext() {
   return async ({ getState, dispatch }) => {
-    const thread = getCurrentThread(getState());
-    const selectedFrame = getSelectedFrame(getState(), thread);
+    const selectedFrame = getSelectedFrame(getState());
     await dispatch(evaluateExpressions(selectedFrame));
   };
 }
@@ -142,7 +143,7 @@ function evaluateExpression(expression) {
 
     const { dispatch, getState, client } = thunkArgs;
     const thread = getCurrentThread(getState());
-    const selectedFrame = getSelectedFrame(getState(), thread);
+    const selectedFrame = getSelectedFrame(getState());
 
     const selectedSource = getSelectedSource(getState());
     // Only map when we are paused and if the currently selected source is original,

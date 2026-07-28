@@ -12,17 +12,29 @@ pane-general-title = સામાન્ય
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = મુખ્ય
+pane-search-title2 = શોધ
+    .title = શોધ
+pane-privacy-title3 = ગોપનીયતા & સુરક્ષા
+    .title = ગોપનીયતા & સુરક્ષા
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = શોધ
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = ગોપનીયતા & સુરક્ષા
 pane-privacy-title = ગોપનીયતા & સુરક્ષા
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = { -brand-short-name } આધાર
+    .title = { -brand-short-name } આધાર
+addons-button-label2 = એક્સ્ટેન્શન્સ અને થીમ્સ
+    .title = એક્સ્ટેન્શન્સ અને થીમ્સ
 help-button-label = { -brand-short-name } આધાર
 addons-button-label = એક્સ્ટેન્શન્સ અને થીમ્સ
 focus-search =
@@ -76,6 +88,8 @@ startup-restore-warn-on-quit =
     .label = બ્રાઉઝર છોડતી વખતે તમને ચેતવણી આપે છે.
 disable-extension =
     .label = એક્સ્ટેંશન અક્ષમ કરો
+tabs-group-header2 =
+    .label = ટૅબ્સ
 tabs-group-header = ટૅબ્સ
 ctrl-tab-recently-used-order =
     .label = તાજેતરમાં ઉપયોગમાં લેવાયેલી ક્રમમાં ટેબ દ્વારા Ctrl+Tab ચક્ર
@@ -97,6 +111,8 @@ browser-containers-settings =
     .label = સેટીંગ…
     .accesskey = i
 containers-disable-alert-title = બધા કન્ટેઈનર ટૅબ્સ બંધ કરીએ?
+startup-group =
+    .label = શરૂઆત
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -117,7 +133,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = સક્ષમ રાખો
 containers-remove-alert-title = આ કન્ટેઈનર દૂર કરીએ?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] જો તમે આ કન્ટેઈનરને હમણા દૂર કરો છો, તો { $count } કન્ટેનર ટેબ બંધ થઈ જશે. શું તમે ખરેખર આ કન્ટેઈનરને દૂર કરવા માંગો છો?
@@ -147,6 +163,8 @@ manage-browser-languages-button =
     .accesskey = I
 confirm-browser-language-change-description = આ ફેરફારોને લાગુ કરવા માટે { -brand-short-name } પુનઃપ્રારંભ કરો
 confirm-browser-language-change-button = લાગુ કરો અને પુનઃપ્રારંભ કરો
+browser-language-install-error =
+    .message = { -brand-short-name } હમણાં તમારી ભાષાઓને અપડેટ કરી શકતું નથી. તપાસો કે તમે ઇન્ટરનેટથી જોડાયેલાં છો અથવા ફરી પ્રયાસ કરો.
 translate-web-pages =
     .label = વેબ સમાવિષ્ટ અનુવાદ કરો
     .accesskey = T
@@ -163,6 +181,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = ફાઇલો અને એપ્લિકેશન્સ
+download-save-files-header =
+    .label = ફાઈલોને આમાં સંગ્રહો
+download-save-where-3 =
+    .aria-label = ફાઈલોને આમાં સંગ્રહો
 download-header = ડાઉનલોડ
 download-save-where = ફાઈલોને આમાં સંગ્રહો
     .accesskey = v
@@ -187,9 +209,11 @@ applications-filter =
 applications-type-column =
     .label = સામગ્રી પ્રકાર
     .accesskey = T
+applications-type-heading = સામગ્રી પ્રકાર
 applications-action-column =
     .label = ક્રિયા
     .accesskey = A
+applications-action-heading = ક્રિયા
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = { $extension } ફાઈલ
@@ -211,11 +235,11 @@ applications-manage-app =
 applications-always-ask =
     .label = હંમેશા પૂછો
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name } વાપરો ({ -brand-short-name } માં)
 
@@ -236,8 +260,10 @@ applications-use-app-default-label =
 applications-use-other-label =
     .value = { applications-use-other.label }
 
-##
+## Firefox updates
 
+drm-group =
+    .label = ડિજિટલ અધિકાર સંચાલન (DRM) કન્ટેન્ટ
 drm-content-header = ડિજિટલ અધિકાર સંચાલન (DRM) કન્ટેન્ટ
 play-drm-content =
     .label = DRM-નિયંત્રિત સામગ્રીને ચાલુ કરો
@@ -245,7 +271,12 @@ play-drm-content =
 play-drm-content-learn-more = વધુ શીખો
 update-application-title = { -brand-short-name } સુધારો
 update-application-description = શ્રેષ્ઠ પ્રદર્શન, સ્થિરતા અને સુરક્ષા માટે { -brand-short-name } અધતન રાખો.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = આવૃત્તિ { $version } <a data-l10n-name="learn-more">નવું શું છે</a>
+update-history-2 =
+    .label = અપડેટ ઇતિહાસ બતાવો
+    .accesskey = P
 update-history =
     .label = અપડેટ ઇતિહાસ બતાવો…
     .accesskey = P
@@ -279,11 +310,13 @@ performance-limit-content-process-option = સામગ્રી પ્રક્
 performance-limit-content-process-enabled-desc = બહુવિધ ટૅબ્સનો ઉપયોગ કરતી વખતે વધારાની સામગ્રી પ્રક્રિયાઓ પ્રભાવ સુધારી શકે છે, પરંતુ તે વધુ મેમરીનો પણ ઉપયોગ કરશે.
 performance-limit-content-process-blocked-desc = મલ્ટિપ્રોસેસ સાથે સામગ્રી પ્રોસેસની સંખ્યામાં ફેરફાર કરવો શક્ય છે { -brand-short-name }. <a data-l10n-name="learn-more">મલ્ટિપ્રોસેસ સક્રિય કરે છે કે નહીં તે કેવી રીતે તપાસવું તે જાણો</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (મૂળભૂત)
+performance-group =
+    .label = કામગીરી
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = બ્રાઉઝીંગ
 browsing-use-autoscroll =
@@ -305,6 +338,8 @@ browsing-cfr-recommendations =
     .label = તમે બ્રાઉઝ કરો ત્યારે એક્સ્ટેન્શન્સની ભલામણ કરો
     .accesskey = R
 browsing-cfr-recommendations-learn-more = વધુ શીખો
+browsing-group =
+    .label = બ્રાઉઝીંગ
 
 ## General Section - Proxy
 
@@ -320,10 +355,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = નવી વિન્ડો અને ટૅબ્સ
 home-new-windows-tabs-description2 = જ્યારે તમે તમારું હોમપેજ, નવી વિંડોઝ અને નવી ટેબ્સ ખોલો છો ત્યારે તમે શું જુઓ છો તે પસંદ કરો.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = ડિફૉલ્ટ બનાવો
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = મુખ્ય પૃષ્ઠ અને નવી વિંડોઝ
 home-newtabs-mode-label = નવી ટૅબ્સ
+home-homepage-new-tabs =
+    .label = નવી ટૅબ્સ
 home-restore-defaults =
     .label = મૂળભૂતને પુન:સંગ્રહો
     .accesskey = R
@@ -353,11 +396,8 @@ choose-bookmark =
 home-prefs-search-header =
     .label = વેબ શોધ
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 home-prefs-recommended-by-header =
     .label = { $provider } દ્વારા ભલામણ
 
@@ -380,6 +420,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = જાણકારી આપનારા ઉતારા ક કાપલીઓ
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -401,6 +443,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = સરનામાં બાર પરિણામોમાં શોધ સૂચનો બતાવો
     .accesskey = I
+search-suggestions-cant-show-2 =
+    .message = શોધ સૂચનો સ્થાન બાર પરિણામોમાં બતાવવામાં આવશે નહીં કારણ કે તમે { -brand-short-name } ઇતિહાસ ક્યારેય યાદ નથી
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -425,13 +469,19 @@ search-find-more-link = વધુ શોધ યંત્ર શોધો
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = નકલી મુખ્ય શબ્દ
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = તમે પસંદ કરેલ મુખ્ય શબ્દ વર્તમાનમાં "{ $name }" દ્વારા વપરાશમાં છે. મહેરબાની કરીને અન્ય પસંદ કરો.
 search-keyword-warning-bookmark = તમે પસંદ કરેલ મુખ્ય શબ્દ વર્તમાનમાં બુકમાર્ક દ્વારા વપરાશમાં છે. મહેરબાની કરીને અન્ય પસંદ કરો.
+search-engine-group =
+    .label = મૂળભૂત શોધ એંજીન
+search-default-engine =
+    .aria-label = મૂળભૂત શોધ એંજીન
 
 ## Containers Section
 
 containers-header = કન્ટેઈનર ટેબ્સ
+containers-section-header =
+    .heading = કન્ટેઈનર ટેબ્સ
 containers-add-button =
     .label = નવું કન્ટેઈનર ઉમેરો
     .accesskey = A
@@ -461,9 +511,13 @@ sync-profile-picture-with-alt =
     .alt = પ્રોફાઇલ ચિત્ર બદલો
 sync-manage-account = ખાતાને સંચાલિત કરો
     .accesskey = o
+sync-manage-account2 =
+    .label = ખાતાને સંચાલિત કરો
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } ચકાસેલ નથી.
 sync-signedin-login-failure = મહેરબાની કરીને ફરી જોડાણ માટે પ્રવેશો { $email }
@@ -479,12 +533,6 @@ sync-remove-account =
 sync-sign-in =
     .label = સાઇન ઇન કરો
     .accesskey = g
-
-## Sync section - enabling or disabling sync.
-
-
-## The list of things currently syncing.
-
 
 ## The "Choose what to sync" dialog.
 
@@ -514,6 +562,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = ઉપકરણનું નામ
+sync-device-name-header-2 =
+    .label = ઉપકરણનું નામ
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = ઉપકરણનું નામ
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = ઉપકરણ નામ બદલો
+    .accesskey = h
 sync-device-name-change =
     .label = ઉપકરણ નામ બદલો…
     .accesskey = h
@@ -524,6 +582,8 @@ sync-device-name-save =
     .label = સંગ્રહો
     .accesskey = v
 sync-connect-another-device = બીજા ઉપકરણ સાથે જોડાણ કરો
+sync-connect-another-device-2 =
+    .label = બીજા ઉપકરણ સાથે જોડાણ કરો
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -544,11 +604,12 @@ privacy-header = બ્રાઉઝર ગોપનીયતા
 # The search keyword isn't shown to users but is used to find relevant settings in about:preferences.
 pane-privacy-logins-and-passwords-header = લૉગ-ઇન્સ અને પાસવર્ડ્સ
     .searchkeywords = { -lockwise-brand-short-name }
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
     .label = વેબસાઇટ્સ માટે લૉગિન અને પાસવર્ડ્સ સાચવવા માટે પૂછો
     .accesskey = r
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = અપવાદો...
@@ -556,16 +617,13 @@ forms-exceptions =
 forms-saved-logins =
     .label = સાચવેલા લૉગિન્સ…
     .accesskey = L
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = મુખ્ય પાસવર્ડ બદલો...
     .accesskey = M
 forms-master-pw-fips-desc = પાસવર્ડ બદલવાનું નિષ્ફળ
-
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
 
 ## Privacy Section - History
 
@@ -587,6 +645,12 @@ history-remember-option-never =
     .label = ક્યારેય ઇતિહાસ યાદ રાખશો નહિં
 history-remember-option-custom =
     .label = ઇતિહાસ માટે વૈવિધ્યપૂર્ણ સેટીંગ વાપરો
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } તમારી બ્રાઉઝિંગ, ડાઉનલોડ, ફોર્મ અને શોધ ઇતિહાસ યાદ રાખશે.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ખાનગી બ્રાઉઝીંગની જેમ જ સેટીંગ વાપરશે, અને તમે જેમ વેબ બ્રાઉઝ કરો તેમ ઇતિહાસ યાદ રાખશે નહિં.
 history-remember-description = { -brand-short-name } તમારી બ્રાઉઝિંગ, ડાઉનલોડ, ફોર્મ અને શોધ ઇતિહાસ યાદ રાખશે.
 history-dontremember-description = { -brand-short-name } ખાનગી બ્રાઉઝીંગની જેમ જ સેટીંગ વાપરશે, અને તમે જેમ વેબ બ્રાઉઝ કરો તેમ ઇતિહાસ યાદ રાખશે નહિં.
 history-private-browsing-permanent =
@@ -607,14 +671,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = ઇતિહાસ સાફ કરો…
     .accesskey = s
+history-group =
+    .label = ઇતિહાસ
 
 ## Privacy Section - Site Data
 
 sitedata-header = કૂકીઝ અને સાઈટ ડેટા
 sitedata-total-size-calculating = સાઇટ ડેટા અને કેશ કદની ગણતરી કરી રહ્યું છે…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = તમારી સંગ્રહિત કૂકીઝ, સાઇટ ડેટા અને કેશ હાલમાં { $value } { $unit } જગ્યા નો ઉપયોગ કરી રહ્યાં છે.
 sitedata-learn-more = વધુ શીખો
 sitedata-delete-on-close =
@@ -640,14 +706,10 @@ sitedata-clear =
 sitedata-settings =
     .label = ડેટા સંચાલન કરો…
     .accesskey = M
+cookies-site-data-group =
+    .label = કૂકીઝ અને સાઈટ ડેટા
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = સરનામા પટ્ટી
 addressbar-suggest = સરનામાં બારનો ઉપયોગ કરતી વખતે, સૂચન કરો
@@ -750,6 +812,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = અપવાદો...
     .accesskey = E
+permissions-location2 =
+    .label = સ્થાન
+permissions-camera2 =
+    .label = કેમેરા
+permissions-microphone2 =
+    .label = માઇક્રોફોન
+permissions-notification2 =
+    .label = સૂચનાઓ
 
 ## Privacy Section - Data Collection
 
@@ -769,9 +839,8 @@ addon-recommendations-link = વધુ શીખો
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = આ તૈચાર કરેલ રૂપરેખાંકન માટે ડેટા અહેવાલ અક્ષમ કરેલું છે
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-studies-link =
+    .label = { -brand-short-name } અભ્યાસો જુઓ
 
 ## Privacy Section - Security
 ##
@@ -803,12 +872,7 @@ certs-view =
 certs-devices =
     .label = સુરક્ષા ઉપકરણો…
     .accesskey = D
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = FIPS સક્રિય કરો
 
 ## The following strings are used in the Download section of settings
 

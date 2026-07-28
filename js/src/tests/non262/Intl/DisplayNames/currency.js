@@ -1,5 +1,3 @@
-// |reftest| skip-if(!this.hasOwnProperty('Intl'))
-
 const tests = {
   "en": {
     long: {
@@ -17,9 +15,7 @@ const tests = {
       "XAU": "XAU",
     },
     narrow: {
-      "USD": "USD",
-      "EUR": "EUR",
-      "CNY": "CNY",
+      "CNY": "¥",
     },
   },
   "de": {

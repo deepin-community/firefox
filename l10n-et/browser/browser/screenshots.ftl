@@ -40,19 +40,10 @@ screenshots-login-error-details = Ekraanipildi salvestamine ebaõnnestus { -scre
 screenshots-unshootable-page-error-title = Sellest lehest ei saa ekraanipilti teha.
 screenshots-unshootable-page-error-details = Tegemist pole standardse veebilehega, seetõttu ei saa sellest ekraanipilti teha.
 screenshots-empty-selection-error-title = Valik on liiga väike
-screenshots-private-window-error-title = Ekraanipilte ei saa privaatsel veebilehitsemisel teha
+screenshots-private-window-error-title = { -screenshots-brand-name } on privaatse sirvimise režiimis keelatud
 screenshots-private-window-error-details = Vabandame tüli tekitamise pärast. Töötame selle võimaluse lisamiseks tulevikus.
 screenshots-generic-error-title = Oi-oi! { -screenshots-brand-name } läks sassi.
 screenshots-generic-error-details = Me pole kindlad, mis just juhtus. Proovid ehk uuesti või teed ekraanipildi mõnest teisest lehest?
 screenshots-component-retry-button =
     .title = Proovi ekraanipilti uuesti teha
     .aria-label = Proovi ekraanipilti uuesti teha
-screenshots-component-copy-button-label = Kopeeri
-screenshots-component-download-button-label = Laadi alla
-
-## The below strings are used to capture keydown events so the strings should
-## not be changed unless the keyboard layout in the locale requires it.
-
-
-##
-

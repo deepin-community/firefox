@@ -36,10 +36,17 @@ certificate-viewer-key-size = Nøgle-størrelse
 certificate-viewer-inc-locality = Virksomhedens placering
 certificate-viewer-locality = Lokalitet
 certificate-viewer-location = Placering
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Lognavn
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Log-ID
 certificate-viewer-method = Metode
 certificate-viewer-modulus = Modulus
 certificate-viewer-name = Navn
+certificate-viewer-surname = Efternavn
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Fornavn
 certificate-viewer-not-after = Ikke efter
 certificate-viewer-not-before = Ikke før
 certificate-viewer-organization = Organisation
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = Information om autoritet (AIA)
 certificate-viewer-certificate-policies = Certifikatpolitikker
 certificate-viewer-embedded-scts = Indlejrede SCT'er
 certificate-viewer-crl-endpoints = Slutpunkter for CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Hent
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (kæde)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Denne udvidelse er blevet markeret som kritisk, hvilket betyder at klienter skal afvise certifikatet, hvis de ikke forstår det.
@@ -112,6 +117,8 @@ certificate-viewer-export = Eksporter
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (ukendt)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certifikat
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,49 +6,50 @@
 
 #include "CDMStorageIdProvider.h"
 #include "ChromiumCDMAdapter.h"
-#include "GeckoProfiler.h"
 #include "GMPContentParent.h"
 #include "GMPLog.h"
 #include "GMPTimerParent.h"
+#include "GeckoProfiler.h"
 #include "MediaResult.h"
 #include "mozIGeckoMediaPluginService.h"
+#include "mozilla/Casting.h"
+#include "mozilla/FOGIPC.h"
 #include "mozilla/dom/KeySystemNames.h"
 #include "mozilla/dom/WidevineCDMManifestBinding.h"
-#include "mozilla/FOGIPC.h"
 #include "mozilla/ipc/CrashReporterHost.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/GeckoChildProcessHost.h"
 #if defined(XP_LINUX) && defined(MOZ_SANDBOX)
 #  include "mozilla/SandboxInfo.h"
-#  include "base/shared_memory.h"
+#  include "mozilla/ipc/SharedMemoryHandle.h"
 #endif
-#include "mozilla/Services.h"
+#include "ProfilerParent.h"
 #include "mozilla/SSE.h"
+#include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_media.h"
 #include "mozilla/SyncRunnable.h"
 #include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
+#include "mozilla/glean/IpcMetrics.h"
 #include "nsComponentManagerUtils.h"
-#include "nsIRunnable.h"
 #include "nsIObserverService.h"
+#include "nsIRunnable.h"
 #include "nsIWritablePropertyBag2.h"
 #include "nsPrintfCString.h"
 #include "nsThreadUtils.h"
-#include "ProfilerParent.h"
 #include "runnable_utils.h"
 #ifdef XP_WIN
-#  include "mozilla/FileUtilsWin.h"
-#  include "mozilla/WinDllServices.h"
 #  include "PDMFactory.h"
 #  include "WMFDecoderModule.h"
+#  include "mozilla/FileUtilsWin.h"
+#  include "mozilla/WinDllServices.h"
 #endif
 #if defined(MOZ_WIDGET_ANDROID)
 #  include "mozilla/java/GeckoProcessManagerWrappers.h"
 #  include "mozilla/java/GeckoProcessTypeWrappers.h"
 #endif  // defined(MOZ_WIDGET_ANDROID)
 #if defined(XP_MACOSX)
-#  include "nsMacUtilsImpl.h"
 #  include "base/process_util.h"
+#  include "nsMacUtilsImpl.h"
 #endif  // defined(XP_MACOSX)
 
 using mozilla::ipc::GeckoChildProcessHost;
@@ -92,7 +92,7 @@ GMPParent::~GMPParent() {
 
 void GMPParent::CloneFrom(const GMPParent* aOther) {
   MOZ_ASSERT(GMPEventTarget()->IsOnCurrentThread());
-  MOZ_ASSERT(aOther->mDirectory && aOther->mService, "null plugin directory");
+  MOZ_ASSERT(aOther->mService);
 
   mService = aOther->mService;
   mDirectory = aOther->mDirectory;
@@ -163,6 +163,29 @@ nsresult GMPParent::GetPluginFileArch(nsIFile* aPluginDir,
   return NS_OK;
 }
 #endif  // defined(XP_WIN) || defined(XP_MACOSX)
+
+#ifdef MOZ_WIDGET_ANDROID
+void GMPParent::InitForClearkey(GeckoMediaPluginServiceParent* aService) {
+  MOZ_ASSERT(aService);
+  MOZ_ASSERT(GMPEventTarget()->IsOnCurrentThread());
+
+  mService = aService;
+  mName = u"clearkey"_ns;
+  mDisplayName = "clearkey"_ns;
+  mVersion = "0.1"_ns;
+  mDescription = "ClearKey Gecko Media Plugin"_ns;
+  mPluginType = GMPPluginType::Clearkey;
+  mAdapter = u"chromium"_ns;
+
+  mCapabilities.SetCapacity(1);
+  auto& video = *mCapabilities.AppendElement();
+  video.mAPIName = nsLiteralCString(CHROMIUM_CDM_API);
+  video.mAPITags.SetCapacity(2);
+  video.mAPITags.AppendElement(nsCString{kClearKeyKeySystemName});
+  video.mAPITags.AppendElement(
+      nsCString{kClearKeyWithProtectionQueryKeySystemName});
+}
+#endif
 
 RefPtr<GenericPromise> GMPParent::Init(GeckoMediaPluginServiceParent* aService,
                                        nsIFile* aPluginDir) {
@@ -283,7 +306,7 @@ RefPtr<GenericPromise> GMPParent::Init(GeckoMediaPluginServiceParent* aService,
 
 void GMPParent::Crash() {
   if (mState != GMPState::NotLoaded) {
-    Unused << SendCrashPluginNow();
+    (void)SendCrashPluginNow();
   }
 }
 
@@ -302,7 +325,7 @@ class NotifyGMPProcessLoadedTask : public Runnable {
 
 #if defined(XP_LINUX) && defined(MOZ_SANDBOX)
     if (SandboxInfo::Get().Test(SandboxInfo::kEnabledForMedia) &&
-        base::SharedMemory::UsingPosixShm()) {
+        ipc::shared_memory::UsingPosixShm()) {
       canProfile = false;
     }
 #endif
@@ -341,7 +364,6 @@ class NotifyGMPProcessLoadedTask : public Runnable {
 };
 
 nsresult GMPParent::LoadProcess() {
-  MOZ_ASSERT(mDirectory, "Plugin directory cannot be NULL!");
   MOZ_ASSERT(GMPEventTarget()->IsOnCurrentThread());
   MOZ_ASSERT(mState == GMPState::NotLoaded);
 
@@ -352,9 +374,16 @@ nsresult GMPParent::LoadProcess() {
   }
 
   nsAutoString path;
-  if (NS_WARN_IF(NS_FAILED(mDirectory->GetPath(path)))) {
+#ifdef MOZ_WIDGET_ANDROID
+  // We need to bundle any CDMs with the APK, so we can just supply the library
+  // name to the child process.
+  path = mName;
+#else
+  if (NS_WARN_IF(!mDirectory) ||
+      NS_WARN_IF(NS_FAILED(mDirectory->GetPath(path)))) {
     return NS_ERROR_FAILURE;
   }
+#endif
   GMP_PARENT_LOG_DEBUG("%s: for %s", __FUNCTION__,
                        NS_ConvertUTF16toUTF8(path).get());
 
@@ -439,7 +468,7 @@ void GMPParent::OnPreferenceChange(const mozilla::dom::Pref& aPref) {
     return;
   }
 
-  Unused << SendPreferenceUpdate(aPref);
+  (void)SendPreferenceUpdate(aPref);
 }
 
 mozilla::ipc::IPCResult GMPParent::RecvPGMPContentChildDestroyed() {
@@ -507,16 +536,14 @@ void GMPParent::CloseIfUnused() {
        mState == GMPState::Unloading) &&
       !IsUsed()) {
     // Ensure all timers are killed.
-    for (uint32_t i = mTimers.Length(); i > 0; i--) {
-      mTimers[i - 1]->Shutdown();
+    for (auto* timer : ManagedPGMPTimerParent()) {
+      static_cast<GMPTimerParent*>(timer)->Shutdown();
     }
 
     // Shutdown GMPStorage. Given that all protocol actors must be shutdown
     // (!Used() is true), all storage operations should be complete.
-    GMP_PARENT_LOG_DEBUG("%p shutdown storage (sz=%zu)", this,
-                         mStorage.Length());
-    for (size_t i = mStorage.Length(); i > 0; i--) {
-      mStorage[i - 1]->Shutdown();
+    for (auto* storage : ManagedPGMPStorageParent()) {
+      static_cast<GMPStorageParent*>(storage)->Shutdown();
     }
     Shutdown();
   }
@@ -534,7 +561,7 @@ void GMPParent::CloseActive(bool aDieWhenUnloaded) {
     mState = GMPState::Unloading;
   }
   if (mState != GMPState::NotLoaded && IsUsed()) {
-    Unused << SendCloseActive();
+    (void)SendCloseActive();
     CloseIfUnused();
   }
 }
@@ -638,16 +665,19 @@ void GMPParent::DeleteProcess() {
       // it is easy to miss the recordings during profiling.
       SendShutdown()->Then(
           gmpEventTarget, __func__,
-          [self](nsCString&& aProfile) {
+          [self](ProfileAndAdditionalInformation&& aProfileAndAdditionalInfo) {
             GMP_LOG_DEBUG(
                 "GMPParent[%p|childPid=%d] DeleteProcess: Shutdown handshake "
                 "success, profileLen=%zu.",
-                self.get(), self->mChildPid, aProfile.Length());
-            if (!aProfile.IsEmpty()) {
+                self.get(), self->mChildPid,
+                aProfileAndAdditionalInfo.mProfile.Length());
+            if (!aProfileAndAdditionalInfo.mProfile.IsEmpty()) {
               NS_DispatchToMainThread(NS_NewRunnableFunction(
                   "GMPParent::DeleteProcess",
-                  [profile = std::move(aProfile)]() {
-                    profiler_received_exit_profile(profile);
+                  [profileAndAdditionalInfo =
+                       std::move(aProfileAndAdditionalInfo)]() mutable {
+                    profiler_received_exit_profile(
+                        std::move(profileAndAdditionalInfo));
                   }));
             }
             self->mState = GMPState::Closed;
@@ -655,13 +685,11 @@ void GMPParent::DeleteProcess() {
             self->DeleteProcess();
           },
           [self](const ipc::ResponseRejectReason&) {
+            // We crashed during shutdown, ActorDestroy will perform cleanup.
             GMP_LOG_DEBUG(
                 "GMPParent[%p|childPid=%d] DeleteProcess: Shutdown handshake "
                 "error.",
                 self.get(), self->mChildPid);
-            self->mState = GMPState::Closed;
-            self->Close();
-            self->DeleteProcess();
           });
       return;
     }
@@ -788,7 +816,7 @@ void GMPParent::AddCrashAnnotations() {
 
 void GMPParent::GetCrashID(nsString& aResult) {
   AddCrashAnnotations();
-  GenerateCrashReport(OtherPid(), &aResult);
+  GenerateCrashReport(&aResult);
 }
 
 static void GMPNotifyObservers(const uint32_t aPluginID,
@@ -813,11 +841,11 @@ static void GMPNotifyObservers(const uint32_t aPluginID,
 
 void GMPParent::ActorDestroy(ActorDestroyReason aWhy) {
   MOZ_ASSERT(GMPEventTarget()->IsOnCurrentThread());
-  GMP_PARENT_LOG_DEBUG("%s: (%d)", __FUNCTION__, (int)aWhy);
+  GMP_PARENT_LOG_DEBUG("%s: (%d), state=%u", __FUNCTION__, (int)aWhy,
+                       uint32_t(GMPState(mState)));
 
   if (AbnormalShutdown == aWhy) {
-    Telemetry::Accumulate(Telemetry::SUBPROCESS_ABNORMAL_ABORT, "gmplugin"_ns,
-                          1);
+    glean::subprocess::abnormal_abort.Get("gmplugin"_ns).Add(1);
     nsString dumpID;
     GetCrashID(dumpID);
     if (dumpID.IsEmpty()) {
@@ -838,7 +866,8 @@ void GMPParent::ActorDestroy(ActorDestroyReason aWhy) {
   mAbnormalShutdownInProgress = true;
   CloseActive(false);
 
-  // Normal Shutdown() will delete the process on unwind.
+  // Normal Shutdown() will delete the process on unwind. GMPProcessParent
+  // blocks shutdown to avoid races.
   if (AbnormalShutdown == aWhy) {
     RefPtr<GMPParent> self(this);
     // Must not call Close() again in DeleteProcess(), as we'll recurse
@@ -850,49 +879,17 @@ void GMPParent::ActorDestroy(ActorDestroyReason aWhy) {
   }
 }
 
-PGMPStorageParent* GMPParent::AllocPGMPStorageParent() {
-  GMPStorageParent* p = new GMPStorageParent(mNodeId, this);
-  mStorage.AppendElement(p);  // Addrefs, released in DeallocPGMPStorageParent.
-  return p;
-}
-
-bool GMPParent::DeallocPGMPStorageParent(PGMPStorageParent* aActor) {
-  GMPStorageParent* p = static_cast<GMPStorageParent*>(aActor);
-  p->Shutdown();
-  mStorage.RemoveElement(p);
-  return true;
-}
-
-mozilla::ipc::IPCResult GMPParent::RecvPGMPStorageConstructor(
-    PGMPStorageParent* aActor) {
-  GMPStorageParent* p = (GMPStorageParent*)aActor;
-  if (NS_FAILED(p->Init())) {
-    // TODO: Verify if this is really a good reason to IPC_FAIL.
-    // There might be shutdown edge cases here.
-    return IPC_FAIL(this,
-                    "GMPParent::RecvPGMPStorageConstructor: p->Init() failed.");
+already_AddRefed<PGMPStorageParent> GMPParent::AllocPGMPStorageParent() {
+  auto p = MakeRefPtr<GMPStorageParent>(mNodeId, this);
+  if (NS_WARN_IF(NS_FAILED(p->Init()))) {
+    return nullptr;
   }
-  return IPC_OK();
+  return p.forget();
 }
 
-mozilla::ipc::IPCResult GMPParent::RecvPGMPTimerConstructor(
-    PGMPTimerParent* actor) {
-  return IPC_OK();
-}
-
-PGMPTimerParent* GMPParent::AllocPGMPTimerParent() {
+already_AddRefed<PGMPTimerParent> GMPParent::AllocPGMPTimerParent() {
   nsCOMPtr<nsISerialEventTarget> target = GMPEventTarget();
-  GMPTimerParent* p = new GMPTimerParent(target);
-  mTimers.AppendElement(
-      p);  // Released in DeallocPGMPTimerParent, or on shutdown.
-  return p;
-}
-
-bool GMPParent::DeallocPGMPTimerParent(PGMPTimerParent* aActor) {
-  GMPTimerParent* p = static_cast<GMPTimerParent*>(aActor);
-  p->Shutdown();
-  mTimers.RemoveElement(p);
-  return true;
+  return MakeAndAddRef<GMPTimerParent>(std::move(target));
 }
 
 bool ReadInfoField(GMPInfoFileParser& aParser, const nsCString& aKey,
@@ -961,6 +958,38 @@ static void ApplyOleaut32(nsCString& aLibs) {
 }
 #endif
 
+static constexpr uint64_t MakeVersion(uint16_t aA, uint16_t aB, uint16_t aC,
+                                      uint16_t aD) {
+  return (static_cast<uint64_t>(aA) << 48) | (static_cast<uint64_t>(aB) << 32) |
+         (static_cast<uint64_t>(aC) << 16) | aD;
+}
+
+static nsresult ParseVersion(const nsACString& aVersion,
+                             uint64_t* aParsedVersion) {
+  MOZ_ASSERT(aParsedVersion);
+
+  uint64_t version = 0;
+  uint32_t fragmentCount = 0;
+  nsresult rv = NS_OK;
+
+  for (const auto& fragment : aVersion.Split('.')) {
+    ++fragmentCount;
+    if (NS_WARN_IF(fragmentCount >= 5)) {
+      return NS_ERROR_FAILURE;
+    }
+
+    uint32_t fragmentInt = fragment.ToUnsignedInteger(&rv, /* aRadix */ 10);
+    if (NS_WARN_IF(NS_FAILED(rv))) {
+      return rv;
+    }
+
+    version = (version << 16) | SaturatingCast<uint16_t>(fragmentInt);
+  }
+
+  *aParsedVersion = version << (4 - fragmentCount) * 16;
+  return NS_OK;
+}
+
 RefPtr<GenericPromise> GMPParent::ReadGMPInfoFile(nsIFile* aFile) {
   MOZ_ASSERT(GMPEventTarget()->IsOnCurrentThread());
   GMPInfoFileParser parser;
@@ -982,6 +1011,25 @@ RefPtr<GenericPromise> GMPParent::ReadGMPInfoFile(nsIFile* aFile) {
 #endif
 
   UpdatePluginType();
+
+  // We check the version for OpenH264 because we may need to add additional API
+  // tags to indicate we support more advanced modes for newer versions of the
+  // plugin.
+  bool addMozSupportsH264Advanced = false;
+  bool addMozSupportsH264TemporalSVC = false;
+  if (mPluginType == GMPPluginType::OpenH264) {
+    uint64_t parsedVersion = 0;
+    nsresult rv = ParseVersion(mVersion, &parsedVersion);
+    if (NS_WARN_IF(NS_FAILED(rv))) {
+      return GenericPromise::CreateAndReject(rv, __func__);
+    }
+
+    // Earlier versions only supported decoding/encoding constrained baseline.
+    addMozSupportsH264Advanced = parsedVersion >= MakeVersion(2, 3, 2, 0);
+
+    // Earlier versions did not expose the encoded SVC temporal layer ID.
+    addMozSupportsH264TemporalSVC = parsedVersion > MakeVersion(2, 5, 0, 0);
+  }
 
 #ifdef XP_LINUX
   // The glibc workaround (see above) isn't needed for clearkey
@@ -1026,6 +1074,17 @@ RefPtr<GenericPromise> GMPParent::ReadGMPInfoFile(nsIFile* aFile) {
         for (nsCString tag : tagTokens) {
           cap.mAPITags.AppendElement(tag);
         }
+      }
+    }
+
+    if (mPluginType == GMPPluginType::OpenH264) {
+      if (addMozSupportsH264Advanced &&
+          !cap.mAPITags.Contains("moz-h264-advanced"_ns)) {
+        cap.mAPITags.AppendElement("moz-h264-advanced"_ns);
+      }
+      if (addMozSupportsH264TemporalSVC &&
+          !cap.mAPITags.Contains("moz-h264-temporal-svc"_ns)) {
+        cap.mAPITags.AppendElement("moz-h264-temporal-svc"_ns);
       }
     }
 

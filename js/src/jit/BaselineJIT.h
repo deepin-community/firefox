@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -190,7 +188,7 @@ class alignas(uintptr_t) BaselineScript final
     : public TrailingArray<BaselineScript> {
  private:
   // Code pointer containing the actual method.
-  HeapPtr<JitCode*> method_ = nullptr;
+  HeapPtr<JitCode*> method_{nullptr};
 
   // An ion compilation that is ready, but isn't linked yet.
   MainThreadData<IonCompileTask*> pendingIonCompileTask_{nullptr};
@@ -288,6 +286,11 @@ class alignas(uintptr_t) BaselineScript final
                              size_t retAddrEntries, size_t osrEntries,
                              size_t debugTrapEntries, size_t resumeEntries);
 
+  // Copies the given BaselineScript and all trailing arrays.
+  // Both BaselineScripts will refer to the same method and IonCompileTask (if
+  // any), but those objects won't be compiled.
+  static BaselineScript* Copy(JSContext* cx, BaselineScript* bs);
+
   static void Destroy(JS::GCContext* gcx, BaselineScript* script);
 
   void trace(JSTracer* trc);
@@ -330,6 +333,9 @@ class alignas(uintptr_t) BaselineScript final
   const RetAddrEntry& retAddrEntryFromReturnAddress(const uint8_t* returnAddr);
 
   uint8_t* nativeCodeForOSREntry(uint32_t pcOffset);
+
+  static bool OSREntryForFrame(JSContext* cx, BaselineFrame* frame,
+                               uint8_t** entry);
 
   void copyRetAddrEntries(const RetAddrEntry* entries);
   void copyOSREntries(const OSREntry* entries);
@@ -391,6 +397,7 @@ JitExecStatus EnterBaselineInterpreterAtBranch(JSContext* cx,
                                                jsbytecode* pc);
 
 bool CanBaselineInterpretScript(JSScript* script);
+bool CanBaselineCompileScript(JSContext* cx, JSScript* script);
 
 // Called by the Baseline Interpreter to compile a script for the Baseline JIT.
 // |res| is set to the native code address in the BaselineScript to jump to, or
@@ -454,8 +461,18 @@ enum class BailoutReason {
     BaselineBailoutInfo** bailoutInfo,
     const ExceptionBailoutInfo* exceptionInfo, BailoutReason reason);
 
+enum class BaselineOption : uint8_t {
+  ForceDebugInstrumentation = 1 << 0,
+  ForceMainThreadCompilation = 1 << 1,
+};
+
+using BaselineOptions = EnumFlags<BaselineOption>;
+
+bool DispatchOffThreadBaselineBatchEager(JSContext* cx);
+bool DispatchOffThreadBaselineBatch(JSContext* cx);
+
 MethodStatus BaselineCompile(JSContext* cx, JSScript* script,
-                             bool forceDebugInstrumentation = false);
+                             BaselineOptions options);
 
 // Class storing the generated Baseline Interpreter code for the runtime.
 class BaselineInterpreter {
@@ -594,6 +611,14 @@ struct DeletePolicy<js::jit::BaselineScript> {
 
  private:
   JSRuntime* rt_;
+};
+
+template <>
+struct GCPolicy<js::jit::BaselineScript*> {
+  static void trace(JSTracer* trc, js::jit::BaselineScript** thingp,
+                    const char* name) {
+    (*thingp)->trace(trc);
+  }
 };
 
 }  // namespace JS

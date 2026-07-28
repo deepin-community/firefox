@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const { AddonTestUtils } = ChromeUtils.importESModule(
@@ -46,21 +44,21 @@ add_task(async function testWindowCreateFocused() {
     async background() {
       async function doWaitForWindow(createOpts, resolve) {
         let created;
-        browser.windows.onFocusChanged.addListener(async function listener(
-          wid
-        ) {
-          if (wid == browser.windows.WINDOW_ID_NONE) {
-            return;
+        browser.windows.onFocusChanged.addListener(
+          async function listener(wid) {
+            if (wid == browser.windows.WINDOW_ID_NONE) {
+              return;
+            }
+            let win = await created;
+            if (win.id !== wid) {
+              return;
+            }
+            browser.windows.onFocusChanged.removeListener(listener);
+            // update the window object
+            let window = await browser.windows.get(wid);
+            resolve(window);
           }
-          let win = await created;
-          if (win.id !== wid) {
-            return;
-          }
-          browser.windows.onFocusChanged.removeListener(listener);
-          // update the window object
-          let window = await browser.windows.get(wid);
-          resolve(window);
-        });
+        );
         created = browser.windows.create(createOpts);
       }
       async function awaitNewFocusedWindow(createOpts) {
@@ -215,9 +213,15 @@ add_task(async function testPopupTypeWithDimension() {
     "expected popup type windows are opened at given coordinates"
   );
 
-  const actualSizes = windows
-    .slice(0, 3)
-    .map(window => `${window.outerWidth}x${window.outerHeight}`);
+  const isGtk = Services.appinfo.widgetToolkit == "gtk";
+  const actualSizes = windows.slice(0, 3).map(window => {
+    // Gtk can't set outer sizes on window creation because it doesn't know how
+    // big the decorations of the window will be. This was papered over before
+    // bug 581863 returning outer == innerWidth (even tho it was a lie).
+    return isGtk
+      ? `${window.innerWidth}x${window.innerHeight}`
+      : `${window.outerWidth}x${window.outerHeight}`;
+  });
   const expectedSizes = [`151x152`, `152x153`, `153x154`];
   is(
     actualSizes.join(" / "),

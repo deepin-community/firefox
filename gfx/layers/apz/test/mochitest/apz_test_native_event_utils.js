@@ -1,5 +1,5 @@
-// ownerGlobal isn't defined in content privileged windows.
-/* eslint-disable mozilla/use-ownerGlobal */
+// documentGlobal isn't defined in content privileged windows.
+/* eslint-disable mozilla/use-documentGlobal */
 
 // Utilities for synthesizing of native events.
 
@@ -213,35 +213,44 @@ function parseNativeModifiers(aModifiers, aWindow = window) {
 // |aTarget| may be an element (contained in the root content document or
 // a subdocument) or, as a special case, the root content window.
 // FIXME: Support iframe windows as targets.
-function _getTargetRect(aTarget) {
+function _getTargetRect(aTarget, atCenter) {
   let rect = { left: 0, top: 0, width: 0, height: 0 };
 
-  // If the target is the root content window, its origin relative
-  // to the visual viewport is (0, 0).
-  if (aTarget instanceof Window) {
-    return rect;
-  }
-  if (aTarget.Window && aTarget instanceof aTarget.Window) {
-    // iframe window
-    // FIXME: Compute proper rect against the root content window
-    return rect;
-  }
+  aTarget = SpecialPowers.wrap(aTarget);
+  let containingWindow = null;
+  if (
+    aTarget instanceof Window ||
+    (aTarget.Window && aTarget instanceof aTarget.Window)
+  ) {
+    // If the target is the root content window, its origin relative
+    // to the visual viewport is (0, 0).
 
-  // Otherwise, we have an element. Start with the origin of
-  // its bounding client rect which is relative to the enclosing
-  // document's layout viewport. Note that for iframes, the
-  // layout viewport is also the visual viewport.
-  const boundingClientRect = aTarget.getBoundingClientRect();
-  rect.left = boundingClientRect.left;
-  rect.top = boundingClientRect.top;
-  rect.width = boundingClientRect.width;
-  rect.height = boundingClientRect.height;
+    // FIXME: Compute proper rect against the root content window
+
+    // leave rect as all 0's. The top/left is correct, but the width/height is
+    // not necessarily correct, just assert that we are not sending event to the
+    // center of the target so that we are not using the width/height.
+    ok(!atCenter, "atCenter not supported with window targets, todo");
+    containingWindow = aTarget;
+  } else {
+    // Otherwise, we have an element. Start with the origin of
+    // its bounding client rect which is relative to the enclosing
+    // document's layout viewport. Note that for iframes, the
+    // layout viewport is also the visual viewport.
+
+    const boundingClientRect = aTarget.getBoundingClientRect();
+    rect.left = boundingClientRect.left;
+    rect.top = boundingClientRect.top;
+    rect.width = boundingClientRect.width;
+    rect.height = boundingClientRect.height;
+    containingWindow = aTarget.ownerDocument.defaultView;
+  }
 
   // Iterate up the window hierarchy until we reach the root
   // content window, adding the offsets of any iframe windows
   // relative to their parent window.
-  while (aTarget.ownerDocument.defaultView.frameElement) {
-    const iframe = aTarget.ownerDocument.defaultView.frameElement;
+  while (containingWindow.browsingContext.embedderElement) {
+    const iframe = containingWindow.browsingContext.embedderElement;
     // The offset of the iframe window relative to the parent window
     // includes the iframe's border, and the iframe's origin in its
     // containing document.
@@ -276,16 +285,17 @@ function _getTargetRect(aTarget) {
       );
     }
     aTarget = iframe;
+    containingWindow = aTarget.ownerDocument.defaultView;
   }
 
-  return rect;
+  return { rect, window: containingWindow };
 }
 
 // Returns the in-process root window for the given |aWindow|.
 function getInProcessRootWindow(aWindow) {
-  let window = aWindow;
-  while (window.frameElement) {
-    window = window.frameElement.ownerDocument.defaultView;
+  let window = SpecialPowers.wrap(aWindow);
+  while (window.browsingContext.embedderElement) {
+    window = window.browsingContext.embedderElement.ownerDocument.defaultView;
   }
   return window;
 }
@@ -336,12 +346,34 @@ async function coordinatesRelativeToScreen(aParams) {
     };
   }
 
-  const rect = _getTargetRect(target);
+  const rectAndWindow = _getTargetRect(target, atCenter);
 
-  const utils = SpecialPowers.getDOMWindowUtils(getInProcessRootWindow(window));
+  const inProcessRootWindow = getInProcessRootWindow(window);
+
+  if (
+    !(inProcessRootWindow.location.href === rectAndWindow.window.location.href)
+  ) {
+    info(
+      "warning: coordinatesRelativeToScreen using coords based on one window in another, this will likely produce incorrect results"
+    );
+    info(
+      "inProcessRootWindow.location.href " + inProcessRootWindow.location.href
+    );
+    info(
+      "rectAndWindow.window.location.href " + rectAndWindow.window.location.href
+    );
+  }
+  // This doesn't hold yet.
+  //ok(inProcessRootWindow.location.href === rectAndWindow.window.location.href, "same root window");
+
+  const utils = SpecialPowers.wrap(
+    SpecialPowers.getDOMWindowUtils(inProcessRootWindow)
+  );
   const positionInScreenCoords = utils.toScreenRect(
-    rect.left + (atCenter ? rect.width / 2 : offsetX),
-    rect.top + (atCenter ? rect.height / 2 : offsetY),
+    rectAndWindow.rect.left +
+      (atCenter ? rectAndWindow.rect.width / 2 : offsetX),
+    rectAndWindow.rect.top +
+      (atCenter ? rectAndWindow.rect.height / 2 : offsetY),
     0,
     0
   );
@@ -497,14 +529,6 @@ async function promiseNativeTouchpadPanEventAndWaitForObserver(
   const utils = utilsForTarget(aTarget);
 
   return new Promise(resolve => {
-    var observer = {
-      observe(aSubject, aTopic) {
-        if (aTopic == "touchpadpanevent") {
-          resolve();
-        }
-      },
-    };
-
     utils.sendNativeTouchpadPan(
       aPhase,
       pt.x,
@@ -512,7 +536,7 @@ async function promiseNativeTouchpadPanEventAndWaitForObserver(
       aDeltaX,
       aDeltaY,
       0,
-      observer
+      resolve
     );
   });
 }
@@ -556,13 +580,6 @@ function promiseNativePanGestureEventAndWaitForObserver(
   aPhase
 ) {
   return new Promise(resolve => {
-    var observer = {
-      observe(aSubject, aTopic) {
-        if (aTopic == "mousescrollevent") {
-          resolve();
-        }
-      },
-    };
     synthesizeNativePanGestureEvent(
       aElement,
       aX,
@@ -570,7 +587,7 @@ function promiseNativePanGestureEventAndWaitForObserver(
       aDeltaX,
       aDeltaY,
       aPhase,
-      observer
+      resolve
     );
   });
 }
@@ -587,14 +604,7 @@ function promiseNativeWheelAndWaitForObserver(
   aDeltaY
 ) {
   return new Promise(resolve => {
-    var observer = {
-      observe(aSubject, aTopic) {
-        if (aTopic == "mousescrollevent") {
-          resolve();
-        }
-      },
-    };
-    synthesizeNativeWheel(aElement, aX, aY, aDeltaX, aDeltaY, observer);
+    synthesizeNativeWheel(aElement, aX, aY, aDeltaX, aDeltaY, resolve);
   });
 }
 
@@ -782,7 +792,16 @@ async function synthesizeNativeTouch(
     target: aTarget,
   });
   var utils = utilsForTarget(aTarget);
-  utils.sendNativeTouchPoint(aTouchId, aType, pt.x, pt.y, 1, 90, aObserver);
+  utils.sendNativeTouchPoint(
+    aTouchId,
+    aType,
+    pt.x,
+    pt.y,
+    1,
+    90,
+    aObserver,
+    aTarget instanceof Element ? aTarget : null
+  );
   return true;
 }
 
@@ -794,11 +813,21 @@ function sendBasicNativePointerInput(
   aX,
   aY,
   aObserver,
+  aElement,
   { pressure = 1, twist = 0, tiltX = 0, tiltY = 0, button = 0 } = {}
 ) {
   switch (aPointerType) {
     case "touch":
-      utils.sendNativeTouchPoint(aId, aState, aX, aY, pressure, 90, aObserver);
+      utils.sendNativeTouchPoint(
+        aId,
+        aState,
+        aX,
+        aY,
+        pressure,
+        90,
+        aObserver,
+        aElement
+      );
       break;
     case "pen":
       utils.sendNativePenInput(
@@ -811,7 +840,8 @@ function sendBasicNativePointerInput(
         tiltX,
         tiltY,
         button,
-        aObserver
+        aObserver,
+        aElement
       );
       break;
     default:
@@ -842,6 +872,7 @@ async function promiseNativePointerInput(
       pt.x,
       pt.y,
       resolve,
+      aTarget instanceof Element ? aTarget : null,
       options
     );
   });
@@ -849,6 +880,7 @@ async function promiseNativePointerInput(
 
 /**
  * Function to generate native pointer events as a sequence.
+ *
  * @param aTarget is the element or window whose bounding rect the coordinates are
  *   relative to.
  * @param aPointerType "touch" or "pen".
@@ -942,6 +974,7 @@ async function synthesizeNativePointerSequences(
             currentPositions[j].x,
             currentPositions[j].y,
             observer,
+            aTarget instanceof Element ? aTarget : null,
             options
           );
           currentPositions[j] = null;
@@ -955,6 +988,7 @@ async function synthesizeNativePointerSequences(
           aPositions[i][j].x,
           aPositions[i][j].y,
           null,
+          aTarget instanceof Element ? aTarget : null,
           options
         );
         currentPositions[j] = aPositions[i][j];
@@ -1278,6 +1312,9 @@ function promiseMoveMouseAndScrollWheelOver(
   });
   if (waitForScroll) {
     p = p.then(() => {
+      info(
+        "Printing something here to avoid failure; see https://bugzilla.mozilla.org/show_bug.cgi?id=1776963"
+      );
       return promiseNativeWheelAndWaitForScrollEvent(
         target,
         dx,
@@ -1547,18 +1584,13 @@ function promiseTopic(aTopic) {
         SpecialPowers.Services.obs.removeObserver(observer, topic);
         reject(ex);
       }
-    },
-    aTopic);
+    }, aTopic);
   });
 }
 
 // Returns a promise that is resolved when a APZ transform ends.
 function promiseTransformEnd() {
   return promiseTopic("APZ:TransformEnd");
-}
-
-function promiseScrollend(aTarget = window) {
-  return promiseOneEvent(aTarget, "scrollend");
 }
 
 // Returns a promise that resolves after the indicated number
@@ -1916,7 +1948,7 @@ async function closeContextMenu() {
 // scroll animation is slowed down so the test can perform other actions
 // while it's still in progress.
 function getSmoothScrollPrefs(aInputType, aMsdPhysics) {
-  let result = [["apz.test.logging_enabled", true]];
+  let result = [];
   // Some callers just want the default and don't pass in aMsdPhysics.
   if (aMsdPhysics !== undefined) {
     result.push(["general.smoothScroll.msdPhysics.enabled", aMsdPhysics]);
@@ -1972,7 +2004,10 @@ function buildRelativeScrollSmoothnessVariants(aInputType, aScrollMethods) {
   for (let scrollMethod of aScrollMethods) {
     subtests.push({
       file: `helper_relative_scroll_smoothness.html?input-type=${aInputType}&scroll-method=${scrollMethod}&strict=true`,
-      prefs: getSmoothScrollPrefs(aInputType, /* Bezier physics */ false),
+      prefs: [
+        ["apz.test.logging_enabled", true],
+        ...getSmoothScrollPrefs(aInputType, /* Bezier physics */ false),
+      ],
     });
     // For MSD physics, run the test with strict=false. The shape of the
     // animation curve is highly timing dependent, and we can't guarantee
@@ -1980,8 +2015,27 @@ function buildRelativeScrollSmoothnessVariants(aInputType, aScrollMethods) {
     // arrives.
     subtests.push({
       file: `helper_relative_scroll_smoothness.html?input-type=${aInputType}&scroll-method=${scrollMethod}&strict=false`,
-      prefs: getSmoothScrollPrefs(aInputType, /* MSD physics */ true),
+      prefs: [
+        ["apz.test.logging_enabled", true],
+        ...getSmoothScrollPrefs(aInputType, /* MSD physics */ true),
+      ],
     });
   }
   return subtests;
+}
+
+// Right now this is only meaningful on Linux.
+async function getWindowProtocol() {
+  if (getPlatform() != "linux") {
+    return "";
+  }
+
+  return await SpecialPowers.spawnChrome([], () => {
+    try {
+      return Cc["@mozilla.org/gfx/info;1"].getService(Ci.nsIGfxInfo)
+        .windowProtocol;
+    } catch {
+      return "";
+    }
+  });
 }

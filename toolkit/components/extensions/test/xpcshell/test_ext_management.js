@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 AddonTestUtils.init(this);
@@ -273,10 +271,11 @@ add_task(
     }
 
     // Test uninstalling an addon wakes up the watching extension.
+    const testExtId = testExt.id;
     let uninstalled = testExt.unload();
 
     details = await extension.awaitMessage("onUninstalled");
-    equal(testExt.id, details.id, "got onUninstalled event");
+    equal(testExtId, details.id, "got onUninstalled event");
 
     await extension.unload();
     await uninstalled;

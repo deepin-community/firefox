@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -33,6 +31,8 @@ class RemoteTrackSource : public dom::MediaStreamTrackSource {
     return dom::MediaSourceEnum::Other;
   }
 
+  void GetSettings(dom::MediaTrackSettings& aSettings) override;
+
   RefPtr<ApplyConstraintsPromise> ApplyConstraints(
       const dom::MediaTrackConstraints& aConstraints,
       dom::CallerType aCallerType) override;
@@ -52,11 +52,14 @@ class RemoteTrackSource : public dom::MediaStreamTrackSource {
 
   SourceMediaTrack* Stream() const;
 
+  const dom::RTCStatsTimestampMaker* GetTimestampMaker() const override;
+
  private:
   virtual ~RemoteTrackSource();
 
   RefPtr<SourceMediaTrack> mStream;
   RefPtr<dom::RTCRtpReceiver> mReceiver;
+  Maybe<gfx::IntSize> mReceivingSizeOnEnded;
 };
 
 }  // namespace mozilla

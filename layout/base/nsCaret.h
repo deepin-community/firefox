@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* the caret is the text cursor used, e.g., when editing */
 
-#ifndef nsCaret_h__
-#define nsCaret_h__
+#ifndef nsCaret_h_
+#define nsCaret_h_
 
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/SelectionMovementUtils.h"
@@ -52,15 +50,6 @@ class nsCaret final : public nsISelectionListener {
   void SetSelection(mozilla::dom::Selection*);
   mozilla::dom::Selection* GetSelection();
 
-  /**
-   * Sets whether the caret should only be visible in nodes that are not
-   * user-modify: read-only, or whether it should be visible in all nodes.
-   *
-   * @param aIgnoreUserModify true to have the cursor visible in all nodes,
-   *                          false to have it visible in all nodes except
-   *                          those with user-modify: read-only
-   */
-  void SetIgnoreUserModify(bool aIgnoreUserModify);
   /**
    * SetVisible will set the visibility of the caret
    *  @param aVisible true to show the caret, false to hide it
@@ -116,12 +105,12 @@ class nsCaret final : public nsISelectionListener {
   void SetLastPaintedFrame(nsIFrame* aFrame) { mLastPaintedFrame = aFrame; }
 
   /**
-   * Returns a frame to paint in, and the bounds of the painted caret
-   * relative to that frame.
-   * The rectangle includes bidi decorations.
+   * Returns a frame to paint in, and optionally the bounds of the painted caret
+   * relative to that frame. The rectangle includes bidi decorations.
    * Returns null if the caret should not be drawn (including if it's blinked
    * off).
    */
+  nsIFrame* GetPaintGeometry();
   nsIFrame* GetPaintGeometry(nsRect* aRect);
 
   /**
@@ -154,10 +143,8 @@ class nsCaret final : public nsISelectionListener {
     CaretAssociationHint mHint{0};
     mozilla::intl::BidiEmbeddingLevel mBidiLevel;
 
-    bool operator==(const CaretPosition& aOther) const {
-      return mContent == aOther.mContent && mOffset == aOther.mOffset &&
-             mHint == aOther.mHint && mBidiLevel == aOther.mBidiLevel;
-    }
+    bool operator==(const CaretPosition& aOther) const = default;
+
     explicit operator bool() const { return !!mContent; }
   };
 
@@ -206,11 +193,16 @@ class nsCaret final : public nsISelectionListener {
   // If we're tracking the selection, this updates the caret position and
   // invalidates paint as needed.
   void UpdateCaretPositionFromSelectionIfNeeded();
+  void UpdateHiddenDuringSelection();
 
-  nsWeakPtr mPresShell;
   mozilla::WeakPtr<mozilla::dom::Selection> mDomSelectionWeak;
 
   nsCOMPtr<nsITimer> mBlinkTimer;
+  // Last time we reset the blink timer. We give it some slack to avoid
+  // resetting it too often. This gets cleared when CaretBlinkCallback fires,
+  // because the point of this variable is just to avoid resetting too many
+  // times in a single blink cycle.
+  mozilla::TimeStamp mLastBlinkTimerReset;
 
   CaretPosition mCaretPosition;
 
@@ -224,11 +216,10 @@ class nsCaret final : public nsISelectionListener {
    */
   int32_t mBlinkCount = -1;
   /**
-   * mBlinkRate is the rate of the caret blinking the last time we read it.
-   * It is used as a way to optimize whether we need to reset the blinking
-   * timer. 0 or a negative value means no blinking.
+   * Current blink time (the value that LookAndFeel::CaretBlinkTime() gave us
+   * when we most recently reset our blinking).
    */
-  int32_t mBlinkRate = 0;
+  int32_t mBlinkTime = -1;
   /**
    * mHideCount is not 0, it means that somebody doesn't want the caret
    * to be visible.  See AddForceHide() and RemoveForceHide().
@@ -253,11 +244,6 @@ class nsCaret final : public nsISelectionListener {
    * the selection is not collapsed.
    */
   bool mShowDuringSelection = false;
-  /**
-   * mIgnoreUserModify is true when the caret should be shown even when
-   * it's in non-user-modifiable content.
-   */
-  bool mIgnoreUserModify = true;
 
   /**
    * If the caret position is fixed, it's been overridden externally and it
@@ -272,4 +258,4 @@ class nsCaret final : public nsISelectionListener {
   bool mHiddenDuringSelection = false;
 };
 
-#endif  // nsCaret_h__
+#endif  // nsCaret_h_

@@ -1,6 +1,4 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * vim: sw=4 ts=4 sts=4 et
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -14,6 +12,8 @@ let REASON = BackgroundUpdate.REASON;
 const { EnterprisePolicyTesting } = ChromeUtils.importESModule(
   "resource://testing-common/EnterprisePolicyTesting.sys.mjs"
 );
+const { setupPolicyEngineWithJson } = EnterprisePolicyTesting;
+EnterprisePolicyTesting.pathResolver = path => do_get_file(path).path;
 const { UpdateService } = ChromeUtils.importESModule(
   "resource://gre/modules/UpdateService.sys.mjs"
 );
@@ -33,17 +33,6 @@ function setup_enterprise_policy_testing() {
 }
 setup_enterprise_policy_testing();
 
-async function setupPolicyEngineWithJson(json, customSchema) {
-  if (typeof json != "object") {
-    let filePath = do_get_file(json ? json : "non-existing-file.json").path;
-    return EnterprisePolicyTesting.setupPolicyEngineWithJson(
-      filePath,
-      customSchema
-    );
-  }
-  return EnterprisePolicyTesting.setupPolicyEngineWithJson(json, customSchema);
-}
-
 add_setup(async function test_setup() {
   // These tests use per-installation prefs, and those are a shared resource, so
   // they require some non-trivial setup.
@@ -54,7 +43,7 @@ add_setup(async function test_setup() {
   do_get_profile();
 
   // We need to initialize it once, otherwise operations will be stuck in the pre-init queue.
-  Services.fog.initializeFOG();
+  Services.fog.initializeFOG(undefined, "firefox.desktop.background.update");
 
   setupProfileService();
 });
@@ -313,9 +302,9 @@ add_task(
   }
 );
 
-add_task(() => {
+add_task(async () => {
   // `setupTestCommon()` calls `do_test_pending()`; this calls
   // `do_test_finish()`.  The `add_task` schedules this to run after all the
   // other tests have completed.
-  doTestFinish();
+  await doTestFinish();
 });

@@ -1,11 +1,13 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+interface imgIContainer;
+interface nsIContentParentKeepAlive;
 interface nsIDOMProcessChild;
 interface nsIDOMProcessParent;
+interface nsIRFPTargetSetIDL;
 interface Principal;
 
 /**
@@ -29,12 +31,9 @@ interface MozQueryInterface {
  * All fields are optional.
  */
 dictionary ProfilerMarkerOptions {
-  // A timestamp to use as the start time of the marker.
+  // A timestamp from `ChromeUtils.now()` to use as the start time of the marker.
   // If no start time is provided, the marker will have no duration.
-  // In window and ChromeWorker contexts, use a timestamp from
-  // `performance.now()`.
-  // In JS modules, use `Cu.now()` to get a timestamp.
-  DOMHighResTimeStamp startTime = 0;
+  double startTime = 0;
 
   // If captureStack is true, a profiler stack will be captured and associated
   // with the marker.
@@ -68,6 +67,47 @@ dictionary InteractionData {
 dictionary FormAutofillConfidences {
   double ccNumber = 0;
   double ccName = 0;
+};
+
+enum ResourceCacheType {
+  "stylesheet",
+  "script",
+  "image",
+};
+
+enum ResourceCacheTarget {
+  "chrome",
+  "content",
+};
+
+dictionary ClearResourceCacheOptions {
+  // If specified clear only those types of resources.
+  // If not specified, clears all types.
+  sequence<ResourceCacheType> types;
+
+  // If specified, clear only the specified target, either chrome or content.
+  // If not specified, clears both chrome and content.
+  //
+  // Exclusive with principal, schemelessSite, and url.
+  ResourceCacheTarget target;
+
+  // If specified, filters by principal.
+  //
+  // Exclusive with target, schemelessSite, and url.
+  Principal principal;
+
+  // If specified, filters by site, and needs to provide a pattern.
+  //
+  // Exclusive with target, principal, and url.
+  UTF8String schemelessSite;
+
+  // If specified with schemelessSite, filter by origin attributes.
+  OriginAttributesPatternDictionary pattern = {};
+
+  // If specified, clear the cache for the url
+  //
+  // Exclusive with target, principal, and schemelessSite.
+  UTF8String url;
 };
 
 /**
@@ -228,55 +268,145 @@ namespace ChromeUtils {
 #endif // NIGHTLY_BUILD
 
   /**
-   * Clears the stylesheet cache by baseDomain. This includes associated
-   * state-partitioned cache.
+   * Clears the entire resource cache (stylesheets, JavaScripts, and images).
    */
-  undefined clearStyleSheetCacheByBaseDomain(UTF8String baseDomain);
+  [Throws]
+  undefined clearResourceCache(optional ClearResourceCacheOptions options = {});
 
   /**
-   * Clears the stylesheet cache by principal.
+   * Invalidates the resource cache which supports invalidation.
+   *
+   * In contrast to the clearResourceCache, this doesn't immediately clear
+   * the cache.  It can validate the cache entry on the next request and
+   * revive if the cache is confirmed to be still valid.
+   *
+   * Currently only JavaScripts supports.
    */
-  undefined clearStyleSheetCacheByPrincipal(Principal principal);
+  [Throws]
+  undefined invalidateResourceCache();
 
   /**
-   * Clears the entire stylesheet cache.
+   * Get the script source for the in-memory cached JavaScript.
+   * Returns an empty string if the cache is not found.
+   *
+   * The key parameter should be the data parameter passed to the
+   * http-on-resource-cache-response observer notification, and uri and
+   * hintCharset parameters should be extracted from the channel
+   * of the notification.
+   * nonce and hintCharset should be empty strings if they're not set for the
+   * channel.
+   *
+   * If the cached entry has already been cleared, for example by
+   * `clearResourceCache` above, this returns undefined.
+   *
+   * For cached entries invalidated with `invalidateResourceCache` above,
+   * this API doesn't check the state nor re-validate, and just returns the
+   * script source.
+   *
+   * This function uses `any` as the return value to avoid the
+   * JS::Value -> Gecko String -> JS::Value turnaround.
    */
-  undefined clearStyleSheetCache();
+  [Throws]
+  any getCachedJavaScriptSource(UTF8String key, UTF8String uri,
+                                UTF8String hintCharset);
 
   /**
-   * Clears the JavaScript cache by baseDomain. This includes associated
-   * state-partitioned cache.
+   * Clears the bfcache (backward-forward cache)
    */
-  undefined clearScriptCacheByBaseDomain(UTF8String baseDomain);
+  [Throws]
+  undefined clearBfcacheByPrincipal(Principal principal);
 
   /**
-   * Clears the JavaScript cache by principal.
+   * Clears the Messaging Layer Security state by schemeless site.
+   * This includes associated state-partitioned cache.
    */
-  undefined clearScriptCacheByPrincipal(Principal principal);
+  [Throws]
+  undefined clearMessagingLayerSecurityStateBySite(UTF8String schemelessSite, optional OriginAttributesPatternDictionary pattern = {});
 
   /**
-   * Clears the entire JavaScript cache.
+   * Clears the Messaging Layer Security state by principal.
    */
-  undefined clearScriptCache();
+  [Throws]
+  undefined clearMessagingLayerSecurityStateByPrincipal(Principal principal);
+
+  /**
+   * Clears all Messaging Layer Security related state across domains
+   */
+  [Throws]
+  undefined clearMessagingLayerSecurityState();
 
   /**
    * If the profiler is currently running and recording the current thread,
    * add a marker for the current thread. No-op otherwise.
    *
    * @param name              The name of the marker.
-   * @param options           Either a timestamp to use as the start time of the
-   *                          marker, or a ProfilerMarkerOptions object that can
-   *                          contain startTime, captureStack or category fields.
-   *                          If this parameter is omitted, the marker will have
-   *                           no duration.
-   *                          In window and ChromeWorker contexts, use a
-   *                          timestamp from `performance.now()`.
-   *                          In JS modules, use `Cu.now()` to get a timestamp.
-   * @param text              Text to associate with the marker.
+   * @param options           Either a timestamp from `ChromeUtils.now()` to use as
+   *                          the start time of the marker, or a ProfilerMarkerOptions
+   *                          object that can contain startTime, captureStack or
+   *                          category fields. If this parameter is omitted, the marker
+   *                          will have no duration.
+   * @param data              Text or object to associate with the marker.
+   *                          - If a string, creates a Text marker (for simple annotations)
+   *                          - If an object, must include a "type" field matching a
+   *                            registered schema name
+   *
+   * Example with object data:
+   *   ChromeUtils.addProfilerMarker("MyOperation", {}, {
+   *     type: "CustomOperation",
+   *     status: "completed",
+   *     itemCount: 42
+   *   });
    */
   undefined addProfilerMarker(UTF8String name,
-                              optional (ProfilerMarkerOptions or DOMHighResTimeStamp) options = {},
-                              optional UTF8String text);
+                              optional (ProfilerMarkerOptions or double) options = {},
+                              optional (UTF8String or object) data);
+
+  /**
+   * Register a custom marker schema for use with the profiler.
+   *
+   * The schema defines how markers with a given "type" field should be displayed
+   * in the Firefox Profiler UI. Schemas are automatically included in captured
+   * profiles and used by the profiler frontend to render custom markers.
+   *
+   * @param schema   An object with the following structure:
+   *   - name {string}:     Required. The marker type name (must match the "type"
+   *                        field in marker data objects)
+   *   - display {string[]}: Where to show the marker. Typical values:
+   *                        ["marker-chart", "marker-table"]
+   *   - data {object[]}:   Array of field definitions, each with:
+   *     - key {string}:    Field name in the marker data
+   *     - label {string}:  Display label in the UI
+   *     - format {string}: How to display the value. Common formats:
+   *                        "string", "integer", "decimal", "bytes",
+   *                        "duration" (in ms), "url", "file-path"
+   *     - searchable {boolean}: Optional. Whether the field is searchable in UI
+   *
+   * Example:
+   *   ChromeUtils.registerMarkerSchema({
+   *     name: "CustomOperation",
+   *     display: ["marker-chart", "marker-table"],
+   *     data: [
+   *       { key: "status", label: "Status", format: "string" },
+   *       { key: "itemCount", label: "Items Processed", format: "integer" },
+   *       { key: "duration", label: "Duration", format: "duration" }
+   *     ]
+   *   });
+   *
+   * After registering this schema, you can add markers with:
+   *   ChromeUtils.addProfilerMarker("MyOperation", {}, {
+   *     type: "CustomOperation",
+   *     status: "completed",
+   *     itemCount: 42,
+   *     duration: 15.5
+   *   });
+   *
+   * Note: If a marker's "type" field doesn't match any registered schema,
+   * the profiler will still capture the marker but it may not display optimally
+   * in the UI. No validation is performed - invalid schemas will be included
+   * in the profile output as-is.
+   */
+  [Throws]
+  undefined registerMarkerSchema(object schema);
 
   /**
    * Return the symbolic name of any given XPCOM error code (nsresult):
@@ -291,8 +421,25 @@ namespace ChromeUtils {
   double dateNow();
 
   /**
+   * Return a fractional number of milliseconds from process startup,
+   * measured with a monotonic clock. This provides a unified timing source
+   * that works in all JavaScript contexts and can be used with addProfilerMarker.
+   */
+  double now();
+
+  /**
    * Defines a getter on a specified object that will be created upon first
    * use.
+   *
+   * The first time the property is accessed, |aLambda| is called, and the
+   * property is replaced with the return value.
+   *
+   * The property is defined on `this` value used to access the getter. This
+   * means that if you define the lazy getter on a prototype, the lambda will
+   * be called every time the property is accessed on a new instance.
+   *
+   * The property doesn't have setter, and the property cannot be overwritten
+   * by simple assignment.
    *
    * @param aTarget
    *        The object to define the lazy getter on.
@@ -351,23 +498,56 @@ namespace ChromeUtils {
                         optional ImportESModuleOptionsDictionary aOptions = {});
 
   /**
-   * Defines propertys on the given target which lazily imports a ES module
+   * Defines properties on the given target which lazily imports a ES module
    * when accessed.
+   *
+   * See defineLazyGetter for the characteristics of the lazy getter.
+   *
+   * In contrast to defineLazyGetter, the properties defined by this API
+   * has setter, and the properties can be overwritten with simple assignment.
+   * The new property value is always defined on the `this` object that the
+   * setter is called with.
    *
    * @param aTarget The target object on which to define the property.
    * @param aModules An object with a property for each module property to be
    *                 imported, where the property name is the name of the
    *                 imported symbol and the value is the module URI.
-   * @param aOption An option to specify where to load the module into.
+   * @param aOptions An option to specify where to load the module into.
    *
-   * In worker threads, aOption is required and only { global: "current" } and
+   * In worker threads, aOptions is required and only { global: "current" } and
    * { global: "contextual" } are supported.
    *
-   * In DevTools distinct global, aOptions.global is reuiqred.
+   * In DevTools distinct global, aOptions.global is required.
    */
   [Throws]
   undefined defineESModuleGetters(object aTarget, object aModules,
                                   optional ImportESModuleOptionsDictionary aOptions = {});
+
+  /**
+   * Returns whether |str| is a valid JS identifier
+   */
+  boolean isJSIdentifier(DOMString str);
+
+  /**
+   * Given an URI string, replaces html whitespace with the relevant
+   * url-encoded characters, so that it can be used as part of a srcset without
+   * changing its meaning.
+   */
+  UTF8String encodeURIForSrcset(UTF8String uri);
+
+  /**
+   * Returns, in bytes, a platform-normalized estimate of the process's private physical memory usage.
+   * Any error when calling the underlying platform-specific API will be thrown.
+   */
+  [Throws]
+  readonly attribute unsigned long long currentProcessMemoryUsage;
+
+  /**
+   * Return the number of milliseconds of CPU time used since process start.
+   * Any error when calling the underlying platform-specific API will be thrown.
+   */
+  [Throws]
+  readonly attribute unsigned long long cpuTimeSinceProcessStart;
 
   /**
    * IF YOU ADD NEW METHODS HERE, MAKE SURE THEY ARE THREAD-SAFE.
@@ -454,16 +634,20 @@ partial namespace ChromeUtils {
   getBaseDomainFromPartitionKey(DOMString partitionKey);
 
   /**
-   * Returns the partitionKey for a given URL.
+   * Returns the partitionKey for a given subresourceURL given its top-level URL
+   * and whether or not it is in a foreign context.
    *
-   * The function will treat the URL as a first party and construct the
-   * partitionKey according to the scheme, site and port in the URL.
+   * The function will treat the topLevelURL as a first party and construct the
+   * partitionKey according to the scheme, site and port in the URL. It will also
+   * include information about the subresource and whether or not this is a foreign
+   * request in the partition key.
    *
-   * Throws for invalid urls.
+   * Throws for invalid urls, if the Third Party Service is unavailable, or if the
+   * combination of inputs is impossible.
    */
   [Throws]
   DOMString
-  getPartitionKeyFromURL(DOMString url);
+  getPartitionKeyFromURL(DOMString topLevelUrl, DOMString subresourceUrl, optional boolean foreignContext);
 
   /**
    * Loads and compiles the script at the given URL and returns an object
@@ -544,63 +728,6 @@ partial namespace ChromeUtils {
                          optional IdleRequestOptions options = {});
 
   /**
-   * Synchronously loads and evaluates the js file located at
-   * 'aResourceURI' with a new, fully privileged global object.
-   *
-   * If `aTargetObj` is specified all properties exported by the module are
-   * copied to that object. This is deprecated and should not be used in
-   * new code.
-   *
-   * @param aResourceURI A resource:// URI string to load the module from.
-   * @param aTargetObj the object to install the exported properties on or null.
-   * @returns the module code's global object.
-   *
-   * The implementation maintains a hash of aResourceURI->global obj.
-   * Subsequent invocations of import with 'aResourceURI' pointing to
-   * the same file will not cause the module to be re-evaluated, but
-   * the symbols in EXPORTED_SYMBOLS will be exported into the
-   * specified target object and the global object returned as above.
-   *
-   * TODO: Remove this once m-c, c-c, and out-of-tree code migrations finish
-   *       (bug 1881888).
-   */
-  [Throws]
-  object import(UTF8String aResourceURI, optional object aTargetObj);
-
-  /**
-   * Defines a property on the given target which lazily imports a JavaScript
-   * module when accessed.
-   *
-   * The first time the property is accessed, the module at the given URL is
-   * imported, and the property is replaced with the module's exported symbol
-   * of the same name.
-   *
-   * Some points to note when using this utility:
-   *
-   * - The cached module export is always stored on the `this` object that was
-   *   used to access the getter. This means that if you define the lazy
-   *   getter on a prototype, the module will be re-imported every time the
-   *   property is accessed on a new instance.
-   *
-   * - The getter property may be overwritten by simple assignment, but as
-   *   with imports, the new property value is always defined on the `this`
-   *   object that the setter is called with.
-   *
-   * - If the module import fails, the getter will throw an error, and the
-   *   property will not be replaced. Each subsequent attempt to access the
-   *   getter will attempt to re-import the object, which will likely continue
-   *   to result in errors.
-   *
-   * @param target The target object on which to define the property.
-   * @param id The name of the property to define, and of the symbol to
-   *           import.
-   * @param resourceURI The resource URI of the module, as passed to
-   *                    ChromeUtils.import.
-   */
-  [Throws]
-  undefined defineModuleGetter(object target, DOMString id, DOMString resourceURI);
-
-  /**
    * Returns the scripted location of the first ancestor stack frame with a
    * principal which is subsumed by the given principal. If no such frame
    * exists on the call stack, returns null.
@@ -618,13 +745,19 @@ partial namespace ChromeUtils {
 
   /**
    * Set the collection of specific detailed performance timing information.
-   * Selecting 0 for the mask will end existing collection. All metrics that
-   * are chosen will be cleared after updating the mask.
+   * Passing an empty array will end existing collection. All metrics that
+   * are chosen will be cleared after updating the features.
    *
-   * @param aCollectionMask A bitmask where each bit corresponds to a metric
-   *        to be collected as listed in PerfStats::Metric.
+   * @param aMetrics An array of metric names corresponding to the Metric enum
+   *        values in PerfStats::Metric.
    */
-  undefined setPerfStatsCollectionMask(unsigned long long aCollectionMask);
+  undefined setPerfStatsFeatures(sequence<DOMString> aMetrics);
+
+  /**
+   * Enables the collection of all perf stats features.  Will override the features
+   * enabled by setPerfStatsFeatures.
+   */
+  undefined enableAllPerfStatsFeatures();
 
   /**
    * Collect results of detailed performance timing information.
@@ -667,8 +800,8 @@ partial namespace ChromeUtils {
    * For webdriver consistency purposes, we need to be able to end a wheel
    * transaction from the browser chrome.
    */
-  [ChromeOnly]
-  undefined endWheelTransaction();
+  [ChromeOnly, Throws]
+  Promise<undefined> endWheelTransaction(WindowProxy window);
 
   /**
    * Register a new toplevel window global actor. This method may only be
@@ -679,7 +812,7 @@ partial namespace ChromeUtils {
   [ChromeOnly, Throws]
   undefined registerWindowActor(UTF8String aName, optional WindowActorOptions aOptions = {});
 
-  [ChromeOnly]
+  [ChromeOnly, Throws]
   undefined unregisterWindowActor(UTF8String aName);
 
   /**
@@ -691,8 +824,24 @@ partial namespace ChromeUtils {
   [ChromeOnly, Throws]
   undefined registerProcessActor(UTF8String aName, optional ProcessActorOptions aOptions = {});
 
-  [ChromeOnly]
+  [ChromeOnly, Throws]
   undefined unregisterProcessActor(UTF8String aName);
+
+  /**
+   * Ensure a content process with the given remote type is running, and return
+   * a "KeepAlive" object for it. While this object is kept alive, the
+   * process will not intentionally exit.
+   *
+   * This follows the same process selection logic as creating a remote browser,
+   * allowing up to `dom.ipc.processCount.<aRemoteType>` processes (default 1)
+   * to be created per remote type. Once the limit has been reached, a new
+   * KeepAlive for an existing process will be returned instead.
+   *
+   * This can be used to start a content process for non-browser use cases, such
+   * as running sandboxed JS/WASM operations in a content process.
+   */
+  [ChromeOnly, Throws]
+  Promise<nsIContentParentKeepAlive> ensureHeadlessContentProcess(UTF8String aRemoteType);
 
   [ChromeOnly]
   // aError should a nsresult.
@@ -766,7 +915,41 @@ partial namespace ChromeUtils {
   sequence<UTF8String> getAllPossibleUtilityActorNames();
 
   boolean shouldResistFingerprinting(JSRFPTarget target,
-                                     unsigned long long? overriddenFingerprintingSettings);
+                                     nsIRFPTargetSetIDL? overriddenFingerprintingSettings,
+                                     optional boolean isPBM);
+
+  // Equivalent to pressing the home button. Exclusively for testing.
+  [ChromeOnly]
+  undefined androidMoveTaskToBack();
+
+  [Throws]
+  ContentSecurityPolicy createCSPFromHeader(DOMString header, URI selfURI, Principal loadingPrincipal);
+
+  // This helper function executes `func` and redirects any exception
+  // that may be thrown while running it to the DevTools Console currently
+  // debugging `targetGlobal`.
+  //
+  // This helps flag the nsIScriptError with a particular innerWindowID
+  // which is especially useful for WebExtension content scripts
+  // where script are running in a Sandbox whose prototype is the content window.
+  // We expect content script exception to be flagged with the content window
+  // innerWindowID in order to appear in the tab's DevTools.
+  [ChromeOnly, Throws]
+  any callFunctionAndLogException(any targetGlobal, any func);
+
+  // For a given command name, returns:
+  //  * Null if not all windows handle this command.
+  //  * true if all windows handle it _and_ it's unconditionally enabled.
+  //  * false if all windows handle and it is not unconditionally enabled.
+  boolean? getGlobalWindowCommandEnabled(UTF8String name);
+
+  [Throws]
+  Promise<imgIContainer> fetchDecodedImage(URI uri, MozChannel channel);
+
+  // Returns the stack trace captured from the most recent out-of-memory exception,
+  // or null if no OOM stack trace is available. The stack trace shows the JavaScript
+  // call stack at the time the out-of-memory condition occurred
+  DOMString getLastOOMStackTrace();
 };
 
 /*
@@ -790,7 +973,6 @@ enum WebIDLProcType {
  "vr",
  "rdd",
  "socket",
- "remoteSandboxBroker",
  "inference",
 #ifdef MOZ_ENABLE_FORKSERVER
  "forkServer",
@@ -845,6 +1027,7 @@ enum WebIDLUtilityActorName {
   "jSOracle",
   "windowsUtils",
   "windowsFileDialog",
+  "pkcs11Module",
 };
 
 dictionary UtilityActorsDictionary {
@@ -936,45 +1119,6 @@ dictionary ParentProcInfoDictionary {
   // Type of this parent process.
   // As of this writing, this is always `browser`.
   WebIDLProcType type = "browser";
-};
-
-/**
- * Used by principals and the script security manager to represent origin
- * attributes. The first dictionary is designed to contain the full set of
- * OriginAttributes, the second is used for pattern-matching (i.e. does this
- * OriginAttributesDictionary match the non-empty attributes in this pattern).
- *
- * IMPORTANT: If you add any members here, you need to do the following:
- * (1) Add them to both dictionaries.
- * (2) Update the methods on mozilla::OriginAttributes, including equality,
- *     serialization, deserialization, and inheritance.
- * (3) Update the methods on mozilla::OriginAttributesPattern, including matching.
- */
-[GenerateInitFromJSON, GenerateEqualityOperator]
-dictionary OriginAttributesDictionary {
-  unsigned long userContextId = 0;
-  unsigned long privateBrowsingId = 0;
-  DOMString firstPartyDomain = "";
-  DOMString geckoViewSessionContextId = "";
-  DOMString partitionKey = "";
-};
-
-[GenerateInitFromJSON, GenerateToJSON]
-dictionary OriginAttributesPatternDictionary {
-  unsigned long userContextId;
-  unsigned long privateBrowsingId;
-  DOMString firstPartyDomain;
-  DOMString geckoViewSessionContextId;
-  // partitionKey takes precedence over partitionKeyPattern.
-  DOMString partitionKey;
-  PartitionKeyPatternDictionary partitionKeyPattern;
-};
-
-dictionary PartitionKeyPatternDictionary {
-  DOMString scheme;
-  DOMString baseDomain;
-  long port;
-  boolean foreignByAncestorContext;
 };
 
 dictionary CompileScriptOptionsDictionary {
@@ -1119,10 +1263,14 @@ enum PopupBlockerState {
 enum JSRFPTarget {
   "RoundWindowSize",
   "SiteSpecificZoom",
+  "CSSPrefersColorScheme",
+  "JSLocalePrompt",
+  "HttpUserAgent",
 };
 
 #ifdef XP_UNIX
 dictionary LibcConstants {
+  long EPERM;
   long EINTR;
   long EACCES;
   long EAGAIN;
@@ -1139,6 +1287,7 @@ dictionary LibcConstants {
   long O_CREAT;
   long O_NONBLOCK;
   long O_WRONLY;
+  long O_CLOEXEC;
 
   long POLLIN;
   long POLLOUT;
@@ -1150,6 +1299,7 @@ dictionary LibcConstants {
 
 #ifdef XP_LINUX
   long PR_CAPBSET_READ;
+  long O_PATH;
 #endif
 };
 #endif
@@ -1158,5 +1308,22 @@ dictionary CDMInformation {
   required DOMString keySystemName;
   required DOMString capabilities;
   required boolean clearlead;
-  required boolean isHDCP22Compatible;
+  required boolean isHardwareDecryption;
+};
+
+/**
+ * This is effectively a 1:1 mapping of the fields exposed by Necko's
+ * CacheControlParser, which lets us use the results from that parser in JS.
+ */
+[GenerateConversionToJS]
+dictionary HTTPCacheControlParseResult {
+  unsigned long maxAge = 0;
+  unsigned long maxStale = 0;
+  unsigned long minFresh = 0;
+  unsigned long staleWhileRevalidate = 0;
+  boolean noCache = false;
+  boolean noStore = false;
+  boolean public = false;
+  boolean private = false;
+  boolean immutable = false;
 };

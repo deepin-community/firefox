@@ -33,7 +33,6 @@
 
 #include "jArray.h"
 #include "mozilla/ImportScanner.h"
-#include "mozilla/Likely.h"
 #include "nsAHtml5TreeBuilderState.h"
 #include "nsAtom.h"
 #include "nsContentUtils.h"
@@ -315,6 +314,7 @@ class nsHtml5TreeBuilder : public nsAHtml5TreeBuilderState {
   bool quirks;
   bool forceNoQuirks;
   bool allowDeclarativeShadowRoots;
+  bool noInSelectMode;
   bool keepBuffer;
   inline nsHtml5ContentCreatorFunction htmlCreator(
       mozilla::dom::HTMLContentCreatorFunction htmlCreator) {
@@ -514,6 +514,7 @@ class nsHtml5TreeBuilder : public nsAHtml5TreeBuilderState {
   nsIContentHandle* createHtmlElementSetAsRoot(
       nsHtml5HtmlAttributes* attributes);
   void detachFromParent(nsIContentHandle* element);
+  void optionElementPopped(nsIContentHandle* option);
   bool hasChildren(nsIContentHandle* element);
   void appendElement(nsIContentHandle* child, nsIContentHandle* newParent);
   void appendChildrenToNewParent(nsIContentHandle* oldParent,
@@ -565,6 +566,8 @@ class nsHtml5TreeBuilder : public nsAHtml5TreeBuilderState {
   void setIsSrcdocDocument(bool isSrcdocDocument);
   bool isAllowDeclarativeShadowRoots();
   void setAllowDeclarativeShadowRoots(bool allow);
+  bool isNoInSelectMode();
+  void setNoInSelectMode(bool mode);
   void flushCharacters();
 
  private:

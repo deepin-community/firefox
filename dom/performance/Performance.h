@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -36,6 +34,7 @@ class PerformanceService;
 class PerformanceStorage;
 class PerformanceTiming;
 class PerformanceEventTiming;
+class PerformanceInteractionMetrics;
 class WorkerGlobalScope;
 class EventCounts;
 
@@ -148,17 +147,27 @@ class Performance : public DOMEventTargetHelper {
 
   virtual class EventCounts* EventCounts() = 0;
 
+  virtual uint64_t InteractionCount() = 0;
+
   virtual void QueueNavigationTimingEntry() = 0;
 
   virtual void UpdateNavigationTimingEntry() = 0;
 
   virtual void DispatchPendingEventTimingEntries() = 0;
 
+  virtual PerformanceInteractionMetrics& GetPerformanceInteractionMetrics() = 0;
+
+  virtual void SetInteractionId(PerformanceEventTiming* aEventTiming,
+                                const WidgetEvent* aEvent) = 0;
+
   void QueueNotificationObserversTask();
 
   bool IsPerformanceTimingAttribute(const nsAString& aName) const;
 
   virtual bool IsGlobalObjectWindow() const { return false; };
+
+  virtual void RecordModalFallbackTime() {}
+  virtual DOMHighResTimeStamp GetLastModalFallbackTime() const { return 0; }
 
  protected:
   Performance(nsIGlobalObject* aGlobal);
@@ -171,7 +180,7 @@ class Performance : public DOMEventTargetHelper {
   void ClearUserEntries(const Optional<nsAString>& aEntryName,
                         const nsAString& aEntryType);
 
-  virtual void DispatchBufferFullEvent() = 0;
+  virtual void DispatchResourceTimingBufferFullEvent() = 0;
 
   virtual DOMHighResTimeStamp CreationTime() const = 0;
 
@@ -214,10 +223,19 @@ class Performance : public DOMEventTargetHelper {
 
  private:
   MOZ_ALWAYS_INLINE bool CanAddResourceTimingEntry();
-  void BufferEvent();
+  void ResourceTimingBufferFullEvent();
   void MaybeEmitExternalProfilerMarker(
       const nsAString& aName, Maybe<const PerformanceMeasureOptions&> aOptions,
       Maybe<const nsAString&> aStartMark, const Optional<nsAString>& aEndMark);
+  void MaybeAddProfileMarker(
+      const nsAString& aName,
+      const Maybe<const PerformanceMeasureOptions&>& options,
+      const Maybe<const nsAString&>& startMark,
+      const Optional<nsAString>& aEndMark);
+  void AddProfileMarker(const nsAString& aName,
+                        const Maybe<const PerformanceMeasureOptions&>& options,
+                        const Maybe<const nsAString&>& startMark,
+                        const Optional<nsAString>& aEndMark);
 
   // The attributes of a PerformanceMeasureOptions that we call
   // ResolveTimestamp* on.
@@ -246,11 +264,10 @@ class Performance : public DOMEventTargetHelper {
       const Maybe<const PerformanceMeasureOptions&>& aOptions, ErrorResult& aRv,
       bool aReturnUnclamped);
 
-  std::pair<TimeStamp, TimeStamp> GetTimeStampsForMarker(
+  Maybe<std::pair<TimeStamp, TimeStamp>> GetTimeStampsForMarker(
       const Maybe<const nsAString&>& aStartMark,
       const Optional<nsAString>& aEndMark,
-      const Maybe<const PerformanceMeasureOptions&>& aOptions,
-      ErrorResult& aRv);
+      const Maybe<const PerformanceMeasureOptions&>& aOptions);
 };
 
 }  // namespace dom

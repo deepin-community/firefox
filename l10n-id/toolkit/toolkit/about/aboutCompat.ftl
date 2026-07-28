@@ -5,10 +5,13 @@
 label-disable = Nonaktifkan
 label-enable = Aktifkan
 label-interventions = Intervensi
+# Variables:
+#   $bug (string) - Bug number
 label-more-information = Informasi Lebih Lanjut: Bug { $bug }
 label-overrides = Agen Pengguna yang Menimpa
 text-disabled-in-about-config = Fitur ini telah dinonaktifkan di about:config
 text-no-interventions = Tidak ada intervensi yang digunakan
+text-page-title = Kompatibilitas Web
 text-no-overrides = Tidak ada penggantian UA yang digunakan
 text-title = about:compat
 

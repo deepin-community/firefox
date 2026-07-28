@@ -5,7 +5,7 @@
  */
 
 import expect from 'expect';
-import type {PuppeteerLaunchOptions} from 'puppeteer-core/internal/node/PuppeteerNode.js';
+import type {LaunchOptions} from 'puppeteer-core/internal/node/LaunchOptions.js';
 
 import {getTestState, launch} from '../mocha-utils.js';
 
@@ -15,9 +15,7 @@ describe('DevTools', function () {
    */
   this.timeout(20_000);
 
-  let launchOptions: PuppeteerLaunchOptions & {
-    devtools: boolean;
-  };
+  let launchOptions: LaunchOptions;
   const browsers: Array<() => Promise<void>> = [];
 
   beforeEach(async () => {
@@ -40,7 +38,7 @@ describe('DevTools', function () {
       browsers.map((close, index) => {
         delete browsers[index];
         return close();
-      })
+      }),
     );
   });
 
@@ -65,11 +63,12 @@ describe('DevTools', function () {
     expect(
       await page.evaluate(() => {
         return 2 * 3;
-      })
+      }),
     ).toBe(6);
     expect(await browser.pages()).toContain(page);
   });
-  it('target.page() should return Page when calling asPage on DevTools target', async function () {
+
+  it('browser.pages() should return a DevTools page if handleDevToolsAsPage is provided in connect()', async function () {
     const {puppeteer} = await getTestState({skipLaunch: true});
     const originalBrowser = await launchBrowser(launchOptions);
 
@@ -77,7 +76,39 @@ describe('DevTools', function () {
 
     using browser = await puppeteer.connect({
       browserWSEndpoint,
+      handleDevToolsAsPage: true,
     });
+    const devtoolsPageTarget = await browser.waitForTarget(target => {
+      return target.type() === 'other' && target.url().startsWith('devtools');
+    });
+    const page = (await devtoolsPageTarget.page())!;
+    await page.waitForFunction(() => {
+      // @ts-expect-error devtools context.
+      return Boolean(window.DevToolsAPI);
+    });
+    expect(await browser.pages()).toContain(page);
+  });
+
+  it('browser.pages() should return a DevTools page if handleDevToolsAsPage is provided in launch()', async function () {
+    const browser = await launchBrowser({
+      ...launchOptions,
+      handleDevToolsAsPage: true,
+    });
+
+    const devtoolsPageTarget = await browser.waitForTarget(target => {
+      return target.type() === 'other' && target.url().startsWith('devtools');
+    });
+    const page = (await devtoolsPageTarget.page())!;
+
+    await page.waitForFunction(() => {
+      // @ts-expect-error devtools context.
+      return Boolean(window.DevToolsAPI);
+    });
+    expect(await browser.pages()).toContain(page);
+  });
+
+  it('target.page() should return Page when calling asPage on DevTools target', async function () {
+    const browser = await launchBrowser(launchOptions);
     const devtoolsPageTarget = await browser.waitForTarget(target => {
       return target.type() === 'other';
     });
@@ -85,14 +116,14 @@ describe('DevTools', function () {
     expect(
       await page.evaluate(() => {
         return 2 * 3;
-      })
+      }),
     ).toBe(6);
     // The page won't be part of browser.pages() if a custom isPageTarget is not provided
     expect(await browser.pages()).not.toContain(page);
   });
   it('should open devtools when "devtools: true" option is given', async () => {
     const browser = await launchBrowser(
-      Object.assign({devtools: true}, launchOptions)
+      Object.assign({devtools: true}, launchOptions),
     );
     const context = await browser.createBrowserContext();
     await Promise.all([
@@ -103,9 +134,10 @@ describe('DevTools', function () {
     ]);
     await browser.close();
   });
+
   it('should expose DevTools as a page', async () => {
     const browser = await launchBrowser(
-      Object.assign({devtools: true}, launchOptions)
+      Object.assign({devtools: true}, launchOptions),
     );
     const context = await browser.createBrowserContext();
     const [target] = await Promise.all([
@@ -117,7 +149,19 @@ describe('DevTools', function () {
     const page = await target.page();
     await page!.waitForFunction(() => {
       // @ts-expect-error wrong context.
-      return Boolean(DevToolsAPI);
+      return Boolean(window.DevToolsAPI);
+    });
+    await browser.close();
+  });
+
+  it('should support opening DevTools on a page', async () => {
+    const browser = await launchBrowser(launchOptions);
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    const devtoolsPage = await page.openDevTools();
+    await devtoolsPage!.waitForFunction(() => {
+      // @ts-expect-error wrong context.
+      return Boolean(window.DevToolsAPI);
     });
     await browser.close();
   });

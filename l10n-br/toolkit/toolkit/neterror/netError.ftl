@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Pajenn stanket
 neterror-captive-portal-page-title = Kennaskañ d'ar rouedad
 neterror-dns-not-found-title = Dafariad ebet kavet
 neterror-malformed-uri-page-title = URL didalvoudek
+problem-with-this-site-title = War a-seblant ez eus ur gudenn gant al lec’hienn-mañ
 
 ## Error page actions
 
@@ -23,6 +24,8 @@ neterror-override-exception-button = Asantiñ ar riskl ha kenderc'hel
 neterror-pref-reset-button = Assav an arventennoù dre ziouer
 neterror-return-to-previous-page-button = Distreiñ
 neterror-return-to-previous-page-recommended-button = Distreiñ (Erbedet)
+neterror-try-again-button-2 = Klask en-dro
+    .accesskey = K
 neterror-try-again-button = Klask en-dro
 neterror-add-exception-button = Bepred kenderc’hel evit al lec’hienn-mañ
 neterror-view-certificate-link = Gwelout an testeni
@@ -139,3 +142,9 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Ma n'anavezit ket <b>{ $mit
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> a zo gantañ ur politikerezh surentez anvet HTTP Strict Transport Security (HSTS), ar pezh a dalvez { -brand-short-name } a c'hall kennaskañ outañ en un doare sur. N'hallit ket ouzhpennañ un nemedenn ebet evit gweladenniñ al lec'hienn-mañ.
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-vpn-error-description = Klaskit en-dro en un nebeut munutennoù.
+fp-neterror-denied-port-access = Emañ ar chomlec'h oc'h arverañ ur porzh hag a zo arveret dre voaz evit palioù all eget ar merdeiñ war internet. Dilezet eo bet ar goulenn gant { -brand-short-name } evit ho kwarez.

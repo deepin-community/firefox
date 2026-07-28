@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set et sw=2 ts=4: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +9,6 @@
 #include <algorithm>
 #include <vector>
 
-#include <stdarg.h>
 #include <windef.h>
 #include <winbase.h>
 #include <wingdi.h>
@@ -30,7 +27,6 @@
 #include "nsComponentManagerUtils.h"
 #include "nsThreadUtils.h"
 #include "nsIObserverService.h"
-#include "nsIWindowsRegKey.h"
 #include "nsServiceManagerUtils.h"
 #include "nsNetAddr.h"
 #include "nsNotifyAddrListener.h"
@@ -43,10 +39,25 @@
 #include "mozilla/SHA1.h"
 #include "mozilla/Base64.h"
 #include "mozilla/ScopeExit.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkMetrics.h"
+#include "mozilla/widget/WinRegistry.h"
 #include "../LinkServiceCommon.h"
 #include <iptypes.h>
 #include <iphlpapi.h>
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
+BOOLEAN IN6_IS_ADDR_LOOPBACK(const struct in6_addr* a) {
+  auto words = a->s6_words;
+  return (words[0] == 0) && (words[1] == 0) && (words[2] == 0) &&
+         (words[3] == 0) && (words[4] == 0) && (words[5] == 0) &&
+         (words[6] == 0) && (words[7] == 0x0100);
+}
+
+#  define IN6_IS_ADDR_LINKLOCAL(_addr)         \
+    ((((const uint8_t*)(_addr))[0] == 0xfe) && \
+     ((((const uint8_t*)(_addr))[1] & 0xc0) == 0x80))
+
+#endif  // defined(__MINGW32__)  || defined (__MINGW64__)
 
 using namespace mozilla;
 
@@ -61,16 +72,9 @@ static const unsigned int kNetworkChangeCoalescingPeriod = 1000;
 NS_IMPL_ISUPPORTS(nsNotifyAddrListener, nsINetworkLinkService, nsIRunnable,
                   nsIObserver)
 
-nsNotifyAddrListener::nsNotifyAddrListener()
-    : mLinkUp(true),  // assume true by default
-      mStatusKnown(false),
-      mCheckAttempted(false),
-      mMutex("nsNotifyAddrListener::mMutex"),
-      mCheckEvent(nullptr),
-      mShutdown(false),
-      mPlatformDNSIndications(NONE_DETECTED),
-      mIPInterfaceChecksum(0),
-      mCoalescingActive(false) {}
+static Atomic<bool, MemoryOrdering::Relaxed> sHasNonLocalIPv6{true};
+
+nsNotifyAddrListener::nsNotifyAddrListener() = default;
 
 nsNotifyAddrListener::~nsNotifyAddrListener() {
   NS_ASSERTION(!mThread, "nsNotifyAddrListener thread shutdown failed");
@@ -238,7 +242,7 @@ void nsNotifyAddrListener::calculateNetworkId(void) {
       mNetworkId.Truncate();
     }
     LOG(("calculateNetworkId: no network ID - no active networks"));
-    Telemetry::Accumulate(Telemetry::NETWORK_ID2, 0);
+    glean::network::id.AccumulateSingleSample(0);
     if (idChanged) {
       NotifyObservers(NS_NETWORK_ID_CHANGED_TOPIC, nullptr);
     }
@@ -257,7 +261,7 @@ void nsNotifyAddrListener::calculateNetworkId(void) {
       MutexAutoLock lock(mMutex);
       mNetworkId.Truncate();
     }
-    Telemetry::Accumulate(Telemetry::NETWORK_ID2, 0);
+    glean::network::id.AccumulateSingleSample(0);
     LOG(("calculateNetworkId: no network ID Base64Encode error %X",
          uint32_t(rv)));
     return;
@@ -266,11 +270,11 @@ void nsNotifyAddrListener::calculateNetworkId(void) {
   MutexAutoLock lock(mMutex);
   if (output != mNetworkId) {
     mNetworkId = output;
-    Telemetry::Accumulate(Telemetry::NETWORK_ID2, 1);
+    glean::network::id.AccumulateSingleSample(1);
     LOG(("calculateNetworkId: new NetworkID: %s", output.get()));
     NotifyObservers(NS_NETWORK_ID_CHANGED_TOPIC, nullptr);
   } else {
-    Telemetry::Accumulate(Telemetry::NETWORK_ID2, 2);
+    glean::network::id.AccumulateSingleSample(2);
     LOG(("calculateNetworkId: same NetworkID: %s", output.get()));
   }
 }
@@ -475,6 +479,7 @@ nsNotifyAddrListener::CheckAdaptersAddresses(void) {
   nsTArray<nsCString> dnsSuffixList;
   nsTArray<mozilla::net::NetAddr> resolvers;
   uint32_t platformDNSIndications = NONE_DETECTED;
+  bool hasNonLocalIPv6 = false;
   if (ret == ERROR_SUCCESS) {
     bool linkUp = false;
     ULONG sum = 0;
@@ -483,7 +488,10 @@ nsNotifyAddrListener::CheckAdaptersAddresses(void) {
          adapter = adapter->Next) {
       if (adapter->OperStatus != IfOperStatusUp ||
           !adapter->FirstUnicastAddress ||
-          adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK) {
+          adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK ||
+          nsDependentString(adapter->FriendlyName).Find(u"VMnet") !=
+              kNotFound ||
+          nsDependentString(adapter->Description).Find(u"VMnet") != kNotFound) {
         continue;
       }
 
@@ -512,6 +520,15 @@ nsNotifyAddrListener::CheckAdaptersAddresses(void) {
         for (int i = 0; i < sockAddr->iSockaddrLength; ++i) {
           sum += (reinterpret_cast<unsigned char*>(sockAddr->lpSockaddr))[i];
         }
+
+        if (sockAddr->lpSockaddr->sa_family == AF_INET6) {
+          sockaddr_in6* ipv6 =
+              reinterpret_cast<sockaddr_in6*>(sockAddr->lpSockaddr);
+          if (!IN6_IS_ADDR_LINKLOCAL(&ipv6->sin6_addr) &&
+              !IN6_IS_ADDR_LOOPBACK(&ipv6->sin6_addr)) {
+            hasNonLocalIPv6 = true;
+          }
+        }
       }
 
       for (IP_ADAPTER_DNS_SERVER_ADDRESS* pDnServer =
@@ -535,11 +552,7 @@ nsNotifyAddrListener::CheckAdaptersAddresses(void) {
           continue;
         }
 
-        if (LOG_ENABLED()) {
-          char buf[100];
-          addr.ToStringBuffer(buf, 100);
-          LOG(("Found DNS resolver=%s", buf));
-        }
+        LOG(("Found DNS resolver=%s", addr.ToString().get()));
         resolvers.AppendElement(addr);
       }
 
@@ -558,6 +571,8 @@ nsNotifyAddrListener::CheckAdaptersAddresses(void) {
     mStatusKnown = true;
   }
   free(adapterList);
+  LOG(("has IPv6: %d", hasNonLocalIPv6));
+  sHasNonLocalIPv6 = hasNonLocalIPv6;
 
   if (mLinkUp) {
     /* Store the checksum only if one or more interfaces are up */
@@ -574,28 +589,17 @@ nsNotifyAddrListener::CheckAdaptersAddresses(void) {
     // found and successfully parsed, then it returns true. Otherwise it
     // returns false.
     auto checkRegistry = [&dnsSuffixList](const nsAString& aRegPath) -> bool {
-      nsresult rv;
-      nsCOMPtr<nsIWindowsRegKey> regKey =
-          do_CreateInstance("@mozilla.org/windows-registry-key;1", &rv);
-      if (NS_FAILED(rv)) {
-        LOG(("  creating nsIWindowsRegKey failed\n"));
-        return false;
-      }
-      rv = regKey->Open(nsIWindowsRegKey::ROOT_KEY_LOCAL_MACHINE, aRegPath,
-                        nsIWindowsRegKey::ACCESS_READ);
-      if (NS_FAILED(rv)) {
-        LOG(("  opening registry key failed\n"));
-        return false;
-      }
       nsAutoString wideSuffixString;
-      rv = regKey->ReadStringValue(u"SearchList"_ns, wideSuffixString);
-      if (NS_FAILED(rv)) {
-        LOG(("  reading registry string value failed\n"));
+      if (!mozilla::widget::WinRegistry::GetString(
+              HKEY_LOCAL_MACHINE, nsString(aRegPath), u"SearchList"_ns,
+              wideSuffixString)) {
+        LOG(("  reading registry key %s failed\n",
+             NS_ConvertUTF16toUTF8(aRegPath).get()));
         return false;
       }
 
       // Normally the key should not contain whitespace, but editing the
-      // registry manually or through gpedit doesn't alway enforce this.
+      // registry manually or through gpedit doesn't always enforce this.
       nsAutoCString list = NS_ConvertUTF16toUTF8(wideSuffixString);
       list.StripWhitespace();
       for (const nsACString& suffix : list.Split(',')) {
@@ -610,7 +614,7 @@ nsNotifyAddrListener::CheckAdaptersAddresses(void) {
     };
 
     // The Local group policy overrides the user set suffix list, so we must
-    // first check the registry key that is sets by gpedit, and if that fails we
+    // first check the registry key that is set by gpedit, and if that fails we
     // fall back to the one that is set by the user.
     if (!checkRegistry(nsLiteralString(
             u"SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient"))) {
@@ -620,27 +624,15 @@ nsNotifyAddrListener::CheckAdaptersAddresses(void) {
   }
 
   auto registryChildCount = [](const nsAString& aRegPath) -> uint32_t {
-    nsresult rv;
-    nsCOMPtr<nsIWindowsRegKey> regKey =
-        do_CreateInstance("@mozilla.org/windows-registry-key;1", &rv);
-    if (NS_FAILED(rv)) {
-      LOG(("  creating nsIWindowsRegKey failed\n"));
+    mozilla::widget::WinRegistry::Key key(
+        HKEY_LOCAL_MACHINE, nsString(aRegPath),
+        mozilla::widget::WinRegistry::KeyMode::Read);
+    if (!key) {
+      LOG(("  opening registry key %s failed\n",
+           NS_ConvertUTF16toUTF8(aRegPath).get()));
       return 0;
     }
-    rv = regKey->Open(nsIWindowsRegKey::ROOT_KEY_LOCAL_MACHINE, aRegPath,
-                      nsIWindowsRegKey::ACCESS_READ);
-    if (NS_FAILED(rv)) {
-      LOG(("  opening registry key failed\n"));
-      return 0;
-    }
-
-    uint32_t count = 0;
-    rv = regKey->GetChildCount(&count);
-    if (NS_FAILED(rv)) {
-      return 0;
-    }
-
-    return count;
+    return key.GetChildCount();
   };
 
   if (StaticPrefs::network_notify_checkForProxies()) {
@@ -733,4 +725,9 @@ void nsNotifyAddrListener::CheckLinkStatus(void) {
                                                  : NS_NETWORK_LINK_DATA_DOWN);
     }
   }
+}
+
+// static
+bool nsINetworkLinkService::HasNonLocalIPv6Address() {
+  return sHasNonLocalIPv6;
 }

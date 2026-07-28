@@ -4,27 +4,33 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![allow(clippy::missing_panics_doc)]
-#![allow(clippy::missing_errors_doc)]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 use std::{
-    fmt::{self, Display},
-    net::{SocketAddr, ToSocketAddrs},
+    net::{SocketAddr, ToSocketAddrs as _},
     path::PathBuf,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
-use clap::Parser;
+use clap::{Parser, builder::TypedValueParser as _};
 use neqo_transport::{
-    tparams::PreferredAddress, CongestionControlAlgorithm, ConnectionParameters, StreamType,
-    Version,
+    CongestionControl, ConnectionParameters, DEFAULT_INITIAL_RTT, SlowStart, StreamType, Version,
+    tparams::PreferredAddress,
 };
+use strum::VariantNames as _;
+use thiserror::Error;
 
 pub mod client;
+mod send_data;
 pub mod server;
 pub mod udp;
 
-#[derive(Debug, Parser)]
+/// Firefox default value
+///
+/// See `network.buffer.cache.size` pref <https://searchfox.org/mozilla-central/rev/f6e3b81aac49e602f06c204f9278da30993cdc8a/modules/libpref/init/all.js#3212>
+const STREAM_IO_BUFFER_SIZE: usize = 32 * 1024;
+
+#[derive(Clone, Debug, Parser)]
 pub struct SharedArgs {
     #[command(flatten)]
     verbose: Option<clap_verbosity_flag::Verbosity>,
@@ -33,39 +39,35 @@ pub struct SharedArgs {
     /// ALPN labels to negotiate.
     ///
     /// This client still only does HTTP/3 no matter what the ALPN says.
-    pub alpn: String,
+    alpn: String,
 
     #[arg(name = "qlog-dir", long, value_parser=clap::value_parser!(PathBuf))]
     /// Enable QLOG logging and QLOG traces to this directory
-    pub qlog_dir: Option<PathBuf>,
+    qlog_dir: Option<PathBuf>,
 
     #[arg(name = "encoder-table-size", long, default_value = "16384")]
-    pub max_table_size_encoder: u64,
+    max_table_size_encoder: u64,
 
     #[arg(name = "decoder-table-size", long, default_value = "16384")]
-    pub max_table_size_decoder: u64,
+    max_table_size_decoder: u64,
 
     #[arg(name = "max-blocked-streams", short = 'b', long, default_value = "10")]
-    pub max_blocked_streams: u16,
+    max_blocked_streams: u16,
 
     #[arg(short = 'c', long, number_of_values = 1)]
     /// The set of TLS cipher suites to enable.
     /// From: `TLS_AES_128_GCM_SHA256`, `TLS_AES_256_GCM_SHA384`, `TLS_CHACHA20_POLY1305_SHA256`.
-    pub ciphers: Vec<String>,
+    ciphers: Vec<String>,
 
     #[arg(name = "qns-test", long)]
     /// Enable special behavior for use with QUIC Network Simulator
-    pub qns_test: Option<String>,
-
-    #[arg(name = "use-old-http", short = 'o', long)]
-    /// Use http 0.9 instead of HTTP/3
-    pub use_old_http: bool,
+    qns_test: Option<String>,
 
     #[command(flatten)]
-    pub quic_parameters: QuicParameters,
+    quic_parameters: QuicParameters,
 }
 
-#[cfg(feature = "bench")]
+#[cfg(any(test, feature = "bench"))]
 impl Default for SharedArgs {
     fn default() -> Self {
         Self {
@@ -77,13 +79,19 @@ impl Default for SharedArgs {
             max_blocked_streams: 10,
             ciphers: vec![],
             qns_test: None,
-            use_old_http: false,
             quic_parameters: QuicParameters::default(),
         }
     }
 }
 
-#[derive(Debug, Parser)]
+impl SharedArgs {
+    #[must_use]
+    pub fn get_alpn(&self) -> &str {
+        &self.alpn
+    }
+}
+
+#[derive(Clone, Debug, Parser)]
 pub struct QuicParameters {
     #[arg(
         short = 'Q',
@@ -111,9 +119,21 @@ pub struct QuicParameters {
     /// The idle timeout for connections, in seconds.
     pub idle_timeout: u64,
 
-    #[arg(long = "cc", default_value = "newreno")]
-    /// The congestion controller to use.
-    pub congestion_control: CongestionControlAlgorithm,
+    #[arg(long = "init_rtt", default_value_t = DEFAULT_INITIAL_RTT.as_millis() as u64)]
+    /// The initial round-trip time, in milliseconds.
+    pub initial_rtt_ms: u64,
+
+    #[arg(long = "cc", default_value = "cubic",
+        value_parser = clap::builder::PossibleValuesParser::new(CongestionControl::VARIANTS)
+            .map(|s| s.parse::<CongestionControl>().unwrap()))]
+    /// The congestion control algorithm to use.
+    pub congestion_control: CongestionControl,
+
+    #[arg(long = "ss", default_value = "classic",
+        value_parser = clap::builder::PossibleValuesParser::new(SlowStart::VARIANTS)
+            .map(|s| s.parse::<SlowStart>().unwrap()))]
+    /// The slow start algorithm to use.
+    pub slow_start: SlowStart,
 
     #[arg(long = "no-pacing")]
     /// Whether to disable pacing.
@@ -122,6 +142,10 @@ pub struct QuicParameters {
     #[arg(long)]
     /// Whether to disable path MTU discovery.
     pub no_pmtud: bool,
+
+    #[arg(long)]
+    /// Whether to slice the SNI.
+    pub no_sni_slicing: bool,
 
     #[arg(name = "preferred-address-v4", long)]
     /// An IPv4 address for the server preferred address.
@@ -132,7 +156,7 @@ pub struct QuicParameters {
     pub preferred_address_v6: Option<String>,
 }
 
-#[cfg(feature = "bench")]
+#[cfg(any(test, feature = "bench"))]
 impl Default for QuicParameters {
     fn default() -> Self {
         Self {
@@ -140,17 +164,21 @@ impl Default for QuicParameters {
             max_streams_bidi: 16,
             max_streams_uni: 16,
             idle_timeout: 30,
-            congestion_control: CongestionControlAlgorithm::NewReno,
+            initial_rtt_ms: u64::try_from(DEFAULT_INITIAL_RTT.as_millis())
+                .expect("this value will always be less than u64::MAX"),
+            congestion_control: CongestionControl::Cubic,
+            slow_start: SlowStart::Classic,
             no_pacing: false,
             no_pmtud: false,
             preferred_address_v4: None,
             preferred_address_v6: None,
+            no_sni_slicing: false,
         }
     }
 }
 
 impl QuicParameters {
-    fn get_sock_addr<F>(opt: &Option<String>, v: &str, f: F) -> Option<SocketAddr>
+    fn get_sock_addr<F>(opt: Option<&String>, v: &str, f: F) -> Option<SocketAddr>
     where
         F: FnMut(&SocketAddr) -> bool,
     {
@@ -162,21 +190,28 @@ impl QuicParameters {
         assert_eq!(
             opt.is_some(),
             addr.is_some(),
-            "unable to resolve '{}' to an {} address",
-            opt.as_ref().unwrap(),
-            v,
+            "unable to resolve '{:?}' to an {v} address",
+            opt.as_ref()?,
         );
         addr
     }
 
     #[must_use]
     pub fn preferred_address_v4(&self) -> Option<SocketAddr> {
-        Self::get_sock_addr(&self.preferred_address_v4, "IPv4", SocketAddr::is_ipv4)
+        Self::get_sock_addr(
+            self.preferred_address_v4.as_ref(),
+            "IPv4",
+            SocketAddr::is_ipv4,
+        )
     }
 
     #[must_use]
     pub fn preferred_address_v6(&self) -> Option<SocketAddr> {
-        Self::get_sock_addr(&self.preferred_address_v6, "IPv6", SocketAddr::is_ipv6)
+        Self::get_sock_addr(
+            self.preferred_address_v6.as_ref(),
+            "IPv6",
+            SocketAddr::is_ipv6,
+        )
     }
 
     #[must_use]
@@ -204,14 +239,21 @@ impl QuicParameters {
 
     #[must_use]
     pub fn get(&self, alpn: &str) -> ConnectionParameters {
-        let params = ConnectionParameters::default()
+        let mut params = ConnectionParameters::default()
             .max_streams(StreamType::BiDi, self.max_streams_bidi)
             .max_streams(StreamType::UniDi, self.max_streams_uni)
             .idle_timeout(Duration::from_secs(self.idle_timeout))
-            .cc_algorithm(self.congestion_control)
+            .initial_rtt(Duration::from_millis(self.initial_rtt_ms))
+            .congestion_control(self.congestion_control)
+            .slow_start(self.slow_start)
             .pacing(!self.no_pacing)
-            .pmtud(!self.no_pmtud);
-
+            .pmtud(!self.no_pmtud)
+            .sni_slicing(!self.no_sni_slicing);
+        params = if let Some(pa) = self.preferred_address() {
+            params.preferred_address(pa)
+        } else {
+            params
+        };
         if let Some(&first) = self.quic_version.first() {
             let all = if self.quic_version[1..].contains(&first) {
                 &self.quic_version[1..]
@@ -222,10 +264,8 @@ impl QuicParameters {
         } else {
             let version = match alpn {
                 "h3" | "hq-interop" => Version::Version1,
+                #[cfg(feature = "draft-29")]
                 "h3-29" | "hq-29" => Version::Draft29,
-                "h3-30" | "hq-30" => Version::Draft30,
-                "h3-31" | "hq-31" => Version::Draft31,
-                "h3-32" | "hq-32" => Version::Draft32,
                 _ => Version::default(),
             };
             params.versions(version, Version::all())
@@ -239,16 +279,85 @@ fn from_str(s: &str) -> Result<Version, Error> {
     Version::try_from(v).map_err(|_| Error::Argument("unknown version"))
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
+    #[error("Error: {0}")]
     Argument(&'static str),
 }
 
-impl Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Error: {self:?}")?;
-        Ok(())
-    }
+/// Wrapper for [`Instant::now()`] to manage the `disallowed_methods` override.
+fn now() -> Instant {
+    #![expect(clippy::disallowed_methods, reason = "This program uses the time")]
+    Instant::now()
 }
 
-impl std::error::Error for Error {}
+#[cfg(not(target_os = "netbsd"))] // FIXME: Test fails on NetBSD.
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use std::{fs, path::PathBuf, str::FromStr as _, time::SystemTime};
+
+    use crate::{client, server};
+
+    struct TempDir {
+        path: PathBuf,
+    }
+
+    impl TempDir {
+        fn new() -> Self {
+            let dir = std::env::temp_dir().join(format!(
+                "neqo-bin-test-{}",
+                SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs()
+            ));
+            fs::create_dir_all(&dir).unwrap();
+            Self { path: dir }
+        }
+
+        fn path(&self) -> PathBuf {
+            self.path.clone()
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            if self.path.exists() {
+                fs::remove_dir_all(&self.path).unwrap();
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn write_qlog_file() {
+        nss::init_db(PathBuf::from_str("../test-fixture/db").unwrap()).unwrap();
+
+        let temp_dir = TempDir::new();
+
+        let mut client_args = client::Args::new(None, 1, 0, 1);
+        client_args.set_qlog_dir(temp_dir.path());
+        let mut server_args = server::Args::default();
+        server_args.set_qlog_dir(temp_dir.path());
+
+        let client = client::client(client_args);
+        let (server, _local_addrs) = server::run(server_args).unwrap();
+        tokio::select! {
+            _ = client => {}
+            res = server  => panic!("expect server not to terminate: {res:?}"),
+        };
+
+        // Verify that the directory contains two non-empty files
+        let entries: Vec<_> = fs::read_dir(temp_dir.path())
+            .unwrap()
+            .filter_map(Result::ok)
+            .collect();
+        assert_eq!(entries.len(), 2, "expect 2 files in the directory");
+
+        for entry in entries {
+            let metadata = entry.metadata().unwrap();
+            assert!(metadata.is_file(), "expect a file, found something else");
+            assert!(metadata.len() > 0, "expect file not be empty");
+        }
+    }
+}

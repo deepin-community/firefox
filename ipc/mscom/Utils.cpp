@@ -1,5 +1,3 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 #  include "mozilla/dom/ContentChild.h"
 #endif
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/mscom/COMWrappers.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/mscom/Utils.h"
@@ -144,9 +141,8 @@ long BuildRegGuidPath(REFGUID aGuid, const GuidType aGuidType, wchar_t* aBuf,
   // We exclude null terminators in these length calculations because we include
   // the stringified GUID's null terminator at the end. Since kClsid and kAppid
   // have identical lengths, we just choose one to compute this length.
-  constexpr size_t kSubkeyBaseLen = mozilla::ArrayLength(kSubkeyBase) - 1;
-  constexpr size_t kSubkeyLen =
-      kSubkeyBaseLen + mozilla::ArrayLength(kClsid) - 1;
+  constexpr size_t kSubkeyBaseLen = std::size(kSubkeyBase) - 1;
+  constexpr size_t kSubkeyLen = kSubkeyBaseLen + std::size(kClsid) - 1;
   // Guid length as formatted for the registry (including curlies and dashes),
   // but excluding null terminator.
   constexpr size_t kGuidLen = kGuidRegFormatCharLenInclNul - 1;
@@ -313,8 +309,7 @@ void DiagnosticNameForIID(REFIID aIid, nsACString& aOutString) {
 
 void GUIDToString(REFGUID aGuid,
                   wchar_t (&aOutBuf)[kGuidRegFormatCharLenInclNul]) {
-  DebugOnly<int> result =
-      ::StringFromGUID2(aGuid, aOutBuf, ArrayLength(aOutBuf));
+  DebugOnly<int> result = ::StringFromGUID2(aGuid, aOutBuf, std::size(aOutBuf));
   MOZ_ASSERT(result);
 }
 

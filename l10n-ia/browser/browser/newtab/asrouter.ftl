@@ -16,7 +16,7 @@ cfr-doorhanger-extension-cancel-button = Non ora
     .accesskey = N
 cfr-doorhanger-extension-ok-button = Adder ora
     .accesskey = A
-cfr-doorhanger-extension-manage-settings-button = Gerer le configurationes de recommendation
+cfr-doorhanger-extension-manage-settings-button = Gerer le parametros de recommendation
     .accesskey = G
 cfr-doorhanger-extension-never-show-recommendation = Non monstrar me iste recommendation
     .accesskey = N
@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } usatores
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Synchronisa tu marcapaginas ubique.
 cfr-doorhanger-bookmark-fxa-body = Grande discoperta! Ora non resta sin iste marcapagina sur tu apparatos mobile. Comencia con un { -fxaccount-brand-name }.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Synchronisar marcapaginas ora…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Button Clauder
     .title = Clauder
+fxa-adoption-addresses-backup-title = Face un copia de securitate de tu adresses salvate
+fxa-adoption-addresses-backup-subtitle = Protege tu adresses salvate synchronisante los con tu apparatos con cryptation.
+fxa-adoption-credit-cards-backup-title = Face un copia de securitate de tu methodos de pagamento
+fxa-adoption-credit-cards-backup-subtitle = Protege tu methodos de pagamento synchronisante los con tu apparatos con cryptation.
+fxa-adoption-bookmarks-treatment-backup-title = Que nos salveguarda tu marcapaginas
+fxa-adoption-bookmarks-treatment-backup-subtitle = Protege tu marcapaginas, los synchronisante in tu apparatos con cryptation.
+fxa-adoption-primary-button-label = Inscriber se
 
 ## Protections panel
 
@@ -226,6 +233,20 @@ fox-doodle-pin-secondary = Non ora
 set-default-pdf-handler-headline = <strong>Tu files pdf ora se aperi in { -brand-short-name }.</strong> Redige o firma formularios directemente in tu navigator. Pro configurar lo, cerca “PDF” in parametros.
 set-default-pdf-handler-primary = Comprendite
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Signa sur le linea de punctos, o ubicunque!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Designa, digita o incarga tu signatura, pois pone lo exactemente ubi tu vole. Salva tu signaturas preferite pro le proxime vice.
+annotations-make-default-pdf-handler-title = Facer de { -brand-short-name } tu editor PDF predefinite?
+annotations-make-default-pdf-handler-subtitle = Tu habera accesso a nostre utensiles cata vice que tu aperi un file PDF.
+annotations-make-default-pdf-primary-cta-label = Render predefinite
+annotations-make-default-pdf-next-label = Sequente
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Nove apparato in tu futuro?
@@ -246,6 +267,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Crea un conto
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nove apparato in tu futuro?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Seque alcun simple passos pro portar con te marcapaginas, chronologia e contrasignos quando tu initia usar un nove apparato.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Como facer un copia de securitate de mi datos
+device-migration-fxa-spotlight-sync-header = Naviga sin perder un pulsation
+device-migration-fxa-spotlight-sync-body = Synchronisa tote tu info importante con cryptation, como LE marcapaginas e LE contrasignos. Tu poter acceder a omne cosa ubique tu usa { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Comenciar
 
 ## Set as Default PDF Reader Infobar
 
@@ -272,6 +296,20 @@ launch-on-login-infobar-final-message = <strong>Aperir { -brand-short-name } qua
 launch-on-login-infobar-final-reject-button = No, gratias
     .accesskey = N
 
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-title = Le proxime vice que tu computator es reinitialisate, aperir { -brand-short-name } ?
+launch-on-login-spotlight-startup-checkbox = Lancea { -brand-short-name } al initialisation
+launch-on-login-spotlight-pin-taskbar-checkbox = Clavar al barra de activitates
+# This checkbox label intentionally matches “startup-restore-windows-and-tabs”
+# in the Settings (preferences.ftl). Localizers can reuse the existing
+# translation suggested by translation memory.
+launch-on-login-spotlight-restore-checkbox = Aperir le previe fenestras e schedas
+launch-on-login-spotlight-primary-button = Salvar e clauder { -brand-short-name }
+
 ## Tail Fox Set Default Spotlight
 
 # This title is displayed together with the picture of a running fox with a long tail.
@@ -282,3 +320,177 @@ tail-fox-spotlight-title = Libera te del spias que tracia tu datos
 tail-fox-spotlight-subtitle = Dice adeo al enoiose traciatores publicitari e opta pro un experientia internet plus rapide e plus secur.
 tail-fox-spotlight-primary-button = Aperir mi ligamines con { -brand-short-name }
 tail-fox-spotlight-secondary-button = Non ora
+
+## Welcome Back Spotlight and Import
+
+welcome-back-spotlight-title = Saltar retro in confidentialitate integrate
+welcome-back-spotlight-subtitle = Ben tornate al sol navigator importante supportate per un organisation non-lucrative. Nos prende mesuras additional pro proteger tu datos ubicunque tu ambula.
+welcome-back-embedded-import-title = Importa tu datos e senti te como a casa in { -brand-short-name }
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Le versiones plus vetere de { -brand-short-name } poterea haber problemas desde le 14 de januario 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Actualisa pro continuar a utilisar { -brand-short-name } post le 14 de martio 2025.</strong>
+root-certificate-succession-infobar-link = Perque debe io actualisar?
+root-certificate-succession-infobar-primary-button =
+    .label = Actualisar ora
+    .accesskey = A
+root-certificate-succession-infobar-secondary-button =
+    .label = Plus tarde
+    .accesskey = t
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Tu perdeva un importante actualisation de { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Partes del browser cessara tosto de functionar si tu non lo actualisa. Ora es un bon tempore pro obtener nostre ultime protectiones e functiones.
+root-certificate-windows-background-notification-learn-more-button = Pro saper plus
+root-certificate-windows-background-notification-update-button = Actualisar { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Clauder
+    .aria-label = Clauder
+fxa-menu-message-sign-up-button = Inscriber se
+fxa-menu-message-sign-in-button = Aperir session
+fxa-menu-message-sync-button = Comenciar a synchronisar
+fxa-menu-message-sync-devices-primary-text = Synchronisa tote tu apparatos
+fxa-menu-message-sync-devices-secondary-text = Instantaneemente obtene tu info, como marcapaginas e contrasignos, ubique tu usa { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = Accede instantaneemente a tu marcapaginas, contrasignos, e plus – ubicunque tu ha aperite session sur { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Synchronisa tote tu apparatos
+fxa-menu-message-backup-data-primary-text = Preserva le datos de tu navigator
+fxa-menu-message-backup-data-secondary-text = Automaticamente protege marcapaginas, contrasignos, e altere info sur tote tu apparatos.
+fxa-menu-message-backup-data-collapsed-text = Preserva le datos de tu navigator
+fxa-menu-message-backup-sync-primary-text = Mantene tu datos secur e synchronisate
+fxa-menu-message-backup-sync-secondary-text = Synchronisar preserva le majoritate de tu datos assi que tu pote acceder los ubique tu usa { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Synchronisa e preserva tu datos
+fxa-menu-message-mobile-primary-text = Invia schedas a tu telephono
+fxa-menu-message-mobile-secondary-text = Instantaneemente  reprende de ubi tu ha lassate quando tu synchronisa tu schedas con un apparato mobile.
+fxa-menu-message-mobile-collapsed-text = Synchronisa con tu telephono
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bentornate
+multi-cta-fox-doodle-set-default-checkbox = Facer de { -brand-short-name } mi predefinite
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fixar { -brand-short-name } a menu Initiar
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Retener { -brand-short-name } in Dock
+       *[other] Fixar { -brand-short-name } a barra de apps
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Comenciar a navigar
+multi-cta-fox-doodle-main-browser-primary-button-label = Facer de { -brand-short-name } mi navigator principal
+multi-cta-fox-doodle-quick-reminder-subtitle = Memora que tu pote tener tu navigator preferite, e attente al confidentialitate, justo a portata de clic.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Tene tu navigator preferite, e attente al confidentialitate, justo a portata de clic. Pone { -brand-short-name } como tu navigator predefinite pro aperir ligamines e tene lo in tu Dock.
+       *[other] Tene tu navigator preferite, e attente al confidentialitate, justo a portata de clic. Pone { -brand-short-name } como tu navigator predefinite pro aperir ligamines e fixa lo a tu barra de apps.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Tene a portata de clic tu navigator preferite, attente al confidentialitate. Pone { -brand-short-name } como navigator predefinite pro le apertura del ligamines, fixa lo al barra del apps.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Tosto promovente ab Windows 10?
+windows-10-eos-sync-spotlight-subtitle = Preserva tu contrasignos e marcapaginas assi que tu es preste a facer le salto a qualcunque apparato.
+windows-10-eos-sync-spotlight-primary-label = Preserva tu { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Va tu promover a Windows 11? Non perde marcapaginas e contrasignos.
+windows-10-eos-sync-toast-subtitle = Preserva tu datos assi que { -brand-short-name } es preste a continuar quandocunque, sur iste PC o sur le successive.
+windows-10-eos-sync-toast-primary-label = Comenciar
+windows-10-eos-sync-toast-secondary-label = Rememora me plus tarde
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } non es pre-cargate como altere navigatores del gigantes technologic. Isto es le proposito.
+windows-10-eos-challenger-sync-callout-subtitle = Quando tu face un copia de securitate de tu marcapaginas e contrasignos de { -brand-product-name }, il es plus facile apportar le navigator de tu preferentia a tu proxime apparato.
+windows-10-eos-challenger-pin-callout-subtitle = Fixa { -brand-shorter-name } a tu barra de cargas a fin que le navigator de tu preferentia es sempre presente quando tu ha besonio de illo.
+windows-10-eos-challenger-sync-primary-button = Facer un copia de securitate de { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = Fixar { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } bloca minatores de cryptomonetas, traciatores de medios social, e dactylogrammatores.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Le traciatores non pote identificar tu apparato o sequer te a transverso le web, perque nos non lo permitte.
+windows-10-eos-sync-callout-privacy-screen-2-title = Protege tu contrasignos e marcapaginas pro tu proxime apparato.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Facer un copia de securitate de { -brand-shorter-name } permitte apportar facilemente tu datos e parametros de confidentialitate con te.
+windows-10-eos-sync-callout-privacy-info-button = Vide lo que es blocate
+windows-10-eos-callout-addons-title = Essaya le additivos: simple actualisationes, grande impactos
+windows-10-eos-callout-addons-subtitle = Iste extensiones ha essite seligite pro adjutar te a restar productive, protegite e libere de distractiones.
+windows-10-eos-callout-addons-primary-button = Vide nostre selection
+windows-10-eos-sync-callout-addons-title = Non perde tu additivos quando tu actualisa desde Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = Synchronisa ora, a fin que tu additivos de { -brand-product-name } restara sempre disponibile, mesmo post un cambiamento de apparato.
+windows-10-eos-sync-callout-next-button = Sequente
+windows-10-eos-sync-callout-get-started-button = Comenciar
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Le schedas vertical e le gruppos de schedas ha arrivate!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Per petition popular, { -brand-product-name } ha justo ora lanceate nove functiones pro mantener tu navigation fluide e concentrate.
+windows-10-eos-feature-toast-whats-new-button = Vide le novas
+windows-10-eos-feature-toast-dismiss-button = Clauder
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-title = <strong>Microsoft non plus supporta Windows 10.</strong> Salveguarda tu info pro obtener { -brand-product-name } preste pro Windows 11.
+windows-10-eos-global-infobar-primary-button = Accender le salveguarda
+    .accesskey = A
+windows-10-eos-global-infobar-learn-more-link = Pro saper plus
+    .accessKey = p
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Le protection stricte contra le traciamento pote impedir a sitos de functionar.</strong> Pro resolver problemas commun, disbloca elementos essential que poterea continer traciatores.
+etp-strict-exceptions-infobar-learn-more = Pro saper plus
+etp-strict-exceptions-infobar-button = Applicar correctiones
+    .accesskey = A
+etp-strict-exceptions-infobar-not-now = Non ora
+    .accesskey = N
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } non es tu navigator predefinite
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } non es tu navigator primari
+set-default-menu-message-row-layout-title = Rende primari tu navigator { -brand-short-name }
+set-default-menu-message-row-layout-title-variant = Rende predefinite tu navigator { -brand-short-name }
+set-default-menu-message-row-layout-subtitle = Obtene velocitate, securitate e confidentialitate cata vice que tu naviga.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Tene { -brand-short-name } a portata de manos: rende lo tu predefinite e tene lo in tu bassino.
+       *[other] Tene { -brand-short-name } a portata de manos: rende lo tu predefinite e tene lo in tu barra del cargas.
+    }
+set-default-menu-message-split-layout-title =
+    { PLATFORM() ->
+        [macos] Tene { -brand-short-name } a portata de tu manos
+       *[other] Aperir tote le ligamines con { -brand-short-name }
+    }
+set-default-menu-message-split-layout-subtitle =
+    { PLATFORM() ->
+        [macos] Rende lo tu predefinite e tene lo in tu bassino.
+       *[other] Obtene navigation plus veloce e protection automatic del confidentialitate.
+    }
+set-default-menu-message-primary-button = Render predefinite
+set-default-menu-message-primary-button-variant = Configura lo como navigator primari
+set-default-menu-message-primary-button-short-variant = Rende  { -brand-short-name } predefinite
+
+## Firefox Relay 50 Masks Announcement
+
+# "on us" in this context means "for free" or "at no cost"
+relay-50-masks-announcement-title = 50 maskas e-mail, con nos
+relay-50-masks-announcement-subtitle = Ora tu pote reciper gratis 50 mascas (in vice que 5). Usa un pro cata conto pro mantenter private tu e-mail real.
+relay-50-masks-announcement-primary-button = Ir a { -relay-brand-name }
+    .accesskey = I
+relay-50-masks-announcement-secondary-button = Clauder
+    .accesskey = C
+
+## Nova Early Access Infobar
+
+nova-early-access-infobar-title = <strong>{ -brand-product-name } sta a obtener un nove apparentia.</strong> Tu previsualisa un version anticipate,  impolite, ante le lanceamento futur de iste anno,
+nova-early-access-share-feedback-link = Condivide commentos
+    .accesskey = C
+nova-early-access-infobar-primary-button = Comprendite
+    .accesskey = C

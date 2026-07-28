@@ -25,6 +25,8 @@ import mozilla.components.support.utils.SafeIntent
  * contextual identity to use for the session's cookie store.
  * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Work_with_contextual_identities
  * @property restored Indicates if this session was restored from a hydrated state.
+ * @property originalInput If the user entered a URL, this is the original user
+ * input before any fixups were applied to it.
  */
 interface SessionState {
     val id: String
@@ -38,6 +40,7 @@ interface SessionState {
     val contextId: String?
     val source: Source
     val restored: Boolean
+    val originalInput: String?
 
     /**
      * Copy the class and override some parameters.
@@ -159,7 +162,6 @@ interface SessionState {
 /**
  * Describes a category of an external package.
  */
-@Suppress("MagicNumber")
 enum class PackageCategory(val id: Int) {
     UNKNOWN(-1),
     GAME(0),

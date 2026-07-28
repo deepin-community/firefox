@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env mozilla/browser-window */
-
 document.addEventListener(
   "DOMContentLoaded",
   () => {
@@ -21,14 +19,16 @@ document.addEventListener(
             .promptAndGoToLine();
           break;
         case "context-viewsource-wrapLongLines":
-          gViewSourceUtils
-            .getPageActor(gContextMenu.browser)
-            .sendAsyncMessage("ViewSource:ToggleWrapping");
+          Services.prefs.setBoolPref(
+            "view_source.wrap_long_lines",
+            !Services.prefs.getBoolPref("view_source.wrap_long_lines", false)
+          );
           break;
         case "context-viewsource-highlightSyntax":
-          gViewSourceUtils
-            .getPageActor(gContextMenu.browser)
-            .sendAsyncMessage("ViewSource:ToggleSyntaxHighlighting");
+          Services.prefs.setBoolPref(
+            "view_source.syntax_highlight",
+            !Services.prefs.getBoolPref("view_source.syntax_highlight", false)
+          );
           break;
         case "spell-add-to-dictionary":
           InlineSpellCheckerUI.addToDictionary();
@@ -46,17 +46,20 @@ document.addEventListener(
         case "context-openlink":
           gContextMenu.openLink();
           break;
+        case "context-openlinkinsplitview":
+          gContextMenu.openLinkInSplitView(event);
+          break;
         case "context-openlinkprivate":
           gContextMenu.openLinkInPrivateWindow();
+          break;
+        case "context-openlinksmartwindow":
+          gContextMenu.openLinkInSmartWindow();
           break;
         case "context-bookmarklink":
           gContextMenu.bookmarkLink();
           break;
         case "context-savelink":
           gContextMenu.saveLink();
-          break;
-        case "context-savelinktopocket":
-          Pocket.savePage(gContextMenu.browser, gContextMenu.linkURL);
           break;
         case "context-copyemail":
           gContextMenu.copyEmail();
@@ -66,6 +69,9 @@ document.addEventListener(
           break;
         case "context-copylink":
           gContextMenu.copyLink();
+          break;
+        case "context-previewlink":
+          gContextMenu.previewLink();
           break;
         case "context-stripOnShareLink":
           gContextMenu.copyStrippedLink();
@@ -131,7 +137,11 @@ document.addEventListener(
           gContextMenu.saveMedia();
           break;
         case "context-copyimage-contents":
-          goDoCommand("cmd_copyImage");
+          if (gContextMenu.onCanvas) {
+            gContextMenu.copyCanvasImage();
+          } else {
+            goDoCommand("cmd_copyImage");
+          }
           break;
         case "context-copyaudiourl":
         case "context-copyimage":
@@ -161,13 +171,6 @@ document.addEventListener(
         case "context-savepage":
           gContextMenu.savePageAs();
           break;
-        case "context-pocket":
-          Pocket.savePage(
-            gContextMenu.browser,
-            gContextMenu.browser.currentURI.spec,
-            gContextMenu.browser.contentTitle
-          );
-          break;
         case "fill-login-generated-password":
           gContextMenu.useGeneratedPassword();
           break;
@@ -177,62 +180,33 @@ document.addEventListener(
         case "manage-saved-logins":
           gContextMenu.openPasswordManager();
           break;
-        case "context-pdfjs-highlight-selection":
-          gContextMenu.pdfJSCmd("highlightSelection");
-          break;
         case "context-reveal-password":
           gContextMenu.toggleRevealPassword();
           break;
         case "context-print-selection":
           gContextMenu.printSelection();
           break;
-        case "context-pdfjs-undo":
-          gContextMenu.pdfJSCmd("undo");
-          break;
-        case "context-pdfjs-redo":
-          gContextMenu.pdfJSCmd("redo");
-          break;
-        case "context-pdfjs-cut":
-          gContextMenu.pdfJSCmd("cut");
-          break;
-        case "context-pdfjs-copy":
-          gContextMenu.pdfJSCmd("copy");
-          break;
-        case "context-pdfjs-paste":
-          gContextMenu.pdfJSCmd("paste");
-          break;
-        case "context-pdfjs-delete":
-          gContextMenu.pdfJSCmd("delete");
-          break;
-        case "context-pdfjs-selectall":
-          gContextMenu.pdfJSCmd("selectAll");
-          break;
         case "context-take-screenshot":
           gContextMenu.takeScreenshot();
           break;
-        case "context-keywordfield":
-          AddKeywordForSearchField();
+        case "context-add-engine":
+          if (!gContextMenu) {
+            throw new Error("Context menu doesn't seem to be open.");
+          }
+          gContextMenu.addSearchFieldAsEngine().catch(console.error);
           break;
-        case "context-searchselect": {
-          let { searchTerms, usePrivate, principal, csp } = event.target;
-          BrowserSearch.loadSearchFromContext(
-            searchTerms,
-            usePrivate,
-            principal,
-            csp,
-            event
-          );
+        case "context-searchselect":
+        case "context-searchselect-private":
+          gContextMenu.loadSearch({ event });
           break;
-        }
-        case "context-searchselect-private": {
-          let { searchTerms, principal, csp } = event.target;
-          BrowserSearch.loadSearchFromContext(
-            searchTerms,
-            true,
-            principal,
-            csp,
-            event
+        case "context-visual-search": {
+          let { SearchUtils } = ChromeUtils.importESModule(
+            "moz-src:///toolkit/components/search/SearchUtils.sys.mjs"
           );
+          gContextMenu.loadSearch({
+            event,
+            searchUrlType: SearchUtils.URL_TYPE.VISUAL_SEARCH,
+          });
           break;
         }
         case "context-translate-selection":
@@ -258,9 +232,6 @@ document.addEventListener(
           break;
         case "context-printframe":
           gContextMenu.printFrame();
-          break;
-        case "context-take-frame-screenshot":
-          gContextMenu.takeScreenshot();
           break;
         case "context-viewframesource":
           gContextMenu.viewFrameSource();
@@ -293,22 +264,65 @@ document.addEventListener(
         case "context-media-eme-learnmore":
           gContextMenu.drmLearnMore(event);
           break;
+        case "context-copy-link-to-highlight":
+          gContextMenu.copyLinkToHighlight();
+          break;
+        case "context-copy-clean-link-to-highlight":
+          gContextMenu.copyLinkToHighlight(/* stripSiteTracking */ true);
+          break;
+        case "context-remove-highlight":
+          gContextMenu.removeAllTextFragments();
+          break;
+      }
+      if (event.target.id.startsWith("context-pdfjs-")) {
+        gContextMenu.pdfjsContextMenu.cmd(event.target.id);
       }
     });
     contextMenuPopup.addEventListener("popupshowing", event => {
-      if (event.target != contextMenuPopup) {
-        return;
-      }
+      switch (event.target.id) {
+        case "contentAreaContextMenu": {
+          // eslint-disable-next-line no-global-assign
+          gContextMenu = new nsContextMenu(contextMenuPopup, event.shiftKey);
+          if (!gContextMenu.shouldDisplay) {
+            event.preventDefault();
+            return;
+          }
 
-      // eslint-disable-next-line no-global-assign
-      gContextMenu = new nsContextMenu(contextMenuPopup, event.shiftKey);
-      if (!gContextMenu.shouldDisplay) {
-        event.preventDefault();
-        return;
-      }
+          if (!IS_WEBEXT_PANELS) {
+            updateEditUIVisibility();
+          }
 
-      if (!IS_WEBEXT_PANELS) {
-        updateEditUIVisibility();
+          // attempts to generate the text fragment directive of selected text
+          // Note: This is kicking off an async operation that might update
+          // the context menu while it's open (enables an entry).
+          if (gContextMenu.isContentSelected || gContextMenu.hasTextFragments) {
+            gContextMenu.getTextDirective();
+          }
+          break;
+        }
+        case "context-openlinkinusercontext-popup":
+          gContextMenu.createContainerMenu(event);
+          break;
+        case "context-sendlinktodevice-popup":
+          gSync.populateSendTabToDevicesMenu(
+            event.target,
+            gContextMenu.linkURI,
+            gContextMenu.linkTextStr,
+            {
+              contextMenuType: "link",
+            }
+          );
+          break;
+        case "context-sendpagetodevice-popup":
+          gSync.populateSendTabToDevicesMenu(
+            event.target,
+            gBrowser.currentURI,
+            gBrowser.contentTitle,
+            {
+              contextMenuType: "page",
+            }
+          );
+          break;
       }
     });
     contextMenuPopup.addEventListener("popuphiding", event => {
@@ -322,7 +336,17 @@ document.addEventListener(
       if (!IS_WEBEXT_PANELS) {
         updateEditUIVisibility();
       }
+      // Reset Send Tab exposure tracking when context menu closes
+      gSync._resetSendTabExposureTracking();
     });
+
+    // The command events bubble up to the popup element.
+    let userContextPopup = document.getElementById(
+      "context-openlinkinusercontext-popup"
+    );
+    userContextPopup.addEventListener("command", event =>
+      gContextMenu.openLinkInTab(event)
+    );
   },
   { once: true }
 );

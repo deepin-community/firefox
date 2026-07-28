@@ -2,8 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-///! Profiler Rust API
-
+//! Profiler Rust API
 #[macro_use]
 extern crate lazy_static;
 
@@ -17,7 +16,6 @@ mod time;
 
 pub use gecko_bindings::profiling_categories::*;
 pub use json_writer::*;
-#[cfg(feature = "enabled")]
 pub use label::*;
 pub use marker::options::*;
 pub use marker::schema::MarkerSchema;

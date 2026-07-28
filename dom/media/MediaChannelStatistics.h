@@ -1,4 +1,3 @@
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -57,13 +56,6 @@ class MediaChannelStatistics {
       return;
     }
     mAccumulatedBytes += aBytes;
-  }
-  double GetRateAtLastStop(bool* aReliable) const {
-    double seconds = mAccumulatedTime.ToSeconds();
-    *aReliable =
-        (seconds >= 1.0) || (mAccumulatedBytes >= RELIABLE_DATA_THRESHOLD);
-    if (seconds <= 0.0) return 0.0;
-    return static_cast<double>(mAccumulatedBytes) / seconds;
   }
   double GetRate(bool* aReliable) const {
     TimeDuration time = mAccumulatedTime;

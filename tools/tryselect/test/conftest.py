@@ -3,8 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
+import mach_initialize
 import pytest
 import yaml
 from moztest.resolve import TestResolver
@@ -12,7 +13,7 @@ from responses import RequestsMock
 from taskgraph.graph import Graph
 from taskgraph.task import Task
 from taskgraph.taskgraph import TaskGraph
-from tryselect import push
+from tryselect import push, tasks
 
 
 @pytest.fixture
@@ -48,6 +49,18 @@ def patch_resolver(monkeypatch):
     return inner
 
 
+@pytest.fixture()
+def mock_push_to_lando_try():
+    return patch(
+        "tryselect.push.push_to_lando_try",
+        return_value={
+            "lando_instance": "lando-test",
+            "lando_job_id": 42,
+            "duration": 1.5,
+        },
+    )
+
+
 @pytest.fixture(autouse=True)
 def patch_vcs(monkeypatch):
     attrs = {
@@ -60,10 +73,7 @@ def patch_vcs(monkeypatch):
 
 @pytest.fixture(scope="session")
 def run_mach():
-    import mach_initialize
-    from tryselect.tasks import build
-
-    mach = mach_initialize.initialize(build.topsrcdir)
+    mach = mach_initialize.initialize(tasks.build.topsrcdir, ["try"])
 
     def inner(args):
         return mach.run(args)
@@ -92,7 +102,7 @@ def pytest_generate_tests(metafunc):
         preset_path = os.path.join(
             push.build.topsrcdir, "tools", "tryselect", "try_presets.yml"
         )
-        with open(preset_path, "r") as fh:
+        with open(preset_path) as fh:
             presets = list(yaml.safe_load(fh).items())
 
         ids = [p[0] for p in presets]

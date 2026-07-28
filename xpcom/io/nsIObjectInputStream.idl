@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -22,9 +21,9 @@ interface nsIObjectInputStream : nsIBinaryInputStream
      *
      * @see nsIObjectOutputStream
      */
-    nsISupports readObject(in boolean aIsStrongRef);
+    [must_use] nsISupports readObject(in boolean aIsStrongRef);
 
-    [notxpcom] nsresult readID(out nsID aID);
+    [notxpcom, must_use] nsresult readID(out nsID aID);
 
     /**
      * Optimized deserialization support -- see nsIStreamBufferAccess.idl.

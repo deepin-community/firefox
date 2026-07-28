@@ -1,17 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef xpcselfhostedshmem_h___
-#define xpcselfhostedshmem_h___
+#ifndef xpcselfhostedshmem_h_
+#define xpcselfhostedshmem_h_
 
-#include "base/shared_memory.h"
-#include "mozilla/UniquePtr.h"
-#include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/Span.h"
 #include "mozilla/StaticPtr.h"
+#include "mozilla/ipc/SharedMemoryHandle.h"
+#include "mozilla/ipc/SharedMemoryMapping.h"
 #include "nsIMemoryReporter.h"
 #include "nsIObserver.h"
 #include "nsIThread.h"
@@ -35,6 +32,12 @@ class SelfHostedShmem final : public nsIMemoryReporter {
 
   static SelfHostedShmem& GetSingleton();
 
+  static void SetSelfHostedUseSharedMemory(bool aSelfHostedUseSharedMemory) {
+    sSelfHostedUseSharedMemory = aSelfHostedUseSharedMemory;
+  }
+
+  static bool SelfHostedUseSharedMemory() { return sSelfHostedUseSharedMemory; }
+
   // Initialize this singleton with the content of the Self-hosted Stencil XDR.
   // This will be used to initialize the shared memory which would hold a copy.
   //
@@ -47,14 +50,14 @@ class SelfHostedShmem final : public nsIMemoryReporter {
   //
   // This function is not thread-safe and should be call at most once and from
   // the main thread.
-  [[nodiscard]] bool InitFromChild(base::SharedMemoryHandle aHandle,
-                                   size_t aLen);
+  [[nodiscard]] bool InitFromChild(
+      mozilla::ipc::ReadOnlySharedMemoryHandle aHandle);
 
   // Return a span over the read-only XDR content of the self-hosted stencil.
   ContentType Content() const;
 
   // Return the file handle which is under which the content is mapped.
-  const mozilla::UniqueFileHandle& Handle() const;
+  const mozilla::ipc::ReadOnlySharedMemoryHandle& Handle() const;
 
   // Register this class to the memory reporter service.
   void InitMemoryReporter();
@@ -71,19 +74,15 @@ class SelfHostedShmem final : public nsIMemoryReporter {
   SelfHostedShmem() = default;
   ~SelfHostedShmem() = default;
 
+  // Mirrored value of javascript.options.self_hosted.use_shared_memory.
+  static bool sSelfHostedUseSharedMemory;
   static mozilla::StaticRefPtr<SelfHostedShmem> sSelfHostedXdr;
 
-  // read-only file Handle used to transfer from the parent process to content
-  // processes.
-  mozilla::UniqueFileHandle mHandle;
-
-  // Shared memory used by JS runtime initialization.
-  mozilla::UniquePtr<base::SharedMemory> mMem;
-
-  // Length of the content within the shared memory.
-  size_t mLen = 0;
+  // Read-only shared memory used by JS runtime initialization.
+  mozilla::ipc::ReadOnlySharedMemoryHandle mHandle;
+  mozilla::ipc::ReadOnlySharedMemoryMapping mMem;
 };
 
 }  // namespace xpc
 
-#endif  // !xpcselfhostedshmem_h___
+#endif  // !xpcselfhostedshmem_h_

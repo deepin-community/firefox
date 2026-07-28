@@ -15,18 +15,23 @@ appmenuitem-banner-update-unsupported =
     .label = Налично е издание – несъвместима система
 appmenuitem-banner-update-restart =
     .label = Налично е издание – рестартирайте
+appmenu-nova-update-link = Рестартирайте за обновяване
 appmenuitem-new-tab =
     .label = Нов раздел
 appmenuitem-new-window =
     .label = Нов прозорец
 appmenuitem-new-private-window =
-    .label = Поверителен прозорец
+    .label = Нов поверителен прозорец
 appmenuitem-history =
     .label = История
 appmenuitem-downloads =
     .label = Изтегляния
 appmenuitem-passwords =
     .label = Пароли
+appmenuitem-extensions-and-themes =
+    .label = Разширения и теми
+appmenuitem-extensions =
+    .label = Разширения
 appmenuitem-addons-and-themes =
     .label = Добавки и теми
 appmenuitem-print =
@@ -94,7 +99,7 @@ appmenu-remote-tabs-connectdevice =
     .label = Добавяне на устройство
 appmenu-remote-tabs-welcome = Вижте списък с разделите от другите ваши устройства.
 appmenu-remote-tabs-unverified = Профилът ви трябва да бъде потвърден.
-appmenuitem-fxa-toolbar-sync-now2 = Синхронизиране
+appmenuitem-fxa-toolbar-sync-now2 = Синхронизиране сега
 appmenuitem-fxa-sign-in = Вписване в { -brand-product-name }
 appmenuitem-fxa-manage-account = Управление на профил
 appmenu-fxa-header2 = { -fxaccount-brand-name }
@@ -108,8 +113,11 @@ appmenu-fxa-sync-and-save-data2 = Синхронизиране и запазва
 appmenu-fxa-signed-in-label = Вход
 appmenu-fxa-setup-sync =
     .label = Включване синхронизиране
+appmenu-fxa-setup-sync-new = Включване
 appmenuitem-save-page =
     .label = Запазване като…
+appmenuitem-fxa-sync-off-title = Синхронизирането е изключено
+appmenuitem-fxa-sync-off-description = Защитете и имайте достъп до отметки, пароли и други навсякъде.
 
 ## What's New panel in App menu.
 
@@ -163,6 +171,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Отваряне на профилатора
+    .tooltiptext = Отваряне на профилатора
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +200,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Предварителни настройки за изследване на дефекти във видео и аудио във { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Медия
+profiler-popup-presets-ml-description = Предварителни настройки за изследване на дефекти в машинното обучение в { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Машинно обучение
 profiler-popup-presets-networking-description = Предварителни настройки за изследване на дефекти при работа с мрежата във { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Работа в мрежа
@@ -199,6 +213,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Предварителни настройки за отстраняване на грешки в { -brand-shorter-name }. Имат голямо и негативно въздействие на системата, не се използват за работа по производителността, а за фокусиране върху разбиране на поведението на браузъра.
 profiler-popup-presets-debug-label =
     .label = Дебъг
+profiler-popup-presets-web-compat-description = Препоръчителна настройка за отстраняване на проблеми със съвместимостта на уебсайтове, а не за проследяване на производителността.
+profiler-popup-presets-web-compat-label =
+    .label = Web Compat
 profiler-popup-presets-custom-label =
     .label = Потребителски
 
@@ -263,12 +280,12 @@ appmenu-help-not-deceptive =
 ## More Tools
 
 appmenu-customizetoolbar =
-    .label = Персонализиране на лентата…
+    .label = Приспособяване на лентата…
 appmenu-developer-tools-subheader = Инструменти за четеца
 appmenu-developer-tools-extensions =
     .label = Разширения за разработчици
 appmenuitem-report-broken-site =
-    .label = Съобщаване за неработеща страница
+    .label = Доклад за повредена страница
 
 ## Panel for privacy and security products
 
@@ -276,6 +293,31 @@ appmenuitem-sign-in-account = Влезте в профила си
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Получавайте сигнали за изтичане на данни
 appmenuitem-relay-title = { -relay-brand-short-name }
-appmenuitem-relay-description = Скрива истинския телефонен номер и адрес на ел. поща
+appmenuitem-relay-description = Скрийте истинските си електронна поща и телефонен номер
+appmenuitem-services-relay-description = Стартираен на таблото за маскиране на електронните адреси
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Вземете защита за цялото устройство
 appmenuitem-vpn-description = Защита на действията ви онлайн
+appmenu-services-header = Моите услуги
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Опитайте други защитни инструменти от Mozilla:
+appmenu-other-protection-header = Опитайте други инструменти за защита от { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Други профили
+appmenu-manage-profiles =
+    .label = Управление на профили
+appmenu-copy-profile =
+    .label = Копиране на този профил
+appmenu-create-profile =
+    .label = Нов профил
+appmenu-edit-profile =
+    .aria-label = Промяна на профила
+appmenu-profiles-2 =
+    .label = Профили
+appmenu-profiles-header = Профили
+appmenu-all-profiles =
+    .label = Всички профили

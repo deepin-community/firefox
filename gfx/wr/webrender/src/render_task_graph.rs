@@ -9,24 +9,29 @@
 
 use api::units::*;
 use api::ImageFormat;
-use crate::gpu_cache::{GpuCache, GpuCacheAddress};
+use crate::gpu_types::ImageSource;
 use crate::internal_types::{TextureSource, CacheTextureId, FastHashMap, FastHashSet, FrameId};
-use crate::render_task::{StaticRenderTaskSurface, RenderTaskLocation, RenderTask};
+use crate::internal_types::size_of_frame_vec;
+use crate::render_task::{StaticRenderTaskSurface, RenderTaskLocation, RenderTask, SubTask};
 use crate::render_target::RenderTargetKind;
 use crate::render_task::{RenderTaskData, RenderTaskKind};
+use crate::renderer::GpuBufferAddress;
+use crate::renderer::GpuBufferBuilder;
 use crate::resource_cache::ResourceCache;
 use crate::texture_pack::GuillotineAllocator;
 use crate::prim_store::DeferredResolve;
 use crate::image_source::{resolve_image, resolve_cached_render_task};
-use crate::util::VecHelper;
 use smallvec::SmallVec;
-use std::mem;
 use topological_sort::TopologicalSort;
 
-use crate::render_target::{RenderTargetList, ColorRenderTarget};
-use crate::render_target::{PictureCacheTarget, TextureCacheRenderTarget, AlphaRenderTarget};
-use crate::util::Allocation;
+use crate::render_target::{RenderTargetList, PictureCacheTarget, RenderTarget};
+use crate::util::{Allocation, VecHelper};
 use std::{usize, f32};
+
+use crate::internal_types::{FrameVec, FrameMemory};
+
+#[cfg(test)]
+use crate::frame_allocator::FrameAllocator;
 
 /// If we ever need a larger texture than the ideal, we better round it up to a
 /// reasonable number in order to have a bit of leeway in case the size of this
@@ -45,24 +50,87 @@ pub struct RenderTaskAllocation<'a> {
 impl<'l> RenderTaskAllocation<'l> {
     #[inline(always)]
     pub fn init(self, value: RenderTask) -> RenderTaskId {
-        RenderTaskId {
-            index: self.alloc.init(value) as u32,
-        }
+        RenderTaskId::from_index(self.alloc.init(value))
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 #[derive(MallocSizeOf)]
 #[cfg_attr(feature = "capture", derive(Serialize))]
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct RenderTaskId {
     pub index: u32,
+    pub sub_rect_index: u16,
 }
 
 impl RenderTaskId {
     pub const INVALID: RenderTaskId = RenderTaskId {
         index: u32::MAX,
+        sub_rect_index: u16::MAX,
     };
+
+    #[inline]
+    fn from_index(index: usize) -> Self {
+        RenderTaskId { index: index as u32, sub_rect_index: u16::MAX }
+    }
+
+    #[inline]
+    pub fn index(&self) -> usize {
+        self.index as usize
+    }
+
+    pub fn has_sub_rect(&self) -> bool {
+        self.sub_rect_index != u16::MAX
+    }
+}
+
+impl std::fmt::Debug for RenderTaskId {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if *self == Self::INVALID {
+            write!(f, "<invalid>")
+        } else {
+            write!(f, "#{}", self.index)
+        }
+    }
+}
+
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+#[derive(Clone)]
+pub struct SubTaskRange(std::ops::Range<u32>);
+
+impl SubTaskRange {
+    pub fn empty() -> Self { SubTaskRange(0..0) }
+    pub fn is_empty(&self) -> bool { self.0.is_empty() }
+}
+
+impl std::fmt::Debug for SubTaskRange {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if self.is_empty() {
+            write!(f, "<empty>")
+        } else {
+            self.0.fmt(f)
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(MallocSizeOf)]
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+pub struct SubTaskId(u32);
+
+impl std::fmt::Debug for SubTaskId {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "#{}", self.0)
+    }
+}
+
+impl Iterator for SubTaskRange {
+    type Item = SubTaskId;
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(SubTaskId(self.0.next()?))
+    }
 }
 
 #[cfg_attr(feature = "capture", derive(Serialize))]
@@ -88,9 +156,13 @@ struct Surface {
     allocator: GuillotineAllocator,
     /// We can only allocate into this for reuse if it's a shared surface
     is_shared: bool,
-    /// The pass that we can free this surface after (guaranteed
-    /// to be the same for all tasks assigned to this surface)
-    free_after: PassId,
+    /// The lifetime group of this surface: only tasks with a matching
+    /// lifetime_group can share it, to avoid holding the surface longer
+    /// than necessary.
+    lifetime_group: PassId,
+    /// Reference count: number of tasks whose individual free_after will trigger
+    /// a decrement. Surface is returned to the pool when this reaches 0.
+    pending_frees: usize,
 }
 
 impl Surface {
@@ -101,9 +173,9 @@ impl Surface {
         size: DeviceIntSize,
         kind: RenderTargetKind,
         is_shared: bool,
-        free_after: PassId,
+        lifetime_group: PassId,
     ) -> Option<DeviceIntPoint> {
-        if self.kind == kind && self.is_shared == is_shared && self.free_after == free_after {
+        if self.kind == kind && self.is_shared == is_shared && self.lifetime_group == lifetime_group {
             self.allocator
                 .allocate(&size)
                 .map(|(_slice, origin)| origin)
@@ -142,7 +214,7 @@ pub struct SubPass {
     /// The surface this subpass draws to
     pub surface: SubPassSurface,
     /// The tasks assigned to this subpass.
-    pub task_ids: Vec<RenderTaskId>,
+    pub task_ids: FrameVec<RenderTaskId>,
 }
 
 /// A pass expresses dependencies between tasks. Each pass consists of a number
@@ -151,12 +223,20 @@ pub struct SubPass {
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct Pass {
     /// The tasks assigned to this render pass
-    pub task_ids: Vec<RenderTaskId>,
+    pub task_ids: FrameVec<RenderTaskId>,
     /// The subpasses that make up this dependency pass
-    pub sub_passes: Vec<SubPass>,
+    pub sub_passes: FrameVec<SubPass>,
     /// A list of intermediate surfaces that can be invalidated after
     /// this pass completes.
-    pub textures_to_invalidate: Vec<CacheTextureId>,
+    pub textures_to_invalidate: FrameVec<CacheTextureId>,
+}
+
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+pub struct TaskSubRect {
+    pub sub_rect: DeviceIntRect,
+    source_task: RenderTaskId,
+    uv_address: GpuBufferAddress,
 }
 
 /// The RenderTaskGraph is the immutable representation of the render task graph. It is
@@ -165,16 +245,21 @@ pub struct Pass {
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct RenderTaskGraph {
     /// List of tasks added to the graph
-    pub tasks: Vec<RenderTask>,
+    pub tasks: FrameVec<RenderTask>,
+    /// List of sub-tasks, executing after the regular tasks for a given
+    /// pass.
+    pub sub_tasks: FrameVec<SubTask>,
+
+    pub sub_rects: FrameVec<TaskSubRect>,
 
     /// The passes that were created, based on dependencies between tasks
-    pub passes: Vec<Pass>,
+    pub passes: FrameVec<Pass>,
 
     /// Current frame id, used for debug validation
     frame_id: FrameId,
 
     /// GPU specific data for each task that is made available to shaders
-    pub task_data: Vec<RenderTaskData>,
+    pub task_data: FrameVec<RenderTaskData>,
 
     /// Total number of intermediate surfaces that will be drawn to, used for test validation.
     #[cfg(test)]
@@ -190,6 +275,11 @@ pub struct RenderTaskGraph {
 pub struct RenderTaskGraphBuilder {
     /// List of tasks added to the builder
     tasks: Vec<RenderTask>,
+    /// List of sub-tasks added to the builder
+    sub_tasks: Vec<SubTask>,
+    /// render task ids can optionally refer to sub-rects of a render task
+    /// by indexing into this vector.
+    sub_rects: Vec<TaskSubRect>,
 
     /// List of task roots
     roots: FastHashSet<RenderTaskId>,
@@ -200,6 +290,11 @@ pub struct RenderTaskGraphBuilder {
     /// A list of texture surfaces that can be freed at the end of a pass. Retained
     /// here to reduce heap allocations.
     textures_to_free: FastHashSet<CacheTextureId>,
+
+    /// Set of task ids already processed for freeing in the current pass,
+    /// used to avoid double-counting when multiple parents reference
+    /// the same child task.
+    freed_tasks: FastHashSet<RenderTaskId>,
 
     // Keep a map of `texture_id` to metadata about surfaces that are currently
     // borrowed from the render target pool.
@@ -212,9 +307,12 @@ impl RenderTaskGraphBuilder {
     pub fn new() -> Self {
         RenderTaskGraphBuilder {
             tasks: Vec::new(),
+            sub_tasks: Vec::new(),
+            sub_rects: Vec::new(),
             roots: FastHashSet::default(),
             frame_id: FrameId::INVALID,
             textures_to_free: FastHashSet::default(),
+            freed_tasks: FastHashSet::default(),
             active_surfaces: FastHashMap::default(),
         }
     }
@@ -253,12 +351,25 @@ impl RenderTaskGraphBuilder {
     pub fn add(&mut self) -> RenderTaskAllocation {
         // Assume every task is a root to start with
         self.roots.insert(
-            RenderTaskId { index: self.tasks.len() as u32 }
+            RenderTaskId::from_index(self.tasks.len()),
         );
 
         RenderTaskAllocation {
             alloc: self.tasks.alloc(),
         }
+    }
+
+    pub fn begin_sub_tasks(&self) -> SubTaskRange {
+        let first = self.sub_tasks.len() as u32;
+        SubTaskRange(first..first)
+    }
+
+    pub fn push_sub_task(&mut self, in_range: &mut SubTaskRange, task: SubTask) {
+        // Check that we are pushing sub-tasks as contiguous sequences.
+        assert_eq!(in_range.0.end as usize, self.sub_tasks.len());
+        in_range.0.end += 1;
+
+        self.sub_tasks.push(task);
     }
 
     /// Express a dependency, such that `task_id` depends on `input` as a texture source.
@@ -273,25 +384,57 @@ impl RenderTaskGraphBuilder {
         self.roots.remove(&input);
     }
 
+    pub fn add_sub_rect(&mut self, source_task: RenderTaskId, sub_rect: &DeviceIntRect) -> RenderTaskId {
+        assert!(self.sub_rects.len() < u16::MAX as usize);
+        if source_task == RenderTaskId::INVALID {
+            return RenderTaskId::INVALID;
+        }
+
+        let sub_rect_index = self.sub_rects.len() as u16;
+        self.sub_rects.push(TaskSubRect {
+            source_task,
+            sub_rect: *sub_rect,
+            uv_address: GpuBufferAddress::INVALID,
+        });
+
+        RenderTaskId {
+            index: source_task.index,
+            sub_rect_index,
+        }
+    }
+
     /// End the graph building phase and produce the immutable task graph for this frame
     pub fn end_frame(
         &mut self,
         resource_cache: &mut ResourceCache,
-        gpu_cache: &mut GpuCache,
-        deferred_resolves: &mut Vec<DeferredResolve>,
+        gpu_buffers: &mut GpuBufferBuilder,
+        deferred_resolves: &mut FrameVec<DeferredResolve>,
         max_shared_surface_size: i32,
+        memory: &FrameMemory,
     ) -> RenderTaskGraph {
         // Copy the render tasks over to the immutable graph output
         let task_count = self.tasks.len();
-        let tasks = mem::replace(
-            &mut self.tasks,
-            Vec::with_capacity(task_count),
-        );
+
+        // Copy from the frame_builder's task vector to the frame's instead of stealing it
+        // because they use different memory allocators. TODO: The builder should use the
+        // frame allocator, however since the builder lives longer than the frame, it's a
+        // bit more risky to do so.
+        let mut tasks = memory.new_vec_with_capacity(task_count);
+        for task in self.tasks.drain(..) {
+            tasks.push(task)
+        }
+
+        let mut sub_tasks = memory.new_vec_with_capacity(self.sub_tasks.len());
+        for task in self.sub_tasks.drain(..) {
+            sub_tasks.push(task)
+        }
 
         let mut graph = RenderTaskGraph {
             tasks,
-            passes: Vec::new(),
-            task_data: Vec::with_capacity(task_count),
+            sub_tasks,
+            sub_rects: memory.new_vec(),
+            passes: memory.new_vec(),
+            task_data: memory.new_vec_with_capacity(task_count),
             frame_id: self.frame_id,
             #[cfg(test)]
             surface_count: 0,
@@ -308,12 +451,12 @@ impl RenderTaskGraphBuilder {
         // or reused during subsequent passes).
 
         let mut pass_count = 0;
-        let mut passes = Vec::new();
+        let mut passes = memory.new_vec();
         let mut task_sorter = TopologicalSort::<RenderTaskId>::new();
 
         // Iterate the task list, and add all the dependencies to the topo sort
         for (parent_id, task) in graph.tasks.iter().enumerate() {
-            let parent_id = RenderTaskId { index: parent_id as u32 };
+            let parent_id = RenderTaskId::from_index(parent_id);
 
             for child_id in &task.children {
                 task_sorter.add_dependency(
@@ -365,16 +508,16 @@ impl RenderTaskGraphBuilder {
         // Construct passes array for tasks to be assigned to below
         for _ in 0 .. pass_count {
             graph.passes.push(Pass {
-                task_ids: Vec::new(),
-                sub_passes: Vec::new(),
-                textures_to_invalidate: Vec::new(),
+                task_ids: memory.new_vec(),
+                sub_passes: memory.new_vec(),
+                textures_to_invalidate: memory.new_vec(),
             });
         }
 
         // Assign tasks to each pass based on their `render_on` attribute
         for (index, task) in graph.tasks.iter().enumerate() {
             if task.kind.is_a_rendering_operation() {
-                let id = RenderTaskId { index: index as u32 };
+                let id = RenderTaskId::from_index(index);
                 graph.passes[task.render_on.0].task_ids.push(id);
             }
         }
@@ -387,6 +530,8 @@ impl RenderTaskGraphBuilder {
         for (pass_id, pass) in graph.passes.iter_mut().enumerate().rev() {
             assert!(self.textures_to_free.is_empty());
 
+            // Phase 1: Allocate all tasks in this pass to surfaces, incrementing
+            // pending_frees on each surface for every task (including Existing).
             for task_id in &pass.task_ids {
 
                 let task_location = graph.tasks[task_id.index as usize].location.clone();
@@ -398,11 +543,8 @@ impl RenderTaskGraphBuilder {
                         let mut location = None;
                         let kind = task.kind.target_kind();
 
-                        // If a task is used as part of an existing-chain then we can't
-                        // safely share it (nor would we want to).
                         let can_use_shared_surface =
-                            task.kind.can_use_shared_surface() &&
-                            task.free_after != PassId::INVALID;
+                            task.kind.can_use_shared_surface();
 
                         if can_use_shared_surface {
                             // If we can use a shared surface, step through the existing shared
@@ -412,6 +554,7 @@ impl RenderTaskGraphBuilder {
                                 if let SubPassSurface::Dynamic { texture_id, ref mut used_rect, .. } = sub_pass.surface {
                                     let surface = self.active_surfaces.get_mut(&texture_id).unwrap();
                                     if let Some(p) = surface.alloc_rect(size, kind, true, task.free_after) {
+                                        surface.pending_frees += 1;
                                         location = Some((texture_id, p));
                                         *used_rect = used_rect.union(&DeviceIntRect::from_origin_and_size(p, size));
                                         sub_pass.task_ids.push(*task_id);
@@ -468,7 +611,8 @@ impl RenderTaskGraphBuilder {
                                 kind,
                                 allocator: GuillotineAllocator::new(Some(surface_size)),
                                 is_shared: can_use_shared_surface,
-                                free_after: task.free_after,
+                                lifetime_group: task.free_after,
+                                pending_frees: 1,
                             };
 
                             // Allocation of the task must fit in this new surface!
@@ -493,6 +637,9 @@ impl RenderTaskGraphBuilder {
                                 graph.unique_surfaces.insert(texture_id);
                             }
 
+                            let mut task_ids = memory.new_vec();
+                            task_ids.push(*task_id);
+
                             // Add the target as a new subpass for this render pass.
                             pass.sub_passes.push(SubPass {
                                 surface: SubPassSurface::Dynamic {
@@ -500,7 +647,7 @@ impl RenderTaskGraphBuilder {
                                     target_kind: kind,
                                     used_rect: DeviceIntRect::from_origin_and_size(p, size),
                                 },
-                                task_ids: vec![*task_id],
+                                task_ids,
                             });
                         }
 
@@ -523,8 +670,12 @@ impl RenderTaskGraphBuilder {
                             RenderTaskLocation::Dynamic { texture_id, rect, .. } => {
                                 assert_eq!(existing_size, rect.size());
 
-                                let kind = graph.tasks[parent_task_id.index as usize].kind.target_kind();
+                                let surface = self.active_surfaces.get_mut(&texture_id).unwrap();
+                                surface.pending_frees += 1;
 
+                                let kind = graph.tasks[parent_task_id.index as usize].kind.target_kind();
+                                let mut task_ids = memory.new_vec();
+                                task_ids.push(*task_id);
                                 // A sub-pass is always created in this case, as existing tasks by definition can't be shared.
                                 pass.sub_passes.push(SubPass {
                                     surface: SubPassSurface::Dynamic {
@@ -532,7 +683,7 @@ impl RenderTaskGraphBuilder {
                                         target_kind: kind,
                                         used_rect: rect,        // clear will be skipped due to no-op check anyway
                                     },
-                                    task_ids: vec![*task_id],
+                                    task_ids,
                                 });
 
                                 let task = &mut graph.tasks[task_id.index as usize];
@@ -546,11 +697,13 @@ impl RenderTaskGraphBuilder {
                     RenderTaskLocation::Static { ref surface, .. } => {
                         // No need to allocate for this surface, since it's a persistent
                         // target. Instead, just create a new sub-pass for it.
+                        let mut task_ids = memory.new_vec();
+                        task_ids.push(*task_id);
                         pass.sub_passes.push(SubPass {
                             surface: SubPassSurface::Persistent {
                                 surface: surface.clone(),
                             },
-                            task_ids: vec![*task_id],
+                            task_ids,
                         });
                     }
                     RenderTaskLocation::CacheRequest { .. } => {
@@ -561,8 +714,13 @@ impl RenderTaskGraphBuilder {
                         panic!("bug: encountered an already allocated task");
                     }
                 }
+            }
 
-                // Return the shared surfaces from this pass
+            // Phase 2: For each child task whose free_after matches this pass,
+            // decrement the pending_frees on its surface. When pending_frees
+            // reaches 0, the surface can be returned to the pool.
+            assert!(self.freed_tasks.is_empty());
+            for task_id in &pass.task_ids {
                 let task = &graph.tasks[task_id.index as usize];
                 for child_id in &task.children {
                     let child_task = &graph.tasks[child_id.index as usize];
@@ -570,10 +728,14 @@ impl RenderTaskGraphBuilder {
                         RenderTaskLocation::Unallocated { .. } |
                         RenderTaskLocation::Existing { .. } => panic!("bug: must be allocated"),
                         RenderTaskLocation::Dynamic { texture_id, .. } => {
-                            // If this task can be freed after this pass, include it in the
-                            // unique set of textures to be returned to the render target pool below.
-                            if child_task.free_after == PassId(pass_id) {
-                                self.textures_to_free.insert(texture_id);
+                            if child_task.free_after == PassId(pass_id) &&
+                               self.freed_tasks.insert(*child_id)
+                            {
+                                let surface = self.active_surfaces.get_mut(&texture_id).unwrap();
+                                surface.pending_frees -= 1;
+                                if surface.pending_frees == 0 {
+                                    self.textures_to_free.insert(texture_id);
+                                }
                             }
                         }
                         RenderTaskLocation::Static { .. } => {}
@@ -581,6 +743,7 @@ impl RenderTaskGraphBuilder {
                     }
                 }
             }
+            self.freed_tasks.clear();
 
             // Return no longer used textures to the pool, so that they can be reused / aliased
             // by later passes.
@@ -603,50 +766,90 @@ impl RenderTaskGraphBuilder {
         // considered to be immutable for the rest of the frame building process.
 
         for task in &mut graph.tasks {
-            // First check whether the render task texture and uv rects are managed
-            // externally. This is the case for image tasks and cached tasks. In both
-            // cases it results in a finding the information in the texture cache.
+            // Check whether the render task texture and uv rects are managed externally.
+            // This is the case for image tasks and cached tasks. In both cases it
+            // results in a finding the information in the texture cache.
             let cache_item = if let Some(ref cache_handle) = task.cache_handle {
                 Some(resolve_cached_render_task(
                     cache_handle,
                     resource_cache,
                 ))
-            } else if let RenderTaskKind::Image(request) = &task.kind {
+            } else if let RenderTaskKind::Image(info) = &task.kind {
                 Some(resolve_image(
-                    *request,
+                    info.request,
                     resource_cache,
-                    gpu_cache,
+                    &mut gpu_buffers.f32,
                     deferred_resolves,
+                    info.is_composited,
                 ))
             } else {
                 // General case (non-cached non-image tasks).
                 None
             };
 
-            if let Some(cache_item) = cache_item {
+            if let Some(cache_item) = &cache_item {
+                task.uv_rect_handle = gpu_buffers.f32.resolve_handle(cache_item.uv_rect_handle);
+
                 // Update the render task even if the item is invalid.
                 // We'll handle it later and it's easier to not have to
                 // deal with unexpected location variants like
                 // RenderTaskLocation::CacheRequest when we do.
-                let source = cache_item.texture_id;
-                task.uv_rect_handle = cache_item.uv_rect_handle;
-                task.location = RenderTaskLocation::Static {
-                    surface: StaticRenderTaskSurface::ReadOnly { source },
-                    rect: cache_item.uv_rect,
-                };
+                if let RenderTaskLocation::CacheRequest { .. } = &task.location {
+                    let source = cache_item.texture_id;
+                    task.location = RenderTaskLocation::Static {
+                        surface: StaticRenderTaskSurface::ReadOnly { source },
+                        rect: cache_item.uv_rect,
+                    };
+                }
             }
-            // Give the render task an opportunity to add any
-            // information to the GPU cache, if appropriate.
+
+            // This has to be done after we do the task location fixup above.
             let target_rect = task.get_target_rect();
 
-            task.write_gpu_blocks(
-                target_rect,
-                gpu_cache,
-            );
+            // If the uv rect is not managed externally, generate it now.
+            if cache_item.is_none() {
+                let image_source = ImageSource {
+                    p0: target_rect.min.to_f32(),
+                    p1: target_rect.max.to_f32(),
+                    user_data: [0.0; 4],
+                    uv_rect_kind: task.uv_rect_kind,
+                };
+
+                let uv_rect_handle = image_source.write_gpu_blocks(&mut gpu_buffers.f32);
+                task.uv_rect_handle = gpu_buffers.f32.resolve_handle(uv_rect_handle);
+            }
+
+            // Give the render task an opportunity to add any
+            // information to the GPU cache, if appropriate.
+            task.kind.write_gpu_blocks(gpu_buffers);
 
             graph.task_data.push(
                 task.kind.write_task_data(target_rect)
             );
+        }
+
+        graph.sub_rects.reserve(self.sub_rects.len());
+        for item in &self.sub_rects {
+            let task = &graph.tasks[item.source_task.index()];
+            let task_rect = task.get_target_rect();
+            let rect = item.sub_rect
+                .translate(task_rect.min.to_vector())
+                .intersection_unchecked(&task_rect);
+
+            let image_source = ImageSource {
+                p0: rect.min.to_f32(),
+                p1: rect.max.to_f32(),
+                user_data: [0.0; 4],
+                uv_rect_kind: task.uv_rect_kind,
+            };
+
+            let uv_rect_handle = image_source.write_gpu_blocks(&mut gpu_buffers.f32);
+
+            graph.sub_rects.push(TaskSubRect {
+                source_task: item.source_task,
+                sub_rect: item.sub_rect,
+                uv_address: gpu_buffers.f32.resolve_handle(uv_rect_handle),
+            });
         }
 
         graph
@@ -704,16 +907,14 @@ impl RenderTaskGraph {
     pub fn resolve_location(
         &self,
         task_id: impl Into<Option<RenderTaskId>>,
-        gpu_cache: &GpuCache,
-    ) -> Option<(GpuCacheAddress, TextureSource)> {
-        self.resolve_impl(task_id.into()?, gpu_cache)
+    ) -> Option<(GpuBufferAddress, TextureSource)> {
+        self.resolve_impl(task_id.into()?)
     }
 
     fn resolve_impl(
         &self,
         task_id: RenderTaskId,
-        gpu_cache: &GpuCache,
-    ) -> Option<(GpuCacheAddress, TextureSource)> {
+    ) -> Option<(GpuBufferAddress, TextureSource)> {
         let task = &self[task_id];
         let texture_source = task.get_texture_source();
 
@@ -721,19 +922,48 @@ impl RenderTaskGraph {
             return None;
         }
 
-        let uv_address = task.get_texture_address(gpu_cache);
+        let uv_address = if task_id.has_sub_rect() {
+            self.sub_rects[task_id.sub_rect_index as usize].uv_address
+        } else {
+            task.get_texture_address()
+        };
+
+        assert!(uv_address.is_valid());
 
         Some((uv_address, texture_source))
     }
 
+    pub fn report_memory(&self) -> usize {
+        // We can't use wr_malloc_sizeof here because the render task
+        // graph's memory is mainly backed by frame's custom allocator.
+        // So we calulate the memory footprint manually.
+
+        let mut mem = size_of_frame_vec(&self.tasks)
+            +  size_of_frame_vec(&self.task_data)
+            +  size_of_frame_vec(&self.passes);
+
+        for pass in &self.passes {
+            mem += size_of_frame_vec(&pass.task_ids)
+                + size_of_frame_vec(&pass.sub_passes)
+                + size_of_frame_vec(&pass.textures_to_invalidate);
+            for sub_pass in &pass.sub_passes {
+                mem += size_of_frame_vec(&sub_pass.task_ids);
+            }
+        }
+
+        mem
+    }
 
     #[cfg(test)]
     pub fn new_for_testing() -> Self {
+        let allocator = FrameAllocator::fallback();
         RenderTaskGraph {
-            tasks: Vec::new(),
-            passes: Vec::new(),
+            tasks: allocator.clone().new_vec(),
+            sub_tasks: allocator.clone().new_vec(),
+            sub_rects: allocator.clone().new_vec(),
+            passes: allocator.clone().new_vec(),
             frame_id: FrameId::INVALID,
-            task_data: Vec::new(),
+            task_data: allocator.clone().new_vec(),
             surface_count: 0,
             unique_surfaces: FastHashSet::default(),
         }
@@ -757,6 +987,13 @@ impl std::ops::Index<RenderTaskId> for RenderTaskGraph {
     type Output = RenderTask;
     fn index(&self, id: RenderTaskId) -> &RenderTask {
         &self.tasks[id.index as usize]
+    }
+}
+
+impl std::ops::Index<SubTaskId> for RenderTaskGraph {
+    type Output = SubTask;
+    fn index(&self, id: SubTaskId) -> &SubTask {
+        &self.sub_tasks[id.0 as usize]
     }
 }
 
@@ -786,22 +1023,10 @@ fn assign_free_pass(
             RenderTaskLocation::Dynamic { .. } => {
                 panic!("bug: should not be allocated yet");
             }
-            RenderTaskLocation::Unallocated { .. } => {
+            RenderTaskLocation::Unallocated { .. } |
+            RenderTaskLocation::Existing { .. } => {
                 let child_task = &mut graph.tasks[child_id.index as usize];
-
-                if child_task.free_after != PassId::INVALID {
-                    child_task.free_after = child_task.free_after.min(render_on);
-                }
-            }
-            RenderTaskLocation::Existing { parent_task_id, .. } => {
-                let parent_task = &mut graph.tasks[parent_task_id.index as usize];
-                parent_task.free_after = PassId::INVALID;
-
-                let child_task = &mut graph.tasks[child_id.index as usize];
-
-                if child_task.free_after != PassId::INVALID {
-                    child_task.free_after = child_task.free_after.min(render_on);
-                }
+                child_task.free_after = child_task.free_after.min(render_on);
             }
         }
     }
@@ -816,21 +1041,21 @@ fn assign_free_pass(
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct RenderPass {
     /// The subpasses that describe targets being rendered to in this pass
-    pub alpha: RenderTargetList<AlphaRenderTarget>,
-    pub color: RenderTargetList<ColorRenderTarget>,
-    pub texture_cache: FastHashMap<CacheTextureId, TextureCacheRenderTarget>,
-    pub picture_cache: Vec<PictureCacheTarget>,
-    pub textures_to_invalidate: Vec<CacheTextureId>,
+    pub alpha: RenderTargetList,
+    pub color: RenderTargetList,
+    pub texture_cache: FastHashMap<CacheTextureId, RenderTarget>,
+    pub picture_cache: FrameVec<PictureCacheTarget>,
+    pub textures_to_invalidate: FrameVec<CacheTextureId>,
 }
 
 impl RenderPass {
     /// Creates an intermediate off-screen pass.
-    pub fn new(src: &Pass) -> Self {
+    pub fn new(src: &Pass, memory: &mut FrameMemory) -> Self {
         RenderPass {
-            color: RenderTargetList::new(),
-            alpha: RenderTargetList::new(),
+            color: RenderTargetList::new(memory.allocator()),
+            alpha: RenderTargetList::new(memory.allocator()),
             texture_cache: FastHashMap::default(),
-            picture_cache: Vec::new(),
+            picture_cache: memory.allocator().new_vec(),
             textures_to_invalidate: src.textures_to_invalidate.clone(),
         }
     }
@@ -1055,18 +1280,20 @@ impl RenderTaskGraphBuilder {
         total_surface_count: usize,
         unique_surfaces: &[(i32, i32, ImageFormat)],
     ) {
-        use crate::internal_types::FrameStamp;
+        use crate::{internal_types::FrameStamp, renderer::{GpuBufferBuilderF, GpuBufferBuilderI}};
         use api::{DocumentId, IdNamespace};
 
         let mut rc = ResourceCache::new_for_testing();
-        let mut gc =  GpuCache::new();
 
         let mut frame_stamp = FrameStamp::first(DocumentId::new(IdNamespace(1), 1));
         frame_stamp.advance();
-        gc.prepare_for_frames();
-        gc.begin_frame(frame_stamp);
 
-        let g = self.end_frame(&mut rc, &mut gc, &mut Vec::new(), 2048);
+        let frame_memory = FrameMemory::fallback();
+        let mut gpu_buffers = GpuBufferBuilder {
+            f32: GpuBufferBuilderF::new(&frame_memory, 0, FrameId::first()),
+            i32: GpuBufferBuilderI::new(&frame_memory, 0, FrameId::first()),
+        };
+        let g = self.end_frame(&mut rc, &mut gpu_buffers, &mut frame_memory.new_vec(), 2048, &frame_memory);
         g.print();
 
         assert_eq!(g.passes.len(), pass_count);

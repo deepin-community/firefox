@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -68,8 +67,11 @@ nsProfileLock::nsProfileLock(nsProfileLock& src) { *this = src; }
 nsProfileLock& nsProfileLock::operator=(nsProfileLock& rhs) {
   Unlock();
 
+  mLockFile = rhs.mLockFile;
+  rhs.mLockFile = nullptr;
   mHaveLock = rhs.mHaveLock;
   rhs.mHaveLock = false;
+  mReplacedLockTime = rhs.mReplacedLockTime;
 
 #if defined(XP_WIN)
   mLockFileHandle = rhs.mLockFileHandle;
@@ -240,7 +242,7 @@ nsresult nsProfileLock::LockWithFcntl(nsIFile* aLockFile,
         rv = NS_ERROR_FAILURE;
     }
   } else {
-    NS_ERROR("Failed to open lock file.");
+    NS_WARNING("Failed to open lock file.");
     rv = NS_ERROR_FAILURE;
   }
   return rv;
@@ -454,7 +456,7 @@ nsresult nsProfileLock::Lock(nsIFile* aProfileDir,
   rv = lockFile->Clone(getter_AddRefs(mLockFile));
   if (NS_FAILED(rv)) return rv;
 
-#if defined(XP_MACOSX)
+#if defined(XP_DARWIN)
   // First, try locking using fcntl. It is more reliable on
   // a local machine, but may not be supported by an NFS server.
 
@@ -531,7 +533,12 @@ nsresult nsProfileLock::Lock(nsIFile* aProfileDir,
 nsresult nsProfileLock::Unlock(bool aFatalSignal) {
   nsresult rv = NS_OK;
 
+#pragma GCC diagnostic push
+/* Bug 1952241: Ignore uninitialized warning for mHaveLock.
+   Seems to be a false positive with gcc */
+#pragma GCC diagnostic ignored "-Wuninitialized"
   if (mHaveLock) {
+#pragma GCC diagnostic pop
 #if defined(XP_WIN)
     if (mLockFileHandle != INVALID_HANDLE_VALUE) {
       CloseHandle(mLockFileHandle);

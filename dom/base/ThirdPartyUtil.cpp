@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,29 +5,26 @@
 #include "ThirdPartyUtil.h"
 
 #include <cstdint>
+
 #include "MainThreadUtils.h"
 #include "mozIDOMWindow.h"
-#include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/ClearOnShutdown.h"
+#include "mozilla/Components.h"
 #include "mozilla/ContentBlockingNotifier.h"
 #include "mozilla/Logging.h"
-#include "mozilla/MacroForEach.h"
-#include "mozilla/Components.h"
+#include "mozilla/NullPrincipal.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/StorageAccess.h"
-#include "mozilla/TextUtils.h"
-#include "mozilla/Unused.h"
+#include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/CanonicalBrowsingContext.h"
 #include "mozilla/dom/Document.h"
-#include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/dom/WindowContext.h"
 #include "mozilla/dom/WindowGlobalParent.h"
 #include "nsCOMPtr.h"
 #include "nsDebug.h"
-#include "nsEffectiveTLDService.h"
 #include "nsError.h"
 #include "nsGlobalWindowOuter.h"
 #include "nsIChannel.h"
@@ -45,6 +40,7 @@
 #include "nsNetUtil.h"
 #include "nsPIDOMWindow.h"
 #include "nsPIDOMWindowInlines.h"
+#include "nsSandboxFlags.h"
 #include "nsServiceManagerUtils.h"
 #include "nsTLiteralString.h"
 
@@ -57,7 +53,6 @@ NS_IMPL_ISUPPORTS(ThirdPartyUtil, mozIThirdPartyUtil)
 // MOZ_LOG=thirdPartyUtil:5
 //
 static mozilla::LazyLogModule gThirdPartyLog("thirdPartyUtil");
-#undef LOG
 #define LOG(args) MOZ_LOG(gThirdPartyLog, mozilla::LogLevel::Debug, args)
 
 static mozilla::StaticRefPtr<ThirdPartyUtil> gService;
@@ -77,7 +72,7 @@ nsresult ThirdPartyUtil::Init() {
   gService = this;
   mozilla::ClearOnShutdown(&gService);
 
-  mTLDService = nsEffectiveTLDService::GetInstance();
+  mTLDService = mozilla::components::EffectiveTLD::Service();
   return mTLDService ? NS_OK : NS_ERROR_FAILURE;
 }
 
@@ -126,16 +121,6 @@ nsresult ThirdPartyUtil::IsThirdPartyInternal(const nsCString& aFirstDomain,
 
   *aResult = IsThirdPartyInternal(aFirstDomain, secondDomain);
   return NS_OK;
-}
-
-nsCString ThirdPartyUtil::GetBaseDomainFromWindow(nsPIDOMWindowOuter* aWindow) {
-  mozilla::dom::Document* doc = aWindow ? aWindow->GetExtantDoc() : nullptr;
-
-  if (!doc) {
-    return ""_ns;
-  }
-
-  return doc->GetBaseDomain();
 }
 
 NS_IMETHODIMP
@@ -223,6 +208,18 @@ ThirdPartyUtil::IsThirdPartyWindow(mozIDOMWindowProxy* aWindow, nsIURI* aURI,
   auto* const browsingContext = current->GetBrowsingContext();
   MOZ_ASSERT(browsingContext);
 
+  if (browsingContext->IsTopContent()) {
+    *aResult = false;
+    return NS_OK;
+  }
+
+  // If the document is sandboxed, it's always third party.
+  RefPtr<Document> doc = current->GetExtantDoc();
+  if (doc && (doc->GetSandboxFlags() & SANDBOXED_ORIGIN)) {
+    *aResult = true;
+    return NS_OK;
+  }
+
   WindowContext* wc = browsingContext->GetCurrentWindowContext();
   if (NS_WARN_IF(!wc)) {
     *aResult = true;
@@ -245,6 +242,13 @@ nsresult ThirdPartyUtil::IsThirdPartyGlobal(
       *aResult = false;
       return NS_OK;
     }
+
+    // If the window global is sandboxed, it's always third party.
+    if (currentWGP->SandboxFlags() & SANDBOXED_ORIGIN) {
+      *aResult = true;
+      return NS_OK;
+    }
+
     nsCOMPtr<nsIPrincipal> currentPrincipal = currentWGP->DocumentPrincipal();
     RefPtr<WindowGlobalParent> parent =
         currentWGP->BrowsingContext()->GetEmbedderWindowGlobal();
@@ -284,7 +288,7 @@ ThirdPartyUtil::IsThirdPartyChannel(nsIChannel* aChannel, nsIURI* aURI,
     uint32_t flags = 0;
     // Avoid checking the return value here since some channel implementations
     // may return NS_ERROR_NOT_IMPLEMENTED.
-    mozilla::Unused << httpChannelInternal->GetThirdPartyFlags(&flags);
+    (void)httpChannelInternal->GetThirdPartyFlags(&flags);
 
     doForce = (flags & nsIHttpChannelInternal::THIRD_PARTY_FORCE_ALLOW);
 
@@ -400,11 +404,10 @@ ThirdPartyUtil::GetTopWindowForChannel(nsIChannel* aChannel,
 // "bbc.co.uk". Only properly-formed URI's are tolerated, though a trailing
 // dot may be present. If aHostURI is an IP address, an alias such as
 // 'localhost', an eTLD such as 'co.uk', or the empty string, aBaseDomain will
-// be the exact host. Blob URIs will incur a lookup for their blob URL entry,
-// and will perform the same construction from their principal's base domain.
-// The result of this function should only be used in exact
-// string comparisons, since substring comparisons will not be valid for the
-// special cases elided above.
+// be the exact host. Blob URIs will perform the same construction from their
+// principal's base domain. The result of this function should only be used in
+// exact string comparisons, since substring comparisons will not be valid for
+// the special cases listed above.
 NS_IMETHODIMP
 ThirdPartyUtil::GetBaseDomain(nsIURI* aHostURI, nsACString& aBaseDomain) {
   if (!aHostURI) {
@@ -415,18 +418,25 @@ ThirdPartyUtil::GetBaseDomain(nsIURI* aHostURI, nsACString& aBaseDomain) {
   // direct. For blob URLs we get this from the blob url's entry in the blob url
   // store.
   nsresult rv;
-  nsCOMPtr<nsIPrincipal> blobPrincipal;
   if (aHostURI->SchemeIs("blob")) {
+    // NOTE: OriginAttributes will be discarded by GetBaseDomain, so it's OK to
+    // pass in a default-constructed value here.
+    nsCOMPtr<nsIPrincipal> blobPrincipal;
     if (BlobURLProtocolHandler::GetBlobURLPrincipal(
-            aHostURI, getter_AddRefs(blobPrincipal))) {
-      // If the blob URL is expired, this will be the uuid of a NullPrincipal
+            aHostURI, OriginAttributes(), getter_AddRefs(blobPrincipal))) {
       rv = blobPrincipal->GetBaseDomain(aBaseDomain);
     } else {
-      // If the blob is expired and no longer has a map entry, we fail
+      // If the blob URI isn't the correct form, we fail.
       rv = nsresult::NS_ERROR_DOM_BAD_URI;
     }
   } else {
     rv = mTLDService->GetBaseDomain(aHostURI, 0, aBaseDomain);
+  }
+
+  // If the URI is a null principal, we get the UUID portion instead of the base
+  // domain because a null principal uri doesn't have a base domain.
+  if (aHostURI->SchemeIs(NS_NULLPRINCIPAL_SCHEME)) {
+    rv = aHostURI->GetFilePath(aBaseDomain);
   }
 
   // Get the base domain. this will fail if the host contains a leading dot,
@@ -436,7 +446,16 @@ ThirdPartyUtil::GetBaseDomain(nsIURI* aHostURI, nsACString& aBaseDomain) {
     // aHostURI is either an IP address, an alias such as 'localhost', an eTLD
     // such as 'co.uk', or the empty string. Uses the normalized host in such
     // cases.
-    rv = aHostURI->GetAsciiHost(aBaseDomain);
+
+    // The aHostURI can be a view-source URI, in which case we need to get the
+    // base domain from the inner most URI.
+    if (aHostURI->SchemeIs("view-source")) {
+      rv = NS_GetInnermostURIHost(aHostURI, aBaseDomain);
+    } else {
+      // Apply IPV6 fixup to work around Bug 1603199.
+      rv =
+          nsContentUtils::GetAsciiHostOrIPv6WithBrackets(aHostURI, aBaseDomain);
+    }
   }
 
   if (NS_FAILED(rv)) {
@@ -444,48 +463,15 @@ ThirdPartyUtil::GetBaseDomain(nsIURI* aHostURI, nsACString& aBaseDomain) {
   }
 
   // aHostURI (and thus aBaseDomain) may be the string '.'. If so, fail.
-  if (aBaseDomain.Length() == 1 && aBaseDomain.Last() == '.')
+  if (aBaseDomain.Length() == 1 && aBaseDomain.Last() == '.') {
     return NS_ERROR_INVALID_ARG;
+  }
 
   // Reject any URIs without a host that aren't file:// URIs. This makes it the
   // only way we can get a base domain consisting of the empty string, which
   // means we can safely perform foreign tests on such URIs where "not foreign"
   // means "the involved URIs are all file://".
   if (aBaseDomain.IsEmpty() && !aHostURI->SchemeIs("file")) {
-    return NS_ERROR_INVALID_ARG;
-  }
-
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-ThirdPartyUtil::GetBaseDomainFromSchemeHost(const nsACString& aScheme,
-                                            const nsACString& aAsciiHost,
-                                            nsACString& aBaseDomain) {
-  MOZ_DIAGNOSTIC_ASSERT(IsAscii(aAsciiHost));
-
-  // Get the base domain. this will fail if the host contains a leading dot,
-  // more than one trailing dot, or is otherwise malformed.
-  nsresult rv = mTLDService->GetBaseDomainFromHost(aAsciiHost, 0, aBaseDomain);
-  if (rv == NS_ERROR_HOST_IS_IP_ADDRESS ||
-      rv == NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS) {
-    // aMozURL is either an IP address, an alias such as 'localhost', an eTLD
-    // such as 'co.uk', or the empty string. Uses the normalized host in such
-    // cases.
-    aBaseDomain = aAsciiHost;
-    rv = NS_OK;
-  }
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  // aMozURL (and thus aBaseDomain) may be the string '.'. If so, fail.
-  if (aBaseDomain.Length() == 1 && aBaseDomain.Last() == '.')
-    return NS_ERROR_INVALID_ARG;
-
-  // Reject any URLs without a host that aren't file:// URLs. This makes it the
-  // only way we can get a base domain consisting of the empty string, which
-  // means we can safely perform foreign tests on such URLs where "not foreign"
-  // means "the involved URLs are all file://".
-  if (aBaseDomain.IsEmpty() && !aScheme.EqualsLiteral("file")) {
     return NS_ERROR_INVALID_ARG;
   }
 
@@ -550,3 +536,4 @@ ThirdPartyUtil::AnalyzeChannel(nsIChannel* aChannel, bool aNotify, nsIURI* aURI,
 
   return result;
 }
+#undef LOG

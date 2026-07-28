@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,7 +6,6 @@
 
 #include <algorithm>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "CTLogVerifier.h"
 #include "CTVerifyResult.h"
@@ -35,25 +32,30 @@ class CTPolicyEnforcerTest : public ::testing::Test {
 
   void AddSct(VerifiedSCTList& verifiedScts, size_t logNo,
               CTLogOperatorId operatorId, SCTOrigin origin, uint64_t timestamp,
-              CTLogState logState = CTLogState::Admissible) {
+              CTLogState logState = CTLogState::Admissible,
+              CTLogFormat logFormat = CTLogFormat::RFC6962,
+              Maybe<uint64_t> leafIndex = Nothing()) {
     SignedCertificateTimestamp sct;
     sct.version = SignedCertificateTimestamp::Version::V1;
     sct.timestamp = timestamp;
+    sct.leafIndex = std::move(leafIndex);
     Buffer logId;
     GetLogId(logId, logNo);
     sct.logId = std::move(logId);
     VerifiedSCT verifiedSct(std::move(sct), origin, operatorId, logState,
-                            LOG_TIMESTAMP);
+                            logFormat, LOG_TIMESTAMP);
     verifiedScts.push_back(std::move(verifiedSct));
   }
 
   void AddMultipleScts(VerifiedSCTList& verifiedScts, size_t logsCount,
                        uint8_t operatorsCount, SCTOrigin origin,
                        uint64_t timestamp,
-                       CTLogState logState = CTLogState::Admissible) {
+                       CTLogState logState = CTLogState::Admissible,
+                       CTLogFormat logFormat = CTLogFormat::RFC6962) {
     for (size_t logNo = 0; logNo < logsCount; logNo++) {
       CTLogOperatorId operatorId = logNo % operatorsCount;
-      AddSct(verifiedScts, logNo, operatorId, origin, timestamp, logState);
+      AddSct(verifiedScts, logNo, operatorId, origin, timestamp, logState,
+             logFormat);
     }
   }
 
@@ -290,6 +292,84 @@ TEST_F(CTPolicyEnforcerTest,
     CTPolicyCompliance compliance = CheckCTPolicyCompliance(scts, certLifetime);
     EXPECT_EQ(CTPolicyCompliance::Compliant, compliance) << "i=" << i;
   }
+}
+
+TEST_F(CTPolicyEnforcerTest, ConformsToCTPolicyWithAtLeastOneRFC6962Log) {
+  VerifiedSCTList scts;
+
+  AddSct(scts, LOG_1, OPERATOR_1, ORIGIN_TLS, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+  AddSct(scts, LOG_2, OPERATOR_2, ORIGIN_TLS, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::RFC6962);
+
+  CheckCompliance(scts, DEFAULT_LIFETIME, CTPolicyCompliance::Compliant);
+}
+
+TEST_F(CTPolicyEnforcerTest,
+       ConformsToCTPolicyWithAtLeastOneRFC6962LogEmbedded) {
+  VerifiedSCTList scts;
+
+  // 3 embedded SCTs required for DEFAULT_LIFETIME.
+  AddSct(scts, LOG_1, OPERATOR_1, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+  AddSct(scts, LOG_2, OPERATOR_1, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+  AddSct(scts, LOG_3, OPERATOR_2, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::RFC6962);
+
+  CheckCompliance(scts, DEFAULT_LIFETIME, CTPolicyCompliance::Compliant);
+}
+
+TEST_F(CTPolicyEnforcerTest, DoesConformToCTPolicyWithNoRFC6962Logs) {
+  VerifiedSCTList scts;
+
+  AddSct(scts, LOG_1, OPERATOR_1, ORIGIN_TLS, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+  AddSct(scts, LOG_2, OPERATOR_2, ORIGIN_TLS, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+
+  CheckCompliance(scts, DEFAULT_LIFETIME, CTPolicyCompliance::Compliant);
+}
+
+TEST_F(CTPolicyEnforcerTest, DoesConformToCTPolicyWithNoRFC6962LogsEmbedded) {
+  VerifiedSCTList scts;
+
+  // 3 embedded SCTs required for DEFAULT_LIFETIME.
+  AddSct(scts, LOG_1, OPERATOR_1, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+  AddSct(scts, LOG_2, OPERATOR_1, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+  AddSct(scts, LOG_3, OPERATOR_2, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+
+  CheckCompliance(scts, DEFAULT_LIFETIME, CTPolicyCompliance::Compliant);
+}
+
+TEST_F(CTPolicyEnforcerTest,
+       DoesNotConformToCTPolicyWithSCTFromTiledLogWithNoLeafIndex) {
+  VerifiedSCTList scts;
+
+  AddSct(scts, LOG_1, OPERATOR_1, ORIGIN_TLS, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Nothing());
+  AddSct(scts, LOG_2, OPERATOR_2, ORIGIN_TLS, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::RFC6962);
+
+  CheckCompliance(scts, DEFAULT_LIFETIME, CTPolicyCompliance::NotEnoughScts);
+}
+
+TEST_F(CTPolicyEnforcerTest,
+       DoesNotConformToCTPolicyWithSCTFromTiledLogWithNoLeafIndexEmbedded) {
+  VerifiedSCTList scts;
+
+  // 3 embedded SCTs required for DEFAULT_LIFETIME.
+  AddSct(scts, LOG_1, OPERATOR_1, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Some(23));
+  AddSct(scts, LOG_2, OPERATOR_1, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::Tiled, Nothing());
+  AddSct(scts, LOG_3, OPERATOR_2, ORIGIN_EMBEDDED, TIMESTAMP_1,
+         CTLogState::Admissible, CTLogFormat::RFC6962);
+
+  CheckCompliance(scts, DEFAULT_LIFETIME, CTPolicyCompliance::NotEnoughScts);
 }
 
 }  // namespace ct

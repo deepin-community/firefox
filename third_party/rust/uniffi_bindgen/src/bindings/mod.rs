@@ -7,50 +7,32 @@
 //! This module contains all the code for generating foreign language bindings,
 //! along with some helpers for executing foreign language scripts or tests.
 
-use anyhow::{bail, Result};
-use camino::Utf8Path;
-use serde::{Deserialize, Serialize};
-use std::fmt;
+use std::fs;
 
-use crate::interface::ComponentInterface;
+use anyhow::Result;
+use camino::Utf8PathBuf;
 
-pub mod kotlin;
+use crate::{BindgenLoader, BindgenPaths};
+mod kotlin;
 pub mod python;
-pub mod ruby;
-pub mod swift;
+mod ruby;
+mod swift;
+pub use swift::{generate_swift_bindings, SwiftBindingsOptions};
 
-/// Enumeration of all foreign language targets currently supported by this crate.
-///
-/// The functions in this module will delegate to a language-specific backend based
-/// on the provided `TargetLanguage`. For convenience of calling code we also provide
-/// a few `TryFrom` implementations to help guess the correct target language from
-/// e.g. a file extension of command-line argument.
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
-pub enum TargetLanguage {
-    Kotlin,
-    Swift,
-    Python,
-    Ruby,
-}
+#[cfg(feature = "bindgen-tests")]
+pub use self::{
+    kotlin::test as kotlin_test, python::test as python_test, ruby::test as ruby_test,
+    swift::test as swift_test,
+};
 
-impl fmt::Display for TargetLanguage {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Kotlin => write!(f, "kotlin"),
-            Self::Swift => write!(f, "swift"),
-            Self::Python => write!(f, "python"),
-            Self::Ruby => write!(f, "ruby"),
-        }
-    }
-}
-
+#[cfg(feature = "bindgen-tests")]
 /// Mode for the `run_script` function defined for each language
 #[derive(Clone, Debug)]
 pub struct RunScriptOptions {
     pub show_compiler_messages: bool,
 }
 
+#[cfg(feature = "bindgen-tests")]
 impl Default for RunScriptOptions {
     fn default() -> Self {
         Self {
@@ -59,67 +41,74 @@ impl Default for RunScriptOptions {
     }
 }
 
-impl TryFrom<&str> for TargetLanguage {
-    type Error = anyhow::Error;
-    fn try_from(value: &str) -> Result<Self> {
-        Ok(match value.to_ascii_lowercase().as_str() {
-            "kotlin" | "kt" | "kts" => TargetLanguage::Kotlin,
-            "swift" => TargetLanguage::Swift,
-            "python" | "py" => TargetLanguage::Python,
-            "ruby" | "rb" => TargetLanguage::Ruby,
-            _ => bail!("Unknown or unsupported target language: \"{value}\""),
-        })
-    }
+/// Generate bindings
+///
+/// This implements the default uniffi-bindgen command
+pub fn generate(options: GenerateOptions) -> Result<()> {
+    generate_with_bindgen_paths(options, BindgenPaths::default())
 }
 
-impl TryFrom<&std::ffi::OsStr> for TargetLanguage {
-    type Error = anyhow::Error;
-    fn try_from(value: &std::ffi::OsStr) -> Result<Self> {
-        match value.to_str() {
-            None => bail!("Unreadable target language"),
-            Some(s) => s.try_into(),
-        }
-    }
-}
-
-impl TryFrom<String> for TargetLanguage {
-    type Error = anyhow::Error;
-    fn try_from(value: String) -> Result<Self> {
-        TryFrom::try_from(value.as_str())
-    }
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct Config {
-    #[serde(default)]
-    pub(crate) kotlin: kotlin::Config,
-    #[serde(default)]
-    pub(crate) swift: swift::Config,
-    #[serde(default)]
-    pub(crate) python: python::Config,
-    #[serde(default)]
-    pub(crate) ruby: ruby::Config,
-}
-
-/// Generate foreign language bindings from a compiled `uniffi` library.
-pub fn write_bindings(
-    config: &Config,
-    ci: &ComponentInterface,
-    out_dir: &Utf8Path,
-    language: TargetLanguage,
-    try_format_code: bool,
+/// Generate bindings with custom bindgen paths.
+pub fn generate_with_bindgen_paths(
+    options: GenerateOptions,
+    mut paths: BindgenPaths,
 ) -> Result<()> {
-    match language {
-        TargetLanguage::Kotlin => {
-            kotlin::write_bindings(&config.kotlin, ci, out_dir, try_format_code)?
+    if let Some(path) = &options.config_override {
+        paths.add_config_override_layer(path.clone());
+    }
+
+    #[cfg(feature = "cargo-metadata")]
+    paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
+
+    fs::create_dir_all(&options.out_dir)?;
+
+    let loader = BindgenLoader::new(paths);
+    for language in options.languages.iter() {
+        match language {
+            TargetLanguage::Swift => {
+                swift::generate(&loader, options.clone())?;
+            }
+            TargetLanguage::Kotlin => {
+                kotlin::generate(&loader, options.clone())?;
+            }
+            TargetLanguage::Python => {
+                python::generate(&loader, options.clone())?;
+            }
+            TargetLanguage::Ruby => {
+                ruby::generate(&loader, options.clone())?;
+            }
         }
-        TargetLanguage::Swift => {
-            swift::write_bindings(&config.swift, ci, out_dir, try_format_code)?
-        }
-        TargetLanguage::Python => {
-            python::write_bindings(&config.python, ci, out_dir, try_format_code)?
-        }
-        TargetLanguage::Ruby => ruby::write_bindings(&config.ruby, ci, out_dir, try_format_code)?,
     }
     Ok(())
+}
+
+#[derive(Clone, Default)]
+pub struct GenerateOptions {
+    /// Languages to generate bindings for
+    pub languages: Vec<TargetLanguage>,
+    /// Path to the UDL or library file
+    pub source: Utf8PathBuf,
+    /// Directory to write generated files.
+    pub out_dir: Utf8PathBuf,
+    /// Path to the config file to use, if None bindings generators will load
+    /// `[crate-root]/uniffi.toml`
+    pub config_override: Option<Utf8PathBuf>,
+    /// Run the generated code through a source code formatter
+    pub format: bool,
+    /// Limit binding generate to a single crate
+    pub crate_filter: Option<String>,
+    /// Exclude dependencies when running "cargo metadata".
+    /// This will mean external types may not be resolved if they are implemented in crates
+    /// outside of this workspace.
+    /// This can be used in environments when all types are in the namespace and fetching
+    /// all sub-dependencies causes obscure platform specific problems.
+    pub metadata_no_deps: bool,
+}
+
+#[derive(Clone, Debug)]
+pub enum TargetLanguage {
+    Kotlin,
+    Python,
+    Ruby,
+    Swift,
 }

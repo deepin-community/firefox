@@ -2,7 +2,8 @@ use crate::annotation;
 use crate::core::*;
 use crate::encode::Encode;
 use crate::kw;
-use crate::parser::{Cursor, Parse, Parser, Result};
+use crate::lexer::{Lexer, Token, TokenKind};
+use crate::parser::{Parse, Parser, Result};
 use crate::token::*;
 use std::mem;
 
@@ -39,7 +40,7 @@ pub struct Expression<'a> {
 #[derive(Debug)]
 pub struct BranchHint {
     /// Index of instructions in `instrs` field of `Expression` that this hint
-    /// appplies to.
+    /// applies to.
     pub instr_index: usize,
     /// The value of this branch hint
     pub value: u32,
@@ -149,7 +150,7 @@ enum Level<'a> {
 
 /// Possible states of "what is currently being parsed?" in an `if` expression.
 enum If<'a> {
-    /// Only the `if` instructoin has been parsed, next thing to parse is the
+    /// Only the `if` instruction has been parsed, next thing to parse is the
     /// clause, if any, of the `if` instruction.
     ///
     /// This parse ends when `(then ...)` is encountered.
@@ -162,7 +163,7 @@ enum If<'a> {
 }
 
 impl<'a> ExpressionParser<'a> {
-    fn new(parser: Parser<'a>) -> ExpressionParser {
+    fn new(parser: Parser<'a>) -> ExpressionParser<'a> {
         ExpressionParser {
             raw_instrs: Vec::new(),
             stack: Vec::new(),
@@ -295,7 +296,7 @@ impl<'a> ExpressionParser<'a> {
                     }
                 }
                 Paren::None => {
-                    return Err(parser.error("expected to continue a folded instruction"))
+                    return Err(parser.error("expected to continue a folded instruction"));
                 }
             }
         }
@@ -318,7 +319,7 @@ impl<'a> ExpressionParser<'a> {
 
     /// State transitions with parsing an `if` statement.
     ///
-    /// The syntactical form of an `if` stament looks like:
+    /// The syntactical form of an `if` statement looks like:
     ///
     /// ```wat
     /// (if ($clause)... (then $then) (else $else))
@@ -441,7 +442,7 @@ macro_rules! instructions {
         }
 
         impl Encode for Instruction<'_> {
-            #[allow(non_snake_case)]
+            #[allow(non_snake_case, unused_lifetimes)]
             fn encode(&self, v: &mut Vec<u8>) {
                 match self {
                     $(
@@ -870,31 +871,31 @@ instructions! {
         GlobalAtomicRmwCmpxchg(Ordered<Index<'a>>) : [0xfe, 0x57] : "global.atomic.rmw.cmpxchg",
         TableAtomicGet(Ordered<TableArg<'a>>) : [0xfe, 0x58] : "table.atomic.get",
         TableAtomicSet(Ordered<TableArg<'a>>) : [0xfe, 0x59] : "table.atomic.set",
-        TableAtomicRmwXchg(Ordered<TableArg<'a>>) : [0xfe, 0x5A] : "table.atomic.rmw.xchg",
-        TableAtomicRmwCmpxchg(Ordered<TableArg<'a>>) : [0xFE, 0x5B] : "table.atomic.rmw.cmpxchg",
-        StructAtomicGet(Ordered<StructAccess<'a>>) : [0xFE, 0x5C] : "struct.atomic.get",
-        StructAtomicGetS(Ordered<StructAccess<'a>>) : [0xFE, 0x5D] : "struct.atomic.get_s",
-        StructAtomicGetU(Ordered<StructAccess<'a>>) : [0xFE, 0x5E] : "struct.atomic.get_u",
-        StructAtomicSet(Ordered<StructAccess<'a>>) : [0xFE, 0x5F] : "struct.atomic.set",
-        StructAtomicRmwAdd(Ordered<StructAccess<'a>>) : [0xFE, 0x60] : "struct.atomic.rmw.add",
-        StructAtomicRmwSub(Ordered<StructAccess<'a>>) : [0xFE, 0x61] : "struct.atomic.rmw.sub",
-        StructAtomicRmwAnd(Ordered<StructAccess<'a>>) : [0xFE, 0x62] : "struct.atomic.rmw.and",
-        StructAtomicRmwOr(Ordered<StructAccess<'a>>) : [0xFE, 0x63] : "struct.atomic.rmw.or",
-        StructAtomicRmwXor(Ordered<StructAccess<'a>>) : [0xFE, 0x64] : "struct.atomic.rmw.xor",
-        StructAtomicRmwXchg(Ordered<StructAccess<'a>>) : [0xFE, 0x65] : "struct.atomic.rmw.xchg",
-        StructAtomicRmwCmpxchg(Ordered<StructAccess<'a>>) : [0xFE, 0x66] : "struct.atomic.rmw.cmpxchg",
-        ArrayAtomicGet(Ordered<Index<'a>>) : [0xFE, 0x67] : "array.atomic.get",
-        ArrayAtomicGetS(Ordered<Index<'a>>) : [0xFE, 0x68] : "array.atomic.get_s",
-        ArrayAtomicGetU(Ordered<Index<'a>>) : [0xFE, 0x69] : "array.atomic.get_u",
-        ArrayAtomicSet(Ordered<Index<'a>>) : [0xFE, 0x6A] : "array.atomic.set",
-        ArrayAtomicRmwAdd(Ordered<Index<'a>>) : [0xFE, 0x6B] : "array.atomic.rmw.add",
-        ArrayAtomicRmwSub(Ordered<Index<'a>>) : [0xFE, 0x6C] : "array.atomic.rmw.sub",
-        ArrayAtomicRmwAnd(Ordered<Index<'a>>) : [0xFE, 0x6D] : "array.atomic.rmw.and",
-        ArrayAtomicRmwOr(Ordered<Index<'a>>) : [0xFE, 0x6E] : "array.atomic.rmw.or",
-        ArrayAtomicRmwXor(Ordered<Index<'a>>) : [0xFE, 0x6F] : "array.atomic.rmw.xor",
-        ArrayAtomicRmwXchg(Ordered<Index<'a>>) : [0xFE, 0x70] : "array.atomic.rmw.xchg",
-        ArrayAtomicRmwCmpxchg(Ordered<Index<'a>>) : [0xFE, 0x71] : "array.atomic.rmw.cmpxchg",
-        RefI31Shared : [0xFE, 0x72] : "ref.i31_shared",
+        TableAtomicRmwXchg(Ordered<TableArg<'a>>) : [0xfe, 0x5a] : "table.atomic.rmw.xchg",
+        TableAtomicRmwCmpxchg(Ordered<TableArg<'a>>) : [0xfe, 0x5b] : "table.atomic.rmw.cmpxchg",
+        StructAtomicGet(Ordered<StructAccess<'a>>) : [0xfe, 0x5c] : "struct.atomic.get",
+        StructAtomicGetS(Ordered<StructAccess<'a>>) : [0xfe, 0x5d] : "struct.atomic.get_s",
+        StructAtomicGetU(Ordered<StructAccess<'a>>) : [0xfe, 0x5e] : "struct.atomic.get_u",
+        StructAtomicSet(Ordered<StructAccess<'a>>) : [0xfe, 0x5f] : "struct.atomic.set",
+        StructAtomicRmwAdd(Ordered<StructAccess<'a>>) : [0xfe, 0x60] : "struct.atomic.rmw.add",
+        StructAtomicRmwSub(Ordered<StructAccess<'a>>) : [0xfe, 0x61] : "struct.atomic.rmw.sub",
+        StructAtomicRmwAnd(Ordered<StructAccess<'a>>) : [0xfe, 0x62] : "struct.atomic.rmw.and",
+        StructAtomicRmwOr(Ordered<StructAccess<'a>>) : [0xfe, 0x63] : "struct.atomic.rmw.or",
+        StructAtomicRmwXor(Ordered<StructAccess<'a>>) : [0xfe, 0x64] : "struct.atomic.rmw.xor",
+        StructAtomicRmwXchg(Ordered<StructAccess<'a>>) : [0xfe, 0x65] : "struct.atomic.rmw.xchg",
+        StructAtomicRmwCmpxchg(Ordered<StructAccess<'a>>) : [0xfe, 0x66] : "struct.atomic.rmw.cmpxchg",
+        ArrayAtomicGet(Ordered<Index<'a>>) : [0xfe, 0x67] : "array.atomic.get",
+        ArrayAtomicGetS(Ordered<Index<'a>>) : [0xfe, 0x68] : "array.atomic.get_s",
+        ArrayAtomicGetU(Ordered<Index<'a>>) : [0xfe, 0x69] : "array.atomic.get_u",
+        ArrayAtomicSet(Ordered<Index<'a>>) : [0xfe, 0x6a] : "array.atomic.set",
+        ArrayAtomicRmwAdd(Ordered<Index<'a>>) : [0xfe, 0x6b] : "array.atomic.rmw.add",
+        ArrayAtomicRmwSub(Ordered<Index<'a>>) : [0xfe, 0x6c] : "array.atomic.rmw.sub",
+        ArrayAtomicRmwAnd(Ordered<Index<'a>>) : [0xfe, 0x6d] : "array.atomic.rmw.and",
+        ArrayAtomicRmwOr(Ordered<Index<'a>>) : [0xfe, 0x6e] : "array.atomic.rmw.or",
+        ArrayAtomicRmwXor(Ordered<Index<'a>>) : [0xfe, 0x6f] : "array.atomic.rmw.xor",
+        ArrayAtomicRmwXchg(Ordered<Index<'a>>) : [0xfe, 0x70] : "array.atomic.rmw.xchg",
+        ArrayAtomicRmwCmpxchg(Ordered<Index<'a>>) : [0xfe, 0x71] : "array.atomic.rmw.cmpxchg",
+        RefI31Shared : [0xfe, 0x72] : "ref.i31_shared",
 
         // proposal: simd
         //
@@ -1159,7 +1160,7 @@ instructions! {
         TryTable(TryTable<'a>) : [0x1f] : "try_table",
         Throw(Index<'a>) : [0x08] : "throw",
 
-        // Deprecated exception handling optocdes
+        // Deprecated exception handling opcodes
         Try(Box<BlockType<'a>>) : [0x06] : "try",
         Catch(Index<'a>) : [0x07] : "catch",
         Rethrow(Index<'a>) : [0x09] : "rethrow",
@@ -1187,6 +1188,28 @@ instructions! {
         I16x8RelaxedQ15mulrS: [0xfd, 0x111]: "i16x8.relaxed_q15mulr_s",
         I16x8RelaxedDotI8x16I7x16S: [0xfd, 0x112]: "i16x8.relaxed_dot_i8x16_i7x16_s",
         I32x4RelaxedDotI8x16I7x16AddS: [0xfd, 0x113]: "i32x4.relaxed_dot_i8x16_i7x16_add_s",
+
+        // Stack switching proposal
+        ContNew(Index<'a>)             : [0xe0] : "cont.new",
+        ContBind(ContBind<'a>)         : [0xe1] : "cont.bind",
+        Suspend(Index<'a>)             : [0xe2] : "suspend",
+        Resume(Resume<'a>)             : [0xe3] : "resume",
+        ResumeThrow(ResumeThrow<'a>)   : [0xe4] : "resume_throw",
+        Switch(Switch<'a>)             : [0xe5] : "switch",
+
+        // Wide arithmetic proposal
+        I64Add128   : [0xfc, 19] : "i64.add128",
+        I64Sub128   : [0xfc, 20] : "i64.sub128",
+        I64MulWideS : [0xfc, 21] : "i64.mul_wide_s",
+        I64MulWideU : [0xfc, 22] : "i64.mul_wide_u",
+
+        // Custom descriptors
+        StructNewDesc(Index<'a>) : [0xfb, 32] : "struct.new_desc",
+        StructNewDefaultDesc(Index<'a>) : [0xfb, 33] : "struct.new_default_desc",
+        RefGetDesc(Index<'a>): [0xfb, 34] : "ref.get_desc",
+        RefCastDesc(RefCastDesc<'a>) : [] : "ref.cast_desc",
+        BrOnCastDesc(Box<BrOnCastDesc<'a>>) : [] : "br_on_cast_desc",
+        BrOnCastDescFail(Box<BrOnCastDescFail<'a>>) : [] : "br_on_cast_desc_fail",
     }
 }
 
@@ -1194,11 +1217,12 @@ instructions! {
 // since big `*.wat` files will have a lot of these. This is a small ratchet to
 // make sure that this enum doesn't become larger than it already is, although
 // ideally it also wouldn't be as large as it is now.
-const _: () = {
+#[test]
+fn assert_instruction_not_too_large() {
     let size = std::mem::size_of::<Instruction<'_>>();
     let pointer = std::mem::size_of::<u64>();
-    assert!(size <= pointer * 10);
-};
+    assert!(size <= pointer * 11);
+}
 
 impl<'a> Instruction<'a> {
     pub(crate) fn needs_data_count(&self) -> bool {
@@ -1233,6 +1257,113 @@ impl<'a> Parse<'a> for BlockType<'a> {
                 .parse::<TypeUse<'a, FunctionTypeNoNames<'a>>>()?
                 .into(),
         })
+    }
+}
+
+/// Extra information associated with the cont.bind instruction
+#[derive(Debug, Clone)]
+#[allow(missing_docs)]
+pub struct ContBind<'a> {
+    pub argument_index: Index<'a>,
+    pub result_index: Index<'a>,
+}
+
+impl<'a> Parse<'a> for ContBind<'a> {
+    fn parse(parser: Parser<'a>) -> Result<Self> {
+        Ok(ContBind {
+            argument_index: parser.parse()?,
+            result_index: parser.parse()?,
+        })
+    }
+}
+
+/// Extra information associated with the resume instruction
+#[derive(Debug, Clone)]
+#[allow(missing_docs)]
+pub struct Resume<'a> {
+    pub type_index: Index<'a>,
+    pub table: ResumeTable<'a>,
+}
+
+impl<'a> Parse<'a> for Resume<'a> {
+    fn parse(parser: Parser<'a>) -> Result<Self> {
+        Ok(Resume {
+            type_index: parser.parse()?,
+            table: parser.parse()?,
+        })
+    }
+}
+
+/// Extra information associated with the resume_throw instruction
+#[derive(Debug, Clone)]
+#[allow(missing_docs)]
+pub struct ResumeThrow<'a> {
+    pub type_index: Index<'a>,
+    pub tag_index: Index<'a>,
+    pub table: ResumeTable<'a>,
+}
+
+impl<'a> Parse<'a> for ResumeThrow<'a> {
+    fn parse(parser: Parser<'a>) -> Result<Self> {
+        Ok(ResumeThrow {
+            type_index: parser.parse()?,
+            tag_index: parser.parse()?,
+            table: parser.parse()?,
+        })
+    }
+}
+
+/// Extra information associated with the switch instruction
+#[derive(Debug, Clone)]
+#[allow(missing_docs)]
+pub struct Switch<'a> {
+    pub type_index: Index<'a>,
+    pub tag_index: Index<'a>,
+}
+
+impl<'a> Parse<'a> for Switch<'a> {
+    fn parse(parser: Parser<'a>) -> Result<Self> {
+        Ok(Switch {
+            type_index: parser.parse()?,
+            tag_index: parser.parse()?,
+        })
+    }
+}
+
+/// A representation of resume tables
+#[derive(Debug, Clone)]
+#[allow(missing_docs)]
+pub struct ResumeTable<'a> {
+    pub handlers: Vec<Handle<'a>>,
+}
+
+/// A representation of resume table entries
+#[derive(Debug, Clone)]
+#[allow(missing_docs)]
+pub enum Handle<'a> {
+    OnLabel { tag: Index<'a>, label: Index<'a> },
+    OnSwitch { tag: Index<'a> },
+}
+
+impl<'a> Parse<'a> for ResumeTable<'a> {
+    fn parse(parser: Parser<'a>) -> Result<Self> {
+        let mut handlers = Vec::new();
+        while parser.peek::<LParen>()? && parser.peek2::<kw::on>()? {
+            handlers.push(parser.parens(|p| {
+                p.parse::<kw::on>()?;
+                let tag: Index<'a> = p.parse()?;
+                if p.peek::<kw::switch>()? {
+                    p.parse::<kw::switch>()?;
+                    Ok(Handle::OnSwitch { tag })
+                } else {
+                    Ok(Handle::OnLabel {
+                        tag,
+                        label: p.parse()?,
+                    })
+                }
+            })?);
+        }
+        Ok(ResumeTable { handlers })
     }
 }
 
@@ -1364,7 +1495,7 @@ pub struct MemArg<'a> {
     ///
     /// This is not stored as a log, this is the actual alignment (e.g. 1, 2, 4,
     /// 8, etc).
-    pub align: u32,
+    pub align: u64,
     /// The offset, in bytes of this access.
     pub offset: u64,
     /// The memory index we're accessing
@@ -1372,12 +1503,8 @@ pub struct MemArg<'a> {
 }
 
 impl<'a> MemArg<'a> {
-    fn parse(parser: Parser<'a>, default_align: u32) -> Result<Self> {
-        fn parse_field<T>(
-            name: &str,
-            parser: Parser<'_>,
-            f: impl FnOnce(Cursor<'_>, &str, u32) -> Result<T>,
-        ) -> Result<Option<T>> {
+    fn parse(parser: Parser<'a>, default_align: u64) -> Result<Self> {
+        fn parse_field(name: &str, parser: Parser<'_>) -> Result<Option<u64>> {
             parser.step(|c| {
                 let (kw, rest) = match c.keyword()? {
                     Some(p) => p,
@@ -1391,35 +1518,34 @@ impl<'a> MemArg<'a> {
                     return Ok((None, c));
                 }
                 let num = &kw[1..];
-                let num = if let Some(stripped) = num.strip_prefix("0x") {
-                    f(c, stripped, 16)?
-                } else {
-                    f(c, num, 10)?
-                };
-
-                Ok((Some(num), rest))
-            })
-        }
-
-        fn parse_u32(name: &str, parser: Parser<'_>) -> Result<Option<u32>> {
-            parse_field(name, parser, |c, num, radix| {
-                u32::from_str_radix(num, radix).map_err(|_| c.error("i32 constant out of range"))
-            })
-        }
-
-        fn parse_u64(name: &str, parser: Parser<'_>) -> Result<Option<u64>> {
-            parse_field(name, parser, |c, num, radix| {
-                u64::from_str_radix(num, radix).map_err(|_| c.error("i64 constant out of range"))
+                let lexer = Lexer::new(num);
+                let mut pos = 0;
+                if let Ok(Some(
+                    token @ Token {
+                        kind: TokenKind::Integer(integer_kind),
+                        ..
+                    },
+                )) = lexer.parse(&mut pos)
+                {
+                    let int = token.integer(lexer.input(), integer_kind);
+                    let (s, base) = int.val();
+                    let value = u64::from_str_radix(s, base);
+                    return match value {
+                        Ok(n) => Ok((Some(n), rest)),
+                        Err(_) => Err(c.error("u64 constant out of range")),
+                    };
+                }
+                Err(c.error("expected u64 integer constant"))
             })
         }
 
         let memory = parser
             .parse::<Option<_>>()?
             .unwrap_or_else(|| Index::Num(0, parser.prev_span()));
-        let offset = parse_u64("offset", parser)?.unwrap_or(0);
-        let align = match parse_u32("align", parser)? {
+        let offset = parse_field("offset", parser)?.unwrap_or(0);
+        let align = match parse_field("align", parser)? {
             Some(n) if !n.is_power_of_two() => {
-                return Err(parser.error("alignment must be a power of two"))
+                return Err(parser.error("alignment must be a power of two"));
             }
             n => n.unwrap_or(default_align),
         };
@@ -1442,7 +1568,7 @@ pub struct LoadOrStoreLane<'a> {
 }
 
 impl<'a> LoadOrStoreLane<'a> {
-    fn parse(parser: Parser<'a>, default_align: u32) -> Result<Self> {
+    fn parse(parser: Parser<'a>, default_align: u64) -> Result<Self> {
         // This is sort of funky. The first integer we see could be the lane
         // index, but it could also be the memory index. To determine what it is
         // then if we see a second integer we need to look further.
@@ -1821,6 +1947,63 @@ pub struct BrOnCastFail<'a> {
 impl<'a> Parse<'a> for BrOnCastFail<'a> {
     fn parse(parser: Parser<'a>) -> Result<Self> {
         Ok(BrOnCastFail {
+            label: parser.parse()?,
+            from_type: parser.parse()?,
+            to_type: parser.parse()?,
+        })
+    }
+}
+
+/// Extra data associated with the `ref.cast_desc` instruction
+#[derive(Debug, Clone)]
+pub struct RefCastDesc<'a> {
+    /// The type to cast to.
+    pub r#type: RefType<'a>,
+}
+
+impl<'a> Parse<'a> for RefCastDesc<'a> {
+    fn parse(parser: Parser<'a>) -> Result<Self> {
+        Ok(RefCastDesc {
+            r#type: parser.parse()?,
+        })
+    }
+}
+
+/// Extra data associated with the `br_on_cast_desc` instruction
+#[derive(Debug, Clone)]
+pub struct BrOnCastDesc<'a> {
+    /// The label to branch to.
+    pub label: Index<'a>,
+    /// The type we're casting from.
+    pub from_type: RefType<'a>,
+    /// The type we're casting to.
+    pub to_type: RefType<'a>,
+}
+
+impl<'a> Parse<'a> for BrOnCastDesc<'a> {
+    fn parse(parser: Parser<'a>) -> Result<Self> {
+        Ok(BrOnCastDesc {
+            label: parser.parse()?,
+            from_type: parser.parse()?,
+            to_type: parser.parse()?,
+        })
+    }
+}
+
+/// Extra data associated with the `br_on_cast_desc_fail` instruction
+#[derive(Debug, Clone)]
+pub struct BrOnCastDescFail<'a> {
+    /// The label to branch to.
+    pub label: Index<'a>,
+    /// The type we're casting from.
+    pub from_type: RefType<'a>,
+    /// The type we're casting to.
+    pub to_type: RefType<'a>,
+}
+
+impl<'a> Parse<'a> for BrOnCastDescFail<'a> {
+    fn parse(parser: Parser<'a>) -> Result<Self> {
+        Ok(BrOnCastDescFail {
             label: parser.parse()?,
             from_type: parser.parse()?,
             to_type: parser.parse()?,

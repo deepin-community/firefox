@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Amharc
 download-cert-view-text = Scrúdaigh Teastas an Údaráis Deimhniúcháin
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = Eisithe ag: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Stóráilte ar: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Meabhraigh an cinneadh seo
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Focal faire an chúltaca teastais (arís):
 set-password-reminder = Tábhachtach: má dhéanann tú dearmad ar an bhfocal faire don chúltaca teastais ní bheidh tú in ann an cúltaca seo a chur ar ais. Breac síos tuairisc de in áit shlán.
-
-## Protected authentication alert
-

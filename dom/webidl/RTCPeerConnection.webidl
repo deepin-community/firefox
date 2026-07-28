@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -63,13 +62,10 @@ dictionary RTCDataChannelInit {
   unsigned short maxPacketLifeTime;
   [EnforceRange]
   unsigned short maxRetransmits;
-  DOMString      protocol = "";
+  UTF8String     protocol = "";
   boolean        negotiated = false;
   [EnforceRange]
   unsigned short id;
-
-  // These are deprecated due to renaming in the spec, but still supported for Fx53
-  unsigned short maxRetransmitTime;
 };
 
 dictionary RTCOfferAnswerOptions {
@@ -159,6 +155,7 @@ interface RTCPeerConnection : EventTarget  {
   undefined close ();
   attribute EventHandler onnegotiationneeded;
   attribute EventHandler onicecandidate;
+  attribute EventHandler onicecandidateerror;
   attribute EventHandler onsignalingstatechange;
   attribute EventHandler onaddstream; // obsolete
   attribute EventHandler onaddtrack;  // obsolete
@@ -171,7 +168,7 @@ interface RTCPeerConnection : EventTarget  {
 
   readonly attribute RTCSctpTransport? sctp;
   // Data channel.
-  RTCDataChannel createDataChannel (DOMString label,
+  RTCDataChannel createDataChannel (UTF8String label,
                                     optional RTCDataChannelInit dataChannelDict = {});
   attribute EventHandler ondatachannel;
 };

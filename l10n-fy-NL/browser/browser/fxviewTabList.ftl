@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Ferpleatse nei Ein
     .accesskey = E
 fxviewtabrow-move-tab-window = Ferpleatse nei nij finster
     .accesskey = j
+fxviewtabrow-send-to-device = Nei apparaat ferstjoere
+    .accesskey = s
+fxviewtabrow-send-to-mobile = Nei Mobyl ferstjoere
+    .accesskey = s
 fxviewtabrow-send-tab = Ljepblêd nei apparaat ferstjoere
     .accesskey = a
 fxviewtabrow-pin-tab = Ljepblêd fêstsette
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Ljepblêd dôvje opheffe
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Opsjes foar { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = { $tabTitle } dôvje
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Dôvjen { $tabTitle } opheffe
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Ljepblêd dôvje
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Ljepblêd dôvje opheffe
+fxviewtabrow-send-to-mobile-connect-device = Ferbyn in apparaat om ljepblêden te ferstjoeren
+fxviewtabrow-send-to-mobile-device-missing2 = Sjogge jo jo apparaat net?
+fxviewtabrow-send-to-mobile-not-verified = Account net ferifiearre
+fxviewtabrow-send-to-mobile-verify-account = Ferifiearje jo account
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Meld jo oan om ljepblêden te ferstjoeren
+fxviewtabrow-send-to-mobile-turn-on-sync = Skeakelje Syngronisaasje yn om ljepblêden te ferstjoeren

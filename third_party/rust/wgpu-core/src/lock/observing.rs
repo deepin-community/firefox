@@ -28,15 +28,17 @@
 //!
 //! [`lock/rank.rs`]: ../../../src/wgpu_core/lock/rank.rs.html
 
-use crate::FastHashSet;
-
-use super::rank::{LockRank, LockRankSet};
+use alloc::{format, string::String};
+use core::{cell::RefCell, panic::Location};
 use std::{
-    cell::RefCell,
     fs::File,
-    panic::Location,
     path::{Path, PathBuf},
 };
+
+use super::rank::{LockRank, LockRankSet};
+use crate::FastHashSet;
+
+pub type RankData = Option<HeldLock>;
 
 /// A `Mutex` instrumented for lock acquisition order observation.
 ///
@@ -69,16 +71,20 @@ impl<T> Mutex<T> {
     }
 
     #[track_caller]
-    pub fn lock(&self) -> MutexGuard<T> {
+    pub fn lock(&self) -> MutexGuard<'_, T> {
         let saved = acquire(self.rank, Location::caller());
         MutexGuard {
             inner: self.inner.lock(),
             _state: LockStateGuard { saved },
         }
     }
+
+    pub fn into_inner(self) -> T {
+        self.inner.into_inner()
+    }
 }
 
-impl<'a, T> std::ops::Deref for MutexGuard<'a, T> {
+impl<'a, T> core::ops::Deref for MutexGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -86,14 +92,14 @@ impl<'a, T> std::ops::Deref for MutexGuard<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::DerefMut for MutexGuard<'a, T> {
+impl<'a, T> core::ops::DerefMut for MutexGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.inner.deref_mut()
     }
 }
 
-impl<T: std::fmt::Debug> std::fmt::Debug for Mutex<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<T: core::fmt::Debug> core::fmt::Debug for Mutex<T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.inner.fmt(f)
     }
 }
@@ -140,7 +146,7 @@ impl<T> RwLock<T> {
     }
 
     #[track_caller]
-    pub fn read(&self) -> RwLockReadGuard<T> {
+    pub fn read(&self) -> RwLockReadGuard<'_, T> {
         let saved = acquire(self.rank, Location::caller());
         RwLockReadGuard {
             inner: self.inner.read(),
@@ -149,12 +155,33 @@ impl<T> RwLock<T> {
     }
 
     #[track_caller]
-    pub fn write(&self) -> RwLockWriteGuard<T> {
+    pub fn write(&self) -> RwLockWriteGuard<'_, T> {
         let saved = acquire(self.rank, Location::caller());
         RwLockWriteGuard {
             inner: self.inner.write(),
             _state: LockStateGuard { saved },
         }
+    }
+
+    /// Force an read-unlock operation on this lock.
+    ///
+    /// Safety:
+    /// - A read lock must be held which is not held by a guard.
+    pub unsafe fn force_unlock_read(&self, data: RankData) {
+        release(data);
+        unsafe { self.inner.force_unlock_read() };
+    }
+}
+
+impl<'a, T> RwLockReadGuard<'a, T> {
+    // Forget the read guard, leaving the lock in a locked state with no guard.
+    //
+    // Equivalent to std::mem::forget, but preserves the information about the lock
+    // rank.
+    pub fn forget(this: Self) -> RankData {
+        core::mem::forget(this.inner);
+
+        this._state.saved
     }
 }
 
@@ -167,13 +194,13 @@ impl<'a, T> RwLockWriteGuard<'a, T> {
     }
 }
 
-impl<T: std::fmt::Debug> std::fmt::Debug for RwLock<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<T: core::fmt::Debug> core::fmt::Debug for RwLock<T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.inner.fmt(f)
     }
 }
 
-impl<'a, T> std::ops::Deref for RwLockReadGuard<'a, T> {
+impl<'a, T> core::ops::Deref for RwLockReadGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -181,7 +208,7 @@ impl<'a, T> std::ops::Deref for RwLockReadGuard<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::Deref for RwLockWriteGuard<'a, T> {
+impl<'a, T> core::ops::Deref for RwLockWriteGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -189,7 +216,7 @@ impl<'a, T> std::ops::Deref for RwLockWriteGuard<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::DerefMut for RwLockWriteGuard<'a, T> {
+impl<'a, T> core::ops::DerefMut for RwLockWriteGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.inner.deref_mut()
     }
@@ -267,13 +294,10 @@ fn acquire(new_rank: LockRank, location: &'static Location<'static>) -> Option<H
                 log.write_acquisition(held_lock, new_rank, location);
             }
 
-            std::mem::replace(
-                held_lock,
-                Some(HeldLock {
-                    rank: new_rank,
-                    location,
-                }),
-            )
+            held_lock.replace(HeldLock {
+                rank: new_rank,
+                location,
+            })
         }
     })
 }
@@ -290,7 +314,7 @@ fn release(saved: Option<HeldLock>) {
     });
 }
 
-thread_local! {
+std::thread_local! {
     static LOCK_STATE: RefCell<ThreadState> = const { RefCell::new(ThreadState::Initial) };
 }
 
@@ -312,7 +336,7 @@ enum ThreadState {
 
 /// Information about a currently held lock.
 #[derive(Debug, Copy, Clone)]
-struct HeldLock {
+pub struct HeldLock {
     /// The lock's rank.
     rank: LockRank,
 
@@ -333,10 +357,9 @@ struct ObservationLog {
     locations_seen: FastHashSet<*const Location<'static>>,
 
     /// Buffer for serializing events, retained for allocation reuse.
-    buffer: Vec<u8>,
+    buffer: String,
 }
 
-#[allow(trivial_casts)]
 impl ObservationLog {
     /// Create an observation log in `dir` for the current pid and thread.
     fn create(dir: impl AsRef<Path>) -> Result<Self, std::io::Error> {
@@ -350,7 +373,7 @@ impl ObservationLog {
         Ok(ObservationLog {
             log_file,
             locations_seen: FastHashSet::default(),
-            buffer: Vec::new(),
+            buffer: String::new(),
         })
     }
 
@@ -369,16 +392,16 @@ impl ObservationLog {
         self.write_location(new_location);
         self.write_action(&Action::Acquisition {
             older_rank: older_lock.rank.bit.number(),
-            older_location: older_lock.location as *const _ as usize,
+            older_location: addr(older_lock.location),
             newer_rank: new_rank.bit.number(),
-            newer_location: new_location as *const _ as usize,
+            newer_location: addr(new_location),
         });
     }
 
     fn write_location(&mut self, location: &'static Location<'static>) {
         if self.locations_seen.insert(location) {
             self.write_action(&Action::Location {
-                address: location as *const _ as usize,
+                address: addr(location),
                 file: location.file(),
                 line: location.line(),
                 column: location.column(),
@@ -400,9 +423,9 @@ impl ObservationLog {
         self.buffer.clear();
         ron::ser::to_writer(&mut self.buffer, &action)
             .expect("error serializing `lock::observing::Action`");
-        self.buffer.push(b'\n');
+        self.buffer.push('\n');
         self.log_file
-            .write_all(&self.buffer)
+            .write_all(self.buffer.as_bytes())
             .expect("error writing `lock::observing::Action`");
     }
 }
@@ -472,4 +495,9 @@ impl LockRankSet {
     fn number(self) -> u32 {
         self.bits().trailing_zeros()
     }
+}
+
+/// Convenience for `core::ptr::from_ref(t) as usize`.
+fn addr<T>(t: &T) -> usize {
+    core::ptr::from_ref(t) as usize
 }

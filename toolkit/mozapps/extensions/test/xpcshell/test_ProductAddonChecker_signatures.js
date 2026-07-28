@@ -49,7 +49,7 @@ let goodXml;
 // `cat toolkit/mozapps/extensions/test/xpcshell/data/productaddons/good.xml | ./mach python security/manager/ssl/tests/unit/test_content_signing/pysign.py`
 // If test certificates are regenerated, this signature must also be.
 const goodXmlContentSignature =
-  "7QYnPqFoOlS02BpDdIRIljzmPr6BFwPs1z1y8KJUBlnU7EVG6FbnXmVVt5Op9wDzgvhXX7th8qFJvpPOZs_B_tHRDNJ8SK0HN95BAN15z3ZW2r95SSHmU-fP2JgoNOR3";
+  "7QYnPqFoOlS02BpDdIRIljzmPr6BFwPs1z1y8KJUBlnU7EVG6FbnXmVVt5Op9wDzHeN7pJOM7ANmTqU50IbHnV8q87wmY83QL4p6NZzjsFnWolFmwK2ZjlLnhyxFcVSz";
 
 const goodXmlPath = "/good.xml";
 // Requests use query strings to test different signature states.
@@ -97,7 +97,6 @@ add_task(async function test_valid_content_signature() {
     const res = await ProductAddonChecker.getProductAddonList(
       signedBaseUri + goodXmlPath + "?" + validSignatureQuery,
       /*allowNonBuiltIn*/ false,
-      /*allowedCerts*/ false,
       /*verifyContentSignature*/ true,
       /*trustedContentSignatureRoot*/ Ci.nsIX509CertDB.AppXPCShellRoot
     );
@@ -122,7 +121,6 @@ add_task(async function test_invalid_content_signature() {
     await ProductAddonChecker.getProductAddonList(
       signedBaseUri + goodXmlPath + "?" + invalidSignatureQuery,
       /*allowNonBuiltIn*/ false,
-      /*allowedCerts*/ false,
       /*verifyContentSignature*/ true,
       /*trustedContentSignatureRoot*/ Ci.nsIX509CertDB.AppXPCShellRoot
     );
@@ -144,7 +142,6 @@ add_task(async function test_missing_content_signature_header() {
     await ProductAddonChecker.getProductAddonList(
       signedBaseUri + goodXmlPath + "?" + missingSignatureQuery,
       /*allowNonBuiltIn*/ false,
-      /*allowedCerts*/ false,
       /*verifyContentSignature*/ true,
       /*trustedContentSignatureRoot*/ Ci.nsIX509CertDB.AppXPCShellRoot
     );
@@ -167,7 +164,6 @@ add_task(async function test_incomplete_content_signature_header() {
     await ProductAddonChecker.getProductAddonList(
       signedBaseUri + goodXmlPath + "?" + incompleteSignatureQuery,
       /*allowNonBuiltIn*/ false,
-      /*allowedCerts*/ false,
       /*verifyContentSignature*/ true,
       /*trustedContentSignatureRoot*/ Ci.nsIX509CertDB.AppXPCShellRoot
     );
@@ -190,7 +186,6 @@ add_task(async function test_bad_x5u_content_signature_header() {
     await ProductAddonChecker.getProductAddonList(
       signedBaseUri + goodXmlPath + "?" + badX5uSignatureQuery,
       /*allowNonBuiltIn*/ false,
-      /*allowedCerts*/ false,
       /*verifyContentSignature*/ true,
       /*trustedContentSignatureRoot*/ Ci.nsIX509CertDB.AppXPCShellRoot
     );

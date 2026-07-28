@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,12 +8,15 @@
 class nsWindowSizes;
 
 #include "mozilla/ServoStyleConsts.h"
+#include "nsStyleStructList.h"
 
 /*
  * ServoComputedData and its related types.
  */
 
 namespace mozilla {
+
+enum class PseudoStyleType : uint8_t;
 
 struct ServoWritingMode {
   uint8_t mBits;
@@ -26,6 +27,10 @@ struct ServoComputedCustomProperties {
   uintptr_t mNonInherited;
 };
 
+struct ServoUsedAttributes {
+  uintptr_t mUsedAttributes;
+};
+
 struct ServoRuleNode {
   uintptr_t mPtr;
 };
@@ -34,9 +39,9 @@ class ComputedStyle;
 
 }  // namespace mozilla
 
-#define STYLE_STRUCT(name_) struct nsStyle##name_;
-#include "nsStyleStructList.h"
-#undef STYLE_STRUCT
+#define FORWARD_STYLE_STRUCT(name_) struct nsStyle##name_;
+FOR_EACH_STYLE_STRUCT(FORWARD_STYLE_STRUCT, FORWARD_STYLE_STRUCT)
+#undef FORWARD_STYLE_STRUCT
 
 class ServoComputedData;
 
@@ -60,13 +65,14 @@ class ServoComputedData {
   // Constructs via memcpy.  Will not move out of aValue.
   explicit ServoComputedData(const ServoComputedDataForgotten aValue);
 
-#define STYLE_STRUCT(name_)                                       \
+#define SERVO_STYLE_STRUCT_ACCESSOR(name_)                        \
   const nsStyle##name_* name_;                                    \
   const nsStyle##name_* Style##name_() const MOZ_NONNULL_RETURN { \
     return name_;                                                 \
   }
-#include "nsStyleStructList.h"
-#undef STYLE_STRUCT
+  FOR_EACH_STYLE_STRUCT(SERVO_STYLE_STRUCT_ACCESSOR,
+                        SERVO_STYLE_STRUCT_ACCESSOR)
+#undef SERVO_STYLE_STRUCT_ACCESSOR
 
   void AddSizeOfExcludingThis(nsWindowSizes& aSizes) const;
 
@@ -74,7 +80,19 @@ class ServoComputedData {
 
  private:
   mozilla::ServoComputedCustomProperties custom_properties;
+  mozilla::ServoUsedAttributes attribute_references;
+  /// The rule node representing the ordered list of rules matched for this
+  /// node.  Can be None for default values and text nodes.  This is
+  /// essentially an optimization to avoid referencing the root rule node.
+  mozilla::ServoRuleNode rules;
+  /// The element's computed values if visited, only computed if there's a
+  /// relevant link for this element. A element's "relevant link" is the
+  /// element being matched if it is a link or the nearest ancestor link.
+  const mozilla::ComputedStyle* visited_style;
+  /// The computed writing-mode of the element.
   mozilla::ServoWritingMode writing_mode;
+  /// The pseudo type of this style.
+  mozilla::PseudoStyleType pseudo_type;
   /// The effective zoom (as in, the CSS zoom property) of this style.
   ///
   /// zoom is a non-inherited property, yet changes to it propagate through in
@@ -85,15 +103,8 @@ class ServoComputedData {
   ///
   /// So the style object itself is probably a reasonable place to store it.
   mozilla::StyleZoom effective_zoom;
+  /// Various flags that affect our style.
   mozilla::StyleComputedValueFlags flags;
-  /// The rule node representing the ordered list of rules matched for this
-  /// node.  Can be None for default values and text nodes.  This is
-  /// essentially an optimization to avoid referencing the root rule node.
-  mozilla::ServoRuleNode rules;
-  /// The element's computed values if visited, only computed if there's a
-  /// relevant link for this element. A element's "relevant link" is the
-  /// element being matched if it is a link or the nearest ancestor link.
-  const mozilla::ComputedStyle* visited_style;
 
   // C++ just sees this struct as a bucket of bits, and will
   // do the wrong thing if we let it use the default copy ctor/assignment

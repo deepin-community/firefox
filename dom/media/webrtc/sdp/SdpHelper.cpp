@@ -1,21 +1,17 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "sdp/SdpHelper.h"
 
-#include "sdp/Sdp.h"
-#include "sdp/SdpMediaSection.h"
-#include "transport/logging.h"
+#include <set>
 
 #include "nsDebug.h"
 #include "nsError.h"
 #include "prprf.h"
-
-#include <string.h>
-#include <set>
+#include "sdp/Sdp.h"
+#include "sdp/SdpMediaSection.h"
+#include "transport/logging.h"
 
 namespace mozilla {
 MOZ_MTLOG_MODULE("sdp")
@@ -28,7 +24,7 @@ MOZ_MTLOG_MODULE("sdp")
     MOZ_MTLOG(ML_ERROR, mLastError); \
   } while (0);
 
-nsresult SdpHelper::CopyTransportParams(size_t numComponents,
+nsresult SdpHelper::CopyTransportParams(const size_t numComponents,
                                         const SdpMediaSection& oldLocal,
                                         SdpMediaSection* newLocal) {
   const SdpAttributeList& oldLocalAttrs = oldLocal.GetAttributeList();
@@ -76,7 +72,8 @@ nsresult SdpHelper::CopyTransportParams(size_t numComponents,
 
 bool SdpHelper::AreOldTransportParamsValid(const Sdp& oldAnswer,
                                            const Sdp& offerersPreviousSdp,
-                                           const Sdp& newOffer, size_t level) {
+                                           const Sdp& newOffer,
+                                           const size_t level) {
   if (MsectionIsDisabled(oldAnswer.GetMediaSection(level)) ||
       MsectionIsDisabled(newOffer.GetMediaSection(level))) {
     // Obvious
@@ -232,8 +229,8 @@ nsresult SdpHelper::GetBundledMids(const Sdp& sdp, BundledMids* bundledMids) {
   return NS_OK;
 }
 
-bool SdpHelper::OwnsTransport(const Sdp& sdp, uint16_t level,
-                              sdp::SdpType type) {
+bool SdpHelper::OwnsTransport(const Sdp& sdp, const uint16_t level,
+                              const sdp::SdpType type) {
   auto& msection = sdp.GetMediaSection(level);
 
   BundledMids bundledMids;
@@ -249,7 +246,7 @@ bool SdpHelper::OwnsTransport(const Sdp& sdp, uint16_t level,
 
 bool SdpHelper::OwnsTransport(const SdpMediaSection& msection,
                               const BundledMids& bundledMids,
-                              sdp::SdpType type) {
+                              const sdp::SdpType type) {
   if (MsectionIsDisabled(msection)) {
     return false;
   }
@@ -272,7 +269,7 @@ bool SdpHelper::OwnsTransport(const SdpMediaSection& msection,
   return true;
 }
 
-nsresult SdpHelper::GetMidFromLevel(const Sdp& sdp, uint16_t level,
+nsresult SdpHelper::GetMidFromLevel(const Sdp& sdp, const uint16_t level,
                                     std::string* mid) {
   if (level >= sdp.GetMediaSectionCount()) {
     SDP_SET_ERROR("Index " << level << " out of range");
@@ -292,7 +289,7 @@ nsresult SdpHelper::GetMidFromLevel(const Sdp& sdp, uint16_t level,
 
 nsresult SdpHelper::AddCandidateToSdp(Sdp* sdp,
                                       const std::string& candidateUntrimmed,
-                                      uint16_t level,
+                                      const uint16_t level,
                                       const std::string& ufrag) {
   if (level >= sdp->GetMediaSectionCount()) {
     SDP_SET_ERROR("Index " << level << " out of range");
@@ -351,7 +348,7 @@ nsresult SdpHelper::SetIceGatheringComplete(Sdp* sdp,
   return NS_OK;
 }
 
-nsresult SdpHelper::SetIceGatheringComplete(Sdp* sdp, uint16_t level,
+nsresult SdpHelper::SetIceGatheringComplete(Sdp* sdp, const uint16_t level,
                                             const std::string& ufrag) {
   if (level >= sdp->GetMediaSectionCount()) {
     SDP_SET_ERROR("Index " << level << " out of range");
@@ -377,9 +374,9 @@ nsresult SdpHelper::SetIceGatheringComplete(Sdp* sdp, uint16_t level,
 }
 
 void SdpHelper::SetDefaultAddresses(const std::string& defaultCandidateAddr,
-                                    uint16_t defaultCandidatePort,
+                                    const uint16_t defaultCandidatePort,
                                     const std::string& defaultRtcpCandidateAddr,
-                                    uint16_t defaultRtcpCandidatePort,
+                                    const uint16_t defaultRtcpCandidatePort,
                                     SdpMediaSection* msection) {
   SdpAttributeList& attrList = msection->GetAttributeList();
 
@@ -433,12 +430,12 @@ nsresult SdpHelper::GetMsids(const SdpMediaSection& msection,
     auto& ssrcs = msection.GetAttributeList().GetSsrc().mSsrcs;
 
     for (auto i = ssrcs.begin(); i != ssrcs.end(); ++i) {
-      if (i->attribute.find("msid:") == 0) {
+      if (i->attribute.starts_with("msid:")) {
         std::string streamId;
         std::string trackId;
         nsresult rv = ParseMsid(i->attribute, &streamId, &trackId);
         NS_ENSURE_SUCCESS(rv, rv);
-        msids->push_back({streamId, trackId});
+        msids->push_back({std::move(streamId), std::move(trackId)});
       }
     }
   }
@@ -497,7 +494,7 @@ std::string SdpHelper::GetCNAME(const SdpMediaSection& msection) const {
   if (msection.GetAttributeList().HasAttribute(SdpAttribute::kSsrcAttribute)) {
     auto& ssrcs = msection.GetAttributeList().GetSsrc().mSsrcs;
     for (auto i = ssrcs.begin(); i != ssrcs.end(); ++i) {
-      if (i->attribute.find("cname:") == 0) {
+      if (i->attribute.starts_with("cname:")) {
         return i->attribute.substr(6);
       }
     }
@@ -553,10 +550,15 @@ nsresult SdpHelper::CopyStickyParams(const SdpMediaSection& source,
         new SdpFlagAttribute(SdpAttribute::kRtcpRsizeAttribute));
   }
 
+  // Keep extmap-allow-mixed setting
+  if (sourceAttrs.HasAttribute(SdpAttribute::kExtmapAllowMixedAttribute)) {
+    destAttrs.SetAttribute(
+        new SdpFlagAttribute(SdpAttribute::kExtmapAllowMixedAttribute));
+  }
   return NS_OK;
 }
 
-bool SdpHelper::HasRtcp(SdpMediaSection::Protocol proto) const {
+bool SdpHelper::HasRtcp(const SdpMediaSection::Protocol proto) const {
   switch (proto) {
     case SdpMediaSection::kRtpAvpf:
     case SdpMediaSection::kDccpRtpAvpf:
@@ -605,7 +607,7 @@ bool SdpHelper::HasRtcp(SdpMediaSection::Protocol proto) const {
 }
 
 SdpMediaSection::Protocol SdpHelper::GetProtocolForMediaType(
-    SdpMediaSection::MediaType type) {
+    const SdpMediaSection::MediaType type) {
   if (type == SdpMediaSection::kApplication) {
     return SdpMediaSection::kUdpDtlsSctp;
   }
@@ -734,8 +736,24 @@ bool SdpHelper::SdpMatch(const Sdp& sdp1, const Sdp& sdp2) {
   return true;
 }
 
+// ICE credential length bounds per RFC 8839 section 5.4.
+static constexpr size_t kMinIceUfragLength = 4;
+static constexpr size_t kMaxIceUfragLength = 256;
+static constexpr size_t kMinIcePwdLength = 22;
+static constexpr size_t kMaxIcePwdLength = 256;
+
+// Bug 2027782: Google Meet uses '=' in ice-pwd, only reject '$' for now.
+static bool IsValidIceToken(const std::string& aToken) {
+  for (unsigned char c : aToken) {
+    if (c == '$') {
+      return false;
+    }
+  }
+  return true;
+}
+
 nsresult SdpHelper::ValidateTransportAttributes(const Sdp& aSdp,
-                                                sdp::SdpType aType) {
+                                                const sdp::SdpType aType) {
   BundledMids bundledMids;
   nsresult rv = GetBundledMids(aSdp, &bundledMids);
   NS_ENSURE_SUCCESS(rv, rv);
@@ -750,9 +768,49 @@ nsresult SdpHelper::ValidateTransportAttributes(const Sdp& aSdp,
         return NS_ERROR_INVALID_ARG;
       }
 
+      if (mediaAttrs.GetIceUfrag().size() < kMinIceUfragLength) {
+        SDP_SET_ERROR("Invalid description, ice-ufrag is too short at level "
+                      << level);
+        return NS_ERROR_INVALID_ARG;
+      }
+
+      if (mediaAttrs.GetIceUfrag().size() > kMaxIceUfragLength) {
+        SDP_SET_ERROR("Invalid description, ice-ufrag is too long at level "
+                      << level);
+        return NS_ERROR_INVALID_ARG;
+      }
+
+      if (!IsValidIceToken(mediaAttrs.GetIceUfrag())) {
+        SDP_SET_ERROR(
+            "Invalid description, ice-ufrag contains invalid characters at "
+            "level "
+            << level);
+        return NS_ERROR_INVALID_ARG;
+      }
+
       if (mediaAttrs.GetIcePwd().empty()) {
         SDP_SET_ERROR("Invalid description, no ice-pwd attribute at level "
                       << level);
+        return NS_ERROR_INVALID_ARG;
+      }
+
+      if (mediaAttrs.GetIcePwd().size() < kMinIcePwdLength) {
+        SDP_SET_ERROR("Invalid description, ice-pwd is too short at level "
+                      << level);
+        return NS_ERROR_INVALID_ARG;
+      }
+
+      if (mediaAttrs.GetIcePwd().size() > kMaxIcePwdLength) {
+        SDP_SET_ERROR("Invalid description, ice-pwd is too long at level "
+                      << level);
+        return NS_ERROR_INVALID_ARG;
+      }
+
+      if (!IsValidIceToken(mediaAttrs.GetIcePwd())) {
+        SDP_SET_ERROR(
+            "Invalid description, ice-pwd contains invalid characters at "
+            "level "
+            << level);
         return NS_ERROR_INVALID_ARG;
       }
 

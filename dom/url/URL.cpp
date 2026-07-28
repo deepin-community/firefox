@@ -1,20 +1,17 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "URL.h"
+
+#include "MainThreadUtils.h"
 #include "URLMainThread.h"
 #include "URLWorker.h"
-
-#include "nsASCIIMask.h"
-#include "MainThreadUtils.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/dom/URLBinding.h"
 #include "mozilla/dom/BindingUtils.h"
-#include "nsContentUtils.h"
 #include "mozilla/dom/Document.h"
+#include "nsASCIIMask.h"
+#include "nsContentUtils.h"
 #include "nsIURIMutator.h"
 #include "nsNetUtil.h"
 
@@ -81,19 +78,14 @@ already_AddRefed<URL> URL::FromURI(GlobalObject& aGlobal, nsIURI* aURI) {
   return MakeAndAddRef<URL>(aGlobal.GetAsSupports(), aURI);
 }
 
-void URL::CreateObjectURL(const GlobalObject& aGlobal, Blob& aBlob,
-                          nsACString& aResult, ErrorResult& aRv) {
+void URL::CreateObjectURL(const GlobalObject& aGlobal,
+                          const BlobOrMediaSource& aObj, nsACString& aResult,
+                          ErrorResult& aRv) {
   if (NS_IsMainThread()) {
-    URLMainThread::CreateObjectURL(aGlobal, aBlob, aResult, aRv);
+    URLMainThread::CreateObjectURL(aGlobal, aObj, aResult, aRv);
   } else {
-    URLWorker::CreateObjectURL(aGlobal, aBlob, aResult, aRv);
+    URLWorker::CreateObjectURL(aGlobal, aObj, aResult, aRv);
   }
-}
-
-void URL::CreateObjectURL(const GlobalObject& aGlobal, MediaSource& aSource,
-                          nsACString& aResult, ErrorResult& aRv) {
-  MOZ_ASSERT(NS_IsMainThread());
-  URLMainThread::CreateObjectURL(aGlobal, aSource, aResult, aRv);
 }
 
 void URL::RevokeObjectURL(const GlobalObject& aGlobal, const nsACString& aURL,
@@ -110,12 +102,12 @@ void URL::RevokeObjectURL(const GlobalObject& aGlobal, const nsACString& aURL,
   }
 }
 
-bool URL::IsValidObjectURL(const GlobalObject& aGlobal, const nsACString& aURL,
-                           ErrorResult& aRv) {
+bool URL::IsBoundToBlob(const GlobalObject& aGlobal, const nsACString& aURL,
+                        ErrorResult& aRv) {
   if (NS_IsMainThread()) {
-    return URLMainThread::IsValidObjectURL(aGlobal, aURL, aRv);
+    return URLMainThread::IsBoundToBlob(aGlobal, aURL, aRv);
   }
-  return URLWorker::IsValidObjectURL(aGlobal, aURL, aRv);
+  return URLWorker::IsBoundToBlob(aGlobal, aURL, aRv);
 }
 
 already_AddRefed<nsIURI> URL::ParseURI(const nsACString& aURL,
@@ -154,12 +146,10 @@ bool URL::CanParse(const GlobalObject& aGlobal, const nsACString& aURL,
   return !!uri;
 }
 
-URLSearchParams* URL::SearchParams() {
+already_AddRefed<URLSearchParams> URL::SearchParams() {
   CreateSearchParamsIfNeeded();
-  return mSearchParams;
+  return do_AddRef(mSearchParams);
 }
-
-bool IsChromeURI(nsIURI* aURI) { return aURI->SchemeIs("chrome"); }
 
 void URL::CreateSearchParamsIfNeeded() {
   if (!mSearchParams) {
@@ -231,7 +221,7 @@ void URL::GetUsername(nsACString& aUsername) const {
 
 void URL::SetUsername(const nsACString& aUsername) {
   MOZ_ASSERT(mURI);
-  Unused << NS_MutateURI(mURI).SetUsername(aUsername).Finalize(mURI);
+  (void)NS_MutateURI(mURI).SetUsername(aUsername).Finalize(mURI);
 }
 
 void URL::GetPassword(nsACString& aPassword) const {
@@ -241,14 +231,14 @@ void URL::GetPassword(nsACString& aPassword) const {
 void URL::SetPassword(const nsACString& aPassword) {
   MOZ_ASSERT(mURI);
 
-  Unused << NS_MutateURI(mURI).SetPassword(aPassword).Finalize(mURI);
+  (void)NS_MutateURI(mURI).SetPassword(aPassword).Finalize(mURI);
 }
 
 void URL::GetHost(nsACString& aHost) const { URL_GETTER(aHost, GetHostPort); }
 
 void URL::SetHost(const nsACString& aHost) {
   MOZ_ASSERT(mURI);
-  Unused << NS_MutateURI(mURI).SetHostPort(aHost).Finalize(mURI);
+  (void)NS_MutateURI(mURI).SetHostPort(aHost).Finalize(mURI);
 }
 
 void URL::GetHostname(nsACString& aHostname) const {
@@ -262,7 +252,7 @@ void URL::SetHostname(const nsACString& aHostname) {
 
   // nsStandardURL returns NS_ERROR_UNEXPECTED for an empty hostname
   // The return code is silently ignored
-  Unused << NS_MutateURI(mURI).SetHost(aHostname).Finalize(mURI);
+  (void)NS_MutateURI(mURI).SetHost(aHostname).Finalize(mURI);
 }
 
 void URL::GetPort(nsACString& aPort) const {
@@ -295,7 +285,7 @@ void URL::SetPort(const nsACString& aPort) {
     }
   }
 
-  Unused << NS_MutateURI(mURI).SetPort(port).Finalize(mURI);
+  (void)NS_MutateURI(mURI).SetPort(port).Finalize(mURI);
 }
 
 void URL::GetPathname(nsACString& aPathname) const {
@@ -309,7 +299,7 @@ void URL::SetPathname(const nsACString& aPathname) {
   MOZ_ASSERT(mURI);
 
   // Do not throw!
-  Unused << NS_MutateURI(mURI).SetFilePath(aPathname).Finalize(mURI);
+  (void)NS_MutateURI(mURI).SetFilePath(aPathname).Finalize(mURI);
 }
 
 void URL::GetSearch(nsACString& aSearch) const {
@@ -339,14 +329,14 @@ void URL::GetHash(nsACString& aHash) const {
 void URL::SetHash(const nsACString& aHash) {
   MOZ_ASSERT(mURI);
 
-  Unused << NS_MutateURI(mURI).SetRef(aHash).Finalize(mURI);
+  (void)NS_MutateURI(mURI).SetRef(aHash).Finalize(mURI);
 }
 
 void URL::SetSearchInternal(const nsACString& aSearch) {
   MOZ_ASSERT(mURI);
 
   // Ignore failures to be compatible with NS4.
-  Unused << NS_MutateURI(mURI).SetQuery(aSearch).Finalize(mURI);
+  (void)NS_MutateURI(mURI).SetQuery(aSearch).Finalize(mURI);
 }
 
 void URL::UpdateURLSearchParams() {

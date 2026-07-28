@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -52,6 +50,8 @@ static void AddUniforms(ProgramProfileOGL& aProfile) {
                                              "uVisibleCenter",
                                              "uYuvColorMatrix",
                                              "uYuvOffsetVector",
+                                             "uRoundedClipRect",
+                                             "uRoundedClipRadii",
                                              nullptr};
 
   for (int i = 0; sKnownUniformNames[i] != nullptr; ++i) {
@@ -106,6 +106,10 @@ void ShaderConfigOGL::SetColorMultiplier(uint32_t aMultiplier) {
   MOZ_ASSERT(mFeatures & ENABLE_TEXTURE_YCBCR,
              "Multiplier only supported with YCbCr!");
   mMultiplier = aMultiplier;
+}
+
+void ShaderConfigOGL::SetRoundedClip(bool aEnabled) {
+  SetFeature(ENABLE_ROUNDED_CLIP, aEnabled);
 }
 
 void ShaderConfigOGL::SetNV12(bool aEnabled) {
@@ -172,6 +176,11 @@ ProgramProfileOGL ProgramProfileOGL::GetProfileFor(ShaderConfigOGL aConfig) {
     vs << "uniform vec2 uViewportSize;" << endl;
   }
   vs << "uniform vec2 uRenderTargetOffset;" << endl;
+  if (aConfig.mFeatures & ENABLE_ROUNDED_CLIP) {
+    vs << "uniform vec4 uRoundedClipRect;" << endl;
+    vs << "varying vec2 vRoundedClipSize;" << endl;
+    vs << "varying vec2 vRoundedClipPos;" << endl;
+  }
 
   if (!(aConfig.mFeatures & ENABLE_DYNAMIC_GEOMETRY)) {
     vs << "attribute vec4 aCoord;" << endl;
@@ -216,6 +225,14 @@ ProgramProfileOGL ProgramProfileOGL::GetProfileFor(ShaderConfigOGL aConfig) {
   }
 
   vs << "  finalPosition = uLayerTransform * finalPosition;" << endl;
+
+  if (aConfig.mFeatures & ENABLE_ROUNDED_CLIP) {
+    vs << "  vec2 halfSize = 0.5 * uRoundedClipRect.zw;" << endl;
+    vs << "  vRoundedClipPos = uRoundedClipRect.xy + halfSize - "
+          "finalPosition.xy;"
+       << endl;
+    vs << "  vRoundedClipSize = halfSize;" << endl;
+  }
 
   if (aConfig.mFeatures & ENABLE_DEAA) {
     // XXX kip - The DEAA shader could be made simpler if we switch to
@@ -357,6 +374,11 @@ ProgramProfileOGL ProgramProfileOGL::GetProfileFor(ShaderConfigOGL aConfig) {
     if (aConfig.mFeatures & ENABLE_OPACITY) {
       fs << "uniform COLOR_PRECISION float uLayerOpacity;" << endl;
     }
+  }
+  if (aConfig.mFeatures & ENABLE_ROUNDED_CLIP) {
+    fs << "uniform vec4 uRoundedClipRadii;" << endl;
+    fs << "varying vec2 vRoundedClipSize;" << endl;
+    fs << "varying vec2 vRoundedClipPos;" << endl;
   }
   if (BlendOpIsMixBlendMode(blendOp)) {
     fs << "varying vec2 vBackdropCoord;" << endl;
@@ -545,6 +567,16 @@ ProgramProfileOGL ProgramProfileOGL::GetProfileFor(ShaderConfigOGL aConfig) {
       fs << "}" << endl;
     }
   }
+  if (aConfig.mFeatures & ENABLE_ROUNDED_CLIP) {
+    fs << "float sd_round_box(vec2 pos, vec2 half_box_size, vec4 radii) {"
+       << endl;
+    fs << "  radii.xy = (pos.x > 0.0) ? radii.xy : radii.zw;" << endl;
+    fs << "  radii.x  = (pos.y > 0.0) ? radii.x  : radii.y;" << endl;
+    fs << "  vec2 q = abs(pos) - half_box_size + radii.x;" << endl;
+    fs << "  return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radii.x;"
+       << endl;
+    fs << "}" << endl;
+  }
   fs << "void main() {" << endl;
   if (aConfig.mFeatures & ENABLE_RENDER_COLOR) {
     fs << "  vec4 color = uRenderColor;" << endl;
@@ -592,6 +624,13 @@ ProgramProfileOGL ProgramProfileOGL::GetProfileFor(ShaderConfigOGL aConfig) {
   } else {
     fs << "  COLOR_PRECISION float mask = 1.0;" << endl;
     fs << "  color *= mask;" << endl;
+  }
+  if (aConfig.mFeatures & ENABLE_ROUNDED_CLIP) {
+    fs << "  float d = sd_round_box(vRoundedClipPos, vRoundedClipSize, "
+          "uRoundedClipRadii);"
+       << endl;
+    // TODO(gw): Probably want some proper AA step here
+    fs << "  color *= 1.0 - clamp(d, 0.0, 1.0);" << endl;
   }
   fs << "  gl_FragColor = color;" << endl;
   fs << "}" << endl;
@@ -875,9 +914,9 @@ bool ShaderProgramOGL::Initialize() {
 
   mProgramState = STATE_OK;
 
-  for (uint32_t i = 0; i < KnownUniform::KnownUniformCount; ++i) {
-    mProfile.mUniforms[i].mLocation =
-        mGL->fGetUniformLocation(mProgram, mProfile.mUniforms[i].mNameString);
+  for (auto& mUniform : mProfile.mUniforms) {
+    mUniform.mLocation =
+        mGL->fGetUniformLocation(mProgram, mUniform.mNameString);
   }
 
   return true;

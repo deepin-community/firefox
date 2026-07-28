@@ -19,8 +19,8 @@ about-private-browsing-handoff-no-engine =
 about-private-browsing-handoff-text = Traži pomoću { $engine } ili upiši adresu
 about-private-browsing-handoff-text-no-engine = Traži ili upiši adresu
 about-private-browsing-not-private = Trenutačno nisi u privatnom prozoru.
-about-private-browsing-info-description-private-window = Privatni prozor: { -brand-short-name } čisti tvoju povijest pretraživanja i pregledavanja kada zatvoriš sve privatne prozore. Ovo te ne čini anonimnim.
-about-private-browsing-info-description-simplified = { -brand-short-name } čisti tvoju povijest pretraživanja i pregledavanja kada zatvoriš sve privatne prozore, ali ovo te ne čini anonimnim.
+about-private-browsing-info-description-private-window = Privatni prozor: { -brand-short-name } briše tvoju povijest pretraživanja i pregledavanja kada zatvoriš sve privatne prozore. Ovo te ne čini anonimnim.
+about-private-browsing-info-description-simplified = { -brand-short-name } briše tvoju povijest pretraživanja i pregledavanja kada zatvoriš sve privatne prozore, ali ovo te ne čini anonimnim.
 about-private-browsing-learn-more-link = Saznaj više
 about-private-browsing-hide-activity = Sakrij svoju aktivnost i lokaciju gdje god pregledavaš
 about-private-browsing-get-privacy = Zaštiti svoju privatnost gdje god pregledavaš
@@ -56,7 +56,7 @@ about-private-browsing-promo-close-button =
 about-private-browsing-pin-promo-header = Sloboda privatnog pregledavanja jednim pritiskom
 about-private-browsing-pin-promo-link-text =
     { PLATFORM() ->
-        [macos] Zadrži u Doku
+        [macos] Dodaj u Dock
        *[other] Prikvači na programsku traku
     }
 about-private-browsing-pin-promo-title = Bez spremljenih kolačića ili povijesti, izravno s tvoje radne površine. Pregledavaj kao da nitko ne gleda.
@@ -73,8 +73,8 @@ about-private-browsing-cookie-banners-promo-message = Dopusti da { -brand-short-
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } se brine o dijalozima kolačića umjesto tebe
 about-private-browsing-cookie-banners-promo-body = Sada automatski odbijamo mnoge dijaloge kolačića što smanjuje praćenje tvojih radnji na internetu i omogućuje pregledavanje bez ometanja.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Ne ostavljaj tragove na ovom uređaju.
-about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } briše kolačiće, povijest i podatke web stranica kada zatvoriš sve svoje privatne prozore.
+about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } briše kolačiće, povijest i podatke web-stranica kada zatvoriš sve svoje privatne prozore.
 about-private-browsing-felt-privacy-v1-info-link = Tko može vidjeti moju aktivnost?

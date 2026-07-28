@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -29,7 +27,7 @@
 #include "nsISupportsImpl.h"   // for MOZ_COUNT_CTOR, etc
 #include "nsIWidget.h"         // for nsIWidget
 #include "nsThreadUtils.h"     // for NS_IsMainThread
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/GfxMetrics.h"
 #include "mozilla/VsyncDispatcher.h"
 #if defined(XP_WIN) || defined(MOZ_WIDGET_GTK)
 #  include "VsyncSource.h"
@@ -90,7 +88,7 @@ CompositorVsyncScheduler::~CompositorVsyncScheduler() {
   MOZ_ASSERT(!mIsObservingVsync);
   MOZ_ASSERT(!mVsyncObserver);
   // The CompositorVsyncDispatcher is cleaned up before this in the
-  // nsBaseWidget, which stops vsync listeners
+  // nsIWidget, which stops vsync listeners
   mVsyncSchedulerOwner = nullptr;
 }
 
@@ -274,9 +272,8 @@ void CompositorVsyncScheduler::Composite(const VsyncEvent& aVsyncEvent,
     mVsyncNotificationsSkipped = 0;
 
     TimeDuration compositeFrameTotal = TimeStamp::Now() - aVsyncEvent.mTime;
-    mozilla::Telemetry::Accumulate(
-        mozilla::Telemetry::COMPOSITE_FRAME_ROUNDTRIP_TIME,
-        compositeFrameTotal.ToMilliseconds());
+    mozilla::glean::gfx::composite_frame_roundtrip_time.AccumulateRawDuration(
+        compositeFrameTotal);
   } else if (mVsyncNotificationsSkipped++ >
              StaticPrefs::gfx_vsync_compositor_unobserve_count_AtStartup()) {
     UnobserveVsync();

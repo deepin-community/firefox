@@ -37,15 +37,16 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Pas ara
     .secondarybuttonaccesskey = P
 appmenu-update-other-instance-message = Una version novèla de { -brand-shorter-name } es disponibla, mas una còpia ja en execucion de { -brand-shorter-name } empacha de l’installar. Tampatz-la per contunhar la mesa a jorn o causissètz de metre a jorn de tot biais (pòt arribar que l’autra còpia foncione pas mai abans reaviada).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = D’acòrdi
     .buttonaccesskey = D
 appmenu-addon-post-install-message3 = Gerissètz vòstres moduls complementaris e tèmas via lo menú de l’aplicacion.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Podètz actualizar las autorizacions e preferéncias de donadas quand volgatz dins los <a data-l10n-name="settings-link">paramètres d’exetension</a>.
 appmenu-addon-post-install-incognito-checkbox =
     .label = Autorizar aquesta extension en navegacion privada
     .accesskey = A
-    
 appmenu-new-tab-controlled-changes =
     .label = La pagina Onglet novèl a cambiat.
     .buttonlabel = Servar las modificacions

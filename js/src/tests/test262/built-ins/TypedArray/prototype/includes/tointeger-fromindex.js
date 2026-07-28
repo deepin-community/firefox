@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -36,10 +35,10 @@ var obj = {
   }
 };
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var sample;
 
-  sample = new TA([42, 43]);
+  sample = new TA(makeCtorArg([42, 43]));
   assert.sameValue(sample.includes(42, "1"), false, "string [0]");
   assert.sameValue(sample.includes(43, "1"), true, "string [1]");
 

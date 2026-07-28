@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Dowolić
     .accesskey = D
+permissions-add =
+    .label = Přidać
+    .accesskey = P
 permissions-button-off =
     .label = Znjemóžnić
     .accesskey = n
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Wšě websydła wotstronić
     .accesskey = y
+permissions-save-changes-2 =
+    .buttonlabelaccept = Změny składować
+    .buttonaccesskeyaccept = s
 permission-dialog =
     .buttonlabelaccept = Změny składować
     .buttonaccesskeyaccept = s
@@ -85,6 +91,13 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Móžeće podać, kotre websydła smědźa přeco abo njesmědźa ženje placki a sydłowe daty wužiwać. Zapisajće eksaktnu adresu sydła, kotrež chceće rjadować a klikńće potom na Blokować, Za posedźenje dowolić abo Dowolić.
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = Wuwzaća – Historiju při kónčenju zhašeć
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = Móžeće podać, kotre websydła swoje daty wobchowuja, hdyž { -brand-short-name } historiju při začinjenju zhaša. Zapisajće eksaktnu adresu sydła, kotrež chceće rjadować a klikńće potom na Dowolić.
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
@@ -92,6 +105,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Móžeće modus Jenož-HTTPS za wěste websydła znjemóžnić. { -brand-short-name } njespyta, zwisk za te sydła na wěsty HTTPS aktualizować. Wuwzaća za priwatne wokna njepłaća.
 permissions-exceptions-https-only-desc2 = Móžeće modus Jenož-HTTPS za wěste websydła znjemóžnić. { -brand-short-name } njespyta, zwisk za te sydła na wěsty HTTPS aktualizować.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Dowolene websydła – wuskakowace wokna a dalesposrědkowanja třećich poskićowarjow
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Móžeće postajić, kotre websydła smědźa wuskakowace wokna wočinić a so přez wobłuki třećich poskićowarjow dale sposrědkować.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +187,26 @@ permissions-site-camera-desc = Slědowace websydła su přistup k wašej kamerje
 permissions-site-camera-disable-label =
     .label = Nowe žadanja za přistupom na wašu kameru blokować
 permissions-site-camera-disable-desc = To budźe websydła, kotrež horjeka w lisćinje podate njejsu, při žadanju za přistupom k wašej kamerje haćić. Hdyž přistup k wašej kamerje blokujeće, móže so stać, zo někotre funkcije websydła njefunguja.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Nastajenja – Gratowe nałoženja a słužby
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Tute websydła su wo přistup k nałoženjam a słužbam na tutym graće prosyli. Móžeće rozsudźić, hač sydłam dowoleće abo zakazujeće to činić.
+permissions-site-localhost-disable-label =
+    .label = Blokujće nowe naprašowanja za přistupom k nałoženjam a słužbam na tutym graće
+permissions-site-localhost-disable-desc = To tomu zadźěwa, zo websydła, kotrež horjeka nalistowane njejsu, wo přistup k nałoženjam a słužbam na tutym graće proša. Hdyž to činiće, někotre funkcije websydła snano hižo korektnje njefunguja.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Nastajenja – Graty lokalneje syće
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Tute websydła su wo přistup k nałoženjam a słužbam na gratach prosyli, kotrež su z wašej lokalnej syću WLAN zwjazane. Móžeće rozsudźić, hač sydłam dowoleće abo zakazujeće to činić.
+permissions-site-local-network-disable-label =
+    .label = Blokujće nowe naprašowanja za přistupom k nałoženjam a słužbam na gratach, kotrež su z wašej lokalnej syću WLAN zwjazane.
+permissions-site-local-network-disable-desc = To tomu zadźěwa, zo websydła, kotrež horjeka nalistowane njejsu, wo přistup k nałoženjam a słužbam na gratach proša, kotrež su z gratami WLAN abo lokalnej syću zwjazane. Hdyž to činiće, někotre funkcije websydła snano hižo korektnje njefunguja.
 
 ## Site Permissions - Microphone
 

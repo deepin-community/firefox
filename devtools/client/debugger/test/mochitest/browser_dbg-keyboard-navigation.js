@@ -10,18 +10,18 @@ add_task(async function () {
   const dbg = await initDebugger("doc-scripts.html", "simple2.js");
   const doc = dbg.win.document;
 
+  const focusableEditorElementSelector = ".cm-content";
   await selectSource(dbg, "simple2.js");
 
-  await waitForElementWithSelector(dbg, ".CodeMirror");
+  const focusableEditorElement = await waitForElementWithSelector(
+    dbg,
+    focusableEditorElementSelector
+  );
 
   info("Focus on the editor");
-  findElementWithSelector(dbg, ".CodeMirror").focus();
+  focusableEditorElement.focus();
 
-  is(
-    findElementWithSelector(dbg, ".CodeMirror"),
-    doc.activeElement,
-    "Editor is focused"
-  );
+  is(doc.activeElement, focusableEditorElement, "Editor is focused");
 
   info(
     "Press shift + tab to navigate out of the editor to the previous tab element"
@@ -29,8 +29,8 @@ add_task(async function () {
   pressKey(dbg, "ShiftTab");
 
   is(
-    findElementWithSelector(dbg, ".command-bar-button.toggle-button.end"),
-    doc.activeElement,
+    doc.activeElement.className,
+    findElementWithSelector(dbg, ".cm6-dt-foldgutter__toggle-button").className,
     "The left sidebar toggle button is focused"
   );
 
@@ -38,14 +38,12 @@ add_task(async function () {
   pressKey(dbg, "Tab");
 
   is(
-    findElementWithSelector(dbg, ".CodeMirror"),
+    findElementWithSelector(dbg, focusableEditorElementSelector),
     doc.activeElement,
     "Editor is focused again"
   );
 
   info("Press tab again to navigate out of the editor to the next tab element");
-  // The extra tab is needed as in CM5 there is a <textarea> which gets a focus
-  pressKey(dbg, "Tab");
   pressKey(dbg, "Tab");
 
   is(

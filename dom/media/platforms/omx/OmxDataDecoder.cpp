@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -408,7 +406,7 @@ void OmxDataDecoder::EmptyBufferDone(BufferData* aData) {
 
     nsresult rv = mOmxTaskQueue->Dispatch(r.forget());
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
   }
 }
 
@@ -652,7 +650,7 @@ bool OmxDataDecoder::Event(OMX_EVENTTYPE aEvent, OMX_U32 aData1,
         //
         // So client needs to disable port and reallocate buffers.
         MOZ_ASSERT(mPortSettingsChanged == -1);
-        mPortSettingsChanged = aData1;
+        mPortSettingsChanged = AssertedCast<int32_t>(aData1);
       }
       LOG("Got OMX_EventPortSettingsChanged event");
       break;
@@ -664,7 +662,7 @@ bool OmxDataDecoder::Event(OMX_EVENTTYPE aEvent, OMX_U32 aData1,
                     MediaResult(NS_ERROR_DOM_MEDIA_DECODE_ERR, __func__));
         return true;
       }
-      LOG("WARNING: got none handle event: %d, aData1: %ld, aData2: %ld",
+      LOG("WARNING: got none handle event: %d, aData1: %lu, aData2: %lu",
           aEvent, aData1, aData2);
       return false;
     }
@@ -929,7 +927,7 @@ already_AddRefed<VideoData> MediaDataHelper::CreateYUV420VideoData(
     BufferData* aBufferData) {
   uint8_t* yuv420p_buffer = (uint8_t*)aBufferData->mBuffer->pBuffer;
   int32_t stride = mOutputPortDef.format.video.nStride;
-  int32_t slice_height = mOutputPortDef.format.video.nSliceHeight;
+  uint32_t slice_height = mOutputPortDef.format.video.nSliceHeight;
   int32_t width = mTrackInfo->GetAsVideoInfo()->mImage.width;
   int32_t height = mTrackInfo->GetAsVideoInfo()->mImage.height;
 

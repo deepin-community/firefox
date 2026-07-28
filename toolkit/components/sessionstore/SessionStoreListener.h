@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -61,12 +59,17 @@ class ContentSessionStore {
   bool mSHistoryChanged;
 };
 
+#define NS_TABLISTENER_IID \
+  {0x14426f68, 0x3948, 0x4c18, {0x9c, 0xf6, 0x20, 0x74, 0x37, 0xcb, 0xb9, 0x87}}
+
 class TabListener : public nsIDOMEventListener,
                     public nsIObserver,
                     public nsIPrivacyTransitionObserver,
                     public nsIWebProgressListener,
                     public nsSupportsWeakReference {
  public:
+  NS_INLINE_DECL_STATIC_IID(NS_TABLISTENER_IID)
+
   explicit TabListener(nsIDocShell* aDocShell, Element* aElement);
   EventTarget* GetEventTarget();
   nsresult Init();
@@ -91,7 +94,6 @@ class TabListener : public nsIDOMEventListener,
   NS_DECL_NSIWEBPROGRESSLISTENER
 
  private:
-  static void TimerCallback(nsITimer* aTimer, void* aClosure);
   void AddTimerForUpdate();
   void StopTimerForUpdate();
   void AddEventListeners();

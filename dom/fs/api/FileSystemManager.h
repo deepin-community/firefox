@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,10 +5,9 @@
 #ifndef DOM_FS_CHILD_FILESYSTEMMANAGER_H_
 #define DOM_FS_CHILD_FILESYSTEMMANAGER_H_
 
-#include <functional>
-
 #include "mozilla/MozPromise.h"
 #include "mozilla/UniquePtr.h"
+#include "mozilla/dom/FileSystemManagerChild.h"
 #include "mozilla/dom/FlippedOnce.h"
 #include "mozilla/dom/quota/ForwardDecls.h"
 #include "nsCOMPtr.h"
@@ -26,7 +23,6 @@ class ErrorResult;
 
 namespace dom {
 
-class FileSystemManagerChild;
 class FileSystemBackgroundRequestHandler;
 class StorageManager;
 
@@ -70,14 +66,15 @@ class FileSystemManager : public nsISupports {
 
   const RefPtr<FileSystemManagerChild>& ActorStrongRef() const;
 
-  void RegisterPromiseRequestHolder(PromiseRequestHolder<BoolPromise>* aHolder);
+  void RegisterPromiseRequestHolder(
+      PromiseRequestHolder<FileSystemManagerChild::ActorPromise>* aHolder);
 
   void UnregisterPromiseRequestHolder(
-      PromiseRequestHolder<BoolPromise>* aHolder);
+      PromiseRequestHolder<FileSystemManagerChild::ActorPromise>* aHolder);
 
   void BeginRequest(
-      std::function<void(const RefPtr<FileSystemManagerChild>&)>&& aSuccess,
-      std::function<void(nsresult)>&& aFailure);
+      MoveOnlyFunction<void(RefPtr<FileSystemManagerChild>)>&& aSuccess,
+      MoveOnlyFunction<void(nsresult)>&& aFailure);
 
   already_AddRefed<Promise> GetDirectory(ErrorResult& aError);
 
@@ -91,7 +88,8 @@ class FileSystemManager : public nsISupports {
   const RefPtr<FileSystemBackgroundRequestHandler> mBackgroundRequestHandler;
   const UniquePtr<fs::FileSystemRequestHandler> mRequestHandler;
 
-  nsTObserverArray<PromiseRequestHolder<BoolPromise>*> mPromiseRequestHolders;
+  nsTObserverArray<PromiseRequestHolder<FileSystemManagerChild::ActorPromise>*>
+      mPromiseRequestHolders;
 
   FlippedOnce<false> mShutdown;
 };

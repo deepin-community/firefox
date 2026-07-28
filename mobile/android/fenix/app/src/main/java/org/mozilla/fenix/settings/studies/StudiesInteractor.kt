@@ -4,13 +4,8 @@
 
 package org.mozilla.fenix.settings.studies
 
-import androidx.annotation.VisibleForTesting
 import mozilla.components.service.nimbus.NimbusApi
-import org.mozilla.experiments.nimbus.NimbusInterface
 import org.mozilla.experiments.nimbus.internal.EnrolledExperiment
-import org.mozilla.fenix.BrowserDirection
-import org.mozilla.fenix.HomeActivity
-import kotlin.system.exitProcess
 
 interface StudiesInteractor {
     /**
@@ -24,33 +19,22 @@ interface StudiesInteractor {
     fun removeStudy(experiment: EnrolledExperiment)
 }
 
+/**
+ * Default implementation of [StudiesInteractor].
+ *
+ * @param openUrlInBrowser Callback to open a URL in the browser.
+ * @param experiments The Nimbus API for managing experiments.
+ */
 class DefaultStudiesInteractor(
-    private val homeActivity: HomeActivity,
+    private val openUrlInBrowser: (String) -> Unit,
     private val experiments: NimbusApi,
 ) : StudiesInteractor {
     override fun openWebsite(url: String) {
-        homeActivity.openToBrowserAndLoad(
-            searchTermOrURL = url,
-            newTab = true,
-            from = BrowserDirection.FromStudiesFragment,
-        )
+        openUrlInBrowser(url)
     }
 
     override fun removeStudy(experiment: EnrolledExperiment) {
-        experiments.register(
-            object : NimbusInterface.Observer {
-                override fun onUpdatesApplied(updated: List<EnrolledExperiment>) {
-                    // Wait until the experiment is unrolled from nimbus to restart.
-                    killApplication()
-                }
-            },
-        )
         experiments.optOut(experiment.slug)
         experiments.applyPendingExperiments()
-    }
-
-    @VisibleForTesting
-    internal fun killApplication() {
-        exitProcess(0)
     }
 }

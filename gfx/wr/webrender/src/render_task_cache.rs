@@ -3,20 +3,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-use api::{ImageDescriptor, ImageDescriptorFlags, DirtyRect};
+use api::{DirtyRect, ImageDescriptor, ImageDescriptorFlags, SnapshotImageKey};
 use api::units::*;
 use crate::border::BorderSegmentCacheKey;
-use crate::box_shadow::{BoxShadowCacheKey};
+use crate::box_shadow::BoxShadowCacheKey;
 use crate::device::TextureFilter;
 use crate::freelist::{FreeList, FreeListHandle, WeakFreeListHandle};
-use crate::gpu_cache::GpuCache;
 use crate::internal_types::FastHashMap;
 use crate::prim_store::image::ImageCacheKey;
-use crate::prim_store::gradient::{
-    FastLinearGradientCacheKey, LinearGradientCacheKey, RadialGradientCacheKey,
-    ConicGradientCacheKey,
-};
 use crate::prim_store::line_dec::LineDecorationCacheKey;
+use crate::quad::QuadCacheKey;
 use crate::resource_cache::CacheItem;
 use std::{mem, usize, f32, i32};
 use crate::surface::SurfaceBuilder;
@@ -48,16 +44,15 @@ pub enum RenderTaskCacheKeyKind {
     Image(ImageCacheKey),
     BorderSegment(BorderSegmentCacheKey),
     LineDecoration(LineDecorationCacheKey),
-    FastLinearGradient(FastLinearGradientCacheKey),
-    LinearGradient(LinearGradientCacheKey),
-    RadialGradient(RadialGradientCacheKey),
-    ConicGradient(ConicGradientCacheKey),
+    Snapshot(SnapshotImageKey),
+    Quad(QuadCacheKey),
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 #[cfg_attr(feature = "capture", derive(Serialize))]
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct RenderTaskCacheKey {
+    pub origin: DeviceIntPoint,
     pub size: DeviceIntSize,
     pub kind: RenderTaskCacheKeyKind,
 }
@@ -164,7 +159,7 @@ impl RenderTaskCache {
         size: DeviceIntSize,
         render_task: &mut RenderTask,
         entry: &mut RenderTaskCacheEntry,
-        gpu_cache: &mut GpuCache,
+        gpu_buffer: &mut GpuBufferBuilderF,
         texture_cache: &mut TextureCache,
     ) {
         // Find out what size to alloc in the texture cache.
@@ -198,11 +193,12 @@ impl RenderTaskCache {
             None,
             entry.user_data.unwrap_or([0.0; 4]),
             DirtyRect::All,
-            gpu_cache,
+            gpu_buffer,
             None,
             render_task.uv_rect_kind(),
             Eviction::Auto,
             TargetShader::Default,
+            false,
         );
 
         // Get the allocation details in the texture cache, and store
@@ -222,22 +218,68 @@ impl RenderTaskCache {
         };
     }
 
-    pub fn request_render_task<F>(
+    pub fn request_render_task(
         &mut self,
-        key: RenderTaskCacheKey,
+        key: Option<RenderTaskCacheKey>,
         texture_cache: &mut TextureCache,
-        gpu_cache: &mut GpuCache,
-        gpu_buffer_builder: &mut GpuBufferBuilderF,
-        rg_builder: &mut RenderTaskGraphBuilder,
-        user_data: Option<[f32; 4]>,
         is_opaque: bool,
         parent: RenderTaskParent,
+        gpu_buffer_builder: &mut GpuBufferBuilderF,
+        rg_builder: &mut RenderTaskGraphBuilder,
         surface_builder: &mut SurfaceBuilder,
-        f: F,
-    ) -> Result<RenderTaskId, ()>
-    where
-        F: FnOnce(&mut RenderTaskGraphBuilder, &mut GpuBufferBuilderF) -> Result<RenderTaskId, ()>,
-    {
+        f: &mut dyn FnMut(&mut RenderTaskGraphBuilder, &mut GpuBufferBuilderF) -> RenderTaskId,
+    ) -> RenderTaskId {
+        // If this render task cache is being drawn this frame, ensure we hook up the
+        // render task for it as a dependency of any render task that uses this as
+        // an input source.
+        let (task_id, rendered_this_frame) = match key {
+            None => (f(rg_builder, gpu_buffer_builder), true),
+            Some(key) => self.request_render_task_impl(
+                key,
+                is_opaque,
+                texture_cache,
+                gpu_buffer_builder,
+                rg_builder,
+                f
+            )
+        };
+
+        if rendered_this_frame {
+            match parent {
+                RenderTaskParent::Surface => {
+                    // If parent is a surface, use helper fn to add this dependency,
+                    // which correctly takes account of the render task configuration
+                    // of the surface.
+                    surface_builder.add_child_render_task(
+                        task_id,
+                        rg_builder,
+                    );
+                }
+                RenderTaskParent::RenderTask(parent_render_task_id) => {
+                    // For render tasks, just add it as a direct dependency on the
+                    // task graph builder.
+                    rg_builder.add_dependency(
+                        parent_render_task_id,
+                        task_id,
+                    );
+                }
+            }
+        }
+
+        task_id
+    }
+
+    /// Returns the render task id and a boolean indicating whether the
+    /// task was rendered this frame (was not already in cache).
+    fn request_render_task_impl(
+        &mut self,
+        key: RenderTaskCacheKey,
+        is_opaque: bool,
+        texture_cache: &mut TextureCache,
+        gpu_buffer_builder: &mut GpuBufferBuilderF,
+        rg_builder: &mut RenderTaskGraphBuilder,
+        f: &mut dyn FnMut(&mut RenderTaskGraphBuilder, &mut GpuBufferBuilderF) -> RenderTaskId,
+    ) -> (RenderTaskId, bool) {
         let frame_id = self.frame_id;
         let size = key.size;
         // Get the texture cache handle for this cache key,
@@ -246,7 +288,7 @@ impl RenderTaskCache {
         let entry_handle = self.map.entry(key).or_insert_with(|| {
             let entry = RenderTaskCacheEntry {
                 handle: TextureCacheHandle::invalid(),
-                user_data,
+                user_data: None,
                 target_kind: RenderTargetKind::Color, // will be set below.
                 is_opaque,
                 frame_id,
@@ -258,12 +300,12 @@ impl RenderTaskCache {
         cache_entry.frame_id = self.frame_id;
 
         // Check if this texture cache handle is valid.
-        if texture_cache.request(&cache_entry.handle, gpu_cache) {
+        if texture_cache.request(&cache_entry.handle, gpu_buffer_builder) {
             // Invoke user closure to get render task chain
             // to draw this into the texture cache.
-            let render_task_id = f(rg_builder, gpu_buffer_builder)?;
+            let render_task_id = f(rg_builder, gpu_buffer_builder);
 
-            cache_entry.user_data = user_data;
+            cache_entry.user_data = None;
             cache_entry.is_opaque = is_opaque;
             cache_entry.render_task_id = Some(render_task_id);
 
@@ -277,36 +319,13 @@ impl RenderTaskCache {
                 task_size,
                 render_task,
                 cache_entry,
-                gpu_cache,
+                gpu_buffer_builder,
                 texture_cache,
             );
         }
 
-        // If this render task cache is being drawn this frame, ensure we hook up the
-        // render task for it as a dependency of any render task that uses this as
-        // an input source.
         if let Some(render_task_id) = cache_entry.render_task_id {
-            match parent {
-                RenderTaskParent::Surface => {
-                    // If parent is a surface, use helper fn to add this dependency,
-                    // which correctly takes account of the render task configuration
-                    // of the surface.
-                    surface_builder.add_child_render_task(
-                        render_task_id,
-                        rg_builder,
-                    );
-                }
-                RenderTaskParent::RenderTask(parent_render_task_id) => {
-                    // For render tasks, just add it as a direct dependency on the
-                    // task graph builder.
-                    rg_builder.add_dependency(
-                        parent_render_task_id,
-                        render_task_id,
-                    );
-                }
-            }
-
-            return Ok(render_task_id);
+            return (render_task_id, true);
         }
 
         let target_kind = cache_entry.target_kind;
@@ -319,7 +338,7 @@ impl RenderTaskCache {
         task.mark_cached(entry_handle.weak());
         let render_task_id = rg_builder.add().init(task);
 
-        Ok(render_task_id)
+        (render_task_id, false)
     }
 
     pub fn get_cache_entry(

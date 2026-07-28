@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -8,6 +6,7 @@
 
 #include "jit/JitSpewer.h"
 #include "vm/NativeObject.h"
+#include "wasm/WasmFrame.h"
 #include "wasm/WasmMemory.h"
 
 namespace js {
@@ -16,7 +15,8 @@ namespace wasm {
 
 #ifdef DEBUG
 void MemoryAccessDesc::assertOffsetInGuardPages() const {
-  MOZ_ASSERT(offset_ < (uint64_t)GetMaxOffsetGuardLimit(hugeMemory_));
+  MOZ_ASSERT(offset_ < (uint64_t)GetMaxOffsetGuardLimit(
+                           hugeMemory_, wasm::PageSize::Standard));
 }
 #endif
 
@@ -83,6 +83,20 @@ bool AssemblerShared::hasCreator() const {
   return !creators_.empty();
 }
 #endif
+
+static uint32_t ABIArgGeneratorStartOffset(ABIKind kind) {
+  switch (kind) {
+    case ABIKind::System:
+      return 0;
+    case ABIKind::Wasm:
+      return wasm::FrameWithInstances::sizeOfInstanceFields();
+    default:
+      MOZ_CRASH("Invalid ABI kind");
+  }
+}
+
+ABIArgGeneratorShared::ABIArgGeneratorShared(ABIKind kind)
+    : kind_(kind), stackOffset_(ABIArgGeneratorStartOffset(kind)) {}
 
 }  // namespace jit
 

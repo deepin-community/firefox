@@ -7,28 +7,32 @@ const searchPopup = document.getElementById("PopupSearchAutoComplete");
 
 const diacritic_engine = "Foo \u2661";
 
-var { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
-);
-
 let searchIcon;
 let engine;
 
 add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      // Force settings redesign to false, so that `hideOneOffButton` will correctly
+      // work for the time being.
+      ["browser.settings-redesign.enabled", false],
+    ],
+  });
+
   let searchbar = await gCUITestUtils.addSearchBar();
   registerCleanupFunction(() => {
     gCUITestUtils.removeSearchBar();
   });
   searchIcon = searchbar.querySelector(".searchbar-search-button");
 
-  let defaultEngine = await Services.search.getDefault();
+  let defaultEngine = await SearchService.getDefault();
   engine = await SearchTestUtils.installOpenSearchEngine({
     url: getRootDirectory(gTestPath) + "testEngine_diacritics.xml",
   });
   registerCleanupFunction(async () => {
-    await Services.search.setDefault(
+    await SearchService.setDefault(
       defaultEngine,
-      Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+      SearchService.CHANGE_REASON.UNKNOWN
     );
     engine.hideOneOffButton = false;
   });
@@ -43,7 +47,9 @@ add_task(async function test_hidden() {
   await promise;
 
   ok(
-    !getOneOffs().some(x => x.getAttribute("tooltiptext") == diacritic_engine),
+    !(await getOneOffs()).some(
+      x => x.getAttribute("tooltiptext") == diacritic_engine
+    ),
     "Search engines with diacritics are hidden when added to hiddenOneOffs preference."
   );
 
@@ -56,16 +62,16 @@ add_task(async function test_hidden() {
 add_task(async function test_shown() {
   engine.hideOneOffButton = false;
 
-  let oneOffsContainer = searchPopup.searchOneOffsContainer;
   let shownPromise = promiseEvent(searchPopup, "popupshown");
-  let builtPromise = promiseEvent(oneOffsContainer, "rebuild");
   info("Opening search panel");
 
   EventUtils.synthesizeMouseAtCenter(searchIcon, {});
-  await Promise.all([shownPromise, builtPromise]);
+  await shownPromise;
 
   ok(
-    getOneOffs().some(x => x.getAttribute("tooltiptext") == diacritic_engine),
+    (await getOneOffs()).some(
+      x => x.getAttribute("tooltiptext") == diacritic_engine
+    ),
     "Search engines with diacritics are shown when removed from hiddenOneOffs preference."
   );
 

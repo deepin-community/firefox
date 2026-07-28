@@ -4,14 +4,6 @@
 
 STANDALONE_MAKEFILE := 1
 
-# overwrite mobile-l10n.js with a matchOS=true one for multi-locale builds
-ifeq ($(AB_CD),multi)
-L10N_PREF_JS_EXPORTS = $(srcdir)/mobile-l10n.js
-L10N_PREF_JS_EXPORTS_PATH = $(FINAL_TARGET)/$(PREF_DIR)
-L10N_PREF_JS_EXPORTS_FLAGS = $(PREF_PPFLAGS) --silence-missing-directive-warnings
-PP_TARGETS += L10N_PREF_JS_EXPORTS
-endif
-
 include $(topsrcdir)/config/rules.mk
 
 MOZ_PKG_REMOVALS = $(srcdir)/removed-files.in
@@ -21,6 +13,20 @@ MOZ_PKG_DUPEFLAGS = -f $(srcdir)/allowed-dupes.mn
 
 DEFINES += -DPKG_LOCALE_MANIFEST=$(topobjdir)/mobile/android/installer/locale-manifest.in
 MOZ_CHROME_LOCALE_ENTRIES=@BINPATH@/chrome/
+
+MOZ_PKG_FATAL_WARNINGS = 1
+
+# When packaging an artifact build not all xpt files expected by the
+# packager will be present.
+ifdef MOZ_ARTIFACT_BUILDS
+MOZ_PKG_FATAL_WARNINGS =
+endif
+
+# Toolchain gradle-dependencies tasks use --disable-compile-environment and
+# bin/lib*.so files are missing.
+ifndef COMPILE_ENVIRONMENT
+MOZ_PKG_FATAL_WARNINGS =
+endif
 
 DEFINES += \
   -DMOZ_APP_NAME=$(MOZ_APP_NAME) \
@@ -36,6 +42,10 @@ endif
 
 ifdef MOZ_ANDROID_EXCLUDE_FONTS
 DEFINES += -DMOZ_ANDROID_EXCLUDE_FONTS=1
+endif
+
+ifdef MOZ_PREF_EXTENSIONS
+DEFINES += -DMOZ_PREF_EXTENSIONS=1
 endif
 
 ifdef MOZ_ARTIFACT_BUILDS
@@ -65,4 +75,8 @@ endif
 
 ifdef MOZ_CLANG_RT_ASAN_LIB_PATH
 DEFINES += -DMOZ_CLANG_RT_ASAN_LIB=$(notdir $(MOZ_CLANG_RT_ASAN_LIB_PATH))
+endif
+
+ifdef MOZ_APPSERVICES_IN_TREE
+DEFINES += -DMOZ_APPSERVICES_IN_TREE=1
 endif

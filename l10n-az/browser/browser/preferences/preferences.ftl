@@ -10,17 +10,29 @@ pane-general-title = Ümumi
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = Ev
+pane-search-title2 = Axtarış
+    .title = Axtarış
+pane-privacy-title3 = Məxfilik və Təhlükəsizlik
+    .title = Məxfilik və Təhlükəsizlik
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = Axtarış
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = Məxfilik və Təhlükəsizlik
 pane-privacy-title = Məxfilik və Təhlükəsizlik
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = { -brand-short-name } Dəstək
+    .title = { -brand-short-name } Dəstək
+addons-button-label2 = Uzantılar və Mövzular
+    .title = Uzantılar və Mövzular
 help-button-label = { -brand-short-name } Dəstək
 addons-button-label = Uzantılar və Mövzular
 focus-search =
@@ -72,6 +84,8 @@ set-as-my-default-browser =
     .accesskey = m
 disable-extension =
     .label = Uzantını söndür
+tabs-group-header2 =
+    .label = Vərəqlər
 tabs-group-header = Vərəqlər
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab son istifadə etmə sırasına görə vərəqlər arasında dönsün
@@ -93,6 +107,8 @@ browser-containers-settings =
     .label = Tənzimləmələr…
     .accesskey = i
 containers-disable-alert-title = Bütün konteyner vərəqlər qapatılsın?
+startup-group =
+    .label = Başlanğıc
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -113,7 +129,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Açıq tut
 containers-remove-alert-title = Bu konteyner silinsin?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Əgər bu Konteyneri indi silsəz, { $count } konteyner vərəqi qapadılacaq. Bu Konteyneri silmək istədiyinizə əminsiniz?
@@ -143,6 +159,8 @@ manage-browser-languages-button =
     .accesskey = l
 confirm-browser-language-change-description = Dəyişiklikləri tətbiq etmək üçün { -brand-short-name } səyyahını yenidən başladın
 confirm-browser-language-change-button = Tətbiq et və Yenidən başlat
+browser-language-install-error =
+    .message = { -brand-short-name } hazırda dillərinizi yeniləyə bilmir. İnternetə qoşulu olduğunuza əmin olun və təkrar yoxlayın.
 translate-web-pages =
     .label = Web məzmunu tərcümə et
     .accesskey = t
@@ -159,6 +177,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Fayllar və Tətbiqlər
+download-save-files-header =
+    .label = Faylların saxlandığı yer
+download-save-where-3 =
+    .aria-label = Faylların saxlandığı yer
 download-header = Endirilənlər
 download-save-where = Faylların saxlandığı yer
     .accesskey = y
@@ -183,9 +205,11 @@ applications-filter =
 applications-type-column =
     .label = Məzmun formatı
     .accesskey = t
+applications-type-heading = Məzmun formatı
 applications-action-column =
     .label = Əməliyyat
     .accesskey = Ə
+applications-action-heading = Əməliyyat
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = { $extension } faylı
@@ -207,11 +231,11 @@ applications-manage-app =
 applications-always-ask =
     .label = Həmişə soruş
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name } istifadə et ({ -brand-short-name } içində)
 
@@ -232,8 +256,10 @@ applications-use-app-default-label =
 applications-use-other-label =
     .value = { applications-use-other.label }
 
-##
+## Firefox updates
 
+drm-group =
+    .label = Rəqəmsal Hüquqların İdarəsi (DRM) Məzmunu
 drm-content-header = Rəqəmsal Hüquqların İdarəsi (DRM) Məzmunu
 play-drm-content =
     .label = DRM-idarəli məzmunu oxut (güvənilir deyil)
@@ -241,7 +267,12 @@ play-drm-content =
 play-drm-content-learn-more = Ətraflı öyrən
 update-application-title = { -brand-short-name } yeniləmələri
 update-application-description = Yaxşı məhsuldarlıq, sabitlik və təhlükəsizlik üçün { -brand-short-name } səyyahını daima yeni tutun.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Buraxılış { $version } <a data-l10n-name="learn-more">Yeniliklər</a>
+update-history-2 =
+    .label = Yeniləmə tarixçəsini göstər
+    .accesskey = e
 update-history =
     .label = Yeniləmə tarixçəsini göstər…
     .accesskey = e
@@ -275,11 +306,13 @@ performance-limit-content-process-option = Məzmun proses limiti
 performance-limit-content-process-enabled-desc = Əlavə məzmun prosesləri çox vərəq işlətdikdə məhsuldarlığı artıra bilərlər, amma daha çox yaddaş işlədəcəklər.
 performance-limit-content-process-blocked-desc = Məzmun proseslərinin sayısının dəyişdirilməsi ancaq çox-prosesli { -brand-short-name } ilə mümkündür. <a data-l10n-name="learn-more">Çox-prosesliliyin aktiv olmasını necə yoxlayacağınızı görün</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (standart)
+performance-group =
+    .label = Məhsuldarlıq
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = Səyahət
 browsing-use-autoscroll =
@@ -301,6 +334,8 @@ browsing-cfr-recommendations =
     .label = Gəzərkən uzantıları məsləhət gör
     .accesskey = R
 browsing-cfr-recommendations-learn-more = Ətraflı Öyrən
+browsing-group =
+    .label = Səyahət
 
 ## General Section - Proxy
 
@@ -316,10 +351,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = Yeni Pəncərələr və Vərəqlər
 home-new-windows-tabs-description2 = Ev səhifənizi, yeni pəncərə və vərəqləri açdığınızda nə gördüyünüzü seçin.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Əsas səyyahım et
+    .accesskey = m
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Ev səhifəsi və yeni pəncərələr
 home-newtabs-mode-label = Yeni vərəqlər
+home-homepage-new-tabs =
+    .label = Yeni vərəqlər
 home-restore-defaults =
     .label = İlkin Seçənəkləri Bərpa et
     .accesskey = R
@@ -349,11 +392,8 @@ choose-bookmark =
 home-prefs-search-header =
     .label = Web Axtarış
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 home-prefs-recommended-by-header =
     .label = { $provider } məsləhət görür
 
@@ -376,6 +416,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Hissələr
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -397,6 +439,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Ünvan sətri nəticələrində axtarış təkliflərini göstər
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = { -brand-short-name } səyyahını tarixçəni xatırlamayacaq şəkildə nizamladığınız üçün ünvan sətri nəticələrində axtarış təklifləri göstərilməyəcək.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -421,13 +465,19 @@ search-find-more-link = Daha çox axtarış mühərriyi tap
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Təkrarlanan Açar Söz
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Hazırda “{ $name }” tərəfindən istifadə olunan bir açar söz seçdiniz. Lütfən başqa birini seçin.
 search-keyword-warning-bookmark = Hazırda bir əlfəcin tərəfindən istifadə olunan açar söz seçdiniz. Lütfən başqa birini seçin.
+search-engine-group =
+    .label = Əsas axtarış mühərriyi
+search-default-engine =
+    .aria-label = Əsas axtarış mühərriyi
 
 ## Containers Section
 
 containers-header = Konteyner Vərəqlər
+containers-section-header =
+    .heading = Konteyner Vərəqlər
 containers-add-button =
     .label = Yeni konteyner əlavə et
     .accesskey = A
@@ -457,9 +507,13 @@ sync-profile-picture-with-alt =
     .alt = Profil şəklini dəyiş
 sync-manage-account = Hesabı idarə et
     .accesskey = b
+sync-manage-account2 =
+    .label = Hesabı idarə et
+    .accesskey = b
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } təsdiqlənməyib.
 sync-signedin-login-failure = Yenidən qoşulmaq üçün daxil olun { $email }
@@ -475,12 +529,6 @@ sync-remove-account =
 sync-sign-in =
     .label = Daxil ol
     .accesskey = x
-
-## Sync section - enabling or disabling sync.
-
-
-## The list of things currently syncing.
-
 
 ## The "Choose what to sync" dialog.
 
@@ -510,6 +558,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = Cihaz Adı
+sync-device-name-header-2 =
+    .label = Cihaz Adı
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Cihaz Adı
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Cihaz adını dəyişdir
+    .accesskey = h
 sync-device-name-change =
     .label = Cihaz adını dəyişdir…
     .accesskey = h
@@ -520,6 +578,8 @@ sync-device-name-save =
     .label = Saxla
     .accesskey = S
 sync-connect-another-device = Digər cihazı qoş
+sync-connect-another-device-2 =
+    .label = Digər cihazı qoş
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -540,11 +600,12 @@ privacy-header = Səyahər Məxfiliyi
 # The search keyword isn't shown to users but is used to find relevant settings in about:preferences.
 pane-privacy-logins-and-passwords-header = Hesablar və Parollar
     .searchkeywords = { -lockwise-brand-short-name }
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
     .label = Daxil olma və parolları saxlamaq üçün soruş
     .accesskey = r
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = İstisnalar…
@@ -552,16 +613,13 @@ forms-exceptions =
 forms-saved-logins =
     .label = Saxlanmış Daxil olmalar…
     .accesskey = D
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Ana parolu dəyişdir…
     .accesskey = d
 forms-master-pw-fips-desc = Parolu dəyişdirmək mümkün olmadı.
-
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
 
 ## Privacy Section - History
 
@@ -583,6 +641,12 @@ history-remember-option-never =
     .label = Tarixçəni heç vaxt xatırlama
 history-remember-option-custom =
     .label = Tarixçə üçün fərdi tənzimləmələri işlət
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } səyahət, endirmə, forma və axtarış tarixçənizi yadda saxlayacaq.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } gizli baxışdakı nizamlamalardan istifadə edəcək və siz Web-də gəzərkən keçmişlə bağlı heçnə xatırlamayacaq.
 history-remember-description = { -brand-short-name } səyahət, endirmə, forma və axtarış tarixçənizi yadda saxlayacaq.
 history-dontremember-description = { -brand-short-name } gizli baxışdakı nizamlamalardan istifadə edəcək və siz Web-də gəzərkən keçmişlə bağlı heçnə xatırlamayacaq.
 history-private-browsing-permanent =
@@ -603,14 +667,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Tarixçəni Təmizlə…
     .accesskey = T
+history-group =
+    .label = Tarixçə
 
 ## Privacy Section - Site Data
 
 sitedata-header = Çərəzlər və Sayt Məlumatları
 sitedata-total-size-calculating = Sayt məlumatları və keş ölçüsü hesablanır…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Saxlanılan çərəz, sayt məlumatları və keşləriniz hazırda { $value } { $unit } disk işlədirlər.
 sitedata-learn-more = Ətraflı öyrən
 sitedata-delete-on-close =
@@ -633,14 +699,10 @@ sitedata-clear =
 sitedata-settings =
     .label = Məlumatları idarə et…
     .accesskey = M
+cookies-site-data-group =
+    .label = Çərəzlər və Sayt Məlumatları
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Ünvan Sətri
 addressbar-suggest = Ünvan sətrindən istifadə edərkən bunları təklif et:
@@ -732,6 +794,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = İstisnalar…
     .accesskey = s
+permissions-location2 =
+    .label = Mövqe
+permissions-camera2 =
+    .label = Kamera
+permissions-microphone2 =
+    .label = Mikrofon
+permissions-notification2 =
+    .label = Bildirişlər
 
 ## Privacy Section - Data Collection
 
@@ -749,9 +819,8 @@ addon-recommendations-link = Ətraflı öyrən
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Bu quraşdırmanın konfiqurasiyasında məlumat xəbərdarlığı söndürülüb
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-studies-link =
+    .label = { -brand-short-name } tədqiqatlarını gör
 
 ## Privacy Section - Security
 ##
@@ -783,12 +852,7 @@ certs-view =
 certs-devices =
     .label = Təhlükəsizlik cihazları…
     .accesskey = T
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = FIPS aktivləşdir
 
 ## The following strings are used in the Download section of settings
 

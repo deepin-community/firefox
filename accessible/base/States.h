@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set expandtab shiftwidth=2 tabstop=2: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -295,9 +293,9 @@ const uint64_t LAST_ENTRY = CURRENT;
 /**
  * States that must be calculated by RemoteAccessible and are thus not cached.
  */
-const uint64_t kRemoteCalculatedStates =
-    states::FOCUSED | states::INVISIBLE | states::OFFSCREEN | states::ENABLED |
-    states::SENSITIVE | states::COLLAPSED | states::OPAQUE1;
+const uint64_t kRemoteCalculatedStates = states::FOCUSED | states::INVISIBLE |
+                                         states::OFFSCREEN | states::SENSITIVE |
+                                         states::COLLAPSED | states::OPAQUE1;
 
 }  // namespace a11y
 }  // namespace mozilla

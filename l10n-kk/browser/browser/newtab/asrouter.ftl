@@ -57,7 +57,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } пайдаланушы
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Бетбелгілерді барлық жерде синхрондаңыз.
 cfr-doorhanger-bookmark-fxa-body = Тамаша табу! Енді мобильді құрылғыларыңызда бұл бетбелгісіз қалмаңыз. { -fxaccount-brand-name } қызметімен жұмысты бастаңыз.
@@ -66,6 +66,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Бетбелгілерді қазір с
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Жабу батырмасы
     .title = Жабу
+fxa-adoption-addresses-backup-title = Сақталған адрестеріңіздің сақтық көшірмесін жасайық
+fxa-adoption-addresses-backup-subtitle = Сақталған адрестеріңізді құрылғыларыңызбен шифрленген түрде синхрондау арқылы қорғаңыз.
+fxa-adoption-credit-cards-backup-title = Төлем әдістеріңіздің сақтық көшірмесін жасайық
+fxa-adoption-credit-cards-backup-subtitle = Төлем әдістеріңізді құрылғыларыңызбен шифрленген түрде синхрондау арқылы қорғаңыз.
+fxa-adoption-bookmarks-treatment-backup-title = Бетбелгілеріңіздің сақтық көшірмесін жасайық
+fxa-adoption-bookmarks-treatment-backup-subtitle = Бетбелгілеріңізді құрылғыларыңызбен шифрленген түрде синхрондау арқылы қорғаңыз.
+fxa-adoption-primary-button-label = Тіркелу
 
 ## Protections panel
 
@@ -223,6 +230,20 @@ fox-doodle-pin-secondary = Қазір емес
 set-default-pdf-handler-headline = <strong>PDF файлдарыңыз енді { -brand-short-name } ішінде ашылады.</strong> Формаларды тікелей браузерде өңдеңіз немесе қол қойыңыз. Өзгерту үшін параметрлерден "PDF" іздеңіз.
 set-default-pdf-handler-primary = Түсіндім
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Нүктелі сызыққа немесе кез келген жерге қол қойыңыз!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Қолтаңбаңызды салыңыз, теріңіз немесе жүктеп салыңыз, содан кейін оны қажетті жерге дәл орналастырыңыз. Негізгі қолтаңбаларыңызды келесі жолы пайдалану үшін сақтап қойыңыз.
+annotations-make-default-pdf-handler-title = { -brand-short-name } өнімін негізгі PDF түзеткіші ретінде орнату керек пе?
+annotations-make-default-pdf-handler-subtitle = PDF файлын ашқан сайын біздің құралдарымызға қол жеткізе аласыз.
+annotations-make-default-pdf-primary-cta-label = Бастапқы ретінде орнату
+annotations-make-default-pdf-next-label = Келесі
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Болашақта жаңа құрылғыңыз бола ма?
@@ -243,6 +264,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Тіркелгі ж
 device-migration-fxa-spotlight-getting-new-device-header-2 = Болашақта жаңа құрылғыңыз бола ма?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Жаңа құрылғыны пайдалануды бастаған кезде бетбелгілер, тарих және парольдерді өзіңізбен бірге алып келу үшін бірнеше қарапайым қадамдарды орындаңыз.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Деректерімнің сақтық көшірмесін қалай жасауға болады
+device-migration-fxa-spotlight-sync-header = Бір қадамды жіберіп алмай шолыңыз
+device-migration-fxa-spotlight-sync-body = Бетбелгілер мен парольдер сияқты барлық маңызды ақпаратты шифрлеумен синхрондаңыз. Сіз { -brand-product-name } қолданатын кез келген жерде оның бәріне де қол жеткізе аласыз.
+device-migration-fxa-spotlight-sync-primary-button = Бастау
 
 ## Set as Default PDF Reader Infobar
 
@@ -269,6 +293,20 @@ launch-on-login-infobar-final-message = <strong>Компьютеріңізді �
 launch-on-login-infobar-final-reject-button = Жоқ, рахмет
     .accesskey = Ж
 
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-title = Компьютеріңіз келесі рет іске қосылғанда { -brand-short-name } ашу керек пе?
+launch-on-login-spotlight-startup-checkbox = Жүйе іске қосылғанда { -brand-short-name } іске қосу
+launch-on-login-spotlight-pin-taskbar-checkbox = Тапсырмалар панеліне бекіту
+# This checkbox label intentionally matches “startup-restore-windows-and-tabs”
+# in the Settings (preferences.ftl). Localizers can reuse the existing
+# translation suggested by translation memory.
+launch-on-login-spotlight-restore-checkbox = Алдыңғы терезелер мен беттерді ашу
+launch-on-login-spotlight-primary-button = Сақтау және { -brand-short-name } жабу
+
 ## Tail Fox Set Default Spotlight
 
 # This title is displayed together with the picture of a running fox with a long tail.
@@ -279,3 +317,177 @@ tail-fox-spotlight-title = Тітіркендіргіш трекерлерді �
 tail-fox-spotlight-subtitle = Тітіркендіргіш жарнама трекерлерімен қоштасып, қауіпсіз, жылдам интернет тәжірибесіне ие болыңыз.
 tail-fox-spotlight-primary-button = Менің сілтемелерімді { -brand-short-name } арқылы ашу
 tail-fox-spotlight-secondary-button = Қазір емес
+
+## Welcome Back Spotlight and Import
+
+welcome-back-spotlight-title = Кірістірілген жекелікке қайта оралыңыз
+welcome-back-spotlight-subtitle = Коммерциялық емес ұйым қолдайтын жалғыз ірі браузерге қайта қош келдіңіз. Қайда жүрсеңіз де, деректеріңізді қорғау үшін қосымша шаралар қолданамыз.
+welcome-back-embedded-import-title = Деректеріңізді импорттаңыз және { -brand-short-name } қызметін үйдегідей сезініңіз
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>2025 жылдың 14 қаңтарында { -brand-short-name } ескі нұсқаларында мәселелер пайда болуы мүмкін.</strong>
+root-certificate-succession-infobar-march-message = <strong>2025 жылдың 14 наурызынан кейін { -brand-short-name } пайдалануды жалғастыру үшін жаңартыңыз.</strong>
+root-certificate-succession-infobar-link = Жаңарту не үшін керек?
+root-certificate-succession-infobar-primary-button =
+    .label = Қазір жаңарту
+    .accesskey = ж
+root-certificate-succession-infobar-secondary-button =
+    .label = Кейінірек
+    .accesskey = й
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = { -brand-short-name } өнімінің маңызды жаңартуын өткізіп алдыңыз
+root-certificate-windows-background-notification-subtitle = Браузерді жаңартпасаңыз, оның кейбір бөліктері жақында жұмысын тоқтатады. Қазір — ең жаңа қорғаныс пен мүмкіндіктерді алу үшін таптырмас уақыт.
+root-certificate-windows-background-notification-learn-more-button = Көбірек білу
+root-certificate-windows-background-notification-update-button = { -brand-short-name } жаңарту
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Жабу
+    .aria-label = Жабу
+fxa-menu-message-sign-up-button = Тіркелу
+fxa-menu-message-sign-in-button = Кіру
+fxa-menu-message-sync-button = Синхрондауды бастау
+fxa-menu-message-sync-devices-primary-text = Барлық құрылғыларыңызды синхрондау
+fxa-menu-message-sync-devices-secondary-text = { -brand-short-name } қолданатын барлық жерде бетбелгілер мен парольдер сияқты ақпаратыңызды дереу алыңыз.
+fxa-menu-message-sync-devices-secondary-text2 = Бетбелгілерге, парольдерге және басқа да деректерге { -brand-short-name } жүйесіне кірген барлық құрылғыдан лезде қол жеткізіңіз.
+fxa-menu-message-sync-devices-collapsed-text = Барлық құрылғыларыңызды синхрондау
+fxa-menu-message-backup-data-primary-text = Браузер деректерінің сақтық көшірмесін жасау
+fxa-menu-message-backup-data-secondary-text = Барлық құрылғыларыңыздағы бетбелгілерді, парольдер және басқа ақпаратты автоматты түрде қорғау.
+fxa-menu-message-backup-data-collapsed-text = Браузер деректерінің сақтық көшірмесін жасау
+fxa-menu-message-backup-sync-primary-text = Деректеріңізді қауіпсіз және синхрондалған түрде сақтаңыз
+fxa-menu-message-backup-sync-secondary-text = Синхрондау деректеріңіздің көпшілігінің сақтық көшірмесін жасайды, осылайша оған { -brand-short-name } қолданатын кез келген жерден қол жеткізе аласыз.
+fxa-menu-message-backup-sync-collapsed-text = Синхрондау және деректердің қор көшірмесін жасау
+fxa-menu-message-mobile-primary-text = Беттерді телефоныңызға жіберу
+fxa-menu-message-mobile-secondary-text = Беттерді мобильді құрылғымен синхрондағанда, тоқтаған жеріңізден бірден жалғастырыңыз.
+fxa-menu-message-mobile-collapsed-text = Телефоныңызбен синхрондау
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Қайта қош келдіңіз
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } негізгі браузер қылу
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name } Бастау мәзіріне бекіту
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } Докта ұстау
+       *[other] { -brand-short-name } тапсырмалар панеліне бекіту
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Шолуды бастау
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } менің негізгі браузерім қылу
+multi-cta-fox-doodle-quick-reminder-subtitle = Жекелікке бағытталған таңдаулы браузеріңізді қасыңызда ұстауға болатынын еске саламыз.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Жекелікке бағытталған таңдаулы браузеріңізді қасыңызда ұстауға болатынын еске саламыз. { -brand-short-name } сілтемелерді ашатын негізгі браузер қылыңыз және Докта ұстаңыз.
+       *[other] Жекелікке бағытталған таңдаулы браузеріңізді қасыңызда ұстауға болатынын еске саламыз. { -brand-short-name } сілтемелерді ашатын негізгі браузер қылыңыз және тапсырмалар панеліне бекітіңіз.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Жекелікке бағытталған таңдаулы браузеріңізді қасыңызда ұстауға болатынын еске саламыз. { -brand-short-name } сілтемелерді ашатын негізгі браузер қылыңыз және тапсырмалар панелі мен Бастау мәзіріне бекітіңіз.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Windows 10 жүйесінен жақын арада жаңартыласыз ба?
+windows-10-eos-sync-spotlight-subtitle = Парольдер мен бетбелгілеріңіздің сақтық көшірмесін жасаңыз, сонда кез келген құрылғыға өтуге дайын боласыз.
+windows-10-eos-sync-spotlight-primary-label = { -brand-short-name } қор көшірмесін жасау
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Windows 11 жүйесіне өтудесіз бе? Бетбелгілер мен парольдерді жоғалтпаңыз.
+windows-10-eos-sync-toast-subtitle = Деректеріңіздің сақтық көшірмесін жасаңыз, сонда { -brand-short-name } кез келген уақытта, осы немесе келесі компьютерде пайдалануға дайын болады.
+windows-10-eos-sync-toast-primary-label = Бастау
+windows-10-eos-sync-toast-secondary-label = Кейінірек еске салу
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } басқа Big Tech браузерлері сияқты алдын ала орнатылмаған. Бастысы — осы.
+windows-10-eos-challenger-sync-callout-subtitle = { -brand-product-name } бетбелгілері мен парольдерінің сақтық көшірмесін жасасаңыз, өзіңіз таңдаған браузерді келесі құрылғыға көшіру оңайырақ болады.
+windows-10-eos-challenger-pin-callout-subtitle = { -brand-shorter-name } бағдарламасын тапсырмалар тақтасына бекітіңіз, сонда өзіңіз таңдаған браузер қажет болғанда әрдайым қол астыңызда болады.
+windows-10-eos-challenger-sync-primary-button = { -brand-shorter-name } сақтық көшірмесін жасау
+windows-10-eos-challenger-pin-primary-button = { -brand-shorter-name } бекіту
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } криптомайнерлерді, әлеуметтік желілердегі бақылаушыларды және саусақ ізін алушыларды бұғаттайды.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Бақылаушылар сіздің құрылғыңызды сәйкестендіре алмайды немесе желіде соңыңыздан ере алмайды — өйткені біз оларға жол бермейміз.
+windows-10-eos-sync-callout-privacy-screen-2-title = Келесі құрылғыңыз үшін парольдер мен бетбелгілердің қауіпсіздігін қамтамасыз етіңіз.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = { -brand-shorter-name } сақтық көшірмесін жасау деректеріңіз бен жекелік баптауларыңызды өзіңізбен бірге алып жүруді жеңілдетеді.
+windows-10-eos-sync-callout-privacy-info-button = Ненің бұғатталғанын қарау
+windows-10-eos-callout-addons-title = Қосымшаларды қолданып көріңіз: қарапайым жаңарту, үлкен әсер
+windows-10-eos-callout-addons-subtitle = Бұл кеңейтулер сіздің өнімділігіңізді арттырып, қорғалған әрі алаңдаушылықсыз болуыңызға көмектесу үшін таңдалды.
+windows-10-eos-callout-addons-primary-button = Біздің таңдауларымызды қараңыз
+windows-10-eos-sync-callout-addons-title = Windows 10 жүйесінен жаңартылған кезде қосымшаларыңызды жоғалтпаңыз.
+windows-10-eos-sync-callout-addons-subtitle = { -brand-product-name } қосымшаларыңыз әрқашан, тіпті құрылғыны ауыстырғаннан кейін де қолжетімді болуы үшін қазір синхрондаңыз.
+windows-10-eos-sync-callout-next-button = Келесі
+windows-10-eos-sync-callout-get-started-button = Бастау
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Тік қойындылар мен қойындылар топтары енді қолжетімді!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Көптеген сұраныстар бойынша, { -brand-product-name } шолу процесін жеңілдету және шоғырландыру үшін жаңа функцияларды шығарды.
+windows-10-eos-feature-toast-whats-new-button = Жаңалықтарын білу
+windows-10-eos-feature-toast-dismiss-button = Елемеу
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-title = <strong>Microsoft енді Windows 10 жүйесін қолдамайды.</strong> { -brand-product-name } Windows 11 жүйесіне дайындау үшін деректеріңіздің сақтық көшірмесін жасаңыз.
+windows-10-eos-global-infobar-primary-button = Сақтық көшірме жасауды іске қосу
+    .accesskey = с
+windows-10-eos-global-infobar-learn-more-link = Көбірек білу
+    .accessKey = L
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Қатаң бақылаудан қорғау режимi сайттардың жұмысын бұзуы мүмкін.</strong> Бақылаушылары болуы мүмкін маңызды элементтерді бұғаттан шығару арқылы жиі кездесетін мәселелерді түзетіңіз.
+etp-strict-exceptions-infobar-learn-more = Көбірек білу
+etp-strict-exceptions-infobar-button = Түзетулерді іске асыру
+    .accesskey = а
+etp-strict-exceptions-infobar-not-now = Қазір емес
+    .accesskey = м
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } негізгі браузер емес
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } негізгі браузеріңіз емес
+set-default-menu-message-row-layout-title = { -brand-short-name } негізгі браузер қылу
+set-default-menu-message-row-layout-title-variant = { -brand-short-name } негізгі браузер қылу
+set-default-menu-message-row-layout-subtitle = Әр шолудағы жылдамдық, қауіпсіздік және жекелікті алыңыз.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } жақын ұстаңыз — оны өзіңіздің негізгі браузеріңіз етіп, Dock ішіне бекітіңіз.
+       *[other] { -brand-short-name } жақын ұстаңыз — оны өзіңіздің негізгі браузеріңіз етіп, тапсырмалар панеліне бекітіңіз.
+    }
+set-default-menu-message-split-layout-title =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } қолданбасын әрқашан қол астында ұстаңыз
+       *[other] Барлық сілтемелерді { -brand-short-name } арқылы ашу
+    }
+set-default-menu-message-split-layout-subtitle =
+    { PLATFORM() ->
+        [macos] Оны үнсіз келісім бойынша браузер етіңіз және док панелінде сақтаңыз.
+       *[other] Жылдам шолу мен автоматты жекелік қорғауын алыңыз.
+    }
+set-default-menu-message-primary-button = Бастапқы ретінде орнату
+set-default-menu-message-primary-button-variant = Негізгі браузер ретінде орнату
+set-default-menu-message-primary-button-short-variant = { -brand-short-name } негізі қылу
+
+## Firefox Relay 50 Masks Announcement
+
+# "on us" in this context means "for free" or "at no cost"
+relay-50-masks-announcement-title = 50 эл. пошта маскалары, бізден тегін
+relay-50-masks-announcement-subtitle = Енді сіз 50 тегін маска аласыз (бұрын 5 болатын). Нақты электрондық поштаңызды құпия сақтау үшін әр тіркелгі үшін біреуін пайдаланыңыз.
+relay-50-masks-announcement-primary-button = { -relay-brand-name } ішіне өту
+    .accesskey = т
+relay-50-masks-announcement-secondary-button = Елемеу
+    .accesskey = м
+
+## Nova Early Access Infobar
+
+nova-early-access-infobar-title = <strong>{ -brand-product-name } жаңа сыртқы түріне ие болуда.</strong> Сіз осы жылдың соңында іске қосылғанға дейінгі ерте, өңделмеген нұсқасын алдын ала қарап жатырсыз.
+nova-early-access-share-feedback-link = Пікір қалдыру
+    .accesskey = л
+nova-early-access-infobar-primary-button = Түсіндім
+    .accesskey = Т

@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2015 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,6 +65,9 @@ enum class TypeCode {
   I8 = 0x78,   // SLEB128(-0x08)
   I16 = 0x77,  // SLEB128(-0x09)
 
+  // A null reference in the cont hierarchy.
+  NullContRef = 0x75,  // SLEB128(-0x0b)
+
   // A function pointer with any signature
   FuncRef = 0x70,  // SLEB128(-0x10)
 
@@ -106,6 +107,9 @@ enum class TypeCode {
   // A reference to an exception value.
   ExnRef = 0x69,  // SLEB128(-0x17)
 
+  // A reference to a continuation.
+  ContRef = 0x68,  // SLEB128(-0x18)
+
   // A null reference in the any hierarchy.
   NullAnyRef = 0x71,  // SLEB128(-0x0F)
 
@@ -117,6 +121,9 @@ enum class TypeCode {
 
   // Type constructor for array types - gc proposal
   Array = 0x5e,  // SLEB128(-0x22)
+
+  // Type constructor for cont types - stack switching proposal
+  Cont = 0x5d,  // SLEB128(-0x23)
 
   // Value for non-nullable type present.
   TableHasInitExpr = 0x40,
@@ -204,11 +211,23 @@ enum class Trap {
   // CheckForInterrupt(). This trap is resumable.
   CheckInterrupt,
 
+#ifdef ENABLE_WASM_JSPI
+  // Throw the WebAssembly.SuspendError exception.
+  ThrowSuspendError,
+#endif
+
+  // Executed an instruction that is not fully implemented yet.
+  Unimplemented,
+
   // Signal an error that was reported in C++ code.
   ThrowReported,
 
   Limit
 };
+
+#ifdef JS_JITSPEW
+const char* NameOfTrap(Trap t);
+#endif
 
 enum class DefinitionKind {
   Function = 0x00,
@@ -218,6 +237,12 @@ enum class DefinitionKind {
   Tag = 0x04,
 };
 
+// The values here must not intersect with the values of DefinitionKind.
+enum class CompactImportKind {
+  ModuleName = 0x7F,
+  ModuleNameAndExternType = 0x7E,
+};
+
 enum class GlobalTypeImmediate { IsMutable = 0x1, AllowedMask = 0x1 };
 
 enum class LimitsFlags {
@@ -225,16 +250,20 @@ enum class LimitsFlags {
   HasMaximum = 0x1,
   IsShared = 0x2,
   IsI64 = 0x4,
+#ifdef ENABLE_WASM_CUSTOM_PAGE_SIZES
+  HasCustomPageSize = 0x8,
+#endif
 };
 
 enum class LimitsMask {
-#ifdef ENABLE_WASM_MEMORY64
   Table = uint8_t(LimitsFlags::HasMaximum) | uint8_t(LimitsFlags::IsI64),
+#ifdef ENABLE_WASM_CUSTOM_PAGE_SIZES
+  Memory = uint8_t(LimitsFlags::HasMaximum) | uint8_t(LimitsFlags::IsShared) |
+           uint8_t(LimitsFlags::IsI64) |
+           uint8_t(LimitsFlags::HasCustomPageSize),
+#else
   Memory = uint8_t(LimitsFlags::HasMaximum) | uint8_t(LimitsFlags::IsShared) |
            uint8_t(LimitsFlags::IsI64),
-#else
-  Table = uint8_t(LimitsFlags::HasMaximum),
-  Memory = uint8_t(LimitsFlags::HasMaximum) | uint8_t(LimitsFlags::IsShared),
 #endif
 };
 
@@ -493,6 +522,17 @@ enum class Op {
 
   // Function references
   BrOnNonNull = 0xd6,
+
+#ifdef ENABLE_WASM_JSPI
+  // Stack switching
+  ContNew = 0xe0,
+  ContBind = 0xe1,
+  Suspend = 0xe2,
+  Resume = 0xe3,
+  ResumeThrow = 0xe4,
+  ResumeThrowRef = 0xe5,
+  Switch = 0xe6,
+#endif
 
   FirstPrefix = 0xfa,
   GcPrefix = 0xfb,
@@ -833,8 +873,8 @@ enum class SimdOp {
   F64x2RelaxedMin = 0x10f,
   F64x2RelaxedMax = 0x110,
   I16x8RelaxedQ15MulrS = 0x111,
-  I16x8DotI8x16I7x16S = 0x112,
-  I32x4DotI8x16I7x16AddS = 0x113,
+  I16x8RelaxedDotI8x16I7x16S = 0x112,
+  I32x4RelaxedDotI8x16I7x16AddS = 0x113,
 
   // Reserved for Relaxed SIMD = 0x114-0x12f
 
@@ -874,13 +914,19 @@ enum class MiscOp {
 
   MemoryDiscard = 0x12,
 
+  // Wide Arithmetic, per proposal as of January 2026.
+  I64Add128 = 19,    // 0x13
+  I64Sub128 = 20,    // 0x14
+  I64MulWideS = 21,  // 0x15
+  I64MulWideU = 22,  // 0x16
+
   Limit
 };
 
 // Opcodes from threads proposal as of June 30, 2017
 enum class ThreadOp {
-  // Wait and wake
-  Wake = 0x00,
+  // Wait and notify
+  Notify = 0x00,
   I32Wait = 0x01,
   I64Wait = 0x02,
   Fence = 0x03,
@@ -970,8 +1016,8 @@ enum class BuiltinModuleFuncId {
 // emitted internally when compiling intrinsic modules and are rejected by wasm
 // validation.
 // See wasm/WasmBuiltinModule.yaml for the list.
-#define VISIT_BUILTIN_FUNC(op, export, sa_name, abitype, entry, uses_memory, \
-                           inline_op, idx)                                   \
+#define VISIT_BUILTIN_FUNC(op, export, sa_name, abitype, needs_thunk, entry, \
+                           uses_memory, inline_op, idx)                      \
   op = idx + 1,  // NOLINT
   FOR_EACH_BUILTIN_MODULE_FUNC(VISIT_BUILTIN_FUNC)
 #undef VISIT_BUILTIN_FUNC
@@ -985,6 +1031,7 @@ enum class BuiltinInlineOp {
 
   StringCast,
   StringTest,
+  StringLength,
 
   // Op limit.
   Limit
@@ -997,19 +1044,6 @@ enum class BuiltinModuleId {
 
   // Not technically a builtin module, but it uses most of the same machinery.
   JSStringConstants,
-};
-
-enum class StackSwitchKind {
-  SwitchToSuspendable,
-  SwitchToMain,
-  ContinueOnSuspendable,
-};
-
-enum class UpdateSuspenderStateAction {
-  Enter,
-  Suspend,
-  Resume,
-  Leave,
 };
 
 enum class MozOp {
@@ -1055,11 +1089,17 @@ enum class MozOp {
   OldCallDirect,
   OldCallIndirect,
 
+  // Everything above this must be asm.js.
+  LastAsmJSOp = OldCallIndirect,
+
+#ifdef ENABLE_WASM_JSPI
+  // Check that there is a WebAssembly.promising function ready to suspend to.
+  GuardSuspending,
+#endif
+
   // Call a builtin module funcs. The operator has argument leb u32 to specify
   // particular operation id. See BuiltinModuleFuncId above.
   CallBuiltinModuleFunc,
-
-  StackSwitch,
 
   Limit
 };
@@ -1075,7 +1115,22 @@ struct OpBytes {
     b0 = uint16_t(x);
     b1 = 0;
   }
+  OpBytes(uint16_t b0, uint16_t b1) : b0(b0), b1(b1) {}
   OpBytes() = default;
+
+  bool canBePacked() const {
+    // In practice all of our secondary bytecodes are actually 16-bit right now.
+    return b1 <= UINT16_MAX;
+  }
+
+  uint32_t toPacked() const {
+    MOZ_RELEASE_ASSERT(canBePacked());
+    return b0 | (b1 << 16);
+  }
+
+  static OpBytes fromPacked(uint32_t packed) {
+    return OpBytes(packed & 0xFFFF, packed >> 16);
+  }
 
   // Whether this opcode should have a breakpoint site inserted directly before
   // the opcode in baseline when debugging. We use this as a heuristic to
@@ -1108,6 +1163,9 @@ struct OpBytes {
         return true;
     }
   }
+
+  // Defined in WasmOpIter.cpp
+  const char* toString() const;
 };
 
 static const char NameSectionName[] = "name";
@@ -1120,14 +1178,21 @@ enum class FieldFlags { Mutable = 0x01, AllowedMask = 0x01 };
 
 enum class FieldWideningOp { None, Signed, Unsigned };
 
-// The WebAssembly spec hard-codes the virtual page size to be 64KiB and
-// requires the size of linear memory to always be a multiple of 64KiB.
+enum class HandlerKind : uint8_t {
+  Suspend = 0x0,
+  Switch = 0x1,
 
-static const unsigned PageSize = 64 * 1024;
-static const unsigned PageBits = 16;
-static_assert(PageSize == (1u << PageBits));
+  Limit = Switch,
+};
 
-static const unsigned PageMask = ((1u << PageBits) - 1);
+// The WebAssembly custom page sizes proposal allows for a virtual page size of
+// either 64KiB, or 1 byte.  We call these Standard and Tiny, respectively.
+enum class PageSize {
+#ifdef ENABLE_WASM_CUSTOM_PAGE_SIZES
+  Tiny = 0,
+#endif
+  Standard = 16
+};
 
 // These limits are agreed upon with other engines for consistency.
 
@@ -1137,7 +1202,7 @@ static const unsigned MaxSubTypingDepth = 63;
 static const unsigned MaxTags = 1000000;
 static const unsigned MaxFuncs = 1000000;
 static const unsigned MaxTables = 100000;
-static const unsigned MaxMemories = 100000;
+static const unsigned MaxMemories = 100;
 static const unsigned MaxImports = 1000000;
 static const unsigned MaxExports = 1000000;
 static const unsigned MaxGlobals = 1000000;
@@ -1152,9 +1217,13 @@ static const unsigned MaxLocals = 50000;
 static const unsigned MaxParams = 1000;
 static const unsigned MaxResults = 1000;
 static const unsigned MaxStructFields = 10000;
-static const uint64_t MaxMemory32PagesValidation = uint64_t(1) << 16;
-static const uint64_t MaxMemory64PagesValidation = uint64_t(1) << 48;
-static const unsigned MaxStringBytes = 100000;
+#ifdef ENABLE_WASM_CUSTOM_PAGE_SIZES
+static const uint64_t MaxMemory32TinyPagesValidation = UINT32_MAX;
+static const uint64_t MaxMemory64TinyPagesValidation = (uint64_t(1) << 53) - 1;
+#endif
+static const uint64_t MaxMemory32StandardPagesValidation = uint64_t(1) << 16;
+static const uint64_t MaxMemory64StandardPagesValidation =
+    (uint64_t(1) << 37) - 1;
 static const unsigned MaxModuleBytes = 1024 * 1024 * 1024;
 static const unsigned MaxFunctionBytes = 7654321;
 static const unsigned MaxArrayNewFixedElements = 10000;
@@ -1171,9 +1240,10 @@ static_assert(uint64_t(MaxArrayPayloadBytes) <
 // These limits pertain to our WebAssembly implementation only.
 
 static const unsigned MaxTryTableCatches = 10000;
-static const unsigned MaxBrTableElems = 1000000;
+static const unsigned MaxBrTableElems = 65520;
 static const unsigned MaxCodeSectionBytes = MaxModuleBytes;
 static const unsigned MaxBranchHintValue = 2;
+static const unsigned MaxHandlers = 16;
 
 // 512KiB should be enough, considering how Rabaldr uses the stack and
 // what the standard limits are:
@@ -1185,21 +1255,6 @@ static const unsigned MaxBranchHintValue = 2;
 // At sizeof(int64) bytes per slot this works out to about 480KiB.
 
 static const unsigned MaxFrameSize = 512 * 1024;
-
-// Limit for the amount of stacks present in the runtime.
-static const size_t SuspendableStacksMaxCount = 100;
-
-// Max size of an allocated stack.
-static const size_t SuspendableStackSize = 0x100000;
-
-// Size of additional space at the top of a suspendable stack.
-// The space is allocated to C++ handlers such as error/trap handlers,
-// or stack snapshots utilities.
-static const size_t SuspendableRedZoneSize = 0x6000;
-
-// Total size of a suspendable stack to be reserved.
-static constexpr size_t SuspendableStackPlusRedZoneSize =
-    SuspendableStackSize + SuspendableRedZoneSize;
 
 // Asserted by Decoder::readVarU32.
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -185,6 +183,40 @@ BlockingResourceBase::~BlockingResourceBase() {
   mChainPrev = 0;  // racy only for stupidly buggy client code
   if (sDeadlockDetector) {
     sDeadlockDetector->Remove(this);
+  }
+}
+
+void BlockingResourceBase::AssertSafeToProcessEventLoop() {
+  for (BlockingResourceBase* res = ResourceChainFront(); res != nullptr;
+       res = res->mChainPrev) {
+    // It's more OK to hold reentrant/recursive types across nested event loops,
+    // as it should hopefully not lead to deadlocks, so allow them for now.
+    if (res->mType == eReentrantMonitor || res->mType == eRecursiveMutex) {
+      continue;
+    }
+
+    // Allow specifically named mutexes to be held across a nested event loop,
+    // in order to get this check landed.
+    nsDependentCString name(res->mName);
+    if (name != "GraphRunner::mMonitor"_ns ||            // Bug 1928770
+        name != "SourceSurfaceSkia::mChangeMutex"_ns) {  // Bug 1928772
+      continue;
+    }
+
+    // This is a potential deadlock, as ProcessNextEvent could process any
+    // runnable on the current thread, including one which could attempt to
+    // acquire the mutex.
+    fputs(
+        "###!!! ERROR: Potential deadlock detected:\n"
+        "=== Holding blocking resource across call to ProcessNextEvent\n",
+        stderr);
+    nsAutoCString out(
+        "Potential deadlock detected:\n"
+        "Holding blocking resource across call to ProcessNextEvent\n");
+    res->Print(out);
+    NS_ERROR(out.get());
+    MOZ_CRASH_UNSAFE_PRINTF("Holding '%s' across call to ProcessNextEvent",
+                            res->mName);
   }
 }
 

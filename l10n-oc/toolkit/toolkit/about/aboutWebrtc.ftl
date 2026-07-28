@@ -12,12 +12,9 @@ about-webrtc-document-title = Detalhs intèrnes de WebRTC
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = enregistrar about:webrtc jos
 
-## These labels are for a disclosure which contains the information for closed PeerConnection sections
-
-
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
-about-webrtc-aec-logging-msg-label = Jornalizacion AEC 
+about-webrtc-aec-logging-msg-label = Jornalizacion AEC
 about-webrtc-aec-logging-off-state-label = Aviar la jornalizacion AEC
 about-webrtc-aec-logging-on-state-label = Arrèstar la jornalizacion AEC
 about-webrtc-aec-logging-on-state-msg = Jornalizacion AEC activa (parlatz amb lo correspondant unas minutas puèi arrestatz l'enregistrament)
@@ -185,10 +182,6 @@ about-webrtc-configuration-element-not-provided = Pas fornit
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = Preferéncias utilizaire pel WebRTC
 
-## These are displayed on the button that shows or hides the
-## user modified configuration disclosure
-
-
 ##
 
 # Section header for estimated bandwidths of WebRTC media flows
@@ -212,10 +205,7 @@ about-webrtc-round-trip-time-ms = RTT ms
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Estatisticas de quadre vidèo - MediaStreamTrack ID : { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = pagina enregistrada a l'emplaçament seguent : { $path }
 about-webrtc-debug-mode-off-state-msg = lo fichièr de la traça es disponible a l'emplaçament seguent : { $path }
@@ -297,11 +287,3 @@ about-webrtc-sdp-set-timestamp = Orodatatge { NUMBER($timestamp, useGrouping: "f
 
 about-webrtc-show-msg-sdp = Mostrar lo SDP
 about-webrtc-hide-msg-sdp = Amagar lo SDP
-
-## These are displayed on the button that shows or hides the Media Context information disclosure.
-## The Media Context is the set of preferences and detected capabilities that informs
-## the negotiated CODEC settings.
-
-
-##
-

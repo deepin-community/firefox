@@ -14,9 +14,9 @@
 #include <stddef.h>
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
-#include "absl/types/optional.h"
 #include "rtc_base/strings/string_builder.h"
 
 namespace webrtc {
@@ -57,7 +57,7 @@ class AudioTransport {
       uint32_t currentMicLevel,
       bool keyPressed,
       uint32_t& newMicLevel,
-      absl::optional<int64_t> estimatedCaptureTimeNS) {  // NOLINT
+      std::optional<int64_t> /* estimatedCaptureTimeNS */) {  // NOLINT
     // TODO(webrtc:13620) Make the default behaver of the new API to behave as
     // the old API. This can be pure virtual if all uses of the old API is
     // removed.
@@ -154,7 +154,7 @@ class AudioParameters {
   }
   std::string ToString() const {
     char ss_buf[1024];
-    rtc::SimpleStringBuilder ss(ss_buf);
+    SimpleStringBuilder ss(ss_buf);
     ss << "AudioParameters: ";
     ss << "sample_rate=" << sample_rate() << ", channels=" << channels();
     ss << ", frames_per_buffer=" << frames_per_buffer();

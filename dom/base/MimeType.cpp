@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "MimeType.h"
+
 #include "nsNetUtil.h"
 #include "nsUnicharUtils.h"
 
@@ -271,6 +270,7 @@ template <typename char_type>
     const nsTSubstring<char_type>& aMimeType,
     nsTSubstring<char_type>& aOutEssence,
     nsTSubstring<char_type>& aOutCharset) {
+  // https://fetch.spec.whatwg.org/#concept-header-extract-mime-type
   static char_type kCHARSET[] = {'c', 'h', 'a', 'r', 's', 'e', 't'};
   static nsTDependentSubstring<char_type> kCharset(kCHARSET, 7);
 
@@ -278,8 +278,8 @@ template <typename char_type>
   nsTAutoString<char_type> prevContentType;
   nsTAutoString<char_type> prevCharset;
 
-  prevContentType.Assign(aOutEssence);
-  prevCharset.Assign(aOutCharset);
+  aOutEssence.Truncate();
+  aOutCharset.Truncate();
 
   nsTArray<nsTDependentSubstring<char_type>> mimeTypeParts =
       SplitMimetype(aMimeType);
@@ -292,9 +292,7 @@ template <typename char_type>
     parsed = Parse(mimeTypeString);
 
     if (!parsed) {
-      aOutEssence.Truncate();
-      aOutCharset.Truncate();
-      return false;
+      continue;
     }
 
     parsed->GetEssence(aOutEssence);
@@ -322,6 +320,10 @@ template <typename char_type>
     }
   }
 
+  if (aOutEssence.IsEmpty()) {
+    return false;
+  }
+
   return true;
 }
 
@@ -343,6 +345,11 @@ template <typename char_type>
 void TMimeType<char_type>::GetEssence(nsTSubstring<char_type>& aOutput) const {
   aOutput.Assign(mType);
   aOutput.Append('/');
+  GetSubtype(aOutput);
+}
+
+template <typename char_type>
+void TMimeType<char_type>::GetSubtype(nsTSubstring<char_type>& aOutput) const {
   aOutput.Append(mSubtype);
 }
 
@@ -416,6 +423,9 @@ template void TMimeType<char>::Serialize(nsTSubstring<char>& aOutput) const;
 template void TMimeType<char16_t>::GetEssence(
     nsTSubstring<char16_t>& aOutput) const;
 template void TMimeType<char>::GetEssence(nsTSubstring<char>& aOutput) const;
+template void TMimeType<char16_t>::GetSubtype(
+    nsTSubstring<char16_t>& aOutput) const;
+template void TMimeType<char>::GetSubtype(nsTSubstring<char>& aOutput) const;
 template bool TMimeType<char16_t>::HasParameter(
     const nsTSubstring<char16_t>& aName) const;
 template bool TMimeType<char>::HasParameter(

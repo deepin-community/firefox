@@ -6,7 +6,7 @@
 
 ChromeUtils.defineESModuleGetters(this, {
   LanguageDetector:
-    "resource://gre/modules/translation/LanguageDetector.sys.mjs",
+    "resource://gre/modules/translations/LanguageDetector.sys.mjs",
 });
 
 this.i18n = class extends ExtensionAPI {
@@ -27,6 +27,14 @@ this.i18n = class extends ExtensionAPI {
 
         getUILanguage: function () {
           return extension.localeData.uiLocale;
+        },
+
+        getPreferredSystemLanguages: function () {
+          const systemLocales = Cc[
+            "@mozilla.org/intl/ospreferences;1"
+          ].getService(Ci.mozIOSPreferences).systemLocales;
+
+          return Promise.resolve(systemLocales);
         },
 
         detectLanguage: function (text) {

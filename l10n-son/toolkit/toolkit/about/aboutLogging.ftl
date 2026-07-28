@@ -8,10 +8,3 @@ about-logging-set-log-file = Huruyan tuku kayandi
 about-logging-set-log-modules = Huruyan dunhey kayandi
 about-logging-start-logging = Huruyan šintin
 about-logging-stop-logging = Huruyan kayandi
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

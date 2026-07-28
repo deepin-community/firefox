@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -22,22 +21,10 @@
 #include "jerror.h"
 
 #include "gfxPlatform.h"
-#include "mozilla/EndianUtils.h"
 #include "mozilla/gfx/Types.h"
-#include "mozilla/Telemetry.h"
-
-extern "C" {
-#include "iccjpeg.h"
-}
-
-#if MOZ_BIG_ENDIAN()
-#  define MOZ_JCS_EXT_NATIVE_ENDIAN_XRGB JCS_EXT_XRGB
-#else
-#  define MOZ_JCS_EXT_NATIVE_ENDIAN_XRGB JCS_EXT_BGRX
-#endif
 
 static void cmyk_convert_bgra(uint32_t* aInput, uint32_t* aOutput,
-                              int32_t aWidth);
+                              int32_t aWidth, bool aIsInverted);
 
 using mozilla::gfx::SurfaceFormat;
 
@@ -54,7 +41,7 @@ static qcms_profile* GetICCProfile(struct jpeg_decompress_struct& info) {
   uint32_t profileLength;
   qcms_profile* profile = nullptr;
 
-  if (read_icc_profile(&info, &profilebuf, &profileLength)) {
+  if (jpeg_read_icc_profile(&info, &profilebuf, &profileLength)) {
     profile = qcms_profile_from_memory(profilebuf, profileLength);
     free(profilebuf);
   }
@@ -73,7 +60,7 @@ METHODDEF(void) progress_monitor(j_common_ptr info);
 #define MAX_JPEG_MARKER_LENGTH (((uint32_t)1 << 16) - 1)
 
 nsJPEGDecoder::nsJPEGDecoder(RasterImage* aImage,
-                             Decoder::DecodeStyle aDecodeStyle)
+                             Decoder::DecodeStyle aDecodeStyle, bool aIsPDF)
     : Decoder(aImage),
       mLexer(Transition::ToUnbuffered(State::FINISHED_JPEG_DATA,
                                       State::JPEG_DATA, SIZE_MAX),
@@ -81,7 +68,8 @@ nsJPEGDecoder::nsJPEGDecoder(RasterImage* aImage,
       mProfile(nullptr),
       mProfileLength(0),
       mCMSLine(nullptr),
-      mDecodeStyle(aDecodeStyle) {
+      mDecodeStyle(aDecodeStyle),
+      mIsPDF(aIsPDF) {
   this->mErr.pub.error_exit = nullptr;
   this->mErr.pub.emit_message = nullptr;
   this->mErr.pub.output_message = nullptr;
@@ -129,8 +117,9 @@ nsJPEGDecoder::~nsJPEGDecoder() {
           ("nsJPEGDecoder::~nsJPEGDecoder: Destroying JPEG decoder %p", this));
 }
 
-Maybe<Telemetry::HistogramID> nsJPEGDecoder::SpeedHistogram() const {
-  return Some(Telemetry::IMAGE_DECODE_SPEED_JPEG);
+Maybe<glean::impl::MemoryDistributionMetric> nsJPEGDecoder::SpeedMetric()
+    const {
+  return Some(glean::image_decode::speed_jpeg);
 }
 
 nsresult nsJPEGDecoder::InitInternal() {
@@ -188,7 +177,7 @@ LexerResult nsJPEGDecoder::DoDecode(SourceBufferIterator& aIterator,
   MOZ_ASSERT(!HasError(), "Shouldn't call DoDecode after error!");
 
   return mLexer.Lex(aIterator, aOnResume,
-                    [=](State aState, const char* aData, size_t aLength) {
+                    [this](State aState, const char* aData, size_t aLength) {
                       switch (aState) {
                         case State::JPEG_DATA:
                           return ReadJPEGData(aData, aLength);
@@ -400,8 +389,9 @@ LexerTransition<nsJPEGDecoder::State> nsJPEGDecoder::ReadJPEGData(
           mInfo.out_color_space != JCS_GRAYSCALE ? mTransform : nullptr;
 
       Maybe<SurfacePipe> pipe = SurfacePipeFactory::CreateReorientSurfacePipe(
-          this, Size(), OutputSize(), SurfaceFormat::OS_RGBX, pipeTransform,
-          GetOrientation());
+          this, Size(), OutputSize(), SurfaceFormat::OS_RGBX,
+          SurfaceFormat::OS_RGBX, pipeTransform, GetOrientation(),
+          SurfacePipeFlags());
       if (!pipe) {
         mState = JPEG_ERROR;
         MOZ_LOG(sJPEGDecoderAccountingLog, LogLevel::Debug,
@@ -656,7 +646,7 @@ EXIFData nsJPEGDecoder::ReadExifData() const {
     return EXIFData();
   }
 
-  return EXIFParser::Parse(marker->data,
+  return EXIFParser::Parse(/* aExpectExifIdCode = */ true, marker->data,
                            static_cast<uint32_t>(marker->data_length),
                            gfx::IntSize(mInfo.image_width, mInfo.image_height));
 }
@@ -692,7 +682,7 @@ WriteState nsJPEGDecoder::OutputScanlines() {
           case JCS_CMYK:
             // Convert from CMYK to BGRA
             MOZ_ASSERT(mCMSLine);
-            cmyk_convert_bgra(mCMSLine, aPixelBlock, aBlockSize);
+            cmyk_convert_bgra(mCMSLine, aPixelBlock, aBlockSize, mIsPDF);
             break;
         }
 
@@ -961,7 +951,7 @@ term_source(j_decompress_ptr jd) {
 /// @param aOutput Points to row buffer to write BGRA to.
 /// @param aWidth Number of pixels in the row.
 static void cmyk_convert_bgra(uint32_t* aInput, uint32_t* aOutput,
-                              int32_t aWidth) {
+                              int32_t aWidth, bool aIsInverted) {
   uint8_t* input = reinterpret_cast<uint8_t*>(aInput);
 
   for (int32_t i = 0; i < aWidth; ++i) {
@@ -984,10 +974,16 @@ static void cmyk_convert_bgra(uint32_t* aInput, uint32_t* aOutput,
     // B = 1 - Y => 1 - (1 - iY*iK) => iY*iK
 
     // Convert from Inverted CMYK (0..255) to RGB (0..255)
-    const uint32_t iC = input[0];
-    const uint32_t iM = input[1];
-    const uint32_t iY = input[2];
-    const uint32_t iK = input[3];
+    uint32_t iC = input[0];
+    uint32_t iM = input[1];
+    uint32_t iY = input[2];
+    uint32_t iK = input[3];
+    if (MOZ_UNLIKELY(aIsInverted)) {
+      iC = 255 - iC;
+      iM = 255 - iM;
+      iY = 255 - iY;
+      iK = 255 - iK;
+    }
 
     const uint8_t r = iC * iK / 255;
     const uint8_t g = iM * iK / 255;

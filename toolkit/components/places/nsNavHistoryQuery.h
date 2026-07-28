@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,21 +16,15 @@
 //    This class encapsulates the parameters for basic history queries for
 //    building UI, trees, lists, etc.
 
-#include "mozilla/Attributes.h"
-
-#define NS_NAVHISTORYQUERY_IID                       \
-  {                                                  \
-    0xb10185e0, 0x86eb, 0x4612, {                    \
-      0x95, 0x7c, 0x09, 0x34, 0xf2, 0xb1, 0xce, 0xd7 \
-    }                                                \
-  }
+#define NS_NAVHISTORYQUERY_IID \
+  {0xb10185e0, 0x86eb, 0x4612, {0x95, 0x7c, 0x09, 0x34, 0xf2, 0xb1, 0xce, 0xd7}}
 
 class nsNavHistoryQuery final : public nsINavHistoryQuery {
  public:
   nsNavHistoryQuery();
   nsNavHistoryQuery(const nsNavHistoryQuery& aOther);
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_NAVHISTORYQUERY_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_NAVHISTORYQUERY_IID)
   NS_DECL_ISUPPORTS
   NS_DECL_NSINAVHISTORYQUERY
 
@@ -81,23 +74,17 @@ class nsNavHistoryQuery final : public nsINavHistoryQuery {
   nsTArray<uint32_t> mTransitions;
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(nsNavHistoryQuery, NS_NAVHISTORYQUERY_IID)
-
 // nsNavHistoryQueryOptions
 
-#define NS_NAVHISTORYQUERYOPTIONS_IID                \
-  {                                                  \
-    0x95f8ba3b, 0xd681, 0x4d89, {                    \
-      0xab, 0xd1, 0xfd, 0xae, 0xf2, 0xa3, 0xde, 0x18 \
-    }                                                \
-  }
+#define NS_NAVHISTORYQUERYOPTIONS_IID \
+  {0x95f8ba3b, 0xd681, 0x4d89, {0xab, 0xd1, 0xfd, 0xae, 0xf2, 0xa3, 0xde, 0x18}}
 
 class nsNavHistoryQueryOptions final : public nsINavHistoryQueryOptions {
  public:
   nsNavHistoryQueryOptions();
   nsNavHistoryQueryOptions(const nsNavHistoryQueryOptions& other);
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_NAVHISTORYQUERYOPTIONS_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_NAVHISTORYQUERYOPTIONS_IID)
 
   NS_DECL_ISUPPORTS
   NS_DECL_NSINAVHISTORYQUERYOPTIONS
@@ -134,8 +121,5 @@ class nsNavHistoryQueryOptions final : public nsINavHistoryQueryOptions {
   uint16_t mQueryType;
   bool mAsyncEnabled;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsNavHistoryQueryOptions,
-                              NS_NAVHISTORYQUERYOPTIONS_IID)
 
 #endif  // nsNavHistoryQuery_h_

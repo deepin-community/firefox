@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Thay đổi ngôn ngữ nguồn
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Rất tiếc, hiện tại chúng tôi chưa hỗ trợ dịch từ { $language }.
+translations-panel-error-unsupported-hint-unknown-2 = Rất tiếc, hiện tại chúng tôi chưa hỗ trợ dịch từ ngôn ngữ này.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = Tải xuống ngôn ngữ để dịch ngoại
 translations-manage-all-language = Tất cả ngôn ngữ
 translations-manage-download-button = Tải xuống
 translations-manage-delete-button = Xóa
-translations-manage-intro = Đặt tùy chọn ngôn ngữ và bản dịch trang web của bạn, đồng thời quản lý các ngôn ngữ được cài đặt để dịch ngoại tuyến.
-translations-manage-install-description = Cài đặt ngôn ngữ để dịch ngoại tuyến
-translations-manage-language-install-button =
-    .label = Cài đặt
-translations-manage-language-install-all-button =
-    .label = Cài đặt tất cả
-    .accesskey = I
 translations-manage-intro-2 = Đặt tùy chọn ngôn ngữ và bản dịch trang web của bạn, đồng thời quản lý các ngôn ngữ được tải xuống để dịch ngoại tuyến.
 translations-manage-download-description = Tải xuống ngôn ngữ để dịch ngoại tuyến
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Xóa tất cả
     .accesskey = e
-translations-manage-error-install = Đã xảy ra sự cố khi cài đặt tập tin ngôn ngữ. Vui lòng thử lại.
 translations-manage-error-download = Đã xảy ra sự cố khi tải xuống tập tin ngôn ngữ. Hãy thử lại.
 translations-manage-error-delete = Đã xảy ra sự cố khi xóa tập tin ngôn ngữ. Hãy thử lại.
 translations-manage-error-remove = Đã xảy ra lỗi khi xóa tập tin ngôn ngữ. Vui lòng thử lại.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Có sự cố khi dịch. Hãy thử lại.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Rất tiếc, hiện tại chúng tôi chưa hỗ trợ dịch từ { $language }.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Rất tiếc, hiện tại chúng tôi chưa hỗ trợ dịch từ ngôn ngữ này.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

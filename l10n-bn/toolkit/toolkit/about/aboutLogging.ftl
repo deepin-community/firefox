@@ -8,10 +8,3 @@ about-logging-set-log-file = লগ ফাইল সেট করুন
 about-logging-set-log-modules = লগ মডিউল সেট করুন
 about-logging-start-logging = লগিং শুরু করুন
 about-logging-stop-logging = লগিং থামাও
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

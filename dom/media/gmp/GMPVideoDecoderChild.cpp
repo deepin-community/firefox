@@ -1,30 +1,37 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "GMPVideoDecoderChild.h"
-#include "GMPVideoi420FrameImpl.h"
+
 #include "GMPContentChild.h"
-#include <stdio.h>
-#include "mozilla/Unused.h"
+#include "GMPPlatform.h"
 #include "GMPVideoEncodedFrameImpl.h"
+#include "GMPVideoi420FrameImpl.h"
+#include "mozilla/StaticPrefs_media.h"
+#include "nsProxyRelease.h"
+#include "nsThreadUtils.h"
 #include "runnable_utils.h"
 
 namespace mozilla::gmp {
 
 GMPVideoDecoderChild::GMPVideoDecoderChild(GMPContentChild* aPlugin)
-    : GMPSharedMemManager(aPlugin),
-      mPlugin(aPlugin),
-      mVideoDecoder(nullptr),
-      mVideoHost(this),
-      mNeedShmemIntrCount(0),
-      mPendingDecodeComplete(false) {
+    : mPlugin(aPlugin), mVideoDecoder(nullptr) {
   MOZ_ASSERT(mPlugin);
 }
 
 GMPVideoDecoderChild::~GMPVideoDecoderChild() {
-  MOZ_ASSERT(!mNeedShmemIntrCount);
+  // Since any outstanding synchronous runnables require a strong reference to
+  // ourselves, we know that when we are freed, they must have all successfully
+  // dispatched. As such, it should now be safe to free the plugin and join with
+  // the worker thread.
+  if (mVideoDecoder) {
+    mVideoDecoder->DecodingComplete();
+  }
+}
+
+bool GMPVideoDecoderChild::MgrIsOnOwningThread() const {
+  return !mPlugin || mPlugin->GMPMessageLoop() == MessageLoop::current();
 }
 
 void GMPVideoDecoderChild::Init(GMPVideoDecoder* aDecoder) {
@@ -32,8 +39,6 @@ void GMPVideoDecoderChild::Init(GMPVideoDecoder* aDecoder) {
              "Cannot initialize video decoder child without a video decoder!");
   mVideoDecoder = aDecoder;
 }
-
-GMPVideoHostImpl& GMPVideoDecoderChild::Host() { return mVideoHost; }
 
 void GMPVideoDecoderChild::Decoded(GMPVideoi420Frame* aDecodedFrame) {
   if (!aDecodedFrame) {
@@ -49,9 +54,22 @@ void GMPVideoDecoderChild::Decoded(GMPVideoi420Frame* aDecodedFrame) {
 
   auto df = static_cast<GMPVideoi420FrameImpl*>(aDecodedFrame);
 
+  ipc::Shmem inputShmem;
+  if (MgrTakeShmem(GMPSharedMemClass::Encoded, &inputShmem)) {
+    (void)SendReturnShmem(std::move(inputShmem));
+  }
+
   GMPVideoi420FrameData frameData;
-  df->InitFrameData(frameData);
-  SendDecoded(frameData);
+  ipc::Shmem frameShmem;
+  nsTArray<uint8_t> frameArray;
+
+  if (df->InitFrameData(frameData, frameShmem)) {
+    (void)SendDecodedShmem(frameData, std::move(frameShmem));
+  } else if (df->InitFrameData(frameData, frameArray)) {
+    (void)SendDecodedData(frameData, std::move(frameArray));
+  } else {
+    MOZ_CRASH("Decoded without any frame data!");
+  }
 
   aDecodedFrame->Destroy();
 }
@@ -88,6 +106,18 @@ void GMPVideoDecoderChild::InputDataExhausted() {
 }
 
 void GMPVideoDecoderChild::DrainComplete() {
+  if (!mDrainSelfRef) {
+    MOZ_ASSERT_UNREACHABLE("DrainComplete without Drain!");
+    return;
+  }
+
+  // Proxy release to ensure that any synchronous runnables from the plugin can
+  // first unblock the worker thread. If we destroy the plugin once this
+  // reference is freed, we won't be blocked trying to join the worker thread.
+  NS_ProxyRelease("GMPVideoDecoderChild::DrainComplete",
+                  GetMainThreadSerialEventTarget(), mDrainSelfRef.forget(),
+                  /* aAlwaysProxy */ true);
+
   if (NS_WARN_IF(!mPlugin)) {
     return;
   }
@@ -98,6 +128,18 @@ void GMPVideoDecoderChild::DrainComplete() {
 }
 
 void GMPVideoDecoderChild::ResetComplete() {
+  if (!mResetSelfRef) {
+    MOZ_ASSERT_UNREACHABLE("ResetComplete without Reset!");
+    return;
+  }
+
+  // Proxy release to ensure that any synchronous runnables from the plugin can
+  // first unblock the worker thread. If we destroy the plugin once this
+  // reference is freed, we won't be blocked trying to join the worker thread.
+  NS_ProxyRelease("GMPVideoDecoderChild::ResetComplete",
+                  GetMainThreadSerialEventTarget(), mResetSelfRef.forget(),
+                  /* aAlwaysProxy */ true);
+
   if (NS_WARN_IF(!mPlugin)) {
     return;
   }
@@ -131,14 +173,23 @@ mozilla::ipc::IPCResult GMPVideoDecoderChild::RecvInitDecode(
   return IPC_OK();
 }
 
+mozilla::ipc::IPCResult GMPVideoDecoderChild::RecvGiveShmem(
+    ipc::Shmem&& aOutputShmem) {
+  MgrGiveShmem(GMPSharedMemClass::Decoded, std::move(aOutputShmem));
+  return IPC_OK();
+}
+
 mozilla::ipc::IPCResult GMPVideoDecoderChild::RecvDecode(
-    const GMPVideoEncodedFrameData& aInputFrame, const bool& aMissingFrames,
-    nsTArray<uint8_t>&& aCodecSpecificInfo, const int64_t& aRenderTimeMs) {
+    const GMPVideoEncodedFrameData& aInputFrame, ipc::Shmem&& aInputShmem,
+    const bool& aMissingFrames, nsTArray<uint8_t>&& aCodecSpecificInfo,
+    const int64_t& aRenderTimeMs) {
   if (!mVideoDecoder) {
+    DeallocShmem(aInputShmem);
     return IPC_FAIL(this, "!mVideoDecoder");
   }
 
-  auto f = new GMPVideoEncodedFrameImpl(aInputFrame, &mVideoHost);
+  auto* f =
+      new GMPVideoEncodedFrameImpl(aInputFrame, std::move(aInputShmem), this);
 
   // Ignore any return code. It is OK for this to fail without killing the
   // process.
@@ -148,22 +199,19 @@ mozilla::ipc::IPCResult GMPVideoDecoderChild::RecvDecode(
   return IPC_OK();
 }
 
-mozilla::ipc::IPCResult GMPVideoDecoderChild::RecvChildShmemForPool(
-    Shmem&& aFrameBuffer) {
-  GMPSharedMemManager* memMgr = mVideoHost.SharedMemMgr();
-  if (memMgr && aFrameBuffer.IsWritable()) {
-    memMgr->MgrDeallocShmem(GMPSharedMem::kGMPFrameData, aFrameBuffer);
-  }
-  return IPC_OK();
-}
-
 mozilla::ipc::IPCResult GMPVideoDecoderChild::RecvReset() {
   if (!mVideoDecoder) {
     return IPC_FAIL(this, "!mVideoDecoder");
   }
 
+  if (mResetSelfRef) {
+    MOZ_ASSERT_UNREACHABLE("Already has outstanding reset!");
+    return IPC_OK();
+  }
+
   // Ignore any return code. It is OK for this to fail without killing the
   // process.
+  mResetSelfRef = this;
   mVideoDecoder->Reset();
 
   return IPC_OK();
@@ -174,74 +222,25 @@ mozilla::ipc::IPCResult GMPVideoDecoderChild::RecvDrain() {
     return IPC_FAIL(this, "!mVideoDecoder");
   }
 
+  if (mDrainSelfRef) {
+    MOZ_ASSERT_UNREACHABLE("Already has outstanding drain!");
+    return IPC_OK();
+  }
+
   // Ignore any return code. It is OK for this to fail without killing the
   // process.
+  mDrainSelfRef = this;
   mVideoDecoder->Drain();
 
   return IPC_OK();
 }
 
-mozilla::ipc::IPCResult GMPVideoDecoderChild::RecvDecodingComplete() {
-  MOZ_ASSERT(mPlugin);
-  MOZ_ASSERT(mPlugin->GMPMessageLoop() == MessageLoop::current());
-
-  if (mNeedShmemIntrCount) {
-    // There's a GMP blocked in Alloc() waiting for the CallNeedShem() to
-    // return a frame they can use. Don't call the GMP's DecodingComplete()
-    // now and don't delete the GMPVideoDecoderChild, defer processing the
-    // DecodingComplete() until once the Alloc() finishes.
-    mPendingDecodeComplete = true;
-    return IPC_OK();
-  }
-
-  // This will call ActorDestroy.
-  Unused << Send__delete__(this);
-  return IPC_OK();
-}
-
 void GMPVideoDecoderChild::ActorDestroy(ActorDestroyReason why) {
-  if (mVideoDecoder) {
-    // Ignore any return code. It is OK for this to fail without killing the
-    // process.
-    mVideoDecoder->DecodingComplete();
-    mVideoDecoder = nullptr;
-  }
-
-  mVideoHost.DoneWithAPI();
-
+  // We don't destroy the video decoder from the plugin here because there may
+  // be outstanding synchronous runnables. They hold a strong reference to
+  // ourselves, so we can wait for our destructor to be called first.
+  MgrPurgeShmems();
   mPlugin = nullptr;
-}
-
-bool GMPVideoDecoderChild::Alloc(size_t aSize, Shmem* aMem) {
-  if (NS_WARN_IF(!mPlugin)) {
-    return false;
-  }
-
-  MOZ_ASSERT(mPlugin->GMPMessageLoop() == MessageLoop::current());
-
-  bool rv;
-#ifndef SHMEM_ALLOC_IN_CHILD
-  ++mNeedShmemIntrCount;
-  rv = SendNeedShmem(aSize, aMem);
-  --mNeedShmemIntrCount;
-  if (mPendingDecodeComplete && mNeedShmemIntrCount == 0) {
-    mPendingDecodeComplete = false;
-    mPlugin->GMPMessageLoop()->PostTask(
-        NewRunnableMethod("gmp::GMPVideoDecoderChild::RecvDecodingComplete",
-                          this, &GMPVideoDecoderChild::RecvDecodingComplete));
-  }
-#else
-  rv = AllocShmem(aSize, aType, aMem);
-#endif
-  return rv;
-}
-
-void GMPVideoDecoderChild::Dealloc(Shmem&& aMem) {
-#ifndef SHMEM_ALLOC_IN_CHILD
-  SendParentShmemForPool(std::move(aMem));
-#else
-  DeallocShmem(aMem);
-#endif
 }
 
 }  // namespace mozilla::gmp

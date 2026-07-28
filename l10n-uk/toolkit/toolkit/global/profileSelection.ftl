@@ -4,35 +4,29 @@
 
 profile-selection-window =
     .title = { -brand-short-name } - вибір профілю користувача
-
 profile-selection-button-accept =
     .label = Запуск { -brand-short-name }
-
 profile-selection-button-cancel =
     .label = Вихід
-
 profile-selection-new-button =
     .label = Створити…
     .accesskey = С
-
 profile-selection-rename-button =
     .label = Перейменувати…
     .accesskey = П
-
 profile-selection-delete-button =
     .label = Видалити…
     .accesskey = В
-
 profile-selection-conflict-message = Інша копія { -brand-product-name } зробила зміни в профілях. Необхідно перезапустити { -brand-short-name }, щоб виконувати інші зміни.
 
 ## Messages used in the profile manager
 
 profile-manager-description = { -brand-short-name } зберігає інформацію про ваші налаштування, вподобання та інші елементи у вашому особистому профілі.
-
 profile-manager-work-offline =
     .label = Працювати автономно
     .accesskey = т
-
 profile-manager-use-selected =
     .label = Запускати вибраний профіль без запиту
     .accesskey = В
+profile-has-selectable-profiles-title = Неможливо видалити профіль, пов'язаний з іншими профілями
+profile-has-selectable-profiles-message = Щоб видалити цей профіль, відкрийте його та виберіть "Керувати профілями" в розділі профілів меню { -brand-short-name }. Після видалення будь-яких додаткових профілів, які ви тут створили, можна повернутися до about:profiles і видалити цей профіль.

@@ -12,19 +12,26 @@ support-files = [
   "keyword_form.html",
 ]
 prefs = [
-  "sidebar.revamp=false",
+  # Disable tab previews as some tests click on the toolbar.
+  "browser.tabs.hoverPreview.enabled=false",
+  "browser.tabs.groups.hoverPreview.enabled=false",
+  # TODO(Bug 2039395): adapt this test to the new bookmarks sidebar panel and remove this sidebar.updateBookmarks.enabled pushPrefEnv
+  "sidebar.updatedBookmarks.enabled=false"
 ]
 
 ["browser_addBookmarkForFrame.js"]
+skip-if = [
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11' && socketprocess_networking", # Bug 1775655
+]
 
 ["browser_autoshow_bookmarks_toolbar.js"]
 
 ["browser_bookmarkMenu_hiddenWindow.js"]
-skip-if = ["os != 'mac'"] # Mac-only functionality
+run-if = [
+  "os == 'mac'", # Mac-only functionality
+]
 
 ["browser_bookmarkProperties_addFolderDefaultButton.js"]
-
-["browser_bookmarkProperties_addKeywordForThisSearch.js"]
 
 ["browser_bookmarkProperties_bookmarkAllTabs.js"]
 
@@ -43,6 +50,9 @@ skip-if = ["os != 'mac'"] # Mac-only functionality
 ["browser_bookmarkProperties_readOnlyRoot.js"]
 
 ["browser_bookmarkProperties_remember_folders.js"]
+skip-if = [
+  "os == 'mac' && os_version == '14.70' && arch == 'x86_64' && debug", # Bug 1869782
+]
 
 ["browser_bookmarkProperties_speculativeConnection.js"]
 
@@ -50,6 +60,9 @@ skip-if = ["os != 'mac'"] # Mac-only functionality
 
 ["browser_bookmark_add_tags.js"]
 https_first_disabled = true
+skip-if = [
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64'", # Bug 1775656
+]
 
 ["browser_bookmark_backup_export_import.js"]
 
@@ -57,19 +70,25 @@ https_first_disabled = true
 
 ["browser_bookmark_context_menu_contents.js"]
 
+["browser_bookmark_context_on_gutter.js"]
+
 ["browser_bookmark_copy_folder_tree.js"]
 tags = "os_integration"
 
 ["browser_bookmark_current_tabs.js"]
+
+["browser_bookmark_drag_splitview.js"]
 
 ["browser_bookmark_folder_moveability.js"]
 
 ["browser_bookmark_menu_ctrl_click.js"]
 
 ["browser_bookmark_popup.js"]
-skip-if = ["verify && os == 'win'"]
 
 ["browser_bookmark_private_window.js"]
+skip-if = [
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11' && opt", # Bug 1937891
+]
 
 ["browser_bookmark_remove_tags.js"]
 
@@ -83,8 +102,15 @@ support-files = ["bookmarklet_windowOpen_dummy.html"]
 ["browser_bookmarksProperties.js"]
 
 ["browser_bookmarks_change_title.js"]
+skip-if = [
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64' && opt", # Bug 1961550
+]
 
 ["browser_bookmarks_change_url.js"]
+
+["browser_bookmarks_checkDefaultBookmarks.js"]
+
+["browser_bookmarks_close_panel.js"]
 
 ["browser_bookmarks_sidebar_search.js"]
 support-files = ["pageopeningwindow.html"]
@@ -94,10 +120,16 @@ support-files = ["pageopeningwindow.html"]
 ["browser_bookmarks_toolbar_drag_with_chevron.js"]
 
 ["browser_bookmarks_toolbar_telemetry.js"]
+skip-if = [
+  "verify-standalone",
+]
 
 ["browser_bug427633_no_newfolder_if_noip.js"]
 
 ["browser_bug485100-change-case-loses-tag.js"]
+skip-if = [
+  "socketprocess_networking", # Bug 1973561
+]
 
 ["browser_bug631374_tags_selector_scroll.js"]
 support-files = ["favicon-normal16.png"]
@@ -106,6 +138,8 @@ support-files = ["favicon-normal16.png"]
 
 ["browser_click_bookmarks_on_toolbar.js"]
 https_first_disabled = true
+
+["browser_closePanelview.js"]
 
 ["browser_controller_onDrop.js"]
 
@@ -129,7 +163,6 @@ https_first_disabled = true
 ["browser_editBookmark_keywords.js"]
 
 ["browser_enable_toolbar_sidebar.js"]
-skip-if = ["verify && debug && os == 'win'"]
 
 ["browser_forgetthissite.js"]
 
@@ -138,6 +171,8 @@ skip-if = ["verify && debug && os == 'win'"]
 ["browser_import_button.js"]
 
 ["browser_library_bookmark_clear_visits.js"]
+
+["browser_library_bookmark_move.js"]
 
 ["browser_library_bookmark_pages.js"]
 
@@ -199,9 +234,14 @@ skip-if = ["verify && debug && os == 'win'"]
 
 ["browser_paste_resets_cut_highlights.js"]
 
+["browser_recursive_hierarchies.js"]
+
 ["browser_remove_bookmarks.js"]
 
+["browser_sidebar_bookmarks_glean.js"]
+
 ["browser_sidebar_bookmarks_telemetry.js"]
+disabled = "Bug 2036783"
 
 ["browser_sidebar_history_telemetry.js"]
 
@@ -216,6 +256,8 @@ skip-if = ["verify && debug && os == 'win'"]
 ["browser_stayopenmenu.js"]
 
 ["browser_toolbar_drop_bookmarklet.js"]
+
+["browser_toolbar_drop_indicator_empty.js"]
 
 ["browser_toolbar_drop_multiple_flavors.js"]
 

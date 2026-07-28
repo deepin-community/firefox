@@ -1,6 +1,4 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
- * vim: sw=2 ts=2 sts=2
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -23,7 +21,7 @@ ChromeUtils.defineESModuleGetters(this, {
   PlacesTestUtils: "resource://testing-common/PlacesTestUtils.sys.mjs",
 });
 
-const COOKIE_EXPIRY = Math.round(Date.now() / 1000) + 60;
+const COOKIE_EXPIRY = Date.now() + 60000;
 const COOKIE_NAME = "testcookie";
 const COOKIE_PATH = "/";
 
@@ -46,7 +44,7 @@ const PREFERENCE_NAME = "test-pref";
  */
 function add_cookie(aDomain) {
   check_cookie_exists(aDomain, false);
-  Services.cookies.add(
+  const cv = Services.cookies.add(
     aDomain,
     COOKIE_PATH,
     COOKIE_NAME,
@@ -56,9 +54,10 @@ function add_cookie(aDomain) {
     false,
     COOKIE_EXPIRY,
     {},
-    Ci.nsICookie.SAMESITE_NONE,
+    Ci.nsICookie.SAMESITE_UNSET,
     Ci.nsICookie.SCHEME_HTTPS
   );
+  Assert.equal(cv.result, Ci.nsICookieValidation.eOK, "Valid cookie");
   check_cookie_exists(aDomain, true);
 }
 
@@ -221,7 +220,7 @@ async function test_history_cleared_with_direct_match() {
   Assert.equal(false, await PlacesUtils.history.hasVisits(TEST_URI));
   await PlacesTestUtils.addVisits(TEST_URI);
   Assert.ok(await PlacesUtils.history.hasVisits(TEST_URI));
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   Assert.equal(false, await PlacesUtils.history.hasVisits(TEST_URI));
 }
 
@@ -230,7 +229,7 @@ async function test_history_cleared_with_subdomain() {
   Assert.equal(false, await PlacesUtils.history.hasVisits(TEST_URI));
   await PlacesTestUtils.addVisits(TEST_URI);
   Assert.ok(await PlacesUtils.history.hasVisits(TEST_URI));
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   Assert.equal(false, await PlacesUtils.history.hasVisits(TEST_URI));
 }
 
@@ -239,7 +238,7 @@ async function test_history_not_cleared_with_uri_contains_domain() {
   Assert.equal(false, await PlacesUtils.history.hasVisits(TEST_URI));
   await PlacesTestUtils.addVisits(TEST_URI);
   Assert.ok(await PlacesUtils.history.hasVisits(TEST_URI));
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   Assert.ok(await PlacesUtils.history.hasVisits(TEST_URI));
 
   // Clear history since we left something there from this test.
@@ -259,21 +258,21 @@ async function test_history_cleared_base_domain() {
 async function test_cookie_cleared_with_direct_match() {
   const TEST_DOMAIN = "mozilla.org";
   add_cookie(TEST_DOMAIN);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_cookie_exists(TEST_DOMAIN, false);
 }
 
 async function test_cookie_cleared_with_subdomain() {
   const TEST_DOMAIN = "www.mozilla.org";
   add_cookie(TEST_DOMAIN);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_cookie_exists(TEST_DOMAIN, false);
 }
 
 async function test_cookie_not_cleared_with_uri_contains_domain() {
   const TEST_DOMAIN = "ilovemozilla.org";
   add_cookie(TEST_DOMAIN);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_cookie_exists(TEST_DOMAIN, true);
 }
 
@@ -288,21 +287,21 @@ async function test_cookie_cleared_base_domain() {
 async function test_login_manager_disabled_hosts_cleared_with_direct_match() {
   const TEST_HOST = "http://mozilla.org";
   add_disabled_host(TEST_HOST);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_disabled_host(TEST_HOST, false);
 }
 
 async function test_login_manager_disabled_hosts_cleared_with_subdomain() {
   const TEST_HOST = "http://www.mozilla.org";
   add_disabled_host(TEST_HOST);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_disabled_host(TEST_HOST, false);
 }
 
 async function test_login_manager_disabled_hosts_not_cleared_with_uri_contains_domain() {
   const TEST_HOST = "http://ilovemozilla.org";
   add_disabled_host(TEST_HOST);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_disabled_host(TEST_HOST, true);
 
   // Reset state
@@ -313,24 +312,24 @@ async function test_login_manager_disabled_hosts_not_cleared_with_uri_contains_d
 async function test_login_manager_logins_cleared_with_direct_match() {
   const TEST_HOST = "http://mozilla.org";
   await add_login(TEST_HOST);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   await check_login_exists(TEST_HOST, true);
 }
 
 async function test_login_manager_logins_cleared_with_subdomain() {
   const TEST_HOST = "http://www.mozilla.org";
   await add_login(TEST_HOST);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   await check_login_exists(TEST_HOST, true);
 }
 
 async function test_login_manager_logins_not_cleared_with_uri_contains_domain() {
   const TEST_HOST = "http://ilovemozilla.org";
   await add_login(TEST_HOST);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   await check_login_exists(TEST_HOST, true);
 
-  Services.logins.removeAllUserFacingLogins();
+  await Services.logins.removeAllUserFacingLoginsAsync();
   await check_login_exists(TEST_HOST, false);
 }
 
@@ -345,21 +344,21 @@ async function test_login_manager_disabled_hosts_cleared_base_domain() {
 async function test_permission_manager_cleared_with_direct_match() {
   const TEST_URI = Services.io.newURI("http://mozilla.org");
   add_permission(TEST_URI);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_permission_exists(TEST_URI, false);
 }
 
 async function test_permission_manager_cleared_with_subdomain() {
   const TEST_URI = Services.io.newURI("http://www.mozilla.org");
   add_permission(TEST_URI);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_permission_exists(TEST_URI, false);
 }
 
 async function test_permission_manager_not_cleared_with_uri_contains_domain() {
   const TEST_URI = Services.io.newURI("http://ilovemozilla.org");
   add_permission(TEST_URI);
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   check_permission_exists(TEST_URI, true);
 
   // Reset state
@@ -380,7 +379,7 @@ async function test_content_preferences_cleared_with_direct_match() {
   Assert.equal(false, await preference_exists(TEST_URI));
   await add_preference(TEST_URI);
   Assert.ok(await preference_exists(TEST_URI));
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   Assert.equal(false, await preference_exists(TEST_URI));
 }
 
@@ -389,7 +388,7 @@ async function test_content_preferences_cleared_with_subdomain() {
   Assert.equal(false, await preference_exists(TEST_URI));
   await add_preference(TEST_URI);
   Assert.ok(await preference_exists(TEST_URI));
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   Assert.equal(false, await preference_exists(TEST_URI));
 }
 
@@ -398,11 +397,11 @@ async function test_content_preferences_not_cleared_with_uri_contains_domain() {
   Assert.equal(false, await preference_exists(TEST_URI));
   await add_preference(TEST_URI);
   Assert.ok(await preference_exists(TEST_URI));
-  await ForgetAboutSite.removeDataFromDomain("mozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
   Assert.ok(await preference_exists(TEST_URI));
 
   // Reset state
-  await ForgetAboutSite.removeDataFromDomain("ilovemozilla.org");
+  await ForgetAboutSite.removeDataFromBaseDomain("ilovemozilla.org");
   Assert.equal(false, await preference_exists(TEST_URI));
 }
 
@@ -416,15 +415,12 @@ async function test_content_preferences_cleared_base_domain() {
 }
 
 // Push
-async function test_push_cleared() {
-  return helper_push_cleared(false);
-}
 
 async function test_push_cleared_base_domain() {
-  return helper_push_cleared(true);
+  return helper_push_cleared();
 }
 
-async function helper_push_cleared(aBaseDomainTest) {
+async function helper_push_cleared() {
   let ps;
   try {
     ps = Cc["@mozilla.org/push/Service;1"].getService(Ci.nsIPushService);
@@ -461,23 +457,16 @@ async function helper_push_cleared(aBaseDomainTest) {
   };
   Services.prefs.setBoolPref("dom.push.enabled", true);
 
-  if (aBaseDomainTest) {
-    await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
-  } else {
-    await ForgetAboutSite.removeDataFromDomain("mozilla.org");
-  }
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
 
   Assert.ok(wasCleared, "Should have cleared push data");
 }
 
-function test_storage_cleared() {
-  return helper_storage_cleared(false);
-}
 function test_storage_cleared_base_domain() {
-  return helper_storage_cleared(true);
+  return helper_storage_cleared();
 }
 
-async function helper_storage_cleared(aBaseDomainTest) {
+async function helper_storage_cleared() {
   function getStorageForURI(aURI) {
     let principal = Services.scriptSecurityManager.createContentPrincipal(
       aURI,
@@ -508,11 +497,7 @@ async function helper_storage_cleared(aBaseDomainTest) {
     Assert.equal(storage.getItem("test"), "value" + i);
   }
 
-  if (aBaseDomainTest) {
-    await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
-  } else {
-    await ForgetAboutSite.removeDataFromDomain("mozilla.org");
-  }
+  await ForgetAboutSite.removeDataFromBaseDomain("mozilla.org");
 
   Assert.equal(s[0].getItem("test"), null);
   Assert.equal(s[0].length, 0);
@@ -557,13 +542,23 @@ var tests = [
   test_content_preferences_cleared_base_domain,
 
   // Push
-  test_push_cleared,
   test_push_cleared_base_domain,
 
   // Storage
-  test_storage_cleared,
   test_storage_cleared_base_domain,
 ];
+
+add_setup(async function () {
+  // We must explicitly initialize Places, because otherwise the database
+  // doesn't exist yet, and `hasVisits` awaits for the Places subsystem to
+  // initialize it.
+  // In the real world this is not a problem as either the database already
+  // exists, or Places will be initialized shortly after by something else.
+  Assert.equal(
+    PlacesUtils.history.databaseStatus,
+    PlacesUtils.history.DATABASE_STATUS_CREATE
+  );
+});
 
 function run_test() {
   for (let i = 0; i < tests.length; i++) {

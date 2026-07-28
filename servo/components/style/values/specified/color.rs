@@ -6,20 +6,27 @@
 
 use super::AllowQuirks;
 use crate::color::mix::ColorInterpolationMethod;
-use crate::color::{parsing, AbsoluteColor, ColorSpace};
-use crate::media_queries::Device;
+use crate::color::{parsing, AbsoluteColor, ColorFunction, ColorMixItemList, ColorSpace};
+use crate::derives::*;
+use crate::device::Device;
 use crate::parser::{Parse, ParserContext};
-use crate::values::computed::{Color as ComputedColor, Context, ToComputedValue};
-use crate::values::generics::color::{
-    ColorMixFlags, GenericCaretColor, GenericColorMix, GenericColorOrAuto,
+use crate::values::computed::{
+    Color as ComputedColor, Context, Percentage as ComputedPercentage, ToComputedValue,
 };
+use crate::values::generics::color::{
+    ColorMixFlags, GenericCaretColor, GenericColorMix, GenericColorMixItem, GenericColorOrAuto,
+    GenericLightDark,
+};
+use crate::values::specified::percentage::ToPercentage;
 use crate::values::specified::Percentage;
 use crate::values::{normalize, CustomIdent};
-use cssparser::{BasicParseErrorKind, ParseErrorKind, Parser, Token};
+use cssparser::{match_ignore_ascii_case, BasicParseErrorKind, ParseErrorKind, Parser, Token};
 use std::fmt::{self, Write};
 use std::io::Write as IoWrite;
-use style_traits::{CssType, CssWriter, KeywordsCollectFn, ParseError, StyleParseErrorKind};
-use style_traits::{SpecifiedValueInfo, ToCss, ValueParseErrorKind};
+use style_traits::{
+    owned_slice::OwnedSlice, CssType, CssWriter, KeywordsCollectFn, ParseError, SpecifiedValueInfo,
+    StyleParseErrorKind, ToCss, ValueParseErrorKind,
+};
 
 /// A specified color-mix().
 pub type ColorMix = GenericColorMix<Color, Percentage>;
@@ -33,8 +40,15 @@ impl ColorMix {
         input.expect_function_matching("color-mix")?;
 
         input.parse_nested_block(|input| {
-            let interpolation = ColorInterpolationMethod::parse(context, input)?;
-            input.expect_comma()?;
+            // If the color interpolation method is omitted, default to "in oklab".
+            // See: https://github.com/web-platform-tests/interop/issues/1166
+            let interpolation = input
+                .try_parse(|input| -> Result<_, ParseError<'i>> {
+                    let interpolation = ColorInterpolationMethod::parse(context, input)?;
+                    input.expect_comma()?;
+                    Ok(interpolation)
+                })
+                .unwrap_or_default();
 
             let try_parse_percentage = |input: &mut Parser| -> Option<Percentage> {
                 input
@@ -42,31 +56,83 @@ impl ColorMix {
                     .ok()
             };
 
-            let mut left_percentage = try_parse_percentage(input);
+            let allow_multiple_items =
+                static_prefs::pref!("layout.css.color-mix-multi-color.enabled");
 
-            let left = Color::parse_internal(context, input, preserve_authored)?;
-            if left_percentage.is_none() {
-                left_percentage = try_parse_percentage(input);
+            let mut items = ColorMixItemList::default();
+
+            loop {
+                let mut percentage = try_parse_percentage(input);
+
+                let color = Color::parse_internal(context, input, preserve_authored)?;
+
+                if percentage.is_none() {
+                    percentage = try_parse_percentage(input);
+                }
+
+                // TODO(Bug 2037742) - Enable calc()-expressions that can only be resolved at
+                // computed value time (due to relative lengths, sibling-index(), etc.).
+                if matches!(percentage, Some(ref p) if p.to_percentage().is_none()) {
+                    return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+                }
+
+                items.push((color, percentage));
+
+                if input.try_parse(|i| i.expect_comma()).is_err() {
+                    break;
+                }
+
+                // Early exit to avoid parsing more than 2 colors if the pref is not enabled.
+                if !allow_multiple_items && items.len() == 2 {
+                    break;
+                }
             }
 
-            input.expect_comma()?;
-
-            let mut right_percentage = try_parse_percentage(input);
-
-            let right = Color::parse_internal(context, input, preserve_authored)?;
-
-            if right_percentage.is_none() {
-                right_percentage = try_parse_percentage(input);
+            // ...the color-mix() function takes a list of one or more <color> specifications...
+            // <https://drafts.csswg.org/css-color-5/#color-mix>
+            let min_item_count = if allow_multiple_items { 1 } else { 2 };
+            if items.len() < min_item_count {
+                return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
             }
 
-            let right_percentage = right_percentage
-                .unwrap_or_else(|| Percentage::new(1.0 - left_percentage.map_or(0.5, |p| p.get())));
+            // Normalize percentages per:
+            // https://drafts.csswg.org/css-values-5/#normalize-mix-percentages
+            let (mut sum_specified, mut missing) = (0.0, 0);
+            for (_, percentage) in items.iter() {
+                if let Some(p) = percentage {
+                    // Percentage was enforced to be resolvable at parse time.
+                    sum_specified += p.to_percentage().unwrap();
+                } else {
+                    missing += 1;
+                }
+            }
 
-            let left_percentage =
-                left_percentage.unwrap_or_else(|| Percentage::new(1.0 - right_percentage.get()));
+            let default_for_missing_items = match missing {
+                0 => None,
+                m if m == items.len() => Some(Percentage::new(1.0 / items.len() as f32)),
+                m => Some(Percentage::new((1.0 - sum_specified) / m as f32)),
+            };
 
-            if left_percentage.get() + right_percentage.get() <= 0.0 {
-                // If the percentages sum to zero, the function is invalid.
+            if let Some(default) = default_for_missing_items {
+                for (_, percentage) in items.iter_mut() {
+                    if percentage.is_none() {
+                        *percentage = Some(default.clone());
+                    }
+                }
+            }
+
+            let mut total = 0.0;
+            let finalized = items
+                .into_iter()
+                .map(|(color, percentage)| {
+                    let percentage = percentage.expect("percentage filled above");
+                    // Percentage was enforced to be resolvable at parse time.
+                    total += percentage.to_percentage().unwrap();
+                    GenericColorMixItem { color, percentage }
+                })
+                .collect::<ColorMixItemList<_>>();
+
+            if total <= 0.0 {
                 return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
             }
 
@@ -75,10 +141,7 @@ impl ColorMix {
             // to preserve floating point precision.
             Ok(ColorMix {
                 interpolation,
-                left,
-                left_percentage,
-                right,
-                right_percentage,
+                items: OwnedSlice::from_slice(&finalized),
                 flags: ColorMixFlags::NORMALIZE_WEIGHTS | ColorMixFlags::RESULT_IN_MODERN_SYNTAX,
             })
         })
@@ -108,61 +171,27 @@ impl ToCss for Absolute {
 }
 
 /// Specified color value
-#[derive(Clone, Debug, MallocSizeOf, PartialEq, ToShmem)]
+#[derive(Clone, Debug, MallocSizeOf, PartialEq, ToShmem, ToTyped)]
+#[typed(todo_derive_fields)]
 pub enum Color {
     /// The 'currentColor' keyword
     CurrentColor,
     /// An absolute color.
     /// https://w3c.github.io/csswg-drafts/css-color-4/#typedef-absolute-color-function
     Absolute(Box<Absolute>),
+    /// A color function that could not be resolved to a [Color::Absolute] color at parse time.
+    /// Right now this is only the case for relative colors with `currentColor` as the origin.
+    ColorFunction(Box<ColorFunction<Self>>),
     /// A system color.
-    #[cfg(feature = "gecko")]
     System(SystemColor),
     /// A color mix.
     ColorMix(Box<ColorMix>),
     /// A light-dark() color.
-    LightDark(Box<LightDark>),
+    LightDark(Box<GenericLightDark<Self>>),
+    /// The contrast-color function.
+    ContrastColor(Box<Color>),
     /// Quirksmode-only rule for inheriting color from the body
-    #[cfg(feature = "gecko")]
     InheritFromBodyQuirk,
-}
-
-/// A light-dark(<light-color>, <dark-color>) function.
-#[derive(Clone, Debug, MallocSizeOf, PartialEq, ToShmem, ToCss)]
-#[css(function, comma)]
-pub struct LightDark {
-    /// The <color> that is returned when using a light theme.
-    pub light: Color,
-    /// The <color> that is returned when using a dark theme.
-    pub dark: Color,
-}
-
-impl LightDark {
-    fn compute(&self, cx: &Context) -> ComputedColor {
-        let style_color_scheme = cx.style().get_inherited_ui().clone_color_scheme();
-        let dark = cx.device().is_dark_color_scheme(&style_color_scheme);
-        let used = if dark { &self.dark } else { &self.light };
-        used.to_computed_value(cx)
-    }
-
-    fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-        preserve_authored: PreserveAuthored,
-    ) -> Result<Self, ParseError<'i>> {
-        let enabled =
-            context.chrome_rules_enabled() || static_prefs::pref!("layout.css.light-dark.enabled");
-        if !enabled {
-            return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
-        }
-        input.expect_function_matching("light-dark")?;
-        input.parse_nested_block(|input| {
-            let light = Color::parse_internal(context, input, preserve_authored)?;
-            input.expect_comma()?;
-            let dark = Color::parse_internal(context, input, preserve_authored)?;
-            Ok(LightDark { light, dark })
-        })
-    }
 }
 
 impl From<AbsoluteColor> for Color {
@@ -249,10 +278,6 @@ pub enum SystemColor {
     Selecteditem,
     /// Used for selected and focused html cell text.
     Selecteditemtext,
-    /// Used to button text background when hovered.
-    MozButtonhoverface,
-    /// Used to button text color when hovered.
-    MozButtonhovertext,
     /// Used for menu item backgrounds when hovered.
     MozMenuhover,
     /// Used for menu item backgrounds when hovered and disabled.
@@ -263,22 +288,35 @@ pub enum SystemColor {
     /// Used for menubar item text when hovered.
     MozMenubarhovertext,
 
-    /// On platforms where these colors are the same as -moz-field, use
-    /// -moz-fieldtext as foreground color
-    MozEventreerow,
+    /// On platforms where this color is the same as field, or transparent, use fieldtext as
+    /// foreground color.
     MozOddtreerow,
 
-    /// Used for button text when pressed.
+    /// Used for button text background when hovered.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozButtonactivetext,
-
+    MozButtonhoverface,
+    /// Used for button text color when hovered.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozButtonhovertext,
+    /// Used for button border color when hovered.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozButtonhoverborder,
     /// Used for button background when pressed.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozButtonactiveface,
+    /// Used for button text when pressed.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozButtonactivetext,
+    /// Used for button border when pressed.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozButtonactiveborder,
 
     /// Used for button background when disabled.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozButtondisabledface,
+    /// Used for button border when disabled.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozButtondisabledborder,
 
     /// Colors used for the header bar (sorta like the tab bar / menubar).
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
@@ -320,18 +358,6 @@ pub enum SystemColor {
     /// The background-color for :autofill-ed inputs.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozAutofillBackground,
-
-    /// Hyperlink color extracted from the system, not affected by the browser.anchor_color user
-    /// pref.
-    ///
-    /// There is no OS-specified safe background color for this text, but it is used regularly
-    /// within Windows and the Gnome DE on Dialog and Window colors.
-    #[css(skip)]
-    MozNativehyperlinktext,
-
-    /// As above, but visited link color.
-    #[css(skip)]
-    MozNativevisitedhyperlinktext,
 
     #[parse(aliases = "-moz-hyperlinktext")]
     Linktext,
@@ -397,15 +423,11 @@ pub enum SystemColor {
     #[css(skip)]
     ThemedScrollbar,
     #[css(skip)]
-    ThemedScrollbarInactive,
-    #[css(skip)]
     ThemedScrollbarThumb,
     #[css(skip)]
     ThemedScrollbarThumbHover,
     #[css(skip)]
     ThemedScrollbarThumbActive,
-    #[css(skip)]
-    ThemedScrollbarThumbInactive,
 
     #[css(skip)]
     End, // Just for array-indexing purposes.
@@ -415,16 +437,91 @@ pub enum SystemColor {
 impl SystemColor {
     #[inline]
     fn compute(&self, cx: &Context) -> ComputedColor {
-        use crate::gecko::values::convert_nscolor_to_absolute_color;
         use crate::gecko_bindings::bindings;
 
-        // TODO: We should avoid cloning here most likely, though it's cheap-ish.
-        let style_color_scheme = cx.style().get_inherited_ui().clone_color_scheme();
-        let color = cx.device().system_nscolor(*self, &style_color_scheme);
+        let color = cx.device().system_nscolor(*self, cx.builder.color_scheme);
+        if cx.for_non_inherited_property {
+            cx.rule_cache_conditions
+                .borrow_mut()
+                .set_color_scheme_dependency(cx.builder.color_scheme);
+        }
         if color == bindings::NS_SAME_AS_FOREGROUND_COLOR {
             return ComputedColor::currentcolor();
         }
-        ComputedColor::Absolute(convert_nscolor_to_absolute_color(color))
+        ComputedColor::Absolute(AbsoluteColor::from_nscolor(color))
+    }
+}
+
+/// System colors. A bunch of these are ad-hoc, others come from Windows:
+///
+///   https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsyscolor
+///
+/// Others are HTML/CSS specific. Spec is:
+///
+///   https://drafts.csswg.org/css-color/#css-system-colors
+///   https://drafts.csswg.org/css-color/#deprecated-system-colors
+#[allow(missing_docs)]
+#[cfg(feature = "servo")]
+#[derive(Clone, Copy, Debug, MallocSizeOf, Parse, PartialEq, ToCss, ToShmem)]
+#[repr(u8)]
+pub enum SystemColor {
+    Accentcolor,
+    Accentcolortext,
+    Activetext,
+    Linktext,
+    Visitedtext,
+    Buttonborder,
+    Buttonface,
+    Buttontext,
+    Canvas,
+    Canvastext,
+    Field,
+    Fieldtext,
+    Graytext,
+    Highlight,
+    Highlighttext,
+    Mark,
+    Marktext,
+    Selecteditem,
+    Selecteditemtext,
+
+    // Deprecated system colors.
+    Activeborder,
+    Inactiveborder,
+    Threeddarkshadow,
+    Threedhighlight,
+    Threedlightshadow,
+    Threedshadow,
+    Windowframe,
+    Buttonhighlight,
+    Buttonshadow,
+    Threedface,
+    Activecaption,
+    Appworkspace,
+    Background,
+    Inactivecaption,
+    Infobackground,
+    Menu,
+    Scrollbar,
+    Window,
+    Captiontext,
+    Infotext,
+    Menutext,
+    Windowtext,
+    Inactivecaptiontext,
+}
+
+#[cfg(feature = "servo")]
+impl SystemColor {
+    #[inline]
+    fn compute(&self, cx: &Context) -> ComputedColor {
+        if cx.for_non_inherited_property {
+            cx.rule_cache_conditions
+                .borrow_mut()
+                .set_color_scheme_dependency(cx.builder.color_scheme);
+        }
+
+        ComputedColor::Absolute(cx.device().system_color(*self, cx.builder.color_scheme))
     }
 }
 
@@ -474,21 +571,38 @@ impl Color {
                 Ok(color)
             },
             Err(e) => {
-                #[cfg(feature = "gecko")]
                 {
+                    #[cfg(feature = "gecko")]
                     if let Ok(system) = input.try_parse(|i| SystemColor::parse(context, i)) {
                         return Ok(Color::System(system));
                     }
+                    #[cfg(feature = "servo")]
+                    if let Ok(system) = input.try_parse(SystemColor::parse) {
+                        return Ok(Color::System(system));
+                    }
                 }
-
                 if let Ok(mix) = input.try_parse(|i| ColorMix::parse(context, i, preserve_authored))
                 {
                     return Ok(Color::ColorMix(Box::new(mix)));
                 }
 
-                if let Ok(ld) = input.try_parse(|i| LightDark::parse(context, i, preserve_authored))
-                {
+                if let Ok(ld) = input.try_parse(|i| {
+                    GenericLightDark::parse_with(i, |i| {
+                        Self::parse_internal(context, i, preserve_authored)
+                    })
+                }) {
                     return Ok(Color::LightDark(Box::new(ld)));
+                }
+
+                if static_prefs::pref!("layout.css.contrast-color.enabled") {
+                    if let Ok(c) = input.try_parse(|i| {
+                        i.expect_function_matching("contrast-color")?;
+                        i.parse_nested_block(|i| {
+                            Self::parse_internal(context, i, preserve_authored)
+                        })
+                    }) {
+                        return Ok(Color::ContrastColor(Box::new(c)));
+                    }
                 }
 
                 match e.kind {
@@ -515,7 +629,7 @@ impl Color {
         context: &ParserContext,
         input: &mut Parser,
         device: Option<&Device>,
-    ) -> Option<ComputedColor> {
+    ) -> Result<ComputedColor, ()> {
         use crate::error_reporting::ContextualParseError;
         let start = input.position();
         let result = input
@@ -524,22 +638,22 @@ impl Color {
         let specified = match result {
             Ok(s) => s,
             Err(e) => {
-                if !context.error_reporting_enabled() {
-                    return None;
+                if context.error_reporting_enabled() {
+                    // Ignore other kinds of errors that might be reported, such as
+                    // ParseErrorKind::Basic(BasicParseErrorKind::UnexpectedToken),
+                    // since Gecko didn't use to report those to the error console.
+                    //
+                    // TODO(emilio): Revise whether we want to keep this at all, we
+                    // use this only for canvas, this warnings are disabled by
+                    // default and not available on OffscreenCanvas anyways...
+                    if let ParseErrorKind::Custom(StyleParseErrorKind::ValueError(..)) = e.kind {
+                        let location = e.location.clone();
+                        let error =
+                            ContextualParseError::UnsupportedValue(input.slice_from(start), e);
+                        context.log_css_error(location, error);
+                    }
                 }
-                // Ignore other kinds of errors that might be reported, such as
-                // ParseErrorKind::Basic(BasicParseErrorKind::UnexpectedToken),
-                // since Gecko didn't use to report those to the error console.
-                //
-                // TODO(emilio): Revise whether we want to keep this at all, we
-                // use this only for canvas, this warnings are disabled by
-                // default and not available on OffscreenCanvas anyways...
-                if let ParseErrorKind::Custom(StyleParseErrorKind::ValueError(..)) = e.kind {
-                    let location = e.location.clone();
-                    let error = ContextualParseError::UnsupportedValue(input.slice_from(start), e);
-                    context.log_css_error(location, error);
-                }
-                return None;
+                return Err(());
             },
         };
 
@@ -562,12 +676,16 @@ impl ToCss for Color {
         match *self {
             Color::CurrentColor => dest.write_str("currentcolor"),
             Color::Absolute(ref absolute) => absolute.to_css(dest),
+            Color::ColorFunction(ref color_function) => color_function.to_css(dest),
             Color::ColorMix(ref mix) => mix.to_css(dest),
             Color::LightDark(ref ld) => ld.to_css(dest),
-            #[cfg(feature = "gecko")]
+            Color::ContrastColor(ref c) => {
+                dest.write_str("contrast-color(")?;
+                c.to_css(dest)?;
+                dest.write_char(')')
+            },
             Color::System(system) => system.to_css(dest),
-            #[cfg(feature = "gecko")]
-            Color::InheritFromBodyQuirk => Ok(()),
+            Color::InheritFromBodyQuirk => dest.write_str("-moz-inherit-from-body-quirk"),
         }
     }
 }
@@ -576,20 +694,27 @@ impl Color {
     /// Returns whether this color is allowed in forced-colors mode.
     pub fn honored_in_forced_colors_mode(&self, allow_transparent: bool) -> bool {
         match *self {
-            #[cfg(feature = "gecko")]
             Self::InheritFromBodyQuirk => false,
             Self::CurrentColor => true,
-            #[cfg(feature = "gecko")]
             Self::System(..) => true,
             Self::Absolute(ref absolute) => allow_transparent && absolute.color.is_transparent(),
+            Self::ColorFunction(ref color_function) => {
+                // For now we allow transparent colors if we can resolve the color function.
+                // <https://bugzilla.mozilla.org/show_bug.cgi?id=1923053>
+                color_function
+                    .resolve_to_absolute()
+                    .map(|resolved| allow_transparent && resolved.is_transparent())
+                    .unwrap_or(false)
+            },
             Self::LightDark(ref ld) => {
-                ld.light.honored_in_forced_colors_mode(allow_transparent) &&
-                    ld.dark.honored_in_forced_colors_mode(allow_transparent)
+                ld.light.honored_in_forced_colors_mode(allow_transparent)
+                    && ld.dark.honored_in_forced_colors_mode(allow_transparent)
             },
-            Self::ColorMix(ref mix) => {
-                mix.left.honored_in_forced_colors_mode(allow_transparent) &&
-                    mix.right.honored_in_forced_colors_mode(allow_transparent)
-            },
+            Self::ColorMix(ref mix) => mix
+                .items
+                .iter()
+                .all(|item| item.color.honored_in_forced_colors_mode(allow_transparent)),
+            Self::ContrastColor(ref c) => c.honored_in_forced_colors_mode(allow_transparent),
         }
     }
 
@@ -618,29 +743,27 @@ impl Color {
     /// forms that are invalid in an absolute color.
     ///   https://drafts.csswg.org/css-color-5/#absolute-color
     /// Returns None if the specified color is not valid as an absolute color.
-    pub fn resolve_to_absolute(&self) -> Option<AbsoluteColor> {
+    pub fn resolve_to_absolute(&self) -> Result<AbsoluteColor, ()> {
         use crate::values::specified::percentage::ToPercentage;
 
         match self {
-            Self::Absolute(c) => return Some(c.color),
+            Self::Absolute(c) => Ok(c.color),
+            Self::ColorFunction(ref color_function) => color_function.resolve_to_absolute(),
             Self::ColorMix(ref mix) => {
-                if let Some(left) = mix.left.resolve_to_absolute() {
-                    if let Some(right) = mix.right.resolve_to_absolute() {
-                        return Some(crate::color::mix::mix(
-                            mix.interpolation,
-                            &left,
-                            mix.left_percentage.to_percentage(),
-                            &right,
-                            mix.right_percentage.to_percentage(),
-                            mix.flags,
-                        ));
-                    }
-                }
-            },
-            _ => (),
-        };
+                use crate::color::mix;
 
-        None
+                let mut items = ColorMixItemList::with_capacity(mix.items.len());
+                for item in mix.items.iter() {
+                    items.push(mix::ColorMixItem::new(
+                        item.color.resolve_to_absolute()?,
+                        item.percentage.to_percentage().ok_or(())?,
+                    ))
+                }
+
+                Ok(mix::mix_many(mix.interpolation, items, mix.flags))
+            },
+            _ => Err(()),
+        }
     }
 
     /// Parse a color, with quirks.
@@ -742,50 +865,71 @@ impl Color {
     ///
     /// If `context` is `None`, and the specified color requires data from
     /// the context to resolve, then `None` is returned.
-    pub fn to_computed_color(&self, context: Option<&Context>) -> Option<ComputedColor> {
-        Some(match *self {
-            Color::CurrentColor => ComputedColor::CurrentColor,
-            Color::Absolute(ref absolute) => {
-                let mut color = absolute.color;
-
+    pub fn to_computed_color(&self, context: Option<&Context>) -> Result<ComputedColor, ()> {
+        macro_rules! adjust_absolute_color {
+            ($color:expr) => {{
                 // Computed lightness values can not be NaN.
                 if matches!(
-                    color.color_space,
+                    $color.color_space,
                     ColorSpace::Lab | ColorSpace::Oklab | ColorSpace::Lch | ColorSpace::Oklch
                 ) {
-                    color.components.0 = normalize(color.components.0);
+                    $color.components.0 = normalize($color.components.0);
                 }
 
                 // Computed RGB and XYZ components can not be NaN.
-                if !color.is_legacy_syntax() && color.color_space.is_rgb_or_xyz_like() {
-                    color.components = color.components.map(normalize);
+                if !$color.is_legacy_syntax() && $color.color_space.is_rgb_or_xyz_like() {
+                    $color.components = $color.components.map(normalize);
                 }
 
-                color.alpha = normalize(color.alpha);
+                $color.alpha = normalize($color.alpha);
+            }};
+        }
 
+        Ok(match *self {
+            Color::CurrentColor => ComputedColor::CurrentColor,
+            Color::Absolute(ref absolute) => {
+                let mut color = absolute.color;
+                adjust_absolute_color!(color);
                 ComputedColor::Absolute(color)
             },
-            Color::LightDark(ref ld) => ld.compute(context?),
-            Color::ColorMix(ref mix) => {
-                use crate::values::computed::percentage::Percentage;
+            Color::ColorFunction(ref color_function) => {
+                debug_assert!(color_function.has_origin_color(),
+                    "no need for a ColorFunction if it doesn't contain an unresolvable origin color");
 
-                let left = mix.left.to_computed_color(context)?;
-                let right = mix.right.to_computed_color(context)?;
+                // Try to eagerly resolve the color function before making it a computed color.
+                if let Ok(absolute) = color_function.resolve_to_absolute() {
+                    ComputedColor::Absolute(absolute)
+                } else {
+                    let color_function = color_function
+                        .map_origin_color(|origin_color| origin_color.to_computed_color(context))?;
+                    ComputedColor::ColorFunction(Box::new(color_function))
+                }
+            },
+            Color::LightDark(ref ld) => ld.compute(context.ok_or(())?),
+            Color::ColorMix(ref mix) => {
+                let mut items = ColorMixItemList::with_capacity(mix.items.len());
+                for item in mix.items.iter() {
+                    items.push(GenericColorMixItem {
+                        color: item.color.to_computed_color(context)?,
+                        percentage: match context {
+                            None => ComputedPercentage(item.percentage.to_percentage().ok_or(())?),
+                            Some(ctx) => item.percentage.to_computed_value(ctx),
+                        },
+                    });
+                }
 
                 ComputedColor::from_color_mix(GenericColorMix {
                     interpolation: mix.interpolation,
-                    left,
-                    left_percentage: Percentage(mix.left_percentage.get()),
-                    right,
-                    right_percentage: Percentage(mix.right_percentage.get()),
+                    items: OwnedSlice::from_slice(items.as_slice()),
                     flags: mix.flags,
                 })
             },
-            #[cfg(feature = "gecko")]
-            Color::System(system) => system.compute(context?),
-            #[cfg(feature = "gecko")]
+            Color::ContrastColor(ref c) => {
+                ComputedColor::ContrastColor(Box::new(c.to_computed_color(context)?))
+            },
+            Color::System(system) => system.compute(context.ok_or(())?),
             Color::InheritFromBodyQuirk => {
-                ComputedColor::Absolute(context?.device().body_text_color())
+                ComputedColor::Absolute(context.ok_or(())?.device().body_text_color())
             },
         })
     }
@@ -795,15 +939,30 @@ impl ToComputedValue for Color {
     type ComputedValue = ComputedColor;
 
     fn to_computed_value(&self, context: &Context) -> ComputedColor {
-        self.to_computed_color(Some(context)).unwrap()
+        self.to_computed_color(Some(context)).unwrap_or_else(|_| {
+            debug_assert!(
+                false,
+                "Specified color could not be resolved to a computed color!"
+            );
+            ComputedColor::Absolute(AbsoluteColor::BLACK)
+        })
     }
 
     fn from_computed_value(computed: &ComputedColor) -> Self {
         match *computed {
             ComputedColor::Absolute(ref color) => Self::from_absolute_color(color.clone()),
+            ComputedColor::ColorFunction(ref color_function) => {
+                let color_function = color_function
+                    .map_origin_color(|o| Ok(Self::from_computed_value(o)))
+                    .unwrap();
+                Self::ColorFunction(Box::new(color_function))
+            },
             ComputedColor::CurrentColor => Color::CurrentColor,
             ComputedColor::ColorMix(ref mix) => {
                 Color::ColorMix(Box::new(ToComputedValue::from_computed_value(&**mix)))
+            },
+            ComputedColor::ContrastColor(ref c) => {
+                Self::ContrastColor(Box::new(ToComputedValue::from_computed_value(&**c)))
             },
         }
     }
@@ -832,6 +991,7 @@ impl SpecifiedValueInfo for Color {
             "oklab",
             "oklch",
             "color-mix",
+            "contrast-color",
             "light-dark",
         ]);
     }
@@ -840,7 +1000,7 @@ impl SpecifiedValueInfo for Color {
 /// Specified value for the "color" property, which resolves the `currentcolor`
 /// keyword to the parent color instead of self's color.
 #[cfg_attr(feature = "gecko", derive(MallocSizeOf))]
-#[derive(Clone, Debug, PartialEq, SpecifiedValueInfo, ToCss, ToShmem)]
+#[derive(Clone, Debug, PartialEq, SpecifiedValueInfo, ToCss, ToShmem, ToTyped)]
 pub struct ColorPropertyValue(pub Color);
 
 impl ToComputedValue for ColorPropertyValue {
@@ -924,13 +1084,16 @@ bitflags! {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(C)]
+#[typed(todo_derive_fields)]
 #[value_info(other_values = "normal")]
 pub struct ColorScheme {
     #[ignore_malloc_size_of = "Arc"]
     idents: crate::ArcSlice<CustomIdent>,
-    bits: ColorSchemeFlags,
+    /// The computed bits for the known color schemes (plus the only keyword).
+    pub bits: ColorSchemeFlags,
 }
 
 impl ColorScheme {
@@ -1038,6 +1201,7 @@ impl ToCss for ColorScheme {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum PrintColorAdjust {
@@ -1060,6 +1224,7 @@ pub enum PrintColorAdjust {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 pub enum ForcedColorAdjust {
@@ -1067,4 +1232,25 @@ pub enum ForcedColorAdjust {
     Auto,
     /// Respect specified colors.
     None,
+}
+
+/// Possible values for the forced-colors media query.
+/// <https://drafts.csswg.org/mediaqueries-5/#forced-colors>
+#[derive(Clone, Copy, Debug, FromPrimitive, Parse, PartialEq, ToCss)]
+#[repr(u8)]
+pub enum ForcedColors {
+    /// Page colors are not being forced.
+    None,
+    /// Page colors would be forced in content.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Requested,
+    /// Page colors are being forced.
+    Active,
+}
+
+impl ForcedColors {
+    /// Returns whether forced-colors is active for this page.
+    pub fn is_active(self) -> bool {
+        matches!(self, Self::Active)
+    }
 }

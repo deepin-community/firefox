@@ -23,7 +23,7 @@ about-processes-shutdown-tab =
 about-processes-profile-process =
     .title =
         { $duration ->
-            [one] יצירת פרופיל לכל התהליכונים של תהליך זה לשניה אחת
+            [one] יצירת פרופיל לכל התהליכונים של תהליך זה לשנייה אחת
            *[other] יצירת פרופיל לכל התהליכונים של תהליך זה ל־{ $duration } שניות
         }
 
@@ -56,6 +56,12 @@ about-processes-preallocated-process = מוקצה מראש ({ $pid })
 #    $pid (String) The process id of this process, assigned by the OS.
 #    $type (String) The raw type for this process.
 about-processes-unknown-process = אחר: { $type } ‏({ $pid })
+
+## Properties of isolated web processes
+
+about-processes-web-isolated-property-private = private
+about-processes-web-isolated-property-serviceworker = serviceworker
+about-processes-web-isolated-property-jit-disabled = ‏JIT מושבת
 
 ## Isolated process names
 ## Variables:
@@ -117,6 +123,7 @@ about-processes-frame-name-many = מסגרות משנה ({ $number }): { $shortU
 
 ## Utility process actor names
 
+about-processes-utility-actor-unknown = Unknown actor
 about-processes-utility-actor-audio-decoder-generic = מפענח שמע גנרי
 about-processes-utility-actor-audio-decoder-applemedia = מפענח שמע של אפל מדיה
 about-processes-utility-actor-audio-decoder-wmf = מפענח שמע של Windows Media Framework
@@ -125,6 +132,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windows Utils
 about-processes-utility-actor-windows-file-dialog = דו־שיח קבצים של Windows
+about-processes-utility-actor-pkcs11-module = Security Module Helper
 
 ## Displaying CPU (percentage and total)
 ## Variables:

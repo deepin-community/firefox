@@ -5,11 +5,11 @@ This article provides an overview of what the various directories contain.
 
 To simply take a look at the Firefox source code, you do not need to
 download it. You can look at the source directly with your web browser
-using Searchfox (start at https://searchfox.org/mozilla-central/source for
+using Searchfox (start at https://searchfox.org/firefox-main/source for
 the complete firefox source code of branch HEAD).
 
 In order to modify the source, you have to acquire it either by
-downloading a :ref:`snapshot <Mercurial Overview>` of the sources or
+downloading a :ref:`snapshot <Firefox Contributors' Quick Reference>` of the sources or
 by checking out the current sources from
 :ref:`the repository <Firefox Contributors' Quick Reference>`.
 

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define EME_LOG_H_
 
 #include "mozilla/Logging.h"
+#include "mozilla/dom/BufferSourceBindingFwd.h"
 #include "mozilla/dom/MediaKeyStatusMapBinding.h"
 #include "mozilla/dom/MediaKeySystemAccessBinding.h"
 #include "nsString.h"
@@ -22,7 +21,6 @@ class MFCDMCapabilitiesIPDL;
 struct KeySystemConfig;
 
 namespace dom {
-class ArrayBufferViewOrArrayBuffer;
 class Document;
 }  // namespace dom
 
@@ -52,8 +50,7 @@ LogModule* GetEMEVerboseLog();
 //
 // Only call this on a properly initialized ArrayBufferViewOrArrayBuffer.
 void CopyArrayBufferViewOrArrayBufferData(
-    const dom::ArrayBufferViewOrArrayBuffer& aBufferOrView,
-    nsTArray<uint8_t>& aOutData);
+    const dom::BufferSource& aBufferOrView, nsTArray<uint8_t>& aOutData);
 
 nsString KeySystemToProxyName(const nsAString& aKeySystem);
 

@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = Бұғатталған бет
 neterror-captive-portal-page-title = Желіге кіру
 neterror-dns-not-found-title = Сервер табылмады
 neterror-malformed-uri-page-title = Жарамсыз URL
+general-body-title = Сақ болыңыз. Бірдеңе дұрыс емес сияқты.
+problem-with-this-site-title = Бұл сайтта мәселе бар сияқты
 
 ## Error page actions
 
@@ -23,6 +25,8 @@ neterror-override-exception-button = Тәуекелді қабылдап, жал
 neterror-pref-reset-button = Бастапқы баптауларды қалпына келтіру
 neterror-return-to-previous-page-button = Артқа
 neterror-return-to-previous-page-recommended-button = Артқа оралу (ұсынылады)
+neterror-try-again-button-2 = Қайтадан көру
+    .accesskey = т
 neterror-try-again-button = Қайтадан көру
 neterror-add-exception-button = Бұл сайт үшін әрқашан жалғастыру
 neterror-settings-button = DNS бапталарын өзгерту
@@ -41,6 +45,13 @@ neterror-generic-error = { -brand-short-name } осы парақты белгі�
 neterror-load-error-try-again = Сайт уақытша қолжетімсіз, немесе сұранымдарға толы шығар. Кейінірек қайталап көріңіз.
 neterror-load-error-connection = Басқа да сайттарды аша алмасаңыз, компьютеріңіздің желіге байланысу баптауларын тексеріңіз.
 neterror-load-error-firewall = Компьютер немесе желі желіаралық экранмен немесе прокси-сервермен қорғалған болса – { -brand-short-name } үшін Интернетке шығуға рұқсат бар екеніне көз жеткізіңіз.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Жергілікті желі бетін жүктеп алғыңыз келсе, { -brand-short-name } қолданбасына macOS Жекелік және қауіпсіздік параметрлерінде Жергілікті желі рұқсаттары берілгенін тексеріңіз.
+neterror-http-error-page = Веб-сайт адресін дұрыс енгізгеніңізді тексеріп шығыңыз.
+neterror-http-empty-response = Веб-сайт адресін дұрыс тергеніңізді тексеріп, біраз уақыттан кейін қайталап көріңіз.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = { $hostname } бос бетті қайтарды.
 neterror-captive-portal = Интернетке қатынау үшін бұл желіге кіруіңіз керек.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +60,12 @@ neterror-dns-not-found-hint-header = <strong>Дұрыс адресті енгі�
 neterror-dns-not-found-hint-try-again = Әрекетті кейінірек қайталаңыз
 neterror-dns-not-found-hint-check-network = Желі байланысын тексеріңіз
 neterror-dns-not-found-hint-firewall = { -brand-short-name } үшін интернетке кіруге рұқсаты бар екенін тексеріңіз (сіз байланысқан, бірақ файрволл артында болуыңыз мүмкін)
+neterror-dns-not-found-hint-check-network-2 = Желі байланысын тексеріңіз.
+neterror-dns-not-found-hint-firewall-2 = { -brand-short-name } үшін интернетке кіруге рұқсаты бар екенін тексеріңіз (сіз байланысқан, бірақ файрволл артында болуыңыз мүмкін).
+neterror-dns-not-found-offline-hint-header = <strong>Бұған қатысты не істей аласыз?</strong>
+neterror-dns-not-found-offline-hint-different-device = Басқа құрылғыда қосылып көріңіз.
+neterror-dns-not-found-offline-hint-modem = Модемді немесе роутерді тексеріңіз.
+neterror-dns-not-found-offline-hint-reconnect = Wi-Fi желісінен ажырап, қайта қосылыңыз.
 
 ## TRR-only specific messages
 ## Variables:
@@ -72,7 +89,6 @@ neterror-dns-not-found-trr-unknown-problem = Күтпеген мәселе.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } біздің сенімді DNS шешушісі арқылы осы сайт адресіне қатысты сұрауыңызды қорғай алмайды. Себебі:
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } біздің қауіпсіз DNS ұсынушысы арқылы осы сайт адресіне қатысты сұрауыңызды қорғай алмайды. Себебі:
 neterror-dns-not-found-native-fallback-heuristic = HTTPS арқылы DNS сіздің желіңізде сөндірілген.
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } { $trrDomain } доменіне қосыла алмады.
 
@@ -80,9 +96,14 @@ neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } { 
 
 neterror-file-not-found-filename = Файлдың енгізілген аты, үлкен-кіші әріптердің дұрыстығы, және басқа да қателер жоқ екеніне көз жеткізіңіз.
 neterror-file-not-found-moved = Файлдың аты ауысқан, ол өшірілген немесе басқа жаққа көшірілген болуы мүмкін.
+# Variables:
+#   $path (String) - Path of the local file that could not be found.
+neterror-file-not-found-intro = { -brand-short-name } <strong>{ $path }</strong> адресіндегі файлды таба алмады. Ол жоқ немесе жол дұрыс емес.
+neterror-file-not-found-what-can-you-do = Егер адресті қолмен терген болсаңыз, файл атауында немесе жолында бас әріптермен жазу қателерін немесе басқа да қателерге тексеріңіз. Егер сіз сақталған бетбелгі немесе сілтеме арқылы өткен болсаңыз, файл сақталғаннан кейін жылжытылған, атауы өзгертілген немесе өшірілген болуы мүмкін. Оны файл басқарушысы немесе жуырдағы іздеуді пайдаланып табуға тырысыңыз.
 neterror-access-denied = Ол өшірілген, жылжытылған немесе файл рұқсаттары қатынауға жол бермеуі мүмкін.
 neterror-unknown-protocol = Бұл адресті ашу үшін сізге қосымша бағдарламаларды орнату керек мүмкін.
 neterror-redirect-loop = Бұл мәселе анда-санда cookies файлдарын қабылдау сөндірілген кезде болуы мүмкін.
+neterror-unknown-socket-type-client-config = Бұл сіздің клиентіңіздің баптауларындағы қатеге байланысты болуы мүмкін.
 neterror-unknown-socket-type-psm-installed = Жүйеңізде Personal Security Manager орнатылғанын тексеріңіз.
 neterror-unknown-socket-type-server-config = Бұл мәселе қалыпты емес бапталған сервер себебінен болуы мүмкін.
 neterror-not-cached-intro = Сұралған құжат { -brand-short-name } кэшінде жоқ.
@@ -96,6 +117,9 @@ neterror-proxy-connect-failure-settings = Прокси баптауларын д
 neterror-proxy-connect-failure-contact-admin = Прокси жұмыс істеуіне көз жеткізу үшін желі әкімшіңізбен хабарласыңыз.
 neterror-content-encoding-error = Веб сайт иелеріне осы мәселе жөнінде хабарлаңыз.
 neterror-unsafe-content-type = Веб сайт иелеріне осы мәселе жайында хабарлаңыз.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } бағдарламасы { $hostname } сайтына сенбейді, себебі байланыс қауіпсіз емес. URL адресін HTTPS-ке өзгертіп көріңіз.
 neterror-nss-failure-not-verified = Сіз сұраған парақ көрсетілмейді, өйткені алынған мәліметтерді тексеру мүмкін емес.
 neterror-nss-failure-contact-website = Сайттың иесімен осы мәселе жөнінде хабарласыңыз.
 # Variables:
@@ -148,3 +172,50 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Егер сізге <b>{ $m
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> сайтының HTTP Strict Transport Security (HSTS) деп аталатын қауіпсіздік саясаты бар, бұл дегеніміз, { -brand-short-name } оған тек қауіпсіз түрде байланыса алады. Бұл веб-сайт үшін ережеден тыс жағдайды қоса алмайсыз.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Ешнәрсе емес сияқты, себебі сайттың өзінде мәселе болуы мүмкін.
+certerror-blocked-by-corp-headers-description = Кейде веб-сайттар өздерін және сіз сияқты пайдаланушыларды басқа сайттармен қажетсіз әрекеттесуден қорғау үшін арнайы қорғаныстарды орнатады.
+certerror-coop-learn-more = Cross Origin Opener Policies (COOP) туралы көбірек біліңіз
+certerror-coep-learn-more = Cross Origin Embedder Policies (COEP) туралы көбірек біліңіз
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Қате коды: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Интернет байланысыңызда мәселе бар сияқты
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name } бағдарламасы { $hostname } серверімен қауіпсіз байланыс орната алмады.
+fp-neterror-offline-intro = { -brand-short-name } бағдарламасы <strong>{ $hostname }</strong> серверіне қосыла алмай тұр.
+fp-neterror-offline-intro-2 = { -brand-short-name } бағдарламасы <strong>{ $hostname }</strong> серверіне қосыла алмай тұр.
+fp-neterror-net-timeout-intro = <strong>{ $hostname }</strong> адресіндегі сервер жауап беру үшін тым ұзақ уақыт алуда.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $responsestatus (Number) - HTTP response status code (e.g., 404).
+#   $responsestatustext (String) - HTTP response status text (e.g., "Not Found", always in English).
+fp-neterror-http-error-intro = <strong>{ $hostname }</strong> адресіндегі сервер қате туралы хабарлама жіберді: { $responsestatus } { $responsestatustext }
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-neterror-invalid-header-value-intro = <strong>{ $hostname }</strong> веб қауіпсіздігі стандарттарына сай келмейтін бос таңбалары бар тақырыптама жіберді.
+fp-neterror-content-encoding-intro = Сіз сұраған беттің сығуы қате немесе браузер оны қолдамайды.
+fp-neterror-coop-coep-intro = { -brand-short-name } бұл бетті жүктемеді, себебі қауіпсіздік баптамасы алдыңғы бетке сәйкес келмейтін сияқты.
+fp-neterror-blocked-by-policy-intro = Сіздің ұйымыңыз бұл бет немесе веб-сайтқа қол жеткізуді бұғаттаған.
+fp-neterror-http-auth-disabled-intro = Сайттың атын жамылған біреулер сіздің пайдаланушы атыңызды, пароліңізді немесе электрондық поштаңызды ұрлауға әрекеттенуі мүмкін.
+fp-neterror-http-auth-disabled-secure-connection = Бұл сайт қауіпсіз қосылымды талап етеді, және оған кіру үшін сіз ерекше жағдай қоса алмайсыз.
+fp-neterror-why-did-this-happen = Бұл неліктен орын алды?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = Бұл сайтта қауіпсіздік ақаулары белгілі ескі бағдарламалық қамтама қолданылып жатқан сияқты.
+fp-neterror-http-auth-disabled-why-dangerous-body = { -brand-short-name } бағдарламасы { $hostname } сайтына сенбейді, себебі байланыс қауіпсіз емес.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = { -brand-short-name } бағдарламасының ең соңғы нұсқасын пайдаланып жатқаныңызға көз жеткізіңіз. Мәзірден Көмек > { -brand-short-name } туралы бөліміне өтіңіз. Егер сізде { -brand-short-name } бағдарламасының соңғы нұсқасы болса, мәселе үлкен ықтималдықпен сайттың өзінде.
+fp-neterror-offline-what-can-you-do-body = Басқа құрылғыда қосылып көріңіз. Модемді немесе маршрутизаторды тексеріңіз. Wi-Fi желісіне байланысты ажыратыңыз және қайта қосылыңыз.
+fp-neterror-http-auth-disabled-what-can-you-do-body = URL адресін HTTPS-ке өзгертіп көріңіз. Бірақ, мәселе сайттың өзінде болуы әбден мүмкін.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Кейде веб-сайттар өздерін басқа сайттармен қажетсіз әрекеттесуден қорғау үшін арнайы қорғаныстарды орнатады.
+fp-learn-more-about-https-connections = HTTPS байланысы туралы біліңіз
+fp-neterror-vpn-error-title = VPN-ге қосылу мүмкін болмады
+fp-neterror-vpn-error-description = Бірнеше минуттан кейін қайталап көріңіз.
+fp-neterror-denied-port-access = Бұл адрес қолданатын порт әдетте Интернет-сайттарға байланысу үшін қолданылмайды. Сізді қорғау үшін { -brand-short-name } байланысты үзді.

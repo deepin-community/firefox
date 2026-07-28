@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +6,6 @@
 #include "nsContentUtils.h"
 #include "nsIconChannel.h"
 #include "mozilla/BasePrincipal.h"
-#include "mozilla/EndianUtils.h"
 #include "nsComponentManagerUtils.h"
 #include "nsIIconURI.h"
 #include "nsIInputStream.h"
@@ -46,10 +44,11 @@ nsIconChannel::~nsIconChannel() {
 NS_IMPL_ISUPPORTS(nsIconChannel, nsIChannel, nsIRequest, nsIRequestObserver,
                   nsIStreamListener)
 
-nsresult nsIconChannel::Init(nsIURI* uri) {
+nsresult nsIconChannel::Init(nsIURI* uri, nsILoadInfo* aLoadInfo) {
   NS_ASSERTION(uri, "no uri");
   mUrl = uri;
   mOriginalURI = uri;
+  mLoadInfo = aLoadInfo;
   nsresult rv;
   mPump = do_CreateInstance(NS_INPUTSTREAMPUMP_CONTRACTID, &rv);
   return rv;

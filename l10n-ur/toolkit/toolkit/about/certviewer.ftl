@@ -24,6 +24,7 @@ certificate-viewer-key-exchange-group = کلیدی تبادلہ وا؛ا گرو�
 certificate-viewer-key-id = کلید شناخت
 certificate-viewer-key-size = کلیدی کا ماپ
 certificate-viewer-location = موجودہ مقام
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = لاگ ID
 certificate-viewer-method = طریقہ
 certificate-viewer-modulus = ماڈیولس
@@ -56,7 +57,6 @@ certificate-viewer-fingerprints = انگلیوں کے نشان
 certificate-viewer-basic-constraints = بنیادی رکاوٹیں
 certificate-viewer-key-usages = کلیدی استعمال
 certificate-viewer-certificate-policies = تصدیق نامہ پالیسیاں
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = ڈاؤن لوڈ

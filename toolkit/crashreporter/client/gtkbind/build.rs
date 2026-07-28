@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use mozbuild::config::{
-    CC_BASE_FLAGS as CFLAGS, MOZ_GTK3_CFLAGS as GTK_CFLAGS, MOZ_GTK3_LIBS as GTK_LIBS,
+    BINDGEN_SYSTEM_FLAGS as CFLAGS, MOZ_GTK3_CFLAGS as GTK_CFLAGS, MOZ_GTK3_LIBS as GTK_LIBS,
 };
 
 const HEADER: &str = r#"
@@ -19,7 +19,7 @@ fn main() {
         .clang_args(GTK_CFLAGS)
         .allowlist_function("gtk_.*")
         .allowlist_function(
-            "g_(application|main_context|memory_input_stream|object|signal|timeout)_.*",
+            "g_(application|main_context|memory_input_stream|object|signal|source|timeout)_.*",
         )
         .allowlist_function("gdk_pixbuf_new_from_stream")
         .allowlist_function("pango_attr_.*")

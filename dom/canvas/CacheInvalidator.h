@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 13; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=13 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,10 +5,13 @@
 #ifndef MOZILLA_CACHE_INVALIDATOR_H_
 #define MOZILLA_CACHE_INVALIDATOR_H_
 
-#include "mozilla/Maybe.h"
-#include "mozilla/UniquePtr.h"
-#include "DmdStdContainers.h"
+#include <cstddef>  // nullptr_t
+#include <memory>
+#include <optional>
 #include <vector>
+
+#include "DmdStdContainers.h"
+#include "mozilla/Assertions.h"
 
 // -
 
@@ -73,27 +74,33 @@ class AbstractCache {
 
 template <typename T>
 class CacheMaybe : public AbstractCache {
-  Maybe<T> mVal;
+  std::optional<T> mVal;
 
  public:
-  template <typename U>
-  CacheMaybe& operator=(Maybe<U>&& rhs) {
-    mVal.reset();
-    if (rhs) {
-      mVal.emplace(std::move(rhs.ref()));
-    }
+  CacheMaybe& operator=(std::optional<T>&& rhs) {
+    mVal.swap(rhs);
+    rhs.reset();
     return *this;
   }
 
-  CacheMaybe& operator=(Nothing) { return *this = Maybe<T>(); }
+  template <typename U>
+  CacheMaybe& operator=(U&& rhs) {
+    mVal.emplace(std::forward<U>(rhs));
+    return *this;
+  }
+
+  CacheMaybe& operator=(std::nullptr_t) {
+    mVal.reset();
+    return *this;
+  }
 
   void OnInvalidate() override {
-    *this = Nothing();
+    *this = {};
     ResetInvalidators({});
   }
 
   explicit operator bool() const { return bool(mVal); }
-  T* get() const { return mVal.ptrOr(nullptr); }
+  T* get() const { return mVal ? &*mVal : nullptr; }
   T* operator->() const { return get(); }
 };
 
@@ -127,7 +134,7 @@ class CacheWeakMap final {
     }
   };
 
-  using MapT = webgl::dmd_unordered_map<const KeyT*, UniquePtr<Entry>,
+  using MapT = webgl::dmd_unordered_map<const KeyT*, std::unique_ptr<Entry>,
                                         DerefHash, DerefEqual>;
   MapT mMap;
 
@@ -136,14 +143,14 @@ class CacheWeakMap final {
     return mMap.SizeOfExcludingThis(mso);
   }
 
-  UniquePtr<Entry> MakeEntry(const KeyT& key, ValueT&& value) {
-    return UniquePtr<Entry>(new Entry(*this, key, std::move(value)));
+  std::unique_ptr<Entry> MakeEntry(const KeyT& key, ValueT&& value) {
+    return std::unique_ptr<Entry>(new Entry(*this, key, std::move(value)));
   }
-  UniquePtr<Entry> MakeEntry(const KeyT& key, const ValueT& value) {
+  std::unique_ptr<Entry> MakeEntry(const KeyT& key, const ValueT& value) {
     return MakeEntry(key, ValueT(value));
   }
 
-  const ValueT* Insert(UniquePtr<Entry>&& entry) {
+  const ValueT* Insert(std::unique_ptr<Entry>&& entry) {
     auto insertable = typename MapT::value_type{&entry->mKey, std::move(entry)};
 
     const auto res = mMap.insert(std::move(insertable));

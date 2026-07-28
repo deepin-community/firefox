@@ -11,6 +11,7 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = ਉਹ ਨੀਤੀਆਂ ਸੈਟ ਕਰੋ ਜੋ WebExtensions chrome.storage.managed ਰਾਹੀਂ ਪ੍ਰਾਪਤ ਕਰ ਸਕਦੀਆਂ ਹਨ।
+policy-AIControls = AI ਕੰਟਰੋਲਾਂ ਦੀ ਸੰਰਚਨਾ ਕਰੋ।
 policy-AllowedDomainsForApps = Google Workspace ਲਈ ਪਹੁੰਚ ਵਾਸਤੇ ਇਜਾਜ਼ਤ ਦਿੱਤੀਆਂ ਡੋਮੇਨਾਂ ਦੀ ਪਰਿਭਾਸ਼ਾ।
 policy-AllowFileSelectionDialogs = ਫਾਇਲ ਚੁਣਨ ਡਾਈਲਾਗ ਦੀ ਮਨਜ਼ੂਰੀ ਦਿਓ।
 policy-AppAutoUpdate = ਆਪਣੇ-ਆਪ ਐਪਲੀਕੇਸ਼ਨ ਅੱਪਡੇਟ ਨੂੰ ਸਮਰੱਥ ਜਾਂ ਅਸਮਰੱਥ ਕਰੋ।
@@ -21,6 +22,7 @@ policy-AutofillAddressEnabled = ਸਿਰਨਾਵਿਆਂ ਲਈ ਆਪਣੇ-
 policy-AutofillCreditCardEnabled = ਭੁਗਤਾਨ ਢੰਗਾਂ ਲਈ ਆਪਣੇ-ਆਪ ਭਰਨਾ ਸਮਰੱਥ ਕਰੋ।
 policy-AutoLaunchProtocolsFromOrigins = ਬਾਹਰੀ ਪਰੋਟੋਕਾਲਾਂ ਦੀ ਸੂਚੀ ਦਿਓ, ਜੋ ਕਿ ਸੂਚੀਬੱਧ ਮੁੱਢ ਤੋਂ ਬਿਨਾਂ ਵਰਤੋਂਕਾਰ ਦੇ ਪੁੱਛੇ ਵਰਤੇ ਜਾ ਸਕਦੇ ਹਨ।
 policy-BackgroundAppUpdate2 = ਬੈਕਗਰਾਊਂਡ ਅੱਪਡੇਟਰ ਨੂੰ ਸਮਰੱਥ ਜਾਂ ਅਸਮਰੱਥ ਕਰੋ।
+policy-Backup = ਪਰੋਫ਼ਾਈਲ ਡਾਟੇ ਦੇ ਬੈਕਅੱਪ ਜਾਂ ਬਹਾਲ ਕਰਨ ਨੂੰ ਅਸਮਰੱਥ ਕਰੋ।
 policy-BlockAboutAddons = ਐਡ-ਆਨ ਮੈਨੇਜਰ (about:addons) ਤਕ ਪਹੁੰਚ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਓ।
 policy-BlockAboutConfig = about:config ਸਫ਼ੇ ਲਈ ਪਹੁੰਚ ਤੇ ਪਾਬੰਦੀ ਲਗਾਓ।
 policy-BlockAboutProfiles = about:profiles ਸਫ਼ੇ ਲਈ ਪਹੁੰਚ ਤੇ ਪਾਬੰਦੀ ਲਗਾਓ।
@@ -35,12 +37,13 @@ policy-Containers = ਕਨਟੇਨਰ ਸੰਬੰਧੀ ਪਾਲਸੀਆਂ 
 policy-DisableAccounts = ਸਿੰਕ ਸਮੇਤ ਅਕਾਊਂਟ ਅਧਾਰਿਤ ਸੇਵਾਵਾਂ ਅਸਮਰੱਥ ਕਰੋ।
 policy-DisabledCiphers = ਸੀਫ਼ਰ ਅਸਮਰੱਥ ਕਰੋ।
 policy-DefaultDownloadDirectory = ਮੂਲ ਡਾਊਨਲੋਡ ਡਾਇਰੈਕਟਰੀ ਸੈੱਟ ਕਰੋ।
+policy-DefaultSerialGuardSetting = ਸੀਰੀਅਸ API ਲਈ ਕੰਟਰੋਲ ਵਰਤੋਂ।
 policy-DisableAppUpdate = ਬਰਾਊਜ਼ਰ ਨੂੰ ਅੱਪਡੇਟ ਹੋਣ ਤੋਂ ਰੋਕੋ।
 policy-DisableBuiltinPDFViewer = PDF.js, { -brand-short-name } ਵਿੱਚ ਮੌਜੂਦ PDF ਦਰਸ਼ਕ, ਨੂੰ ਅਸਮਰੱਥ ਕਰੋ।
 policy-DisableDefaultBrowserAgent = ਡਿਫਾਲਟ ਬਰਾਊਜ਼ਰ ਏਜੰਟ ਨੂੰ ਕੋਈ ਵੀ ਕਾਰਵਾਈ ਕਰਨ ਤੋਂ ਰੋਕੋ। ਸਿਰਫ਼ ਵਿੰਡੋਜ਼ ਲਈ ਲਾਗੂ ਹੈ; ਦੂਜੇ ਪਲੇਟਫਾਰਮਾਂ ਵਿੱਚ ਏਜੰਟ ਨਹੀਂ ਹੁੰਦਾ।
 policy-DisableDeveloperTools = ਡਿਵੈਲਪਰ ਟੂਲਾਂ ਲਈ ਪਹੁੰਚ ਵਾਸਤੇ ਪਾਬੰਦੀ ਲਗਾਓ।
 policy-DisableEncryptedClientHello = ਇੰਕ੍ਰਿਪਟ ਕੀਤੀ ਕਲਾਈਂਟ ਹੈਲੋ (ECH) ਫ਼ੀਚਰ ਦੀ ਵਰਤੋਂ ਨੂੰ ਅਸਮਰੱਥ ਕਰੋ।
-policy-DisableFeedbackCommands = ਮੱਦਦ ਮੇਨੂ ਤੋਂ ਫੀਡਬੈਕ ਭੇਜਣ ਲਈ ਕਮਾਂਡਾਂ ਨੂੰ ਅਯੋਗ ਕਰੋ (ਭੇਤ ਸੁਝਾਅ ਜਮ੍ਹਾਂ ਕਰੋ ਅਤੇ ਧੋਖੇਬਾਜ਼ਾਂ ਦੀ ਰਿਪੋਰਟ ਕਰੋ)।
+policy-DisableFeedbackCommands = ਮਦਦ ਮੇਨੂ ਤੋਂ ਫੀਡਬੈਕ ਭੇਜਣ ਲਈ ਕਮਾਂਡਾਂ ਨੂੰ ਅਸਮਰੱਥ (ਸੁਝਾਅ ਦਿਓ ਅਤੇ ਭਰਮਪੂਰਨ ਸਾਈਟ ਬਾਰੇ ਇਤਲਾਹ ਦਿਓ)।
 policy-DisableFirefoxAccounts = { -fxaccount-brand-name } ਅਧਾਰਿਤ ਸੇਵਾਵਾਂ, ਸਿੰਕ ਸਮੇਤ, ਨੂੰ ਅਸਮਰੱਥ ਕਰੋ।
 # This string is in the process of being deprecated in favor of policy-DisableAccounts.
 policy-DisableFirefoxAccounts1 = ਖਾਤਾ ਅਧਾਰਿਤ ਸੇਵਾਵਾਂ ਨੂੰ ਅਸਮਰੱਥ ਕਰੋ, ਜਿਸ ਵਿੱਚ ਸਿੰਕ ਕਰਨਾ ਵੀ ਸ਼ਾਮਲ ਹੈ।
@@ -55,6 +58,8 @@ policy-DisablePocket2 = { -pocket-brand-name } ਨੂੰ ਵੈਬ ਪੇਜਿ�
 policy-DisablePrivateBrowsing = ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ਿੰਗ ਅਸਮਰੱਥ ਕਰੋ।
 policy-DisableProfileImport = ਕਿਸੇ ਹੋਰ ਬਰਾਊਜ਼ਰ ਤੋਂ ਡਾਟਾ ਦਰਾਮਦ ਕਰਨ ਲਈ ਮੇਨੂ ਕਮਾਂਡ ਨੂੰ ਅਸਮਰੱਥ ਕਰੋ।
 policy-DisableProfileRefresh = about:support ਸਫ਼ੇ ਵਿੱਚ { -brand-short-name } ਬਟਨ ਨੂੰ ਤਾਜ਼ਾ ਕਰਨ ਤੋਂ ਰੋਕੋ।
+policy-DisableRemoteImprovements = { -brand-short-name } ਵਲੋਂ ਅੱਪਡੇਟਾਂ ਵਿਚਾਲੇ ਕਾਰਗੁਜ਼ਰੀ, ਸਥਿਰਤਾ ਅਤੇ ਫ਼ੀਚਰ ਤਬਦੀਲੀ ਲਾਗੂ ਕਰਨ ਤੋਂ ਰੋਕਦੀ ਹੈ।
+policy-DisableRemoteSettingsAndAcceptSecurityConsequences = ਰਿਮੋਟ ਸੈਟਿੰਗਾਂ ਨੂੰ ਅਸਮਰੱਥ ਕਰੋ।
 policy-DisableSafeMode = ਸੁਰੱਖਿਅਤ ਮੋਡ ਵਿੱਚ ਰੀਸਟਾਰਟ ਕਰਨ ਲਈ ਵਿਸ਼ੇਸ਼ਤਾ ਨੂੰ ਅਸਮਰੱਥ ਬਣਾਓ। ਨੋਟ: ਸੇਫ ਮੋਡ ਵਿੱਚ ਦਾਖਲ ਕਰਨ ਲਈ ਸ਼ਿਫਟ ਸਵਿੱਚ ਨੂੰ ਸਿਰਫ ਗਰੁੱਪ ਪਾਲਿਸੀ ਦੀ ਵਰਤੋਂ ਨਾਲ ਵਿੰਡੋਜ਼ ਉੱਤੇ ਅਸਮਰੱਥ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।
 policy-DisableSecurityBypass = ਯੂਜ਼ਰ ਨੂੰ ਕੁਝ ਸੁਰੱਖਿਆ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਅਣਡਿੱਠ ਕਰਨ ਤੋਂ ਰੋਕੋ।
 policy-DisableSetAsDesktopBackground = ਮੇਨੂ ਕਮਾਂਡ ਨੂੰ ਅਯੋਗ ਕਰੋ ਚਿੱਤਰਾਂ ਲਈ ਡੈਸਕਟਾਪ ਬੈਕਗਰਾਊਂਡ ਵਾਂਗ ਸੈੱਟ ਕਰੋ।
@@ -81,6 +86,7 @@ policy-ExtensionSettings = ਇਕਸਟੈਨਸ਼ਨ ਇੰਸਟਾਲੇਸ਼ਨ 
 policy-ExtensionUpdate = ਆਟੋਮੈਟਿਕ ਇਕਸਟੈਨਸ਼ਨ ਅੱਪਡੇਟ ਸਮਰੱਥ ਜਾਂ ਅਸਮਰੱਥ ਕਰੋ।
 policy-FirefoxHome2 = { -firefox-home-brand-name } ਦੀ ਸੰਰਚਨਾ।
 policy-FirefoxSuggest = { -firefox-suggest-brand-name } ਦੀ ਸੰਰਚਨਾ।
+policy-GenerativeAI = ਤਿਆਰਕਰਤਾ AI ਫ਼ੀਚਰਾਂ ਦੀ ਸੰਰਚਨਾ ਹੈ।
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = ਜਦੋਂ ਸਿਰਨਾਵਾਂ ਪੱਟੀ ਵਿੱਚ ਇੱਕਲਾ ਸ਼ਬਦ ਲਿਖਿਆ ਜਾਵੇ ਤਾਂ ਖੋਜ ਕਰਨ ਦੀ ਬਜਾਏ ਸਿੱਧੇ ਇੰਟਰਾਨੈੱਟ ਸਾਈਟ ਉੱਤੇ ਜਾਣ ਲਈ ਮਜ਼ਬੂਰ ਕਰੋ।
 policy-Handlers = ਡਿਫਾਲਟ ਐਪਲੀਕੇਸ਼ਨ ਹੈਂਡਲ ਸੰਰਚਨਾ ਕਰੋ।
 policy-HardwareAcceleration = ਜੇ ਗਲਤ ਹੈ, ਤਾਂ ਹਾਰਡਵੇਅਰ ਐਕਸਰਲੇਸ਼ਨ ਬੰਦ ਹੁੰਦਾ ਹੈ।
@@ -89,6 +95,7 @@ policy-Homepage = ਮੁੱਖ ਸਫ਼ੇ ਨੂੰ ਨਿਯਤ ਕਰੋ ਅ
 policy-HttpAllowlist = ਮੁੱਢ, ਜੋ ਕਿ HTTPS ਲਈ ਅੱਪਗਰੇਡ ਨਹੀਂ ਕੀਤੇ ਜਾਣਗੇ।
 policy-HttpsOnlyMode = ਸਿਰਫ਼-HTTPS ਮੋਡ ਨੂੰ ਸਮਰੱਥ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।
 policy-InstallAddonsPermission = ਕੁਝ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਐਡ-ਆਨ ਇੰਸਟਾਲ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿਓ।
+policy-IPProtectionAvailable = ਵਿੱਚ ਮੌਜੂਦ VPN ਨੂੰ ਵਰਤੋਂਕਾਰਾਂ ਲਈ ਉਪਲੱਬਧ ਹੋਣ ਤੋਂ ਰੋਕੋ।
 policy-LegacyProfiles = ਹਰੇਕ ਇੰਸਟਾਲੇਸ਼ਨ ਲਈ ਵੱਖਰੇ ਪਰੋਫਾਈਲ ਨੂੰ ਫੀਚਰ ਲਾਗੂ ਕਰਨ ਨੂੰ ਅਸਮਰੱਥ ਕਰੋ।
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
@@ -98,7 +105,8 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = ਨਿਰਧਾਰਤ 
 
 ##
 
-policy-LocalFileLinks = ਖਾਸ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਲੋਕਲ ਫ਼ਾਈਲਾਂ ਲਈ ਲਿੰਕ ਦੀ ਆਗਿਆ ਦਿਓ।
+policy-LocalFileLinks = ਖਾਸ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਲੋਕਲ ਫ਼ਾਇਲਾਂ ਲਈ ਲਿੰਕ ਕਰਨ ਦੀ ਮਨਜੂਰੀ ਦਿਓ।
+policy-LocalNetworkAccess = ਲੋਕਲ ਨੈੱਟਵਰਕ ਪਹੁੰਚ ਲਈ ਜਾਂਚ ਨੂੰ ਸਮਰੱਥ ਜਾਂ ਅਸਮਰੱਥ ਕਰੋ।
 policy-ManagedBookmarks =
     ਪਰਸ਼ਾਸਕ ਵਲੋਂ ਇੰਤਜ਼ਾਮ ਕੀਤੇ ਬੁੱਕਮਾਰਕਾਂ ਦੀ ਸੂਚੀ ਸੰਰਚਿਤ ਕਰਦਾ ਹੈ, ਜਿਸ ਨੂੰ ਵਰਤੋਂਕਾਰ
     ਬਦਲ ਨਹੀਂ ਸਕਦਾ ਹੈ।
@@ -123,11 +131,13 @@ policy-PDFjs =
     ਜਾਂ ਸੰਰਚਿਤ ਕਰੋ।
 policy-Permissions2 = ਕੈਮਰਾ, ਮਾਈਕਰੋਫੋਨ, ਟਿਕਾਣਾ, ਸੂਚਨਾਵਾਂ ਜਾਂ ਆਪੇ-ਚਲਾਓ ਲਈ ਇਜਾਜ਼ਤਾਂ ਦੀ ਸੰਰਚਨਾ ਕਰੋ।
 policy-PictureInPicture = ਤਸਵੀਰ-ਚ-ਤਸਵੀਰ ਨੂੰ ਸਮਰੱਥ ਜਾਂ ਅਸਮਰੱਥ ਕਰੋ।
+policy-PopupBlocking2 = ਕੁਝ ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਪੌਪ-ਅੱਪ ਦਿਖਾਉਣ ਅਤੇ ਸੁਤੰਤਰ-ਧਿਰ ਫਰੇਮਾਂ ਲਈ ਰੀ-ਡਾਇਰੈਕਟ ਕਰਨ ਦੀ ਮਨਜ਼ੂਰੀ ਦਿਓ।
 policy-PopupBlocking = ਕੁਝ ਵੈਬਸਾਈਟਾਂ ਨੂੰ ਡਿਫੌਲਟ ਦੁਆਰਾ ਪੌਪਅਪਸ ਪ੍ਰਦਰਸ਼ਿਤ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿਓ।
 policy-Preferences = ਤਰਜੀਹਾਂ ਦੇ ਸਬਸੈਟ ਲਈ ਮੁੱਲ ਨੂੰ ਸੈਟ ਕਰੋ ਅਤੇ ਲਾਕ ਕਰੋ।
 policy-PrivateBrowsingModeAvailability = ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ ਕਰਨ ਦੇ ਢੰਗ ਦੀ ਮੌਜੂਦਗੀ ਸੈੱਟ ਕਰੋ।
 policy-PromptForDownloadLocation = ਡਾਊਨਲੋਡ ਕਰਨ ਵੇਲੇ ਫਾਈਲਾਂ ਨੂੰ ਕਿੱਥੇ ਸੁਰੱਖਿਅਤ ਕਰਨ ਦੇ ਬਾਰੇ ਪੁੱਛੋ।
 policy-Proxy = ਪਰਾਕਸੀ ਸੈਟਿੰਗਾਂ ਦੀ ਸੰਰਚਨਾ।
+policy-RelaunchRequired = ਦਿੱਤੇ ਸਮੇਂ ਵਿੱਚ { -brand-short-name } ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ ਅਤੇ ਵਰਤੋਂਕਾਰ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਹੋਣ ਦੇ ਬਾਰੇ ਸੂਚਿਤ ਕਰੋ।
 policy-RequestedLocales = ਤਰਜੀਹ ਦੇ ਅਨੁਸਾਰ ਅਰਜ਼ੀ ਲਈ ਲੋੜੀਦੇ ਲੋਕਲਾਂ ਦੀ ਸੂਚੀ ਸੈਟ ਕਰੋ।
 policy-SanitizeOnShutdown2 = ਬੰਦ ਕਰਨ ਸਮੇਂ ਨੈਵੀਗੇਸ਼ਨ ਡਾਟਾ ਸਾਫ਼ ਕਰੋ।
 policy-SearchBar = ਖੋਜ ਪੱਟੀ ਲਈ ਮੂਲ ਟਿਕਾਣਾ ਨਿਯਤ ਕਰੋ। ਵਰਤੋਂਕਾਰ ਹਾਲੇ ਵੀ ਇਸ ਨੂੰ ਆਪਣੀ ਪਸੰਦ ਮੁਤਾਬਕ ਬਦਲਣ ਲਈ ਆਗਿਆ ਹੁੰਦੀ ਹੈ।
@@ -136,6 +146,9 @@ policy-SearchSuggestEnabled = ਖੋਜ ਸੁਝਾਅ ਨੂੰ ਸਮਰੱ�
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = PKCS #11 ਮੋਡੀਊਲ ਜੋੜੋ ਜਾਂ ਹਟਾਓ।
 policy-ShowHomeButton = ਟੂਲ-ਪੱਟੀ ਉੱਤੇ ਮੁੱਖ ਬਟਨ ਦਿਖਾਓ।
+policy-SitePolicies = ਸਾਈਟ ਖਾਸ ਪਾਲਸੀਆਂ।
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = ਸ਼ੁਰੂ ਵੇਲੇ ਵਰਤਣ ਦੀਆਂ ਸ਼ਰਤਾਂ ਅਤੇ ਪਰਦੇਦਾਰੀ ਸੂਚਨਾ ਨਾ ਦਿਖਾਓ। ਤੁਸੀਂ ਦਰਸਾਇਆ ਹੈ ਕਿ ਤੁਸੀਂ ਮਨਜ਼ੂਰ ਕਰ ਲਿਆ ਹੈ ਅਤੇ ਇਸ ਬਰਾਊਜ਼ਰ ਨੂੰ ਜੋ ਵੀ ਵਰਤੇਗਾ, ਉਸ ਦੇ ਵਜੋਂ ਵਰਤਣ ਦੀਆਂ ਸ਼ਰਤਾਂ ਨੂੰ ਮਨਜ਼ੂਰ ਕਰਨ ਦਾ ਅਧਿਕਾਰ ਹੈ।
 policy-SSLVersionMax = ਵੱਧ ਤੋਂ ਵੱਧ SSL ਵਰਜ਼ਨ ਨਿਯਤ ਕਰੋ।
 policy-SSLVersionMin = ਘੱਟੋ ਘੱਟ SSL ਵਰਜ਼ਨ ਨਿਯਤ ਕਰੋ।
 policy-StartDownloadsInTempDirectory = ਡਾਊਨਲੋਡਾਂ ਨੂੰ ਮੂਲ ਡਾਊਨਲੋਡ ਡਾਇਰੈਕਟੜੀ ਦੀ ਬਜਾਏ ਲੋਕਲ, ਆਰਜ਼ੀ ਟਿਕਾਣੇ ਉੱਤੇ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਮਜ਼ਬੂਰ ਕਰੋ।
@@ -143,6 +156,11 @@ policy-SupportMenu = ਸਹਾਇਤਾ ਮੇਨੂ ਵਿੱਚ ਇੱਕ ਕ�
 policy-TranslateEnabled = ਵੈੱਬ-ਸਫ਼ੇ ਦੇ ਅਨੁਵਾਦ ਨੂੰ ਸਮਰੱਥ ਜਾਂ ਅਸਮਰੱਥ ਕਰੋ।
 policy-UserMessaging = ਵਰਤੋਂਕਾਰ ਨੂੰ ਕੁਝ ਸੁਨੇਹੇ ਨਾ ਵੇਖਾਓ।
 policy-UseSystemPrintDialog = ਸਿਸਟਮ ਪਰਿੰਟ ਡਾਈਲਾਗ ਨਾਲ ਪਰਿੰਟ ਕਰੋ।
+policy-VisualSearchEnabled = ਦਿੱਖ ਖੋਜ ਨੂੰ ਸਮਰੱਥ ਜਾਂ ਅਸਮਰੱਥ ਕਰੋ।
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = ਵੈਬਸਾਈਟ ਨੂੰ ਬਲਾਕ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰੋ। ਫੌਰਮੈਟ ਤੇ ਹੋਰ ਵੇਰਵਿਆਂ ਲਈ ਦਸਤਾਵੇਜ਼ ਵੇਖੋ।
 policy-Windows10SSO = Microsoft, ਕੰਮ ਤੇ ਸਕੂਲ ਖਾਤਿਆਂ ਲਈ Windows ਇਕਹੇਰੇ ਸਾਈਨ-ਆਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Microsoft Entra ਖਾਤਿਆਂ ਲਈ ਸਿੰਗਲ ਸਾਈਨ-ਆਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿੰਦਾ ਹੈ।
+# Do not translate "XSLTProcessor" as it is the name of an API interface.
+policy-XSLTEnabled = XSLTProcessor ਜਾਵਾਸਕ੍ਰਿਪਟ API ਅਤੇ XSLT ਪ੍ਰੋਸੈਸਿੰਗ ਹਦਾਇਤਾਂ ਲਈ ਸਹਿਯੋਗ ਨੂੰ ਸਮਰੱਥ ਜਾਂ ਅਸਮਰੱਥ ਕਰੋ।

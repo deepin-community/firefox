@@ -69,14 +69,13 @@
 /* Collapsed url */
 .url-preview tr.treeRow:first-child .treeLabelCell {
   font-weight: bold;
-  color: var(--theme-icon-dimmed-color);
+  color: var(--theme-comment);
 }
 
 .url-preview tr.treeRow .treeLabelCell {
   float: left;
   margin-right: -15px;
   padding: 0 2px 0 0;
-
 }
 .url-preview tr.treeRow .treeValueCell {
   display: inline;
@@ -92,7 +91,7 @@
 
 .url-preview .url-scheme,
 .url-preview .url-chars {
-  color: var(--theme-icon-dimmed-color);
+  color: var(--theme-comment);
 }
 
 .url-preview .url-params-name {

@@ -190,7 +190,7 @@ bool ParseClassDefFormat1(const ots::Font *font,
   if (!subtable.ReadU16(&start_glyph)) {
     return OTS_FAILURE_MSG("Failed to read starting glyph of class definition");
   }
-  if (start_glyph > num_glyphs) {
+  if (start_glyph >= num_glyphs) {
     return OTS_FAILURE_MSG("Bad starting glyph %d in class definition", start_glyph);
   }
 
@@ -281,7 +281,7 @@ bool ParseCoverageFormat1(const ots::Font *font,
     if (!subtable.ReadU16(&glyph)) {
       return OTS_FAILURE_MSG("Failed to read glyph %d in coverage", i);
     }
-    if (glyph > num_glyphs) {
+    if (glyph >= num_glyphs) {
       return OTS_FAILURE_MSG("bad glyph ID: %u", glyph);
     }
   }
@@ -386,7 +386,7 @@ bool ParseRuleSubtable(const ots::Font *font,
     if (!subtable.ReadU16(&glyph_id)) {
       return OTS_FAILURE_MSG("Failed to read glyph %d", i);
     }
-    if (glyph_id > num_glyphs) {
+    if (glyph_id >= num_glyphs) {
       return OTS_FAILURE_MSG("Bad glyph %d for entry %d", glyph_id, i);
     }
   }
@@ -662,7 +662,7 @@ bool ParseChainRuleSubtable(const ots::Font *font,
     if (!subtable.ReadU16(&glyph_id)) {
       return OTS_FAILURE_MSG("Failed to read backtrack glyph %d in chain rule subtable", i);
     }
-    if (glyph_id > num_glyphs) {
+    if (glyph_id >= num_glyphs) {
       return OTS_FAILURE_MSG("Bad glyph id %d for bactrack glyph %d in chain rule subtable", glyph_id, i);
     }
   }
@@ -679,7 +679,7 @@ bool ParseChainRuleSubtable(const ots::Font *font,
     if (!subtable.ReadU16(&glyph_id)) {
       return OTS_FAILURE_MSG("Failed to read input glyph %d in chain rule subtable", i);
     }
-    if (glyph_id > num_glyphs) {
+    if (glyph_id >= num_glyphs) {
       return OTS_FAILURE_MSG("Bad glyph id %d for input glyph %d in chain rule subtable", glyph_id, i);
     }
   }
@@ -693,7 +693,7 @@ bool ParseChainRuleSubtable(const ots::Font *font,
     if (!subtable.ReadU16(&glyph_id)) {
       return OTS_FAILURE_MSG("Failed to read lookahead glyph %d in chain rule subtable", i);
     }
-    if (glyph_id > num_glyphs) {
+    if (glyph_id >= num_glyphs) {
       return OTS_FAILURE_MSG("Bad glyph id %d for lookadhead glyph %d in chain rule subtable", glyph_id, i);
     }
   }
@@ -1145,11 +1145,15 @@ bool ParseConditionTable(const ots::Font *font,
     return OTS_FAILURE_MSG("Axis index out of range in condition");
   }
 
-  // Check min/max values are within range -1.0 .. 1.0 and properly ordered
+  // Check min/max values are within range -1.0 .. 1.0.
   if (filter_range_min_value < -0x4000 || // -1.0 in F2DOT14 format
-      filter_range_max_value > 0x4000 || // +1.0 in F2DOT14 format
-      filter_range_min_value > filter_range_max_value) {
+      filter_range_max_value > 0x4000) { // +1.0 in F2DOT14 format
     return OTS_FAILURE_MSG("Invalid filter range in condition");
+  }
+
+  // Warn if range is improperly ordered (and therefore useless).
+  if (filter_range_min_value > filter_range_max_value) {
+    OTS_WARNING("Misordered filter range in condition table");
   }
 
   return true;

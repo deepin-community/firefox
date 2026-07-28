@@ -1,54 +1,63 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/AbstractRange.h"
-#include "mozilla/dom/AbstractRangeBinding.h"
-#include "mozilla/dom/ShadowIncludingTreeIterator.h"
 
 #include "mozilla/Assertions.h"
-#include "mozilla/Attributes.h"
+#include "mozilla/ContentIterator.h"
+#include "mozilla/PresShell.h"
 #include "mozilla/RangeUtils.h"
+#include "mozilla/SelectionMovementUtils.h"
+#include "mozilla/dom/AbstractRangeBinding.h"
 #include "mozilla/dom/ChildIterator.h"
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/StaticRange.h"
-#include "mozilla/dom/Selection.h"
 #include "mozilla/dom/CrossShadowBoundaryRange.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/DocumentInlines.h"
+#include "mozilla/dom/Selection.h"
+#include "mozilla/dom/ShadowIncludingTreeIterator.h"
+#include "mozilla/dom/StaticRange.h"
+#include "mozilla/dom/TreeIterator.h"
 #include "nsContentUtils.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsGkAtoms.h"
+#include "nsFmtString.h"
 #include "nsINode.h"
+#include "nsLayoutUtils.h"
 #include "nsRange.h"
 #include "nsTArray.h"
+#include "nsTextFrame.h"
 
 namespace mozilla::dom {
 
 template nsresult AbstractRange::SetStartAndEndInternal(
     const RangeBoundary& aStartBoundary, const RangeBoundary& aEndBoundary,
-    nsRange* aRange);
+    nsRange* aRange, AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 template nsresult AbstractRange::SetStartAndEndInternal(
     const RangeBoundary& aStartBoundary, const RawRangeBoundary& aEndBoundary,
-    nsRange* aRange);
+    nsRange* aRange, AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 template nsresult AbstractRange::SetStartAndEndInternal(
     const RawRangeBoundary& aStartBoundary, const RangeBoundary& aEndBoundary,
-    nsRange* aRange);
+    nsRange* aRange, AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 template nsresult AbstractRange::SetStartAndEndInternal(
     const RawRangeBoundary& aStartBoundary,
-    const RawRangeBoundary& aEndBoundary, nsRange* aRange);
+    const RawRangeBoundary& aEndBoundary, nsRange* aRange,
+    AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 template nsresult AbstractRange::SetStartAndEndInternal(
     const RangeBoundary& aStartBoundary, const RangeBoundary& aEndBoundary,
-    StaticRange* aRange);
+    StaticRange* aRange,
+    AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 template nsresult AbstractRange::SetStartAndEndInternal(
     const RangeBoundary& aStartBoundary, const RawRangeBoundary& aEndBoundary,
-    StaticRange* aRange);
+    StaticRange* aRange,
+    AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 template nsresult AbstractRange::SetStartAndEndInternal(
     const RawRangeBoundary& aStartBoundary, const RangeBoundary& aEndBoundary,
-    StaticRange* aRange);
+    StaticRange* aRange,
+    AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 template nsresult AbstractRange::SetStartAndEndInternal(
     const RawRangeBoundary& aStartBoundary,
-    const RawRangeBoundary& aEndBoundary, StaticRange* aRange);
+    const RawRangeBoundary& aEndBoundary, StaticRange* aRange,
+    AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary);
 template bool AbstractRange::MaybeCacheToReuse(nsRange& aInstance);
 template bool AbstractRange::MaybeCacheToReuse(StaticRange& aInstance);
 template bool AbstractRange::MaybeCacheToReuse(
@@ -77,8 +86,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(AbstractRange)
   // This may introduce additional overhead which is not needed when unlinking,
   // therefore this is done here beforehand.
   if (tmp->mRegisteredClosestCommonInclusiveAncestor) {
-    tmp->UnregisterClosestCommonInclusiveAncestor(
-        tmp->mRegisteredClosestCommonInclusiveAncestor, true);
+    tmp->UnregisterClosestCommonInclusiveAncestor(IsUnlinking::Yes);
   }
   MOZ_DIAGNOSTIC_ASSERT(!tmp->isInList(),
                         "Shouldn't be registered now that we're unlinking");
@@ -92,32 +100,42 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(AbstractRange)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mRegisteredClosestCommonInclusiveAncestor)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
-// When aMarkDesendants is true, Set
-// DescendantOfClosestCommonInclusiveAncestorForRangeInSelection flag for the
-// shadow including children of aNode. When aMarkDesendants is false, unset that
-// flag for the shadow including children of aNode.
-void UpdateDescendantsByShadowIncludingOrder(const nsIContent& aNode,
-                                             bool aMarkDesendants) {
-  ShadowIncludingTreeIterator iter(*const_cast<nsIContent*>(&aNode));
-  ++iter;  // We don't want to mark the root node
-
-  while (iter) {
-    nsINode* node = *iter;
-    if (aMarkDesendants) {
+void AbstractRange::UpdateDescendantsInFlattenedTree(nsINode& aNode,
+                                                     bool aMarkDescendants) {
+  auto UpdateDescendant = [aMarkDescendants](nsINode* node) {
+    if (aMarkDescendants) {
       node->SetDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
     } else {
       node->ClearDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
     }
+  };
 
-    if (node->IsClosestCommonInclusiveAncestorForRangeInSelection()) {
-      iter.SkipChildren();
-      continue;
+  nsINode* target = &aNode;
+
+  if (target->IsDocument()) {
+    if (auto* rootElement = aNode.AsDocument()->GetRootElement()) {
+      target = rootElement;
+      UpdateDescendant(target);
     }
-    ++iter;
+  }
+
+  if (!target || !target->IsContent()) {
+    return;
+  }
+
+  TreeIterator<FlattenedChildIterator> iter(*target->AsContent());
+  iter.GetNext();  // Skip aNode itself.
+  while (nsIContent* curNode = iter.GetCurrent()) {
+    UpdateDescendant(curNode);
+    if (curNode->IsClosestCommonInclusiveAncestorForRangeInSelection()) {
+      iter.GetNextSkippingChildren();
+    } else {
+      iter.GetNext();
+    }
   }
 }
 
-void AbstractRange::MarkDescendants(const nsINode& aNode) {
+void AbstractRange::MarkDescendants(nsINode& aNode) {
   // Set NodeIsDescendantOfClosestCommonInclusiveAncestorForRangeInSelection on
   // aNode's descendants unless aNode is already marked as a range common
   // ancestor or a descendant of one, in which case all of our descendants have
@@ -125,67 +143,29 @@ void AbstractRange::MarkDescendants(const nsINode& aNode) {
   if (!aNode.IsMaybeSelected()) {
     // If aNode has a web-exposed shadow root, use this shadow tree and ignore
     // the children of aNode.
-    if (aNode.GetShadowRootForSelection()) {
-      UpdateDescendantsByShadowIncludingOrder(*aNode.AsContent(), true);
-      return;
-    }
-    // don't set the Descendant bit on |aNode| itself
-    nsINode* node = aNode.GetNextNode(&aNode);
-    while (node) {
-      node->SetDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
-      if (!node->IsClosestCommonInclusiveAncestorForRangeInSelection()) {
-        if (StaticPrefs::dom_shadowdom_selection_across_boundary_enabled()) {
-          UpdateDescendantsByShadowIncludingOrder(*node->AsContent(), true);
-          // sub-tree of node has been marked already
-          node = node->GetNextNonChildNode(&aNode);
-        } else {
-          node = node->GetNextNode(&aNode);
-        }
-      } else {
-        // optimize: skip this sub-tree since it's marked already.
-        node = node->GetNextNonChildNode(&aNode);
-      }
-    }
+
+    UpdateDescendantsInFlattenedTree(aNode, true /* aMarkDescendants */);
   }
 }
 
-void AbstractRange::UnmarkDescendants(const nsINode& aNode) {
+void AbstractRange::UnmarkDescendants(nsINode& aNode) {
   // Unset NodeIsDescendantOfClosestCommonInclusiveAncestorForRangeInSelection
   // on aNode's descendants unless aNode is a descendant of another range common
   // ancestor. Also, exclude descendants of range common ancestors (but not the
   // common ancestor itself).
   if (!aNode
            .IsDescendantOfClosestCommonInclusiveAncestorForRangeInSelection()) {
-    // If aNode has a web-exposed shadow root, use this shadow tree and ignore
-    // the children of aNode.
-    if (aNode.GetShadowRootForSelection()) {
-      UpdateDescendantsByShadowIncludingOrder(*aNode.AsContent(), false);
-      return;
-    }
-    // we know |aNode| doesn't have any bit set
-    nsINode* node = aNode.GetNextNode(&aNode);
-    while (node) {
-      node->ClearDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
-      if (!node->IsClosestCommonInclusiveAncestorForRangeInSelection()) {
-        if (StaticPrefs::dom_shadowdom_selection_across_boundary_enabled()) {
-          UpdateDescendantsByShadowIncludingOrder(*node->AsContent(), false);
-          // sub-tree has been marked already
-          node = node->GetNextNonChildNode(&aNode);
-        } else {
-          node = node->GetNextNode(&aNode);
-        }
-      } else {
-        // We found an ancestor of an overlapping range, skip its descendants.
-        node = node->GetNextNonChildNode(&aNode);
-      }
-    }
+    UpdateDescendantsInFlattenedTree(aNode, false /* aMarkDescendants */);
   }
 }
 
 // NOTE: If you need to change default value of members of AbstractRange,
 //       update nsRange::Create(nsINode* aNode) and ClearForReuse() too.
-AbstractRange::AbstractRange(nsINode* aNode, bool aIsDynamicRange)
-    : mRegisteredClosestCommonInclusiveAncestor(nullptr),
+AbstractRange::AbstractRange(nsINode* aNode, bool aIsDynamicRange,
+                             TreeKind aBoundaryTreeKind)
+    : mStart(aBoundaryTreeKind),
+      mEnd(aBoundaryTreeKind),
+      mRegisteredClosestCommonInclusiveAncestor(nullptr),
       mIsPositioned(false),
       mIsGenerated(false),
       mCalledByJS(false),
@@ -250,17 +230,15 @@ nsINode* AbstractRange::GetClosestCommonInclusiveAncestor(
   if (!mIsPositioned) {
     return nullptr;
   }
-  nsINode* startContainer =
-      aAllowCrossShadowBoundary == AllowRangeCrossShadowBoundary::Yes
-          ? GetMayCrossShadowBoundaryStartContainer()
-          : GetStartContainer();
-  nsINode* endContainer =
-      aAllowCrossShadowBoundary == AllowRangeCrossShadowBoundary::Yes
-          ? GetMayCrossShadowBoundaryEndContainer()
-          : GetEndContainer();
+  nsINode* startContainer = ShadowDOMSelectionHelpers::GetStartContainer(
+      this, aAllowCrossShadowBoundary);
+  nsINode* endContainer = ShadowDOMSelectionHelpers::GetEndContainer(
+      this, aAllowCrossShadowBoundary);
 
-  if (MayCrossShadowBoundary() &&
-      aAllowCrossShadowBoundary == AllowRangeCrossShadowBoundary::Yes) {
+  if (aAllowCrossShadowBoundary == AllowRangeCrossShadowBoundary::Yes) {
+    if (startContainer == endContainer) {
+      return startContainer;
+    }
     // Since both the start container and the end container are
     // guaranteed to be in the same composed document.
     // If one of the boundary is a document, use that document
@@ -308,14 +286,15 @@ template <typename SPT, typename SRT, typename EPT, typename ERT,
           typename RangeType>
 nsresult AbstractRange::SetStartAndEndInternal(
     const RangeBoundaryBase<SPT, SRT>& aStartBoundary,
-    const RangeBoundaryBase<EPT, ERT>& aEndBoundary, RangeType* aRange) {
+    const RangeBoundaryBase<EPT, ERT>& aEndBoundary, RangeType* aRange,
+    AllowRangeCrossShadowBoundary aAllowCrossShadowBoundary) {
   if (NS_WARN_IF(!aStartBoundary.IsSet()) ||
       NS_WARN_IF(!aEndBoundary.IsSet())) {
     return NS_ERROR_INVALID_ARG;
   }
 
   nsINode* newStartRoot =
-      RangeUtils::ComputeRootNode(aStartBoundary.Container());
+      RangeUtils::ComputeRootNode(aStartBoundary.GetContainer());
   if (!newStartRoot) {
     return NS_ERROR_DOM_INVALID_NODE_TYPE_ERR;
   }
@@ -323,7 +302,7 @@ nsresult AbstractRange::SetStartAndEndInternal(
     return NS_ERROR_DOM_INDEX_SIZE_ERR;
   }
 
-  if (aStartBoundary.Container() == aEndBoundary.Container()) {
+  if (aStartBoundary.GetContainer() == aEndBoundary.GetContainer()) {
     if (!aEndBoundary.IsSetAndValid()) {
       return NS_ERROR_DOM_INDEX_SIZE_ERR;
     }
@@ -341,7 +320,8 @@ nsresult AbstractRange::SetStartAndEndInternal(
     return NS_OK;
   }
 
-  nsINode* newEndRoot = RangeUtils::ComputeRootNode(aEndBoundary.Container());
+  nsINode* newEndRoot =
+      RangeUtils::ComputeRootNode(aEndBoundary.GetContainer());
   if (!newEndRoot) {
     return NS_ERROR_DOM_INVALID_NODE_TYPE_ERR;
   }
@@ -365,20 +345,46 @@ nsresult AbstractRange::SetStartAndEndInternal(
       // Don't create the cross shadow bounday range if the one of the roots is
       // an UA widget regardless whether the boundaries are allowed to cross
       // shadow boundary or not.
-      if (!IsRootUAWidget(newStartRoot) && !IsRootUAWidget(newEndRoot)) {
+      if (aAllowCrossShadowBoundary == AllowRangeCrossShadowBoundary::Yes &&
+          !IsRootUAWidget(newStartRoot) && !IsRootUAWidget(newEndRoot)) {
+        const auto startInFlat =
+            aStartBoundary.AsRangeBoundaryInFlatTree(RangeBoundaryFor::Start);
+        const auto endInFlat =
+            aEndBoundary.AsRangeBoundaryInFlatTree(RangeBoundaryFor::End);
+        if (MOZ_UNLIKELY(!startInFlat.IsSet() || !endInFlat.IsSet())) {
+          NS_WARNING_ASSERTION(
+              !startInFlat.IsSet(),
+              nsFmtCString(
+                  FMT_STRING("aStartBoundary={} could not convert to a "
+                             "point in the flat tree"),
+                  aStartBoundary)
+                  .get());
+          NS_WARNING_ASSERTION(
+              !endInFlat.IsSet(),
+              nsFmtCString(FMT_STRING("aEndBoundary={} could not convert to a "
+                                      "point in the flat tree"),
+                           aEndBoundary)
+                  .get());
+          return NS_ERROR_FAILURE;
+        }
         aRange->AsDynamicRange()
-            ->CreateOrUpdateCrossShadowBoundaryRangeIfNeeded(aStartBoundary,
-                                                             aEndBoundary);
+            ->CreateOrUpdateCrossShadowBoundaryRangeIfNeeded(startInFlat,
+                                                             endInFlat);
       }
     }
     return NS_OK;
   }
 
+  const bool useFlatTree =
+      aAllowCrossShadowBoundary == AllowRangeCrossShadowBoundary::Yes;
   const Maybe<int32_t> pointOrder =
-      nsContentUtils::ComparePoints(aStartBoundary, aEndBoundary);
+      useFlatTree ? nsContentUtils::ComparePoints<TreeKind::Flat>(
+                        aStartBoundary, aEndBoundary)
+                  : nsContentUtils::ComparePoints<TreeKind::ShadowIncludingDOM>(
+                        aStartBoundary, aEndBoundary);
   if (!pointOrder) {
     // Safely return a value but also detected this in debug builds.
-    MOZ_ASSERT_UNREACHABLE();
+    MOZ_ASSERT_UNREACHABLE("The boundaries are not connected");
     return NS_ERROR_INVALID_ARG;
   }
 
@@ -389,8 +395,60 @@ nsresult AbstractRange::SetStartAndEndInternal(
     return NS_OK;
   }
 
-  // Otherwise, set the range as specified.
-  aRange->DoSetRange(aStartBoundary, aEndBoundary, newStartRoot);
+  // Otherwise, set the range as specified.  However, the order may be opposite
+  // in the same tree if the given range is for the flat tree.  Thus, we need to
+  // recompute the order within the same tree if we computed the order in the
+  // flat tree.
+  if (!useFlatTree) {
+    aRange->DoSetRange(aStartBoundary, aEndBoundary, newStartRoot);
+  } else {
+    const Maybe<int32_t> pointOrderInSameTree =
+        nsContentUtils::ComparePoints<TreeKind::DOM>(aStartBoundary,
+                                                     aEndBoundary);
+    if (MOZ_UNLIKELY(pointOrderInSameTree.isNothing())) {
+      MOZ_ASSERT_UNREACHABLE(
+          "The boundaries are not connected in the same DOM tree");
+      aRange->DoSetRange(aEndBoundary, aEndBoundary, newStartRoot);
+    } else if (*pointOrderInSameTree != 1) {
+      aRange->DoSetRange(aStartBoundary, aEndBoundary, newStartRoot);
+    } else {
+      aRange->DoSetRange(aEndBoundary, aStartBoundary, newStartRoot);
+    }
+  }
+
+  if (aAllowCrossShadowBoundary == AllowRangeCrossShadowBoundary::Yes &&
+      aRange->IsDynamicRange()) {
+    const bool isCollapsing = aStartBoundary == aEndBoundary;
+    const auto startInFlat = aStartBoundary
+                                 .AsRangeBoundaryInFlatTree(
+                                     isCollapsing ? RangeBoundaryFor::Collapsed
+                                                  : RangeBoundaryFor::Start)
+                                 .AsRaw();
+    const auto endInFlat =
+        isCollapsing
+            ? startInFlat
+            : aEndBoundary.AsRangeBoundaryInFlatTree(RangeBoundaryFor::End)
+                  .AsRaw();
+    if (MOZ_UNLIKELY(!startInFlat.IsSet() || !endInFlat.IsSet())) {
+      NS_WARNING_ASSERTION(
+          !startInFlat.IsSet(),
+          nsFmtCString(FMT_STRING("aStartBoundary={} could not convert to a "
+                                  "point in the flat tree"),
+                       aStartBoundary)
+              .get());
+      NS_WARNING_ASSERTION(
+          !endInFlat.IsSet(),
+          nsFmtCString(FMT_STRING("aEndBoundary={} could not convert to a "
+                                  "point in the flat tree"),
+                       aEndBoundary)
+              .get());
+      return NS_ERROR_FAILURE;
+    }
+
+    aRange->AsDynamicRange()->CreateOrUpdateCrossShadowBoundaryRangeIfNeeded(
+        startInFlat, endInFlat);
+  }
+
   return NS_OK;
 }
 
@@ -404,11 +462,11 @@ void AbstractRange::RegisterSelection(Selection& aSelection) {
   }
   bool isFirstSelection = mSelections.IsEmpty();
   mSelections.AppendElement(&aSelection);
-  if (isFirstSelection && !mRegisteredClosestCommonInclusiveAncestor) {
-    nsINode* commonAncestor = GetClosestCommonInclusiveAncestor(
-        StaticPrefs::dom_shadowdom_selection_across_boundary_enabled()
-            ? AllowRangeCrossShadowBoundary::Yes
-            : AllowRangeCrossShadowBoundary::No);
+  const bool isValidRange = !IsStaticRange() || AsStaticRange()->IsValid();
+  if (isFirstSelection && !mRegisteredClosestCommonInclusiveAncestor &&
+      isValidRange) {
+    nsINode* commonAncestor =
+        GetClosestCommonInclusiveAncestor(AllowRangeCrossShadowBoundary::Yes);
     MOZ_ASSERT(commonAncestor, "unexpected disconnected nodes");
     RegisterClosestCommonInclusiveAncestor(commonAncestor);
   }
@@ -418,11 +476,11 @@ const nsTArray<WeakPtr<Selection>>& AbstractRange::GetSelections() const {
   return mSelections;
 }
 
-void AbstractRange::UnregisterSelection(const Selection& aSelection) {
+void AbstractRange::UnregisterSelection(const Selection& aSelection,
+                                        IsUnlinking aIsUnlinking) {
   mSelections.RemoveElement(&aSelection);
   if (mSelections.IsEmpty() && mRegisteredClosestCommonInclusiveAncestor) {
-    UnregisterClosestCommonInclusiveAncestor(
-        mRegisteredClosestCommonInclusiveAncestor, false);
+    UnregisterClosestCommonInclusiveAncestor(aIsUnlinking);
     MOZ_DIAGNOSTIC_ASSERT(
         !mRegisteredClosestCommonInclusiveAncestor,
         "How can we have a registered common ancestor when we "
@@ -456,17 +514,17 @@ void AbstractRange::RegisterClosestCommonInclusiveAncestor(nsINode* aNode) {
 }
 
 void AbstractRange::UnregisterClosestCommonInclusiveAncestor(
-    nsINode* aNode, bool aIsUnlinking) {
-  MOZ_ASSERT(aNode, "bad arg");
-  NS_ASSERTION(aNode->IsClosestCommonInclusiveAncestorForRangeInSelection(),
-               "wrong node");
-  MOZ_DIAGNOSTIC_ASSERT(aNode == mRegisteredClosestCommonInclusiveAncestor,
-                        "wrong node");
-  LinkedList<AbstractRange>* ranges =
-      aNode->GetExistingClosestCommonInclusiveAncestorRanges();
-  MOZ_ASSERT(ranges);
-
+    IsUnlinking aIsUnlinking) {
+  if (!mRegisteredClosestCommonInclusiveAncestor) {
+    return;
+  }
+  nsCOMPtr oldClosestCommonInclusiveAncestor =
+      mRegisteredClosestCommonInclusiveAncestor;
   mRegisteredClosestCommonInclusiveAncestor = nullptr;
+  LinkedList<AbstractRange>* ranges =
+      oldClosestCommonInclusiveAncestor
+          ->GetExistingClosestCommonInclusiveAncestorRanges();
+  MOZ_ASSERT(ranges);
 
 #ifdef DEBUG
   bool found = false;
@@ -484,10 +542,12 @@ void AbstractRange::UnregisterClosestCommonInclusiveAncestor(
 
   // We don't want to waste time unmarking flags on nodes that are
   // being unlinked anyway.
-  if (!aIsUnlinking && ranges->isEmpty()) {
-    aNode->ClearClosestCommonInclusiveAncestorForRangeInSelection();
-    UnmarkDescendants(*aNode);
+  if (aIsUnlinking == IsUnlinking::No && ranges->isEmpty()) {
+    oldClosestCommonInclusiveAncestor
+        ->ClearClosestCommonInclusiveAncestorForRangeInSelection();
+    UnmarkDescendants(*oldClosestCommonInclusiveAncestor);
   }
+  oldClosestCommonInclusiveAncestor = nullptr;
 }
 
 void AbstractRange::UpdateCommonAncestorIfNecessary() {
@@ -495,9 +555,8 @@ void AbstractRange::UpdateCommonAncestorIfNecessary() {
   nsINode* newCommonAncestor =
       GetClosestCommonInclusiveAncestor(AllowRangeCrossShadowBoundary::Yes);
   if (newCommonAncestor != oldCommonAncestor) {
-    if (oldCommonAncestor) {
-      UnregisterClosestCommonInclusiveAncestor(oldCommonAncestor, false);
-    }
+    UnregisterClosestCommonInclusiveAncestor();
+
     if (newCommonAncestor) {
       RegisterClosestCommonInclusiveAncestor(newCommonAncestor);
     } else {
@@ -539,13 +598,13 @@ nsIContent* AbstractRange::GetMayCrossShadowBoundaryChildAtEndOffset() const {
 nsINode* AbstractRange::GetMayCrossShadowBoundaryStartContainer() const {
   return IsDynamicRange()
              ? AsDynamicRange()->GetMayCrossShadowBoundaryStartContainer()
-             : mStart.Container();
+             : mStart.GetContainer();
 }
 
 nsINode* AbstractRange::GetMayCrossShadowBoundaryEndContainer() const {
   return IsDynamicRange()
              ? AsDynamicRange()->GetMayCrossShadowBoundaryEndContainer()
-             : mEnd.Container();
+             : mEnd.GetContainer();
 }
 
 bool AbstractRange::MayCrossShadowBoundary() const {
@@ -594,8 +653,8 @@ bool AbstractRange::AreNormalRangeAndCrossShadowBoundaryRangeCollapsed() const {
 
 void AbstractRange::ClearForReuse() {
   mOwner = nullptr;
-  mStart = RangeBoundary();
-  mEnd = RangeBoundary();
+  mStart = RangeBoundary(mStart.GetTreeKind());
+  mEnd = RangeBoundary(mEnd.GetTreeKind());
   mIsPositioned = false;
   mIsGenerated = false;
   mCalledByJS = false;
@@ -609,4 +668,375 @@ bool AbstractRange::IsRootUAWidget(const nsINode* aRoot) {
   }
   return false;
 }
+
+already_AddRefed<StaticRange> AbstractRange::GetShrunkenRangeToVisibleLeaves()
+    const {
+  if (NS_WARN_IF(!IsPositioned()) || NS_WARN_IF(Collapsed()) ||
+      NS_WARN_IF(IsStaticRange() && !AsStaticRange()->IsValid())) {
+    return nullptr;
+  }
+
+  const RawRangeBoundary startBoundary =
+      SelectionMovementUtils::GetFirstVisiblePointAtLeaf(*this);
+  if (MOZ_UNLIKELY(!startBoundary.IsSet())) {
+    return nullptr;
+  }
+  const RawRangeBoundary endBoundary =
+      SelectionMovementUtils::GetLastVisiblePointAtLeaf(*this);
+  if (MOZ_UNLIKELY(!endBoundary.IsSet())) {
+    return nullptr;
+  }
+  IgnoredErrorResult error;
+  RefPtr<StaticRange> range =
+      StaticRange::Create(startBoundary, endBoundary, error);
+  if (NS_WARN_IF(error.Failed())) {
+    error.SuppressException();
+    return nullptr;
+  }
+  return range.forget();
+}
+
+static void ExtractRectFromOffset(nsIFrame* aFrame, const int32_t aOffset,
+                                  nsRect* aR, bool aFlushToOriginEdge,
+                                  bool aClampToEdge) {
+  MOZ_ASSERT(aFrame);
+  MOZ_ASSERT(aR);
+
+  nsPoint point;
+  aFrame->GetPointFromOffset(aOffset, &point);
+
+  // Determine if aFrame has a vertical writing mode, which will change our math
+  // on the output rect.
+  bool isVertical = aFrame->GetWritingMode().IsVertical();
+
+  if (!aClampToEdge && !aR->Contains(point)) {
+    // If point is outside aR, and we aren't clamping, output an empty rect
+    // with origin at the point.
+    if (isVertical) {
+      aR->SetHeight(0);
+      aR->y = point.y;
+    } else {
+      aR->SetWidth(0);
+      aR->x = point.x;
+    }
+    return;
+  }
+
+  if (aClampToEdge) {
+    point = aR->ClampPoint(point);
+  }
+
+  // point is within aR, and now we'll modify aR to output a rect that has point
+  // on one edge. But which edge?
+  if (aFlushToOriginEdge) {
+    // The output rect should be flush to the edge of aR that contains the
+    // origin.
+    if (isVertical) {
+      aR->SetHeight(point.y - aR->y);
+    } else {
+      aR->SetWidth(point.x - aR->x);
+    }
+  } else {
+    // The output rect should be flush to the edge of aR opposite the origin.
+    if (isVertical) {
+      aR->SetHeight(aR->YMost() - point.y);
+      aR->y = point.y;
+    } else {
+      aR->SetWidth(aR->XMost() - point.x);
+      aR->x = point.x;
+    }
+  }
+}
+
+static nsTextFrame* GetTextFrameForContent(nsIContent* aContent) {
+  return do_QueryFrame(aContent->GetPrimaryFrame());
+}
+
+static void GetPartialTextRect(RectCallback* aCallback,
+                               Sequence<nsString>* aTextList,
+                               nsIContent* aContent, int32_t aStartOffset,
+                               int32_t aEndOffset, bool aClampToEdge) {
+  nsTextFrame* textFrame = GetTextFrameForContent(aContent);
+  if (!textFrame) {
+    return;
+  }
+  nsIFrame* relativeTo =
+      nsLayoutUtils::GetContainingBlockForClientRect(textFrame);
+
+  for (nsTextFrame* f = textFrame->FindContinuationForOffset(aStartOffset); f;
+       f = static_cast<nsTextFrame*>(f->GetNextContinuation())) {
+    int32_t fstart = f->GetContentOffset(), fend = f->GetContentEnd();
+    if (fend <= aStartOffset) {
+      continue;
+    }
+    if (fstart >= aEndOffset) {
+      break;
+    }
+
+    // Calculate the text content offsets we'll need if text is requested.
+    int32_t textContentStart = fstart;
+    int32_t textContentEnd = fend;
+
+    // overlapping with the offset we want
+    f->EnsureTextRun(nsTextFrame::eInflated);
+    gfxTextRun* run = f->GetTextRun(nsTextFrame::eInflated);
+    if (NS_WARN_IF(!run)) {
+      continue;
+    }
+    bool topLeftToBottomRight = !run->IsInlineReversed();
+    nsRect r = f->GetRectRelativeToSelf();
+    if (fstart < aStartOffset) {
+      // aStartOffset is within this frame
+      ExtractRectFromOffset(f, aStartOffset, &r, !topLeftToBottomRight,
+                            aClampToEdge);
+      textContentStart = aStartOffset;
+    }
+    if (fend > aEndOffset) {
+      // aEndOffset is in the middle of this frame
+      ExtractRectFromOffset(f, aEndOffset, &r, topLeftToBottomRight,
+                            aClampToEdge);
+      textContentEnd = aEndOffset;
+    }
+    r = nsLayoutUtils::TransformFrameRectToAncestor(f, r, relativeTo);
+    aCallback->AddRect(r);
+
+    // Finally capture the text, if requested.
+    if (aTextList) {
+      nsIFrame::RenderedText renderedText =
+          f->GetRenderedText(textContentStart, textContentEnd,
+                             nsIFrame::TextOffsetType::OffsetsInContentText,
+                             nsIFrame::TrailingWhitespace::DontTrim);
+
+      if (!aTextList->AppendElement(renderedText.mString, fallible)) {
+        return;
+      }
+    }
+  }
+}
+
+static void CollectClientRectsForSubtree(
+    nsINode* aNode, RectCallback* aCollector, Sequence<nsString>* aTextList,
+    nsINode* aStartContainer, uint32_t aStartOffset, nsINode* aEndContainer,
+    uint32_t aEndOffset, bool aClampToEdge, bool aTextOnly) {
+  auto* content = nsIContent::FromNode(aNode);
+  if (!content) {
+    return;
+  }
+
+  const bool isText = content->IsText();
+  if (isText) {
+    if (aNode == aStartContainer) {
+      int32_t offset = aStartContainer == aEndContainer
+                           ? static_cast<int32_t>(aEndOffset)
+                           : content->AsText()->TextDataLength();
+      GetPartialTextRect(aCollector, aTextList, content,
+                         static_cast<int32_t>(aStartOffset), offset,
+                         aClampToEdge);
+      return;
+    }
+
+    if (aNode == aEndContainer) {
+      GetPartialTextRect(aCollector, aTextList, content, 0,
+                         static_cast<int32_t>(aEndOffset), aClampToEdge);
+      return;
+    }
+  }
+
+  if (nsIFrame* frame = content->GetPrimaryFrame()) {
+    if (!aTextOnly || isText) {
+      nsLayoutUtils::GetAllInFlowRectsAndTexts(
+          frame, nsLayoutUtils::GetContainingBlockForClientRect(frame),
+          aCollector, aTextList,
+          nsLayoutUtils::GetAllInFlowRectsFlag::AccountForTransforms);
+      if (isText) {
+        return;
+      }
+      aTextOnly = true;
+      // We just get the text when calling GetAllInFlowRectsAndTexts, so we
+      // don't need to call it again when visiting the children.
+      aTextList = nullptr;
+    }
+  } else if (!content->IsElement() ||
+             !content->AsElement()->IsDisplayContents()) {
+    return;
+  }
+
+  FlattenedChildIterator childIter(content);
+  for (nsIContent* child = childIter.GetNextChild(); child;
+       child = childIter.GetNextChild()) {
+    CollectClientRectsForSubtree(child, aCollector, aTextList, aStartContainer,
+                                 aStartOffset, aEndContainer, aEndOffset,
+                                 aClampToEdge, aTextOnly);
+  }
+}
+
+/* static */
+void AbstractRange::CollectClientRectsAndText(
+    RectCallback* aCollector, Sequence<nsString>* aTextList,
+    AbstractRange* aRange, nsINode* aStartContainer, uint32_t aStartOffset,
+    nsINode* aEndContainer, uint32_t aEndOffset, bool aClampToEdge,
+    bool aFlushLayout) {
+  // Currently, this method is called with start of end offset of AbstractRange.
+  // So, they must be between 0 - INT32_MAX.
+  MOZ_ASSERT(RangeUtils::IsValidOffset(aStartOffset));
+  MOZ_ASSERT(RangeUtils::IsValidOffset(aEndOffset));
+
+  // Hold strong pointers across the flush
+  nsCOMPtr<nsINode> startContainer = aStartContainer;
+  nsCOMPtr<nsINode> endContainer = aEndContainer;
+
+  // Flush out layout so our frames are up to date.
+  if (!aStartContainer->IsInComposedDoc()) {
+    return;
+  }
+
+  if (aFlushLayout) {
+    if (auto* content = nsIContent::FromNode(aStartContainer)) {
+      content->GetPrimaryFrame(FlushType::Layout);
+    } else {
+      aStartContainer->OwnerDoc()->FlushPendingNotifications(FlushType::Layout);
+    }
+    // Recheck whether we're still in the document
+    if (!aStartContainer->IsInComposedDoc()) {
+      return;
+    }
+  }
+
+  RangeSubtreeIterator iter;
+
+  if (NS_FAILED(iter.Init(aRange))) {
+    return;
+  }
+
+  if (iter.IsDone()) {
+    // the range is collapsed, only continue if the cursor is in a text node
+    if (!aStartContainer->IsText()) {
+      return;
+    }
+    nsTextFrame* textFrame = GetTextFrameForContent(aStartContainer->AsText());
+    if (!textFrame) {
+      return;
+    }
+    int32_t outOffset = 0;
+    nsIFrame* outFrame = nullptr;
+    textFrame->GetChildFrameContainingOffset(static_cast<int32_t>(aStartOffset),
+                                             false, &outOffset, &outFrame);
+    if (!outFrame) {
+      return;
+    }
+    nsIFrame* relativeTo =
+        nsLayoutUtils::GetContainingBlockForClientRect(outFrame);
+    nsRect r = outFrame->GetRectRelativeToSelf();
+    ExtractRectFromOffset(outFrame, static_cast<int32_t>(aStartOffset), &r,
+                          false, aClampToEdge);
+    r.SetWidth(0);
+    r = nsLayoutUtils::TransformFrameRectToAncestor(outFrame, r, relativeTo);
+    aCollector->AddRect(r);
+    return;
+  }
+
+  do {
+    nsCOMPtr<nsINode> node = iter.GetCurrentNode();
+    iter.Next();
+
+    CollectClientRectsForSubtree(node, aCollector, aTextList, aStartContainer,
+                                 aStartOffset, aEndContainer, aEndOffset,
+                                 aClampToEdge, false);
+  } while (!iter.IsDone());
+}
+
+already_AddRefed<DOMRect> AbstractRange::GetBoundingClientRect(
+    bool aClampToEdge, bool aFlushLayout) {
+  RefPtr<DOMRect> rect = new DOMRect(ToSupports(mOwner));
+  if (!mIsPositioned) {
+    return rect.forget();
+  }
+
+  nsLayoutUtils::RectAccumulator accumulator;
+  CollectClientRectsAndText(
+      &accumulator, nullptr, this, mStart.GetContainer(),
+      *mStart.Offset(RangeBoundary::OffsetFilter::kValidOffsets),
+      mEnd.GetContainer(),
+      *mEnd.Offset(RangeBoundary::OffsetFilter::kValidOffsets), aClampToEdge,
+      aFlushLayout);
+
+  nsRect r = accumulator.mResultRect.IsEmpty() ? accumulator.mFirstRect
+                                               : accumulator.mResultRect;
+  rect->SetLayoutRect(r);
+  return rect.forget();
+}
+
+already_AddRefed<DOMRectList> AbstractRange::GetClientRects(bool aClampToEdge,
+                                                            bool aFlushLayout) {
+  return GetClientRectsInner(AllowRangeCrossShadowBoundary::No, aClampToEdge,
+                             aFlushLayout);
+}
+
+already_AddRefed<DOMRectList>
+AbstractRange::GetAllowCrossShadowBoundaryClientRects(bool aClampToEdge,
+                                                      bool aFlushLayout) {
+  return GetClientRectsInner(AllowRangeCrossShadowBoundary::Yes, aClampToEdge,
+                             aFlushLayout);
+}
+
+void AbstractRange::CollectClientRects(RectCallback& aCallback,
+                                       bool aClampToEdge) const {
+  if (!mIsPositioned) {
+    return;
+  }
+  CollectClientRectsAndText(
+      &aCallback, nullptr, const_cast<AbstractRange*>(this),
+      mStart.GetContainer(),
+      *mStart.Offset(RangeBoundary::OffsetFilter::kValidOffsets),
+      mEnd.GetContainer(),
+      *mEnd.Offset(RangeBoundary::OffsetFilter::kValidOffsets), aClampToEdge,
+      /* aFlushLayout */ false);
+}
+
+already_AddRefed<DOMRectList> AbstractRange::GetClientRectsInner(
+    AllowRangeCrossShadowBoundary aAllowCrossShadowBoundaryRange,
+    bool aClampToEdge, bool aFlushLayout) {
+  if (!mIsPositioned) {
+    return nullptr;
+  }
+
+  RefPtr<DOMRectList> rectList = new DOMRectList(ToSupports(mOwner));
+
+  nsLayoutUtils::RectListBuilder builder(rectList);
+
+  const auto& startRef =
+      aAllowCrossShadowBoundaryRange == AllowRangeCrossShadowBoundary::Yes
+          ? MayCrossShadowBoundaryStartRef()
+          : mStart;
+  const auto& endRef =
+      aAllowCrossShadowBoundaryRange == AllowRangeCrossShadowBoundary::Yes
+          ? MayCrossShadowBoundaryEndRef()
+          : mEnd;
+
+  CollectClientRectsAndText(
+      &builder, nullptr, this, startRef.GetContainer(),
+      *startRef.Offset(RangeBoundary::OffsetFilter::kValidOffsets),
+      endRef.GetContainer(),
+      *endRef.Offset(RangeBoundary::OffsetFilter::kValidOffsets), aClampToEdge,
+      aFlushLayout);
+  return rectList.forget();
+}
+
+void AbstractRange::GetClientRectsAndTexts(
+    mozilla::dom::ClientRectsAndTexts& aResult, ErrorResult& aErr) {
+  if (!mIsPositioned) {
+    return;
+  }
+
+  aResult.mRectList = new DOMRectList(ToSupports(mOwner));
+
+  nsLayoutUtils::RectListBuilder builder(aResult.mRectList);
+
+  CollectClientRectsAndText(
+      &builder, &aResult.mTextList, this, mStart.GetContainer(),
+      *mStart.Offset(RangeBoundary::OffsetFilter::kValidOffsets),
+      mEnd.GetContainer(),
+      *mEnd.Offset(RangeBoundary::OffsetFilter::kValidOffsets), true, true);
+}
+
 }  // namespace mozilla::dom

@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Zavrieť
     .aria-label = Zavrieť
-firefoxview-empty-state-icon =
-    .alt = Pozor:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = práve teraz
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = Dokončené na { $percentValue } %
 firefoxview-tabpickup-step-signin-header = Plynule prepínajte medzi zariadeniami
 firefoxview-tabpickup-step-signin-description = Ak chcete získať karty z telefónu, najprv sa prihláste alebo si vytvorte účet.
 firefoxview-tabpickup-step-signin-primarybutton = Pokračovať
-firefoxview-syncedtabs-signin-header = Vezmite si karty odkiaľkoľvek
-firefoxview-syncedtabs-signin-description = Ak chcete vidieť svoje karty kdekoľvek, kde používate { -brand-product-name }, prihláste sa do svojho účtu. Ak nemáte účet, prevedieme vás krokmi registrácie.
-firefoxview-syncedtabs-signin-primarybutton = Prihláste sa alebo sa zaregistrujte
+firefoxview-syncedtabs-signin-header-2 = Váš { -brand-product-name } na všetkých vašich zariadeniach
+firefoxview-syncedtabs-signin-description-2 = Ak chcete zobraziť karty, ktoré máte otvorené v telefóne a iných zariadeniach, prihláste sa alebo si vytvorte účet. Pomocou účtu môžete tiež synchronizovať svoje heslá, históriu a ďalšie.
+firefoxview-syncedtabs-signin-primarybutton-2 = Prihlásiť sa
 firefoxview-tabpickup-adddevice-header = Synchronizujte { -brand-product-name } na svojom telefóne alebo tablete
 firefoxview-tabpickup-adddevice-description = Stiahnite si { -brand-product-name } pre mobilné zariadenie a prihláste sa tam.
 firefoxview-tabpickup-adddevice-learn-how = Ďalšie informácie
 firefoxview-tabpickup-adddevice-primarybutton = Získať { -brand-product-name } pre mobilné zariadenie
-firefoxview-syncedtabs-adddevice-header = Prihláste sa vo { -brand-product-name(case: "loc") } na svojich ostatných zariadeniach
-firefoxview-syncedtabs-adddevice-description = Ak chcete vidieť svoje karty kdekoľvek, kde používate { -brand-product-name }, prihláste sa na všetkých svojich zariadeniach. Pozrite sa, ako <a data-l10n-name="url">pripojiť ďalšie zariadenia</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Vezmite si karty odkiaľkoľvek
+firefoxview-syncedtabs-adddevice-description-2 = Prihláste sa do { -brand-product-name(case: "gen") } na svojom telefóne alebo inom počítači, aby ste tu mohli vidieť karty. Pozrite sa, ako <a data-l10n-name="url">pripojiť ďalšie zariadenia</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Vyskúšajte { -brand-product-name } pre mobilné zariadenia
 firefoxview-tabpickup-synctabs-header = Zapnite synchronizáciu kariet
 firefoxview-tabpickup-synctabs-description = Povoľte { -brand-short-name(case: "dat") } zdieľať karty medzi zariadeniami.
@@ -48,14 +46,13 @@ firefoxview-tabpickup-synctabs-learn-how = Ďalšie informácie
 firefoxview-tabpickup-synctabs-primarybutton = Zapnúť synchronizáciu kariet
 firefoxview-syncedtabs-synctabs-header = Aktualizujte nastavenia synchronizácie
 firefoxview-syncedtabs-synctabs-description = Ak chcete zobraziť karty z iných zariadení, musíte svoje otvorené karty synchronizovať.
-firefoxview-syncedtabs-synctabs-checkbox = Povoliť synchronizáciu otvorených kariet
 firefoxview-syncedtabs-loading-header = Prebieha synchronizácia
 firefoxview-syncedtabs-loading-description = Po dokončení uvidíte všetky karty, ktoré máte otvorené na iných zariadeniach. Už o chvíľu.
 firefoxview-tabpickup-fxa-admin-disabled-header = Vaša organizácia zakázala synchronizáciu
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } nemôže synchronizovať karty medzi zariadeniami, pretože váš správca zakázal synchronizáciu.
 firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } nemôže synchronizovať karty medzi zariadeniami, pretože vaša organizácia zakázala synchronizáciu.
 firefoxview-tabpickup-network-offline-header = Skontrolujte svoje internetové pripojenie
-firefoxview-tabpickup-network-offline-description = Ak používate bránu firewall alebo proxy, skontrolujte, či má { -brand-short-name } povolenie na prístup na web.
+firefoxview-tabpickup-network-offline-description = Ak používate bránu firewall alebo proxy, skontrolujte, či má { -brand-short-name } oprávnenie na prístup na web.
 firefoxview-tabpickup-network-offline-primarybutton = Skúsiť znova
 firefoxview-tabpickup-sync-error-header = Pri synchronizácii sa vyskytli problémy
 firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } momentálne nemôže kontaktovať službu. Skúste to znova o chvíľu.
@@ -64,7 +61,7 @@ firefoxview-tabpickup-sync-disconnected-header = Ak chcete pokračovať, zapnite
 firefoxview-tabpickup-sync-disconnected-description = Ak chcete získať svoje karty, musíte povoliť synchronizáciu v nastaveniach { -brand-short-name(case: "gen") }.
 firefoxview-tabpickup-sync-disconnected-primarybutton = Zapnite synchronizáciu v nastaveniach
 firefoxview-tabpickup-password-locked-header = Ak chcete zobraziť karty, zadajte svoje hlavné heslo
-firefoxview-tabpickup-password-locked-description = Ak chcete získať svoje karty, budete musieť zadať vaše hlavné heslo pre { -brand-short-name }.
+firefoxview-tabpickup-password-locked-description = Ak chcete získať svoje karty, budete musieť zadať vaše hlavné heslo pre { -brand-short-name(case: "acc") }.
 firefoxview-tabpickup-password-locked-link = Ďalšie informácie
 firefoxview-tabpickup-password-locked-primarybutton = Zadajte hlavné heslo
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Ďalšie informácie</a>
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Nedávno zatvorené
 firefoxview-closed-tabs-description2 = V tomto okne znova otvorte stránky, ktoré ste zatvorili.
 firefoxview-closed-tabs-placeholder-header = Žiadne nedávno zatvorené karty
 firefoxview-closed-tabs-placeholder-body = Keď zatvoríte kartu v tomto okne, môžete ju opätovne získať tu.
-firefoxview-closed-tabs-placeholder-body2 = Keď kartu zatvoríte, môžete ju odtiaľto opätovne načítať.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -117,6 +113,8 @@ firefoxview-history-nav = História
 firefoxview-history-header = História
 firefoxview-history-context-delete = Odstrániť z histórie
     .accesskey = d
+firefoxview-history-context-forget-site = Zabudnúť na túto stránku…
+    .accesskey = Z
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
@@ -148,8 +146,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Okno { $winID } (aktuálne)
-firefoxview-opentabs-focus-tab =
-    .title = Prepnúť na túto kartu
 firefoxview-show-more = Zobraziť viac
 firefoxview-show-less = Zobraziť menej
 firefoxview-show-all = Zobraziť všetky
@@ -161,12 +157,15 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Hľadať v histórii
+# Placeholder for the input field to search in bookmarks ("search" is a verb).
+firefoxview-search-text-box-bookmarks =
+    .placeholder = Hľadať v záložkách
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Hľadať v nedávno zatvorených kartách
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Hľadať v synchronizovaných kartách
+firefoxview-search-text-box-tabs =
+    .placeholder = Hľadať v kartách
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Hľadať v otvorených kartách
@@ -191,10 +190,6 @@ firefoxview-sort-history-by-date-label = Usporiadať podľa dátumu
 firefoxview-sort-history-by-site-label = Usporiadať podľa lokality
 firefoxview-sort-open-tabs-by-recency-label = Usporiadať podľa nedávnej aktivity
 firefoxview-sort-open-tabs-by-order-label = Usporiadať podľa poradia kariet
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Prepnúť na { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -211,7 +206,6 @@ firefoxview-history-site-localhost = (lokálne súbory)
 ##
 
 firefoxview-show-all-history = Zobraziť celú históriu
-firefoxview-view-more-browsing-history = Zobraziť ďalšiu históriu prehliadania
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -227,9 +221,8 @@ firefoxview-choose-browser-button = Zvoľte prehliadač
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Zatiaľ tu nič nie je
-firefoxview-dont-remember-history-empty-description = Ochrana vášho súkromia je základom toho, čo robíme. Preto môžete určiť, ktorú aktivitu si { -brand-short-name } pamätá.
-firefoxview-dont-remember-history-empty-description-two = Na základe vašich aktuálnych nastavení si { -brand-short-name } nepamätá vašu aktivitu pri prehliadaní. Ak to chcete zmeniť, <a data-l10n-name="history-settings-url-two">zmeňte nastavenia histórie tak, aby si históriu pamätal</a>.
+firefoxview-dont-remember-history-empty-header-2 = Máte kontrolu nad tým, čo si { -brand-short-name } zapamätá
+firefoxview-dont-remember-history-empty-description-one = { -brand-short-name } si práve teraz nepamätá vašu aktivitu prehliadania. Ak to chcete zmeniť, <a data-l10n-name="history-settings-url-two">aktualizujte nastavenia histórie</a>.
 
 ##
 

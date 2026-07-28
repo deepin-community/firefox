@@ -1,4 +1,3 @@
-/* -*- Mode: c++; tab-width: 2; indent-tabs-mode: nil; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +10,7 @@
 #include "mozilla/EventForwards.h"
 #include "GRefPtr.h"
 
-struct xdg_dbus_annotation_v1;
+struct org_kde_kwin_appmenu;
 
 namespace mozilla {
 
@@ -32,7 +31,9 @@ class NativeMenuGtk : public NativeMenu {
   explicit NativeMenuGtk(dom::Element* aElement);
 
   // NativeMenu
-  MOZ_CAN_RUN_SCRIPT_BOUNDARY void ShowAsContextMenu(
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY void ShowMenuAnchored(
+      nsIFrame* aClickedFrame, const nsMenuPopupFrame* aPopupFrame) override;
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY void ShowMenuAtPosition(
       nsIFrame* aClickedFrame, const CSSIntPoint& aPosition,
       bool aIsContextMenu) override;
   bool Close() override;
@@ -80,7 +81,7 @@ class DBusMenuBar final : public RefCounted<DBusMenuBar> {
   RefPtr<DbusmenuServer> mServer;
   RefPtr<GDBusProxy> mProxy;
 #  ifdef MOZ_WAYLAND
-  xdg_dbus_annotation_v1* mAnnotation = nullptr;
+  org_kde_kwin_appmenu* mAppMenu = nullptr;
 #  endif
 };
 

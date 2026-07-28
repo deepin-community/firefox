@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 reload-tab =
     .label = ផ្ទុកផ្ទាំងឡើងវិញ
     .accesskey = R
@@ -14,6 +18,8 @@ tab-context-play-tab =
 duplicate-tab =
     .label = ស្ទួន​ផ្ទាំង
     .accesskey = D
+# The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = បិទ​ផ្ទាំង​ទៅ​ខាងស្ដាំ
     .accesskey = i
@@ -47,7 +53,3 @@ move-to-end =
 move-to-new-window =
     .label = ផ្លាស់ទី​ទៅកាន់​បង្អួច​ថ្មី
     .accesskey = W
-
-## Variables:
-##  $tabCount (Number): the number of tabs that are affected by the action.
-

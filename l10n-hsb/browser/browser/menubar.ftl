@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Nastajenja
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Nastajenja…
+menu-application-set-as-default =
+    .label = { -brand-shorter-name } jako standardny wobhladowak nastajić
 menu-application-services =
     .label = Słužby
 menu-application-hide-this =
@@ -100,6 +93,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Dźělić
     .accesskey = l
+menu-file-share-qrcode =
+    .label = QR-kod generěrować…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = QR-kod generěrować
+    .accesskey = Q
 menu-file-print-setup =
     .label = Stronu připrawić…
     .accesskey = u
@@ -148,8 +147,6 @@ menu-view-history-button =
     .label = Historija
 menu-view-synced-tabs-sidebar =
     .label = Synchronizowane rajtarki
-menu-view-megalist-sidebar =
-    .label = Hesła
 menu-view-full-zoom =
     .label = Skalować
     .accesskey = k
@@ -257,6 +254,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobilne zapołožki
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profile
+menu-profiles-manage-profiles =
+    .label = Profile rjadować
+menu-profiles-new-profile =
+    .label = Nowy profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (aktualny)
+menu-profiles-menu =
+    .label = Profile
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -265,6 +278,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Sćehnjenja
     .accesskey = h
+menu-tools-extensions-and-themes =
+    .label = Rozšěrjenja a drasty
+    .accesskey = R
 menu-tools-addons-and-themes =
     .label = Přidatki a drasty
     .accesskey = P
@@ -292,6 +308,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Info wo stronje
     .accesskey = I
+menu-tools-edit-pdf =
+    .label = PDF wobdźěłać…
+    .accesskey = P
 menu-settings =
     .label = Nastajenja
     .accesskey =

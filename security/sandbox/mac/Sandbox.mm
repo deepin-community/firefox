@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,19 +16,24 @@
 #include <sys/sysctl.h>
 #include <sys/types.h>
 
-#include <iostream>
 #include <sstream>
 #include <vector>
 
 #include "SandboxPolicyContent.h"
 #include "SandboxPolicyGMP.h"
+#include "SandboxPolicyGPU.h"
 #include "SandboxPolicyRDD.h"
 #include "SandboxPolicySocket.h"
 #include "SandboxPolicyUtility.h"
+#if defined(MOZ_PROFILE_GENERATE)
+#  include "SandboxPolicyPGO.h"
+#endif  // defined(MOZ_PROFILE_GENERATE)
+
 #include "mozilla/Assertions.h"
 
 #include "mozilla/GeckoArgs.h"
 #include "mozilla/ipc/UtilityProcessSandboxing.h"
+#include "mozilla/SandboxSettings.h"
 
 // Undocumented sandbox setup routines.
 extern "C" int sandbox_init_with_parameters(const char* profile, uint64_t flags,
@@ -185,6 +189,8 @@ void MacSandboxInfo::AppendAsParams(std::vector<std::string>& aParams) const {
       this->AppendWindowServerParam(aParams);
       this->AppendReadPathParams(aParams);
       break;
+    case MacSandboxType_GPU:
+      break;
     default:
       // Before supporting a new process type, add a case statement
       // here to append any neccesary process-type-specific params.
@@ -294,6 +300,7 @@ bool StartMacSandbox(MacSandboxInfo const& aInfo, std::string& aErrorMessage) {
 
   // Used for the content process to access to parts of the cache dir.
   std::string userCacheDir;
+  std::string bundleIDCacheDir;
 
   if (aInfo.type == MacSandboxType_Utility) {
     profile = const_cast<char*>(SandboxPolicyUtility);
@@ -305,7 +312,7 @@ bool StartMacSandbox(MacSandboxInfo const& aInfo, std::string& aErrorMessage) {
 
 #ifdef MOZ_APPLEMEDIA
       case ipc::SandboxingKind::UTILITY_AUDIO_DECODING_APPLE_MEDIA: {
-        profile.append(SandboxPolicyUtilityAudioDecoderAppleMediaAddend);
+        profile.append(SandboxPolicyUtilityMediaServiceAppleMediaAddend);
         params.push_back("MAC_OS_VERSION");
         params.push_back(combinedVersion.c_str());
       } break;
@@ -319,6 +326,8 @@ bool StartMacSandbox(MacSandboxInfo const& aInfo, std::string& aErrorMessage) {
     params.push_back(aInfo.shouldLog ? "TRUE" : "FALSE");
     params.push_back("APP_PATH");
     params.push_back(aInfo.appPath.c_str());
+    params.push_back("APP_BINARY_PATH");
+    params.push_back(aInfo.appBinaryPath.c_str());
     if (!aInfo.crashServerPort.empty()) {
       params.push_back("CRASH_PORT");
       params.push_back(aInfo.crashServerPort.c_str());
@@ -448,6 +457,40 @@ bool StartMacSandbox(MacSandboxInfo const& aInfo, std::string& aErrorMessage) {
               "Content sandbox disabled due to sandbox level setting\n");
       return false;
     }
+  } else if (aInfo.type == MacSandboxType_GPU) {
+    profile = const_cast<char*>(SandboxPolicyGPU);
+    params.push_back("SHOULD_LOG");
+    params.push_back(aInfo.shouldLog ? "TRUE" : "FALSE");
+    params.push_back("MAC_OS_VERSION");
+    params.push_back(combinedVersion.c_str());
+    params.push_back("APP_PATH");
+    params.push_back(aInfo.appPath.c_str());
+    params.push_back("HOME_PATH");
+    params.push_back(getenv("HOME"));
+    if (!aInfo.crashServerPort.empty()) {
+      params.push_back("CRASH_PORT");
+      params.push_back(aInfo.crashServerPort.c_str());
+    }
+
+    params.push_back("DARWIN_USER_CACHE_DIR");
+    char confStrBuf[PATH_MAX];
+    if (!confstr(_CS_DARWIN_USER_CACHE_DIR, confStrBuf, sizeof(confStrBuf))) {
+      return false;
+    }
+    if (!GetRealPath(userCacheDir, confStrBuf)) {
+      return false;
+    }
+    params.push_back(userCacheDir.c_str());
+
+    // For accessing shader cache paths in the cache dir that
+    // are derived from the applications bundle ID.
+    bundleIDCacheDir = userCacheDir;
+    bundleIDCacheDir.append("/" MOZ_GPU_PROCESS_BUNDLEID);
+    params.push_back("BUNDLE_ID_CACHE_DIR");
+    params.push_back(bundleIDCacheDir.c_str());
+    params.push_back("ALLOW_REMOTE_APPLE_IMAGEIO");
+    params.push_back(getenv("MOZ_BLOCK_REMOTE_APPLE_IMAGEIO") ? "FALSE"
+                                                              : "TRUE");
   } else {
     char* msg = NULL;
     asprintf(&msg, "Unexpected sandbox type %u", aInfo.type);
@@ -462,6 +505,17 @@ bool StartMacSandbox(MacSandboxInfo const& aInfo, std::string& aErrorMessage) {
     fprintf(stderr, "Out of memory in StartMacSandbox()!\n");
     return false;
   }
+
+#if defined(MOZ_PROFILE_GENERATE)
+  // It should only be allowed on instrumented builds, never on production
+  // builds.
+  std::string parentPath;
+  if (GetLlvmProfileDir(parentPath)) {
+    params.push_back("PGO_DATA_DIR");
+    params.push_back(parentPath.c_str());
+    profile.append(SandboxPolicyPGO);
+  }
+#endif
 
 // In order to avoid relying on any other Mozilla modules (as described at the
 // top of this file), we use our own #define instead of the existing MOZ_LOG
@@ -621,12 +675,27 @@ bool GetContentSandboxParamsFromArgs(int aArgc, char** aArgv,
   return true;
 }
 
+bool GetAppPathForExecutable(const char* aAppName, const char* aExecutablePath,
+                             std::string& aAppPath) {
+  std::string execPath(aExecutablePath);
+  std::string appName(aAppName);
+  size_t pos = execPath.rfind(appName + '/');
+  if (pos == std::string::npos) {
+    return false;
+  }
+  aAppPath = execPath.substr(0, pos + appName.size());
+  return true;
+}
+
 bool GetUtilitySandboxParamsFromArgs(int aArgc, char** aArgv,
                                      MacSandboxInfo& aInfo,
                                      bool aSandboxingKindRequired = true) {
   // Ensure we find these paramaters in the command
   // line arguments. Return false if any are missing.
   bool foundAppPath = false;
+
+  GetAppPathForExecutable(MOZ_CHILD_PROCESS_BUNDLENAME, aArgv[0],
+                          aInfo.appBinaryPath);
 
   // Collect sandbox params from CLI arguments
   for (int i = 0; i < aArgc; i++) {
@@ -750,6 +819,11 @@ bool GetRDDSandboxParamsFromArgs(int aArgc, char** aArgv,
   return GetUtilitySandboxParamsFromArgs(aArgc, aArgv, aInfo, false);
 }
 
+bool GetGPUSandboxParamsFromArgs(int aArgc, char** aArgv,
+                                 MacSandboxInfo& aInfo) {
+  return GetUtilitySandboxParamsFromArgs(aArgc, aArgv, aInfo, false);
+}
+
 /*
  * Returns true if no errors were encountered or if early sandbox startup is
  * not enabled for this process. Returns false if an error was encountered.
@@ -787,6 +861,11 @@ bool StartMacSandboxIfEnabled(const MacSandboxType aSandboxType, int aArgc,
       break;
     case MacSandboxType_GMP:
       if (!GetPluginSandboxParamsFromArgs(aArgc, aArgv, info)) {
+        return false;
+      }
+      break;
+    case MacSandboxType_GPU:
+      if (!GetGPUSandboxParamsFromArgs(aArgc, aArgv, info)) {
         return false;
       }
       break;

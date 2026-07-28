@@ -55,10 +55,22 @@ fxviewtabrow-move-tab-window = Mover a unha nova xanela
     .accesskey = x
 fxviewtabrow-send-tab = Enviar a lapela ao dispositivo
     .accesskey = l
+fxviewtabrow-pin-tab = Fixar lapela
+    .accesskey = F
+fxviewtabrow-unpin-tab = Eliminar lapela fixa
+    .accesskey = f
+fxviewtabrow-mute-tab = Enmudecer pestana
+    .accesskey = E
+fxviewtabrow-unmute-tab = Desenmudecer pestana
+    .accesskey = D
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Opcións para { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
+fxviewtabrow-mute-tab-button-no-context =
+    .title = Enmudecer pestana
+fxviewtabrow-unmute-tab-button-no-context =
+    .title = Desenmudecer pestana

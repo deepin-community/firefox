@@ -1,12 +1,11 @@
-//* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "LookupCacheV4.h"
 #include "HashStore.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
+#include "mozilla/EndianUtils.h"
+#include "mozilla/glean/UrlClassifierMetrics.h"
 #include "nsCheckSummedOutputStream.h"
 #include "nsUrlClassifierDBService.h"
 #include "crc32c.h"
@@ -127,7 +126,7 @@ nsresult LookupCacheV4::Has(const Completion& aCompletion, bool* aHas,
 }
 
 nsresult LookupCacheV4::Build(PrefixStringMap& aPrefixMap) {
-  Telemetry::AutoTimer<Telemetry::URLCLASSIFIER_VLPS_CONSTRUCT_TIME> timer;
+  auto timer = glean::urlclassifier::vlps_construct_time.Measure();
 
   nsresult rv = mVLPrefixSet->SetPrefixes(aPrefixMap);
   if (NS_WARN_IF(NS_FAILED(rv))) {
@@ -425,12 +424,11 @@ nsresult LookupCacheV4::ApplyUpdate(RefPtr<TableUpdateV4> aTableUpdate,
   // after merging the data with local prefixes.
   aTableUpdate->Clear();
 
-  nsAutoCString sha256;
+  nsAutoCStringN<40> sha256;
   crypto->Finish(false, sha256);
   if (aTableUpdate->SHA256().IsEmpty()) {
     LOG(("Update sha256 hash missing."));
-    Telemetry::Accumulate(
-        Telemetry::URLCLASSIFIER_UPDATE_ERROR, mProvider,
+    glean::urlclassifier::update_error.Get(mProvider).AccumulateSingleSample(
         NS_ERROR_GET_CODE(NS_ERROR_UC_UPDATE_MISSING_CHECKSUM));
 
     // Generate our own sha256 to tableUpdate to ensure there is always

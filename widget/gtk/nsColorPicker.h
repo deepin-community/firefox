@@ -1,15 +1,14 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsColorPicker_h__
-#define nsColorPicker_h__
+#ifndef nsColorPicker_h_
+#define nsColorPicker_h_
 
 #include <gtk/gtk.h>
 
+#include "nsBaseColorPicker.h"
 #include "nsCOMPtr.h"
-#include "nsIColorPicker.h"
 #include "nsString.h"
 
 // Enable Gtk3 system color picker.
@@ -17,15 +16,18 @@
 
 class nsIWidget;
 
-class nsColorPicker final : public nsIColorPicker {
+class nsColorPicker final : public nsBaseColorPicker {
  public:
   NS_DECL_ISUPPORTS
-  NS_DECL_NSICOLORPICKER
 
   nsColorPicker() = default;
 
  private:
   ~nsColorPicker() = default;
+
+  // nsBaseColorPicker
+  nsresult InitNative(const nsTArray<nsString>& aDefaultColors) override;
+  nsresult OpenNative() override;
 
   static nsString ToHexString(int n);
 
@@ -61,11 +63,8 @@ class nsColorPicker final : public nsIColorPicker {
   void Done(GtkWidget* dialog, gint response_id);
 
   nsCOMPtr<nsIWidget> mParentWidget;
-  nsCOMPtr<nsIColorPickerShownCallback> mCallback;
-  nsString mTitle;
   nsString mColor;
-  nsString mInitialColor;
   nsTArray<nsString> mDefaultColors;
 };
 
-#endif  // nsColorPicker_h__
+#endif  // nsColorPicker_h_

@@ -8,11 +8,11 @@
 #include "MediaControlKeySource.h"
 #include "MediaEventSource.h"
 #include "MediaPlaybackStatus.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/dom/MediaMetadata.h"
 #include "mozilla/dom/MediaSessionBinding.h"
-#include "mozilla/Maybe.h"
-#include "nsTHashMap.h"
 #include "nsISupportsImpl.h"
+#include "nsTHashMap.h"
 
 namespace mozilla::dom {
 
@@ -82,8 +82,9 @@ class IMediaInfoUpdater {
   //     (X) `inaudible` -> `audible`    [notify `inaudible` before `audible`]
   //     (X) `audible` -> `audible`      [notify `audible` twice]
   //     (X) `audible` -> (media pauses) [forgot to notify `inaudible`]
-  virtual void NotifyMediaAudibleChanged(uint64_t aBrowsingContextId,
-                                         MediaAudibleState aState) = 0;
+  virtual void NotifyMediaAudibleChanged(
+      uint64_t aBrowsingContextId, MediaAudibleState aState,
+      ControlType aType = ControlType::eControllable) = 0;
 
   // Use this method to update media session's declared playback state for the
   // specific media session.
@@ -157,8 +158,9 @@ class MediaStatusManager : public IMediaInfoUpdater {
   // IMediaInfoUpdater's methods
   void NotifyMediaPlaybackChanged(uint64_t aBrowsingContextId,
                                   MediaPlaybackState aState) override;
-  void NotifyMediaAudibleChanged(uint64_t aBrowsingContextId,
-                                 MediaAudibleState aState) override;
+  void NotifyMediaAudibleChanged(
+      uint64_t aBrowsingContextId, MediaAudibleState aState,
+      ControlType aType = ControlType::eControllable) override;
   void SetDeclaredPlaybackState(uint64_t aSessionContextId,
                                 MediaSessionPlaybackState aState) override;
   void NotifySessionCreated(uint64_t aSessionContextId) override;
@@ -230,6 +232,7 @@ class MediaStatusManager : public IMediaInfoUpdater {
  private:
   nsString GetDefaultFaviconURL() const;
   nsString GetDefaultTitle() const;
+  nsCString GetUrl() const;
   MediaMetadataBase CreateDefaultMetadata() const;
   bool IsInPrivateBrowsing() const;
   void FillMissingTitleAndArtworkIfNeeded(MediaMetadataBase& aMetadata) const;

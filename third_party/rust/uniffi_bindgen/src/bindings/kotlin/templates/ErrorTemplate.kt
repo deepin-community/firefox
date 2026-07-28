@@ -4,7 +4,11 @@
 
 {% if e.is_flat() %}
 {%- call kt::docstring(e, 0) %}
-sealed class {{ type_name }}(message: String): Exception(message){% if contains_object_references %}, Disposable {% endif %} {
+sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if contains_object_references %}, Disposable {% endif %}
+{%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
+{%- if uniffi_trait_methods.ord_cmp.is_some() -%}
+{% if contains_object_references %}, {% else %}, {% endif %}Comparable<{{ type_name }}>
+{%- endif %} {
         {% for variant in e.variants() -%}
         {%- call kt::docstring(variant, 4) %}
         class {{ variant|error_variant_name }}(message: String) : {{ type_name }}(message)
@@ -16,20 +20,30 @@ sealed class {{ type_name }}(message: String): Exception(message){% if contains_
 }
 {%- else %}
 {%- call kt::docstring(e, 0) %}
-sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Disposable {% endif %} {
+sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references %}, Disposable {% endif %}
+{%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
+{%- if uniffi_trait_methods.ord_cmp.is_some() -%}
+{% if contains_object_references %}, {% else %}, {% endif %}Comparable<{{ type_name }}>
+{%- endif %} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
     {%- let variant_name = variant|error_variant_name %}
     class {{ variant_name }}(
         {% for field in variant.fields() -%}
         {%- call kt::docstring(field, 8) %}
-        val {{ field.name()|var_name }}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
+        val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ type_name }}() {
         override val message
-            get() = "{%- for field in variant.fields() %}{{ field.name()|var_name|unquote }}=${ {{field.name()|var_name }} }{% if !loop.last %}, {% endif %}{% endfor %}"
+            get() = "{%- for field in variant.fields() %}{% call kt::field_name_unquoted(field, loop.index) %}=${ {% call kt::field_name(field, loop.index) %} }{% if !loop.last %}, {% endif %}{% endfor %}"
     }
     {% endfor %}
+
+    {% for meth in e.methods() -%}
+    {%- call kt::func_decl("", meth, 8) %}
+    {% endfor %}
+
+    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {
         override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
@@ -54,6 +68,9 @@ sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Di
 }
 {%- endif %}
 
+/**
+ * @suppress
+ */
 public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer): {{ type_name }} {
         {% if e.is_flat() %}
@@ -88,7 +105,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
                 {%- for field in variant.fields() %}
-                + {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }})
+                + {{ field|allocation_size_fn }}(value.{% call kt::field_name(field, loop.index) %})
                 {%- endfor %}
             )
             {%- endfor %}
@@ -102,7 +119,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
             is {{ type_name }}.{{ variant|error_variant_name }} -> {
                 buf.putInt({{ loop.index }})
                 {%- for field in variant.fields() %}
-                {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
+                {{ field|write_fn }}(value.{% call kt::field_name(field, loop.index) %}, buf)
                 {%- endfor %}
                 Unit
             }

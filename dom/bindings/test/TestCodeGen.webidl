@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -53,6 +52,8 @@ callback interface TestCallbackInterface {
   undefined passUint32Array(Uint32Array arg);
   undefined passUint8ClampedArray(Uint8ClampedArray arg);
   undefined passFloat32Array(Float32Array arg);
+  undefined passBigInt64Array(BigUint64Array arg);
+  undefined passBigUint64Array(BigUint64Array arg);
   undefined passFloat64Array(Float64Array arg);
   undefined passSequenceOfArrayBuffers(sequence<ArrayBuffer> arg);
   undefined passSequenceOfNullableArrayBuffers(sequence<ArrayBuffer?> arg);
@@ -60,6 +61,8 @@ callback interface TestCallbackInterface {
   undefined passVariadicNullableTypedArray(Float32Array?... arg);
   Uint8Array receiveUint8Array();
   attribute Uint8Array uint8ArrayAttr;
+  BigUint64Array receiveBigUint64Array();
+  attribute BigInt64Array int64ArrayAttr;
   Promise<undefined> receivePromise();
 };
 
@@ -1083,6 +1086,22 @@ interface TestInterface {
   undefined passUnionArrayBuffer((DOMString or ArrayBuffer) foo);
   undefined passUnionAllowSharedArrayBuffer((DOMString or [AllowShared] ArrayBuffer) foo);
 
+  // [AllowLarge] tests
+  attribute [AllowLarge] ArrayBufferView allowLargeArrayBufferView;
+  attribute [AllowLarge] ArrayBufferView? allowLargeNullableArrayBufferView;
+  attribute [AllowLarge] ArrayBuffer allowLargeArrayBuffer;
+  attribute [AllowLarge] ArrayBuffer? allowLargeNullableArrayBuffer;
+
+  undefined passAllowLargeArrayBufferView([AllowLarge] ArrayBufferView foo);
+  undefined passAllowLargeNullableArrayBufferView([AllowLarge] ArrayBufferView? foo);
+  undefined passAllowLargeArrayBuffer([AllowLarge] ArrayBuffer foo);
+  undefined passAllowLargeNullableArrayBuffer([AllowLarge] ArrayBuffer? foo);
+  undefined passUnionAllowLargeArrayBuffer((DOMString or [AllowLarge] ArrayBuffer) foo);
+
+  // [AllowShared, AllowLarge] combined tests
+  attribute [AllowShared, AllowLarge] ArrayBufferView allowSharedAllowLargeArrayBufferView;
+  undefined passAllowSharedAllowLargeArrayBufferView([AllowShared, AllowLarge] ArrayBufferView foo);
+
   [Frozen, ReflectedHTMLAttributeReturningFrozenArray]
   attribute sequence<Element>? reflectedHTMLAttributeReturningFrozenArray;
 
@@ -1286,6 +1305,13 @@ dictionary DictWithAllowSharedMembers {
   AllowSharedArrayBufferViewTypedef f;
 };
 
+dictionary DictWithAllowLargeMembers {
+  [AllowLarge] ArrayBufferView a;
+  [AllowLarge] ArrayBufferView? b;
+  [AllowLarge] ArrayBuffer c;
+  [AllowLarge] ArrayBuffer? d;
+};
+
 dictionary DictWithBinaryType {
   [BinaryType="nsAutoString"]
   DOMString otherTypeOfStorageStr = "";
@@ -1348,7 +1374,7 @@ interface TestIndexedAndNamedGetterAndSetterInterface : TestIndexedSetterInterfa
   getter DOMString namedItem(DOMString name);
   setter undefined (unsigned long index, long item);
   setter undefined (DOMString name, DOMString item);
-  stringifier DOMString ();
+  stringifier;
   readonly attribute unsigned long length;
 };
 
@@ -1360,7 +1386,7 @@ interface TestNamedDeleterInterface {
 
 [Exposed=Window]
 interface TestNamedDeleterWithRetvalInterface {
-  deleter boolean delNamedItem(DOMString name);
+  deleter undefined delNamedItem(DOMString name);
   getter long (DOMString name);
 };
 

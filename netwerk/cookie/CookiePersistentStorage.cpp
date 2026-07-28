@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +6,16 @@
 #include "CookieCommons.h"
 #include "CookieLogging.h"
 #include "CookiePersistentStorage.h"
+#include "CookieService.h"
+#include "CookieValidation.h"
 
+#include "mozilla/Components.h"
+#include "mozilla/ErrorNames.h"
 #include "mozilla/FileUtils.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/ProfilerMarkers.h"
+#include "mozilla/StaticPrefs_network.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "mozilla/ScopeExit.h"
-#include "mozilla/Telemetry.h"
 #include "mozIStorageAsyncStatement.h"
 #include "mozIStorageError.h"
 #include "mozIStorageFunction.h"
@@ -19,7 +23,6 @@
 #include "mozStorageHelper.h"
 #include "nsAppDirectoryServiceDefs.h"
 #include "nsICookieNotification.h"
-#include "nsICookieService.h"
 #include "nsIEffectiveTLDService.h"
 #include "nsILineInputStream.h"
 #include "nsIURIMutator.h"
@@ -27,32 +30,31 @@
 #include "nsVariant.h"
 #include "prprf.h"
 
-// XXX_hack. See bug 178993.
-// This is a hack to hide HttpOnly cookies from older browsers
-#define HTTP_ONLY_PREFIX "#HttpOnly_"
-
-constexpr auto COOKIES_SCHEMA_VERSION = 13;
+constexpr auto COOKIES_SCHEMA_VERSION = 17;
 
 // parameter indexes; see |Read|
 constexpr auto IDX_NAME = 0;
 constexpr auto IDX_VALUE = 1;
 constexpr auto IDX_HOST = 2;
 constexpr auto IDX_PATH = 3;
-constexpr auto IDX_EXPIRY = 4;
-constexpr auto IDX_LAST_ACCESSED = 5;
-constexpr auto IDX_CREATION_TIME = 6;
+constexpr auto IDX_EXPIRY_INMSEC = 4;
+constexpr auto IDX_LAST_ACCESSED_INUSEC = 5;
+constexpr auto IDX_CREATION_TIME_INUSEC = 6;
 constexpr auto IDX_SECURE = 7;
 constexpr auto IDX_HTTPONLY = 8;
 constexpr auto IDX_ORIGIN_ATTRIBUTES = 9;
 constexpr auto IDX_SAME_SITE = 10;
-constexpr auto IDX_RAW_SAME_SITE = 11;
-constexpr auto IDX_SCHEME_MAP = 12;
-constexpr auto IDX_PARTITIONED_ATTRIBUTE_SET = 13;
+constexpr auto IDX_SCHEME_MAP = 11;
+constexpr auto IDX_PARTITIONED_ATTRIBUTE_SET = 12;
+constexpr auto IDX_UPDATE_TIME_INUSEC = 13;
 
 #define COOKIES_FILE "cookies.sqlite"
 
 namespace mozilla {
 namespace net {
+
+NS_IMPL_ISUPPORTS_INHERITED(CookiePersistentStorage, CookieStorage,
+                            nsIAsyncShutdownBlocker)
 
 namespace {
 
@@ -86,13 +88,15 @@ void BindCookieParameters(mozIStorageBindingParamsArray* aParamsArray,
   rv = params->BindUTF8StringByName("path"_ns, aCookie->Path());
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
-  rv = params->BindInt64ByName("expiry"_ns, aCookie->Expiry());
+  rv = params->BindInt64ByName("expiry"_ns, aCookie->ExpiryInMSec());
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
-  rv = params->BindInt64ByName("lastAccessed"_ns, aCookie->LastAccessed());
+  rv =
+      params->BindInt64ByName("lastAccessed"_ns, aCookie->LastAccessedInUSec());
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
-  rv = params->BindInt64ByName("creationTime"_ns, aCookie->CreationTime());
+  rv =
+      params->BindInt64ByName("creationTime"_ns, aCookie->CreationTimeInUSec());
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
   rv = params->BindInt32ByName("isSecure"_ns, aCookie->IsSecure());
@@ -104,14 +108,14 @@ void BindCookieParameters(mozIStorageBindingParamsArray* aParamsArray,
   rv = params->BindInt32ByName("sameSite"_ns, aCookie->SameSite());
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
-  rv = params->BindInt32ByName("rawSameSite"_ns, aCookie->RawSameSite());
-  MOZ_ASSERT(NS_SUCCEEDED(rv));
-
   rv = params->BindInt32ByName("schemeMap"_ns, aCookie->SchemeMap());
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
   rv = params->BindInt32ByName("isPartitionedAttributeSet"_ns,
                                aCookie->RawIsPartitioned());
+  MOZ_ASSERT(NS_SUCCEEDED(rv));
+
+  rv = params->BindInt64ByName("updateTime"_ns, aCookie->UpdateTimeInUSec());
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
   // Bind the params to the array.
@@ -201,6 +205,102 @@ SetInBrowserFromOriginAttributesSQLFunction::OnFunctionCall(
   rv = outVar->SetAsInt32(false);
   NS_ENSURE_SUCCESS(rv, rv);
 
+  outVar.forget(aResult);
+  return NS_OK;
+}
+
+class FetchPartitionKeyFromOAsSQLFunction final : public mozIStorageFunction {
+  ~FetchPartitionKeyFromOAsSQLFunction() = default;
+
+  NS_DECL_ISUPPORTS
+  NS_DECL_MOZISTORAGEFUNCTION
+};
+
+NS_IMPL_ISUPPORTS(FetchPartitionKeyFromOAsSQLFunction, mozIStorageFunction);
+
+NS_IMETHODIMP
+FetchPartitionKeyFromOAsSQLFunction::OnFunctionCall(
+    mozIStorageValueArray* aFunctionArguments, nsIVariant** aResult) {
+  nsresult rv;
+
+  nsAutoCString suffix;
+  rv = aFunctionArguments->GetUTF8String(0, suffix);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  OriginAttributes attrsFromSuffix;
+  bool success = attrsFromSuffix.PopulateFromSuffix(suffix);
+  NS_ENSURE_TRUE(success, NS_ERROR_FAILURE);
+
+  RefPtr<nsVariant> outVar(new nsVariant());
+  rv = outVar->SetAsAString(attrsFromSuffix.mPartitionKey);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  outVar.forget(aResult);
+
+  return NS_OK;
+}
+
+class UpdateOAsWithPartitionHostSQLFunction final : public mozIStorageFunction {
+  ~UpdateOAsWithPartitionHostSQLFunction() = default;
+
+  NS_DECL_ISUPPORTS
+  NS_DECL_MOZISTORAGEFUNCTION
+};
+
+NS_IMPL_ISUPPORTS(UpdateOAsWithPartitionHostSQLFunction, mozIStorageFunction);
+
+NS_IMETHODIMP
+UpdateOAsWithPartitionHostSQLFunction::OnFunctionCall(
+    mozIStorageValueArray* aFunctionArguments, nsIVariant** aResult) {
+  nsresult rv;
+
+  nsAutoCString formattedOriginAttributes;
+  rv = aFunctionArguments->GetUTF8String(0, formattedOriginAttributes);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  nsAutoCString partitionKeyHost;
+  rv = aFunctionArguments->GetUTF8String(1, partitionKeyHost);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  OriginAttributes attrsFromSuffix;
+  bool success = attrsFromSuffix.PopulateFromSuffix(formattedOriginAttributes);
+  // On failure, do not alter the OA.
+  if (!success) {
+    RefPtr<nsVariant> outVar(new nsVariant());
+    rv = outVar->SetAsACString(formattedOriginAttributes);
+    NS_ENSURE_SUCCESS(rv, rv);
+    outVar.forget(aResult);
+    return NS_OK;
+  }
+
+  // This is a bit hacky. However, CHIPS cookies can only be set in secure
+  // contexts. So, the scheme has to be https.
+  nsAutoCString schemeHost;
+  schemeHost.AssignLiteral("https://");
+
+  if (*partitionKeyHost.get() == '.') {
+    schemeHost.Append(nsDependentCSubstring(partitionKeyHost, 1));
+  } else {
+    schemeHost.Append(partitionKeyHost);
+  }
+
+  nsCOMPtr<nsIURI> uri;
+  rv = NS_NewURI(getter_AddRefs(uri), schemeHost);
+  // On failure, do not alter the OA.
+  if (NS_FAILED(rv)) {
+    RefPtr<nsVariant> outVar(new nsVariant());
+    rv = outVar->SetAsACString(formattedOriginAttributes);
+    NS_ENSURE_SUCCESS(rv, rv);
+    outVar.forget(aResult);
+    return NS_OK;
+  }
+
+  attrsFromSuffix.SetPartitionKey(uri, false);
+  attrsFromSuffix.CreateSuffix(formattedOriginAttributes);
+
+  RefPtr<nsVariant> outVar(new nsVariant());
+  rv = outVar->SetAsACString(formattedOriginAttributes);
+  NS_ENSURE_SUCCESS(rv, rv);
   outVar.forget(aResult);
   return NS_OK;
 }
@@ -357,6 +457,46 @@ class CloseCookieDBListener final : public mozIStorageCompletionCallback {
 
 NS_IMPL_ISUPPORTS(CloseCookieDBListener, mozIStorageCompletionCallback)
 
+static nsLiteralCString ValidationErrorToLabel(
+    nsICookieValidation::ValidationError aError) {
+  switch (aError) {
+    case nsICookieValidation::eOK:
+      return "eOK"_ns;
+    case nsICookieValidation::eRejectedEmptyNameAndValue:
+      return "eRejectedEmptyNameAndValue"_ns;
+    case nsICookieValidation::eRejectedNameValueOversize:
+      return "eRejectedNameValueOversize"_ns;
+    case nsICookieValidation::eRejectedInvalidCharName:
+      return "eRejectedInvalidCharName"_ns;
+    case nsICookieValidation::eRejectedInvalidCharValue:
+      return "eRejectedInvalidCharValue"_ns;
+    case nsICookieValidation::eRejectedInvalidPath:
+      return "eRejectedInvalidPath"_ns;
+    case nsICookieValidation::eRejectedInvalidDomain:
+      return "eRejectedInvalidDomain"_ns;
+    case nsICookieValidation::eRejectedInvalidPrefix:
+      return "eRejectedInvalidPrefix"_ns;
+    case nsICookieValidation::eRejectedNoneRequiresSecure:
+      return "eRejectedNoneRequiresSecure"_ns;
+    case nsICookieValidation::eRejectedPartitionedRequiresSecure:
+      return "eRejectedPartitionedRequiresSecure"_ns;
+    case nsICookieValidation::eRejectedHttpOnlyButFromScript:
+      return "eRejectedHttpOnlyButFromScript"_ns;
+    case nsICookieValidation::eRejectedSecureButNonHttps:
+      return "eRejectedSecureButNonHttps"_ns;
+    case nsICookieValidation::eRejectedForNonSameSiteness:
+      return "eRejectedForNonSameSiteness"_ns;
+    case nsICookieValidation::eRejectedAttributePathOversize:
+      return "eRejectedAttributePathOversize"_ns;
+    case nsICookieValidation::eRejectedAttributeDomainOversize:
+      return "eRejectedAttributeDomainOversize"_ns;
+    case nsICookieValidation::eRejectedAttributeExpiryOversize:
+      return "eRejectedAttributeExpiryOversize"_ns;
+    default:
+      return "eOK"_ns;
+  }
+}
+
 }  // namespace
 
 // static
@@ -422,9 +562,10 @@ void CookiePersistentStorage::RemoveAllInternal() {
 }
 
 void CookiePersistentStorage::HandleCorruptDB() {
-  COOKIE_LOGSTRING(LogLevel::Debug,
-                   ("HandleCorruptDB(): CookieStorage %p has mCorruptFlag %u",
-                    this, mCorruptFlag));
+  COOKIE_LOGSTRING(
+      LogLevel::Debug,
+      ("HandleCorruptDB(): CookieStorage %p has mCorruptFlag %u", this,
+       static_cast<unsigned>(static_cast<CorruptFlag>(mCorruptFlag))));
 
   // Mark the database corrupt, so the close listener can begin reconstructing
   // it.
@@ -462,7 +603,7 @@ void CookiePersistentStorage::RemoveCookiesWithOriginAttributes(
   mozStorageTransaction transaction(mDBConn, false);
 
   // XXX Handle the error, bug 1696130.
-  Unused << NS_WARN_IF(NS_FAILED(transaction.Start()));
+  (void)NS_WARN_IF(NS_FAILED(transaction.Start()));
 
   CookieStorage::RemoveCookiesWithOriginAttributes(aPattern, aBaseDomain);
 
@@ -476,7 +617,7 @@ void CookiePersistentStorage::RemoveCookiesFromExactHost(
   mozStorageTransaction transaction(mDBConn, false);
 
   // XXX Handle the error, bug 1696130.
-  Unused << NS_WARN_IF(NS_FAILED(transaction.Start()));
+  (void)NS_WARN_IF(NS_FAILED(transaction.Start()));
 
   CookieStorage::RemoveCookiesFromExactHost(aHost, aBaseDomain, aPattern);
 
@@ -574,7 +715,10 @@ void CookiePersistentStorage::Close() {
 
   if (mDBConn) {
     // Asynchronously close the connection. We will null it below.
+    // The shutdown blocker will be removed in HandleDBClosed().
     mDBConn->AsyncClose(mCloseListener);
+  } else {
+    RemoveShutdownBlocker();
   }
 
   CleanupDBConnection();
@@ -655,12 +799,12 @@ void CookiePersistentStorage::StaleCookies(
 }
 
 void CookiePersistentStorage::UpdateCookieInList(
-    Cookie* aCookie, int64_t aLastAccessed,
+    Cookie* aCookie, int64_t aLastAccessedInUSec,
     mozIStorageBindingParamsArray* aParamsArray) {
   MOZ_ASSERT(aCookie);
 
-  // udpate the lastAccessed timestamp
-  aCookie->SetLastAccessed(aLastAccessed);
+  // udpate the lastAccessedInUSec timestamp
+  aCookie->SetLastAccessedInUSec(aLastAccessedInUSec);
 
   // if it's a non-session cookie, update it in the db too
   if (!aCookie->IsSession() && aParamsArray) {
@@ -670,7 +814,7 @@ void CookiePersistentStorage::UpdateCookieInList(
 
     // Bind our parameters.
     DebugOnly<nsresult> rv =
-        params->BindInt64ByName("lastAccessed"_ns, aLastAccessed);
+        params->BindInt64ByName("lastAccessed"_ns, aLastAccessedInUSec);
     MOZ_ASSERT(NS_SUCCEEDED(rv));
 
     rv = params->BindUTF8StringByName("name"_ns, aCookie->Name());
@@ -707,6 +851,33 @@ void CookiePersistentStorage::DeleteFromDB(
   }
 }
 
+// nsIAsyncShutdownBlocker
+
+NS_IMETHODIMP
+CookiePersistentStorage::BlockShutdown(nsIAsyncShutdownClient* aClient) {
+  Close();
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+CookiePersistentStorage::GetName(nsAString& aName) {
+  aName.AssignLiteral("CookiePersistentStorage: cookies.sqlite closing");
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+CookiePersistentStorage::GetState(nsIPropertyBag** aState) {
+  *aState = nullptr;
+  return NS_OK;
+}
+
+void CookiePersistentStorage::RemoveShutdownBlocker() {
+  if (mShutdownBarrier) {
+    mShutdownBarrier->RemoveBlocker(this);
+    mShutdownBarrier = nullptr;
+  }
+}
+
 void CookiePersistentStorage::Activate() {
   MOZ_ASSERT(!mThread, "already have a cookie thread");
 
@@ -731,6 +902,29 @@ void CookiePersistentStorage::Activate() {
   }
 
   mCookieFile->AppendNative(nsLiteralCString(COOKIES_FILE));
+
+  nsCOMPtr<nsIAsyncShutdownService> svc = components::AsyncShutdown::Service();
+  if (svc) {
+    nsCOMPtr<nsIAsyncShutdownClient> client;
+    svc->GetProfileBeforeChange(getter_AddRefs(client));
+    if (client) {
+      mShutdownBarrier = client;
+      client->AddBlocker(this, NS_LITERAL_STRING_FROM_CSTRING(__FILE__),
+                         __LINE__, u""_ns);
+    }
+  }
+
+  // Create the placeholder URI on the main thread before dispatching to the
+  // Cookie thread. NS_NewURI must not be called from background threads as it
+  // triggers XPCOM service initialization.
+  if (NS_FAILED(
+          NS_NewURI(getter_AddRefs(mPlaceholderURI), "https://example.com"))) {
+    MOZ_ASSERT_UNREACHABLE(
+        "Failed to create placeholder URI for cookie validation");
+    mInitializedDBConn = true;
+    mInitialized = true;
+    return;
+  }
 
   NS_ENSURE_SUCCESS_VOID(NS_NewNamedThread("Cookie", getter_AddRefs(mThread)));
 
@@ -816,8 +1010,7 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::TryInitDB(
 
   // This block provides scope for the Telemetry AutoTimer
   {
-    Telemetry::AutoTimer<Telemetry::MOZ_SQLITE_COOKIES_OPEN_READAHEAD_MS>
-        telemetry;
+    auto timer = glean::network_cookies::sqlite_open_readahead.Measure();
     ReadAheadFile(mCookieFile);
 
     // open a connection to the cookie database, and only cache our connection
@@ -826,7 +1019,17 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::TryInitDB(
     rv = mStorageService->OpenUnsharedDatabase(
         mCookieFile, mozIStorageService::CONNECTION_DEFAULT,
         getter_AddRefs(mSyncConn));
-    NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
+    if (NS_FAILED(rv)) {
+      const char* errorName = mozilla::GetStaticErrorName(rv);
+      glean::network_cookies::open_error
+          .Get(nsDependentCString(errorName ? errorName : "unknown"))
+          .Add(1);
+      if (rv == NS_ERROR_FILE_NO_DEVICE_SPACE ||
+          rv == NS_ERROR_FILE_ACCESS_DENIED) {
+        return RESULT_FAILURE;
+      }
+      return RESULT_RETRY;
+    }
   }
 
   auto guard = MakeScopeExit([&] { mSyncConn = nullptr; });
@@ -847,7 +1050,7 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::TryInitDB(
     mozStorageTransaction transaction(mSyncConn, true);
 
     // XXX Handle the error, bug 1696130.
-    Unused << NS_WARN_IF(NS_FAILED(transaction.Start()));
+    (void)NS_WARN_IF(NS_FAILED(transaction.Start()));
 
     switch (dbSchemaVersion) {
       // Upgrading.
@@ -1388,10 +1591,6 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::TryInitDB(
 
         COOKIE_LOGSTRING(LogLevel::Debug,
                          ("Upgraded database to schema version 12"));
-
-        // No more upgrades. Update the schema version.
-        rv = mSyncConn->SetSchemaVersion(COOKIES_SCHEMA_VERSION);
-        NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
       }
         [[fallthrough]];
 
@@ -1404,6 +1603,70 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::TryInitDB(
 
         COOKIE_LOGSTRING(LogLevel::Debug,
                          ("Upgraded database to schema version 13"));
+
+        [[fallthrough]];
+      }
+
+      case 13: {
+        rv = mSyncConn->ExecuteSimpleSQL(
+            nsLiteralCString("UPDATE moz_cookies SET expiry = unixepoch() + "
+                             "34560000 WHERE expiry > unixepoch() + 34560000"));
+        NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
+
+        [[fallthrough]];
+      }
+
+      case 14: {
+        nsCOMPtr<mozIStorageStatement> update;
+        rv = mSyncConn->CreateStatement(
+            nsLiteralCString("UPDATE moz_cookies SET sameSite = "
+                             ":unsetValue WHERE sameSite = :laxValue AND "
+                             "rawSameSite = :noneValue"),
+            getter_AddRefs(update));
+        NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
+
+        mozStorageStatementScoper scoper(update);
+
+        rv =
+            update->BindInt32ByName("unsetValue"_ns, nsICookie::SAMESITE_UNSET);
+        MOZ_ASSERT(NS_SUCCEEDED(rv));
+
+        rv = update->BindInt32ByName("laxValue"_ns, nsICookie::SAMESITE_LAX);
+        MOZ_ASSERT(NS_SUCCEEDED(rv));
+
+        rv = update->BindInt32ByName("noneValue"_ns, nsICookie::SAMESITE_NONE);
+        MOZ_ASSERT(NS_SUCCEEDED(rv));
+
+        bool hasResult;
+        rv = update->ExecuteStep(&hasResult);
+        NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
+
+        rv = mSyncConn->ExecuteSimpleSQL(nsLiteralCString(
+            "ALTER TABLE moz_cookies DROP COLUMN rawSameSite;"));
+        NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
+
+        [[fallthrough]];
+      }
+
+      case 15: {
+        rv = mSyncConn->ExecuteSimpleSQL(
+            nsLiteralCString("UPDATE moz_cookies SET expiry = expiry * 1000;"));
+        NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
+
+        [[fallthrough]];
+      }
+
+      case 16: {
+        // Add the updateTime column to the table.
+        rv = mSyncConn->ExecuteSimpleSQL(
+            nsLiteralCString("ALTER TABLE moz_cookies ADD updateTime INTEGER"));
+        NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
+
+        // OK so... this is tricky because we have to guess the creationTime
+        rv = mSyncConn->ExecuteSimpleSQL(nsLiteralCString(
+            "UPDATE moz_cookies SET updateTime = CAST(strftime('%s','now') AS "
+            "INTEGER) * 1000000"));
+        NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
 
         // No more upgrades. Update the schema version.
         rv = mSyncConn->SetSchemaVersion(COOKIES_SCHEMA_VERSION);
@@ -1452,7 +1715,6 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::TryInitDB(
                              "isSecure, "
                              "isHttpOnly, "
                              "sameSite, "
-                             "rawSameSite, "
                              "schemeMap, "
                              "isPartitionedAttributeSet "
                              "FROM moz_cookies"),
@@ -1476,12 +1738,59 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::TryInitDB(
     return RESULT_OK;
   }
 
+  if (StaticPrefs::network_cookie_CHIPS_enabled() &&
+      StaticPrefs::network_cookie_CHIPS_lastMigrateDatabase() <
+          StaticPrefs::network_cookie_CHIPS_migrateDatabaseTarget()) {
+    CookiePersistentStorage::MoveUnpartitionedChipsCookies();
+  }
+
   // check whether to import or just read in the db
   if (tableExists) {
     return Read();
   }
 
   return RESULT_OK;
+}
+
+void CookiePersistentStorage::MoveUnpartitionedChipsCookies() {
+  nsCOMPtr<mozIStorageFunction> fetchPartitionKeyFromOAs(
+      new FetchPartitionKeyFromOAsSQLFunction());
+  NS_ENSURE_TRUE_VOID(fetchPartitionKeyFromOAs);
+
+  constexpr auto fetchPartitionKeyFromOAsName =
+      "FETCH_PARTITIONKEY_FROM_OAS"_ns;
+
+  nsresult rv = mSyncConn->CreateFunction(fetchPartitionKeyFromOAsName, 1,
+                                          fetchPartitionKeyFromOAs);
+  NS_ENSURE_SUCCESS_VOID(rv);
+
+  nsCOMPtr<mozIStorageFunction> updateOAsWithPartitionHost(
+      new UpdateOAsWithPartitionHostSQLFunction());
+  NS_ENSURE_TRUE_VOID(updateOAsWithPartitionHost);
+
+  constexpr auto updateOAsWithPartitionHostName =
+      "UPDATE_OAS_WITH_PARTITION_HOST"_ns;
+
+  rv = mSyncConn->CreateFunction(updateOAsWithPartitionHostName, 2,
+                                 updateOAsWithPartitionHost);
+  NS_ENSURE_SUCCESS_VOID(rv);
+
+  // Move all cookies with the Partitioned attribute set into their first-party
+  // partitioned storage by updating the origin attributes. Overwrite any
+  // existing cookies that may already be there.
+  rv = mSyncConn->ExecuteSimpleSQL(nsLiteralCString(
+      "UPDATE OR REPLACE moz_cookies  "
+      "SET originAttributes = UPDATE_OAS_WITH_PARTITION_HOST(originAttributes, "
+      "host) "
+      "WHERE FETCH_PARTITIONKEY_FROM_OAS(originAttributes) = '' "
+      "AND isPartitionedAttributeSet = 1;"));
+  NS_ENSURE_SUCCESS_VOID(rv);
+
+  rv = mSyncConn->RemoveFunction(fetchPartitionKeyFromOAsName);
+  NS_ENSURE_SUCCESS_VOID(rv);
+
+  rv = mSyncConn->RemoveFunction(updateOAsWithPartitionHostName);
+  NS_ENSURE_SUCCESS_VOID(rv);
 }
 
 void CookiePersistentStorage::RebuildCorruptDB() {
@@ -1578,6 +1887,7 @@ void CookiePersistentStorage::HandleDBClosed() {
       if (os) {
         os->NotifyObservers(nullptr, "cookie-db-closed", nullptr);
       }
+      RemoveShutdownBlocker();
       break;
     }
     case CookiePersistentStorage::CLOSING_FOR_REBUILD: {
@@ -1603,6 +1913,7 @@ void CookiePersistentStorage::HandleDBClosed() {
       if (os) {
         os->NotifyObservers(nullptr, "cookie-db-closed", nullptr);
       }
+      RemoveShutdownBlocker();
       break;
     }
   }
@@ -1627,9 +1938,9 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::Read() {
                                                   "isHttpOnly, "
                                                   "originAttributes, "
                                                   "sameSite, "
-                                                  "rawSameSite, "
                                                   "schemeMap, "
-                                                  "isPartitionedAttributeSet "
+                                                  "isPartitionedAttributeSet, "
+                                                  "updateTime "
                                                   "FROM moz_cookies"),
                                  getter_AddRefs(stmt));
 
@@ -1639,6 +1950,7 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::Read() {
     mReadArray.Clear();
   }
   mReadArray.SetCapacity(kMaxNumberOfCookies);
+  mCleanupArray.Clear();
 
   nsCString baseDomain;
   nsCString name;
@@ -1671,13 +1983,62 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::Read() {
     stmt->GetUTF8String(IDX_ORIGIN_ATTRIBUTES, suffix);
     // If PopulateFromSuffix failed we just ignore the OA attributes
     // that we don't support
-    Unused << attrs.PopulateFromSuffix(suffix);
+    (void)attrs.PopulateFromSuffix(suffix);
 
-    CookieKey key(baseDomain, attrs);
+    UniquePtr<CookieStruct> cookieStruct = GetCookieFromRow(stmt);
+
+    // Filter cookies with newly invalid hostnames (e.g. legacy DB values that
+    // no longer pass URL parsing).
+    nsCOMPtr<nsIURI> validatedUri;
+    if (NS_FAILED(NS_MutateURI(mPlaceholderURI)
+                      .SetHost(host)
+                      .Finalize(validatedUri))) {
+      COOKIE_LOGSTRING(
+          LogLevel::Debug,
+          ("Read(): Queueing cookie with newly invalid hostname '%s' for "
+           "removal from DB",
+           host.get()));
+      CookieDomainTuple* cleanupTuple = mCleanupArray.AppendElement();
+      cleanupTuple->key = CookieKey(baseDomain, attrs);
+      cleanupTuple->originAttributes = attrs;
+      cleanupTuple->cookie = Cookie::Create(*cookieStruct, attrs);
+      continue;
+    }
+
+    // When the valueless_cookie pref is enabled, discard legacy nameless
+    // cookies (name="") that were stored under the old behavior.
+    // Under the new behavior these cookies are unreachable since new cookies
+    // without '=' are stored with the token as name, not value.
+    if (StaticPrefs::network_cookie_valueless_cookie() &&
+        cookieStruct->name().IsEmpty()) {
+      CookieDomainTuple* cleanupTuple = mCleanupArray.AppendElement();
+      cleanupTuple->key = CookieKey(baseDomain, attrs);
+      cleanupTuple->originAttributes = attrs;
+      cleanupTuple->cookie = Cookie::Create(*cookieStruct, attrs);
+      continue;
+    }
+
+    // Create the Cookie on the background thread. CreateValidated fixes up
+    // any timestamps in the DB that are far in the future.
+    RefPtr<Cookie> cookie = Cookie::CreateValidated(*cookieStruct, attrs);
+
+    // Clean up invalid first-party partitioned cookies without the
+    // 'Partitioned' attribute. Use Cookie::Create to preserve the original DB
+    // timestamps for the deletion query.
+    if (CookieCommons::IsFirstPartyPartitionedCookieWithoutCHIPS(
+            cookie, baseDomain, attrs)) {
+      CookieDomainTuple* cleanupTuple = mCleanupArray.AppendElement();
+      cleanupTuple->key = CookieKey(baseDomain, attrs);
+      cleanupTuple->originAttributes = attrs;
+      cleanupTuple->cookie = Cookie::Create(*cookieStruct, attrs);
+      continue;
+    }
+
+    MOZ_ASSERT(!cookie->IsSession());
     CookieDomainTuple* tuple = mReadArray.AppendElement();
-    tuple->key = std::move(key);
+    tuple->key = CookieKey(baseDomain, attrs);
     tuple->originAttributes = attrs;
-    tuple->cookie = GetCookieFromRow(stmt);
+    tuple->cookie = std::move(cookie);
   }
 
   COOKIE_LOGSTRING(LogLevel::Debug,
@@ -1702,68 +2063,72 @@ UniquePtr<CookieStruct> CookiePersistentStorage::GetCookieFromRow(
   rv = aRow->GetUTF8String(IDX_PATH, path);
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
-  int64_t expiry = aRow->AsInt64(IDX_EXPIRY);
-  int64_t lastAccessed = aRow->AsInt64(IDX_LAST_ACCESSED);
-  int64_t creationTime = aRow->AsInt64(IDX_CREATION_TIME);
+  int64_t expiryInMSec = aRow->AsInt64(IDX_EXPIRY_INMSEC);
+  int64_t lastAccessedInUSec = aRow->AsInt64(IDX_LAST_ACCESSED_INUSEC);
+  int64_t creationTimeInUSec = aRow->AsInt64(IDX_CREATION_TIME_INUSEC);
+  int64_t updateTimeInUSec = aRow->AsInt64(IDX_UPDATE_TIME_INUSEC);
   bool isSecure = 0 != aRow->AsInt32(IDX_SECURE);
   bool isHttpOnly = 0 != aRow->AsInt32(IDX_HTTPONLY);
   int32_t sameSite = aRow->AsInt32(IDX_SAME_SITE);
-  int32_t rawSameSite = aRow->AsInt32(IDX_RAW_SAME_SITE);
   int32_t schemeMap = aRow->AsInt32(IDX_SCHEME_MAP);
   bool isPartitionedAttributeSet =
       0 != aRow->AsInt32(IDX_PARTITIONED_ATTRIBUTE_SET);
 
   // Create a new constCookie and assign the data.
   return MakeUnique<CookieStruct>(
-      name, value, host, path, expiry, lastAccessed, creationTime, isHttpOnly,
-      false, isSecure, isPartitionedAttributeSet, sameSite, rawSameSite,
+      name, value, host, path, expiryInMSec, lastAccessedInUSec,
+      creationTimeInUSec, updateTimeInUSec, isHttpOnly, false, isSecure,
+      isPartitionedAttributeSet, sameSite,
       static_cast<nsICookie::schemeType>(schemeMap));
 }
 
 void CookiePersistentStorage::EnsureInitialized() {
   MOZ_ASSERT(NS_IsMainThread());
 
-  bool isAccumulated = false;
+  TimeStamp startBlockTime;
 
   if (!mInitialized) {
-    TimeStamp startBlockTime = TimeStamp::Now();
+    startBlockTime = TimeStamp::Now();
     MonitorAutoLock lock(mMonitor);
 
     while (!mInitialized) {
       mMonitor.Wait();
     }
-
-    Telemetry::AccumulateTimeDelta(
-        Telemetry::MOZ_SQLITE_COOKIES_BLOCK_MAIN_THREAD_MS_V2, startBlockTime);
-    Telemetry::Accumulate(
-        Telemetry::MOZ_SQLITE_COOKIES_TIME_TO_BLOCK_MAIN_THREAD_MS, 0);
-    isAccumulated = true;
   } else if (!mEndInitDBConn.IsNull()) {
     // We didn't block main thread, and here comes the first cookie request.
     // Collect how close we're going to block main thread.
-    Telemetry::Accumulate(
-        Telemetry::MOZ_SQLITE_COOKIES_TIME_TO_BLOCK_MAIN_THREAD_MS,
-        (TimeStamp::Now() - mEndInitDBConn).ToMilliseconds());
-    // Nullify the timestamp so wo don't accumulate this telemetry probe again.
+    TimeStamp now = TimeStamp::Now();
+    mozilla::glean::networking::sqlite_cookies_time_to_block_main_thread
+        .AccumulateRawDuration(now - mEndInitDBConn);
+    PROFILER_MARKER_UNTYPED("sqlite_cookies_time_to_block_main_thread", NETWORK,
+                            MarkerTiming::Interval(mEndInitDBConn, now));
+    // Nullify the timestamp so we don't accumulate this telemetry probe again.
     mEndInitDBConn = TimeStamp();
-    isAccumulated = true;
-  } else if (!mInitializedDBConn) {
+    return;
+  } else if (mInitializedDBConn) {
+    // Already fully initialized; telemetry was recorded on a prior call.
+    return;
+  } else {
     // A request comes while we finished cookie thread task and InitDBConn is
-    // on the way from cookie thread to main thread. We're very close to block
-    // main thread.
-    Telemetry::Accumulate(
-        Telemetry::MOZ_SQLITE_COOKIES_TIME_TO_BLOCK_MAIN_THREAD_MS, 0);
-    isAccumulated = true;
+    // on the way from cookie thread to main thread. We run it synchronously
+    // below, blocking the main thread.
+    startBlockTime = TimeStamp::Now();
   }
 
-  if (!mInitializedDBConn) {
-    InitDBConn();
-    if (isAccumulated) {
-      // Nullify the timestamp so wo don't accumulate this telemetry probe
-      // again.
-      mEndInitDBConn = TimeStamp();
-    }
-  }
+  // Main thread is blocked: either we just waited on the monitor or the
+  // dispatched InitDBConn runnable hasn't fired yet. Run it synchronously
+  // (the dispatched runnable will no-op via InitDBConn's own guard) and
+  // record the full blocking duration.
+  InitDBConn();
+  mEndInitDBConn = TimeStamp();
+
+  TimeStamp endBlockTime = TimeStamp::Now();
+  mozilla::glean::networking::sqlite_cookies_block_main_thread
+      .AccumulateRawDuration(endBlockTime - startBlockTime);
+  mozilla::glean::networking::sqlite_cookies_time_to_block_main_thread
+      .AccumulateRawDuration(TimeDuration::Zero());
+  PROFILER_MARKER_UNTYPED("sqlite_cookies_block_main_thread", NETWORK,
+                          MarkerTiming::Interval(startBlockTime, endBlockTime));
 }
 
 void CookiePersistentStorage::InitDBConn() {
@@ -1776,44 +2141,31 @@ void CookiePersistentStorage::InitDBConn() {
     return;
   }
 
-  nsCOMPtr<nsIURI> dummyUri;
-  nsresult rv = NS_NewURI(getter_AddRefs(dummyUri), "https://example.com");
-  MOZ_ASSERT(NS_SUCCEEDED(rv));
+  TimeStamp startInitDBConn = TimeStamp::Now();
+  auto markerGuard = MakeScopeExit([&] {
+    PROFILER_MARKER_UNTYPED(
+        "CookiePersistentStorage::InitDBConn", NETWORK,
+        MarkerTiming::IntervalUntilNowFrom(startInitDBConn));
+  });
+
+  // Cookies rejected during Read() on the Cookie thread (invalid hostname or
+  // invalid CHIPS attribution) need to be removed from the DB now that the
+  // connection is ready. Cookies are already fully constructed.
   nsTArray<RefPtr<Cookie>> cleanupCookies;
+  for (auto& tuple : mCleanupArray) {
+    COOKIE_LOGSTRING(LogLevel::Debug,
+                     ("InitDBConn(): Removing invalid cookie from db: '%s'",
+                      tuple.cookie->Host().get()));
+    cleanupCookies.AppendElement(tuple.cookie);
+  }
+  mCleanupArray.Clear();
 
-  for (uint32_t i = 0; i < mReadArray.Length(); ++i) {
-    CookieDomainTuple& tuple = mReadArray[i];
-    MOZ_ASSERT(!tuple.cookie->isSession());
+  // Cookies are already created and validated on the Cookie background thread.
+  for (auto& tuple : mReadArray) {
+    MOZ_ASSERT(!tuple.cookie->IsSession());
 
-    // filter invalid non-ipv4 host ending in number from old db values
-    nsCOMPtr<nsIURIMutator> outMut;
-    nsCOMPtr<nsIURIMutator> dummyMut;
-    rv = dummyUri->Mutate(getter_AddRefs(dummyMut));
-    MOZ_ASSERT(NS_SUCCEEDED(rv));
-    rv = dummyMut->SetHost(tuple.cookie->host(), getter_AddRefs(outMut));
-
-    if (NS_FAILED(rv)) {
-      COOKIE_LOGSTRING(LogLevel::Debug, ("Removing cookie from db with "
-                                         "newly invalid hostname: '%s'",
-                                         tuple.cookie->host().get()));
-      RefPtr<Cookie> cookie =
-          Cookie::Create(*tuple.cookie, tuple.originAttributes);
-      cleanupCookies.AppendElement(cookie);
-      continue;
-    }
-
-    // CreateValidated fixes up the creation and lastAccessed times.
-    // If the DB is corrupted and the timestaps are far away in the future
-    // we don't want the creation timestamp to update gLastCreationTime
-    // as that would contaminate all the next creation times.
-    // We fix up these dates to not be later than the current time.
-    // The downside is that if the user sets the date far away in the past
-    // then back to the current date, those cookies will be stale,
-    // but if we don't fix their dates, those cookies might never be
-    // evicted.
-    RefPtr<Cookie> cookie =
-        Cookie::CreateValidated(*tuple.cookie, tuple.originAttributes);
-    AddCookieToList(tuple.key.mBaseDomain, tuple.key.mOriginAttributes, cookie);
+    AddCookieToList(tuple.key.mBaseDomain, tuple.key.mOriginAttributes,
+                    tuple.cookie);
   }
 
   if (NS_FAILED(InitDBConnInternal())) {
@@ -1841,10 +2193,28 @@ void CookiePersistentStorage::InitDBConn() {
     RemoveCookieFromDB(*cookie);
   }
 
+  // We will have migrated CHIPS cookies if the pref is set, and .unset it
+  // to prevent duplicated work. This has to happen in the main thread though,
+  // so we waited to this point.
+  if (StaticPrefs::network_cookie_CHIPS_enabled()) {
+    Preferences::SetUint(
+        "network.cookie.CHIPS.lastMigrateDatabase",
+        StaticPrefs::network_cookie_CHIPS_migrateDatabaseTarget());
+  }
+
   nsCOMPtr<nsIObserverService> os = services::GetObserverService();
   if (os) {
     os->NotifyObservers(nullptr, "cookie-db-read", nullptr);
     mReadArray.Clear();
+  }
+
+  if (StaticPrefs::network_cookie_validation_lastEpoch() <
+      StaticPrefs::network_cookie_validation_epoch()) {
+    nsCOMPtr<nsIRunnable> idleRunnable = NS_NewRunnableFunction(
+        "CookiePersistentStorage::RecordValidationTelemetry",
+        [self = RefPtr{this}]() { self->RecordValidationTelemetry(); });
+    (void)NS_DispatchToMainThreadQueue(do_AddRef(idleRunnable),
+                                       EventQueuePriority::Idle);
   }
 }
 
@@ -1888,9 +2258,9 @@ nsresult CookiePersistentStorage::InitDBConnInternal() {
                        "isSecure, "
                        "isHttpOnly, "
                        "sameSite, "
-                       "rawSameSite, "
                        "schemeMap, "
-                       "isPartitionedAttributeSet "
+                       "isPartitionedAttributeSet, "
+                       "updateTime "
                        ") VALUES ("
                        ":originAttributes, "
                        ":name, "
@@ -1903,9 +2273,9 @@ nsresult CookiePersistentStorage::InitDBConnInternal() {
                        ":isSecure, "
                        ":isHttpOnly, "
                        ":sameSite, "
-                       ":rawSameSite, "
                        ":schemeMap, "
-                       ":isPartitionedAttributeSet "
+                       ":isPartitionedAttributeSet, "
+                       ":updateTime "
                        ")"),
       getter_AddRefs(mStmtInsert));
   NS_ENSURE_SUCCESS(rv, rv);
@@ -1948,9 +2318,9 @@ nsresult CookiePersistentStorage::CreateTableWorker(const char* aName) {
       "isHttpOnly INTEGER, "
       "inBrowserElement INTEGER DEFAULT 0, "
       "sameSite INTEGER DEFAULT 0, "
-      "rawSameSite INTEGER DEFAULT 0, "
       "schemeMap INTEGER DEFAULT 0, "
       "isPartitionedAttributeSet INTEGER DEFAULT 0, "
+      "updateTime INTEGER, "
       "CONSTRAINT moz_uniqueid UNIQUE (name, host, path, originAttributes)"
       ")");
   return mSyncConn->ExecuteSimpleSQL(command);
@@ -2059,10 +2429,10 @@ nsresult CookiePersistentStorage::RunInTransaction(
   mozStorageTransaction transaction(mDBConn, true);
 
   // XXX Handle the error, bug 1696130.
-  Unused << NS_WARN_IF(NS_FAILED(transaction.Start()));
+  (void)NS_WARN_IF(NS_FAILED(transaction.Start()));
 
   if (NS_FAILED(aCallback->Callback())) {
-    Unused << transaction.Rollback();
+    (void)transaction.Rollback();
     return NS_ERROR_FAILURE;
   }
 
@@ -2121,6 +2491,111 @@ void CookiePersistentStorage::CollectCookieJarSizeData() {
       sumPartitioned);
   mozilla::glean::networking::cookie_count_unpartitioned.AccumulateSingleSample(
       sumUnpartitioned);
+}
+
+// NOTE: if you modify this function and want it to run again on next startup
+// for existing profiles, bump network.cookie.validation.epoch.
+void CookiePersistentStorage::RecordValidationTelemetry() {
+  MOZ_ASSERT(NS_IsMainThread());
+
+  RefPtr<CookieService> cs = CookieService::GetSingleton();
+  if (!cs) {
+    // We are shutting down, or something bad is happening.
+    return;
+  }
+
+  struct CookieToAddOrRemove {
+    nsCString mBaseDomain;
+    OriginAttributes mOriginAttributes;
+    RefPtr<Cookie> mCookie;
+  };
+
+  nsTArray<CookieToAddOrRemove> listToAdd;
+  nsTArray<CookieToAddOrRemove> listToRemove;
+
+  for (const auto& entry : mHostTable) {
+    const CookieEntry::ArrayType& cookies = entry.GetCookies();
+    for (CookieEntry::IndexType i = 0; i < cookies.Length(); ++i) {
+      Cookie* cookie = cookies[i];
+
+      RefPtr<CookieValidation> validation =
+          CookieValidation::Validate(cookie->ToIPC());
+      mozilla::glean::networking::cookie_db_validation
+          .Get(ValidationErrorToLabel(validation->Result()))
+          .Add(1);
+
+      // We are unable to recover from all the possible errors. Let's fix the
+      // most common ones.
+      switch (validation->Result()) {
+        case nsICookieValidation::eRejectedNoneRequiresSecure: {
+          RefPtr<Cookie> newCookie =
+              Cookie::Create(cookie->ToIPC(), entry.mOriginAttributes);
+          MOZ_ASSERT(newCookie);
+
+          newCookie->SetSameSite(nsICookie::SAMESITE_UNSET);
+          newCookie->SetCreationTimeInUSec(cookie->CreationTimeInUSec());
+
+          listToAdd.AppendElement(CookieToAddOrRemove{
+              entry.mBaseDomain, entry.mOriginAttributes, newCookie});
+          break;
+        }
+
+        case nsICookieValidation::eRejectedAttributeExpiryOversize: {
+          RefPtr<Cookie> newCookie =
+              Cookie::Create(cookie->ToIPC(), entry.mOriginAttributes);
+          MOZ_ASSERT(newCookie);
+
+          int64_t currentTimeInMSec = PR_Now() / PR_USEC_PER_MSEC;
+
+          newCookie->SetExpiryInMSec(CookieCommons::MaybeCapExpiry(
+              currentTimeInMSec, cookie->ExpiryInMSec()));
+          newCookie->SetCreationTimeInUSec(cookie->CreationTimeInUSec());
+
+          listToAdd.AppendElement(CookieToAddOrRemove{
+              entry.mBaseDomain, entry.mOriginAttributes, newCookie});
+          break;
+        }
+
+        case nsICookieValidation::eRejectedEmptyNameAndValue:
+          [[fallthrough]];
+        case nsICookieValidation::eRejectedInvalidCharName:
+          [[fallthrough]];
+        case nsICookieValidation::eRejectedInvalidCharValue:
+          listToRemove.AppendElement(CookieToAddOrRemove{
+              entry.mBaseDomain, entry.mOriginAttributes, cookie});
+          break;
+
+        default:
+          // Nothing to do here.
+          break;
+      }
+    }
+  }
+
+  for (CookieToAddOrRemove& data : listToAdd) {
+    AddCookie(nullptr, data.mBaseDomain, data.mOriginAttributes, data.mCookie,
+              data.mCookie->CreationTimeInUSec(), nullptr, VoidCString(), true,
+              !data.mOriginAttributes.mPartitionKey.IsEmpty(), nullptr,
+              nullptr);
+  }
+
+  for (CookieToAddOrRemove& data : listToRemove) {
+    RemoveCookie(data.mBaseDomain, data.mOriginAttributes, data.mCookie->Host(),
+                 data.mCookie->Name(), data.mCookie->Path(),
+                 /* is http: */ true, nullptr);
+  }
+
+  // Only mark this epoch as complete if no fixes were needed. If we did fix
+  // cookies, re-scan on next startup to confirm the database is now stable.
+  if (listToAdd.IsEmpty() && listToRemove.IsEmpty()) {
+    Preferences::SetUint("network.cookie.validation.lastEpoch",
+                         StaticPrefs::network_cookie_validation_epoch());
+  }
+
+  nsCOMPtr<nsIObserverService> os = services::GetObserverService();
+  if (os) {
+    os->NotifyObservers(nullptr, "cookies-validated", nullptr);
+  }
 }
 
 }  // namespace net

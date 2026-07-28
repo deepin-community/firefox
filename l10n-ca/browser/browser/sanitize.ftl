@@ -7,6 +7,9 @@ sanitize-prefs2 =
     .style = min-width: 36em
 sanitize-prefs-style =
     .style = width: 17em
+sanitize-dialog-title2 =
+    .title = Esborra les dades de navegació i les galetes
+    .style = min-width: 34em
 sanitize-dialog-title =
     .title = Esborra l'historial recent
     .style = min-width: 34em
@@ -50,9 +53,6 @@ clear-time-duration-suffix =
 history-section-label = Historial
 item-history-and-downloads =
     .label = Historial de navegació i de baixades
-    .accesskey = H
-item-history-form-data-downloads =
-    .label = Historial
     .accesskey = H
 item-cookies =
     .label = Galetes
@@ -107,3 +107,6 @@ sanitize-everything-warning = S'esborrarà tot l'historial.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = S'esborraran tots els elements seleccionats.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = S'està calculant…

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -79,8 +77,9 @@ class RenderCompositorLayersSWGL : public RenderCompositor {
   void AddSurface(wr::NativeSurfaceId aId,
                   const wr::CompositorSurfaceTransform& aTransform,
                   wr::DeviceIntRect aClipRect,
-                  wr::ImageRendering aImageRendering) override;
-  void EnableNativeCompositor(bool aEnable) override {}
+                  wr::ImageRendering aImageRendering,
+                  wr::DeviceIntRect aRoundedClipRect,
+                  wr::ClipRadius aClipRadius) override;
   void DeInit() override {}
 
   void MaybeRequestAllowFrameRecording(bool aWillRecord) override;
@@ -124,7 +123,7 @@ class RenderCompositorLayersSWGL : public RenderCompositor {
    public:
     explicit Surface(wr::DeviceIntSize aTileSize, bool aIsOpaque)
         : mTileSize(aTileSize), mIsOpaque(aIsOpaque) {}
-    virtual ~Surface() {}
+    virtual ~Surface() = default;
 
     gfx::IntSize TileSize() {
       return gfx::IntSize(mTileSize.width, mTileSize.height);
@@ -157,6 +156,8 @@ class RenderCompositorLayersSWGL : public RenderCompositor {
     gfx::Matrix4x4 mTransform;
     gfx::IntRect mClipRect;
     gfx::SamplingFilter mFilter;
+    gfx::Rect mRoundedClipRect;
+    gfx::RectCornerRadii mRoundedClipRadii;
   };
 
   virtual void HandleExternalImage(RenderTextureHost* aExternalImage,

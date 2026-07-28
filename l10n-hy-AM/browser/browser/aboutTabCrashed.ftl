@@ -4,12 +4,12 @@
 
 crashed-title = Ներդիրի վթարի զեկուցիչ
 crashed-close-tab-button = Փակել ներդիրը
-crashed-restore-tab-button = Վերականգնել ներդիրը
+crashed-restore-tab-button = Վերականգնել այս ներդիրը
 crashed-restore-all-button = Վերականգնել վթարված բոլոր ներդիրները
 crashed-header = Վա՜յ։ Ձեր ներդիրը հենց նոր վթարվեց։
 crashed-offer-help = Մենք կարող ենք օգնել:
 crashed-single-offer-help-message = Ընտրեք { crashed-restore-tab-button }՝ էջը կրին բեռնելու համար:
-crashed-multiple-offer-help-message = Ընտրեք { crashed-restore-tab-button } կամ { crashed-restore-all-button }՝ էջը/էջերը կրկին բեռնելու համար:
+crashed-multiple-offer-help-message = Ընտրեք { crashed-restore-tab-button } կամ { crashed-restore-all-button }՝ էջը/էջերի վերաբեռնման համար։
 crashed-request-help = Կօգնե՞ք մեզ։
 crashed-request-help-message = Վթարի զեկույցներն օգնում են մեզ վերլուծել խնդիրները և դարձնել { -brand-short-name }-ն ավելի լավը։
 crashed-request-report-title = Զեկուցել այս ներդիրը
@@ -19,4 +19,4 @@ crashed-comment =
 crashed-include-URL-2 = Ներառեք կայքերի URL-ները, որոնք բացելիս { -brand-short-name }-ը վթարվել է
 crashed-report-sent = Վթարի զեկույցը արդեն ուղարկվել է: Շնորհակալություն, որ օգնում եք { -brand-short-name }-ը դարձնել էլ ավելի լավը:
 crashed-request-auto-submit-title = Զեկուցել խորապատկերի ներդիրները
-crashed-auto-submit-checkbox-2 = Թարմացնել կարգավորումները՝ ինքնաբար ուղարկելու զեկույցներ, երբ { -brand-short-name }-ը վթարվում է
+crashed-auto-submit-checkbox-2 = Թարմացնել նախապատվությունները՝ { -brand-short-name }-ը վթարվելիս ինքնաբար զեկույցներ ուղարկելու համար

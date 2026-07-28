@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -53,6 +52,12 @@ class TransactionManager final : public nsITransactionManager,
     mRedoStack.Clear();
     return true;
   }
+
+  /**
+   * Delete the last undoable transaction from the undo stack.  This does
+   * nothing if there is a redoable transactions.
+   */
+  already_AddRefed<nsITransaction> PopUndoStack();
 
   void Attach(HTMLEditor& aHTMLEditor);
   void Detach(const HTMLEditor& aHTMLEditor);

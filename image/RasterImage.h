@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,6 +16,7 @@
 #ifndef mozilla_image_RasterImage_h
 #define mozilla_image_RasterImage_h
 
+#include "mozilla/Atomics.h"
 #include "Image.h"
 #include "nsCOMPtr.h"
 #include "imgIContainer.h"
@@ -29,9 +29,7 @@
 #include "ISurfaceProvider.h"
 #include "Orientation.h"
 #include "mozilla/AtomicBitfields.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/Maybe.h"
-#include "mozilla/MemoryReporting.h"
 #include "mozilla/NotNull.h"
 #include "mozilla/StaticPrefs_image.h"
 #include "mozilla/TimeStamp.h"
@@ -47,12 +45,12 @@
 class nsIInputStream;
 class nsIRequest;
 
-#define NS_RASTERIMAGE_CID                           \
-  { /* 376ff2c1-9bf6-418a-b143-3340c00112f7 */       \
-    0x376ff2c1, 0x9bf6, 0x418a, {                    \
-      0xb1, 0x43, 0x33, 0x40, 0xc0, 0x01, 0x12, 0xf7 \
-    }                                                \
-  }
+#define NS_RASTERIMAGE_CID                    \
+  {/* 376ff2c1-9bf6-418a-b143-3340c00112f7 */ \
+   0x376ff2c1,                                \
+   0x9bf6,                                    \
+   0x418a,                                    \
+   {0xb1, 0x43, 0x33, 0x40, 0xc0, 0x01, 0x12, 0xf7}}
 
 /**
  * Handles static and animated image containers.
@@ -382,6 +380,8 @@ class RasterImage final : public ImageResource,
   // This is currently only used for statistics
   int32_t mDecodeCount;
 
+  Atomic<bool> mIsBeingDestroyed{false};
+
 #ifdef DEBUG
   uint32_t mFramesNotified;
 #endif
@@ -415,12 +415,6 @@ class RasterImage final : public ImageResource,
        (bool, WantFullDecode, 1)))
 
   TimeStamp mDrawStartTime;
-
-  // This field is set according to the DecoderType of this image once when
-  // initialized so that a decoder's flags can be set according to any
-  // preferences that affect its behavior in a way that would otherwise cause
-  // errors, such as enabling or disabling animation.
-  DecoderFlags mDefaultDecoderFlags = DefaultDecoderFlags();
 
   //////////////////////////////////////////////////////////////////////////////
   // Scaling.

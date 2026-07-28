@@ -17,6 +17,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=14 span[header_field]="Content-Length"
@@ -53,6 +55,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=14 span[header_field]="Content-Length"
@@ -83,6 +87,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=14 span[header_field]="Content-Length"
@@ -107,6 +113,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=14 span[header_field]="Content-Length"
@@ -135,6 +143,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=14 span[header_field]="Content-Length"
@@ -143,9 +153,7 @@ off=35 len=1 span[header_value]="1"
 off=38 header_value complete
 off=38 len=17 span[header_field]="Transfer-Encoding"
 off=56 header_field complete
-off=57 len=8 span[header_value]="identity"
-off=67 header_value complete
-off=69 error code=4 reason="Content-Length can't be present with Transfer-Encoding"
+off=56 error code=15 reason="Transfer-Encoding can't be present with Content-Length"
 ```
 
 ## Invalid whitespace token with `Content-Length` header field
@@ -166,6 +174,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=10 span[header_field]="Connection"
@@ -194,6 +204,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=10 span[header_field]="Connection"
@@ -220,7 +232,7 @@ off=79 error code=22 reason="Pause on CONNECT/Upgrade"
 ```http
 PUT /url HTTP/1.1
 Content-Length: 1
-Transfer-Encoding: chunked
+Transfer-Encoding: identity
 
 
 ```
@@ -231,6 +243,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=14 span[header_field]="Content-Length"
@@ -239,9 +253,9 @@ off=35 len=1 span[header_value]="1"
 off=38 header_value complete
 off=38 len=17 span[header_field]="Transfer-Encoding"
 off=56 header_field complete
-off=57 len=7 span[header_value]="chunked"
-off=66 header_value complete
-off=68 headers complete method=4 v=1/1 flags=228 content_length=1
+off=57 len=8 span[header_value]="identity"
+off=67 header_value complete
+off=69 headers complete method=4 v=1/1 flags=220 content_length=1
 ```
 
 ## Funky `Content-Length` with body
@@ -260,6 +274,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=36 span[url]="/get_funky_content_length_body_hello"
 off=41 url complete
+off=41 len=4 span[protocol]="HTTP"
+off=45 protocol complete
 off=46 len=3 span[version]="1.0"
 off=49 version complete
 off=51 len=14 span[header_field]="conTENT-Length"
@@ -287,6 +303,8 @@ off=0 len=4 span[method]="POST"
 off=4 method complete
 off=5 len=1 span[url]="/"
 off=7 url complete
+off=7 len=4 span[protocol]="HTTP"
+off=11 protocol complete
 off=12 len=3 span[version]="1.1"
 off=15 version complete
 off=17 len=14 span[header_field]="Content-Length"
@@ -312,6 +330,8 @@ off=0 len=4 span[method]="POST"
 off=4 method complete
 off=5 len=1 span[url]="/"
 off=7 url complete
+off=7 len=4 span[protocol]="HTTP"
+off=11 protocol complete
 off=12 len=3 span[version]="1.1"
 off=15 version complete
 off=17 len=14 span[header_field]="Content-Length"
@@ -336,6 +356,8 @@ off=0 len=4 span[method]="POST"
 off=4 method complete
 off=5 len=1 span[url]="/"
 off=7 url complete
+off=7 len=4 span[protocol]="HTTP"
+off=11 protocol complete
 off=12 len=3 span[version]="1.1"
 off=15 version complete
 off=17 len=14 span[header_field]="Content-Length"
@@ -360,6 +382,8 @@ off=0 len=4 span[method]="POST"
 off=4 method complete
 off=5 len=1 span[url]="/"
 off=7 url complete
+off=7 len=4 span[protocol]="HTTP"
+off=11 protocol complete
 off=12 len=3 span[version]="1.1"
 off=15 version complete
 off=17 len=14 span[header_field]="Content-Length"
@@ -383,6 +407,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=26 error code=10 reason="Invalid header token"
@@ -407,6 +433,8 @@ off=0 len=3 span[method]="PUT"
 off=3 method complete
 off=4 len=4 span[url]="/url"
 off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
 off=14 len=3 span[version]="1.1"
 off=17 version complete
 off=19 len=14 span[header_field]="Content-Length"
@@ -422,6 +450,8 @@ off=42 len=4 span[method]="POST"
 off=46 method complete
 off=47 len=4 span[url]="/url"
 off=52 url complete
+off=52 len=4 span[protocol]="HTTP"
+off=56 protocol complete
 off=57 len=3 span[version]="1.1"
 off=60 version complete
 off=62 len=14 span[header_field]="Content-Length"
@@ -431,4 +461,58 @@ off=83 header_value complete
 off=85 headers complete method=3 v=1/1 flags=20 content_length=456
 off=85 skip body
 off=85 message complete
+```
+
+## Missing CRLF-CRLF before body
+
+<!-- meta={"type": "request" } -->
+```http
+PUT /url HTTP/1.1
+Content-Length: 3
+\rabc
+```
+
+```log
+off=0 message begin
+off=0 len=3 span[method]="PUT"
+off=3 method complete
+off=4 len=4 span[url]="/url"
+off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
+off=14 len=3 span[version]="1.1"
+off=17 version complete
+off=19 len=14 span[header_field]="Content-Length"
+off=34 header_field complete
+off=35 len=1 span[header_value]="3"
+off=38 header_value complete
+off=39 error code=2 reason="Expected LF after headers"
+```
+
+## Missing CRLF-CRLF before body (lenient)
+
+<!-- meta={"type": "request-lenient-optional-lf-after-cr" } -->
+```http
+PUT /url HTTP/1.1
+Content-Length: 3
+\rabc
+```
+
+```log
+off=0 message begin
+off=0 len=3 span[method]="PUT"
+off=3 method complete
+off=4 len=4 span[url]="/url"
+off=9 url complete
+off=9 len=4 span[protocol]="HTTP"
+off=13 protocol complete
+off=14 len=3 span[version]="1.1"
+off=17 version complete
+off=19 len=14 span[header_field]="Content-Length"
+off=34 header_field complete
+off=35 len=1 span[header_value]="3"
+off=38 header_value complete
+off=39 headers complete method=4 v=1/1 flags=20 content_length=3
+off=39 len=3 span[body]="abc"
+off=42 message complete
 ```

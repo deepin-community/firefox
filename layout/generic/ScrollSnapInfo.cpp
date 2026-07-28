@@ -1,15 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ScrollSnapInfo.h"
 
+#include "mozilla/WritingModes.h"
+#include "mozilla/dom/Element.h"
+#include "nsIContent.h"
 #include "nsPoint.h"
 #include "nsRect.h"
 #include "nsStyleStruct.h"
-#include "mozilla/WritingModes.h"
 
 namespace mozilla {
 
@@ -92,7 +92,10 @@ void ScrollSnapInfo::ForEachValidTargetFor(
     // Ignore snap points if snapping to the point would leave the snap area
     // outside of the snapport.
     // https://drafts.csswg.org/css-scroll-snap-1/#snap-scope
-    if (!snappedPort.Intersects(target.mSnapArea)) {
+    //
+    // NOTE: We don't use BaseRect::Intersects() here since the function returns
+    // false in cases where the given rectangle is empty.
+    if (!snappedPort.EdgeInclusiveIntersection(target.mSnapArea)) {
       continue;
     }
 
@@ -100,6 +103,24 @@ void ScrollSnapInfo::ForEachValidTargetFor(
       break;
     }
   }
+}
+
+std::ostream& operator<<(std::ostream& aStream,
+                         const ScrollSnapInfo::SnapTarget& aTarget) {
+  nsAutoString string;
+  const nsIContent* content = reinterpret_cast<nsIContent*>(aTarget.mTargetId);
+  if (content->IsElement()) {
+    content->AsElement()->Describe(string,
+                                   dom::Element::DescriptionKind::IdOnly);
+  } else {
+    string.AppendPrintf("(not an element)");
+  }
+  return aStream << NS_LossyConvertUTF16toASCII(string).get();
+}
+
+std::ostream& operator<<(std::ostream& aStream,
+                         const ScrollSnapInfo::SnapTarget* aTarget) {
+  return aStream << *aTarget;
 }
 
 }  // namespace mozilla

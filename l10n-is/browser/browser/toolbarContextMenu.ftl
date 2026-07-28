@@ -30,6 +30,12 @@ toolbar-context-menu-reopen-closed-tabs =
            *[other] Opna aftur lokaða flipa
         }
     .accesskey = O
+toolbar-context-turn-on-vertical-tabs =
+    .label = Virkja lóðrétta flipa
+toolbar-context-turn-off-vertical-tabs =
+    .label = Loka lóðréttum flipum
+toolbar-context-customize-sidebar =
+    .label = Sérsníða hliðarstiku
 toolbar-context-menu-manage-extension =
     .label = Sýsla með forritsauka
     .accesskey = e
@@ -54,6 +60,10 @@ toolbar-context-menu-auto-hide-downloads-button-2 =
 toolbar-context-menu-always-open-downloads-panel =
     .label = Sýna spjaldið þegar niðurhal hefst
     .accesskey = S
+# Label of checkbox menu item to toggle visibility of Extensions Button.
+toolbar-context-menu-always-show-extensions-button =
+    .label = Sýna alltaf í verkfærastiku
+    .accesskey = a
 toolbar-context-menu-remove-from-toolbar =
     .label = Fjarlægja af verkfærastiku
     .accesskey = r

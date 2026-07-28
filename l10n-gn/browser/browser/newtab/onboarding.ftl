@@ -25,6 +25,8 @@ return-to-amo-subtitle = Iporãite, emohendáma { -brand-short-name }
 return-to-amo-addon-title = Ko’ág̃a roguerekóta <img data-l10n-name="icon"/> <b>{ $addon-name }</b> ndéve g̃uarã.
 return-to-amo-add-extension-label = Embojuaju jepysokue
 return-to-amo-add-theme-label = Embojuaju Téma
+return-to-amo-theme-install-complete-label = Téma mohendapyre
+return-to-amo-extension-install-complete-label = Jepysokue mohendapyre
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Emba’egueru { $previo
 mr1-onboarding-theme-header = Eñemomba’e hese
 mr1-onboarding-theme-subtitle = Eñemomba’e { -brand-short-name } peteĩ téma ndive
 mr1-onboarding-theme-secondary-button-label = Ani ko’ág̃a
-newtab-wallpaper-onboarding-title = Eiporukuaa sa’y sa’imi
-newtab-wallpaper-onboarding-subtitle = Eiporavo mba’erechaha rugua emoporãve hag̃ua tendayke pyahu
-newtab-wallpaper-onboarding-primary-button-label = Emoĩ mba’erechaha rugua
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Téma apopyvusu
 mr1-onboarding-theme-label-light = Tesakã
@@ -63,6 +62,15 @@ mr1-onboarding-theme-label-dark = Ypytũ
 # "Alpenglow" here is the name of the theme, and should be kept in English.
 mr1-onboarding-theme-label-alpenglow = Alpenglow
 onboarding-theme-primary-button-label = Apopyréma
+
+## Accessible labels for the icon-only play/pause toggle that controls animated
+## illustrations on the onboarding screen. The button replaces the animation
+## with a static image when clicked.
+
+onboarding-animation-pause-button =
+    .aria-label = Ñemombyta mokyre’ỹ
+onboarding-animation-play-button =
+    .aria-label = Ñemongu’e mokyre’ỹ
 
 ## Please make sure to split the content of the title attribute into lines whose
 ## width corresponds to about 40 Latin characters, to ensure that the tooltip
@@ -226,7 +234,9 @@ mr2022-onboarding-set-default-subtitle = Eiporu peteĩ kundahára atyguasu viru�
 mr2022-onboarding-get-started-primary-subtitle = Ore rembiapo ipyahuvéva rojapo ndéve g̃uarã, eikundaha hag̃ua apañuai’ỹre. Oreko heta tembiapoite ro’éva ehayhutaha.
 mr2022-onboarding-get-started-primary-button-label = Emboheko sapy’aitépe
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Emboheko pya’eterei
 mr2022-onboarding-import-subtitle = Emboheko { -brand-short-name } eipotaháicha. Embojuaju techaukaha, ñe’ẽñemi ha hetave ne kundahára itujavéva guive.
@@ -341,6 +351,7 @@ onboarding-device-migration-primary-button-label = Eñepyrũ tembiapo
 ## Add-ons Picker screen
 
 amo-picker-title = Emomba’e nde { -brand-short-name }
+amo-picker-subtitle = Umi jepysokue ha’e tembiporu’i kundahárape g̃uarã ha omoneĩ ñe’ẽñemi ñemo’ã, ta’ãngamýi mboguyjy, joguarã jejuhu, ñemurã vai jekoko, kundahára rechaha moambue ha hetave.
 amo-picker-install-button-label = Embojuaju { -brand-short-name } rehe
 amo-picker-install-complete-label = Oñemohendapyréva
 amo-picker-collection-link = Ejepovyvyve moĩmbaháre
@@ -356,6 +367,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Embojuehepaite vove, 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } oĩ tapiaite nendive
 onboarding-gratitude-security-and-privacy-subtitle = Aguyje eiporu haguére { -brand-short-name }, oykekóva Fundación Mozilla. Nepytyvõ rupive, romba’apo Ñanduti hekorosã ha ijuruja hag̃ua opavavetépe g̃uarã.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Embojuehe opavave mba’e’oka ndive
+onboarding-sign-up-description = Eñemboheraguapy ereko hag̃ua mba’ete ha opaite marandu guasu — ñe’ẽñemi, techaukaha ha hetave — oñeñongatúta tekorosãme ha erekóta eike vove oimeraẽ mba’e’okápe.
+onboarding-sign-up-button = Emoinge térã eñemboheraguapy
+onboarding-sign-up-secondary-button = Eñepyrũ eikundaha
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +391,237 @@ onboarding-new-user-survey-familiarity-based-option-1 = Che pyahu ápe
 onboarding-new-user-survey-familiarity-based-option-2 = Aiporu’imíkuri
 onboarding-new-user-survey-familiarity-based-option-3 = Aikuaaporã mba’épa
 onboarding-new-user-survey-familiarity-based-option-4 = Aiporuva’kue yma, aréma upehague
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Eremi moõpa eipota umi tendayke
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Emoambue ejapose vove tenda yke ñembohekópe.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Ne rendayke, ha’eháicha
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = ¿Ereko heta tendayke jurujápe? Ehecha emohenda yke gotyo ehecha hag̃ua hasy’ỹ hag̃uáicha. Térã emantene ymaveguaréicha tendayke ndive. Emoambue ejapose vove.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Eiporavo tendayke ra’ãngarã
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Jehechauka nepytyvõva epáy hag̃ua, eiporu umi tendayke ykegua. Térã eiporavo ojeporumeméva tendayke oĩva yvate gotyo. Emoambue ejapose vove.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Tendayke yke gotyo
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Tendayke yvate gotyo
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Ko’ápe oĩ umi tendayke oñembo’ýva
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Ehechauka tendayke oñembo’ýva
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Eiporu umi tendayke yke gotyo oĩva. Emoambue reipotáramo tenda yke ñembohekópe.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Eiporu tendayke oñembo’ýva
+onboarding-flair-text = ¡Pyahu!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Ereko Tendayke ñenohápe
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Peteĩ kundahára rovetã ohechaukáva tendayke mba’erechaha tenda yke gotyo { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Peteĩ kundahára rovetã ohechaukáva tendayke mba’erechaha tenda yke gotyo { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Kundahára rovetã ohechaukáva tendayke yvate gotyo.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Kundahára rovetã ohechaukáva tendayke yvate gotyo.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Eiporu peteĩ chatbot IA tenda yképe
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Eiporavo hetaiterei me’ẽhára pa’ũgui. Emoambue ne ñanduti me’ẽhára ejaposete vovénte. <a data-l10n-name="learn-more">Eikuaave</a>
+onboarding-genai-sidebar-primary-button = Eiporavo chatbot
+onboarding-genai-sidebar-secondary-button = Eñepyrũ eikundaha
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Embohekopákatu { -brand-short-name }
+onboarding-checklist-subtitle = Emoĩmba ko’ã mba’e eiporu porãve hag̃ua kundahára.
+onboarding-checklist-set-default = Ajapo { -brand-short-name }-gui kundahára ypyguáva
+onboarding-checklist-pin = Emboja { -brand-short-name } tembiaporã rendápe
+onboarding-checklist-import = Emba’egueru kundahára itujavévagui
+onboarding-checklist-extension = Embojuaju jepysokue
+onboarding-checklist-sign-up = Eike térã eñemboheraguapy ne mba’etépe
+onboarding-checklist-minimize =
+    .label = Momichĩ
+onboarding-checklist-remove =
+    .label = Embogue jehechajeyha rysýi
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Eiporu tendayke aty eime porãve ha epayve hag̃ua
+tab-groups-onboarding-feature-callout-subtitle = Eñeorganisa emoĩvo peteĩ tendayke ambuéva ári emoheñói hag̃ua aty peteĩha.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Ejuhu aty rendayke poravoha Tysýi opaite tendayképe ejapose vove.
+tab-groups-onboarding-create-group-title-2 = Ag̃aite ejuhukuaátama ne rendayke aty ko’ápe.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Ejuhu nde atykuéra ehekávo ñeikundaha rupápe.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Embotývo tendayke aty, embojuruja jey poravoha Tysýi guive opaite tendayke ejapose vove.
+tab-groups-onboarding-saved-groups-title-2 = Emboty vove tendayke aty, embojurujakuaa jey ko’ápe ejapose vove.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Ejuhu nde atykuéra oñembotýva ehekávo ñeikundaha rupápe.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Embojuruja jey tendayke aty poravoha Tysýi opaite tendayképe ejapose vove.
+tab-groups-onboarding-session-restore-title = Embojuruja jey ne rendayke aty ápe ejapose vove.
+tab-groups-onboarding-dismiss = MONEĨ
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Emomaitei { -brand-product-name } mba’etekuéra
+multi-profile-spotlight-body = Eva pya’e ñeikundaha tembiapo ha ñembosaraigua. Umi mba’ete oñongatumem marandu ñeikundahagua, oikehápe jeheka rembiasakue ha ñe’ẽñemi, mombyrymbyry oĩ hag̃uáicha hekopete.
+multi-profile-spotlight-cta = Emoheñói mba’ete
+multi-profile-callout-title = Emoheñói heta mba’ete emba’apo ha ñembosarairã
+multi-profile-callout-subtitle = Umi mba’ete omoneĩ eikuaavévo marandu ñeikundaha rehegua, ikatúva jeheka rembiasakue ha ñe’ẽñemi, oñondive’ỹva.
+multi-profile-callout-cta = Emoheñói mba’ete
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = ¡Emboguejy, embojuehe ha oĩma!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Emoha’ãnga QR ayvu emboguejy hag̃ua { -brand-product-name } pumbyrýpe. Emboguejy vove, eiporavo “Embojuehe pumbyry ndive” eikekuaa ñe’ẽñemi, techaukaha ha hetave mba’e.
+dismiss-button-label = Mboyke
+sync-to-mobile-button-label = Ñembojuehe pumbyry ndive
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR ayvu emboguejy hag̃ua { -brand-product-name } pumbyrýpe
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    ¿Embohekopyahu Windows 11-pe?
+    Ñañongatu tekorosãrãve ne mba’ekuaarã { -brand-product-name }.
+create-backup-screen-1-subtitle = Emo’ãkuaa ijeheguiete ñe’ẽñemi, techaukaha ha hetave 1 térã 2 aravo’ípe.
+create-backup-screen-1-flair = Jeroviaha
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Eikuaave</a>
+create-backup-screen-1-sync-label = Embojuehe { -brand-product-name } ndive
+create-backup-screen-1-sync-body = Eykeko ne mba’e’okaita opaite eikehaguépe
+create-backup-screen-1-backup-label = Eñongatu mokõi jey nde PC-pe
+create-backup-screen-1-backup-body = Eñongatu mba’e’oka térã OneDrive-pe
+create-backup-select-tile-button-label = Eiporavo
+create-backup-back-button-label = Tapykue
+create-backup-show-fewer =
+    .label = Ehechauka’ive kóvaicha
+create-backup-screen-2-title = Eiporavo mba’ekuaarãita { -brand-product-name } eykekoséva
+create-backup-screen-2-subtitle = Peteĩ aravo’ínte. Ne mba’ekuaarãita ojeykeko peteĩ jeýnte arapukue.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Ndahasýi ñemboheko
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Techaukaha, tembiasakue, ñemboheko ha hetave
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Ndogueroikéi ñe’ẽñemi ha avei jehepyme’ẽ
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Ipapapy’ỹva
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Opaite mba’ekuaarã
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Ogueroike ñe’ẽñemi ha jehepyme’ẽ
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Ipapapýva ñe’ẽñemi ndive
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = ¿Moõpa eñongatuse ne ñongatu pyahu tekorosãrã?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Emoheñói marandurenda ñe’ẽñemi jeykekoha
+create-backup-screen-3-subtitle = Tekotevẽva mba’ekuaarã ñembopapapyrã. Eñongatu tenda nemandu’a hag̃uáme.
+fx-backup-opt-in-header = Eiporavo marandurenda oĩha
+fx-backup-opt-in-filepath-label = Eiporavo pe mba’e’oka pyahu eguerahaukaseha, ikatúva OneDrive.
+fx-backup-opt-in-create-password-label = Emoinge ñe’ẽñemi
+fx-backup-opt-in-confirm-btn-label = Ku’ejey
+fx-backup-opt-in-cancel-btn-label = Tapykue
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Ne ñongatu tekorasãrã ijaravóma
+fx-backup-confirmation-screen-close-button = Mboty
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Oikepaite ñeikundaha mba’ekuaarã
+fx-backup-confirmation-screen-all-data-item-text-2 = Eñongatu ne mba’e’okápe
+fx-backup-confirmation-screen-all-data-item-text-3 = Ipapapy ha oñemo’ã ñe’ẽñemi ndive
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Techaukaha, tembiasakue, moĩporã ha oĩhápe mba’ekuaarã
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Eñongatu ne mba’e’okápe
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Ñe’ẽñemi ha oike’ỹhápe jehepyme’ẽita
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Eike <a data-l10n-name="settings">Ñembohekópe</a> egueroike hag̃ua mba’ekuaarã kañymbýva.
+fx-backup-confirmation-screen-item-subtext-1 = Pe ñongatu tekorosãrã oñepyrũta ag̃aite ha oikóta peteĩ jey árape. Ikatu ehecha mba’éichapa okue’e <a data-l10n-name="settings">Ñemboheko</a>-pe.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } ohekáta ne ñongatupy tekorosãrãva emohendase jeýrõ.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Erujey tekorosãrã ñongatuha guive
+restore-from-backup-title = Toiko ko { -brand-short-name }-gui eipotahaichaite
+restore-from-backup-subtitle = Erujey techaukaha, tembiasakue ha ambue mba’ekuaarã eike hag̃ua ñandutípe.
+restore-from-backup-secondary-button = Ani eguerujey
+multiple-backups-info-tile = <strong>Ojejuhu heta maranduranda ykekoháva.</strong> Ojeporavóma maranduranda ipyahuvéva. Emyatyrõkuaa ambue mba’ete <a data-l10n-name="settings-label">Moĩporã.</a>-pe.
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = ¡Roju jeýma! Mba’ekuaarãita { -brand-short-name } mba’e ojegueru jeýma.
+restored-from-backup-success-with-checklist-subtitle = ¿Eipotápa kundahára ehayhuvéva, ohecháva nde rekoñemi, peteĩ jekutúpe?
+restored-from-backup-success-no-checklist-subtitle = Embojuruja ñongatu tekorosãrã ko mba’e’okápe <a data-l10n-name="settings">Ñemboheko</a>.
+restored-from-backup-success-with-checklist-primary-button = Eñongatu ha eku’ejey
+restored-from-backup-success-with-checklist-secondary-button = Ehejánte kóva
+restored-from-backup-success-no-checklist-primary-button = Eku’ejey
+restored-from-backup-error-title = Hmm, iñapañuái marandurenda jeykekoha.
+restored-from-backup-error-subtitle = Orekóramo ambue marandurenda jeykekoha { -brand-short-name }, eñeha’ã erujey upégui. <a data-l10n-name="restore-problems">Ereko gueteri apañuái?</a>
+restored-from-backup-error-primary-button = Mboty
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Embohéra nde { -brand-short-name } jehasakue
+onboarding-personalization-subtitle = Embohovái mbovymi porandu ha romomarandúta tembiapoite ha jepysokue eipuru porãve hag̃ua { -brand-short-name }.
+onboarding-personalization-use-case-title = ¿Ma’erã eiporúta { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Avamba’e
+onboarding-personalization-use-case-school-option = Mbo’ehao
+onboarding-personalization-use-case-work-option = Mba’apo
+onboarding-personalization-motivation-title = ¿Mba’etépa umi { -brand-short-name } rehegua nde remomba’evéva?
+onboarding-personalization-motivation-privacy-option = Ñemigua ha tekorosãrã
+onboarding-personalization-motivation-productivity-option = Mba’eapopya’e
+onboarding-personalization-motivation-other-option = Ambue
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = Romo’ã ne mba’ekuaarãita ha rojoko opaite mba’apohaguasu oma’ẽñemíva eikehápe rehe.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = Eime eime hag̃uáme
+onboarding-refresh-import-subtitle = Eru ne ñe’ẽñemieta, techaukaha, tembiasakue ha hetave.
+onboarding-refresh-import-title = Eiko { -brand-short-name } ndive nde rogapeguáicha.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = Emboha’eve ne ñeikundaha
+onboarding-refresh-sync-subtitle = Eike techaukaha, ñe’ẽñemi ha hetave oimeraẽ hendágui eikehague { -brand-short-name }-pe. Avei, umi mba’ekuaarã ipapapy neañoite ehecha hag̃uáicha.
+onboarding-refresh-sync-title = Oimeraẽ hendápe. Oñembojuehepa.
+onboarding-refresh-gratitude-subtitle = Aguyje eiporu haguére { -brand-short-name }, kundahára guasu oykekóva peteĩ atyguasu vivu’ỹguáva. Nepytyvõ rupive, romba’apo Ñanduti hekorosã ha ijuruja hag̃ua opavavetépe g̃uarã.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name } oĩta nendive
+
+## Smart Window ToU modal
+
+# Existing users
+smartwindow-existing-user-fx-tou-title = { -brand-product-name } Jeporurã rape
+smartwindow-existing-user-fx-tou-accept = Moneĩ
+smartwindow-existing-user-fx-tou-go-back = Guevijey
+
+## Smart Window about:welcome screen
+
+smartwindow-onboarding-title = Ejapo { -smart-window-brand-name }-gui eiporusevévarõ
+smartwindow-onboarding-subtitle = Emombyky, embojoja ha emba’eporandu, avavete nde joko’ỹre.
+smartwindow-onboarding-primary-button = Eku’ejey
+# Kit is referring to the Firefox mascot
+smartwindow-onboarding-image-alt =
+    .aria-label = { -brand-product-name } rymba (Kit) mba’ejeguarã ndive
+
+## Smart Window Sidebar Auto-Open Pref
+
+smartwindow-sidebar-auto-open-callout-title = ¿Eguerekose pytyvõha ñembotyhápe?
+smartwindow-sidebar-auto-open-callout-body = Embojurujakuaa gueteri eikotevẽte vovénte.
+smartwindow-sidebar-auto-open-callout-accept = Héẽ, embotymeme
+smartwindow-sidebar-auto-open-callout-dismiss = Nahániri, aguyje
+smartwindow-sidebar-auto-open-callout-accepted-title = Pe pytyvõha oĩta ñembotyhápe
+smartwindow-sidebar-auto-open-callout-rejected-title = Aikũmby

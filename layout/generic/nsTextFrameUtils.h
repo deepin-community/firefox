@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,7 @@
 #include "gfxSkipChars.h"
 #include "nsBidiUtils.h"
 
+class nsAtom;
 class nsIContent;
 struct nsStyleText;
 
@@ -121,12 +120,15 @@ class nsTextFrameUtils {
    * @param aIncomingFlags a flag indicating whether there was whitespace
    * or an Arabic character preceding this text. We set it to indicate if
    * there's an Arabic character or whitespace preceding the end of this text.
+   * @param aLanguage Content language (used to select Japanese/Chinese behavior
+   * at punctuation, see https://bugzilla.mozilla.org/show_bug.cgi?id=1935148).
    */
   template <class CharT>
   static CharT* TransformText(const CharT* aText, uint32_t aLength,
                               CharT* aOutput, CompressionMode aCompression,
                               uint8_t* aIncomingFlags, gfxSkipChars* aSkipChars,
-                              nsTextFrameUtils::Flags* aAnalysisFlags);
+                              nsTextFrameUtils::Flags* aAnalysisFlags,
+                              const nsAtom* aLanguage);
 
   /**
    * Returns whether aChar is a character that nsTextFrameUtils::TransformText
@@ -154,21 +156,36 @@ class nsTextFrameUtils {
 
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(nsTextFrameUtils::Flags)
 
+/**
+ * nsSkipCharsRunIterator is a layout-oriented convenience wrapper over
+ * gfxSkipCharsIterator, which iterates over runs in the string. Each run
+ * consists entirely of either "unskipped" or "skipped" characters.
+ *
+ * By default, calling NextRun() iterates over only unskipped runs. Call
+ * SetVisitSkipped() to let NextRun() also iterates over skipped runs where
+ * IsSkipped() is true.
+ */
 class nsSkipCharsRunIterator {
  public:
+  // Indicates whether the constructor's aRemainingLength counts only unskipped
+  // characters, or unskipped + skipped characters.
   enum LengthMode {
     LENGTH_UNSKIPPED_ONLY = false,
     LENGTH_INCLUDES_SKIPPED = true
   };
   nsSkipCharsRunIterator(const gfxSkipCharsIterator& aStart,
-                         LengthMode aLengthIncludesSkipped, uint32_t aLength)
+                         LengthMode aLengthIncludesSkipped,
+                         uint32_t aRemainingLength)
       : mIterator(aStart),
-        mRemainingLength(aLength),
+        mRemainingLength(aRemainingLength),
         mRunLength(0),
         mSkipped(false),
         mVisitSkipped(false),
         mLengthIncludesSkipped(aLengthIncludesSkipped) {}
+
+  // Include skipped runs in iteration results.
   void SetVisitSkipped() { mVisitSkipped = true; }
+
   void SetOriginalOffset(int32_t aOffset) {
     mIterator.SetOriginalOffset(aOffset);
   }
@@ -176,11 +193,16 @@ class nsSkipCharsRunIterator {
     mIterator.SetSkippedOffset(aOffset);
   }
 
-  // guaranteed to return only positive-length runs
+  // Advance to the next run. Return false when no runs remain. On success,
+  // GetRunLength() is guaranteed to return positive length.
   bool NextRun();
+
+  // Return true if the current run consists of skipped characters.
   bool IsSkipped() const { return mSkipped; }
-  // Always returns something > 0
+
+  // Length of the current run. The return value is always positive.
   int32_t GetRunLength() const { return mRunLength; }
+
   const gfxSkipCharsIterator& GetPos() const { return mIterator; }
   int32_t GetOriginalOffset() const { return mIterator.GetOriginalOffset(); }
   uint32_t GetSkippedOffset() const { return mIterator.GetSkippedOffset(); }

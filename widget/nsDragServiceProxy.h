@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,12 +10,13 @@
 class nsDragSessionProxy : public nsBaseDragSession {
  public:
   NS_INLINE_DECL_REFCOUNTING_INHERITED(nsDragSessionProxy, nsBaseDragSession)
+  nsDragSessionProxy();
 
   MOZ_CAN_RUN_SCRIPT virtual nsresult InvokeDragSession(
       nsIWidget* aWidget, nsINode* aDOMNode, nsIPrincipal* aPrincipal,
-      nsIContentSecurityPolicy* aCsp, nsICookieJarSettings* aCookieJarSettings,
-      nsIArray* aTransferableArray, uint32_t aActionType,
-      nsContentPolicyType aContentPolicyType) override;
+      nsIPolicyContainer* aPolicyContainer,
+      nsICookieJarSettings* aCookieJarSettings, nsIArray* aTransferableArray,
+      uint32_t aActionType, nsContentPolicyType aContentPolicyType) override;
 
   nsresult InvokeDragSessionImpl(
       nsIWidget* aWidget, nsIArray* anArrayTransferables,
@@ -42,6 +42,7 @@ class nsDragSessionProxy : public nsBaseDragSession {
 class nsDragServiceProxy : public nsBaseDragService {
  public:
   NS_INLINE_DECL_REFCOUNTING_INHERITED(nsDragServiceProxy, nsBaseDragService)
+  nsDragServiceProxy();
 
   already_AddRefed<nsIDragSession> CreateDragSession() override;
 

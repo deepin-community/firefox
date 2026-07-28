@@ -1,26 +1,23 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/dom/PWebAuthnTransactionParent.h"
-#include "mozilla/ipc/BackgroundParent.h"
+#include "WinWebAuthnService.h"
+
+#include "WebAuthnAutoFillEntry.h"
+#include "WebAuthnEnumStrings.h"
+#include "WebAuthnResult.h"
+#include "WebAuthnTransportIdentifiers.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticMutex.h"
-#include "mozilla/Unused.h"
-
+#include "mozilla/dom/PWebAuthnTransactionParent.h"
+#include "mozilla/ipc/BackgroundParent.h"
 #include "nsTextFormatter.h"
 #include "nsWindowsHelpers.h"
-#include "WebAuthnAutoFillEntry.h"
-#include "WebAuthnEnumStrings.h"
-#include "WebAuthnResult.h"
-#include "WebAuthnTransportIdentifiers.h"
 #include "winwebauthn/webauthn.h"
-#include "WinWebAuthnService.h"
 
 namespace mozilla::dom {
 
@@ -29,6 +26,10 @@ StaticRWLock gWinWebAuthnModuleLock;
 
 static bool gWinWebAuthnModuleUnusable = false;
 static HMODULE gWinWebAuthnModule = 0;
+
+static const LPCWSTR gWebAuthnHintStrings[3] = {
+    WEBAUTHN_CREDENTIAL_HINT_SECURITY_KEY,
+    WEBAUTHN_CREDENTIAL_HINT_CLIENT_DEVICE, WEBAUTHN_CREDENTIAL_HINT_HYBRID};
 
 static decltype(WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable)*
     gWinWebauthnIsUVPAA = nullptr;
@@ -50,7 +51,6 @@ static decltype(WebAuthNGetPlatformCredentialList)*
     gWinWebauthnGetPlatformCredentialList = nullptr;
 static decltype(WebAuthNFreePlatformCredentialList)*
     gWinWebauthnFreePlatformCredentialList = nullptr;
-
 }  // namespace
 
 /***********************************************************************
@@ -177,6 +177,18 @@ WinWebAuthnService::~WinWebAuthnService() {
 }
 
 // static
+void PrunePublicKeyCredentialHints(const nsTArray<nsString>& aInHints,
+                                   /* out */ nsTArray<LPCWSTR>& aOutHints) {
+  for (const nsString& inputHint : aInHints) {
+    for (const LPCWSTR knownHint : gWebAuthnHintStrings) {
+      if (inputHint.Equals(knownHint)) {
+        aOutHints.AppendElement(knownHint);
+      }
+    }
+  }
+}
+
+// static
 bool WinWebAuthnService::AreWebAuthNApisAvailable() {
   nsresult rv = EnsureWinWebAuthnModuleLoaded();
   NS_ENSURE_SUCCESS(rv, false);
@@ -268,12 +280,9 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
           return;
         }
 
-        BOOL HmacCreateSecret = FALSE;
-        BOOL MinPinLength = FALSE;
-
         // RP Information
         nsString rpId;
-        Unused << aArgs->GetRpId(rpId);
+        (void)aArgs->GetRpId(rpId);
         WEBAUTHN_RP_ENTITY_INFORMATION rpInfo = {
             WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION, rpId.get(), nullptr,
             nullptr};
@@ -289,7 +298,7 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
 
         // Client Data
         nsCString clientDataJSON;
-        Unused << aArgs->GetClientDataJSON(clientDataJSON);
+        (void)aArgs->GetClientDataJSON(clientDataJSON);
         WEBAUTHN_CLIENT_DATA WebAuthNClientData = {
             WEBAUTHN_CLIENT_DATA_CURRENT_VERSION,
             (DWORD)clientDataJSON.Length(), (BYTE*)(clientDataJSON.get()),
@@ -299,37 +308,59 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
         DWORD winUserVerificationReq =
             WEBAUTHN_USER_VERIFICATION_REQUIREMENT_ANY;
 
-        // Resident Key
-        BOOL winRequireResidentKey = FALSE;
-        BOOL winPreferResidentKey = FALSE;
+        // Resident Key Requirement.
+        BOOL winRequireResidentKey = FALSE;  // Will be set to TRUE if and only
+                                             // if residentKey = "required"
+        BOOL winPreferResidentKey = FALSE;   // Will be set to TRUE if and only
+                                             // if residentKey = "preferred"
 
         // AttestationConveyance
         DWORD winAttestation = WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_ANY;
 
+        // Large Blob
+        DWORD largeBlobSupport = WEBAUTHN_LARGE_BLOB_SUPPORT_NONE;
+        bool largeBlobSupportRequired;
+        nsresult rv =
+            aArgs->GetLargeBlobSupportRequired(&largeBlobSupportRequired);
+        if (rv != NS_ERROR_NOT_AVAILABLE) {
+          if (NS_FAILED(rv)) {
+            aPromise->Reject(rv);
+            return;
+          }
+          if (largeBlobSupportRequired) {
+            largeBlobSupport = WEBAUTHN_LARGE_BLOB_SUPPORT_REQUIRED;
+          } else {
+            largeBlobSupport = WEBAUTHN_LARGE_BLOB_SUPPORT_PREFERRED;
+          }
+        }
+
+        // Prf
+        BOOL winEnablePrf = FALSE;
+
         nsString rpName;
-        Unused << aArgs->GetRpName(rpName);
+        (void)aArgs->GetRpName(rpName);
         rpInfo.pwszName = rpName.get();
         rpInfo.pwszIcon = nullptr;
 
         nsTArray<uint8_t> userId;
-        Unused << aArgs->GetUserId(userId);
+        (void)aArgs->GetUserId(userId);
         userInfo.cbId = static_cast<DWORD>(userId.Length());
         userInfo.pbId = const_cast<unsigned char*>(userId.Elements());
 
         nsString userName;
-        Unused << aArgs->GetUserName(userName);
+        (void)aArgs->GetUserName(userName);
         userInfo.pwszName = userName.get();
 
         userInfo.pwszIcon = nullptr;
 
         nsString userDisplayName;
-        Unused << aArgs->GetUserDisplayName(userDisplayName);
+        (void)aArgs->GetUserDisplayName(userDisplayName);
         userInfo.pwszDisplayName = userDisplayName.get();
 
         // Algorithms
         nsTArray<WEBAUTHN_COSE_CREDENTIAL_PARAMETER> coseParams;
         nsTArray<int32_t> coseAlgs;
-        Unused << aArgs->GetCoseAlgs(coseAlgs);
+        (void)aArgs->GetCoseAlgs(coseAlgs);
         for (const int32_t& coseAlg : coseAlgs) {
           WEBAUTHN_COSE_CREDENTIAL_PARAMETER coseAlgorithm = {
               WEBAUTHN_COSE_CREDENTIAL_PARAMETER_CURRENT_VERSION,
@@ -338,7 +369,7 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
         }
 
         nsString userVerificationReq;
-        Unused << aArgs->GetUserVerification(userVerificationReq);
+        (void)aArgs->GetUserVerification(userVerificationReq);
         // This mapping needs to be reviewed if values are added to the
         // UserVerificationRequirement enum.
         static_assert(MOZ_WEBAUTHN_ENUM_STRINGS_VERSION == 3);
@@ -361,8 +392,7 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
         // Attachment
         DWORD winAttachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY;
         nsString authenticatorAttachment;
-        nsresult rv =
-            aArgs->GetAuthenticatorAttachment(authenticatorAttachment);
+        rv = aArgs->GetAuthenticatorAttachment(authenticatorAttachment);
         if (rv != NS_ERROR_NOT_AVAILABLE) {
           if (NS_FAILED(rv)) {
             aPromise->Reject(rv);
@@ -384,14 +414,14 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
         }
 
         nsString residentKey;
-        Unused << aArgs->GetResidentKey(residentKey);
+        (void)aArgs->GetResidentKey(residentKey);
         // This mapping needs to be reviewed if values are added to the
         // ResidentKeyRequirement enum.
         static_assert(MOZ_WEBAUTHN_ENUM_STRINGS_VERSION == 3);
         if (residentKey.EqualsLiteral(
                 MOZ_WEBAUTHN_RESIDENT_KEY_REQUIREMENT_REQUIRED)) {
           winRequireResidentKey = TRUE;
-          winPreferResidentKey = TRUE;
+          winPreferResidentKey = FALSE;
         } else if (residentKey.EqualsLiteral(
                        MOZ_WEBAUTHN_RESIDENT_KEY_REQUIREMENT_PREFERRED)) {
           winRequireResidentKey = FALSE;
@@ -401,7 +431,7 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
           winRequireResidentKey = FALSE;
           winPreferResidentKey = FALSE;
         } else {
-          // WebAuthnManager::MakeCredential is supposed to assign one of the
+          // WebAuthnHandler::MakeCredential is supposed to assign one of the
           // above values, so this shouldn't happen.
           MOZ_ASSERT_UNREACHABLE();
           aPromise->Reject(NS_ERROR_DOM_UNKNOWN_ERR);
@@ -410,7 +440,7 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
 
         // AttestationConveyance
         nsString attestation;
-        Unused << aArgs->GetAttestationConveyancePreference(attestation);
+        (void)aArgs->GetAttestationConveyancePreference(attestation);
         // This mapping needs to be reviewed if values are added to the
         // AttestationConveyancePreference enum.
         static_assert(MOZ_WEBAUTHN_ENUM_STRINGS_VERSION == 3);
@@ -428,33 +458,100 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
           winAttestation = WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_ANY;
         }
 
-        bool requestedCredProps;
-        Unused << aArgs->GetCredProps(&requestedCredProps);
+        // Extensions that might require an entry in the extensions array:
+        // credProtect, hmac-secret, minPinLength.
+        nsTArray<WEBAUTHN_EXTENSION> rgExtension(3);
+        WEBAUTHN_CRED_PROTECT_EXTENSION_IN winCredProtect = {
+            .dwCredProtect = WEBAUTHN_USER_VERIFICATION_ANY,
+            .bRequireCredProtect = FALSE,
+        };
+        BOOL winHmacCreateSecret = FALSE;
+        BOOL winMinPinLength = FALSE;
+
+        nsCString credProtectPolicy;
+        if (NS_SUCCEEDED(
+                aArgs->GetCredentialProtectionPolicy(credProtectPolicy))) {
+          Maybe<CredentialProtectionPolicy> policy(
+              StringToEnum<CredentialProtectionPolicy>(credProtectPolicy));
+          if (policy.isNothing()) {
+            aPromise->Reject(NS_ERROR_DOM_NOT_SUPPORTED_ERR);
+            return;
+          }
+          switch (policy.ref()) {
+            case CredentialProtectionPolicy::UserVerificationOptional:
+              winCredProtect.dwCredProtect =
+                  WEBAUTHN_USER_VERIFICATION_OPTIONAL;
+              break;
+            case CredentialProtectionPolicy::
+                UserVerificationOptionalWithCredentialIDList:
+              winCredProtect.dwCredProtect =
+                  WEBAUTHN_USER_VERIFICATION_OPTIONAL_WITH_CREDENTIAL_ID_LIST;
+              break;
+            case CredentialProtectionPolicy::UserVerificationRequired:
+              winCredProtect.dwCredProtect =
+                  WEBAUTHN_USER_VERIFICATION_REQUIRED;
+              break;
+          }
+
+          bool enforceCredProtectPolicy;
+          if (NS_SUCCEEDED(aArgs->GetEnforceCredentialProtectionPolicy(
+                  &enforceCredProtectPolicy)) &&
+              enforceCredProtectPolicy) {
+            winCredProtect.bRequireCredProtect = TRUE;
+          }
+
+          rgExtension.AppendElement(WEBAUTHN_EXTENSION{
+              .pwszExtensionIdentifier =
+                  WEBAUTHN_EXTENSIONS_IDENTIFIER_CRED_PROTECT,
+              .cbExtension = sizeof(WEBAUTHN_CRED_PROTECT_EXTENSION_IN),
+              .pvExtension = &winCredProtect,
+          });
+        }
+
+        bool requestedPrf;
+        bool requestedHmacCreateSecret;
+        if (NS_SUCCEEDED(aArgs->GetPrf(&requestedPrf)) &&
+            NS_SUCCEEDED(
+                aArgs->GetHmacCreateSecret(&requestedHmacCreateSecret)) &&
+            (requestedPrf || requestedHmacCreateSecret)) {
+          winEnablePrf = requestedPrf ? TRUE : FALSE;
+          winHmacCreateSecret = TRUE;
+          rgExtension.AppendElement(WEBAUTHN_EXTENSION{
+              .pwszExtensionIdentifier =
+                  WEBAUTHN_EXTENSIONS_IDENTIFIER_HMAC_SECRET,
+              .cbExtension = sizeof(BOOL),
+              .pvExtension = &winHmacCreateSecret,
+          });
+        }
+
+        nsTArray<uint8_t> prfEvalFirst;
+        nsTArray<uint8_t> prfEvalSecond;
+        WEBAUTHN_HMAC_SECRET_SALT prfGlobalEval = {0};
+        PWEBAUTHN_HMAC_SECRET_SALT pPrfGlobalEval = NULL;
+        if (requestedPrf) {
+          pPrfGlobalEval = &prfGlobalEval;
+          rv = aArgs->GetPrfEvalFirst(prfEvalFirst);
+          if (rv == NS_OK) {
+            prfGlobalEval.cbFirst = prfEvalFirst.Length();
+            prfGlobalEval.pbFirst = prfEvalFirst.Elements();
+          }
+          rv = aArgs->GetPrfEvalSecond(prfEvalSecond);
+          if (rv == NS_OK) {
+            prfGlobalEval.cbSecond = prfEvalSecond.Length();
+            prfGlobalEval.pbSecond = prfEvalSecond.Elements();
+          }
+        }
 
         bool requestedMinPinLength;
-        Unused << aArgs->GetMinPinLength(&requestedMinPinLength);
-
-        bool requestedHmacCreateSecret;
-        Unused << aArgs->GetHmacCreateSecret(&requestedHmacCreateSecret);
-
-        // Extensions that might require an entry: hmac-secret, minPinLength.
-        WEBAUTHN_EXTENSION rgExtension[2] = {};
-        DWORD cExtensions = 0;
-        if (requestedHmacCreateSecret) {
-          HmacCreateSecret = TRUE;
-          rgExtension[cExtensions].pwszExtensionIdentifier =
-              WEBAUTHN_EXTENSIONS_IDENTIFIER_HMAC_SECRET;
-          rgExtension[cExtensions].cbExtension = sizeof(BOOL);
-          rgExtension[cExtensions].pvExtension = &HmacCreateSecret;
-          cExtensions++;
-        }
-        if (requestedMinPinLength) {
-          MinPinLength = TRUE;
-          rgExtension[cExtensions].pwszExtensionIdentifier =
-              WEBAUTHN_EXTENSIONS_IDENTIFIER_MIN_PIN_LENGTH;
-          rgExtension[cExtensions].cbExtension = sizeof(BOOL);
-          rgExtension[cExtensions].pvExtension = &MinPinLength;
-          cExtensions++;
+        if (NS_SUCCEEDED(aArgs->GetMinPinLength(&requestedMinPinLength)) &&
+            requestedMinPinLength) {
+          winMinPinLength = TRUE;
+          rgExtension.AppendElement(WEBAUTHN_EXTENSION{
+              .pwszExtensionIdentifier =
+                  WEBAUTHN_EXTENSIONS_IDENTIFIER_MIN_PIN_LENGTH,
+              .cbExtension = sizeof(BOOL),
+              .pvExtension = &winMinPinLength,
+          });
         }
 
         WEBAUTHN_COSE_CREDENTIAL_PARAMETERS WebAuthNCredentialParameters = {
@@ -462,10 +559,10 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
 
         // Exclude Credentials
         nsTArray<nsTArray<uint8_t>> excludeList;
-        Unused << aArgs->GetExcludeList(excludeList);
+        (void)aArgs->GetExcludeList(excludeList);
 
         nsTArray<uint8_t> excludeListTransports;
-        Unused << aArgs->GetExcludeListTransports(excludeListTransports);
+        (void)aArgs->GetExcludeListTransports(excludeListTransports);
 
         if (excludeList.Length() != excludeListTransports.Length()) {
           aPromise->Reject(NS_ERROR_DOM_UNKNOWN_ERR);
@@ -517,13 +614,26 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
         }
 
         uint32_t timeout_u32;
-        Unused << aArgs->GetTimeoutMS(&timeout_u32);
+        (void)aArgs->GetTimeoutMS(&timeout_u32);
         DWORD timeout = timeout_u32;
+
+        bool privateBrowsing;
+        (void)aArgs->GetPrivateBrowsing(&privateBrowsing);
+        BOOL winPrivateBrowsing = FALSE;
+        if (privateBrowsing) {
+          winPrivateBrowsing = TRUE;
+        }
+
+        nsTArray<nsString> inputHints;
+        (void)aArgs->GetHints(inputHints);
+
+        nsTArray<LPCWSTR> hints;
+        PrunePublicKeyCredentialHints(inputHints, hints);
 
         // MakeCredentialOptions
         WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS
         WebAuthNCredentialOptions = {
-            WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_7,
+            WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_8,
             timeout,
             {0, NULL},
             {0, NULL},
@@ -535,18 +645,23 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
             &cancellationId,  // CancellationId
             pExcludeCredentialList,
             WEBAUTHN_ENTERPRISE_ATTESTATION_NONE,
-            WEBAUTHN_LARGE_BLOB_SUPPORT_NONE,
-            winPreferResidentKey,  // PreferResidentKey
-            FALSE,                 // BrowserInPrivateMode
-            FALSE,                 // EnablePrf
-            NULL,                  // LinkedDevice
-            0,                     // size of JsonExt
-            NULL,                  // JsonExt
+            largeBlobSupport,       // LargeBlobSupport
+            winPreferResidentKey,   // PreferResidentKey
+            winPrivateBrowsing,     // BrowserInPrivateMode
+            winEnablePrf,           // EnablePrf
+            NULL,                   // LinkedDevice
+            0,                      // size of JsonExt
+            NULL,                   // JsonExt
+            pPrfGlobalEval,         // PRFGlobalEval
+            (DWORD)hints.Length(),  // Size of CredentialHints
+            hints.Elements(),       // CredentialHints
         };
 
-        if (cExtensions != 0) {
-          WebAuthNCredentialOptions.Extensions.cExtensions = cExtensions;
-          WebAuthNCredentialOptions.Extensions.pExtensions = rgExtension;
+        if (rgExtension.Length() != 0) {
+          WebAuthNCredentialOptions.Extensions.cExtensions =
+              rgExtension.Length();
+          WebAuthNCredentialOptions.Extensions.pExtensions =
+              rgExtension.Elements();
         }
 
         PWEBAUTHN_CREDENTIAL_ATTESTATION pWebAuthNCredentialAttestation =
@@ -569,11 +684,13 @@ WinWebAuthnService::MakeCredential(uint64_t aTransactionId,
           // include a flag to indicate whether a resident key was created. We
           // copy that flag to the credProps extension output only if the RP
           // requested the credProps extension.
+          bool requestedCredProps;
+          (void)aArgs->GetCredProps(&requestedCredProps);
           if (requestedCredProps &&
               pWebAuthNCredentialAttestation->dwVersion >=
                   WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_4) {
             BOOL rk = pWebAuthNCredentialAttestation->bResidentKey;
-            Unused << result->SetCredPropsRk(rk == TRUE);
+            (void)result->SetCredPropsRk(rk == TRUE);
           }
           gWinWebauthnFreeCredentialAttestation(pWebAuthNCredentialAttestation);
 
@@ -631,7 +748,7 @@ WinWebAuthnService::GetAssertion(uint64_t aTransactionId,
   });
 
   bool conditionallyMediated;
-  Unused << aArgs->GetConditionallyMediated(&conditionallyMediated);
+  (void)aArgs->GetConditionallyMediated(&conditionallyMediated);
   if (!conditionallyMediated) {
     DoGetAssertion(Nothing(), guard);
   }
@@ -677,7 +794,7 @@ void WinWebAuthnService::DoGetAssertion(
 
         // Client Data
         nsCString clientDataJSON;
-        Unused << aArgs->GetClientDataJSON(clientDataJSON);
+        (void)aArgs->GetClientDataJSON(clientDataJSON);
         WEBAUTHN_CLIENT_DATA WebAuthNClientData = {
             WEBAUTHN_CLIENT_DATA_CURRENT_VERSION,
             (DWORD)clientDataJSON.Length(), (BYTE*)(clientDataJSON.get()),
@@ -696,11 +813,11 @@ void WinWebAuthnService::DoGetAssertion(
 
         // RPID
         nsString rpId;
-        Unused << aArgs->GetRpId(rpId);
+        (void)aArgs->GetRpId(rpId);
 
         // User Verification Requirement
         nsString userVerificationReq;
-        Unused << aArgs->GetUserVerification(userVerificationReq);
+        (void)aArgs->GetUserVerification(userVerificationReq);
         DWORD winUserVerificationReq;
         // This mapping needs to be reviewed if values are added to the
         // UserVerificationRequirement enum.
@@ -721,6 +838,115 @@ void WinWebAuthnService::DoGetAssertion(
           winUserVerificationReq = WEBAUTHN_USER_VERIFICATION_REQUIREMENT_ANY;
         }
 
+        // Large Blob
+        DWORD credLargeBlobOperation = WEBAUTHN_CRED_LARGE_BLOB_OPERATION_NONE;
+        DWORD credLargeBlobSize = 0;
+        PBYTE credLargeBlob = nullptr;
+        nsTArray<uint8_t> largeBlobWrite;
+        bool largeBlobRead;
+        rv = aArgs->GetLargeBlobRead(&largeBlobRead);
+        if (rv != NS_ERROR_NOT_AVAILABLE) {
+          if (NS_FAILED(rv)) {
+            aPromise->Reject(rv);
+            return;
+          }
+          if (largeBlobRead) {
+            credLargeBlobOperation = WEBAUTHN_CRED_LARGE_BLOB_OPERATION_GET;
+          } else {
+            rv = aArgs->GetLargeBlobWrite(largeBlobWrite);
+            if (rv != NS_ERROR_NOT_AVAILABLE && NS_FAILED(rv)) {
+              aPromise->Reject(rv);
+              return;
+            }
+            credLargeBlobOperation = WEBAUTHN_CRED_LARGE_BLOB_OPERATION_SET;
+            credLargeBlobSize = largeBlobWrite.Length();
+            credLargeBlob = largeBlobWrite.Elements();
+          }
+        }
+
+        // PRF inputs
+        WEBAUTHN_HMAC_SECRET_SALT_VALUES* pPrfInputs = nullptr;
+        WEBAUTHN_HMAC_SECRET_SALT_VALUES prfInputs = {0};
+        WEBAUTHN_HMAC_SECRET_SALT globalHmacSalt = {0};
+        nsTArray<uint8_t> prfEvalFirst;
+        nsTArray<uint8_t> prfEvalSecond;
+        nsTArray<nsTArray<uint8_t>> prfEvalByCredIds;
+        nsTArray<nsTArray<uint8_t>> prfEvalByCredFirsts;
+        nsTArray<bool> prfEvalByCredSecondMaybes;
+        nsTArray<nsTArray<uint8_t>> prfEvalByCredSeconds;
+        nsTArray<WEBAUTHN_HMAC_SECRET_SALT> hmacSecretSalts;
+        nsTArray<WEBAUTHN_CRED_WITH_HMAC_SECRET_SALT>
+            credWithHmacSecretSaltList;
+
+        bool requestedPrf;
+        (void)aArgs->GetPrf(&requestedPrf);
+        if (requestedPrf) {
+          rv = aArgs->GetPrfEvalFirst(prfEvalFirst);
+          if (rv == NS_OK) {
+            globalHmacSalt.cbFirst = prfEvalFirst.Length();
+            globalHmacSalt.pbFirst = prfEvalFirst.Elements();
+            prfInputs.pGlobalHmacSalt = &globalHmacSalt;
+          }
+          rv = aArgs->GetPrfEvalSecond(prfEvalSecond);
+          if (rv == NS_OK) {
+            globalHmacSalt.cbSecond = prfEvalSecond.Length();
+            globalHmacSalt.pbSecond = prfEvalSecond.Elements();
+          }
+          if (NS_OK ==
+                  aArgs->GetPrfEvalByCredentialCredentialId(prfEvalByCredIds) &&
+              NS_OK ==
+                  aArgs->GetPrfEvalByCredentialEvalFirst(prfEvalByCredFirsts) &&
+              NS_OK == aArgs->GetPrfEvalByCredentialEvalSecondMaybe(
+                           prfEvalByCredSecondMaybes) &&
+              NS_OK == aArgs->GetPrfEvalByCredentialEvalSecond(
+                           prfEvalByCredSeconds) &&
+              prfEvalByCredIds.Length() == prfEvalByCredFirsts.Length() &&
+              prfEvalByCredIds.Length() == prfEvalByCredSecondMaybes.Length() &&
+              prfEvalByCredIds.Length() == prfEvalByCredSeconds.Length()) {
+            for (size_t i = 0; i < prfEvalByCredIds.Length(); i++) {
+              WEBAUTHN_HMAC_SECRET_SALT salt = {0};
+              salt.cbFirst = prfEvalByCredFirsts[i].Length();
+              salt.pbFirst = prfEvalByCredFirsts[i].Elements();
+              if (prfEvalByCredSecondMaybes[i]) {
+                salt.cbSecond = prfEvalByCredSeconds[i].Length();
+                salt.pbSecond = prfEvalByCredSeconds[i].Elements();
+              }
+              hmacSecretSalts.AppendElement(salt);
+            }
+            // The credWithHmacSecretSaltList array will contain raw pointers to
+            // elements of the hmacSecretSalts array, so we must not cause
+            // any re-allocations of hmacSecretSalts from this point.
+            for (size_t i = 0; i < prfEvalByCredIds.Length(); i++) {
+              WEBAUTHN_CRED_WITH_HMAC_SECRET_SALT value = {0};
+              value.cbCredID = prfEvalByCredIds[i].Length();
+              value.pbCredID = prfEvalByCredIds[i].Elements();
+              value.pHmacSecretSalt = &hmacSecretSalts[i];
+              credWithHmacSecretSaltList.AppendElement(value);
+            }
+            prfInputs.cCredWithHmacSecretSaltList =
+                credWithHmacSecretSaltList.Length();
+            prfInputs.pCredWithHmacSecretSaltList =
+                credWithHmacSecretSaltList.Elements();
+          }
+
+          pPrfInputs = &prfInputs;
+        }
+
+        // https://w3c.github.io/webauthn/#prf-extension
+        // "The hmac-secret extension provides two PRFs per credential: one
+        // which is used for requests where user verification is performed and
+        // another for all other requests. This extension [PRF] only exposes a
+        // single PRF per credential and, when implementing on top of
+        // hmac-secret, that PRF MUST be the one used for when user verification
+        // is performed. This overrides the UserVerificationRequirement if
+        // neccessary."
+        if (pPrfInputs &&
+            winUserVerificationReq ==
+                WEBAUTHN_USER_VERIFICATION_REQUIREMENT_DISCOURAGED) {
+          winUserVerificationReq =
+              WEBAUTHN_USER_VERIFICATION_REQUIREMENT_PREFERRED;
+        }
+
         // allow Credentials
         nsTArray<nsTArray<uint8_t>> allowList;
         nsTArray<uint8_t> allowListTransports;
@@ -729,8 +955,8 @@ void WinWebAuthnService::DoGetAssertion(
           allowListTransports.AppendElement(
               MOZ_WEBAUTHN_AUTHENTICATOR_TRANSPORT_ID_INTERNAL);
         } else {
-          Unused << aArgs->GetAllowList(allowList);
-          Unused << aArgs->GetAllowListTransports(allowListTransports);
+          (void)aArgs->GetAllowList(allowList);
+          (void)aArgs->GetAllowListTransports(allowListTransports);
         }
 
         if (allowList.Length() != allowListTransports.Length()) {
@@ -781,13 +1007,26 @@ void WinWebAuthnService::DoGetAssertion(
           pAllowCredentialList = &allowCredentialList;
         }
 
+        nsTArray<nsString> inputHints;
+        (void)aArgs->GetHints(inputHints);
+
+        nsTArray<LPCWSTR> hints;
+        PrunePublicKeyCredentialHints(inputHints, hints);
+
         uint32_t timeout_u32;
-        Unused << aArgs->GetTimeoutMS(&timeout_u32);
+        (void)aArgs->GetTimeoutMS(&timeout_u32);
         DWORD timeout = timeout_u32;
+
+        bool privateBrowsing;
+        (void)aArgs->GetPrivateBrowsing(&privateBrowsing);
+        BOOL winPrivateBrowsing = FALSE;
+        if (privateBrowsing) {
+          winPrivateBrowsing = TRUE;
+        }
 
         WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS WebAuthNAssertionOptions =
             {
-                WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_7,
+                WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_8,
                 timeout,
                 {0, NULL},
                 {0, NULL},
@@ -798,15 +1037,17 @@ void WinWebAuthnService::DoGetAssertion(
                 pbAppIdUsed,
                 &aCancellationId,  // CancellationId
                 pAllowCredentialList,
-                WEBAUTHN_CRED_LARGE_BLOB_OPERATION_NONE,
-                0,      // Size of CredLargeBlob
-                NULL,   // CredLargeBlob
-                NULL,   // HmacSecretSaltValues
-                FALSE,  // BrowserInPrivateMode
-                NULL,   // LinkedDevice
-                FALSE,  // AutoFill
-                0,      // Size of JsonExt
-                NULL,   // JsonExt
+                credLargeBlobOperation,  // CredLargeBlobOperation
+                credLargeBlobSize,       // Size of CredLargeBlob
+                credLargeBlob,           // CredLargeBlob
+                pPrfInputs,              // HmacSecretSaltValues
+                winPrivateBrowsing,      // BrowserInPrivateMode
+                NULL,                    // LinkedDevice
+                FALSE,                   // AutoFill
+                0,                       // Size of JsonExt
+                NULL,                    // JsonExt
+                (DWORD)hints.Length(),   // Size of CredentialHints
+                hints.Elements(),        // CredentialHints
             };
 
         PWEBAUTHN_ASSERTION pWebAuthNAssertion = nullptr;
@@ -820,13 +1061,13 @@ void WinWebAuthnService::DoGetAssertion(
             &pWebAuthNAssertion);
 
         if (hr == S_OK) {
-          RefPtr<WebAuthnSignResult> result =
-              new WebAuthnSignResult(clientDataJSON, pWebAuthNAssertion);
+          RefPtr<WebAuthnSignResult> result = new WebAuthnSignResult(
+              clientDataJSON, credLargeBlobOperation, pWebAuthNAssertion);
           gWinWebauthnFreeAssertion(pWebAuthNAssertion);
           if (winAppIdentifier != nullptr) {
             // The gWinWebauthnGetAssertion call modified bAppIdUsed through
             // a pointer provided in WebAuthNAssertionOptions.
-            Unused << result->SetUsedAppId(bAppIdUsed == TRUE);
+            (void)result->SetUsedAppId(bAppIdUsed == TRUE);
           }
           aPromise->Resolve(result);
         } else {
@@ -864,7 +1105,7 @@ WinWebAuthnService::HasPendingConditionalGet(uint64_t aBrowsingContextId,
   }
 
   nsString origin;
-  Unused << guard->ref().pendingSignArgs.ref()->GetOrigin(origin);
+  (void)guard->ref().pendingSignArgs.ref()->GetOrigin(origin);
   if (origin != aOrigin) {
     *aRv = 0;
     return NS_OK;
@@ -877,10 +1118,16 @@ WinWebAuthnService::HasPendingConditionalGet(uint64_t aBrowsingContextId,
 NS_IMETHODIMP
 WinWebAuthnService::GetAutoFillEntries(
     uint64_t aTransactionId, nsTArray<RefPtr<nsIWebAuthnAutoFillEntry>>& aRv) {
-  auto guard = mTransactionState.Lock();
-  if (guard->isNothing() || guard->ref().transactionId != aTransactionId ||
-      guard->ref().pendingSignArgs.isNothing()) {
-    return NS_ERROR_NOT_AVAILABLE;
+  aRv.Clear();
+  nsString rpId;
+
+  {
+    auto guard = mTransactionState.Lock();
+    if (guard->isNothing() || guard->ref().transactionId != aTransactionId ||
+        guard->ref().pendingSignArgs.isNothing()) {
+      return NS_ERROR_NOT_AVAILABLE;
+    }
+    (void)guard->ref().pendingSignArgs.ref()->GetRpId(rpId);
   }
 
   StaticAutoReadLock moduleLock(gWinWebAuthnModuleLock);
@@ -888,17 +1135,12 @@ WinWebAuthnService::GetAutoFillEntries(
     return NS_ERROR_NOT_AVAILABLE;
   }
 
-  aRv.Clear();
-
   if (gWinWebauthnGetApiVersionNumber() < WEBAUTHN_API_VERSION_4) {
     // GetPlatformCredentialList was added in version 4. Earlier versions
     // can still present a generic "Use a Passkey" autofill entry, so
     // this isn't an error.
     return NS_OK;
   }
-
-  nsString rpId;
-  Unused << guard->ref().pendingSignArgs.ref()->GetRpId(rpId);
 
   WEBAUTHN_GET_CREDENTIALS_OPTIONS getCredentialsOptions{
       WEBAUTHN_GET_CREDENTIALS_OPTIONS_VERSION_1,
@@ -937,7 +1179,7 @@ WinWebAuthnService::SelectAutoFillEntry(
   }
 
   nsTArray<nsTArray<uint8_t>> allowList;
-  Unused << guard->ref().pendingSignArgs.ref()->GetAllowList(allowList);
+  (void)guard->ref().pendingSignArgs.ref()->GetAllowList(allowList);
   if (!allowList.IsEmpty() && !allowList.Contains(aCredentialId)) {
     return NS_ERROR_FAILURE;
   }
@@ -981,49 +1223,50 @@ WinWebAuthnService::SelectionCallback(uint64_t aTransactionId,
 
 NS_IMETHODIMP
 WinWebAuthnService::AddVirtualAuthenticator(
-    const nsACString& protocol, const nsACString& transport,
-    bool hasResidentKey, bool hasUserVerification, bool isUserConsenting,
-    bool isUserVerified, uint64_t* _retval) {
+    const nsACString& aProtocol, const nsACString& aTransport,
+    bool aHasResidentKey, bool aHasUserVerification, bool aIsUserConsenting,
+    bool aIsUserVerified, nsACString& aRetval) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
-WinWebAuthnService::RemoveVirtualAuthenticator(uint64_t authenticatorId) {
+WinWebAuthnService::RemoveVirtualAuthenticator(
+    const nsACString& aAuthenticatorId) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
-WinWebAuthnService::AddCredential(uint64_t authenticatorId,
-                                  const nsACString& credentialId,
-                                  bool isResidentCredential,
-                                  const nsACString& rpId,
-                                  const nsACString& privateKey,
-                                  const nsACString& userHandle,
-                                  uint32_t signCount) {
+WinWebAuthnService::AddCredential(const nsACString& aAuthenticatorId,
+                                  const nsACString& aCredentialId,
+                                  bool aIsResidentCredential,
+                                  const nsACString& aRpId,
+                                  const nsACString& aPrivateKey,
+                                  const nsACString& aUserHandle,
+                                  uint32_t aSignCount) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
 WinWebAuthnService::GetCredentials(
-    uint64_t authenticatorId,
-    nsTArray<RefPtr<nsICredentialParameters>>& _retval) {
+    const nsACString& aAuthenticatorId,
+    nsTArray<RefPtr<nsICredentialParameters>>& _aRetval) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
-WinWebAuthnService::RemoveCredential(uint64_t authenticatorId,
-                                     const nsACString& credentialId) {
+WinWebAuthnService::RemoveCredential(const nsACString& aAuthenticatorId,
+                                     const nsACString& aCredentialId) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
-WinWebAuthnService::RemoveAllCredentials(uint64_t authenticatorId) {
+WinWebAuthnService::RemoveAllCredentials(const nsACString& aAuthenticatorId) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
-WinWebAuthnService::SetUserVerified(uint64_t authenticatorId,
-                                    bool isUserVerified) {
+WinWebAuthnService::SetUserVerified(const nsACString& aAuthenticatorId,
+                                    bool aIsUserVerified) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -1031,7 +1274,7 @@ NS_IMETHODIMP
 WinWebAuthnService::Listen() { return NS_ERROR_NOT_IMPLEMENTED; }
 
 NS_IMETHODIMP
-WinWebAuthnService::RunCommand(const nsACString& cmd) {
+WinWebAuthnService::RunCommand(const nsACString& aCmd) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 

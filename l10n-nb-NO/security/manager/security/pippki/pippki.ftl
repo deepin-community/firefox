@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Vis
 download-cert-view-text = Undersøk CA-sertifikat
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Utstedt av: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Lagret på: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Husk denne avgjørelsen
+client-auth-cert-remember-label = Husk denne avgjørelsen:
+client-auth-cert-remember-never =
+    .label = En gang
+client-auth-cert-remember-always =
+    .label = Permanent
+client-auth-cert-remember-temporarily =
+    .label = For denne økten
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Passord for sikkerhetskopi (igjen):
 set-password-reminder = Viktig: Hvis du glemmer passordet til sertifikatsikkerhetskopien vil du ikke kunne få tilbake innholdet i sikkerhetskopien senere. Skriv det ned på et sikkert sted.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Beskyttet autentisering
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Autentiser deg for sikkerhetsenheten ({ $tokenName }). Hvordan dette gjøres avhenger av enheten (for eksempel ved bruk av fingeravtrykksleser eller ved å skrive inn en kode på et tastatur).
 
 ## Protected authentication alert
 

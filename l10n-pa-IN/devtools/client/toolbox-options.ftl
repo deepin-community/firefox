@@ -15,7 +15,6 @@ options-select-dev-tools-theme-label = ਥੀਮ
 
 # The heading
 options-context-inspector = ਨਿਰੀਖਕ
-
 # The label for the checkbox option to show user agent styles
 options-show-user-agent-styles-label = ਬਰਾਊਜ਼ਰ ਅੰਦਾਜ ਵਿਖਾਓ
 
@@ -24,6 +23,11 @@ options-show-user-agent-styles-label = ਬਰਾਊਜ਼ਰ ਅੰਦਾਜ ਵਿ
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-name = ਰੰਗਾਂ ਦੇ ਨਾਂ
+
+## Experimental section
+
+# The heading
+options-experimental-label = ਤਜਰਬੇ ਅਧੀਨ ਫੀਚਰ
 
 ## Style Editor section
 
@@ -34,7 +38,6 @@ options-styleeditor-label = ਅੰਦਾਜ ਸੰਪਾਦਕ
 
 # The heading
 options-screenshot-label = ਸਕਰੀਨਸ਼ਾਟ ਰਵੱਈਆ
-
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = ਕੈਮਰਾ ਸ਼ਟਰ ਆਵਾਜ਼ ਚਲਾਓ
 options-screenshot-audio-tooltip =
@@ -47,3 +50,8 @@ options-sourceeditor-keybinding-default-label = ਮੂਲ
 
 ## Advanced section
 
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *

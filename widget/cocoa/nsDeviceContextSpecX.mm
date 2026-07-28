@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,7 +16,7 @@
 #include "mozilla/Logging.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/PrintingMetrics.h"
 
 #include "AppleUtils.h"
 #include "nsCocoaUtils.h"
@@ -99,9 +98,7 @@ NS_IMETHODIMP nsDeviceContextSpecX::Init(nsIPrintSettings* aPS,
   [printInfo release];
 
 #ifdef MOZ_ENABLE_SKIA_PDF
-  nsAutoString printViaPdf;
-  mozilla::Preferences::GetString("print.print_via_pdf_encoder", printViaPdf);
-  if (printViaPdf.EqualsLiteral("skia-pdf")) {
+  if (StaticPrefs::print_experimental_skpdf()) {
     // Annoyingly, PMPrinterPrintWithFile does not pay attention to the
     // kPMDestination* value set in the PMPrintSession; it always sends the PDF
     // to the specified printer.  This means that if we create the PDF using
@@ -121,12 +118,12 @@ NS_IMETHODIMP nsDeviceContextSpecX::Init(nsIPrintSettings* aPS,
           destination == kPMDestinationPreview) {
         mPrintViaSkPDF = true;
       } else if (destination == kPMDestinationFile) {
-        AutoCFRelease<CFURLRef> destURL(nullptr);
+        AutoCFTypeRef<CFURLRef> destURL(nullptr);
         status = ::PMSessionCopyDestinationLocation(
-            mPrintSession, mPMPrintSettings, destURL.receive());
+            mPrintSession, mPMPrintSettings, destURL.Receive());
         if (status == noErr) {
-          AutoCFRelease<CFStringRef> destPathRef =
-              CFURLCopyFileSystemPath(destURL, kCFURLPOSIXPathStyle);
+          AutoCFTypeRef<CFStringRef> destPathRef(
+              CFURLCopyFileSystemPath(destURL, kCFURLPOSIXPathStyle));
           NSString* destPath = (NSString*)CFStringRef(destPathRef);
           NSString* destPathExt = [destPath pathExtension];
           if ([destPathExt isEqualToString:@"pdf"]) {
@@ -144,8 +141,9 @@ NS_IMETHODIMP nsDeviceContextSpecX::Init(nsIPrintSettings* aPS,
     // We don't actually currently support/use kOutputFormatPDF on mac, but
     // this is for completeness in case we add that (we probably need to in
     // order to support adding links into saved PDFs, for example).
-    Telemetry::ScalarAdd(Telemetry::ScalarID::PRINTING_TARGET_TYPE,
-                         u"pdf_file"_ns, 1);
+    glean::printing::target_type
+        .EnumGet(glean::printing::TargetTypeLabel::ePdfFile)
+        .Add(1);
   } else {
     PMDestinationType destination;
     OSStatus status = ::PMSessionGetDestinationType(
@@ -153,11 +151,13 @@ NS_IMETHODIMP nsDeviceContextSpecX::Init(nsIPrintSettings* aPS,
     if (status == noErr && (destination == kPMDestinationFile ||
                             destination == kPMDestinationPreview ||
                             destination == kPMDestinationProcessPDF)) {
-      Telemetry::ScalarAdd(Telemetry::ScalarID::PRINTING_TARGET_TYPE,
-                           u"pdf_file"_ns, 1);
+      glean::printing::target_type
+          .EnumGet(glean::printing::TargetTypeLabel::ePdfFile)
+          .Add(1);
     } else {
-      Telemetry::ScalarAdd(Telemetry::ScalarID::PRINTING_TARGET_TYPE,
-                           u"unknown"_ns, 1);
+      glean::printing::target_type
+          .EnumGet(glean::printing::TargetTypeLabel::eUnknown)
+          .Add(1);
     }
   }
 
@@ -168,7 +168,7 @@ NS_IMETHODIMP nsDeviceContextSpecX::Init(nsIPrintSettings* aPS,
 
 NS_IMETHODIMP nsDeviceContextSpecX::BeginDocument(
     const nsAString& aTitle, const nsAString& aPrintToFileName,
-    int32_t aStartPage, int32_t aEndPage) {
+    uint64_t aBrowsingContextId, int32_t aStartPage, int32_t aEndPage) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
   return NS_OK;
@@ -192,11 +192,11 @@ nsresult nsDeviceContextSpecX::DoEndDocument() {
     if (!tmpPDFFile) {
       return NS_ERROR_FAILURE;
     }
-    AutoCFRelease<CFURLRef> pdfURL(nullptr);
+    AutoCFTypeRef<CFURLRef> pdfURL(nullptr);
     // Note that the caller is responsible to release pdfURL according to
     // nsILocalFileMac.idl, even though we didn't follow the Core Foundation
     // naming conventions here (the method should've been called CopyCFURL).
-    nsresult rv = tmpPDFFile->GetCFURL(pdfURL.receive());
+    nsresult rv = tmpPDFFile->GetCFURL(pdfURL.Receive());
     NS_ENSURE_SUCCESS(rv, rv);
 
     PMDestinationType destination;
@@ -217,24 +217,24 @@ nsresult nsDeviceContextSpecX::DoEndDocument() {
       }
       case kPMDestinationPreview: {
         // XXXjwatt Or should we use CocoaFileUtils::RevealFileInFinder(pdfURL);
-        AutoCFRelease<CFStringRef> pdfPath =
-            CFURLCopyFileSystemPath(pdfURL, kCFURLPOSIXPathStyle);
+        AutoCFTypeRef<CFStringRef> pdfPath(
+            CFURLCopyFileSystemPath(pdfURL, kCFURLPOSIXPathStyle));
         NSString* path = (NSString*)CFStringRef(pdfPath);
         NSWorkspace* ws = [NSWorkspace sharedWorkspace];
         [ws openFile:path];
         break;
       }
       case kPMDestinationFile: {
-        AutoCFRelease<CFURLRef> destURL(nullptr);
+        AutoCFTypeRef<CFURLRef> destURL(nullptr);
         status = ::PMSessionCopyDestinationLocation(
-            mPrintSession, mPMPrintSettings, destURL.receive());
+            mPrintSession, mPMPrintSettings, destURL.Receive());
         if (status == noErr) {
-          AutoCFRelease<CFStringRef> sourcePathRef =
-              CFURLCopyFileSystemPath(pdfURL, kCFURLPOSIXPathStyle);
+          AutoCFTypeRef<CFStringRef> sourcePathRef(
+              CFURLCopyFileSystemPath(pdfURL, kCFURLPOSIXPathStyle));
           NSString* sourcePath = (NSString*)CFStringRef(sourcePathRef);
 #  ifdef DEBUG
-          AutoCFRelease<CFStringRef> destPathRef =
-              CFURLCopyFileSystemPath(destURL, kCFURLPOSIXPathStyle);
+          AutoCFTypeRef<CFStringRef> destPathRef(
+              CFURLCopyFileSystemPath(destURL, kCFURLPOSIXPathStyle));
           NSString* destPath = (NSString*)CFStringRef(destPathRef);
           NSString* destPathExt = [destPath pathExtension];
           MOZ_ASSERT([destPathExt isEqualToString:@"pdf"],

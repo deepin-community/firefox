@@ -3,27 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-// Stolen from https://searchfox.org/mozilla-central/source/browser/base/content/test/popups/browser_popup_close_main_window.js
-// When calling this function, the main window where the test runs will be
-// hidden from various APIs, so that they won't be able to find it. This makes
-// it possible to test some behaviors when only private windows are present.
-function concealMainWindow() {
-  info("Concealing main window.");
-  let oldWinType = document.documentElement.getAttribute("windowtype");
-  // Check if we've already done this to allow calling multiple times:
-  if (oldWinType != "navigator:testrunner") {
-    // Make the main test window not count as a browser window any longer
-    document.documentElement.setAttribute("windowtype", "navigator:testrunner");
-    BrowserWindowTracker.untrackForTestsOnly(window);
-
-    registerCleanupFunction(() => {
-      info("Unconcealing the main window in the cleanup phase.");
-      BrowserWindowTracker.track(window);
-      document.documentElement.setAttribute("windowtype", oldWinType);
-    });
-  }
-}
-
 const EXAMPLE_URL = "https://example.org/";
 add_task(async function test_open_tab() {
   const waitForTabPromise = BrowserTestUtils.waitForNewTab(
@@ -75,7 +54,7 @@ add_task(async function test_open_private_window() {
 
   const win = await waitForWindowPromise;
   ok(
-    PrivateBrowsingUtils.isBrowserPrivate(win),
+    PrivateBrowsingUtils.isWindowPrivate(win),
     "The new window is a private window."
   );
   is(
@@ -103,7 +82,7 @@ add_task(async function test_open_private_tab_from_private_window() {
 
   const tab = await waitForTabPromise;
   ok(
-    PrivateBrowsingUtils.isBrowserPrivate(tab),
+    PrivateBrowsingUtils.isBrowserPrivate(tab.linkedBrowser),
     "The new tab was opened in a private browser."
   );
   is(
@@ -135,7 +114,7 @@ add_task(async function test_open_non_private_tab_from_private_window() {
 
   const nonPrivateTab = await waitForTabPromise;
   ok(
-    !PrivateBrowsingUtils.isBrowserPrivate(nonPrivateTab),
+    !PrivateBrowsingUtils.isBrowserPrivate(nonPrivateTab.linkedBrowser),
     "The new window isn't a private window."
   );
   is(
@@ -156,7 +135,7 @@ add_task(async function test_open_non_private_tab_from_only_private_window() {
   // In this test we'll hide the existing window from window trackers, because
   // we want to test that we open a new window when there's only a private
   // window.
-  concealMainWindow();
+  BrowserTestUtils.concealWindow(window, { signal: testSignal });
 
   // Opening this tab from the private window should open it in a new non-private window.
   const waitForWindowPromise = BrowserTestUtils.waitForNewWindow({
@@ -171,7 +150,7 @@ add_task(async function test_open_non_private_tab_from_only_private_window() {
 
   const nonPrivateWindow = await waitForWindowPromise;
   ok(
-    !PrivateBrowsingUtils.isBrowserPrivate(nonPrivateWindow),
+    !PrivateBrowsingUtils.isWindowPrivate(nonPrivateWindow),
     "The new window isn't a private window."
   );
   is(
@@ -182,4 +161,52 @@ add_task(async function test_open_non_private_tab_from_only_private_window() {
 
   await BrowserTestUtils.closeWindow(nonPrivateWindow);
   await BrowserTestUtils.closeWindow(privateWindow);
+});
+
+add_task(async function test_open_ai_window() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.smartwindow.enabled", true]],
+  });
+  const waitForWindowPromise = BrowserTestUtils.waitForNewWindow();
+  const contentBrowser = await new Promise(resolveOnContentBrowserCreated =>
+    openWebLinkIn(EXAMPLE_URL, "window", {
+      resolveOnContentBrowserCreated,
+      aiWindow: true,
+    })
+  );
+
+  const win = await waitForWindowPromise;
+  ok(
+    win.document.documentElement.hasAttribute("ai-window"),
+    "The new window is a smart window."
+  );
+  is(
+    contentBrowser,
+    win.gBrowser.selectedBrowser,
+    "We get the content browser for the newly opened smart window."
+  );
+
+  await BrowserTestUtils.closeWindow(win);
+  await SpecialPowers.popPrefEnv();
+});
+
+add_task(async function test_open_ai_window_tab_in_ai_window() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.smartwindow.enabled", true]],
+  });
+  let win = await BrowserTestUtils.openNewBrowserWindow({ aiWindow: true });
+
+  let tabPromise = BrowserTestUtils.waitForNewTab(win.gBrowser);
+  win.BrowserCommands.openTab({});
+  let tab = await tabPromise;
+
+  Assert.equal(
+    tab.linkedBrowser.currentURI.spec,
+    AIWindow.newTabURL,
+    "New tab in an AI Window should load AIWindow.newTabURL"
+  );
+
+  await BrowserTestUtils.removeTab(tab);
+  await BrowserTestUtils.closeWindow(win);
+  await SpecialPowers.popPrefEnv();
 });

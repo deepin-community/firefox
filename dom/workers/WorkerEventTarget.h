@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,9 @@
 #ifndef mozilla_dom_WorkerEventTarget_h
 #define mozilla_dom_WorkerEventTarget_h
 
-#include "nsISerialEventTarget.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/dom/WorkerPrivate.h"
+#include "nsISerialEventTarget.h"
 
 namespace mozilla::dom {
 
@@ -24,7 +22,9 @@ class WorkerEventTarget final : public nsISerialEventTarget {
   //   with a holder in place.)
   //
   // * ControlOnly targets will simply dispatch a control runnable.
-  enum class Behavior : uint8_t { Hybrid, ControlOnly };
+  //
+  // * DebuggerOnly targets will simply dispatch a debugger runnable.
+  enum class Behavior : uint8_t { Hybrid, ControlOnly, DebuggerOnly };
 
  private:
   mozilla::Mutex mMutex;

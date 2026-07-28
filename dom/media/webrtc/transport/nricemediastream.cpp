@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -48,14 +46,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nsThreadUtils.h"
 
 // nICEr includes
-extern "C" {
+// clang-format off
 #include "nr_api.h"
 #include "transport_addr.h"
 #include "nr_socket.h"
 #include "ice_ctx.h"
 #include "ice_candidate.h"
 #include "ice_handler.h"
-}
+// clang-format on
 
 // Local includes
 #include "nricectx.h"
@@ -193,10 +191,9 @@ NrIceMediaStream::NrIceMediaStream(NrIceCtx* ctx, const std::string& id,
       old_stream_(nullptr),
       id_(id) {}
 
-NrIceMediaStream::~NrIceMediaStream() {
-  // We do not need to destroy anything. All major resources
-  // are attached to the ice ctx.
-}
+// We do not need to destroy anything. All major resources
+// are attached to the ice ctx.
+NrIceMediaStream::~NrIceMediaStream() = default;
 
 nsresult NrIceMediaStream::ConnectToPeer(
     const std::string& ufrag, const std::string& pwd,
@@ -457,6 +454,9 @@ nsresult NrIceMediaStream::GetCandidatePairs(
         p1->last_sent.tv_sec * 1000 + p1->last_sent.tv_usec / 1000;
     pair.ms_since_last_recv =
         p1->last_recvd.tv_sec * 1000 + p1->last_recvd.tv_usec / 1000;
+    pair.responses_recvd = p1->responses_recvd;
+    pair.current_rtt_ms = p1->current_rtt_ms;
+    pair.total_rtt_ms = p1->total_rtt_ms;
 
     if (!ToNrIceCandidate(*(p1->local), &pair.local) ||
         !ToNrIceCandidate(*(p1->remote), &pair.remote)) {
@@ -515,11 +515,11 @@ std::vector<std::string> NrIceMediaStream::GetAttributes() const {
   }
 
   for (int i = 0; i < attrct; i++) {
-    ret.push_back(attrs[i]);
-    RFREE(attrs[i]);
+    ret.emplace_back(attrs[i]);
+    free(attrs[i]);
   }
 
-  RFREE(attrs);
+  free(attrs);
 
   return ret;
 }
@@ -538,7 +538,7 @@ static nsresult GetCandidatesFromStream(
         // yet). For the purposes of this code, this isn't a candidate we're
         // interested in, since it is not fully baked yet.
         if (ToNrIceCandidate(*cand, &new_cand)) {
-          candidates->push_back(new_cand);
+          candidates->push_back(std::move(new_cand));
         }
         cand = TAILQ_NEXT(cand, entry_comp);
       }

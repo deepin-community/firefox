@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #ifndef MOZILLA_LAYERS_RENDEREROGL_H
 #define MOZILLA_LAYERS_RENDEREROGL_H
 
-#include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/layers/CompositorTypes.h"
 #include "mozilla/gfx/Point.h"
 #include "mozilla/webrender/RenderThread.h"
@@ -26,7 +23,9 @@ class GLContext;
 }
 
 namespace layers {
+class AndroidHardwareBuffer;
 class CompositorBridgeParent;
+class Fence;
 class SyncObjectHost;
 }  // namespace layers
 
@@ -64,13 +63,15 @@ class RendererOGL {
   RenderedFrameId UpdateAndRender(const Maybe<gfx::IntSize>& aReadbackSize,
                                   const Maybe<wr::ImageFormat>& aReadbackFormat,
                                   const Maybe<Range<uint8_t>>& aReadbackBuffer,
-                                  bool* aNeedsYFlip, RendererStats* aOutStats);
+                                  bool* aNeedsYFlip,
+                                  const wr::FrameReadyParams& aFrameParams,
+                                  RendererStats* aOutStats);
 
   /// This can be called on the render thread only.
   void WaitForGPU();
 
   /// This can be called on the render thread only.
-  ipc::FileDescriptor GetAndResetReleaseFence();
+  RefPtr<layers::Fence> GetAndResetReleaseFence();
 
   /// This can be called on the render thread only.
   RenderedFrameId GetLastCompletedFrameId();
@@ -90,6 +91,15 @@ class RendererOGL {
   void MaybeRecordFrame(const WebRenderPipelineInfo* aPipelineInfo);
 
   Maybe<layers::FrameRecording> EndRecording();
+
+#ifdef MOZ_WIDGET_ANDROID
+  using ScreenPixelsPromise =
+      MozPromise<RefPtr<layers::AndroidHardwareBuffer>, nsresult, true>;
+  // Captures the pixels for the next rendered frame. Returns a promise that
+  // resolves once the pixels are captured.
+  RefPtr<ScreenPixelsPromise> RequestScreenPixels(gfx::IntRect aSourceRect,
+                                                  gfx::IntSize aDestSize);
+#endif
 
   /// This can be called on the render thread only.
   ~RendererOGL();
@@ -145,6 +155,14 @@ class RendererOGL {
    */
   bool DidPaintContent(const wr::WebRenderPipelineInfo* aFrameEpochs);
 
+#ifdef MOZ_WIDGET_ANDROID
+  // If mPendingScreenPixelsRequest is set, captures the pixels of the frame
+  // that has just been rendered and resolves the request. Must be called after
+  // the frame has been rendered but before RenderCompositor::EndFrame() (which
+  // swaps buffers).
+  void MaybeCaptureScreenPixels();
+#endif
+
   RefPtr<RenderThread> mThread;
   UniquePtr<RenderCompositor> mCompositor;
   UniquePtr<layers::CompositionRecorder> mCompositionRecorder;  // can be null
@@ -153,14 +171,21 @@ class RendererOGL {
   wr::WindowId mWindowId;
   TimeStamp mFrameStartTime;
 
-  bool mDisableNativeCompositor;
+#ifdef MOZ_WIDGET_ANDROID
+  struct ScreenPixelsRequest {
+    gfx::IntRect mSourceRect;
+    gfx::IntSize mDestSize;
+    RefPtr<ScreenPixelsPromise::Private> mPromise;
+  };
+  Maybe<ScreenPixelsRequest> mPendingScreenPixelsRequest;
+#endif
 
   RendererScreenshotGrabber mScreenshotGrabber;
 
   // The id of the root WebRender pipeline.
   //
   // All other pipelines are considered content.
-  wr::PipelineId mRootPipelineId;
+  wr::PipelineId mRootPipelineId{};
 
   // A mapping of wr::PipelineId to the epochs when last they updated.
   //
@@ -169,6 +194,13 @@ class RendererOGL {
   std::unordered_map<uint64_t, wr::Epoch> mContentPipelineEpochs;
 
   RefPtr<WebRenderPipelineInfo> mLastPipelineInfo;
+
+  // Tracks whether the last render rasterized any tiles.
+  // Used by reftest to verify no rasterization occurred.
+  bool mLastFrameDidRasterize = false;
+
+ public:
+  bool CheckAndClearDidRasterize();
 };
 
 }  // namespace wr

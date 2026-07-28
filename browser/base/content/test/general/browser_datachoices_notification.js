@@ -4,9 +4,6 @@
 
 "use strict";
 
-var { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
-);
 var { TelemetryReportingPolicy } = ChromeUtils.importESModule(
   "resource://gre/modules/TelemetryReportingPolicy.sys.mjs"
 );
@@ -20,6 +17,9 @@ const PREF_ACCEPTED_POLICY_VERSION =
   PREF_BRANCH + "dataSubmissionPolicyAcceptedVersion";
 const PREF_ACCEPTED_POLICY_DATE =
   PREF_BRANCH + "dataSubmissionPolicyNotifiedTime";
+const PREF_TOS_ROLLOUT_POPULATION =
+  "browser.preonboarding.onTrainRolloutPopulation";
+const PREF_TOS_ENABLED = "browser.preonboarding.enabled";
 
 const PREF_TELEMETRY_LOG_LEVEL = "toolkit.telemetry.log.level";
 
@@ -33,12 +33,12 @@ function fakeShowPolicyTimeout(set, clear) {
   reportingPolicy.clearShowInfobarTimeout = clear;
 }
 
-function sendSessionRestoredNotification() {
+async function sendSessionRestoredNotification() {
   let reportingPolicy = ChromeUtils.importESModule(
     "resource://gre/modules/TelemetryReportingPolicy.sys.mjs"
   ).Policy;
 
-  reportingPolicy.fakeSessionRestoreNotification();
+  await reportingPolicy.fakeSessionRestoreNotification();
 }
 
 /**
@@ -50,7 +50,8 @@ function promiseNextTick() {
 
 /**
  * Wait for a notification to be shown in a notification box.
- * @param {Object} aNotificationBox The notification box.
+ *
+ * @param {object} aNotificationBox The notification box.
  * @return {Promise} Resolved when the notification is displayed.
  */
 function promiseWaitForAlertActive(aNotificationBox) {
@@ -67,7 +68,8 @@ function promiseWaitForAlertActive(aNotificationBox) {
 
 /**
  * Wait for a notification to be closed.
- * @param {Object} aNotification The notification.
+ *
+ * @param {object} aNotification The notification.
  * @return {Promise} Resolved when the notification is closed.
  */
 function promiseWaitForNotificationClose(aNotification) {
@@ -76,7 +78,7 @@ function promiseWaitForNotificationClose(aNotification) {
   return deferred.promise;
 }
 
-function triggerInfoBar(expectedTimeoutMs) {
+async function triggerInfoBar(expectedTimeoutMs) {
   let showInfobarCallback = null;
   let timeoutMs = null;
   fakeShowPolicyTimeout(
@@ -86,7 +88,7 @@ function triggerInfoBar(expectedTimeoutMs) {
     },
     () => {}
   );
-  sendSessionRestoredNotification();
+  await sendSessionRestoredNotification();
   Assert.ok(!!showInfobarCallback, "Must have a timer callback.");
   if (expectedTimeoutMs !== undefined) {
     Assert.equal(timeoutMs, expectedTimeoutMs, "Timeout should match");
@@ -94,77 +96,70 @@ function triggerInfoBar(expectedTimeoutMs) {
   showInfobarCallback();
 }
 
-var checkInfobarButton = async function (aNotification) {
-  // Check that the button on the data choices infobar does the right thing.
-  let buttons = aNotification.buttonContainer.getElementsByTagName("button");
-  Assert.equal(
-    buttons.length,
-    1,
-    "There is 1 button in the data reporting notification."
-  );
-  let button = buttons[0];
-
-  let openPrefsPromise = BrowserTestUtils.waitForLocationChange(
-    gBrowser,
-    "about:preferences#privacy"
-  );
-
-  // Click on the button.
-  button.click();
-
-  // Wait for the preferences panel to open.
-  await openPrefsPromise;
-};
-
 add_setup(async function () {
-  const isFirstRun = Preferences.get(PREF_FIRST_RUN, true);
-  const bypassNotification = Preferences.get(PREF_BYPASS_NOTIFICATION, true);
-  const currentPolicyVersion = Preferences.get(PREF_CURRENT_POLICY_VERSION, 1);
+  const isFirstRun = Services.prefs.getBoolPref(PREF_FIRST_RUN, true);
+  const bypassNotification = Services.prefs.getBoolPref(
+    PREF_BYPASS_NOTIFICATION,
+    true
+  );
+  const currentPolicyVersion = Services.prefs.getIntPref(
+    PREF_CURRENT_POLICY_VERSION,
+    1
+  );
 
   // Register a cleanup function to reset our preferences.
   registerCleanupFunction(() => {
-    Preferences.set(PREF_FIRST_RUN, isFirstRun);
-    Preferences.set(PREF_BYPASS_NOTIFICATION, bypassNotification);
-    Preferences.set(PREF_CURRENT_POLICY_VERSION, currentPolicyVersion);
-    Preferences.reset(PREF_TELEMETRY_LOG_LEVEL);
-
+    Services.prefs.setBoolPref(PREF_FIRST_RUN, isFirstRun);
+    Services.prefs.setBoolPref(PREF_BYPASS_NOTIFICATION, bypassNotification);
+    Services.prefs.setIntPref(
+      PREF_CURRENT_POLICY_VERSION,
+      currentPolicyVersion
+    );
+    Services.prefs.clearUserPref(PREF_TELEMETRY_LOG_LEVEL);
+    Services.prefs.clearUserPref(PREF_ACCEPTED_POLICY_VERSION);
+    Services.prefs.clearUserPref(PREF_ACCEPTED_POLICY_DATE);
+    Services.prefs.clearUserPref(PREF_TOS_ENABLED);
+    Services.prefs.clearUserPref("browser.policies.alternatePath");
     return closeAllNotifications();
   });
 
   // Don't skip the infobar visualisation.
-  Preferences.set(PREF_BYPASS_NOTIFICATION, false);
+  Services.prefs.setBoolPref(PREF_BYPASS_NOTIFICATION, false);
   // Set the current policy version.
-  Preferences.set(PREF_CURRENT_POLICY_VERSION, TEST_POLICY_VERSION);
+  Services.prefs.setIntPref(PREF_CURRENT_POLICY_VERSION, TEST_POLICY_VERSION);
   // Ensure this isn't the first run, because then we open the first run page.
-  Preferences.set(PREF_FIRST_RUN, false);
+  Services.prefs.setBoolPref(PREF_FIRST_RUN, false);
   TelemetryReportingPolicy.testUpdateFirstRun();
+  // Do not enable the TOS modal
+  Services.prefs.setBoolPref(PREF_TOS_ENABLED, false);
 });
 
 function clearAcceptedPolicy() {
   // Reset the accepted policy.
-  Preferences.reset(PREF_ACCEPTED_POLICY_VERSION);
-  Preferences.reset(PREF_ACCEPTED_POLICY_DATE);
+  Services.prefs.clearUserPref(PREF_ACCEPTED_POLICY_VERSION);
+  Services.prefs.clearUserPref(PREF_ACCEPTED_POLICY_DATE);
 }
 
 function assertCoherentInitialState() {
   // Make sure that we have a coherent initial state.
   Assert.equal(
-    Preferences.get(PREF_ACCEPTED_POLICY_VERSION, 0),
+    Services.prefs.getIntPref(PREF_ACCEPTED_POLICY_VERSION, 0),
     0,
     "No version should be set on init."
   );
   Assert.equal(
-    Preferences.get(PREF_ACCEPTED_POLICY_DATE, 0),
+    Services.prefs.getIntPref(PREF_ACCEPTED_POLICY_DATE, 0),
     0,
     "No date should be set on init."
   );
   Assert.ok(
-    !TelemetryReportingPolicy.testIsUserNotified(),
+    !TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "User not notified about datareporting policy."
   );
 }
 
 add_task(async function test_single_window() {
+  TelemetryReportingPolicy.reset();
   clearAcceptedPolicy();
 
   // Close all the notifications, then try to trigger the data choices infobar.
@@ -179,7 +174,8 @@ add_task(async function test_single_window() {
   );
 
   // Wait for the infobar to be displayed.
-  triggerInfoBar(10 * 1000);
+  await triggerInfoBar(10 * 1000);
+
   await alertShownPromise;
   await promiseNextTick();
 
@@ -193,11 +189,13 @@ add_task(async function test_single_window() {
     "User should be allowed to upload now."
   );
 
-  await promiseNextTick();
-  let promiseClosed = promiseWaitForNotificationClose(
-    gNotificationBox.currentNotification
-  );
-  await checkInfobarButton(gNotificationBox.currentNotification);
+  // Close the infobar without opening the prefs UI to avoid side effects that
+  // change prefs.
+  let notifications = gNotificationBox.allNotifications;
+  Assert.equal(notifications.length, 1, "One notification present to close");
+  let notification = notifications[0];
+  let promiseClosed = promiseWaitForNotificationClose(notification);
+  notification.close();
   await promiseClosed;
 
   Assert.equal(
@@ -209,17 +207,17 @@ add_task(async function test_single_window() {
   // Check that we are still clear to upload and that the policy data is saved.
   Assert.ok(TelemetryReportingPolicy.canUpload());
   Assert.equal(
-    TelemetryReportingPolicy.testIsUserNotified(),
+    TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     true,
     "User notified about datareporting policy."
   );
   Assert.equal(
-    Preferences.get(PREF_ACCEPTED_POLICY_VERSION, 0),
+    Services.prefs.getIntPref(PREF_ACCEPTED_POLICY_VERSION, 0),
     TEST_POLICY_VERSION,
     "Version pref set."
   );
   Assert.greater(
-    parseInt(Preferences.get(PREF_ACCEPTED_POLICY_DATE, null), 10),
+    parseInt(Services.prefs.getStringPref(PREF_ACCEPTED_POLICY_DATE, ""), 10),
     -1,
     "Date pref set."
   );
@@ -254,7 +252,7 @@ add_task(async function test_multiple_windows() {
   );
 
   // Wait for the infobars.
-  triggerInfoBar(10 * 1000);
+  await triggerInfoBar(10 * 1000);
   await Promise.all(showAlertPromises);
 
   // Both notification were displayed. Close one and check that both gets closed.
@@ -276,17 +274,17 @@ add_task(async function test_multiple_windows() {
     "User should be allowed to upload now."
   );
   Assert.equal(
-    TelemetryReportingPolicy.testIsUserNotified(),
+    TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     true,
     "User notified about datareporting policy."
   );
   Assert.equal(
-    Preferences.get(PREF_ACCEPTED_POLICY_VERSION, 0),
+    Services.prefs.getIntPref(PREF_ACCEPTED_POLICY_VERSION, 0),
     TEST_POLICY_VERSION,
     "Version pref set."
   );
   Assert.greater(
-    parseInt(Preferences.get(PREF_ACCEPTED_POLICY_DATE, null), 10),
+    parseInt(Services.prefs.getStringPref(PREF_ACCEPTED_POLICY_DATE, ""), 10),
     -1,
     "Date pref set."
   );

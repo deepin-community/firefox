@@ -44,10 +44,24 @@ function sanityChecks() {
   }
 }
 
+function isXdgEnabled() {
+  try {
+    return Services.prefs.getBoolPref("widget.support-xdg-config");
+  } catch (ex) {
+    // if the pref is not there it means we dont have XDG support
+    if (ex.name === "NS_ERROR_UNEXPECTED") {
+      return false;
+    }
+    throw ex;
+  }
+}
+
 // Creates file at |path| and returns a promise that resolves with an object
 // with .ok boolean to indicate true if the file was successfully created,
 // otherwise false. Include imports so this can be safely serialized and run
-// remotely by ContentTask.spawn.
+// remotely by SpecialPowers.spawn.
+//
+// Report the exception's error code in .code as well.
 function createFile(path) {
   const { FileUtils } = ChromeUtils.importESModule(
     "resource://gre/modules/FileUtils.sys.mjs"
@@ -76,7 +90,7 @@ function createFile(path) {
     ostream.close();
     fstream.close();
   } catch (e) {
-    return { ok: false };
+    return { ok: false, code: e.result };
   }
 
   return { ok: true };
@@ -85,15 +99,20 @@ function createFile(path) {
 // Creates a symlink at |path| and returns a promise that resolves with an
 // object with .ok boolean to indicate true if the symlink was successfully
 // created, otherwise false. Include imports so this can be safely serialized
-// and run remotely by ContentTask.spawn.
+// and run remotely by SpecialPowers.spawn.
+//
+// Report the exception's error code in .code as well.
+// Report errno in .code if syscall returns -1.
 function createSymlink(path) {
   const { ctypes } = ChromeUtils.importESModule(
     "resource://gre/modules/ctypes.sys.mjs"
   );
 
   try {
+    // Trying to open "libc.so" on linux will fail with invalid elf header error
+    // because it would be a linker script. Using libc.so.6 avoids that.
     const libc = ctypes.open(
-      Services.appinfo.OS === "Darwin" ? "libSystem.B.dylib" : "libc.so"
+      Services.appinfo.OS === "Darwin" ? "libSystem.B.dylib" : "libc.so.6"
     );
 
     const symlink = libc.declare(
@@ -104,11 +123,14 @@ function createSymlink(path) {
       ctypes.char.ptr //linkpath
     );
 
-    if (symlink("/etc", path)) {
-      return { ok: false };
+    ctypes.errno = 0;
+    const rv = symlink("/etc", path);
+    const _errno = ctypes.errno;
+    if (rv < 0) {
+      return { ok: false, code: _errno };
     }
   } catch (e) {
-    return { ok: false };
+    return { ok: false, code: e.result };
   }
 
   return { ok: true };
@@ -117,7 +139,9 @@ function createSymlink(path) {
 // Deletes file at |path| and returns a promise that resolves with an object
 // with .ok boolean to indicate true if the file was successfully deleted,
 // otherwise false. Include imports so this can be safely serialized and run
-// remotely by ContentTask.spawn.
+// remotely by SpecialPowers.spawn.
+//
+// Report the exception's error code in .code as well.
 function deleteFile(path) {
   const { FileUtils } = ChromeUtils.importESModule(
     "resource://gre/modules/FileUtils.sys.mjs"
@@ -127,7 +151,7 @@ function deleteFile(path) {
     const file = new FileUtils.File(path);
     file.remove(false);
   } catch (e) {
-    return { ok: false };
+    return { ok: false, code: e.result };
   }
 
   return { ok: true };
@@ -137,6 +161,8 @@ function deleteFile(path) {
 // iteration over the directory finishes or encounters an error. The promise
 // resolves with an object where .ok indicates success or failure and
 // .numEntries is the number of directory entries found.
+//
+// Report the exception's error code in .code as well.
 function readDir(path) {
   const { FileUtils } = ChromeUtils.importESModule(
     "resource://gre/modules/FileUtils.sys.mjs"
@@ -153,7 +179,7 @@ function readDir(path) {
       numEntries++;
     }
   } catch (e) {
-    return { ok: false, numEntries };
+    return { ok: false, numEntries, code: e.result };
   }
 
   return { ok: true, numEntries };
@@ -162,6 +188,8 @@ function readDir(path) {
 // Reads the file at |path| and returns a promise that resolves when
 // reading is completed. Returned object has boolean .ok to indicate
 // success or failure.
+//
+// Report the exception's error code in .code as well.
 function readFile(path) {
   const { FileUtils } = ChromeUtils.importESModule(
     "resource://gre/modules/FileUtils.sys.mjs"
@@ -183,7 +211,7 @@ function readFile(path) {
     const available = istream.available();
     void istream.readBytes(available);
   } catch (e) {
-    return { ok: false };
+    return { ok: false, code: e.result };
   }
 
   return { ok: true };
@@ -192,6 +220,8 @@ function readFile(path) {
 // Does a stat of |path| and returns a promise that resolves if the
 // stat is successful. Returned object has boolean .ok to indicate
 // success or failure.
+//
+// Report the exception's error code in .code as well.
 function statPath(path) {
   const { FileUtils } = ChromeUtils.importESModule(
     "resource://gre/modules/FileUtils.sys.mjs"
@@ -201,7 +231,7 @@ function statPath(path) {
     const file = new FileUtils.File(path);
     void file.lastModifiedTime;
   } catch (e) {
-    return { ok: false };
+    return { ok: false, code: e.result };
   }
 
   return { ok: true };
@@ -358,6 +388,7 @@ function GetProfileEntry(name) {
 }
 
 function GetDir(path) {
+  info(`GetDir(${path})`);
   let dir = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
   dir.initWithPath(path);
   Assert.ok(dir.isDirectory(), `${path} is a directory`);
@@ -384,6 +415,7 @@ function GetBrowserType(type) {
       // open a tab in a `type` content process
       gBrowser.selectedTab = BrowserTestUtils.addTab(gBrowser, "about:blank", {
         preferredRemoteType: type,
+        allowInheritPrincipal: true,
       });
       // get the browser for the `type` process tab
       GetBrowserType[type] = gBrowser.getBrowserForTab(gBrowser.selectedTab);
@@ -440,9 +472,9 @@ async function runTestsList(tests) {
       ok(test.file.exists(), `${test.file.path} exists`);
     }
 
-    let result = await ContentTask.spawn(
+    let result = await SpecialPowers.spawn(
       test.browser,
-      test.file.path,
+      [test.file.path],
       test.func
     );
 

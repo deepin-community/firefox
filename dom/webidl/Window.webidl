@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,6 +16,7 @@
  * https://w3c.github.io/requestidlecallback/
  * https://drafts.css-houdini.org/css-paint-api-1/#dom-window-paintworklet
  * https://wicg.github.io/visual-viewport/#the-visualviewport-interface
+ * https://wicg.github.io/cookie-store/#Window
  */
 
 interface Principal;
@@ -82,7 +82,6 @@ interface nsIPrintSettings;
                     DeviceMotionEventAcceleration,
                     DeviceMotionEventRotationRate,
                     DOMError,
-                    EncodedVideoChunk,
                     EnterPictureInPictureEvent,
                     External,
                     FederatedCredential,
@@ -96,24 +95,14 @@ interface nsIPrintSettings;
                     KeyboardLayoutMap,
                     LinearAccelerationSensor,
                     MediaSettingsRange,
-                    MIDIAccess,
-                    MIDIConnectionEvent,
-                    MIDIInput,
-                    MIDIInputMap,
-                    MIDIMessageEvent,
-                    MIDIOutput,
-                    MIDIOutputMap,
-                    MIDIPort,
                     NetworkInformation,
                     offscreenBuffering,
                     onbeforeinstallprompt,
                     oncancel,
                     onmousewheel,
-                    onorientationchange,
                     onsearch,
                     onselectionchange,
                     openDatabase,
-                    orientation,
                     OrientationSensor,
                     OverconstrainedError,
                     PasswordCredential,
@@ -138,9 +127,6 @@ interface nsIPrintSettings;
                     PresentationRequest,
                     RelativeOrientationSensor,
                     RemotePlayback,
-                    Report,
-                    ReportBody,
-                    ReportingObserver,
                     RTCError,
                     RTCErrorEvent,
                     RTCIceTransport,
@@ -173,12 +159,6 @@ interface nsIPrintSettings;
                     USBIsochronousOutTransferPacket,
                     USBIsochronousOutTransferResult,
                     USBOutTransferResult,
-                    UserActivation,
-                    VideoColorSpace,
-                    VideoDecoder,
-                    VideoEncoder,
-                    VideoFrame,
-                    WakeLock,
                     WakeLockSentinel,
                     webkitCancelAnimationFrame,
                     webkitMediaStream,
@@ -204,7 +184,7 @@ interface nsIPrintSettings;
   [PutForwards=href, LegacyUnforgeable, CrossOriginReadable,
    CrossOriginWritable] readonly attribute Location location;
   [Throws] readonly attribute History history;
-  [Func="Navigation::IsAPIEnabled"] readonly attribute Navigation navigation;
+  [Replaceable, Func="Navigation::IsAPIEnabled"] readonly attribute Navigation navigation;
   readonly attribute CustomElementRegistry customElements;
   [Replaceable, Throws] readonly attribute BarProp locationbar;
   [Replaceable, Throws] readonly attribute BarProp menubar;
@@ -235,7 +215,7 @@ interface nsIPrintSettings;
 
   // the user agent
   readonly attribute Navigator navigator;
-  [Replaceable, Pref="dom.window.clientinformation.enabled", BinaryName="Navigator"]
+  [Replaceable, BinaryName="Navigator"]
   readonly attribute Navigator clientInformation;
 
   [Replaceable] readonly attribute External external;
@@ -296,8 +276,8 @@ partial interface Window {
 
 // https://drafts.csswg.org/cssom/#extensions-to-the-window-interface
 partial interface Window {
-  //[NewObject, Throws] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt = "");
-  [NewObject, Throws] CSSStyleDeclaration? getComputedStyle(Element elt, optional DOMString? pseudoElt = "");
+  //[NewObject, Throws] CSSStyleProperties getComputedStyle(Element elt, optional DOMString? pseudoElt = "");
+  [NewObject, Throws] CSSStyleProperties? getComputedStyle(Element elt, optional DOMString? pseudoElt = "");
 };
 
 // http://dev.w3.org/csswg/cssom-view/
@@ -327,6 +307,7 @@ partial interface Window {
   [Throws, NeedsCallerType] undefined moveBy(long x, long y);
   [Throws, NeedsCallerType] undefined resizeTo(long x, long y);
   [Throws, NeedsCallerType] undefined resizeBy(long x, long y);
+  [Throws, ChromeOnly] undefined moveResize(long x, long y, long w, long h);
 
   // viewport
   [Replaceable, Throws] readonly attribute double innerWidth;
@@ -389,6 +370,87 @@ Window includes SpeechSynthesisGetter;
 #endif
 
 // Mozilla-specific stuff
+dictionary SynthesizeEventData {
+  // A unique identifier for the pointer causing the event, defaulting to 0.
+  unsigned long identifier = 0;
+  // Input pressure (0.0 -> 1.0).
+  // If unspecified, synthesized events use the default value defined at
+  // https://w3c.github.io/pointerevents/#dom-pointerevent-pressure.
+  float pressure;
+};
+
+// Mozilla-specific stuff
+dictionary SynthesizeMouseEventData : SynthesizeEventData {
+  // Indicates which mouse button is pressed/released when a mouse event is triggered.
+  long button = 0;
+  // Indicates which mouse buttons are pressed when a mouse event is triggered.
+  // If not specified, the value is generated from the button property.
+  long buttons;
+  // Number of clicks that have been performed. If not specified, a default value
+  // is generated based on the event type, e.g. 1 for mousedown and mouseup events,
+  // and 0 for others.
+  long clickCount;
+  // Input source, see MouseEvent for values. Defaults to MouseEvent.MOZ_SOURCE_MOUSE.
+  short inputSource = 1;
+  // Modifiers pressed, using constants defined as MODIFIER_* in nsIDOMWindowUtils.
+  long modifiers = 0;
+};
+
+// Mozilla-specific stuff
+dictionary SynthesizeTouchEventData : SynthesizeEventData {
+  // X offset in CSS pixels.
+  required long offsetX;
+  // Y offset in CSS pixels.
+  required long offsetY;
+  // X radii in CSS pixels.
+  unsigned long radiiX = 1;
+  // Y radii in CSS pixels.
+  unsigned long radiiY = 1;
+  // Rotation angle in degrees.
+  float rotationAngle = 0;
+  // X tilt in degrees (-90 -> 90). If altitudeAngle and azimuthAngle are
+  // specified, tiltX is ignored.
+  long tiltX = 0;
+  // Y tilt in degrees (-90 -> 90). If altitudeAngle and azimuthAngle are
+  // specified, tiltY is ignored.
+  long tiltY = 0;
+  // Twist in degrees (0 -> 360).
+  long twist = 0;
+  // Altitude angle in radians (0 -> π/2). If altitudeAngle is specified,
+  // azimuthAngle must also be specified.
+  double altitudeAngle;
+  // Azimuth angle in radians (0 -> 2π). If azimuthAngle is specified,
+  // altitudeAngle must also be specified.
+  double azimuthAngle;
+};
+
+// Mozilla-specific stuff
+dictionary SynthesizeEventOptions {
+  // If true the event is dispatched to the parent process through APZ,
+  // without being injected into the OS event queue.
+  boolean isAsyncEnabled = false;
+  // Set this to true to ensure that the event is dispatched to this DOM window
+  // or one of its children.
+  boolean toWindow = false;
+  // Controls Event.isSynthesized value that helps identifying test related events.
+  boolean isDOMEventSynthesized = true;
+};
+
+// Mozilla-specific stuff
+dictionary SynthesizeMouseEventOptions : SynthesizeEventOptions {
+  // Indicates whether the event should ignore viewport bounds during dispatch.
+  boolean ignoreRootScrollFrame = false;
+  // Controls WidgetMouseEvent.mReason value.
+  boolean isWidgetEventSynthesized = false;
+};
+
+// Mozilla-specific stuff
+dictionary SynthesizeTouchEventOptions : SynthesizeEventOptions {
+  // If true, the event is synthesized as a pen input.
+  boolean isPen = false;
+};
+
+// Mozilla-specific stuff
 partial interface Window {
   //[NewObject, Throws] CSSStyleDeclaration getDefaultComputedStyle(Element elt, optional DOMString pseudoElt = "");
   [NewObject, Throws] CSSStyleDeclaration? getDefaultComputedStyle(Element elt, optional DOMString pseudoElt = "");
@@ -404,18 +466,12 @@ partial interface Window {
    */
   undefined                 scrollByPages(long numPages, optional ScrollOptions options = {});
 
-  // Gecko specific API that allows a web page to resize the browser window.
-  // Dropping support in bug 1600400.
-  [Throws, NeedsCallerType,
-   Deprecated="SizeToContent",
-   Func="nsGlobalWindowInner::IsSizeToContentEnabled"]
-  undefined sizeToContent();
 
   /**
-   * Chrome-only method for sizing to content with a maximum-size constraint on
-   * either (or both) directions.
+   * Chrome-only method for sizing to content with an optional
+   * maximum-size constraint on either (or both) directions.
    */
-  [Throws, ChromeOnly] undefined sizeToContentConstrained(optional SizeToContentConstraints constraints = {});
+  [Throws, ChromeOnly] undefined sizeToContent(optional SizeToContentConstraints constraints = {});
 
   [ChromeOnly, Replaceable, Throws] readonly attribute XULControllers controllers;
 
@@ -455,7 +511,7 @@ partial interface Window {
   [Replaceable, Throws] readonly attribute long   scrollMaxX;
   [Replaceable, Throws] readonly attribute long   scrollMaxY;
 
-  [Throws] attribute boolean fullScreen;
+  [Throws, Deprecated=FullscreenAttribute] attribute boolean fullScreen;
 
   undefined                 updateCommands(DOMString action);
 
@@ -523,18 +579,101 @@ partial interface Window {
   boolean shouldReportForServiceWorkerScope(USVString aScope);
 
   /**
-   * InstallTrigger is used for extension installs.  Ideally it would
-   * be something like a WebIDL namespace, but we don't support
-   * JS-implemented static things yet.  See bug 863952.
+   * InstallTrigger was an interface for installing extensions. It was disabled
+   * in bug 1772901 and the implementation was removed in bug 1776426.
+   *
+   * We maintain this stub to avoid breaking websites that do
+   * "typeof InstallTrigger !== 'undefined" to detect Firefox
    */
   [Replaceable, Deprecated="InstallTriggerDeprecated", Pref="extensions.InstallTrigger.enabled"]
-  readonly attribute InstallTriggerImpl? InstallTrigger;
+  readonly attribute object? InstallTrigger;
 
   /**
    * Get the nsIDOMWindowUtils for this window.
    */
   [Constant, Throws, ChromeOnly]
   readonly attribute nsIDOMWindowUtils windowUtils;
+
+  /**
+   * Synthesize a mouse event. The event types supported are:
+   *    mousedown, mouseup, mousemove, mouseover, mouseout, mousecancel,
+   *    contextmenu, MozMouseHittest
+   *
+   * Events are sent in coordinates offset by offsetX and offsetY from the window.
+   *
+   * Note that additional events may be fired as a result of this call. For
+   * instance, typically a click event will be fired as a result of a
+   * mousedown and mouseup in sequence.
+   *
+   * Normally at this level of events, the mouseover and mouseout events are
+   * only fired when the window is entered or exited. For inter-element
+   * mouseover and mouseout events, a movemove event fired on the new element
+   * should be sufficient to generate the correct over and out events as well.
+   *
+   * The event is dispatched via the toplevel window, so it could go to any
+   * window under the toplevel window, in some cases it could never reach this
+   * window at all.
+   *
+   * NOTE: mousecancel is used to represent the vanishing of an input device
+   * such as a pen leaving its digitizer by synthesizing a WidgetMouseEvent,
+   * whose mMessage is eMouseExitFromWidget and mExitFrom is
+   * WidgetMouseEvent::eTopLevel.
+   *
+   * @param type            Event type.
+   * @param offsetX         X offset in CSS pixels.
+   * @param offsetY         Y offset in CSS pixels.
+   * @param mouseEventData  A SynthesizeMouseEventData dictionary containing mouse event data.
+   * @param options         A SynthesizeMouseEventOptions dictionary containing options
+   *                        for the event dispatching.
+   * @param callback        A function to call when the synthesized mouse event
+   *                        has been dispatched.
+   *                        XXX: This is currently not supported in the content
+   *                        process, simply because we don't have a use case for
+   *                        it yet. The same applies when the synthesized event
+   *                        might be coalesced, such as when
+   *                        `isDOMEventSynthesized = false`.
+   *                        In such cases, passing callback will throw an
+   *                        exception.
+   *
+   * @return true if someone called prevent default on this event.
+   */
+  [ChromeOnly, Throws]
+  boolean synthesizeMouseEvent(DOMString type, float offsetX, float offsetY,
+                               optional SynthesizeMouseEventData mouseEventData = {},
+                               optional SynthesizeMouseEventOptions options = {},
+                               optional VoidFunction callback);
+
+  /**
+   * Synthesize a touch event. The event types supported are:
+   *    touchstart, touchend, touchmove, and touchcancel
+   *
+   * The event is dispatched via the toplevel window, so it could go to any
+   * window under the toplevel window, in some cases it could never reach this
+   * window at all. (Set SynthesizeTouchEventOptions.toWindow to true to ensure
+   * that the event is dispatched to this window or one of its children.)
+   *
+   * @param type       Event type.
+   * @param touches    An array of SynthesizeTouchEventData dictionaries containing
+   *                   touch event data.
+   * @param modifiers  Modifiers pressed, using constants defined as MODIFIER_*
+   *                   in nsIDOMWindowUtils.
+   * @param options    A SynthesizeTouchEventOptions dictionary containing options
+   *                   for the event dispatching.
+   * @param callback   A function to call when the synthesized touch event has
+   *                   been dispatched.
+   *                   XXX: This is currently not supported in the content process,
+   *                   simply because we don't have a use case for it yet. The same
+   *                   applies when the synthesized event might be coalesced,
+   *                   such as when `isDOMEventSynthesized = false`. In such cases,
+   *                   passing callback will throw an exception.
+   *
+   * @return true if someone called prevent default on this event.
+   */
+  [ChromeOnly, Throws]
+  boolean synthesizeTouchEvent(DOMString type, sequence<SynthesizeTouchEventData> touches,
+                               optional long modifiers = 0,
+                               optional SynthesizeTouchEventOptions options = {},
+                               optional VoidFunction callback);
 
   [Pure, ChromeOnly]
   readonly attribute WindowGlobalChild? windowGlobalChild;
@@ -572,7 +711,7 @@ Window includes OnErrorEventHandlerForWindow;
 #if defined(MOZ_WIDGET_ANDROID)
 // https://compat.spec.whatwg.org/#windoworientation-interface
 partial interface Window {
-  [NeedsCallerType]
+  [UseCounter, NeedsCallerType]
   readonly attribute short orientation;
            attribute EventHandler onorientationchange;
 };
@@ -598,6 +737,16 @@ partial interface Window {
 
   [Func="nsGlobalWindowInner::IsPrivilegedChromeWindow"]
   readonly attribute boolean isFullyOccluded;
+
+  /**
+   * On Windows, returns whether the window is cloaked, presumably
+   * because it is on another virtual desktop. Per Microsoft, we
+   * should not automatically switch to this window if we are looking
+   * for an existing window to focus, and instead open a new window.
+   * On non-Windows platforms, this is always false.
+   */
+  [Func="nsGlobalWindowInner::IsPrivilegedChromeWindow"]
+  readonly attribute boolean isCloaked;
 
   /**
    * browserDOMWindow provides access to yet another layer of
@@ -708,9 +857,9 @@ partial interface Window {
   [Func="IsChromeOrUAWidget"]
   readonly attribute boolean isChromeWindow;
 
-  [Func="nsGlobalWindowInner::IsGleanNeeded"]
+  [Func="GleanWebidlEnabled"]
   readonly attribute GleanImpl Glean;
-  [Func="nsGlobalWindowInner::IsGleanNeeded"]
+  [Func="GleanWebidlEnabled"]
   readonly attribute GleanPingsImpl GleanPings;
 };
 
@@ -752,24 +901,6 @@ callback IdleRequestCallback = undefined (IdleDeadline deadline);
 
 partial interface Window {
   /**
-   * Returns a list of locales that the internationalization components
-   * should be localized to.
-   *
-   * The function name refers to Regional Preferences which can be either
-   * fetched from the internal internationalization database (CLDR), or
-   * from the host environment.
-   *
-   * The result is a sorted list of valid locale IDs and it should be
-   * used for all APIs that accept list of locales, like ECMA402 and L10n APIs.
-   *
-   * This API always returns at least one locale.
-   *
-   * Example: ["en-US", "de", "pl", "sr-Cyrl", "zh-Hans-HK"]
-   */
-  [Func="IsChromeOrUAWidget"]
-  sequence<DOMString> getRegionalPrefsLocales();
-
-  /**
    * Returns a list of locales that the web content would know from the user.
    *
    * One of the fingerprinting technique is to recognize users from their locales
@@ -810,4 +941,21 @@ partial interface Window {
 
 dictionary WindowPostMessageOptions : StructuredSerializeOptions {
   USVString targetOrigin = "/";
+};
+
+// https://wicg.github.io/cookie-store/#Window
+[SecureContext]
+partial interface Window {
+  [SameObject, Pref="dom.cookieStore.enabled"] readonly attribute CookieStore cookieStore;
+};
+
+// https://html.spec.whatwg.org/multipage/browsers.html#origin-keyed-agent-clusters
+partial interface Window {
+  [Pref="dom.origin_agent_cluster.enabled"] readonly attribute boolean originAgentCluster;
+};
+
+// https://wicg.github.io/document-picture-in-picture/#api
+partial interface Window {
+  [SameObject, SecureContext, Pref="dom.documentpip.enabled"]
+  readonly attribute DocumentPictureInPicture documentPictureInPicture;
 };

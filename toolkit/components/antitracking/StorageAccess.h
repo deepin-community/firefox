@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +8,6 @@
 #include <cstdint>
 
 #include "mozilla/MozPromise.h"
-#include "mozilla/RefPtr.h"
 
 #include "mozilla/dom/BrowsingContext.h"
 
@@ -41,9 +38,9 @@ enum class StorageAccess {
   // private browsing context.
   ePrivateBrowsing = 1,
   // Allow access to the storage
-  eAllow = 3,
+  eAllow = 2,
   // Keep this at the end.  Used for serialization, but not a valid value.
-  eNumValues = 4,
+  eNumValues = 3,
 };
 
 /*
@@ -103,8 +100,9 @@ bool StoragePartitioningEnabled(uint32_t aRejectedReason,
 
 // This method returns true if the URI has first party storage access when
 // loaded inside the passed 3rd party context tracking resource window.
-// If the window is first party context, please use
-// ApproximateAllowAccessForWithoutChannel();
+// If aCookies is true, this considers the permission granted by
+// document.requestStorageAccess. Cookies should be the only website state
+// that changes its accessibility based upon that permission.
 //
 // aRejectedReason could be set to one of these values if passed and if the
 // storage permission is not granted:
@@ -116,21 +114,9 @@ bool StoragePartitioningEnabled(uint32_t aRejectedReason,
 //
 // If you update this function, you almost certainly want to consider
 // updating the other overloaded functions
-// (and ApproximateAllowAccessForWithoutChannel).
 bool ShouldAllowAccessFor(nsPIDOMWindowInner* a3rdPartyTrackingWindow,
-                          nsIURI* aURI, uint32_t* aRejectedReason);
-
-// Note: you should use ShouldAllowAccessFor() passing the nsIChannel! Use
-// this method _only_ if the channel is not available.  For first party
-// window, it's impossible to know if the aURI is a tracking resource
-// synchronously, so here we return the best guest: if we are sure that the
-// permission is granted for the origin of aURI, this method returns true,
-// otherwise false.
-//
-// If you update this function, you almost certainly want to consider
-// updating the ShouldAllowAccessFor functions.
-bool ApproximateAllowAccessForWithoutChannel(
-    nsPIDOMWindowInner* aFirstPartyWindow, nsIURI* aURI);
+                          nsIURI* aURI, bool aCookies,
+                          uint32_t* aRejectedReason);
 
 // It returns true if the URI has access to the first party storage.
 // aChannel can be a 3rd party channel, or not.
@@ -139,7 +125,6 @@ bool ApproximateAllowAccessForWithoutChannel(
 //
 // If you update this function, you almost certainly want to consider
 // updating the other overloaded functions
-// (and ApproximateAllowAccessForWithoutChannel).
 bool ShouldAllowAccessFor(nsIChannel* aChannel, nsIURI* aURI,
                           uint32_t* aRejectedReason);
 
@@ -149,7 +134,6 @@ bool ShouldAllowAccessFor(nsIChannel* aChannel, nsIURI* aURI,
 //
 // If you update this function, you almost certainly want to consider
 // updating the other overloaded functions
-// (and ApproximateAllowAccessForWithoutChannel).
 bool ShouldAllowAccessFor(nsIPrincipal* aPrincipal,
                           nsICookieJarSettings* aCookieJarSettings);
 

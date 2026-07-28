@@ -3,17 +3,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 use crate::common::{from_cookie, from_name, to_cookie, to_name, Cookie, Frame, Timeouts, Window};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Url {
-    pub url: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Locator {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub element: Option<String>,
     pub using: Selector,
     pub value: String,
 }
@@ -151,7 +148,7 @@ pub enum SetPermissionState {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub enum WebAuthnProtocol {
+pub enum AuthenticatorProtocol {
     #[serde(rename = "ctap1/u2f")]
     Ctap1U2f,
     #[serde(rename = "ctap2")]
@@ -172,8 +169,9 @@ pub enum AuthenticatorTransport {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct AuthenticatorParameters {
-    pub protocol: WebAuthnProtocol,
+    pub protocol: AuthenticatorProtocol,
     pub transport: AuthenticatorTransport,
     pub has_resident_key: bool,
     pub has_user_verification: bool,
@@ -182,18 +180,48 @@ pub struct AuthenticatorParameters {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthenticatorIdParameters {
+    pub authenticator_id: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CredentialIdParameters {
+    pub authenticator_id: String,
+    pub credential_id: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct CredentialParameters {
+    pub authenticator_id: String,
+    pub credentials: Credentials,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Credentials {
     pub credential_id: String,
     pub is_resident_credential: bool,
     pub rp_id: String,
     pub private_key: String,
-    pub user_handle: String,
+    pub user_handle: Option<String>,
     pub sign_count: u64,
+    pub large_blob: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct UserVerificationParameters {
+    pub authenticator_id: String,
     pub is_user_verified: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct GlobalPrivacyControlParameters {
+    pub gpc: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -207,6 +235,38 @@ pub struct ScreenshotOptions {
 pub struct Script {
     pub script: String,
     pub args: Option<Vec<Value>>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum GeckoContext {
+    Content,
+    Chrome,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum AddonInstallParameters {
+    AddonInstallBase64 {
+        addon: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        temporary: Option<bool>,
+        #[serde(
+            rename = "allowPrivateBrowsing",
+            skip_serializing_if = "Option::is_none"
+        )]
+        allow_private_browsing: Option<bool>,
+    },
+    AddonInstallPath {
+        path: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        temporary: Option<bool>,
+        #[serde(
+            rename = "allowPrivateBrowsing",
+            skip_serializing_if = "Option::is_none"
+        )]
+        allow_private_browsing: Option<bool>,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -251,18 +311,6 @@ pub enum Command {
     FindElement(Locator),
     #[serde(rename = "WebDriver:FindElements")]
     FindElements(Locator),
-    #[serde(rename = "WebDriver:FindElement")]
-    FindElementElement {
-        element: String,
-        using: Selector,
-        value: String,
-    },
-    #[serde(rename = "WebDriver:FindElements")]
-    FindElementElements {
-        element: String,
-        using: Selector,
-        value: String,
-    },
     #[serde(rename = "WebDriver:FindElementFromShadowRoot")]
     FindShadowRootElement {
         #[serde(rename = "shadowRoot")]
@@ -280,7 +328,7 @@ pub enum Command {
     #[serde(rename = "WebDriver:FullscreenWindow")]
     FullscreenWindow,
     #[serde(rename = "WebDriver:Navigate")]
-    Get(Url),
+    Get { url: String },
     #[serde(rename = "WebDriver:GetActiveElement")]
     GetActiveElement,
     #[serde(rename = "WebDriver:GetAlertText")]
@@ -337,8 +385,12 @@ pub enum Command {
     MaximizeWindow,
     #[serde(rename = "WebDriver:MinimizeWindow")]
     MinimizeWindow,
+    #[serde(rename = "WebDriver:NewSession")]
+    NewSession(Map<String, Value>),
     #[serde(rename = "WebDriver:NewWindow")]
     NewWindow(NewWindow),
+    #[serde(rename = "WebDriver:PerformActions")]
+    PerformActions(Map<String, Value>),
     #[serde(rename = "WebDriver:Print")]
     Print(PrintParameters),
     #[serde(rename = "WebDriver:Refresh")]
@@ -360,25 +412,33 @@ pub enum Command {
     #[serde(rename = "WebDriver:SwitchToWindow")]
     SwitchToWindow(Window),
     #[serde(rename = "WebDriver:TakeScreenshot")]
-    TakeElementScreenshot(ScreenshotOptions),
-    #[serde(rename = "WebDriver:TakeScreenshot")]
-    TakeFullScreenshot(ScreenshotOptions),
-    #[serde(rename = "WebDriver:TakeScreenshot")]
     TakeScreenshot(ScreenshotOptions),
-    #[serde(rename = "WebAuthn:AddVirtualAuthenticator")]
-    WebAuthnAddVirtualAuthenticator(AuthenticatorParameters),
-    #[serde(rename = "WebAuthn:RemoveVirtualAuthenticator")]
-    WebAuthnRemoveVirtualAuthenticator,
+    #[serde(rename = "GPC:GetGlobalPrivacyControl")]
+    GPCGetGlobalPrivacyControl,
+    #[serde(rename = "GPC:SetGlobalPrivacyControl")]
+    GPCSetGlobalPrivacyControl(GlobalPrivacyControlParameters),
+    #[serde(rename = "Addon:Install")]
+    AddonInstall(AddonInstallParameters),
+    #[serde(rename = "Addon:Uninstall")]
+    AddonUninstall { id: String },
     #[serde(rename = "WebAuthn:AddCredential")]
     WebAuthnAddCredential(CredentialParameters),
+    #[serde(rename = "WebAuthn:AddVirtualAuthenticator")]
+    WebAuthnAddVirtualAuthenticator(AuthenticatorParameters),
     #[serde(rename = "WebAuthn:GetCredentials")]
-    WebAuthnGetCredentials,
-    #[serde(rename = "WebAuthn:RemoveCredential")]
-    WebAuthnRemoveCredential,
+    WebAuthnGetCredentials(AuthenticatorIdParameters),
     #[serde(rename = "WebAuthn:RemoveAllCredentials")]
-    WebAuthnRemoveAllCredentials,
+    WebAuthnRemoveAllCredentials(AuthenticatorIdParameters),
+    #[serde(rename = "WebAuthn:RemoveCredential")]
+    WebAuthnRemoveCredential(CredentialIdParameters),
+    #[serde(rename = "WebAuthn:RemoveVirtualAuthenticator")]
+    WebAuthnRemoveVirtualAuthenticator(AuthenticatorIdParameters),
     #[serde(rename = "WebAuthn:SetUserVerified")]
     WebAuthnSetUserVerified(UserVerificationParameters),
+    #[serde(rename = "Marionette:GetContext")]
+    GetContext,
+    #[serde(rename = "Marionette:SetContext")]
+    SetContext { value: GeckoContext },
 }
 
 #[cfg(test)]
@@ -436,6 +496,7 @@ mod tests {
             "value": "link text",
         });
         let data = Locator {
+            element: None,
             using: Selector::PartialLinkText,
             value: "link text".into(),
         };
@@ -475,6 +536,7 @@ mod tests {
     #[test]
     fn test_command_with_params() {
         let locator = Locator {
+            element: None,
             using: Selector::Css,
             value: "value".into(),
         };
@@ -533,11 +595,11 @@ mod tests {
     #[test]
     fn test_json_command_as_struct() {
         assert_ser(
-            &Command::FindElementElement {
-                element: "foo".into(),
+            &Command::FindElement(Locator {
+                element: Some("foo".into()),
                 using: Selector::XPath,
                 value: "bar".into(),
-            },
+            }),
             json!({"WebDriver:FindElement": {"element": "foo", "using": "xpath", "value": "bar" }}),
         );
     }

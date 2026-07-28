@@ -32,13 +32,13 @@ treechildren::-moz-tree-image(container, noicon) {
 treechildren::-moz-tree-image(checked),
 treechildren::-moz-tree-image(partial) {
   -moz-context-properties: fill, stroke;
-  fill: var(--in-content-accent-color);
+  fill: var(--color-accent-primary);
 }
 
 treechildren::-moz-tree-image(checked, selected),
 treechildren::-moz-tree-image(partial, selected) {
-  fill: var(--in-content-item-selected-text);
-  stroke: var(--in-content-item-selected);
+  fill: var(--text-color-accent-primary-selected);
+  stroke: var(--color-accent-primary-selected);
 }
 
 treechildren::-moz-tree-image(checked) {

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,7 +21,7 @@ NTSTATUS NTAPI NtMapViewOfSection(
 
 using namespace mozilla;
 
-static WindowsDllInterceptor NtdllIntercept;
+MOZ_RUNINIT static WindowsDllInterceptor NtdllIntercept;
 
 static WindowsDllInterceptor::FuncHookType<decltype(&::NtMapViewOfSection)>
     stub_NtMapViewOfSection;
@@ -80,7 +78,7 @@ class MappedViewsInfoCollector {
 };
 
 static bool sIsTestRunning = false;
-static MappedViewsInfoCollector sMappedViewsInfoCollector;
+MOZ_RUNINIT static MappedViewsInfoCollector sMappedViewsInfoCollector;
 
 NTSTATUS NTAPI patched_NtMapViewOfSection(
     HANDLE aSection, HANDLE aProcess, PVOID* aBaseAddress, ULONG_PTR aZeroBits,

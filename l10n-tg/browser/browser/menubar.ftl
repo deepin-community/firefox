@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Хусусиятҳо
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Танзимот…
+menu-application-set-as-default =
+    .label = Танзим кардани «{ -brand-shorter-name }» ҳамчун браузери пешфарз
 menu-application-services =
     .label = Хизматҳо
 menu-application-hide-this =
@@ -145,8 +138,6 @@ menu-view-history-button =
     .label = Таърих
 menu-view-synced-tabs-sidebar =
     .label = Варақаҳои ҳамоҳангшуда
-menu-view-megalist-sidebar =
-    .label = Ниҳонвожаҳо
 menu-view-full-zoom =
     .label = Танзими андоза
     .accesskey = Т
@@ -254,6 +245,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Хатбаракҳои мобилӣ
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Профилҳо
+menu-profiles-manage-profiles =
+    .label = Идоракунии профилҳо
+menu-profiles-new-profile =
+    .label = Профили нав
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (ҷорӣ)
+menu-profiles-menu =
+    .label = Профилҳо
+    .accesskey = П
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +269,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Боргириҳо
     .accesskey = Б
+menu-tools-extensions-and-themes =
+    .label = Васеъшавиҳо ва мавзӯъҳо
+    .accesskey = В
 menu-tools-addons-and-themes =
     .label = Ҷузъҳои иловагӣ ва мавзуъҳо
     .accesskey = Ҷ

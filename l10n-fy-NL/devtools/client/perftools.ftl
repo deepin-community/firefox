@@ -33,11 +33,33 @@ perftools-description-local-build =
     As jo in build profilearje dy’t jo sels, op dizze masine, kompilearre hawwe,
     foegje dan de objdir fan jo build oan de ûndersteande list ta, sadat
     dizze brûkt wurde kin om symboalynformaasje op te sykjen.
+perftools-pick-local-build-directory = Buildmap kieze
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Stekproefynterfal:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
 
 ##
 
@@ -68,6 +90,14 @@ perftools-button-restart = Opnij starte
 perftools-button-add-directory = In map tafoegje
 perftools-button-remove-directory = Selektearre fuortsmite
 perftools-button-edit-settings = Ynstellingen bewurkje…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Mear aksjes
+perftools-menu-more-actions-restart-with-profiling = { -brand-shorter-name } opnij starte mei opstartprofilearring ynskeakele
+perftools-menu-more-actions-copy-for-startup = Omjouwingsfariabelen foar opstartprofilearring kopiearje
+perftools-menu-more-actions-copy-for-perf-tests = Parameters foar prestaasjetests kopiearje
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -141,14 +171,17 @@ perftools-presets-graphics-label = Grafysk
 perftools-presets-graphics-description = Foarynstelling foar it ûndersykjen fan grafyske bugs yn { -brand-shorter-name }.
 perftools-presets-media-label = Media
 perftools-presets-media-description2 = Foarynstelling foar it ûndersykjen fan audio- en fideobugs yn { -brand-shorter-name }.
+perftools-presets-ml-label = Masinaal leare
+perftools-presets-ml-description2 = Foarynstelling foar it ûndersykjen fan masineoersettingsbugs yn { -brand-shorter-name }.
 perftools-presets-networking-label = Netwurk
 perftools-presets-networking-description = Foarynstelling foar it ûndersykjen fan netwerkbugs yn { -brand-shorter-name }.
+perftools-presets-networking-with-logs-label = Netwurken mei lochboeken
+perftools-presets-networking-with-logs-description = Foarynstelling foar it ûndersykjen fan netwurkbugs yn { -brand-shorter-name }, ynklusyf netwurklochboeken. Dizze lochboeken kinne gefoelige ynformaasje befetsje, lykas de URL’s dy’t jo besykje
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Fermogen
 perftools-presets-power-description = Foarynstelling foar it ûndersykjen fan stroomferbrûkbugs yn { -brand-shorter-name }, mei lege overhead.
 perftools-presets-debug-label = Debugge
 perftools-presets-debug-description = Foarynstelling foar debugging yn { -brand-shorter-name }. Hege overhead, net brûke foar prestaasjewurk, mar om te fokussen op it begripen fan browsergedrach.
+perftools-presets-web-compat-label = Webkompatibiliteit
+perftools-presets-web-compat-description = Oanrekommandearre foarynstelling foar it opspoaren fan webkompatibiliteitsproblemen op websites, yn stee fan it folgjen fan prestaasjes.
 perftools-presets-custom-label = Oanpast
-
-##
-

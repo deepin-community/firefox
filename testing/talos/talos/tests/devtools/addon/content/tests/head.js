@@ -114,7 +114,7 @@ function waitForDOMPredicate(
     return Promise.resolve(rv);
   }
   return new Promise(resolve => {
-    const observer = new target.ownerGlobal.MutationObserver(() => {
+    const observer = new target.documentGlobal.MutationObserver(() => {
       rv = predicate();
       if (rv) {
         resolve(rv);
@@ -184,6 +184,15 @@ exports.closeToolboxAndLog = async function (name, toolbox) {
   let test = runTest(`${name}.close.DAMP`);
   await toolbox.destroy();
   test.done();
+};
+
+exports.navigatePageAndLog = async function (url, name, toolbox) {
+  dump(`Navigate page on '${name}' to url '${url}'\n`);
+  let test = runTest(`${name}.navigate.DAMP`);
+  await damp.navigatePage(url);
+  test.done();
+
+  await recordPendingPaints(`${name}.navigate`, toolbox);
 };
 
 exports.reloadPageAndLog = async function (name, toolbox, onReload) {

@@ -85,7 +85,7 @@ function verifyBuffers(buffer1, buffer2) {
   ok(compareBuffers(buffer1, buffer2), "Correct buffer data");
 }
 
-function verifyBlob(blob1, blob2, fileId, blobReadHandler) {
+function verifyBlobProperties(blob1, blob2, fileId) {
   // eslint-disable-next-line mozilla/use-cc-etc
   is(SpecialPowers.wrap(Blob).isInstance(blob1), true, "Instance of Blob");
   is(blob1 instanceof File, blob2 instanceof File, "Instance of DOM File");
@@ -95,6 +95,84 @@ function verifyBlob(blob1, blob2, fileId, blobReadHandler) {
     is(blob1.name, blob2.name, "Correct name");
   }
   is(utils.getFileId(blob1), fileId, "Correct file id");
+}
+
+/**
+ * verifyBlobAsync checks that blob1 has the same size, type and buffer as
+ * blob2, and the given fileId. Additionally, if blob2 is a File, the names
+ * of two blobs must be equal.
+ *
+ * Note: verifyBlobAsync uses bufferCache only for blob2. Callers consistently
+ * use blob1 for the actual Blob value read back from IndexedDB and blob2 for
+ * the expected/reference Blob. Caching blob1 would therefore provide little
+ * benefit, since those values are typically not reused in later calls.
+ *
+ * @param {Blob} blob1 actual Blob value
+ * @param {Blob} blob2 Blob with expected properties
+ * @param {number} fileId expected id
+ */
+async function verifyBlobAsync(blob1, blob2, fileId) {
+  verifyBlobProperties(blob1, blob2, fileId);
+
+  let buffer1;
+  let buffer2;
+
+  for (let i = 0; i < bufferCache.length; i++) {
+    if (!buffer1 && bufferCache[i].blob == blob1) {
+      buffer1 = bufferCache[i].buffer;
+    }
+
+    if (!buffer2 && bufferCache[i].blob == blob2) {
+      buffer2 = bufferCache[i].buffer;
+    }
+
+    if (!!buffer1 && !!buffer2) {
+      break;
+    }
+  }
+
+  const getBuffer = blobItem => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener("loadend", () => {
+        if (reader.error) {
+          reject(reader.error);
+        }
+
+        resolve(reader.result);
+      });
+      reader.readAsArrayBuffer(blobItem);
+    });
+  };
+
+  if (!buffer2) {
+    buffer2 = await getBuffer(blob2);
+    bufferCache.push({ blob: blob2, buffer: buffer2 });
+  }
+
+  buffer1 = await getBuffer(blob1);
+
+  verifyBuffers(buffer1, buffer2);
+}
+
+/**
+ * verifyBlob checks that blob1 has the same size, type and buffer as blob2,
+ * and the given fileId. Additionally, if blob2 is a File, the names of the
+ * two blobs must be equal.
+ *
+ * Note: verifyBlob uses bufferCache only for blob2. Callers consistently use
+ * blob1 for the actual Blob value read back from IndexedDB and blob2 for the
+ * expected/reference Blob. Caching blob1 would therefore provide little
+ * benefit, since those values are typically not reused in later calls.
+ *
+ * @param {Blob} blob1 actual Blob value
+ * @param {Blob} blob2 Blob with expected properties
+ * @param {number} fileId expected id
+ * @param {Function=} blobReadHandler optional callback invoked after both blobs
+ *     have been read and compared
+ */
+function verifyBlob(blob1, blob2, fileId, blobReadHandler) {
+  verifyBlobProperties(blob1, blob2, fileId);
 
   let buffer1;
   let buffer2;
@@ -172,7 +250,6 @@ function verifyBlobArray(blobs1, blobs2, expectedFileIds) {
 function verifyView(view1, view2) {
   is(view1.byteLength, view2.byteLength, "Correct byteLength");
   verifyBuffers(view1, view2);
-  continueToNextStep();
 }
 
 function verifyWasmModule(module1, module2) {
@@ -191,7 +268,7 @@ function grabFileUsageAndContinueHandler(request) {
 
 function getCurrentUsage(usageHandler) {
   let qms = SpecialPowers.Services.qms;
-  let principal = SpecialPowers.wrap(document).nodePrincipal;
+  let principal = SpecialPowers.wrap(document).effectiveStoragePrincipal;
   let cb = SpecialPowers.wrapCallback(usageHandler);
   qms.getUsageForPrincipal(principal, cb);
 }

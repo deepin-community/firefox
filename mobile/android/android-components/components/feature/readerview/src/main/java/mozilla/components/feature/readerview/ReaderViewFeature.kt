@@ -6,9 +6,10 @@ package mozilla.components.feature.readerview
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.mapNotNull
 import mozilla.components.browser.state.action.EngineAction
 import mozilla.components.browser.state.action.ReaderAction
@@ -27,7 +28,7 @@ import mozilla.components.support.base.feature.LifecycleAwareFeature
 import mozilla.components.support.base.feature.UserInteractionHandler
 import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.ktx.kotlinx.coroutines.flow.filterChanged
-import mozilla.components.support.webextensions.WebExtensionController
+import mozilla.components.support.webextensions.BuiltInWebExtensionController
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 import java.net.URLEncoder
@@ -45,6 +46,7 @@ typealias UUIDCreator = () -> String
  * @property engine a reference to the application's browser engine.
  * @property store a reference to the application's [BrowserStore].
  * @param controlsView the view to use to display reader mode controls.
+ * @param mainDispatcher [CoroutineDispatcher] to be used for observing the store.
  * @property onReaderViewStatusChange a callback invoked to indicate whether
  * or not reader view is available and active for the page loaded by the
  * currently selected session. The callback will be invoked when a page is
@@ -56,8 +58,9 @@ class ReaderViewFeature(
     private val engine: Engine,
     private val store: BrowserStore,
     controlsView: ReaderViewControlsView,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
     private val createUUID: UUIDCreator = { UUID.randomUUID().toString() },
-    private val onReaderViewStatusChange: onReaderViewStatusChange = { _, _ -> Unit },
+    private val onReaderViewStatusChange: onReaderViewStatusChange = { _, _ -> },
 ) : LifecycleAwareFeature, UserInteractionHandler {
 
     private var scope: CoroutineScope? = null
@@ -66,7 +69,7 @@ class ReaderViewFeature(
 
     @VisibleForTesting
     // This is an internal var to make it mutable for unit testing purposes only
-    internal var extensionController = WebExtensionController(
+    internal var extensionController = BuiltInWebExtensionController(
         READER_VIEW_EXTENSION_ID,
         READER_VIEW_EXTENSION_URL,
         READER_VIEW_CONTENT_PORT,
@@ -87,7 +90,7 @@ class ReaderViewFeature(
     override fun start() {
         ensureExtensionInstalled()
 
-        scope = store.flowScoped { flow ->
+        scope = store.flowScoped(dispatcher = mainDispatcher) { flow ->
             flow.mapNotNull { state -> state.tabs }
                 .filterChanged {
                     it.readerState
@@ -293,7 +296,7 @@ class ReaderViewFeature(
         }
     }
 
-    private fun WebExtensionController.createReaderUrl(url: String, id: String): String? {
+    private fun BuiltInWebExtensionController.createReaderUrl(url: String, id: String): String? {
         val colorScheme = config.colorScheme.name.lowercase(Locale.ROOT)
         // Encode the original page url, otherwise when the readerview page will try to
         // parse the url and retrieve the readerview url params (ir and colorScheme)

@@ -15,6 +15,10 @@ support-addons-type = Typ
 support-addons-enabled = Zmóžnjeny
 support-addons-version = Wersija
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Městno
 legacy-user-stylesheets-title = Zestarjene wužiwarske stilowe předłohi
 legacy-user-stylesheets-enabled = Aktiwny
 legacy-user-stylesheets-stylesheet-types = Stilowe předłohi
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = Eficienca (%)
 place-database-stats-sequentiality-perc = Sekwencialnosć (%)
 place-database-integrity = Integrita
 place-database-verify-integrity = Integritu přepruwować
+place-database-last-idle-maintenance-data = Datum poslednjeho wothladowanja při njeaktiwnosći
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Posledni datum procesa Vacuum
+place-database-last-integrity-corruption-date = Datum poslednjeho zranjenja integrity
 a11y-title = Bjezbarjernosć
 a11y-activated = Aktiwizowany
 a11y-force-disabled = Bjezbarjernosći zadźěwać
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Datowu banku naličić
 
 media-codec-support-sw-decoding = Softwarowe dekodowanje
 media-codec-support-hw-decoding = Hardwarowe dekodowanje
+media-codec-support-sw-encoding = Softwarowe kodowanje
+media-codec-support-hw-encoding = Hardwarowe kodowanje
 media-codec-support-codec-name = Mjeno Codec
 media-codec-support-supported = Podpěrany
 media-codec-support-unsupported = Njepodpěrany

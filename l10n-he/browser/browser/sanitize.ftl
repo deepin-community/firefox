@@ -59,10 +59,7 @@ history-section-label = היסטוריה
 item-history-and-downloads =
     .label = היסטוריית גלישה והורדות
     .accesskey = ה
-item-history-form-data-downloads =
-    .label = היסטוריה
-    .accesskey = ה
-item-history-form-data-downloads-description = מנקה היסטוריית אתרים 4והיסטוריית הורדות, פרטי טפסים שמורים וחיפושים
+item-history-and-downloads-description2 = מנקה את היסטוריית האתרים וההורדות
 item-cookies =
     .label = עוגיות
     .accesskey = ע
@@ -89,7 +86,7 @@ item-cached-content-with-size =
     .label = קבצים ודפים זמניים המאוחסנים במטמון ({ $amount } { $unit })
     .accesskey = ק
 item-cached-content =
-    .label = קבצים ודפים זמניים במטמון
+    .label = קבצים ודפים זמניים המאוחסנים במטמון
     .accesskey = ק
 item-cached-content-description = מנקה פריטים שעוזרים לאתרים להיטען מהר יותר
 item-form-search-history =
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = הגדרות אתרים
     .accesskey = ה
+item-formdata-prefs =
+    .label = פרטי טפסים שמורים
+    .accesskey = ט
+item-formdata-description = מנקה דברים כמו שמות, כתובות דוא״ל ופריטים אחרים שמזינים בדרך כלל בטפסים
 item-site-prefs-description = מאפס את ההרשאות והעדפות האתר שלך להגדרות המקוריות
 data-section-label = נתונים
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = כל ההיסטוריה תימחק.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = כל הפריטים הנבחרים יימחקו.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = בתהליך חישוב…

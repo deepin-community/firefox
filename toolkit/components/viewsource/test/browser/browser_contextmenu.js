@@ -8,6 +8,12 @@ var gViewSourceWindow, gContextMenu, gCopyLinkMenuItem, gCopyEmailMenuItem;
 
 var expectedData = [];
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function () {
   // Full source in view source tab
   let newTab = await openDocument(source);
@@ -54,7 +60,7 @@ async function onViewSourceWindowOpen(aWindow) {
 
   expectedData.push(["a[href]", true, false, "http://example.com/"]);
   expectedData.push(["a[href^=mailto]", false, true, "abc@def.ghi"]);
-  expectedData.push(["span", false, false, null]);
+  expectedData.push(["span:not([id])", false, false, null]);
 }
 
 async function checkMenuItems(

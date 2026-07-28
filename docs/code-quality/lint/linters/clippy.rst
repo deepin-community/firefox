@@ -12,25 +12,44 @@ The mozlint integration of clippy can be run using mach:
 
     $ mach lint --linter clippy <file paths>
 
+    # Return warnings
+
+    $ mach lint --warnings --linter clippy <file paths>
+
 .. note::
 
    clippy expects a path or a .rs file. It doesn't accept Cargo.toml
    as it would break the mozlint workflow.
 
+To use Rust nightly, you can set the environment variable `RUSTUP_TOOLCHAIN` to `nightly`:
+
+.. parsed-literal:
+
+    # Note that you need to have nightly installed with Rustup
+    # A clobber might be necessary after switching toolchains
+    $ RUSTUP_TOOLCHAIN=nightly ./mach lint --warning -l clippy .
+
 Configuration
 -------------
 
 To enable clippy on new directory, add the path to the include
-section in the `clippy.yml <https://searchfox.org/mozilla-central/source/tools/lint/clippy.yml>`_ file.
+section in the :searchfox:`clippy.yml <tools/lint/clippy.yml>` file.
 
-Autofix
--------
+To enable additional clippy rules beyond the defaults, add them to the
+``warn`` or ``deny`` lists in `clippy.yml <https://searchfox.org/mozilla-central/source/tools/lint/clippy.yml>`_:
 
-This linter provides a ``--fix`` option.
-Please note that this option does not fix all detected issues.
+.. code-block:: yaml
+
+    warn:
+        - needless_return
+    deny:
+        - some_critical_lint
+
+The full list of available lints is at https://rust-lang.github.io/rust-clippy/master/.
+
 
 Sources
 -------
 
-* `Configuration (YAML) <https://searchfox.org/mozilla-central/source/tools/lint/clippy.yml>`_
-* `Source <https://searchfox.org/mozilla-central/source/tools/lint/clippy/__init__.py>`_
+* :searchfox:`Configuration (YAML) <tools/lint/clippy.yml>`
+* :searchfox:`Source <tools/lint/clippy/__init__.py>`

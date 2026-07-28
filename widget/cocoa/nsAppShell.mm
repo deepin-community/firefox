@@ -1,5 +1,3 @@
-/* -*- tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -29,7 +27,7 @@
 #include "nsObjCExceptions.h"
 #include "nsCocoaUtils.h"
 #include "nsCocoaFeatures.h"
-#include "nsChildView.h"
+#include "nsCocoaWindow.h"
 #include "nsToolkit.h"
 #include "TextInputHandler.h"
 #include "mozilla/BackgroundHangMonitor.h"
@@ -337,13 +335,11 @@ void nsAppShell::OnRunLoopActivityChanged(CFRunLoopActivity aActivity) {
           profilingStack.pushLabelFrame("Native event loop idle", nullptr,
                                         &variableOnStack,
                                         JS::ProfilingCategoryPair::IDLE, 0);
-          profiler_thread_sleep();
         });
   } else {
     if (mProfilingStackWhileWaiting) {
       mProfilingStackWhileWaiting->pop();
       mProfilingStackWhileWaiting = nullptr;
-      profiler_thread_wake();
     }
   }
 }
@@ -373,7 +369,11 @@ nsresult nsAppShell::Init() {
   mAutoreleasePools = ::CFArrayCreateMutable(nullptr, 0, nullptr);
   NS_ENSURE_STATE(mAutoreleasePools);
 
+  // Don't call -[NSBundle loadNibNamed:owner:options:] for child process types
+  // that don't need graphics. The loadNibNamed call triggers some graphics-
+  // related initialization that is not needed for these process types.
   bool isNSApplicationProcessType =
+      (XRE_GetProcessType() != GeckoProcessType_Content) &&
       (XRE_GetProcessType() != GeckoProcessType_RDD) &&
       (XRE_GetProcessType() != GeckoProcessType_Socket);
 
@@ -650,7 +650,7 @@ void nsAppShell::ScheduleNativeEventCallback() {
 }
 
 // Undocumented Cocoa Event Manager function, present in the same form since
-// at least OS X 10.6.
+// at least macOS 10.6.
 extern "C" EventAttributes GetEventAttributes(EventRef inEvent);
 
 // ProcessNextNativeEvent
@@ -686,14 +686,12 @@ bool nsAppShell::ProcessNextNativeEvent(bool aMayWait) {
 
   NSRunLoop* currentRunLoop = [NSRunLoop currentRunLoop];
 
-  EventQueueRef currentEventQueue = GetCurrentEventQueue();
-
   if (aMayWait) {
     mozilla::BackgroundHangMonitor().NotifyWait();
   }
 
   // Only call -[NSApp sendEvent:] (and indirectly send user-input events to
-  // Gecko) if aMayWait is true.  Tbis ensures most calls to -[NSApp
+  // Gecko) if aMayWait is true.  This ensures most calls to -[NSApp
   // sendEvent:] happen under nsAppShell::Run(), at the lowest level of
   // recursion -- thereby making it less likely Gecko will process user-input
   // events in the wrong order or skip some of them.  It also avoids eating
@@ -783,9 +781,11 @@ bool nsAppShell::ProcessNextNativeEvent(bool aMayWait) {
   } while (mRunningEventLoop);
 
   if (eventProcessed) {
-    moreEvents =
-        (AcquireFirstMatchingEventInQueue(currentEventQueue, 0, NULL,
-                                          kEventQueueOptionsNone) != NULL);
+    NSEvent* nextEvent = [NSApp nextEventMatchingMask:NSEventMaskAny
+                                            untilDate:nil
+                                               inMode:currentMode
+                                              dequeue:NO];
+    moreEvents = !!nextEvent;
   }
 
   mRunningEventLoop = wasRunningEventLoop;
@@ -793,7 +793,7 @@ bool nsAppShell::ProcessNextNativeEvent(bool aMayWait) {
   NS_OBJC_END_TRY_IGNORE_BLOCK;
 
   if (!moreEvents) {
-    nsChildView::UpdateCurrentInputEventCount();
+    nsCocoaWindow::UpdateCurrentInputEventCount();
   }
 
   return moreEvents;
@@ -1130,7 +1130,7 @@ void nsAppShell::OnMemoryPressureChanged(
 
 // Called by the OS after [MacApplicationDelegate applicationShouldTerminate:]
 // has returned NSTerminateNow.  This method "subclasses" and replaces the
-// OS's original implementation.  The only thing the orginal method does which
+// OS's original implementation.  The only thing the original method does which
 // we need is that it posts NSApplicationWillTerminateNotification.  Everything
 // else is unneeded (because it's handled elsewhere), or actively interferes
 // with Gecko's shutdown sequence.  For example the original terminate: method

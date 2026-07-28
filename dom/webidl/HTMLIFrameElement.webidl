@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,8 +18,8 @@ interface HTMLIFrameElement : HTMLElement {
 
   [CEReactions, SetterNeedsSubjectPrincipal=NonSystem, SetterThrows, Pure]
            attribute DOMString src;
-  [CEReactions, SetterThrows, Pure]
-           attribute DOMString srcdoc;
+  [CEReactions, SetterNeedsSubjectPrincipal=NonSystem, SetterThrows, Pure]
+           attribute (TrustedHTML or DOMString) srcdoc;
   [CEReactions, SetterThrows, Pure]
            attribute DOMString name;
   [PutForwards=value] readonly attribute DOMTokenList sandbox;
@@ -33,7 +32,7 @@ interface HTMLIFrameElement : HTMLElement {
            attribute DOMString height;
   [CEReactions, SetterThrows, Pure]
            attribute DOMString referrerPolicy;
-  [CEReactions, SetterThrows, Pure, Pref="dom.iframe-lazy-loading.enabled"]
+  [CEReactions, SetterThrows, Pure]
            attribute DOMString loading;
   [NeedsSubjectPrincipal]
   readonly attribute Document? contentDocument;

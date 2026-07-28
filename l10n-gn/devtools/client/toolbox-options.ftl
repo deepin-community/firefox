@@ -30,10 +30,18 @@ options-context-inspector = Mbohekoha
 options-show-user-agent-styles-label = Kundaha rehegua jehechauka
 options-show-user-agent-styles-tooltip =
     .title = Emyandývo kóva ojehechaukáta ypykuéva rehegua kundaha omyanyhẽva.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Ehechauka DOM kundahára ãgua
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Emyandývo ko poravorã, ehecháta Shadow DOM mba’eporurã kundahára rehegua.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Tekome’ẽ DOM ñemboyke
 options-collapse-attrs-tooltip =
     .title = Tekome’ẽ ipukúva moambuekuaávape ñemboyke
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Ehechauka je’epy
+options-show-comments-tooltip =
+    .title = Ehechauka je’epy nodo rehegua mbohekohápe
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Eikutu ha embosyryry rehaijey hag̃ua tuichakue térã michĩngue
 options-inspector-draggable-properties-tooltip =
@@ -67,6 +75,27 @@ options-webconsole-label = Mba’e’okarupa
 options-webconsole-split-console-label = Emyandy mba’e’oka mboja’opyre
 options-webconsole-split-console-tooltip =
     .title = Embojuruja mba’e’okarupa ivoréva Esc tairenda ndive
+
+## Network Monitor section
+
+# The heading
+options-netmonitor-label = Monitor ñandutigua
+# Text shown in the input when there is no limitation (instead of showing "0")
+options-netmonitor-body-limit-unlimited-label = Ijapyra’ỹva
+options-netmonitor-body-limit-button =
+    .title = Embosako’i mba’ejerure tuichakue/ñembohovái rete.
+
+## Experimental section
+
+# The heading
+options-experimental-label = Japokuaa reheguaite
+# The label for the checkbox that toggles showing stylesheets in the debugger
+options-stylesheets-in-the-debugger-label = Ehechauka kuatia mbohekoha mopotĩhápe
+options-stylesheets-in-the-debugger-tooltip =
+    .title = Emboysýi ha ehecha kuatia mbohekoha mopotĩhápe
+# The message shown for settings that indicates that the attached setting requires the
+# toolbox to be reopened to take effect.
+options-reopen-toolbox-message = (oikotevẽ ombojuruja tembiporu ryru)
 
 ## Style Editor section
 
@@ -107,6 +136,38 @@ options-sourceeditor-tabsize-label = Tendayke tuichakue
 options-sourceeditor-keybinding-label = Jehaiha mbojopyru
 options-sourceeditor-keybinding-default-label = Jepokokuaa’ỹha
 
+## Local Mode section
+
+# The heading
+options-local-mode-label = Ayvu pypegua
+options-local-mode-domain-label = Mba’eteete mboavapyre:
+options-local-mode-origin-input =
+    .placeholder = Mapeo local peguarã reñoiha
+# Errors shown when the origin input has an error
+options-local-mode-origin-conflict = Ko teñoiha ojoavy ambue mapeo oĩmavavoi ndive
+options-local-mode-origin-invalid = Ko teñoiha ndoikói
+options-local-mode-folder-label = Ñongatuha pypegua:
+options-local-mode-choose-folder = Kundaha…
+    .title = Eiporavo ñongatuha pypegua oiko hag̃ua ko me’ẽmby
+# Dialog's title when picking a folder for a mapping
+# Variables:
+#   $url (String): The url for the mapping being configured
+options-local-mode-choose-folder-picker-title = Eiporavo ñongatuha pypeguávape g̃uarã: { $url }
+# Error shown when the folder is invalid
+# (can easily be triggered when using about:config and changing underlying mappings prefs)
+options-local-mode-folder-invalid = Ko ñongatuha ndaiporivoi térã ndoikói.
+options-local-mode-toggle =
+    .title = Emyandy/embogue ko ñeme’ẽ pypeguáva
+options-local-mode-toggle-enable = Embojuruja
+options-local-mode-toggle-disable = Embogue
+options-local-mode-navigate-to =
+    .title = Eikundaha ko URL mapeoguándi
+# Dialog message prompted when clicking on the Delete button
+# Variables:
+#   $mappingOrigin (String): The origin for the mapping
+options-local-mode-confirm-deletion = ¿Emboguese añetehápe pe mapeo “{ $mappingOrigin }”?
+options-local-mode-new-mapping = Embojuaju mapeo pypeguáva pyahu
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
@@ -115,6 +176,8 @@ options-context-advanced-settings = Ñemoĩporã opapotáva
 options-disable-http-cache-label = Kache HTTP ñemonge (tembiporu ryru ijuruja jave)
 options-disable-http-cache-tooltip =
     .title = Emyandývo ko porãvopyrã oipe’áta kache HTTP opavave tenda’i ombojurujáva tembiporu renda. Mba’apoharakuérape ndohupytýi ko tembiapo hesegua.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Eipe’a JavaScript
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript * monge
 options-disable-javascript-tooltip =
@@ -143,5 +206,21 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Embojuruja yvyra’ãnga ypýva
 options-source-maps-tooltip =
     .title = Embojurujáramo ko poravopyrã, teñoiha ijehecháta tembiporúpe.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (jeike ag̃agua, emyenyhẽjey kuatiarogue)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Tembiapo ag̃agua añónte, emyanyhẽjey kuatiarogue
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (emyanyhẽjey kuatiarogue)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Jehegui
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Ndoikovéima. Eikuaave…

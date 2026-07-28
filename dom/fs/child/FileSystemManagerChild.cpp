@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -26,6 +24,17 @@ void FileSystemManagerChild::CloseAllWritables(
     std::function<void()>&& aCallback) {
   nsTArray<RefPtr<BoolPromise>> promises;
   CloseAllWritablesImpl(promises);
+
+  // FileSystemManagerChild::CloseAllWritables is sometimes called from
+  // FileSystemManager::Shutdown which can be called late in app shutdown
+  // when GetCurrentSerialEventTarget returns null. At that point there
+  // are no writable file streams. The problem with GetCurrentSerialEventTarget
+  // returning null can be solved by calling the callback directly without
+  // dispatching a new runnable.
+  if (promises.IsEmpty()) {
+    aCallback();
+    return;
+  }
 
   BoolPromise::AllSettled(GetCurrentSerialEventTarget(), promises)
       ->Then(GetCurrentSerialEventTarget(), __func__,
@@ -81,6 +90,8 @@ FileSystemManagerChild::AllocPFileSystemWritableFileStreamChild() {
 
 ::mozilla::ipc::IPCResult FileSystemManagerChild::RecvCloseAll(
     CloseAllResolver&& aResolver) {
+  mCloseAllReceived = true;
+
   nsTArray<RefPtr<BoolPromise>> promises;
 
   // NOTE: getFile() creates blobs that read the data from the child;

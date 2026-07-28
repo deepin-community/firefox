@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -69,12 +67,9 @@ class RenderAndroidSurfaceTextureHost final : public RenderTextureHostSWGL {
   virtual ~RenderAndroidSurfaceTextureHost();
   bool EnsureAttachedToGLContext();
 
-  already_AddRefed<gfx::DataSourceSurface> ReadTexImage();
+  gfx::Matrix4x4 GetTextureTransform() const;
 
-  // Returns the UV coordinates to be used when sampling the texture, taking in
-  // to account the SurfaceTexture's transform if applicable.
-  std::pair<gfx::Point, gfx::Point> GetUvCoords(
-      gfx::IntSize aTextureSize) const override;
+  already_AddRefed<gfx::DataSourceSurface> ReadTexImage();
 
   enum PrepareStatus {
     STATUS_NONE,

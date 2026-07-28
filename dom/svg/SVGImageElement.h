@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,12 +5,13 @@
 #ifndef DOM_SVG_SVGIMAGEELEMENT_H_
 #define DOM_SVG_SVGIMAGEELEMENT_H_
 
-#include "nsImageLoadingContent.h"
 #include "mozilla/dom/SVGAnimatedLength.h"
+#include "mozilla/dom/SVGAnimatedPreserveAspectRatio.h"
 #include "mozilla/dom/SVGAnimatedString.h"
 #include "mozilla/dom/SVGGeometryElement.h"
-#include "mozilla/dom/SVGAnimatedPreserveAspectRatio.h"
 #include "mozilla/gfx/2D.h"
+#include "nsINode.h"
+#include "nsImageLoadingContent.h"
 
 nsresult NS_NewSVGImageElement(
     nsIContent** aResult, already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo);
@@ -43,6 +42,7 @@ class SVGImageElement final : public SVGImageElementBase,
   // interfaces:
 
   NS_DECL_ISUPPORTS_INHERITED
+  NS_DECL_ADDSIZEOFEXCLUDINGTHIS
 
   // EventTarget
   void AsyncEventRunning(AsyncEventDispatcher* aEvent) override;
@@ -71,7 +71,7 @@ class SVGImageElement final : public SVGImageElementBase,
 
   nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
 
-  void MaybeLoadSVGImage();
+  void NodeInfoChanged(Document* aOldDoc) override;
 
   // WebIDL
   already_AddRefed<DOMSVGAnimatedLength> X();
@@ -90,6 +90,11 @@ class SVGImageElement final : public SVGImageElementBase,
     SetOrRemoveNullableStringAttr(nsGkAtoms::crossorigin, aCrossOrigin, aError);
   }
 
+  void GetFetchPriority(nsAString& aFetchPriority) const;
+  void SetFetchPriority(const nsAString& aFetchPriority) {
+    SetAttr(nsGkAtoms::fetchpriority, aFetchPriority, IgnoreErrors());
+  }
+
   void SetDecoding(const nsAString& aDecoding, ErrorResult& aError) {
     SetAttr(nsGkAtoms::decoding, aDecoding, aError);
   }
@@ -97,15 +102,16 @@ class SVGImageElement final : public SVGImageElementBase,
 
   already_AddRefed<Promise> Decode(ErrorResult& aRv);
 
-  static nsCSSPropertyID GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum);
+  static NonCustomCSSPropertyId GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum);
 
   gfx::Rect GeometryBounds(const gfx::Matrix& aToBoundsSpace);
 
  protected:
   void DidAnimateAttribute(int32_t aNameSpaceID, nsAtom* aAttribute) override;
 
-  nsresult LoadSVGImage(bool aForce, bool aNotify);
-  bool ShouldLoadImage() const;
+  void UpdateSrcURI();
+
+  void LoadSelectedImage(bool aAlwaysLoad, bool aStopLazyLoading) override;
 
   LengthAttributesInfo GetLengthInfo() override;
   SVGAnimatedPreserveAspectRatio* GetAnimatedPreserveAspectRatio() override;
@@ -114,15 +120,21 @@ class SVGImageElement final : public SVGImageElementBase,
   // Override for nsImageLoadingContent.
   nsIContent* AsContent() override { return this; }
 
+  FetchPriority GetFetchPriorityForImage() const override {
+    return Element::GetFetchPriority();
+  }
+
+  nsCOMPtr<nsIURI> mSrcURI;
+
+  enum { HREF, XLINK_HREF };
+  SVGAnimatedString mStringAttributes[2];
+  static StringInfo sStringInfo[2];
+
   enum { ATTR_X, ATTR_Y, ATTR_WIDTH, ATTR_HEIGHT };
   SVGAnimatedLength mLengthAttributes[4];
   static LengthInfo sLengthInfo[4];
 
   SVGAnimatedPreserveAspectRatio mPreserveAspectRatio;
-
-  enum { HREF, XLINK_HREF };
-  SVGAnimatedString mStringAttributes[2];
-  static StringInfo sStringInfo[2];
 };
 
 }  // namespace dom

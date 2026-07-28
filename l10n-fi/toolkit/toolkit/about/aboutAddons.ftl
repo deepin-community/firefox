@@ -117,6 +117,8 @@ legacy-extensions-description = Nämä laajennukset eivät täytä { -brand-shor
 private-browsing-description2 =
     { -brand-short-name }-laajennusten toiminta yksityisissä ikkunoissa muuttuu. Uutena { -brand-short-name }iin lisättyjä laajennuksia ei enää suoriteta oletuksena yksityisissä ikkunoissa. Jos et salli suorittamista asetuksista, laajennus ei toimi yksityisen selaamisen aikana eikä siten sinä aikana pääse käsiksi tekemisiisi verkossa. Olemme tehneet tämän muutoksen, jotta yksityinen selaus pysyy yksityisenä.
     <label data-l10n-name="private-browsing-learn-more">Lue lisää kuinka hallita laajennusten asetuksia</label>
+aboutaddons-sidebar =
+    .heading = Lisäosat
 addon-category-discover = Suositukset
 addon-category-discover-title =
     .title = Suositukset
@@ -167,6 +169,8 @@ extensions-warning-update-security-button = Ota käyttöön
 extensions-warning-imported-addons2 =
     .message = Viimeistele { -brand-short-name }iin tuotujen laajennusten asennus.
 extensions-warning-imported-addons-button = Asenna laajennukset
+extensions-warning-safe-mode3 =
+    .message = Kaikki lisäosat on poistettu käytöstä vianmääritystilan toimesta.
 
 ## Strings connected to add-on updates
 
@@ -203,6 +207,10 @@ addon-updates-manual-updates-found = Näytä saatavilla olevat päivitykset
 
 addon-install-from-file = Asenna lisäosa tiedostosta…
     .accesskey = A
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Asenna tai päivitä lisäosa tiedostosta…
+    .accesskey = I
 addon-install-from-file-dialog-title = Valitse asennettava lisäosa
 addon-install-from-file-filter-name = Lisäosat
 addon-open-about-debugging = Jäljitä lisäosien virheitä
@@ -275,6 +283,19 @@ discopane-notice-recommendations2 =
         Jotkin näistä suosituksista ovat henkilökohtaisia. Suositukset pohjautuvat
         muihin asentamiisi laajennuksiin, profiiliasetuksiin ja käyttötilastoihin.
 discopane-notice-learn-more = Lue lisää
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Väriteemat poistettiin.
+    .message =
+        { -brand-product-name } päivitti väriteemakokoelmat. Poistimme
+        vanhat versiot “Tallennetut teemat”-lisalta. Hanki teemojen uudet
+        versiot lisäosasivustolta.
+colorway-removal-notice-learn-more = Lue lisää
+colorway-removal-notice-button = Hanki päivitetyt väriteemat
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Windowsin kontrastiasetukset ohittavat { -brand-short-name }in teemat. Poista nämä asetukset käytöstä käyttääksesi teemoja { -brand-short-name }issa.
 privacy-policy = Tietosuojaseloste
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -295,6 +316,16 @@ find-more-themes = Etsi lisää teemoja
 # used for screen readers.
 addon-options-button =
     .aria-label = Lisää valintoja
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Laajennusten ja teemojen avulla voit muokata { -brand-product-name }ia. Ne voivat lisätä yksityisyyttä,
+    tehostaa tuottavuutta, parantaa mediaa, muuttaa { -brand-product-name }in ulkoasua ja
+    paljon muuta. Nämä pienet ohjelmistot ovat usein kolmannen osapuolen kehittämiä. Tässä
+    valikoima Firefoxin <a data-l10n-name="learn-more-trigger">suosittelemia</a>
+    turvallisuuden, suorituskyvyn ja toiminnallisuuden takaamiseksi.
 
 ## Add-on actions
 
@@ -377,6 +408,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Sallittu yksityisissä ikkunnoissa
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Sallittu yksityisissä ikkunnoissa
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -416,6 +451,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Tämä laajennnus on katselmoitu, ja se täyttää standardimme turvallisuuden ja suorituskyvyn suhteen.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Virallinen laajennus, jonka on toteuttanut Mozilla. Täyttää turvallisuus- ja suorituskykystandardit.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Tämä laajennnus on katselmoitu, ja se täyttää turvallisuuden ja suorituskyvyn standardit
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox suosittelee vain sellaisia laajennuksia, jotka täyttävät turvallisuuden ja suorituskyvyn standardit
 
 ##
 
@@ -423,10 +476,18 @@ available-updates-heading = Saatavilla olevat päivitykset
 recent-updates-heading = Tuoreet päivitykset
 release-notes-loading = Ladataan…
 release-notes-error = Julkaisutietojen lataaminen epäonnistui.
+addon-permissions-heading = Käyttöoikeudet
+addon-permissions-empty2 = Tämä laajennus ei vaadi mitään oikeuksia.
+addon-permissions-required-label = Vaadittu:
+addon-permissions-optional-label = Valinnainen:
 addon-permissions-empty = Tämä laajennus ei vaadi mitään oikeuksia
 addon-permissions-required = Vaaditut käyttöoikeudet ydintoiminnoille:
 addon-permissions-optional = Valinnaiset käyttöoikeudet lisätoiminnoille:
 addon-permissions-learnmore = Lue lisää käyttöoikeuksista
+# Shown above the permissions list when one or more permissions for this
+# extension are controlled by an enterprise policy and cannot be changed by
+# the user.
+addon-permissions-managed-by-policy = Joitakin käyttöoikeuksia hallinnoi organisaatiosi.
 recommended-extensions-heading = Suositellut laajennukset
 recommended-themes-heading = Suositellut teemat
 # Variables:
@@ -450,6 +511,9 @@ shortcuts-heading = Laajennusten pikanäppäinten hallinta
 default-heading-search-label = Etsi lisää lisäosia
 addons-heading-search-input =
     .placeholder = Etsi addons.mozilla.org-sivustolta
+addons-heading-search-button =
+    .title = Etsi addons.mozilla.org-sivustolta
+    .aria-label = Etsi addons.mozilla.org-sivustolta
 addon-page-options-button =
     .title = Työkaluja kaikille lisäosille
 
@@ -472,14 +536,32 @@ details-notification-unsigned-and-disabled-link = Lisätietoja
 details-notification-unsigned = Lisäosaa { $name } ei ole varmennettu käytettäväksi { -brand-short-name }issa. Ole varovainen.
 details-notification-unsigned2 =
     .message = Lisäosaa { $name } ei ole varmennettu käytettäväksi { -brand-short-name }issa. Ole varovainen.
+details-notification-hard-blocked-extension =
+    .message = Tämä laajennus on estetty Mozillan käytäntöjen rikkomisen vuoksi, ja se on poistettu käytöstä.
+details-notification-hard-blocked-other =
+    .message = Tämä lisäosa on estetty Mozillan käytäntöjen rikkomisen vuoksi, ja se on poistettu käytöstä.
 details-notification-unsigned-link = Lisätietoja
 details-notification-blocked = Lisäosa { $name } poistettiin käytöstä turvallisuus- tai vakausongelmien takia.
-details-notification-blocked2 =
-    .message = Lisäosa { $name } poistettiin käytöstä turvallisuus- tai vakausongelmien takia.
+details-notification-blocked-link2 = Näytä yksityiskohdat
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Tämä laajennus on rajoitettu ja se on poistettu käytöstä. Voit ottaa sen käyttöön, mutta se voi olla riskialtista.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Tämä laajennus on rajoitettu. Sen käyttö voi olla riskialtista.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Tämä lisäosa on rajoitettu ja se on poistettu käytöstä. Voit ottaa sen käyttöön, mutta se voi olla riskialtista.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Tämä lisäosa on rajoitettu. Sen käyttö voi olla riskialtista.
+details-notification-soft-blocked-extension-disabled =
+    .message = Tämä laajennus on rajoitettu Mozillan käytäntöjen rikkomisen vuoksi, ja se on poistettu käytöstä. Voit ottaa laajennuksen käyttöön, mutta se voi olla riskialtista.
+details-notification-soft-blocked-extension-enabled =
+    .message = Tämä laajennus rikkoo Mozillan käytäntöjä. Sen käyttö voi olla riskialtista.
+details-notification-soft-blocked-other-disabled =
+    .message = Tämä lisäosa on rajoitettu Mozillan käytäntöjen rikkomisen vuoksi, ja se on poistettu käytöstä. Voit ottaa lisäosan käyttöön, mutta se voi olla riskialtista.
+details-notification-soft-blocked-other-enabled =
+    .message = Tämä lisäosa rikkoo Mozillan käytäntöjä. Sen käyttö voi olla riskialtista.
+details-notification-softblocked-link2 = Näytä yksityiskohdat
 details-notification-blocked-link = Lisätietoja
 details-notification-softblocked = Lisäosa { $name } aiheuttaa tunnetusti turvallisuus- tai vakausongelmia.
-details-notification-softblocked2 =
-    .message = Lisäosa { $name } aiheuttaa tunnetusti turvallisuus- tai vakausongelmia.
 details-notification-softblocked-link = Lisätietoja
 details-notification-gmp-pending = { $name } asennetaan kohta.
 details-notification-gmp-pending2 =
@@ -493,3 +575,46 @@ plugins-openh264-name = OpenH264 Video Codec, toimittaja Cisco Systems, Inc.
 plugins-openh264-description = Mozilla asensi tämän liitännäisen automaattisesti WebRTC-rajapinnan määritelmän mukaisesti ja jotta WebRTC-puhelut olisivat mahdollisia laitteisiin, jotka vaativat H.264-videokoodekin. Lue lisää koodekin toteutustavasta ja tarkastele lähdekoodia osoitteesta http://www.openh264.org/.
 plugins-widevine-name = Widevine Content Decryption Module, toimittaja Google Inc.
 plugins-widevine-description = Tämä liitännäinen mahdollistaa Encrypted Media Extensions -määrittelyn mukaisen salatun sisällön toistamisen. Sivustot käyttävät salattua mediasisältöä tyypillisesti estämään maksullisen sisällön kopiointi. Lue lisää Encrypted Media Extensions -määrittelystä osoitteessa https://www.w3.org/TR/encrypted-media/.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Pakollinen tiedonkeruu:
+addon-permissions-optional-data-collection = Valinnainen tiedonkeruu:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Käyttöoikeudet ja data
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Käytetään laajennuksessa { $extensionName }
+addon-permissions-data-collection-heading = Tiedonkeruu
+addon-permissions-data-collection-empty = Kehittäjän mukaan tämä laajennus ei vaadi tiedonkeruuta.
+addon-data-collection-provided = Yksityiskohdat toimitti laajennuksen kehittäjä
+addon-data-collection-learnmore = Lue lisää tiedonkeruusta
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } käyttää tätä sivulla about:inference
+mlmodel-link-preview = { -brand-short-name } käyttää tätä keskeisimpien asioiden luomiseen, kun esikatselet linkkejä
+mlmodel-pdfjs = { -brand-short-name } käyttää tätä luodakseen vaihtoehtoisen alt-tekstin PDF-tiedostoihin lisättäville kuville
+mlmodel-smart-tab-topic-engine = { -brand-short-name } käyttää tätä ehdottaakseen nimiä välilehtiryhmille
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } käyttää tätä ehdottaakseen välilehtiä välilehtiryhmiin
+mlmodel-formfill-engine = { -brand-short-name } käyttää tätä osoitelomakkeiden täyttämiseen
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = Laitteessa sijaitseva tekoäly
+addon-category-mlmodel-title =
+    .title = Laitteessa sijaitseva tekoäly
+mlmodel-heading = Hallitse laitteessa sijaitsevia tekoälymalleja
+mlmodel-description = Jotkin { -brand-short-name }in ominaisuudet ja laajennukset perustuvat tekoälymalleihin, jotka toimivat paikallisesti laitteellasi. Tämä lähestymistapa suojaa yksityisyyttäsi ja monissa tapauksissa nopeuttaa suorituskykyä. <a data-l10n-name="learn-more">Lisätietoja</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Poista
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Tiedoston koko
+mlmodel-addon-detail-last-used-label = Viimeksi käytetty
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Käyttänyt
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Mallikortti
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Näytä Hugging Face -sivustolla

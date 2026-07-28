@@ -172,7 +172,7 @@ migration-list-favorites-label = favoritter
 migration-list-password-label = adgangskoder
 migration-list-history-label = historik
 migration-list-extensions-label = udvidelser
-migration-list-autofill-label = autofyldnings-data
+migration-list-autofill-label = data til autofyldning
 migration-list-payment-methods-label = betalingsmetoder
 
 ##
@@ -196,6 +196,14 @@ migration-safari-password-import-step1 = Åbn "Safari"-menuen i Safari og gå ti
 migration-safari-password-import-step2 = Klik på knappen <img data-l10n-name="safari-icon-3dots"/> og vælg "Eksporter alle adgangskoder"
 migration-safari-password-import-step3 = Gem filen med adgangskoder
 migration-safari-password-import-step4 = Brug "Vælg fil" nedenfor for at vælge den gemte fil med adgangskoder
+migration-chrome-windows-password-import-header = Sådan importerer du adgangskoder fra Chrome
+migration-chrome-windows-password-import-steps-header = I Chrome:
+migration-chrome-windows-password-import-step1 = Åbn hovedmenuen <img data-l10n-name="chrome-icon-3dots"/> og gå til Adgangskoder og autofyld >Google Adgangskodeadministrator.
+migration-chrome-windows-password-import-step2 = Vælg "Indstillinger" fra menuen.
+migration-chrome-windows-password-import-step3 = Vælg "Download fil" og gem filen på din enhed.
+migration-chrome-windows-password-import-step4 = Kom her tilbage og "Vælg fil" for at færdiggøre importen.
+migration-manual-password-import-skip-button = Spring over
+migration-manual-password-import-select-button = Vælg fil
 migration-safari-password-import-skip-button = Spring over
 migration-safari-password-import-select-button = Vælg fil
 # Shown in the migration wizard after importing bookmarks from another

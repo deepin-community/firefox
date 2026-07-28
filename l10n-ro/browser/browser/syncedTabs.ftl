@@ -54,6 +54,19 @@ synced-tabs-context-open-all-in-tabs =
 synced-tabs-context-manage-devices =
     .label = Gestionează dispozitivele…
     .accesskey = D
+synced-tabs-context-manage-this-device =
+    .label = Gestionează acest dispozitiv
+    .accesskey = T
+synced-tabs-context-connect-another-device =
+    .label = Conectare la alt dispozitiv
+    .accesskey = A
 synced-tabs-context-sync-now =
     .label = Sincronizează acum
     .accesskey = S
+synced-tabs-fxa-sign-in = Intră în cont pentru sincronizare
+synced-tabs-turn-on-sync = Activează sincronizarea
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables
+# $deviceName - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab = Închide fila pe { $deviceName }

@@ -6,6 +6,10 @@ var plaintextURL = "data:text/plain,hello+world";
 var htmlURL = "about:mozilla";
 
 add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+
   registerCleanupFunction(function () {
     SpecialPowers.clearUserPref("view_source.tab_size");
     SpecialPowers.clearUserPref("view_source.wrap_long_lines");
@@ -71,7 +75,7 @@ var exercisePrefs = async function (source, highlightable) {
   await checkHighlight(browser, highlightable);
   is(
     getAttribute(wrapMenuItem, "checked"),
-    "false",
+    null,
     "Wrap menu item not checked by default"
   );
   is(
@@ -82,7 +86,7 @@ var exercisePrefs = async function (source, highlightable) {
   await closeContextMenu();
 
   // Next, test that the Wrap Long Lines menu item works.
-  let prefReady = waitForPrefChange("view_source.wrap_long_lines");
+  let prefReady = TestUtils.waitForPrefChange("view_source.wrap_long_lines");
   await openContextMenu(browser);
   await simulateClick(wrapMenuItem);
   await openContextMenu(browser);
@@ -96,16 +100,12 @@ var exercisePrefs = async function (source, highlightable) {
   );
   await closeContextMenu();
 
-  prefReady = waitForPrefChange("view_source.wrap_long_lines");
+  prefReady = TestUtils.waitForPrefChange("view_source.wrap_long_lines");
   await openContextMenu(browser);
   await simulateClick(wrapMenuItem);
   await openContextMenu(browser);
   await checkStyle(browser, "white-space", "pre");
-  is(
-    getAttribute(wrapMenuItem, "checked"),
-    "false",
-    "Wrap menu item unchecked"
-  );
+  is(getAttribute(wrapMenuItem, "checked"), null, "Wrap menu item unchecked");
   await prefReady;
   is(
     SpecialPowers.getBoolPref("view_source.wrap_long_lines"),
@@ -115,14 +115,14 @@ var exercisePrefs = async function (source, highlightable) {
   await closeContextMenu();
 
   // Check that the Syntax Highlighting menu item works.
-  prefReady = waitForPrefChange("view_source.syntax_highlight");
+  prefReady = TestUtils.waitForPrefChange("view_source.syntax_highlight");
   await openContextMenu(browser);
   await simulateClick(syntaxMenuItem);
   await openContextMenu(browser);
   await checkHighlight(browser, false);
   is(
     getAttribute(syntaxMenuItem, "checked"),
-    "false",
+    null,
     "Syntax menu item unchecked"
   );
   await prefReady;
@@ -133,7 +133,7 @@ var exercisePrefs = async function (source, highlightable) {
   );
   await closeContextMenu();
 
-  prefReady = waitForPrefChange("view_source.syntax_highlight");
+  prefReady = TestUtils.waitForPrefChange("view_source.syntax_highlight");
   await openContextMenu(browser);
   await simulateClick(syntaxMenuItem);
   await openContextMenu(browser);
@@ -167,7 +167,7 @@ var exercisePrefs = async function (source, highlightable) {
   is(getAttribute(wrapMenuItem, "checked"), "true", "Wrap menu item checked");
   is(
     getAttribute(syntaxMenuItem, "checked"),
-    "false",
+    null,
     "Syntax menu item unchecked"
   );
 

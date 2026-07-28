@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -59,77 +57,22 @@ class MOZ_CAPABILITY("monitor") Monitor {
 };
 
 /**
- * MonitorSingleWriter
- *
- * Monitor where a single writer exists, so that reads from the same thread
- * will not generate data races or consistency issues.
- *
- * When possible, use MonitorAutoLock/MonitorAutoUnlock to lock/unlock this
- * monitor within a scope, instead of calling Lock/Unlock directly.
- *
- * This requires an object implementing Mutex's SingleWriterLockOwner, so
- * we can do correct-thread checks.
- */
-
-class MonitorSingleWriter : public Monitor {
- public:
-  // aOwner should be the object that contains the mutex, typically.  We
-  // will use that object (which must have a lifetime the same or greater
-  // than this object) to verify that we're running on the correct thread,
-  // typically only in DEBUG builds
-  explicit MonitorSingleWriter(const char* aName, SingleWriterLockOwner* aOwner)
-      : Monitor(aName)
-#ifdef DEBUG
-        ,
-        mOwner(aOwner)
-#endif
-  {
-    MOZ_COUNT_CTOR(MonitorSingleWriter);
-    MOZ_ASSERT(mOwner);
-  }
-
-  MOZ_COUNTED_DTOR(MonitorSingleWriter)
-
-  void AssertOnWritingThread() const MOZ_ASSERT_CAPABILITY(this) {
-    MOZ_ASSERT(mOwner->OnWritingThread());
-  }
-  void AssertOnWritingThreadOrHeld() const MOZ_ASSERT_CAPABILITY(this) {
-#ifdef DEBUG
-    if (!mOwner->OnWritingThread()) {
-      AssertCurrentThreadOwns();
-    }
-#endif
-  }
-
- private:
-#ifdef DEBUG
-  SingleWriterLockOwner* mOwner MOZ_UNSAFE_REF(
-      "This is normally the object that contains the MonitorSingleWriter, so "
-      "we don't want to hold a reference to ourselves");
-#endif
-
-  MonitorSingleWriter() = delete;
-  MonitorSingleWriter(const MonitorSingleWriter&) = delete;
-  MonitorSingleWriter& operator=(const MonitorSingleWriter&) = delete;
-};
-
-/**
  * Lock the monitor for the lexical scope instances of this class are
  * bound to (except for MonitorAutoUnlock in nested scopes).
  *
  * The monitor must be unlocked when instances of this class are
  * created.
  */
-namespace detail {
-template <typename T>
-class MOZ_SCOPED_CAPABILITY MOZ_STACK_CLASS BaseMonitorAutoLock {
+template <class MonitorType>
+class MOZ_SCOPED_CAPABILITY MOZ_STACK_CLASS MonitorAutoLockBase {
  public:
-  explicit BaseMonitorAutoLock(T& aMonitor) MOZ_CAPABILITY_ACQUIRE(aMonitor)
+  explicit MonitorAutoLockBase(MonitorType& aMonitor)
+      MOZ_CAPABILITY_ACQUIRE(aMonitor)
       : mMonitor(&aMonitor) {
     mMonitor->Lock();
   }
 
-  ~BaseMonitorAutoLock() MOZ_CAPABILITY_RELEASE() { mMonitor->Unlock(); }
+  ~MonitorAutoLockBase() MOZ_CAPABILITY_RELEASE() { mMonitor->Unlock(); }
   // It's very hard to mess up MonitorAutoLock lock(mMonitor); ... lock.Wait().
   // The only way you can fail to hold the lock when you call lock.Wait() is to
   // use MonitorAutoUnlock.   For now we'll ignore that case.
@@ -170,38 +113,23 @@ class MOZ_SCOPED_CAPABILITY MOZ_STACK_CLASS BaseMonitorAutoLock {
   // should use this method in preference to using AssertCurrentThreadOwns on
   // the mutex you expected to be held, since this method provides stronger
   // guarantees.
-  void AssertOwns(const T& aMonitor) const MOZ_ASSERT_CAPABILITY(aMonitor) {
+  void AssertOwns(const MonitorType& aMonitor) const
+      MOZ_ASSERT_CAPABILITY(aMonitor) {
     MOZ_ASSERT(&aMonitor == mMonitor);
     mMonitor->AssertCurrentThreadOwns();
   }
 
  private:
-  BaseMonitorAutoLock() = delete;
-  BaseMonitorAutoLock(const BaseMonitorAutoLock&) = delete;
-  BaseMonitorAutoLock& operator=(const BaseMonitorAutoLock&) = delete;
+  MonitorAutoLockBase() = delete;
+  MonitorAutoLockBase(const MonitorAutoLockBase&) = delete;
+  MonitorAutoLockBase& operator=(const MonitorAutoLockBase&) = delete;
   static void* operator new(size_t) noexcept(true);
 
-  friend class MonitorAutoUnlock;
-
  protected:
-  T* mMonitor;
+  MonitorType* mMonitor;
 };
-}  // namespace detail
-typedef detail::BaseMonitorAutoLock<Monitor> MonitorAutoLock;
-typedef detail::BaseMonitorAutoLock<MonitorSingleWriter>
-    MonitorSingleWriterAutoLock;
 
-// clang-format off
-// Use if we've done AssertOnWritingThread(), and then later need to take the
-// lock to write to a protected member. Instead of
-//    MutexSingleWriterAutoLock lock(mutex)
-// use
-//    MutexSingleWriterAutoLockOnThread(lock, mutex)
-// clang-format on
-#define MonitorSingleWriterAutoLockOnThread(lock, monitor) \
-  MOZ_PUSH_IGNORE_THREAD_SAFETY                            \
-  MonitorSingleWriterAutoLock lock(monitor);               \
-  MOZ_POP_THREAD_SAFETY
+using MonitorAutoLock = MonitorAutoLockBase<Monitor>;
 
 /**
  * Unlock the monitor for the lexical scope instances of this class
@@ -210,30 +138,27 @@ typedef detail::BaseMonitorAutoLock<MonitorSingleWriter>
  * The monitor must be locked by the current thread when instances of
  * this class are created.
  */
-namespace detail {
-template <typename T>
-class MOZ_STACK_CLASS MOZ_SCOPED_CAPABILITY BaseMonitorAutoUnlock {
+template <class MonitorType>
+class MOZ_STACK_CLASS MOZ_SCOPED_CAPABILITY MonitorAutoUnlockBase {
  public:
-  explicit BaseMonitorAutoUnlock(T& aMonitor)
+  explicit MonitorAutoUnlockBase(MonitorType& aMonitor)
       MOZ_SCOPED_UNLOCK_RELEASE(aMonitor)
       : mMonitor(&aMonitor) {
     mMonitor->Unlock();
   }
 
-  ~BaseMonitorAutoUnlock() MOZ_SCOPED_UNLOCK_REACQUIRE() { mMonitor->Lock(); }
+  ~MonitorAutoUnlockBase() MOZ_SCOPED_UNLOCK_REACQUIRE() { mMonitor->Lock(); }
 
  private:
-  BaseMonitorAutoUnlock() = delete;
-  BaseMonitorAutoUnlock(const BaseMonitorAutoUnlock&) = delete;
-  BaseMonitorAutoUnlock& operator=(const BaseMonitorAutoUnlock&) = delete;
+  MonitorAutoUnlockBase() = delete;
+  MonitorAutoUnlockBase(const MonitorAutoUnlockBase&) = delete;
+  MonitorAutoUnlockBase& operator=(const MonitorAutoUnlockBase&) = delete;
   static void* operator new(size_t) noexcept(true);
 
-  T* mMonitor;
+  MonitorType* mMonitor;
 };
-}  // namespace detail
-typedef detail::BaseMonitorAutoUnlock<Monitor> MonitorAutoUnlock;
-typedef detail::BaseMonitorAutoUnlock<MonitorSingleWriter>
-    MonitorSingleWriterAutoUnlock;
+
+using MonitorAutoUnlock = MonitorAutoUnlockBase<Monitor>;
 
 /**
  * Lock the monitor for the lexical scope instances of this class are
@@ -242,22 +167,23 @@ typedef detail::BaseMonitorAutoUnlock<MonitorSingleWriter>
  * The monitor must be unlocked when instances of this class are
  * created.
  */
-class MOZ_SCOPED_CAPABILITY MOZ_STACK_CLASS ReleasableMonitorAutoLock {
+template <class MonitorType>
+class MOZ_SCOPED_CAPABILITY MOZ_STACK_CLASS ReleasableMonitorAutoLockBase {
  public:
-  explicit ReleasableMonitorAutoLock(Monitor& aMonitor)
+  explicit ReleasableMonitorAutoLockBase(MonitorType& aMonitor)
       MOZ_CAPABILITY_ACQUIRE(aMonitor)
       : mMonitor(&aMonitor) {
     mMonitor->Lock();
     mLocked = true;
   }
 
-  ~ReleasableMonitorAutoLock() MOZ_CAPABILITY_RELEASE() {
+  ~ReleasableMonitorAutoLockBase() MOZ_CAPABILITY_RELEASE() {
     if (mLocked) {
       mMonitor->Unlock();
     }
   }
 
-  // See BaseMonitorAutoLock::Wait
+  // See MonitorAutoLock::Wait
   void Wait() {
     mMonitor->AssertCurrentThreadOwns();  // someone could have called Unlock()
     mMonitor->Wait();
@@ -302,14 +228,16 @@ class MOZ_SCOPED_CAPABILITY MOZ_STACK_CLASS ReleasableMonitorAutoLock {
 
  private:
   bool mLocked;
-  Monitor* mMonitor;
+  MonitorType* mMonitor;
 
-  ReleasableMonitorAutoLock() = delete;
-  ReleasableMonitorAutoLock(const ReleasableMonitorAutoLock&) = delete;
-  ReleasableMonitorAutoLock& operator=(const ReleasableMonitorAutoLock&) =
-      delete;
+  ReleasableMonitorAutoLockBase() = delete;
+  ReleasableMonitorAutoLockBase(const ReleasableMonitorAutoLockBase&) = delete;
+  ReleasableMonitorAutoLockBase& operator=(
+      const ReleasableMonitorAutoLockBase&) = delete;
   static void* operator new(size_t) noexcept(true);
 };
+
+using ReleasableMonitorAutoLock = ReleasableMonitorAutoLockBase<Monitor>;
 
 }  // namespace mozilla
 

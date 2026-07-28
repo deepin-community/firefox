@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Vidi
 download-cert-view-text = Ekzameni atestilon de CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Liverita de: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Konservita en: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Memori tiun ĉi decidon
+client-auth-cert-remember-label = Memori tiun ĉi decidon:
+client-auth-cert-remember-never =
+    .label = Fojon
+client-auth-cert-remember-always =
+    .label = Ĉiam
+client-auth-cert-remember-temporarily =
+    .label = Por tiu ĉi seanco
 
 ## Set password (p12) dialog
 
@@ -97,7 +99,15 @@ set-password-backup-pw =
     .value = Pasvorto por atestila sekurkopio:
 set-password-repeat-backup-pw =
     .value = Pasvorto por atestila sekurkopio (denove):
-set-password-reminder = Grava rimarko: Se vi forgesas la pasvorton  de via atestila sekurkopio vi ne povos uzi la sekurkopion poste. Bonvolu registri la pasvorton en sekuran lokon.
+set-password-reminder = Grava rimarko: Se vi forgesas la pasvorton  de via atestila sekurkopio vi ne povos uzi la sekurkopion poste. Bonvolu registri la pasvorton en sekura loko.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Protektita aŭtentigo
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Bonvolu aŭtentigi vin en la sekureca aparato ({ $tokenName }). La maniero tion fari dependas de la aparato (ekzemple, per fingrospura legilo aŭ per kodo tajpita en cifera klavaro).
 
 ## Protected authentication alert
 

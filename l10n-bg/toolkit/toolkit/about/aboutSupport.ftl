@@ -131,11 +131,8 @@ media-device-latency = Закъснение
 
 ## Codec support table
 
-
-## Media Content Decryption Modules (CDM)
-## See EME Spec for more explanation for following technical terms
-## https://w3c.github.io/encrypted-media/
-
+media-codec-support-supported = Поддържан
+media-codec-support-unsupported = Неподдържан
 
 ##
 
@@ -309,19 +306,13 @@ policies-inactive = Изключени
 policies-active = Включено
 policies-error = Грешка
 
-## Printing section
-
-
 ## Remote Settings sections
 
+support-remote-settings-title = Отдалечени настройки
 # Status when synchronization is not working.
 support-remote-settings-status-broken = Не работи
 
 ## Normandy sections
 
-
-## Pointing devices
-
-
-## Content Analysis (DLP)
-
+support-remote-experiments-title = Отдалечени експерименти
+support-remote-features-title = Отдалечени функции

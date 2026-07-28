@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 // Helper file for shared image functionality
 //
 // Note that this is use by tests elsewhere in the source tree. When in doubt,
@@ -10,8 +9,7 @@ function clearAllImageCaches() {
     SpecialPowers.Ci.imgITools
   );
   var imageCache = tools.getImgCacheForDocument(window.document);
-  imageCache.clearCache(true); // true=chrome
-  imageCache.clearCache(false); // false=content
+  imageCache.clearCache(); // no parameter=all
 }
 
 // Helper function to clear the image cache of content images

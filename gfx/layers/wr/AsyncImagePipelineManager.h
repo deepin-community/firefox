@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +9,6 @@
 
 #include "CompositableHost.h"
 #include "mozilla/gfx/Point.h"
-#include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/layers/RemoteTextureMap.h"
 #include "mozilla/layers/TextureHost.h"
 #include "mozilla/Maybe.h"
@@ -32,6 +29,7 @@ namespace layers {
 
 class CompositableHost;
 class CompositorVsyncScheduler;
+class Fence;
 class WebRenderImageHost;
 class WebRenderTextureHost;
 
@@ -71,7 +69,7 @@ class AsyncImagePipelineManager final {
   void NotifyPipelinesUpdated(RefPtr<const wr::WebRenderPipelineInfo> aInfo,
                               wr::RenderedFrameId aLatestFrameId,
                               wr::RenderedFrameId aLastCompletedFrameId,
-                              ipc::FileDescriptor&& aFenceFd);
+                              RefPtr<Fence>&& aFence);
 
   // This is run on the compositor thread to process mRenderSubmittedUpdates. We
   // make this public because we need to invoke it from other places.
@@ -260,6 +258,7 @@ class AsyncImagePipelineManager final {
 #ifdef XP_WIN
   bool mUseWebRenderDCompVideoHwOverlayWin;
   bool mUseWebRenderDCompVideoSwOverlayWin;
+  bool mUseWebRenderDCompositionTextureOverlayWin;
 #endif
 
   // Render time for the current composition.
@@ -277,10 +276,11 @@ class AsyncImagePipelineManager final {
 
   struct WebRenderPipelineInfoHolder {
     WebRenderPipelineInfoHolder(RefPtr<const wr::WebRenderPipelineInfo>&& aInfo,
-                                ipc::FileDescriptor&& aFenceFd);
+                                RefPtr<Fence>&& aFence);
     ~WebRenderPipelineInfoHolder();
+    WebRenderPipelineInfoHolder(WebRenderPipelineInfoHolder&&) = default;
     RefPtr<const wr::WebRenderPipelineInfo> mInfo;
-    ipc::FileDescriptor mFenceFd;
+    RefPtr<Fence> mFence;
   };
 
   std::vector<std::pair<wr::RenderedFrameId, WebRenderPipelineInfoHolder>>
@@ -291,7 +291,7 @@ class AsyncImagePipelineManager final {
   std::vector<std::pair<wr::RenderedFrameId,
                         std::vector<UniquePtr<ForwardingTextureHost>>>>
       mTexturesInUseByGPU;
-  ipc::FileDescriptor mReleaseFenceFd;
+  RefPtr<Fence> mReadFence;
 };
 
 }  // namespace layers

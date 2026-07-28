@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = עמוד חסום
 neterror-captive-portal-page-title = כניסה לרשת
 neterror-dns-not-found-title = השרת לא נמצא
 neterror-malformed-uri-page-title = כתובת לא תקנית
+general-body-title = נא להיזהר. משהו לא נראה תקין.
+problem-with-this-site-title = נראה שיש בעיה באתר הזה
 
 ## Error page actions
 
@@ -23,6 +25,8 @@ neterror-override-exception-button = קבלת הסיכון והמשך
 neterror-pref-reset-button = שחזור הגדרות בררת המחדל
 neterror-return-to-previous-page-button = חזרה
 neterror-return-to-previous-page-recommended-button = חזרה (מומלץ)
+neterror-try-again-button-2 = ניסיון חוזר
+    .accesskey = נ
 neterror-try-again-button = נסה שוב
 neterror-add-exception-button = תמיד להמשיך עבור אתר זה
 neterror-settings-button = שינוי הגדרות DNS
@@ -41,6 +45,13 @@ neterror-generic-error = מסיבה בלתי ידועה, אין ל־{ -brand-sho
 neterror-load-error-try-again = האתר איננו זמין כרגע או שהוא עמוס מדי. נא לנסות שוב בעוד מספר רגעים.
 neterror-load-error-connection = אם אינך מצליח לטעון שום דף, מומלץ לבדוק את הקישוריות של המחשב שלך לרשת.
 neterror-load-error-firewall = אם המחשב או הרשת שלך מוגנים באמצעות חומת אש או שרת מתווך, יש לוודא כי { -brand-short-name } מורשה לגישה לרשת.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = אם הינך מנסה לטעון דף אינטרנט מקומי, נא לבדוק של־{ -brand-short-name } הוענקה הרשאות לרשת המקומית בהגדרות הפרטיות והאבטחה של macOS.
+neterror-http-error-page = כדאי לבדוק שהקלדת את כתובת האתר בצורה נכונה.
+neterror-http-empty-response = יש לוודא שהקלדת את כתובת האתר בצורה נכונה ולנסות שוב בעוד מספר רגעים.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = ‏{ $hostname } שלח בחזרה דף ריק.
 neterror-captive-portal = עליך להתחבר לרשת זו כדי לגלוש באינטרנט.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +60,12 @@ neterror-dns-not-found-hint-header = <strong>אם הזנת את הכתובת ה�
 neterror-dns-not-found-hint-try-again = לנסות שוב מאוחר יותר
 neterror-dns-not-found-hint-check-network = לבדוק את חיבור הרשת שלך
 neterror-dns-not-found-hint-firewall = לבדוק של־{ -brand-short-name } יש הרשאה לגשת לרשת (ייתכן שיש חיבור אבל מאחורי חומת אש)
+neterror-dns-not-found-hint-check-network-2 = לבדוק את חיבור הרשת שלך.
+neterror-dns-not-found-hint-firewall-2 = לבדוק של־{ -brand-short-name } יש הרשאה לגשת לרשת (ייתכן שיש חיבור אבל מאחורי חומת אש).
+neterror-dns-not-found-offline-hint-header = <strong>מה אפשר לעשות בנידון?</strong>
+neterror-dns-not-found-offline-hint-different-device = ניתן לנסות להתחבר ממכשיר אחר.
+neterror-dns-not-found-offline-hint-modem = לבדוק את המודם או הנתב שלך.
+neterror-dns-not-found-offline-hint-reconnect = להתנתק ולהתחבר מחדש ל־Wi-Fi.
 
 ## TRR-only specific messages
 ## Variables:
@@ -72,7 +89,6 @@ neterror-dns-not-found-trr-unknown-problem = בעיה לא צפויה.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = ‏{ -brand-short-name } לא יכול להגן על הבקשה שלך עבור כתובת אתר זה באמצעות מפענח ה־DNS המהימן שלנו. הנה הסיבה:
-neterror-dns-not-found-native-fallback-reason2 = ‏{ -brand-short-name } לא יכול להגן על הבקשה שלך עבור כתובת אתר זה באמצעות ספק ה־DNS המאובטח שלנו. הנה הסיבה:
 neterror-dns-not-found-native-fallback-heuristic = ‏DNS over HTTPS הושבת ברשת שלך.
 neterror-dns-not-found-native-fallback-not-confirmed2 = ‏{ -brand-short-name } לא הצליח להתחבר אל { $trrDomain }.
 
@@ -80,9 +96,14 @@ neterror-dns-not-found-native-fallback-not-confirmed2 = ‏{ -brand-short-name }
 
 neterror-file-not-found-filename = בדוק ששם הקובץ אוית נכון, שנעשה שימוש נכון באותיות רישיות ושאין שגיאות הקלדה אחרות.
 neterror-file-not-found-moved = בדוק אם הקובץ הועבר, שינה שם או נמחק.
+# Variables:
+#   $path (String) - Path of the local file that could not be found.
+neterror-file-not-found-intro = ‏{ -brand-short-name } לא יכול למצוא את הקובץ במיקום <strong>{ $path }</strong>. ייתכן שהוא לא קיים או שהנתיב לא נכון.
+neterror-file-not-found-what-can-you-do = אם הקלדת את הכתובת באופן ידני, נא לבדוק אם יש שגיאות באותיות גדולות/קטנות או שגיאות הקלדה בשם הקובץ או בנתיב. אם הגעת לכאן דרך סימנייה שמורה או קישור, ייתכן שהקובץ הועבר, שמו שונה או שהוא נמחק מאז שנשמר. ניתן לנסות לאתר אותו באמצעות מנהל הקבצים שלך.
 neterror-access-denied = ייתכן שהקובץ הוסר, הועבר או שההרשאות מונעות את הגישה אליו.
 neterror-unknown-protocol = ייתכן שיהיה צורך להתקין יישום אחר כדי לפתוח כתובת זו.
 neterror-redirect-loop = בעיה זו נגרמת לעיתים מסירוב לקבל עוגיות או ניטרולן.
+neterror-unknown-socket-type-client-config = ייתכן שזה נובע משגיאת תצורה עם הלקוח שלך.
 neterror-unknown-socket-type-psm-installed = ודא כי מותקן על המערכת שלך מנהל האבטחה האישי.
 neterror-unknown-socket-type-server-config = ייכתן וההגדרות השרת אינן תקניות
 neterror-not-cached-intro = המסמך המבוקש לא זמין במטמון של { -brand-short-name }.
@@ -96,6 +117,9 @@ neterror-proxy-connect-failure-settings = נא לבדוק כי הגדרות הש
 neterror-proxy-connect-failure-contact-admin = נא ליצור קשר עם מנהל הרשת שלך כדי לוודא כי השרת המתווך מתפקד.
 neterror-content-encoding-error = נא ליצור קשר עם בעלי האתר כדי ליידע אותם על בעיה זו.
 neterror-unsafe-content-type = נא ליצור קשר עם בעלי האתר כדי ליידע אותם על בעיה זו.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = ‏{ -brand-short-name } לא נותן אמון ב־{ $hostname } מכיוון שהחיבור אינו מאובטח. ניתן לנסות לשנות את כתובת האתר ל־HTTPS.
 neterror-nss-failure-not-verified = לא ניתן להציג את הדף המבוקש מכיוון שאין אפשרות לאמת את אמינות הנתונים שהתקבלו.
 neterror-nss-failure-contact-website = נא ליצור קשר עם בעלי האתר כדי ליידע אותם על בעיה זו.
 # Variables:
@@ -148,3 +172,50 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = אם <b>{ $mitm }</b> אי�
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = ל־<b>{ $hostname }</b> יש מדיניות אבטחה בשם אבטחת תעבורה מחמירה של HTTP ‏(HSTS), כלומר { -brand-short-name } יכול להתחבר לאתר באופן מאובטח בלבד. לא ניתן להוסיף חריגה כדי לבקר באתר זה.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = כנראה שכלום, מכיוון שסביר להניח שיש בעיה באתר עצמו.
+certerror-blocked-by-corp-headers-description = לפעמים אתרים מגדירים הגנות לעצמם ולאנשים כמוך מפני אינטראקציות לא רצויות עם אתרים אחרים.
+certerror-coop-learn-more = מידע נוסף על Cross Origin Opener Policies ‏(COOP)
+certerror-coep-learn-more = מידע נוסף על Cross Origin Embedder Policies ‏(COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = קוד שגיאה: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = נראה שיש בעיה בחיבור האינטרנט שלך
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = ל־{ -brand-short-name } אין אפשרות ליצור חיבור מאובטח לשרת ב־{ $hostname }.
+fp-neterror-offline-intro = ‏{ -brand-short-name } לא הצליח להתחבר לשרת ב־<strong>{ $hostname }</strong>
+fp-neterror-offline-intro-2 = ‏{ -brand-short-name } לא הצליח להתחבר לשרת ב־<strong>{ $hostname }</strong>.
+fp-neterror-net-timeout-intro = לשרת ב־<strong>{ $hostname }</strong> לוקח יותר מדי זמן להגיב.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $responsestatus (Number) - HTTP response status code (e.g., 404).
+#   $responsestatustext (String) - HTTP response status text (e.g., "Not Found", always in English).
+fp-neterror-http-error-intro = השרת ב־<strong>{ $hostname }</strong> שלח בחזרה שגיאה: { $responsestatus } { $responsestatustext }
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-neterror-invalid-header-value-intro = ‏<strong>{ $hostname }</strong> שלח בחזרה כותרת עם תווים ריקים שאינם מותרים לפי תקני אבטחת האינטרנט.
+fp-neterror-content-encoding-intro = לא ניתן להציג את הדף המבוקש מכיוון שהוא משתמש בסוג דחיסה שאינו חוקי או שאינו נתמך.
+fp-neterror-coop-coep-intro = ‏{ -brand-short-name } לא טען את הדף הזה מכיוון שנראה שתצורת האבטחה לא תואמת את הדף הקודם.
+fp-neterror-blocked-by-policy-intro = הארגון שלך חסם גישה לעמוד או אתר זה.
+fp-neterror-http-auth-disabled-intro = מישהו שמתחזה לאתר יכול לנסות לגנוב דברים כמו שם המשתמש, הססמה או הדוא״ל שלך.
+fp-neterror-http-auth-disabled-secure-connection = אתר זה דורש חיבור מאובטח, ולא ניתן להוסיף חריגה כדי לבקר בו.
+fp-neterror-why-did-this-happen = מדוע זה קרה?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = נראה שאתר זה משתמש בתוכנה ישנה עם בעיות אבטחה ידועות.
+fp-neterror-http-auth-disabled-why-dangerous-body = ‏{ -brand-short-name } לא נותן אמון ב־{ $hostname } מכיוון שהחיבור אינו מאובטח.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = יש לוודא ש־{ -brand-short-name } הוא בגרסה העדכנית ביותר. יש לעבור אל עזרה > על אודות { -brand-short-name } בתפריט. אם יש לך את הגרסה העדכנית ביותר של { -brand-short-name }, הבעיה היא ככל הנראה באתר עצמו.
+fp-neterror-offline-what-can-you-do-body = נא לנסות להתחבר במכשיר אחר, לבדוק את המודם או הנתב שלך, ולהתנתק ולהתחבר מחדש ל־Wi-Fi.
+fp-neterror-http-auth-disabled-what-can-you-do-body = ניתן לנסות לשנות את הכתובת ל־HTTPS. אבל סביר להניח שיש בעיה באתר עצמו.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = לפעמים אתרים מגדירים הגנות לעצמם מפני אינטראקציות לא רצויות עם אתרים אחרים.
+fp-learn-more-about-https-connections = מידע נוסף על חיבורי HTTPS
+fp-neterror-vpn-error-title = לא ניתן היה להתחבר ל־VPN
+fp-neterror-vpn-error-description = נא לנסות שוב בעוד מספר דקות.
+fp-neterror-denied-port-access = כתובת זו משתמשת בשער רשת המיועד בדרך כלל לשימושים אחרים מאשר גלישה באינטרנט. { -brand-short-name } ביטל את הבקשה כדי להגן עליך.

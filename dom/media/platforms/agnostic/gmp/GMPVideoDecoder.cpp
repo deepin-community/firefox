@@ -1,24 +1,23 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "GMPVideoDecoder.h"
+
+#include "AnnexB.h"
 #include "GMPDecoderModule.h"
-#include "GMPVideoHost.h"
 #include "GMPLog.h"
 #include "GMPUtils.h"
+#include "GMPVideoHost.h"
+#include "H264.h"
+#include "MP4Decoder.h"
 #include "MediaData.h"
+#include "VPXDecoder.h"
+#include "VideoUtils.h"
 #include "mozilla/EndianUtils.h"
 #include "mozilla/StaticPrefs_media.h"
 #include "nsServiceManagerUtils.h"
-#include "AnnexB.h"
-#include "H264.h"
-#include "MP4Decoder.h"
 #include "prsystem.h"
-#include "VPXDecoder.h"
-#include "VideoUtils.h"
 
 namespace mozilla {
 

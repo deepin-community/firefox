@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Dadfygio - Amser Rhedeg/ { $selectedRu
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Y { -brand-shorter-name } hwn
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Y { -brand-shorter-name } hwn
+about-debugging-sidebar-this-firefox-title =
+    .title = Y { -brand-shorter-name } hwn
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Gosod
+about-debugging-sidebar-setup-title =
+    .title = Gosod
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Gwasanaeth Gwthio
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Tarddiad
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Mae Gweithiwr Gwasanaeth gwthio wedi ei analluogi ar hyn o bryd ar gyfer amlbroses { -brand-shorter-name }
@@ -325,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Blwch Offer Amlbroses
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Prif Broses a Phrosesau Cynnwys ar gyfer y porwr targed
+about-debugging-message-error-icon =
+    .alt = Eicon gwall
+about-debugging-message-info-icon =
+    .alt = Eicon gwybodaeth
+about-debugging-message-warning-icon =
+    .alt = Eicon rhybudd
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Cau neges
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Cau neges

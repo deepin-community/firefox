@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-*/
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,12 +5,26 @@
 #include "MediaEncoder.h"
 
 #include <algorithm>
+
 #include "AudioNodeEngine.h"
 #include "AudioNodeTrack.h"
 #include "DriftCompensation.h"
 #include "MediaDecoder.h"
 #include "MediaTrackGraph.h"
 #include "MediaTrackListener.h"
+#include "Muxer.h"
+#include "OggWriter.h"
+#include "OpusTrackEncoder.h"
+#include "TimeUnits.h"
+#include "Tracing.h"
+#include "VP8TrackEncoder.h"
+#include "WebMWriter.h"
+#include "mozilla/Logging.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/ProfilerLabels.h"
+#include "mozilla/StaticPrefs_media.h"
+#include "mozilla/StaticPtr.h"
+#include "mozilla/TaskQueue.h"
 #include "mozilla/dom/AudioNode.h"
 #include "mozilla/dom/AudioStreamTrack.h"
 #include "mozilla/dom/Blob.h"
@@ -20,23 +33,8 @@
 #include "mozilla/dom/MutableBlobStorage.h"
 #include "mozilla/dom/VideoStreamTrack.h"
 #include "mozilla/gfx/Point.h"  // IntSize
-#include "mozilla/Logging.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/ProfilerLabels.h"
-#include "mozilla/StaticPrefs_media.h"
-#include "mozilla/StaticPtr.h"
-#include "mozilla/TaskQueue.h"
-#include "mozilla/Unused.h"
-#include "Muxer.h"
 #include "nsMimeTypes.h"
 #include "nsThreadUtils.h"
-#include "OggWriter.h"
-#include "OpusTrackEncoder.h"
-#include "TimeUnits.h"
-#include "Tracing.h"
-
-#include "VP8TrackEncoder.h"
-#include "WebMWriter.h"
 
 mozilla::LazyLogModule gMediaEncoderLog("MediaEncoder");
 #define LOG(type, msg) MOZ_LOG(gMediaEncoderLog, type, msg)
@@ -134,7 +132,7 @@ class MediaEncoder::AudioTrackListener : public DirectMediaTrackListener {
           encoder->mAudioEncoder->AppendAudioSegment(std::move(copy));
         }));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
   }
 
   void NotifyEnded(MediaTrackGraph* aGraph) override {
@@ -148,7 +146,7 @@ class MediaEncoder::AudioTrackListener : public DirectMediaTrackListener {
                                  encoder->mAudioEncoder->NotifyEndOfStream();
                                }));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
   }
 
   void NotifyRemoved(MediaTrackGraph* aGraph) override {
@@ -158,7 +156,7 @@ class MediaEncoder::AudioTrackListener : public DirectMediaTrackListener {
                                  encoder->mAudioEncoder->NotifyEndOfStream();
                                }));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
 
     mRemoved = true;
 
@@ -235,7 +233,7 @@ class MediaEncoder::VideoTrackListener : public DirectMediaTrackListener {
                                    encoder->mVideoEncoder->SetStartOffset(now);
                                  }));
       MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-      Unused << rv;
+      (void)rv;
       mInitialized = true;
     }
 
@@ -248,7 +246,7 @@ class MediaEncoder::VideoTrackListener : public DirectMediaTrackListener {
             encoder->mVideoEncoder->AdvanceCurrentTime(now);
           }));
       MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-      Unused << rv;
+      (void)rv;
     }
   }
 
@@ -277,7 +275,7 @@ class MediaEncoder::VideoTrackListener : public DirectMediaTrackListener {
           encoder->mVideoEncoder->AppendVideoSegment(std::move(copy));
         }));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
   }
 
   void NotifyEnabledStateChanged(MediaTrackGraph* aGraph,
@@ -301,7 +299,7 @@ class MediaEncoder::VideoTrackListener : public DirectMediaTrackListener {
           }));
     }
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
   }
 
   void NotifyEnded(MediaTrackGraph* aGraph) override {
@@ -318,7 +316,7 @@ class MediaEncoder::VideoTrackListener : public DirectMediaTrackListener {
           encoder->mVideoEncoder->NotifyEndOfStream();
         }));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
   }
 
   void NotifyRemoved(MediaTrackGraph* aGraph) override {
@@ -331,7 +329,7 @@ class MediaEncoder::VideoTrackListener : public DirectMediaTrackListener {
           encoder->mVideoEncoder->NotifyEndOfStream();
         }));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
 
     mRemoved = true;
 
@@ -768,7 +766,7 @@ void MediaEncoder::MaybeShutdown() {
   mShutdownEvent.Notify();
 
   // Stop will Shutdown() gracefully.
-  Unused << InvokeAsync(mMainThread, this, __func__, &MediaEncoder::Stop);
+  (void)InvokeAsync(mMainThread, this, __func__, &MediaEncoder::Stop);
 }
 
 RefPtr<GenericNonExclusivePromise> MediaEncoder::Shutdown() {
@@ -875,7 +873,7 @@ auto MediaEncoder::RequestData() -> RefPtr<BlobPromise> {
           const GenericPromise::ResolveOrRejectValue& aValue) {
         // Even if rejected, we want to gather what has already been
         // extracted into the current blob and expose that.
-        Unused << NS_WARN_IF(aValue.IsReject());
+        (void)NS_WARN_IF(aValue.IsReject());
         return GatherBlob();
       });
 }
@@ -927,7 +925,7 @@ void MediaEncoder::MaybeExtractOrGatherBlob() {
          "extract. Extracting more data into blob.",
          this, (muxedEndTime - mLastExtractTime).ToSeconds()));
     mLastExtractTime = muxedEndTime;
-    Unused << Extract();
+    (void)Extract();
   }
 }
 

@@ -13,14 +13,17 @@ permissions-block =
     .label = Engelle
     .accesskey = E
 permissions-disable-etp =
-    .label = Ayrıcalık tanı…
-    .accesskey = A
+    .label = İstisna ekle
+    .accesskey = e
 permissions-session =
     .label = Oturum boyunca izin ver
     .accesskey = r
 permissions-allow =
     .label = İzin ver
     .accesskey = z
+permissions-add =
+    .label = Ekle
+    .accesskey = E
 permissions-button-off =
     .label = Kapat
     .accesskey = K
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Tüm siteleri sil
     .accesskey = e
+permissions-save-changes-2 =
+    .buttonlabelaccept = Değişiklikleri kaydet
+    .buttonaccesskeyaccept = D
 permission-dialog =
     .buttonlabelaccept = Değişiklikleri kaydet
     .buttonaccesskeyaccept = D
@@ -76,7 +82,7 @@ permissions-invalid-uri-label = Lütfen geçerli bir sunucu adı girin
 permissions-exceptions-etp-window2 =
     .title = Gelişmiş İzlenme Koruması İstisnaları
     .style = { permissions-window2.style }
-permissions-exceptions-manage-etp-desc = Gelişmiş izlenme korumasının hangi sitelerde kapalı kalacağını belirleyebilirsiniz. Yönetmek istediğiniz sitenin tam adresini yazıp "İstisna ekle"ye tıklayın.
+permissions-exceptions-manage-etp-desc = Gelişmiş izlenme korumasının hangi sitelerde kapalı kalacağını belirleyebilirsiniz. Yönetmek istediğiniz sitenin tam adresini yazıp “İstisna ekle”ye tıklayın.
 
 ## Exceptions - Cookies
 
@@ -85,6 +91,13 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Hangi web sitelerinin çerezleri ve site verilerini her zaman kullanabileceğini veya hiç kullanmayacağını belirleyebilirsiniz.  Yönetmek istediğiniz sitenin tam adresini yazıp “Engelle”, “Oturum boyunca izin ver” veya “İzin ver”e tıklayın.
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = İstisnalar - Kapanırken geçmişi temizle
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = { -brand-short-name } kapanırken geçmişi temizlediğinde hangi sitelerin verilerini tutacağını belirleyebilirsiniz. Yönetmek istediğiniz sitenin tam adresini yazıp “İzin ver”e tıklayın.
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
@@ -92,6 +105,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Belirli web siteleri için yalnızca HTTPS modunu kapatabilirsiniz. Böylece { -brand-short-name }, bu sitelerde HTTPS güvenliğini sağlamak üzere bağlantıyı yükseltme girişiminde bulunmaz. İstisnalar gizli pencerelerde geçerli değildir.
 permissions-exceptions-https-only-desc2 = Belirli web siteleri için yalnızca HTTPS modunu kapatabilirsiniz. Böylece { -brand-short-name }, bu sitelerde HTTPS güvenliğini sağlamak üzere bağlantıyı yükseltme girişiminde bulunmaz.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = İzin Verilen Siteler - Açılır Pencereler ve Üçüncü Taraf Yönlendirmeleri
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Hangi sitelerin açılır pencere gösterebileceğini ve üçüncü taraf çerçeveler tarafından yeniden yönlendirilebileceğini belirleyebilirsiniz.
 
 ## Exceptions - Pop-ups
 
@@ -168,6 +188,26 @@ permissions-site-camera-disable-label =
     .label = Kamerama erişme isteklerini sormadan engelle
 permissions-site-camera-disable-desc = Yukarıdaki listede bulunmayan hiçbir web sitesi kameranıza erişme isteğinde bulunamayacaktır. Kamera erişimini engellerseniz bazı site özellikleri çalışmayabilir.
 
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Ayarlar - Cihaz uygulamaları ve hizmetleri
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Aşağıdaki siteler bu cihazdaki uygulama ve hizmetlere erişmek istedi. Erişime izin vermeyi veya erişimi engellemeyi seçebilirsiniz.
+permissions-site-localhost-disable-label =
+    .label = Bu cihazdaki uygulama ve hizmetlere erişim isteklerini engelle
+permissions-site-localhost-disable-desc = Yukarıdaki listede bulunmayan hiçbir site bu cihazdaki uygulama ve hizmetlere erişim isteğinde bulunamayacaktır. Bu ayarı etkinleştirmeniz bazı sitelerin özelliklerini bozabilir.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Ayarlar - Yerel Ağ Cihazları
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Aşağıdaki siteler Wi-Fi veya yerel ağınıza bağlı cihazlardaki uygulama ve hizmetlere erişmek istedi. Erişime izin vermeyi veya erişimi engellemeyi seçebilirsiniz.
+permissions-site-local-network-disable-label =
+    .label = Wi-Fi veya yerel ağıma bağlı cihazlardaki uygulama ve hizmetlere erişim için yapılacak yeni istekleri engelle.
+permissions-site-local-network-disable-desc = Yukarıdaki listede bulunmayan hiçbir site, Wi-Fi veya yerel ağınızdaki cihazlarda bulunan uygulama ve hizmetlere erişim isteğinde bulunamayacaktır. Bu ayarı etkinleştirmeniz bazı sitelerin özelliklerini bozabilir.
+
 ## Site Permissions - Microphone
 
 permissions-site-microphone-window2 =
@@ -189,7 +229,7 @@ permissions-site-speaker-desc = Aşağıdaki siteler ses çıkış cihazını se
 permissions-exceptions-doh-window =
     .title = HTTPS üzerinden DNS için web sitesi istisnaları
     .style = { permissions-window2.style }
-permissions-exceptions-manage-doh-desc = { -brand-short-name }, bu sitelerde ve alt alan adlarında güvenli DNS kullanmayacaktır.
+permissions-exceptions-manage-doh-desc = { -brand-short-name } bu sitelerde ve alt alan adlarında güvenli DNS kullanmayacaktır.
 permissions-doh-entry-field = Web sitesinin alan adını yazın
     .accesskey = W
 permissions-doh-add-exception =

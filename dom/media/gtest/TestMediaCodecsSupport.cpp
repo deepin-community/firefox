@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "gtest/gtest.h"
 #include "MediaCodecsSupport.h"
+#include "gtest/gtest.h"
 
 using namespace mozilla;
 using namespace media;
@@ -114,6 +113,20 @@ TEST(MediaCodecsSupport, GetDecodeMediaCodecsSupported)
   dss = DecodeSupportSet{};
   RV = MCSInfo::GetDecodeMediaCodecsSupported(codec, dss);
   EXPECT_TRUE(RV.size() == 0);
+
+  // UnsureDueToLackOfExtension on AV1 maps to AV1LackOfExtension.
+  codec = MediaCodec::AV1;
+  dss = DecodeSupportSet{DecodeSupport::UnsureDueToLackOfExtension};
+  RV = MCSInfo::GetDecodeMediaCodecsSupported(codec, dss);
+  EXPECT_TRUE(RV.contains(MediaCodecsSupport::AV1LackOfExtension));
+  EXPECT_TRUE(RV.size() == 1);
+
+  // UnsureDueToLackOfExtension on HEVC maps to HEVCLackOfExtension.
+  codec = MediaCodec::HEVC;
+  dss = DecodeSupportSet{DecodeSupport::UnsureDueToLackOfExtension};
+  RV = MCSInfo::GetDecodeMediaCodecsSupported(codec, dss);
+  EXPECT_TRUE(RV.contains(MediaCodecsSupport::HEVCLackOfExtension));
+  EXPECT_TRUE(RV.size() == 1);
 }
 
 // Test MCSInfo::AddSupport function.
@@ -188,11 +201,11 @@ TEST(MediaCodecsSupport, GetMediaCodecsSupportedString)
     nsCString cn(it.commonName);
     // H264/VP8/VP9 support text should reflect args to MCSInfo::AddSupport
     if (cn == "H264"_ns) {
-      targetString += "H264 SW HW"_ns;
+      targetString += "H264 SWDEC HWDEC"_ns;
     } else if (cn.Equals("VP8"_ns)) {
-      targetString += "VP8 SW"_ns;
+      targetString += "VP8 SWDEC"_ns;
     } else if (cn.Equals("VP9"_ns)) {
-      targetString += "VP9 HW"_ns;
+      targetString += "VP9 HWDEC"_ns;
     } else {
       targetString += nsCString(it.commonName) + " NONE"_ns;
     }
@@ -210,10 +223,8 @@ TEST(MediaCodecsSupport, GetMediaCodecsSupportedString)
 TEST(MediaCodecsSupport, GetMediaCodecFromMimeType)
 {
   std::vector<std::pair<nsCString, MediaCodec>> testPairs = {
-// Video codecs
-#ifdef MOZ_AV1
+      // Video codecs
       {"video/av1"_ns, MediaCodec::AV1},
-#endif
       {"video/avc"_ns, MediaCodec::H264},
       {"video/mp4"_ns, MediaCodec::H264},
       {"video/vp8"_ns, MediaCodec::VP8},

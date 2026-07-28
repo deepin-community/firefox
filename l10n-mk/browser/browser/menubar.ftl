@@ -3,12 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -36,11 +30,9 @@ menu-quit =
             [windows] x
            *[other] з
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Излези од { -brand-shorter-name }
-
 menu-about =
     .label = За { -brand-shorter-name }
     .accesskey = A
@@ -159,8 +151,6 @@ menu-view-full-screen =
     .label = На цел екран
     .accesskey = ц
 
-## These menu items may use the same accesskey.
-
 ##
 
 menu-view-show-all-tabs =
@@ -246,5 +236,5 @@ menu-help =
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =
-    .label = Пријавете измамничка страница
-    .accesskey = D
+    .label = Пријави измамничко место…
+    .accesskey = з

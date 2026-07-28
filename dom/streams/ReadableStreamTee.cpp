@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,22 +5,22 @@
 #include "ReadableStreamTee.h"
 
 #include "ReadIntoRequest.h"
+#include "ReadableByteStreamControllerAbstract.h"
+#include "ReadableStreamAbstract.h"
+#include "ReadableStreamBYOBReaderAbstract.h"
+#include "ReadableStreamDefaultControllerAbstract.h"
+#include "ReadableStreamDefaultReaderAbstract.h"
 #include "TeeState.h"
 #include "js/Exception.h"
 #include "js/TypeDecls.h"
 #include "js/experimental/TypedData.h"
+#include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/dom/ByteStreamHelpers.h"
 #include "mozilla/dom/Promise-inl.h"
-#include "mozilla/dom/ReadableStream.h"
-#include "mozilla/dom/ReadableStreamBYOBReader.h"
-#include "mozilla/dom/ReadableStreamDefaultController.h"
 #include "mozilla/dom/ReadableStreamGenericReader.h"
-#include "mozilla/dom/ReadableStreamDefaultReader.h"
-#include "mozilla/dom/ReadableByteStreamController.h"
 #include "mozilla/dom/UnderlyingSourceBinding.h"
 #include "mozilla/dom/UnderlyingSourceCallbackHelpers.h"
 #include "nsCycleCollectionParticipant.h"
-#include "mozilla/CycleCollectedJSContext.h"
 
 namespace mozilla::dom {
 
@@ -40,7 +38,8 @@ NS_INTERFACE_MAP_END_INHERITING(UnderlyingSourceAlgorithmsBase)
 
 already_AddRefed<Promise>
 ReadableStreamDefaultTeeSourceAlgorithms::PullCallback(
-    JSContext* aCx, ReadableStreamController& aController, ErrorResult& aRv) {
+    JSContext* aCx, ReadableStreamControllerBase& aController,
+    ErrorResult& aRv) {
   nsCOMPtr<nsIGlobalObject> global = aController.GetParentObject();
   mTeeState->PullCallback(aCx, global, aRv);
   if (!aRv.Failed()) {
@@ -253,17 +252,16 @@ class ByteStreamTeeSourceAlgorithms final
   ByteStreamTeeSourceAlgorithms(TeeState* aTeeState, TeeBranch aBranch)
       : mTeeState(aTeeState), mBranch(aBranch) {}
 
-  MOZ_CAN_RUN_SCRIPT void StartCallback(JSContext* aCx,
-                                        ReadableStreamController& aController,
-                                        JS::MutableHandle<JS::Value> aRetVal,
-                                        ErrorResult& aRv) override {
+  MOZ_CAN_RUN_SCRIPT void StartCallback(
+      JSContext* aCx, ReadableStreamControllerBase& aController,
+      JS::MutableHandle<JS::Value> aRetVal, ErrorResult& aRv) override {
     // Step 21: Let startAlgorithm be an algorithm that returns undefined.
     aRetVal.setUndefined();
   }
 
   // Step 17, 18
   MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> PullCallback(
-      JSContext* aCx, ReadableStreamController& aController,
+      JSContext* aCx, ReadableStreamControllerBase& aController,
       ErrorResult& aRv) override {
     // Step 1 - 5
     ByteStreamTeePullAlgorithm(aCx, mBranch, MOZ_KnownLive(mTeeState), aRv);
@@ -292,13 +290,21 @@ class ByteStreamTeeSourceAlgorithms final
         return nullptr;
       }
 
-      JS::Rooted<JS::Value> reason1(aCx, mTeeState->Reason1());
+      JS::Rooted<JS::Value> reason1(aCx);
+      mTeeState->GetReason1(aCx, &reason1, aRv);
+      if (aRv.Failed()) {
+        return nullptr;
+      }
       if (!JS_SetElement(aCx, compositeReason, 0, reason1)) {
         aRv.StealExceptionFromJSContext(aCx);
         return nullptr;
       }
 
-      JS::Rooted<JS::Value> reason2(aCx, mTeeState->Reason2());
+      JS::Rooted<JS::Value> reason2(aCx);
+      mTeeState->GetReason2(aCx, &reason2, aRv);
+      if (aRv.Failed()) {
+        return nullptr;
+      }
       if (!JS_SetElement(aCx, compositeReason, 1, reason2)) {
         aRv.StealExceptionFromJSContext(aCx);
         return nullptr;
@@ -911,10 +917,11 @@ void PullWithBYOBReader(JSContext* aCx, TeeState* aTeeState,
   RefPtr<ReadIntoRequest> readIntoRequest =
       new PullWithBYOBReader_ReadIntoRequest(aTeeState, aForBranch);
 
-  // Step 16.5.
+  // Step 16.5. Perform ! ReadableStreamBYOBReaderRead(reader, view, 1,
+  // readIntoRequest).
   RefPtr<ReadableStreamBYOBReader> byobReader =
       aTeeState->GetReader()->AsBYOB();
-  ReadableStreamBYOBReaderRead(aCx, byobReader, aView, readIntoRequest, aRv);
+  ReadableStreamBYOBReaderRead(aCx, byobReader, aView, 1, readIntoRequest, aRv);
 }
 
 // See https://streams.spec.whatwg.org/#abstract-opdef-readablebytestreamtee

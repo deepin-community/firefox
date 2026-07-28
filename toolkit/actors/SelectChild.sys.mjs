@@ -1,4 +1,3 @@
-/* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -49,7 +48,6 @@ export var SelectContentHelper = function (aElement, aOptions, aActor) {
   this.isOpenedViaTouch = aOptions.isOpenedViaTouch;
   this._closeAfterBlur = true;
   this._pseudoStylesSetup = false;
-  this._lockedDescendants = null;
   this.init();
   this.showDropDown();
   this._updateTimer = new lazy.DeferredTask(this._update.bind(this), 0);
@@ -63,14 +61,13 @@ Object.defineProperty(SelectContentHelper, "open", {
 
 SelectContentHelper.prototype = {
   init() {
-    let win = this.element.ownerGlobal;
+    let win = this.element.documentGlobal;
     win.addEventListener("pagehide", this, { mozSystemGroup: true });
     this.element.addEventListener("blur", this, { mozSystemGroup: true });
     this.element.addEventListener("transitionend", this, {
       mozSystemGroup: true,
     });
-    let MutationObserver = this.element.ownerGlobal.MutationObserver;
-    this.mut = new MutationObserver(() => {
+    this.mut = new win.MutationObserver(() => {
       // Something changed the <select> while it was open, so
       // we'll poke a DeferredTask to update the parent sometime
       // in the very near future.
@@ -92,7 +89,7 @@ SelectContentHelper.prototype = {
 
   uninit() {
     this.element.openInParentProcess = false;
-    let win = this.element.ownerGlobal;
+    let win = this.element.documentGlobal;
     win.removeEventListener("pagehide", this, { mozSystemGroup: true });
     this.element.removeEventListener("blur", this, { mozSystemGroup: true });
     this.element.removeEventListener("transitionend", this, {
@@ -112,14 +109,14 @@ SelectContentHelper.prototype = {
     let rect = this._getBoundingContentRect();
     let computedStyles = getComputedStyles(this.element);
     let options = this._buildOptionList();
-    let defaultStyles = this.element.ownerGlobal.getDefaultComputedStyle(
+    let defaultStyles = this.element.documentGlobal.getDefaultComputedStyle(
       this.element
     );
     this.actor.sendAsyncMessage("Forms:ShowDropDown", {
       isOpenedViaTouch: this.isOpenedViaTouch,
       options,
       rect,
-      custom: !this.element.nodePrincipal.isSystemPrincipal,
+      custom: this._allowCustomStyling(computedStyles),
       selectedIndex: this.element.selectedIndex,
       isDarkBackground: ChromeUtils.isDarkBackground(this.element),
       style: supportedStyles(computedStyles, SUPPORTED_SELECT_PROPERTIES),
@@ -137,15 +134,6 @@ SelectContentHelper.prototype = {
     // any styles.
     this._pseudoStylesSetup = true;
     InspectorUtils.addPseudoClassLock(this.element, ":focus");
-    let lockedDescendants = (this._lockedDescendants =
-      this.element.querySelectorAll(":checked"));
-    for (let child of lockedDescendants) {
-      // Selected options have the :checked pseudo-class, which
-      // we want to disable before calculating the computed
-      // styles since the user agent styles alter the styling
-      // based on :checked.
-      InspectorUtils.addPseudoClassLock(child, ":checked", false);
-    }
   },
 
   _clearPseudoClassStyles() {
@@ -155,11 +143,6 @@ SelectContentHelper.prototype = {
     // Undo all of the things that change style at once, after we're
     // done reading styles.
     InspectorUtils.clearPseudoClassLocks(this.element);
-    let lockedDescendants = this._lockedDescendants;
-    for (let child of lockedDescendants) {
-      InspectorUtils.clearPseudoClassLocks(child);
-    }
-    this._lockedDescendants = null;
     this._pseudoStylesSetup = false;
   },
 
@@ -176,6 +159,23 @@ SelectContentHelper.prototype = {
     return { options, uniqueStyles };
   },
 
+  _allowCustomStyling(styles) {
+    if (this.element.nodePrincipal.isSystemPrincipal) {
+      // We assume that our UI integrates reasonably with the OS, so we don't
+      // need custom styling.
+      return false;
+    }
+    if (styles.backgroundImage !== "none") {
+      // Disable custom styling if the select uses background-image. We can't
+      // reasonably support arbitrary background-images (because it'd require
+      // doing image loads on the parent for images specified by content, which
+      // is a no-go). Plus, isDarkBackground() and such don't deal particularly
+      // well with it.
+      return false;
+    }
+    return true;
+  },
+
   _update() {
     // The <select> was updated while the dropdown was open.
     // Let's send up a new list of options.
@@ -184,12 +184,12 @@ SelectContentHelper.prototype = {
     // have :focus, though it is here for belt-and-suspenders.
     this._setupPseudoClassStyles();
     let computedStyles = getComputedStyles(this.element);
-    let defaultStyles = this.element.ownerGlobal.getDefaultComputedStyle(
+    let defaultStyles = this.element.documentGlobal.getDefaultComputedStyle(
       this.element
     );
     this.actor.sendAsyncMessage("Forms:UpdateDropDown", {
       options: this._buildOptionList(),
-      custom: !this.element.nodePrincipal.isSystemPrincipal,
+      custom: this._allowCustomStyling(computedStyles),
       selectedIndex: this.element.selectedIndex,
       isDarkBackground: ChromeUtils.isDarkBackground(this.element),
       style: supportedStyles(computedStyles, SUPPORTED_SELECT_PROPERTIES),
@@ -224,12 +224,10 @@ SelectContentHelper.prototype = {
           return;
         }
 
-        let win = this.element.ownerGlobal;
-
         // Running arbitrary script below (dispatching events for example) can
         // close us, but we should still send events consistently.
         let element = this.element;
-
+        let win = element.documentGlobal;
         let selectedOption = element.item(element.selectedIndex);
 
         // For ordering of events, we're using non-e10s as our guide here,
@@ -281,7 +279,7 @@ SelectContentHelper.prototype = {
         break;
 
       case "Forms:MouseUp": {
-        let win = this.element.ownerGlobal;
+        let win = this.element.documentGlobal;
         if (message.data.onAnchor) {
           this.dispatchMouseEvent(win, this.element, "mouseup");
         }
@@ -344,7 +342,7 @@ SelectContentHelper.prototype = {
 };
 
 function getComputedStyles(element) {
-  return element.ownerGlobal.getComputedStyle(element);
+  return element.documentGlobal.getComputedStyle(element);
 }
 
 function supportedStyles(cs, supportedProps) {
@@ -413,7 +411,7 @@ function buildOptionListForChildren(node, uniqueStyles) {
         isHR,
       };
 
-      const defaultHRStyle = node.ownerGlobal.getDefaultComputedStyle(child);
+      const defaultHRStyle = node.documentGlobal.getDefaultComputedStyle(child);
       if (cs.color != defaultHRStyle.color) {
         info.color = cs.color;
       }

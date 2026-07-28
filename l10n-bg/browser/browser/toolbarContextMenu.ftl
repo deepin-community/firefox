@@ -2,6 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+toolbar-context-menu-new-tab =
+    .label = Нов раздел
+    .accesskey = р
 toolbar-context-menu-reload-selected-tab =
     .label = Презареждане на избрания раздел
     .accesskey = п
@@ -17,6 +20,21 @@ toolbar-context-menu-bookmark-selected-tabs =
 toolbar-context-menu-select-all-tabs =
     .label = Избиране на всички раздели
     .accesskey = и
+# Variables
+#   $tabCount (number) - Number of tabs
+toolbar-context-menu-reopen-closed-tabs =
+    .label =
+        { $tabCount ->
+            [1] Възстановяване на затворен раздел
+           *[other] Възстановяване на затворени раздели
+        }
+    .accesskey = т
+toolbar-context-turn-on-vertical-tabs =
+    .label = Включване на вертикални раздели
+toolbar-context-turn-off-vertical-tabs =
+    .label = Изключване на вертикални раздели
+toolbar-context-customize-sidebar =
+    .label = Персонализиране на страничната лента
 toolbar-context-menu-manage-extension =
     .label = Управление на добавката
     .accesskey = д
@@ -35,9 +53,16 @@ toolbar-context-menu-report-extension =
 toolbar-context-menu-pin-to-overflow-menu =
     .label = Преместване в допълнителното меню
     .accesskey = д
+toolbar-context-menu-auto-hide-downloads-button-2 =
+    .label = Скриване на бутона ако няма нищо
+    .accesskey = С
 toolbar-context-menu-always-open-downloads-panel =
     .label = Показване на панела при започване на изтеглянето
     .accesskey = п
+# Label of checkbox menu item to toggle visibility of Extensions Button.
+toolbar-context-menu-always-show-extensions-button =
+    .label = Показване винаги в лентата с инструменти
+    .accesskey = в
 toolbar-context-menu-remove-from-toolbar =
     .label = Премахване от лентата с инструменти
     .accesskey = П
@@ -45,7 +70,7 @@ toolbar-context-menu-view-customize-toolbar =
     .label = Приспособяване…
     .accesskey = П
 toolbar-context-menu-view-customize-toolbar-2 =
-    .label = Персонализиране на лентата…
+    .label = Приспособяване на лентата…
     .accesskey = П
 # This is only ever shown when toolbar-context-menu-pin-to-overflow-menu
 # is hidden, so they can share access keys.

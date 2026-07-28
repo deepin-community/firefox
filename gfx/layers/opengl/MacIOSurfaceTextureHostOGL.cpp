@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +5,7 @@
 #include "MacIOSurfaceTextureHostOGL.h"
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/MacIOSurface.h"
+#include "mozilla/layers/GpuFence.h"
 #include "mozilla/webrender/RenderMacIOSurfaceTextureHost.h"
 #include "mozilla/webrender/RenderThread.h"
 #include "mozilla/webrender/WebRenderAPI.h"
@@ -16,11 +15,12 @@ namespace layers {
 
 MacIOSurfaceTextureHostOGL::MacIOSurfaceTextureHostOGL(
     TextureFlags aFlags, const SurfaceDescriptorMacIOSurface& aDescriptor)
-    : TextureHost(TextureHostType::MacIOSurface, aFlags) {
+    : TextureHost(TextureHostType::MacIOSurface, aFlags),
+      mSurface(MacIOSurface::LookupSurface(
+          aDescriptor.surfaceId(), !aDescriptor.isOpaque(),
+          aDescriptor.yUVColorSpace(), aDescriptor.transferFunction())),
+      mGpuFence(aDescriptor.gpuFence()) {
   MOZ_COUNT_CTOR(MacIOSurfaceTextureHostOGL);
-  mSurface = MacIOSurface::LookupSurface(aDescriptor.surfaceId(),
-                                         !aDescriptor.isOpaque(),
-                                         aDescriptor.yUVColorSpace());
   if (!mSurface) {
     gfxCriticalNote << "Failed to look up MacIOSurface";
   }
@@ -69,12 +69,19 @@ gfx::ColorRange MacIOSurfaceTextureHostOGL::GetColorRange() const {
                                  : gfx::ColorRange::LIMITED;
 }
 
+gfx::TransferFunction MacIOSurfaceTextureHostOGL::GetTransferFunction() const {
+  if (!mSurface) {
+    return gfx::TransferFunction::BT709;
+  }
+  return mSurface->GetTransferFunction();
+}
+
 void MacIOSurfaceTextureHostOGL::CreateRenderTexture(
     const wr::ExternalImageId& aExternalImageId) {
   MOZ_ASSERT(mExternalImageId.isSome());
 
   RefPtr<wr::RenderTextureHost> texture =
-      new wr::RenderMacIOSurfaceTextureHost(GetMacIOSurface());
+      new wr::RenderMacIOSurfaceTextureHost(GetMacIOSurface(), mGpuFence);
 
   bool isDRM = (bool)(mFlags & TextureFlags::DRM_SOURCE);
   texture->SetIsFromDRMSource(isDRM);
@@ -122,15 +129,18 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
   switch (GetFormat()) {
     case gfx::SurfaceFormat::B8G8R8A8:
     case gfx::SurfaceFormat::B8G8R8X8: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 0);
+      if (aImageKeys.length() != 1 || mSurface->GetPlaneCount() != 0) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       // The internal pixel format of MacIOSurface is always BGRX or BGRA
       // format.
       auto format = GetFormat() == gfx::SurfaceFormat::B8G8R8A8
                         ? gfx::SurfaceFormat::B8G8R8A8
                         : gfx::SurfaceFormat::B8G8R8X8;
       wr::ImageDescriptor descriptor(GetSize(), format);
-      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::YUY2: {
@@ -138,15 +148,20 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
       // converted RGB interleaving data or a YCbCr interleaving data depending
       // on the different platform setting. (e.g. It will be RGB at OpenGL 2.1
       // and YCbCr at OpenGL 3.1)
-      MOZ_ASSERT(aImageKeys.length() == 1);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 0);
+      if (aImageKeys.length() != 1 || mSurface->GetPlaneCount() != 0) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       wr::ImageDescriptor descriptor(GetSize(), gfx::SurfaceFormat::B8G8R8X8);
-      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::NV12: {
-      MOZ_ASSERT(aImageKeys.length() == 2);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 2);
+      if (aImageKeys.length() != 2 || mSurface->GetPlaneCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       wr::ImageDescriptor descriptor0(
           gfx::IntSize(mSurface->GetDevicePixelWidth(0),
                        mSurface->GetDevicePixelHeight(0)),
@@ -155,13 +170,18 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
           gfx::IntSize(mSurface->GetDevicePixelWidth(1),
                        mSurface->GetDevicePixelHeight(1)),
           gfx::SurfaceFormat::R8G8);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
-    case gfx::SurfaceFormat::P010: {
-      MOZ_ASSERT(aImageKeys.length() == 2);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 2);
+    case gfx::SurfaceFormat::P010:
+    case gfx::SurfaceFormat::P016: {
+      if (aImageKeys.length() != 2 || mSurface->GetPlaneCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       wr::ImageDescriptor descriptor0(
           gfx::IntSize(mSurface->GetDevicePixelWidth(0),
                        mSurface->GetDevicePixelHeight(0)),
@@ -170,13 +190,17 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
           gfx::IntSize(mSurface->GetDevicePixelWidth(1),
                        mSurface->GetDevicePixelHeight(1)),
           gfx::SurfaceFormat::R16G16);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::NV16: {
-      MOZ_ASSERT(aImageKeys.length() == 2);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 2);
+      if (aImageKeys.length() != 2 || mSurface->GetPlaneCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       wr::ImageDescriptor descriptor0(
           gfx::IntSize(mSurface->GetDevicePixelWidth(0),
                        mSurface->GetDevicePixelHeight(0)),
@@ -185,8 +209,10 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
           gfx::IntSize(mSurface->GetDevicePixelWidth(1),
                        mSurface->GetDevicePixelHeight(1)),
           gfx::SurfaceFormat::R16G16);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
     default: {
@@ -204,8 +230,10 @@ void MacIOSurfaceTextureHostOGL::PushDisplayItems(
   switch (GetFormat()) {
     case gfx::SurfaceFormat::B8G8R8A8:
     case gfx::SurfaceFormat::B8G8R8X8: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 0);
+      if (aImageKeys.length() != 1 || mSurface->GetPlaneCount() != 0) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       // We disable external compositing for RGB surfaces for now until
       // we've tested support more thoroughly. Bug 1667917.
       aBuilder.PushImage(aBounds, aClip, true, false, aFilter, aImageKeys[0],
@@ -216,8 +244,10 @@ void MacIOSurfaceTextureHostOGL::PushDisplayItems(
       break;
     }
     case gfx::SurfaceFormat::YUY2: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 0);
+      if (aImageKeys.length() != 1 || mSurface->GetPlaneCount() != 0) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       // Those images can only be generated at present by the Apple H264 decoder
       // which only supports 8 bits color depth.
       aBuilder.PushYCbCrInterleavedImage(
@@ -228,8 +258,10 @@ void MacIOSurfaceTextureHostOGL::PushDisplayItems(
       break;
     }
     case gfx::SurfaceFormat::NV12: {
-      MOZ_ASSERT(aImageKeys.length() == 2);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 2);
+      if (aImageKeys.length() != 2 || mSurface->GetPlaneCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       aBuilder.PushNV12Image(
           aBounds, aClip, true, aImageKeys[0], aImageKeys[1],
           wr::ColorDepth::Color8, wr::ToWrYuvColorSpace(GetYUVColorSpace()),
@@ -237,9 +269,12 @@ void MacIOSurfaceTextureHostOGL::PushDisplayItems(
           /* aSupportsExternalCompositing */ true);
       break;
     }
-    case gfx::SurfaceFormat::P010: {
-      MOZ_ASSERT(aImageKeys.length() == 2);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 2);
+    case gfx::SurfaceFormat::P010:
+    case gfx::SurfaceFormat::P016: {
+      if (aImageKeys.length() != 2 || mSurface->GetPlaneCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       aBuilder.PushP010Image(
           aBounds, aClip, true, aImageKeys[0], aImageKeys[1],
           wr::ColorDepth::Color10, wr::ToWrYuvColorSpace(GetYUVColorSpace()),
@@ -248,8 +283,10 @@ void MacIOSurfaceTextureHostOGL::PushDisplayItems(
       break;
     }
     case gfx::SurfaceFormat::NV16: {
-      MOZ_ASSERT(aImageKeys.length() == 2);
-      MOZ_ASSERT(mSurface->GetPlaneCount() == 2);
+      if (aImageKeys.length() != 2 || mSurface->GetPlaneCount() != 2) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length or plane count");
+        return;
+      }
       aBuilder.PushNV16Image(
           aBounds, aClip, true, aImageKeys[0], aImageKeys[1],
           wr::ColorDepth::Color10, wr::ToWrYuvColorSpace(GetYUVColorSpace()),

@@ -1,4 +1,3 @@
-/* -*- js-indent-level: 2; indent-tabs-mode: nil -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -45,19 +44,17 @@ export let OsEnvironment = {
       return;
     }
 
-    const appSourceScalar = "os.environment.allowed_app_sources";
-
     let haveAppSourcesFeature;
     try {
       haveAppSourcesFeature =
         OsEnvironment.Policy.windowsVersionHasAppSourcesFeature();
     } catch (ex) {
       console.error(ex);
-      Services.telemetry.scalarSet(appSourceScalar, "Error");
+      Glean.osEnvironment.allowedAppSources.set("Error");
       return;
     }
     if (!haveAppSourcesFeature) {
-      Services.telemetry.scalarSet(appSourceScalar, "NoSuchFeature");
+      Glean.osEnvironment.allowedAppSources.set("NoSuchFeature");
       return;
     }
 
@@ -66,7 +63,7 @@ export let OsEnvironment = {
       allowedAppSources = OsEnvironment.Policy.getAllowedAppSources();
     } catch (ex) {
       console.error(ex);
-      Services.telemetry.scalarSet(appSourceScalar, "Error");
+      Glean.osEnvironment.allowedAppSources.set("Error");
       return;
     }
     if (allowedAppSources === undefined) {
@@ -89,6 +86,6 @@ export let OsEnvironment = {
       allowedAppSources = "Error";
     }
 
-    Services.telemetry.scalarSet(appSourceScalar, allowedAppSources);
+    Glean.osEnvironment.allowedAppSources.set(allowedAppSources);
   },
 };

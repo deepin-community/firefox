@@ -1,28 +1,26 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* eslint-env browser */
 "use strict";
 
 const {
   Component,
   createFactory,
-} = require("resource://devtools/client/shared/vendor/react.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
-const {
-  scrollIntoView,
-} = require("resource://devtools/client/shared/scroll.js");
+const { scrollIntoView } = ChromeUtils.importESModule(
+  "resource://devtools/client/shared/scroll.mjs"
+);
 const {
   preventDefaultAndStopPropagation,
 } = require("resource://devtools/client/shared/events.js");
 
-loader.lazyRequireGetter(
-  this,
-  ["wrapMoveFocus", "getFocusableElements"],
-  "resource://devtools/client/shared/focus.js",
-  true
-);
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  wrapMoveFocus: "resource://devtools/client/shared/focus.mjs",
+  getFocusableElements: "resource://devtools/client/shared/focus.mjs",
+});
 
 const AUTO_EXPAND_DEPTH = 0;
 const NUMBER_OF_OFFSCREEN_ITEMS = 1;
@@ -432,8 +430,8 @@ class Tree extends Component {
   /**
    * Expands current row.
    *
-   * @param {Object} item
-   * @param {Boolean} expandAllChildren
+   * @param {object} item
+   * @param {boolean} expandAllChildren
    */
   _onExpand(item, expandAllChildren) {
     if (this.props.onExpand) {
@@ -452,7 +450,7 @@ class Tree extends Component {
   /**
    * Collapses current row.
    *
-   * @param {Object} item
+   * @param {object} item
    */
   _onCollapse(item) {
     if (this.props.onCollapse) {
@@ -465,12 +463,12 @@ class Tree extends Component {
    * we might have to calculate the position of the item based on its index and
    * the item height.
    *
-   * @param {Object} item
+   * @param {object} item
    *        The item to be scrolled into view.
-   * @param {Number|undefined} index
+   * @param {number | undefined} index
    *        The index of the item in a full DFS traversal (ignoring collapsed
    *        nodes) or undefined.
-   * @param {Object} options
+   * @param {object} options
    *        Optional information regarding item's requested alignement when
    *        scrolling.
    */
@@ -517,11 +515,11 @@ class Tree extends Component {
   /**
    * Sets the passed in item to be the focused item.
    *
-   * @param {Number} index
+   * @param {number} index
    *        The index of the item in a full DFS traversal (ignoring collapsed
    *        nodes). Ignored if `item` is undefined.
    *
-   * @param {Object|undefined} item
+   * @param {object | undefined} item
    *        The item to be focused, or undefined to focus no item.
    */
   _focus(index, item, options = {}) {
@@ -948,7 +946,7 @@ class TreeNodeClass extends Component {
     // Make sure that none of the focusable elements inside the tree node container are
     // tabbable if the tree node is not active. If the tree node is active and focus is
     // outside its container, focus on the first focusable element inside.
-    const elms = getFocusableElements(this.refs.treenode);
+    const elms = lazy.getFocusableElements(this.refs.treenode);
     if (elms.length === 0) {
       return;
     }
@@ -970,8 +968,8 @@ class TreeNodeClass extends Component {
       return;
     }
 
-    const focusMoved = !!wrapMoveFocus(
-      getFocusableElements(this.refs.treenode),
+    const focusMoved = !!lazy.wrapMoveFocus(
+      lazy.getFocusableElements(this.refs.treenode),
       target,
       shiftKey
     );

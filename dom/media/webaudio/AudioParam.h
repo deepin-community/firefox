@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,13 +5,14 @@
 #ifndef AudioParam_h_
 #define AudioParam_h_
 
-#include "AudioParamTimeline.h"
-#include "nsWrapperCache.h"
-#include "nsCycleCollectionParticipant.h"
 #include "AudioNode.h"
-#include "mozilla/dom/TypedArray.h"
+#include "AudioParamTimeline.h"
 #include "WebAudioUtils.h"
 #include "js/TypeDecls.h"
+#include "mozilla/ErrorResult.h"
+#include "mozilla/dom/TypedArray.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla::dom {
 
@@ -57,28 +56,19 @@ class AudioParam final : public nsWrapperCache, public AudioParamTimeline {
   }
 
   // Intended for use in AudioNode creation, when the setter should not throw.
-  void SetInitialValue(float aValue) {
-    MOZ_ASSERT(HasSimpleValue(), "Existing events unexpected");
-    AudioParamEvent event(AudioTimelineEvent::SetValue, 0.0f, aValue);
-
-    DebugOnly<ErrorResult> rv;
-    MOZ_ASSERT(ValidateEvent(event, rv), "This event should be valid");
-
-    AudioParamTimeline::SetValue(aValue);
-
-    SendEventToEngine(event);
+  // Clamp to float range, not nominal range. See
+  // https://github.com/WebAudio/web-audio-api/issues/2671
+  void SetInitialValue(double aValue) {
+    IgnoredErrorResult rv;
+    SetValue(
+        static_cast<float>(std::clamp(
+            aValue, static_cast<double>(std::numeric_limits<float>::lowest()),
+            static_cast<double>(std::numeric_limits<float>::max()))),
+        rv);
   }
 
   void SetValue(float aValue, ErrorResult& aRv) {
-    AudioParamEvent event(AudioTimelineEvent::SetValue, 0.0f, aValue);
-
-    if (!ValidateEvent(event, aRv)) {
-      return;
-    }
-
-    AudioParamTimeline::SetValue(aValue);
-
-    SendEventToEngine(event);
+    SetValueAtTime(aValue, GetParentObject()->CurrentTime(), aRv);
   }
 
   AudioParam* SetValueAtTime(float aValue, double aStartTime,

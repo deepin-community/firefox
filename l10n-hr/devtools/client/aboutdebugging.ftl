@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Otklanjanje grešaka – izvršavanje 
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Ovaj { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Ovaj { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Ovaj { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Konfiguracija
+about-debugging-sidebar-setup-title =
+    .title = Konfiguracija
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -88,7 +96,7 @@ about-debugging-setup-title = Konfiguracija
 # Introduction text in the Setup page to explain how to configure remote debugging.
 about-debugging-setup-intro = Konfiguriraj način povezivanja za uklanjanje grešaka na tvom uređaju.
 # Explanatory text in the Setup page about what the 'This Firefox' page is for
-about-debugging-setup-this-firefox2 = Koristi <a>{ about-debugging-this-firefox-runtime-name }</a> za uklanjanje grešaka proširenja i radnih procesa ove verzije { -brand-shorter-name(case: "gen") }.
+about-debugging-setup-this-firefox2 = Koristi <a>{ about-debugging-this-firefox-runtime-name }</a> za otklanjanje grešaka proširenja i service workera u ovoj { -brand-shorter-name } verziji.
 # Title of the heading Connect section of the Setup page.
 about-debugging-setup-connect-heading = Spoji uređaj
 # USB section of the Setup page
@@ -111,6 +119,8 @@ about-debugging-setup-usb-status-updating = Aktualiziranje …
 about-debugging-setup-usb-step-enable-dev-menu2 = Aktiviraj izbornik za programere na svom Android uređaju.
 # USB section step by step guide
 about-debugging-setup-usb-step-enable-debug2 = Aktiviraj USB uklanjanje grešaka u Android izborniku za programere.
+# USB section step by step guide
+about-debugging-setup-usb-step-enable-file-transfer = Aktiviraj prijenos datoteka i provjeri da tvoj uređaj nije u modusu samo punjenje.
 # USB section step by step guide
 about-debugging-setup-usb-step-enable-debug-firefox2 = Aktiviraj USB uklanjanje grešaka u Firefoxu na Android uređaju.
 # USB section step by step guide
@@ -164,7 +174,7 @@ about-debugging-runtime-tabs =
 # Title of the service workers category.
 # .name is processed by fluent-react / DebugTargetPane
 about-debugging-runtime-service-workers =
-    .name = Radni procesi usluge
+    .name = Service workeri
 # Title of the shared workers category.
 # .name is processed by fluent-react / DebugTargetPane
 about-debugging-runtime-shared-workers =
@@ -183,7 +193,7 @@ about-debugging-runtime-profile-button2 = Profiliraj perfomansu
 # This string is displayed in the runtime page if the current configuration of the
 # target runtime is incompatible with service workers. "Learn more" points to:
 # https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
-about-debugging-runtime-service-workers-not-compatible = Konfiguracija tvog preglednika nije kompatibilna s radnim procesima. <a>Saznaj vše</a>
+about-debugging-runtime-service-workers-not-compatible = Konfiguracija tvog preglednika nije kompatibilna sa service workerima. <a>Saznaj vše</a>
 # This string is displayed in the runtime page if the remote browser version is too old.
 # "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
@@ -198,7 +208,7 @@ about-debugging-browser-version-too-old-fennec = Ova verzija Firefoxa ne može u
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $localVersion } is the version of your current browser (same format)
-about-debugging-browser-version-too-recent = Povezani preglednik je noviji { $runtimeVersion }, ID gradnje { $runtimeID } od tvog { -brand-shorter-name } ({ $localVersion }, ID gradnje { $localID }). Ovo je nepodržana postava i programerski alati možda neće raditi. Aktualiziraj Firefox. <a>Ispravljanje grešaka</a>
+about-debugging-browser-version-too-recent = Povezani preglednik je noviji { $runtimeVersion }, ID gradnje { $runtimeID } od tvog { -brand-shorter-name(case: "gen") } ({ $localVersion }, ID gradnje { $localID }). Ovo je nepodržana postava i programerski alati možda neće raditi. Aktualiziraj Firefox. <a>Ispravljanje grešaka</a>
 # Displayed for runtime info in runtime pages.
 # { $name } is brand name such as "Firefox Nightly"
 # { $version } is version such as "64.0a1"
@@ -213,7 +223,7 @@ about-debugging-connection-prompt-enable-button = Aktiviraj upit za povezivanje
 # "devtools.debugger.prompt-connection" is true on the target runtime.
 about-debugging-connection-prompt-disable-button = Deaktiviraj upit za povezivanje
 # Title of a modal dialog displayed on remote runtime pages after clicking on the Profile Runtime button.
-about-debugging-profiler-dialog-title2 = Alat za profiliranje
+about-debugging-profiler-dialog-title2 = Profiler
 # Clicking on the header of a debug target category will expand or collapse the debug
 # target items in the category. This text is used as ’title’ attribute of the header,
 # to describe this feature.
@@ -239,6 +249,11 @@ about-debugging-tmp-extension-reload-button = Učitaj ponovo
 # Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
 # Clicking on the button will uninstall the extension and remove it from the page.
 about-debugging-tmp-extension-remove-button = Ukloni
+# Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
+# Clicking on the button will forcefully terminate the extension background script (button
+# only visible in extensions that includes a non-persistent background script, either an
+# event page or a background service worker).
+about-debugging-tmp-extension-terminate-bgscript-button = Prekini skripta u pozadini
 # Message displayed in the file picker that opens to select a temporary extension to load
 # (triggered by the button using "about-debugging-tmp-extension-install-button")
 # manifest.json .xpi and .zip should not be localized.
@@ -262,6 +277,22 @@ about-debugging-extension-location =
 # For instance "geckoprofiler@mozilla.com" or "{ed26ddcb-5611-4512-a89a-51b8db81cfb2}".
 about-debugging-extension-id =
     .label = ID proširenja
+# Text displayed for extensions in "runtime" pages, before displaying the status of the
+# extension background script.
+about-debugging-extension-backgroundscript =
+    .label = Skripta u pozadini
+# Displayed for extension using a non-persistent background page (either an event page or
+# background service worker) when the background script is currently running.
+about-debugging-extension-backgroundscript-status-running = Izvodi se
+# Displayed for extension using a non-persistent background page when is currently stopped.
+about-debugging-extension-backgroundscript-status-stopped = Zaustavljeno
+# This string is displayed as a label of the button that pushes a test payload
+# to a service worker.
+# Note this relates to the "Push" API, which is normally not localized so it is
+# probably better to not localize it.
+# .disabledTitle is processed by the fluent-react / ActionButton code.
+about-debugging-worker-action-push2 = Push
+    .disabledTitle = Push obavijesti Service Workera su trenutačno deaktivirane za multiprocesni { -brand-shorter-name }
 # This string is displayed as a label of the button that starts a service worker.
 # .disabledTitle is processed by the fluent-react / ActionButton code.
 about-debugging-worker-action-start2 = Pokreni
@@ -286,9 +317,16 @@ about-debugging-worker-status-registering = Registriranje
 # Displayed for service workers in runtime pages, to label the scope of a worker
 about-debugging-worker-scope =
     .label = Opseg
+# Displayed for service workers in runtime pages, to label the push service endpoint (url)
+# of a worker
+about-debugging-worker-push-service =
+    .label = Push usluga
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Izvor
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
-    .title = Provjera radnih procesa trenutačno je onemogućena za višeprocesni { -brand-shorter-name }
+    .title = Provjera service workera je trenutačno deaktivirana za višeprocesni { -brand-shorter-name }
 # Displayed as title of the inspect button for zombie tabs (e.g. tabs loaded via a session restore).
 about-debugging-zombie-tab-inspect-action-disabled =
     .title = Kartica nije u potpunosti učitana i ne može se pregledati
@@ -298,6 +336,9 @@ about-debugging-multiprocess-toolbox-name = Višeprocesni alati
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Glavni procesi i procesi sadržaja za ciljani preglednik
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Zatvori poruku
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Zatvori poruku

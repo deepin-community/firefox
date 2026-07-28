@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,11 +10,11 @@
 #define mozilla_dom_Attr_h
 
 #include "mozilla/Attributes.h"
+#include "nsCOMPtr.h"
+#include "nsCycleCollectionParticipant.h"
 #include "nsDOMAttributeMap.h"
 #include "nsINode.h"
 #include "nsString.h"
-#include "nsCOMPtr.h"
-#include "nsCycleCollectionParticipant.h"
 #include "nsStubMutationObserver.h"
 
 namespace mozilla {
@@ -42,14 +40,22 @@ class Attr final : public nsINode {
   NS_IMPL_FROMNODE_HELPER(Attr, IsAttr())
 
   // nsINode interface
+  MOZ_CAN_RUN_SCRIPT void SetTextContent(const nsAString& aTextContent,
+                                         nsIPrincipal* aSubjectPrincipal,
+                                         mozilla::ErrorResult& aError) override;
   virtual void GetTextContentInternal(nsAString& aTextContent,
                                       OOMReporter& aError) override;
   virtual void SetTextContentInternal(const nsAString& aTextContent,
                                       nsIPrincipal* aSubjectPrincipal,
-                                      ErrorResult& aError) override;
+                                      ErrorResult& aError,
+                                      MutationEffectOnScript) override;
+  MOZ_CAN_RUN_SCRIPT void SetNodeValue(const nsAString& aNodeValue,
+                                       mozilla::ErrorResult& aError) override;
   virtual void GetNodeValueInternal(nsAString& aNodeValue) override;
-  virtual void SetNodeValueInternal(const nsAString& aNodeValue,
-                                    ErrorResult& aError) override;
+  virtual void SetNodeValueInternal(
+      const nsAString& aNodeValue, ErrorResult& aError,
+      MutationEffectOnScript aMutationEffectOnScript =
+          MutationEffectOnScript::DropTrustWorthiness) override;
 
   void GetEventTargetParent(EventChainPreVisitor& aVisitor) override;
 
@@ -83,9 +89,10 @@ class Attr final : public nsINode {
   void GetName(nsAString& aName);
   void GetValue(nsAString& aValue);
 
-  void SetValue(const nsAString& aValue, nsIPrincipal* aTriggeringPrincipal,
-                ErrorResult& aRv);
-  void SetValue(const nsAString& aValue, ErrorResult& aRv);
+  MOZ_CAN_RUN_SCRIPT void SetValue(const nsAString& aValue,
+                                   nsIPrincipal* aTriggeringPrincipal,
+                                   ErrorResult& aRv);
+  void SetValueInternal(const nsAString& aValue, ErrorResult& aRv);
 
   bool Specified() const;
 

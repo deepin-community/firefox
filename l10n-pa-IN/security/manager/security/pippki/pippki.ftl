@@ -17,7 +17,7 @@ change-password-reenter = ਨਵਾਂ ਪਾਸਵਰਡ (ਮੁੜ):
 pippki-failed-pw-change = ਪਾਸਵਰਡ ਬਦਲਣ ਲਈ ਅਸਮਰੱਥ ਹੈ।
 pippki-incorrect-pw = ਤੁਸੀਂ ਆਪਣਾ ਮੌਜੂਦਾ ਪਾਸਵਰਡ ਠੀਕ ਨਹੀਂ ਭਰਿਆ ਹੈ। ਫੇਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜੀ।
 pippki-pw-change-ok = ਪਾਸਵਰਡ ਕਾਮਯਾਬੀ ਨਾਲ ਬਦਲਿਆ ਹੈ।
-pippki-pw-empty-warning = ਤੁਹਾਡੇ ਸੰਭਾਲੇ ਪਾਸਵਰਡ ਤੇ ਪ੍ਰਾਈਵੇਟ ਕੁੰਜੀਆਂ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਰਹਿਣਗੀਆਂ।
+pippki-pw-empty-warning = ਤੁਹਾਡੇ ਸੰਭਾਲੇ ਪਾਸਵਰਡ ਅਤੇ ਪ੍ਰਾਈਵੇਟ ਕੁੰਜੀਆਂ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਰਹਿਣਗੀਆਂ।
 pippki-pw-erased-ok = ਤੁਸੀਂ ਆਪਣਾ ਪਾਸਵਰਡ ਹਟਾ ਚੁੱਕੇ ਹੋ। { pippki-pw-empty-warning }
 pippki-pw-not-wanted = ਸਾਵਧਾਨ! ਤੁਸੀਂ ਪਾਸਵਰਡ ਨਾ ਵਰਤਣ ਦਾ ਫ਼ੈਸਲਾ ਕੀਤਾ ਹੈ। { pippki-pw-empty-warning }
 pippki-pw-change2empty-in-fips-mode = ਇਸ ਵੇਲੇ ਤੁਸੀਂ FIPS ਢੰਗ ਵਰਤ ਰਹੇ ਹੋ। FIPS ਲਈ ਪਾਸਵਰਡ ਖਾਲੀ ਨਹੀਂ ਹੋ ਸਕਦਾ ਹੈ।
@@ -29,7 +29,7 @@ reset-primary-password-window2 =
     .style = min-width: 40em
 reset-password-button-label =
     .label = ਮੁੜ-ਲੋਡ ਕਰੋ
-reset-primary-password-text = ਜੇਕਰ ਤੁਸੀਂ ਆਪਣਾ ਮੁੱਖ ਪਾਸਵਰਡ ਨੂੰ ਮੁੜ-ਸੈੱਟ ਕੀਤਾ ਤਾਂ, ਤੁਹਾਡੇ ਸਭ ਸੰਭਾਲੇ ਵੈੱਬ ਤੇ ਈ-ਮੇਲ ਪਾਸਵਰਡ, ਫਾਰਮ ਡਾਟਾ, ਨਿੱਜੀ ਸਰਟੀਫਿਕੇਟ ਅਤੇ ਨਿੱਜੀ ਕੁੰਜੀਆਂ ਭੁਲਾ ਦਿੱਤੀਆਂ ਜਾਣਗੀਆਂ। ਕੀ ਤੁਸੀਂ ਮੁੱਖ ਪਾਸਵਰਡ ਮੁੜ-ਸੈੱਟ ਕਰਨ ਲਈ ਸਹਿਮਤ ਹੋ?
+reset-primary-password-text = ਜੇਕਰ ਤੁਸੀਂ ਆਪਣਾ ਮੁੱਖ ਪਾਸਵਰਡ ਨੂੰ ਮੁੜ-ਸੈੱਟ ਕੀਤਾ ਤਾਂ, ਤੁਹਾਡੇ ਸਭ ਸੰਭਾਲੇ ਵੈੱਬ ਤੇ ਈ-ਮੇਲ ਪਾਸਵਰਡ, ਫਾਰਮ ਡਾਟਾ, ਨਿੱਜੀ ਸਰਟੀਫਿਕੇਟ ਅਤੇ ਪ੍ਰਾਈਵੇਟ ਕੁੰਜੀਆਂ ਭੁਲਾ ਦਿੱਤੀਆਂ ਜਾਣਗੀਆਂ। ਕੀ ਤੁਸੀਂ ਮੁੱਖ ਪਾਸਵਰਡ ਮੁੜ-ਸੈੱਟ ਕਰਨ ਲਈ ਸਹਿਮਤ ਹੋ?
 pippki-reset-password-confirmation-title = ਮੁੱਖ ਪਾਸਵਰਡ ਮੁੜ-ਸੈੱਟ ਕਰੋ
 pippki-reset-password-confirmation-message = ਤੁਹਾਡਾ ਮੁੱਖ ਪਾਸਵਰਡ ਮੁੜ-ਸੈੱਟ ਕੀਤਾ ਜਾ ਚੁੱਕਾ ਹੈ।
 
@@ -47,9 +47,6 @@ download-cert-message-desc = ਇਸ CA ਤੇ ਕਿਸੇ ਵੀ ਮਕਸਦ �
 download-cert-view-cert =
     .label = ਵੇਖੋ
 download-cert-view-text = CA ਸਰਟੀਫਿਕੇਟ ਨੂੰ ਵੇਖੋ
-
-## Client Authorization Ask dialog
-
 
 ## Client Authentication Ask dialog
 
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = ਜਾਰੀ ਕਰਤਾ: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = ਇਸ ਉੱਤੇ ਸੰਭਾਲਿਆ: { $storedOn }
-client-auth-cert-remember-box =
-    .label = ਇਹ ਫ਼ੈਸਲਾ ਯਾਦ ਰੱਖੋ
+client-auth-cert-remember-label = ਇਹ ਫ਼ੈਸਲਾ ਯਾਦ ਰੱਖੋ:
+client-auth-cert-remember-never =
+    .label = ਇੱਕ ਵਾਰ
+client-auth-cert-remember-always =
+    .label = ਪੱਕੇ ਤੌਰ ਉੱਤੇ
+client-auth-cert-remember-temporarily =
+    .label = ਇਸ ਸ਼ੈਸ਼ਨ ਲਈ
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = ਸਰਟੀਫਿਕੇਟ ਬੈਕਅੱਪ ਪਾਸਵਰਡ (ਪੁਸ਼ਟੀ):
 set-password-reminder = ਖਾਸ: ਜੇਕਰ ਤੁਸੀਂ ਸਰਟੀਫਿਕੇਟ ਬੈਕਅੱਪ ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ ਤਾਂ ਤੁਸੀਨ ਇਸ ਬੈਕਅੱਪ ਨੂੰ ਬਾਅਦ ਵਿੱਚ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕਰ ਸਕੋਗੇ। ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਨੂੰ ਸੁਰੱਖਿਅਤ ਥਾਂ ਉੱਤੇ ਰੱਖੋ।
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = ਸੁਰੱਖਿਅਤ ਪਰਮਾਣੀਕਰਨ
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = ਸੁਰੱਖਿਆ ਡਿਵਾਈਸ ({ $tokenName }) ਲਈ ਪਰਮਾਣੀਕਰਨ। ਇਹ ਤੁਹਾਡੇ ਡਿਵਾਈਸ ਉੱਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ (ਜਿਵੇਂ ਕਿ ਫਿੰਗਰਪਰਿੰਟ ਰੀਡਰ ਜਾਂ ਕੀਪੈਡ ਨਾਲ ਕੋਡ ਭਰਨਾ)।
 
 ## Protected authentication alert
 

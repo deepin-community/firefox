@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Дозволити
     .accesskey = Д
+permissions-add =
+    .label = Додати
+    .accesskey = о
 permissions-button-off =
     .label = Вимкнути
     .accesskey = В
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Вилучити всі вебсайти
     .accesskey = с
+permissions-save-changes-2 =
+    .buttonlabelaccept = Зберегти зміни
+    .buttonaccesskeyaccept = З
 permission-dialog =
     .buttonlabelaccept = Зберегти зміни
     .buttonaccesskeyaccept = З
@@ -93,6 +99,13 @@ permissions-exceptions-https-only-window2 =
 permissions-exceptions-https-only-desc = Ви можете вимкнути HTTPS-режим для певних вебсайтів. { -brand-short-name } не намагатиметься оновити з'єднання, щоб захистити ці сайти за допомогою HTTPS. Винятки не стосуються приватних вікон.
 permissions-exceptions-https-only-desc2 = Ви можете вимкнути HTTPS-режим для певних вебсайтів. { -brand-short-name } не намагатиметься оновити з'єднання, щоб захистити ці сайти за допомогою HTTPS.
 
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Дозволені сайти – спливні вікна та сторонні переспрямування
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Ви можете вказати вебсайти, для яких дозволяється відкриття спливних вікон і переспрямування за допомогою сторонніх фреймів.
+
 ## Exceptions - Pop-ups
 
 permissions-exceptions-popup-window2 =
@@ -136,7 +149,7 @@ permissions-site-notification-window2 =
 permissions-site-notification-desc = Зазначені тут вебсайти запитували дозвіл надсилати вам сповіщення. Ви можете вказати, яким вебсайтам дозволяється надсилати вам сповіщення. Ви також можете блокувати нові запити про надсилання сповіщень.
 permissions-site-notification-disable-label =
     .label = Блокувати нові запити про отримання сповіщень
-permissions-site-notification-disable-desc = Це не дозволить будь-яким переліченим вгорі вебсайтам запитувати дозвіл про надсилання сповіщень. Блокування сповіщень може вплинути на деякі функції вебсайту.
+permissions-site-notification-disable-desc = Це не дозволить будь-яким переліченим вгорі вебсайтам запитувати дозвіл про надсилання сповіщень. Блокування сповіщень може вплинути на деякі функції вебсайтів.
 
 ## Site Permissions - Location
 
@@ -146,7 +159,7 @@ permissions-site-location-window2 =
 permissions-site-location-desc = Зазначені тут вебсайти запитували дозвіл на доступ до вашого розташування. Ви можете вказати, яким вебсайтам дозволяється отримувати доступ до вашого розташування. Ви також можете блокувати нові запити на доступ до вашого розташування.
 permissions-site-location-disable-label =
     .label = Блокувати нові запити про отримання доступу до вашого розташування
-permissions-site-location-disable-desc = Це не дозволить будь-яким переліченим вгорі вебсайтам запитувати дозвіл на отримання доступу до вашого розташування. Блокування доступу до розташування може вплинути на деякі функції вебсайту.
+permissions-site-location-disable-desc = Це не дозволить будь-яким переліченим вгорі вебсайтам запитувати дозвіл на отримання доступу до вашого розташування. Блокування доступу до розташування може вплинути на деякі функції вебсайтів.
 
 ## Site Permissions - Virtual Reality
 
@@ -166,7 +179,27 @@ permissions-site-camera-window2 =
 permissions-site-camera-desc = Зазначені тут вебсайти запитували дозвіл на доступ до вашої камери. Ви можете вказати, яким вебсайтам дозволяється отримувати доступ до вашої камери. Ви також можете блокувати нові запити на доступ до вашої камери.
 permissions-site-camera-disable-label =
     .label = Блокувати нові запити про отримання доступу до вашої камери
-permissions-site-camera-disable-desc = Це не дозволить будь-яким переліченим вгорі вебсайтам запитувати дозвіл на отримання доступу до вашої камери. Блокування доступу до камери може вплинути на деякі функції вебсайту.
+permissions-site-camera-disable-desc = Це не дозволить будь-яким переліченим вгорі вебсайтам запитувати дозвіл на отримання доступу до вашої камери. Блокування доступу до камери може вплинути на деякі функції вебсайтів.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Налаштування – Програми та служби пристрою
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Ці вебсайти подали запит на доступ до програм і служб на цьому пристрої. Ви можете дозволити або заборонити доступ.
+permissions-site-localhost-disable-label =
+    .label = Блокувати нові запити на доступ до програм і служб на цьому пристрої
+permissions-site-localhost-disable-desc = Ця дія заборонить будь-яким вебсайтам, крім зазначених вище, запитувати доступ до програм і служб на цьому пристрої. Це може вплинути на роботу певних функцій вебсайтів.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Налаштування – Пристрої локальної мережі
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Ці вебсайти запитують доступ до програм і служб на пристроях, під'єднаних до вашої мережі Wi-Fi або локальної мережі. Ви можете дозволити або заборонити доступ.
+permissions-site-local-network-disable-label =
+    .label = Блокувати нові запити на доступ до програм і служб на пристроях, під'єднаних до вашої мережі Wi-Fi або локальної мережі.
+permissions-site-local-network-disable-desc = Ця дія заборонить будь-яким веб-сайтам, крім зазначених вище, запитувати доступ до програм і служб на пристроях, під'єднаних до вашої мережі Wi-Fi або локальної мережі. Це може вплинути на роботу певних функцій вебсайтів.
 
 ## Site Permissions - Microphone
 
@@ -176,7 +209,7 @@ permissions-site-microphone-window2 =
 permissions-site-microphone-desc = Зазначені тут вебсайти запитували дозвіл на доступ до вашого мікрофону. Ви можете вказати, яким вебсайтам дозволяється отримувати доступ до вашого мікрофону. Ви також можете блокувати нові запити на доступ до вашого мікрофону.
 permissions-site-microphone-disable-label =
     .label = Блокувати нові запити про отримання доступу до вашого мікрофону
-permissions-site-microphone-disable-desc = Це не дозволить будь-яким переліченим вгорі вебсайтам запитувати дозвіл на отримання доступу до вашого мікрофону. Блокування доступу до мікрофону може вплинути на деякі функції вебсайту.
+permissions-site-microphone-disable-desc = Це не дозволить будь-яким переліченим вгорі вебсайтам запитувати дозвіл на отримання доступу до вашого мікрофону. Блокування доступу до мікрофону може вплинути на деякі функції вебсайтів.
 
 ## Site Permissions - Speaker
 ##

@@ -145,7 +145,7 @@ Puppeteer supports multiple types of selectors, namely, the CSS, ARIA, text, XPa
 The following table shows Puppeteer's equivalents to [Protractor By](https://www.protractortest.org/#/api?view=ProtractorBy).
 
 > For improved reliability and reduced flakiness try our
-> **Experimental** [Locators API](https://pptr.dev/guides/locators)
+> **Experimental** [Locators API](https://pptr.dev/guides/page-interactions#locators)
 
 | By                | Protractor code                               | Puppeteer querySelector                                      |
 | ----------------- | --------------------------------------------- | ------------------------------------------------------------ |
@@ -193,7 +193,7 @@ Sample Protractor test:
 ```ts
 describe('Protractor Demo', function () {
   it('should add one and two', function () {
-    browser.get('http://juliemr.github.io/protractor-demo/');
+    browser.get('https://juliemr.github.io/protractor-demo/');
     element(by.model('first')).sendKeys(1);
     element(by.model('second')).sendKeys(2);
 
@@ -213,7 +213,7 @@ describe('Puppeteer Demo', function () {
   setupBrowserHooks();
   it('should add one and two', function () {
     const {page} = getBrowserState();
-    await page.goto('http://juliemr.github.io/protractor-demo/');
+    await page.goto('https://juliemr.github.io/protractor-demo/');
 
     await page.locator('.form-inline > input:nth-child(1)').fill('1');
     await page.locator('.form-inline > input:nth-child(2)').fill('2');

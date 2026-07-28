@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -283,9 +281,8 @@ already_AddRefed<nsIFile> GetNormalizedAppFile(nsIFile* aAppFile) {
   FSRef ref;
   nsCOMPtr<nsILocalFileMac> macFile = do_QueryInterface(appFile);
   if (macFile && NS_SUCCEEDED(macFile->GetFSRef(&ref)) &&
-      NS_SUCCEEDED(
-          NS_NewLocalFileWithFSRef(&ref, true, getter_AddRefs(macFile)))) {
-    appFile = static_cast<nsIFile*>(macFile);
+      NS_SUCCEEDED(NS_NewLocalFileWithFSRef(&ref, getter_AddRefs(macFile)))) {
+    appFile = macFile.forget();
   } else {
     NS_WARNING("Failed to resolve install directory.");
   }

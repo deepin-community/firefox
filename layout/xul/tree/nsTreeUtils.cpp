@@ -1,17 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "nsReadableUtils.h"
 #include "nsTreeUtils.h"
+
 #include "ChildIterator.h"
-#include "nsCRT.h"
 #include "nsAtom.h"
-#include "nsNameSpaceManager.h"
+#include "nsCRT.h"
 #include "nsGkAtoms.h"
 #include "nsIContent.h"
+#include "nsNameSpaceManager.h"
+#include "nsReadableUtils.h"
 
 using namespace mozilla;
 
@@ -25,20 +24,28 @@ nsresult nsTreeUtils::TokenizeProperties(const nsAString& aProperties,
 
   do {
     // Skip whitespace
-    while (iter != end && nsCRT::IsAsciiSpace(*iter)) ++iter;
+    while (iter != end && nsCRT::IsAsciiSpace(*iter)) {
+      ++iter;
+    }
 
     // If only whitespace, we're done
-    if (iter == end) break;
+    if (iter == end) {
+      break;
+    }
 
     // Note the first non-whitespace character
     nsAString::const_iterator first = iter;
 
     // Advance to the next whitespace character
-    while (iter != end && !nsCRT::IsAsciiSpace(*iter)) ++iter;
+    while (iter != end && !nsCRT::IsAsciiSpace(*iter)) {
+      ++iter;
+    }
 
     // XXX this would be nonsensical
     NS_ASSERTION(iter != first, "eh? something's wrong here");
-    if (iter == first) break;
+    if (iter == first) {
+      break;
+    }
 
     RefPtr<nsAtom> atom = NS_Atomize(Substring(first, iter));
     aPropertiesArray.AppendElement(atom);

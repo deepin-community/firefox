@@ -48,10 +48,15 @@ account-connection-title = { -fxaccount-brand-name(capitalization: "title") }
 # The title shown in a notification when either this device or another device
 # has connected to, or disconnected from, a Firefox account.
 account-connection-title-2 = ఖాతా
+# Variables:
+#   $deviceName (String): the name of the new device
+account-connection-connected-with = ఈ కంప్యూటర్ ఇప్పుడు { $deviceName }తో అనుసంధానించబడింది
 # Used when the name of the new device is not known.
 account-connection-connected-with-noname = ఈ కంప్యూటరు ఇప్పుడు ఒక కొత్త పరికరంతో అనుసంధానమయ్యింది.
 # Used in a notification shown after a Firefox account is connected to the current device.
 account-connection-connected = మీరు విజయవంతంగా ప్రవేశించారు
+# Used in a notification shown after the Firefox account was disconnected remotely.
+account-connection-disconnected = ఈ కంప్యూటర్ అనుసంధానం తెంచబడింది.
 
 ## These strings are used in a notification shown when we're opening
 ## a single tab another device sent us to display.
@@ -91,3 +96,10 @@ account-multiple-tabs-arriving-from-unknown-device =
         [one] { $tabCount } ట్యాబు వచ్చింది
        *[other] { $tabCount } ట్యాబులు వచ్చాయి
     }
+
+## These strings are used in notifications in which the user remotely closed
+## tabs from other devices
+## Variables:
+##   $closedCount (Number): the number of tabs closed
+
+account-view-recently-closed-tabs = ఇటీవల మూసిన ట్యాబులను చూడండి

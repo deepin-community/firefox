@@ -4,31 +4,16 @@
 
 "use strict";
 
+/* global AppConstants */
+
 /**
- * This file tests both the AboutNewTab and nsIAboutNewTabService
- * for its default URL values, as well as its behaviour when overriding
- * the default URL values.
+ * This file tests AboutNewTab  for its default URL values, as well as its
+ * behaviour when overriding the default URL values.
  */
 
-const { XPCOMUtils } = ChromeUtils.importESModule(
-  "resource://gre/modules/XPCOMUtils.sys.mjs"
-);
-
-const { AppConstants } = ChromeUtils.importESModule(
-  "resource://gre/modules/AppConstants.sys.mjs"
-);
 const { AboutNewTab } = ChromeUtils.importESModule(
   "resource:///modules/AboutNewTab.sys.mjs"
 );
-
-XPCOMUtils.defineLazyServiceGetter(
-  this,
-  "aboutNewTabService",
-  "@mozilla.org/browser/aboutnewtab-service;1",
-  "nsIAboutNewTabService"
-);
-
-AboutNewTab.init();
 
 const IS_RELEASE_OR_BETA = AppConstants.RELEASE_OR_BETA;
 
@@ -38,6 +23,8 @@ const SEPARATE_PRIVILEGED_CONTENT_PROCESS_PREF =
   "browser.tabs.remote.separatePrivilegedContentProcess";
 const ACTIVITY_STREAM_DEBUG_PREF = "browser.newtabpage.activity-stream.debug";
 const SIMPLIFIED_WELCOME_ENABLED_PREF = "browser.aboutwelcome.enabled";
+const ACTIVITY_STREAM_TELEMETRY_PREF =
+  "browser.newtabpage.activity-stream.telemetry";
 
 function cleanup() {
   Services.prefs.clearUserPref(SEPARATE_PRIVILEGED_CONTENT_PROCESS_PREF);
@@ -47,24 +34,6 @@ function cleanup() {
 }
 
 registerCleanupFunction(cleanup);
-
-let ACTIVITY_STREAM_URL;
-let ACTIVITY_STREAM_DEBUG_URL;
-
-function setExpectedUrlsWithScripts() {
-  ACTIVITY_STREAM_URL =
-    "resource://activity-stream/prerendered/activity-stream.html";
-  ACTIVITY_STREAM_DEBUG_URL =
-    "resource://activity-stream/prerendered/activity-stream-debug.html";
-}
-
-function setExpectedUrlsWithoutScripts() {
-  ACTIVITY_STREAM_URL =
-    "resource://activity-stream/prerendered/activity-stream-noscripts.html";
-
-  // Debug urls are the same as non-debug because debug scripts load dynamically
-  ACTIVITY_STREAM_DEBUG_URL = ACTIVITY_STREAM_URL;
-}
 
 function nextChangeNotificationPromise(aNewURL, testMessage) {
   return new Promise(resolve => {
@@ -92,18 +61,13 @@ function setPrivilegedContentProcessPref(usePrivilegedContentProcess) {
   return notificationPromise;
 }
 
-// Default expected URLs to files with scripts in them.
-setExpectedUrlsWithScripts();
-
 function addTestsWithPrivilegedContentProcessPref(test) {
   add_task(async () => {
     await setPrivilegedContentProcessPref(true);
-    setExpectedUrlsWithoutScripts();
     await test();
   });
   add_task(async () => {
     await setPrivilegedContentProcessPref(false);
-    setExpectedUrlsWithScripts();
     await test();
   });
 }
@@ -120,6 +84,10 @@ function setBoolPrefAndWaitForChange(pref, value, testMessage) {
   });
 }
 
+add_setup(() => {
+  AboutNewTab.init();
+});
+
 add_task(async function test_as_initial_values() {
   Assert.ok(
     AboutNewTab.activityStreamEnabled,
@@ -133,6 +101,24 @@ add_task(async function test_as_initial_values() {
   );
 });
 
+// Bug 1977258 moved ActivityStream.init() behind TOU gate
+// which caused about:welcome's first-screen impression to be dropped
+// as it fires before TOU is accepted.
+add_task(function test_AStelemetry_set_early() {
+  Assert.notEqual(
+    Services.prefs.getPrefType(ACTIVITY_STREAM_TELEMETRY_PREF),
+    Services.prefs.PREF_INVALID,
+    " ActivityStream telemetry pref should be set after AboutNewTab.init()"
+  );
+  Assert.equal(
+    Services.prefs
+      .getDefaultBranch("")
+      .getBoolPref(ACTIVITY_STREAM_TELEMETRY_PREF),
+    AppConstants.MOZILLA_OFFICIAL,
+    " ActivityStream telemetry pref default should match MOZILLA_OFFICIAL"
+  );
+});
+
 /**
  * Test the overriding of the default URL
  */
@@ -143,7 +129,6 @@ add_task(async function test_override_activity_stream_disabled() {
     !AboutNewTab.newTabURLOverridden,
     "Newtab URL should not be overridden"
   );
-  const ORIGINAL_URL = aboutNewTabService.defaultURL;
 
   // override with some remote URL
   let url = "http://example.com/";
@@ -159,11 +144,6 @@ add_task(async function test_override_activity_stream_disabled() {
     AboutNewTab.newTabURL,
     url,
     "Newtab URL should be the custom URL"
-  );
-  Assert.equal(
-    aboutNewTabService.defaultURL,
-    ORIGINAL_URL,
-    "AboutNewTabService defaultURL is unchanged"
   );
 
   // test reset with activity stream disabled
@@ -196,11 +176,6 @@ add_task(async function test_override_activity_stream_disabled() {
 
 addTestsWithPrivilegedContentProcessPref(
   async function test_override_activity_stream_enabled() {
-    Assert.equal(
-      aboutNewTabService.defaultURL,
-      ACTIVITY_STREAM_URL,
-      "Newtab URL should be the default activity stream URL"
-    );
     Assert.ok(
       !AboutNewTab.newTabURLOverridden,
       "Newtab URL should not be overridden"
@@ -219,11 +194,6 @@ addTestsWithPrivilegedContentProcessPref(
       DOWNLOADS_URL,
       "Newtab URL set to chrome url"
     );
-    Assert.equal(
-      aboutNewTabService.defaultURL,
-      ACTIVITY_STREAM_URL,
-      "Newtab URL defaultURL still set to the default activity stream URL"
-    );
     Assert.ok(
       AboutNewTab.newTabURLOverridden,
       "Newtab URL should be overridden"
@@ -238,12 +208,6 @@ addTestsWithPrivilegedContentProcessPref(
 );
 
 addTestsWithPrivilegedContentProcessPref(async function test_default_url() {
-  Assert.equal(
-    aboutNewTabService.defaultURL,
-    ACTIVITY_STREAM_URL,
-    "Newtab defaultURL initially set to AS url"
-  );
-
   // Only debug variants aren't available on release/beta
   if (!IS_RELEASE_OR_BETA) {
     await setBoolPrefAndWaitForChange(
@@ -255,11 +219,6 @@ addTestsWithPrivilegedContentProcessPref(async function test_default_url() {
       AboutNewTab.activityStreamDebug,
       true,
       "the .activityStreamDebug property is set to true"
-    );
-    Assert.equal(
-      aboutNewTabService.defaultURL,
-      ACTIVITY_STREAM_DEBUG_URL,
-      "Newtab defaultURL set to debug AS url after the pref has been changed"
     );
     await setBoolPrefAndWaitForChange(
       ACTIVITY_STREAM_DEBUG_PREF,
@@ -273,43 +232,6 @@ addTestsWithPrivilegedContentProcessPref(async function test_default_url() {
       AboutNewTab.activityStreamDebug,
       false,
       "the .activityStreamDebug property is remains false"
-    );
-  }
-
-  Assert.equal(
-    aboutNewTabService.defaultURL,
-    ACTIVITY_STREAM_URL,
-    "Newtab defaultURL set to un-prerendered AS if prerender is false and debug is false"
-  );
-
-  cleanup();
-});
-
-addTestsWithPrivilegedContentProcessPref(async function test_welcome_url() {
-  // Disable about:welcome to load newtab
-  Services.prefs.setBoolPref(SIMPLIFIED_WELCOME_ENABLED_PREF, false);
-  Assert.equal(
-    aboutNewTabService.welcomeURL,
-    ACTIVITY_STREAM_URL,
-    "Newtab welcomeURL set to un-prerendered AS when debug disabled."
-  );
-  Assert.equal(
-    aboutNewTabService.welcomeURL,
-    aboutNewTabService.defaultURL,
-    "Newtab welcomeURL is equal to defaultURL when prerendering disabled and debug disabled."
-  );
-
-  // Only debug variants aren't available on release/beta
-  if (!IS_RELEASE_OR_BETA) {
-    await setBoolPrefAndWaitForChange(
-      ACTIVITY_STREAM_DEBUG_PREF,
-      true,
-      "A notification occurs after changing the debug pref to true."
-    );
-    Assert.equal(
-      aboutNewTabService.welcomeURL,
-      ACTIVITY_STREAM_DEBUG_URL,
-      "Newtab welcomeURL set to un-prerendered debug AS when debug enabled"
     );
   }
 
@@ -343,11 +265,6 @@ addTestsWithPrivilegedContentProcessPref(async function test_updates() {
   Assert.ok(
     AboutNewTab.activityStreamEnabled,
     "Activity Stream should be enabled"
-  );
-  Assert.equal(
-    aboutNewTabService.defaultURL,
-    ACTIVITY_STREAM_URL,
-    "Default URL should be the activity stream page"
   );
   await notificationPromise;
 

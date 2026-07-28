@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Προτιμήσεις
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Ρυθμίσεις…
+menu-application-set-as-default =
+    .label = Ορισμός του { -brand-shorter-name } ως προεπιλογής
 menu-application-services =
     .label = Υπηρεσίες
 menu-application-hide-this =
@@ -37,16 +30,16 @@ menu-quit =
     .label =
         { PLATFORM() ->
             [windows] Έξοδος
-           *[other] Έξοδος
+           *[other] Τερματισμός
         }
     .accesskey =
         { PLATFORM() ->
             [windows] ξ
-           *[other] ξ
+           *[other] Τ
         }
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
-    .label = Έξοδος από το { -brand-shorter-name }
+    .label = Τερματισμός του { -brand-shorter-name }
 menu-about =
     .label = Σχετικά με το { -brand-shorter-name }
     .accesskey = τ
@@ -97,6 +90,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Κοινή χρήση
     .accesskey = χ
+menu-file-share-qrcode =
+    .label = Δημιουργία κωδικού QR…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Δημιουργία κωδικού QR
+    .accesskey = Q
 menu-file-print-setup =
     .label = Διαμόρφωση σελίδας…
     .accesskey = μ
@@ -145,8 +144,6 @@ menu-view-history-button =
     .label = Ιστορικό
 menu-view-synced-tabs-sidebar =
     .label = Συγχρονισμένες καρτέλες
-menu-view-megalist-sidebar =
-    .label = Κωδικοί πρόσβασης
 menu-view-full-zoom =
     .label = Ζουμ
     .accesskey = Ζ
@@ -254,6 +251,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Σελιδοδείκτες κινητού
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Προφίλ
+menu-profiles-manage-profiles =
+    .label = Διαχείριση προφίλ
+menu-profiles-new-profile =
+    .label = Νέο προφίλ
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (τρέχον)
+menu-profiles-menu =
+    .label = Προφίλ
+    .accesskey = Π
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +275,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Λήψεις
     .accesskey = ψ
+menu-tools-extensions-and-themes =
+    .label = Επεκτάσεις και θέματα
+    .accesskey = Ε
 menu-tools-addons-and-themes =
     .label = Πρόσθετα και θέματα
     .accesskey = Π
@@ -289,6 +305,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Πληροφορίες σελίδας
     .accesskey = λ
+menu-tools-edit-pdf =
+    .label = Επεξεργασία PDF…
+    .accesskey = P
 menu-settings =
     .label = Ρυθμίσεις
     .accesskey =
@@ -339,7 +358,7 @@ menu-help-exit-troubleshoot-mode =
     .label = Απενεργοποίηση λειτουργίας επίλυσης προβλημάτων
     .accesskey = ν
 menu-help-switch-device =
-    .label = Εναλλαγή σε νέα συσκευή
+    .label = Μετάβαση σε νέα συσκευή
     .accesskey = ν
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.

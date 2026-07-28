@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +8,6 @@
 #include "StreamFilterBase.h"
 #include "mozilla/extensions/PStreamFilterParent.h"
 
-#include "mozilla/LinkedList.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/WebRequestService.h"
 #include "nsIStreamListener.h"
@@ -78,8 +75,9 @@ class StreamFilterParent final : public PStreamFilterParent,
     Closed,
     // The channel is being disconnected from the child, so that all further
     // data and events pass unfiltered to the output listener. Any data
-    // currnetly in transit to, or buffered by, the child will be written to the
-    // output listener before we enter the Disconnected atate.
+    // currently in transit to, or buffered by, the child will be written to the
+    // output listener before we enter the Disconnected state.
+    // This state is also entered when an IPC failure occurs (via CheckResult).
     Disconnecting,
     // The channel has been disconnected from the child, and all further data
     // and events will be passed directly to the output listener.
@@ -148,14 +146,18 @@ class StreamFilterParent final : public PStreamFilterParent,
 
   static void AssertIsMainThread() { MOZ_ASSERT(NS_IsMainThread()); }
 
+  // RunOnMainThread and RunOnIOThread share the same ChannelEventQueue, which
+  // ensures that callbacks are run sequentially.
   template <typename Function>
   void RunOnMainThread(const char* aName, Function&& aFunc);
 
   void RunOnMainThread(already_AddRefed<Runnable> aRunnable);
 
+  // RunOnActorThread runs independent of RunOnMainThread and RunOnIOThread.
   template <typename Function>
   void RunOnActorThread(const char* aName, Function&& aFunc);
 
+  // RunOnIOThread shares its queue with RunOnMainThread, see RunOnMainThread.
   template <typename Function>
   void RunOnIOThread(const char* aName, Function&& aFunc);
 
@@ -170,7 +172,16 @@ class StreamFilterParent final : public PStreamFilterParent,
 
   RefPtr<net::ChannelEventQueue> mQueue;
 
+  // Mutex covering StreamFilterBase::mBufferedData, which holds data that
+  // were queued while mState is Disconnecting.
   Mutex mBufferMutex MOZ_UNANNOTATED;
+
+  // When mState is set to Disconnecting, ODA queues data in mBufferedData, but
+  // there may be in-flight DoSendData() calls from ODA that belongs to the
+  // front of the list. This counter keeps track of the number of elements that
+  // we prepended, which ensures that the data is in order.
+  // When no more DoSendData() calls are expected, it is set to -1.
+  int mPrependedBufferCount = 0;
 
   bool mReceivedStop;
   bool mSentStop;

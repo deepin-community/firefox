@@ -46,25 +46,3 @@ experimental-features-js-warp-description = Warp inschakelen, een project om de 
 experimental-features-ime-search =
     .label = Adresbalk: resultaten tonen tijdens opstellen met IME
 experimental-features-ime-search-description = Een IME (Input Method Editor) is een hulpmiddel waarmee u complexe symbolen, zoals in Oost-Aziatische of Indische geschreven talen worden gebruikt, met een standaard toetsenbord kunt invoeren. Als u dit experiment inschakelt, blijft het adresbalkpaneel open, waarbij zoekresultaten en -suggesties worden getoond, terwijl u IME gebruikt om tekst in te voeren. Merk op dat de IME een paneel kan tonen dat de adresbalkresultaten afdekt; daarom wordt deze voorkeur alleen gesuggereerd voor IME waarbij dit type paneel niet wordt gebruikt.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Picture-in-picture: automatisch openen bij tabblad wisselen
-experimental-features-auto-pip-description = Schakel Picture-in-Picture in voor actieve video’s bij het wisselen van tabbladen.
-genai-settings-chat-title =
-    .label = AI-chatbot
-# Updated sidebar settings
-sidebar-title =
-    .label = Zijbalk
-sidebar-description = Benader eenvoudig uw geschiedenis, tabbladen van andere apparaten, zijbalkextensies en meer terwijl u surft. <a data-l10n-name="connect">Feedback delen</a>
-vertical-tabs-title =
-    .label = Verticale tabbladen
-vertical-tabs-description = Verplaats uw tabbladen van de bovenkant van de browser naar de zijkant. Vereist dat u ook de zijbalk probeert. <a data-l10n-name="connect">Feedback delen</a>
-experimental-features-group-browsing =
-    .label = Navigeren
-experimental-features-group-developer-tools =
-    .label = Ontwikkelaarshulpmiddelen
-experimental-features-group-webpage-display =
-    .label = Websiteweergave
-experimental-features-group-customize-browsing =
-    .label = Pas uw browser aan
-experimental-features-group-customize-browsing-description = Als u deze functies probeert, <a data-l10n-name="connect">deel dan uw mening op Connect</a>

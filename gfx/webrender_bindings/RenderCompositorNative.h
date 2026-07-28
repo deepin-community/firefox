@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +5,7 @@
 #ifndef MOZILLA_GFX_RENDERCOMPOSITOR_NATIVE_H
 #define MOZILLA_GFX_RENDERCOMPOSITOR_NATIVE_H
 
+#include <deque>
 #include <unordered_map>
 
 #include "GLTypes.h"
@@ -18,6 +17,7 @@
 namespace mozilla {
 
 namespace layers {
+class GpuFence;
 class NativeLayerRootSnapshotter;
 class NativeLayerRoot;
 class NativeLayer;
@@ -57,6 +57,8 @@ class RenderCompositorNative : public RenderCompositor {
   bool MaybeGrabScreenshot(const gfx::IntSize& aWindowSize) override;
   bool MaybeProcessScreenshotQueue() override;
 
+  void WaitUntilPresentationFlushed() override;
+
   // Interface for wr::Compositor
   void CompositorBeginFrame() override;
   void CompositorEndFrame() override;
@@ -73,7 +75,9 @@ class RenderCompositorNative : public RenderCompositor {
   void AddSurface(wr::NativeSurfaceId aId,
                   const wr::CompositorSurfaceTransform& aTransform,
                   wr::DeviceIntRect aClipRect,
-                  wr::ImageRendering aImageRendering) override;
+                  wr::ImageRendering aImageRendering,
+                  wr::DeviceIntRect aRoundedClipRect,
+                  wr::ClipRadius aClipRadius) override;
 
   struct TileKey {
     TileKey(int32_t aX, int32_t aY) : mX(aX), mY(aY) {}
@@ -108,9 +112,10 @@ class RenderCompositorNative : public RenderCompositor {
   };
 
   struct Surface {
-    explicit Surface(wr::DeviceIntSize aTileSize, bool aIsOpaque)
-        : mTileSize(aTileSize), mIsOpaque(aIsOpaque) {}
-    gfx::IntSize TileSize() {
+    Surface(wr::DeviceIntSize aTileSize, bool aIsOpaque);
+    ~Surface();
+
+    gfx::IntSize TileSize() const {
       return gfx::IntSize(mTileSize.width, mTileSize.height);
     }
 
@@ -140,6 +145,7 @@ class RenderCompositorNative : public RenderCompositor {
   gfx::IntRect mVisibleBounds;
   std::unordered_map<wr::NativeSurfaceId, Surface, SurfaceIdHashFn> mSurfaces;
   TimeStamp mBeginFrameTimeStamp;
+  std::deque<RefPtr<layers::GpuFence>> mPendingGpuFeces;
 };
 
 static inline bool operator==(const RenderCompositorNative::TileKey& a0,
@@ -167,6 +173,9 @@ class RenderCompositorNativeOGL : public RenderCompositorNative {
             wr::DeviceIntRect aValidRect) override;
   void Unbind() override;
 
+  void AttachExternalImage(wr::NativeSurfaceId aId,
+                           wr::ExternalImageId aExternalImage) override;
+
  protected:
   void InsertFrameDoneSync();
 
@@ -176,9 +185,18 @@ class RenderCompositorNativeOGL : public RenderCompositorNative {
 
   RefPtr<gl::GLContext> mGL;
 
+  struct BackPressureFences {
+    explicit BackPressureFences(
+        std::deque<RefPtr<layers::GpuFence>>&& aGpuFeces)
+        : mGpuFeces(std::move(aGpuFeces)) {}
+
+    GLsync mSync = nullptr;
+    std::deque<RefPtr<layers::GpuFence>> mGpuFeces;
+  };
+
   // Used to apply back-pressure in WaitForGPU().
-  GLsync mPreviousFrameDoneSync = nullptr;
-  GLsync mThisFrameDoneSync = nullptr;
+  UniquePtr<BackPressureFences> mPreviousFrameDoneFences;
+  UniquePtr<BackPressureFences> mThisFrameDoneFences;
 };
 
 // RenderCompositorNativeSWGL is a NativeLayer compositor that only

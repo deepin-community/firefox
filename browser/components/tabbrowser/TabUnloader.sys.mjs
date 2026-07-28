@@ -1,4 +1,3 @@
-/* -*- mode: js; indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -196,9 +195,8 @@ export var TabUnloader = {
     }
 
     this._isUnloading = true;
-    const isTabUnloaded = await this.unloadLeastRecentlyUsedTab(
-      minInactiveDuration
-    );
+    const isTabUnloaded =
+      await this.unloadLeastRecentlyUsedTab(minInactiveDuration);
     this._isUnloading = false;
 
     watcher.onUnloadAttemptCompleted(
@@ -318,6 +316,7 @@ export var TabUnloader = {
 
   /**
    * Select and discard one tab.
+   *
    * @returns true if a tab was unloaded, otherwise false.
    */
   async unloadLeastRecentlyUsedTab(
@@ -333,6 +332,7 @@ export var TabUnloader = {
       }
 
       const remoteType = tabInfo.tab?.linkedBrowser?.remoteType;
+      await tabInfo.gBrowser.prepareDiscardBrowser(tabInfo.tab);
       if (tabInfo.gBrowser.discardBrowser(tabInfo.tab)) {
         Services.console.logStringMessage(
           `TabUnloader discarded <${remoteType}>`
@@ -350,8 +350,9 @@ export var TabUnloader = {
   ]),
 };
 
-/** Determine the base weight of the tab without accounting for
- *  resource use
+/**
+ * Determine the base weight of the tab without accounting for resource use.
+ *
  * @param tab tab to use
  * @returns the tab's base weight
  */

@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Жабу
     .aria-label = Жабу
-firefoxview-empty-state-icon =
-    .alt = Назар аударыңыз:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Жаңа ғана
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% дайын
 firefoxview-tabpickup-step-signin-header = Құрылғылар арасында кедергісіз ауысыңыз
 firefoxview-tabpickup-step-signin-description = Телефон беттерін осы жерден алу үшін алдымен жүйеге кіріңіз немесе тіркелгіні жасаңыз.
 firefoxview-tabpickup-step-signin-primarybutton = Жалғастыру
-firefoxview-syncedtabs-signin-header = Беттерді кез келген жерден алу
-firefoxview-syncedtabs-signin-description = { -brand-product-name } қолданатын әр жеріңізден беттерді көру үшін, тіркелгіңізге кіріңіз. Тіркелгіңіз жоқ болса, сізді тіркелу қадамдарынан өткіземіз.
-firefoxview-syncedtabs-signin-primarybutton = Кіру немесе тіркелгіні жасау
+firefoxview-syncedtabs-signin-header-2 = Сіздің { -brand-product-name } барлық құрылғыларыңызда
+firefoxview-syncedtabs-signin-description-2 = Телефонда және басқа құрылғыларда ашылған беттерді көру үшін жүйеге кіріңіз немесе тіркелгі жасаңыз. Тіркелгі арқылы парольдер, тарихты және т.б. синхрондауға болады.
+firefoxview-syncedtabs-signin-primarybutton-2 = Кіру
 firefoxview-tabpickup-adddevice-header = Телефонда немесе планшетте { -brand-product-name }синхрондаңыз
 firefoxview-tabpickup-adddevice-description = Мобильді телефонға { -brand-product-name } жүктеп алып, сол жерден кіріңіз.
 firefoxview-tabpickup-adddevice-learn-how = Көбірек білу
 firefoxview-tabpickup-adddevice-primarybutton = Мобильді { -brand-product-name } алу
-firefoxview-syncedtabs-adddevice-header = Басқа құрылғыларыңызда { -brand-product-name } ішіне кіріңіз
-firefoxview-syncedtabs-adddevice-description = { -brand-product-name } қолданатын әр жеріңізден беттерді көру үшін, әр құрылғыңызда тіркелгіңізге кіріңіз. <a data-l10n-name="url">Қосымша құрылғыларды қалай қосуға болатыны</a> туралы көбірек біліңіз.
+firefoxview-syncedtabs-adddevice-header-2 = Беттерді кез келген жерден алу
+firefoxview-syncedtabs-adddevice-description-2 = Осында беттерді көру үшін телефонда немесе басқа компьютерде { -brand-product-name } ішіне кіріңіз. <a data-l10n-name="url">Қосымша құрылғыларды қосу жолын</a> үйреніңіз.
 firefoxview-syncedtabs-adddevice-primarybutton = Мобильді { -brand-product-name } қолданып көру
 firefoxview-tabpickup-synctabs-header = Беттер синхрондауын іске қосу
 firefoxview-tabpickup-synctabs-description = { -brand-short-name } үшін құрылғылар арасында беттермен бөлісуді рұқсат ету.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Көбірек білу
 firefoxview-tabpickup-synctabs-primarybutton = Ашық беттерді синхрондау
 firefoxview-syncedtabs-synctabs-header = Синхрондау баптауларын жаңартыңыз
 firefoxview-syncedtabs-synctabs-description = Басқа құрылғылардан беттерді көру үшін ашық беттерді синхрондау керек.
-firefoxview-syncedtabs-synctabs-checkbox = Ашық беттерді синхрондауға рұқсат ету
 firefoxview-syncedtabs-loading-header = Синхрондау орындалуда
 firefoxview-syncedtabs-loading-description = Ол аяқталғаннан кейін, сіз басқа құрылғыларда ашылған барлық беттерді көресіз. Біраздан кейін тексеріңіз.
 firefoxview-tabpickup-fxa-admin-disabled-header = Сізідң ұйымыңыз синхрондауды сөндірген
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Жақында жабылған
 firefoxview-closed-tabs-description2 = Осы терезеде жабылған беттерді қайта ашыңыз.
 firefoxview-closed-tabs-placeholder-header = Жақында жабылған беттер жоқ
 firefoxview-closed-tabs-placeholder-body = Осы терезеде бетті жапқанда, оны осы жерден алуға болады.
-firefoxview-closed-tabs-placeholder-body2 = Бетті жапқанда, оны осы жерден алуға болады.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -117,6 +113,8 @@ firefoxview-history-nav = Тарих
 firefoxview-history-header = Тарих
 firefoxview-history-context-delete = Тарихтан өшіру
     .accesskey = ш
+firefoxview-history-context-forget-site = Бұл сайтты ұмыту…
+    .accesskey = м
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
@@ -148,8 +146,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Терезе { $winID } (Ағымдағы)
-firefoxview-opentabs-focus-tab =
-    .title = Бұл бетке ауысу
 firefoxview-show-more = Көбірек көрсету
 firefoxview-show-less = Азырақ көрсету
 firefoxview-show-all = Барлығын көрсету
@@ -161,12 +157,15 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Тарихтан іздеу
+# Placeholder for the input field to search in bookmarks ("search" is a verb).
+firefoxview-search-text-box-bookmarks =
+    .placeholder = Бетбелгілерден іздеу
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Жақында жабылған беттерден іздеу
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Синхрондалған беттерден іздеу
+firefoxview-search-text-box-tabs =
+    .placeholder = Беттерден іздеу
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Ашық беттерден іздеу
@@ -189,10 +188,6 @@ firefoxview-sort-history-by-date-label = Күні бойынша сұрыпта�
 firefoxview-sort-history-by-site-label = Сайт бойынша сұрыптау
 firefoxview-sort-open-tabs-by-recency-label = Соңғы әрекет бойынша сұрыптау
 firefoxview-sort-open-tabs-by-order-label = Беттер реті бойынша сұрыптау
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = { $url } адресіне ауысу
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -209,7 +204,6 @@ firefoxview-history-site-localhost = (жергілікті файлдар)
 ##
 
 firefoxview-show-all-history = Бүкіл тарихты көрсету
-firefoxview-view-more-browsing-history = Көбірек шолу тарихын қарау
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -225,9 +219,8 @@ firefoxview-choose-browser-button = Браузерді таңдау
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Ақпарат жоқ
-firefoxview-dont-remember-history-empty-description = Сіздің жекелігіңізді қорғау - біздің жұмысымыздың негізі. Сондықтан { -brand-short-name } есте сақтайтын белсенділікті басқаруға болады.
-firefoxview-dont-remember-history-empty-description-two = Сіздің ағымдағы баптауларға сәйкес, { -brand-short-name } шолу кезінде белсенділікті есте сақтамайды. Оны өзгерту үшін, <a data-l10n-name="history-settings-url-two">шолу тарихыңызды есте сақтау үшін, тарих баптауларын өзгертіңіз</a>.
+firefoxview-dont-remember-history-empty-header-2 = Сіз { -brand-short-name } нені есте сақтайтынын басқарасыз
+firefoxview-dont-remember-history-empty-description-one = Дәл қазір { -brand-short-name } сіздің шолу әрекеттеріңізді есте сақтамайды. Оны өзгерту үшін <a data-l10n-name="history-settings-url-two">тарих параметрлерін жаңартыңыз</a>.
 
 ##
 

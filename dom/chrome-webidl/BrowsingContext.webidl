@@ -1,12 +1,13 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 interface URI;
 interface nsIDocShell;
+interface nsIDOMGeoPosition;
 interface nsISecureBrowserUI;
 interface nsISHEntry;
+interface nsIScopedPrefs;
 interface nsIPrintSettings;
 interface nsIWebProgress;
 
@@ -42,6 +43,7 @@ enum DisplayMode {
   "minimal-ui",
   "standalone",
   "fullscreen",
+  "picture-in-picture"
 };
 
 /**
@@ -51,6 +53,23 @@ enum PrefersColorSchemeOverride {
   "none",
   "light",
   "dark",
+};
+
+/**
+ * CSS forced-colors values.
+ */
+enum ForcedColorsOverride {
+  "none",
+  "active",
+};
+
+/**
+ * CSS prefers-reduced-motion values override.
+ */
+enum PrefersReducedMotionOverride {
+  "none",
+  "reduce",
+  "no-preference",
 };
 
 /**
@@ -189,12 +208,27 @@ interface BrowsingContext {
   [SetterThrows] attribute boolean useGlobalHistory;
 
   // Extension to give chrome JS the ability to set the window screen
-  // orientation while in RDM.
-  [Throws] undefined setRDMPaneOrientation(OrientationType type, float rotationAngle);
+  // dimensions override with WebDriver BiDi.
+  [Throws] undefined setScreenAreaOverride(unsigned long long screenWidth, unsigned long long screenHeight);
+  // Extension to give chrome JS the ability to reset the window screen
+  // dimensions override with WebDriver BiDi.
+  undefined resetScreenAreaOverride();
+
+  // Extension to give chrome JS the ability to set the window screen
+  // orientation override with WebDriver BiDi and DevTools.
+  [Throws] undefined setOrientationOverride(OrientationType type, float rotationAngle);
+  // Extension to give chrome JS the ability to reset the window screen
+  // orientation override with WebDriver BiDi and DevTools.
+  undefined resetOrientationOverride();
 
   // Extension to give chrome JS the ability to set a maxTouchPoints override
   // while in RDM.
   [Throws] undefined setRDMPaneMaxTouchPoints(octet maxTouchPoints);
+
+  // Geolocation emulation for WebDriver BiDi and DevTools.
+  // Note: in case of watchPosition emulation, the override has to be set
+  // before the watcher is started.
+  undefined setGeolocationServiceOverride(optional nsIDOMGeoPosition position);
 
   // The watchedByDevTools flag indicates whether or not DevTools are currently
   // debugging this browsing context.
@@ -206,8 +240,23 @@ interface BrowsingContext {
   // Enable media query medium override, for DevTools.
   [SetterThrows] attribute DOMString mediumOverride;
 
+  // Language emulation for WebDriver BiDi and DevTools.
+  [SetterThrows] attribute UTF8String languageOverride;
+
+  // Timezone emulation for WebDriver BiDi and DevTools per browsing context.
+  [SetterThrows] attribute DOMString timezoneOverride;
+
   // Color-scheme simulation, for DevTools.
   [SetterThrows] attribute PrefersColorSchemeOverride prefersColorSchemeOverride;
+
+  // Reduced-motion simulation, for DevTools.
+  [SetterThrows] attribute PrefersReducedMotionOverride prefersReducedMotionOverride;
+
+  // Forced-colors simulation, for DevTools
+  [SetterThrows] attribute ForcedColorsOverride forcedColorsOverride;
+
+  // Animation playbackRate multiplier, for Devtools
+  [SetterThrows] attribute double animationsPlayBackRateMultiplier;
 
   /**
    * A unique identifier for the browser element that is hosting this
@@ -264,15 +313,24 @@ interface BrowsingContext {
   readonly attribute ChildSHistory? childSessionHistory;
 
   // Resets the location change rate limit. Used for testing.
-  undefined resetLocationChangeRateLimit();
+  undefined resetNavigationRateLimit();
 
   readonly attribute long childOffset;
+
+  // https://wicg.github.io/document-picture-in-picture/
+  // This is true both for the top-level BC of the content and chrome window
+  // of a Document Picture-in-Picture window.
+  [BinaryName="GetIsDocumentPiP"]
+  readonly attribute boolean isDocumentPiP;
 };
 
 BrowsingContext includes LoadContextMixin;
 
 [Exposed=Window, ChromeOnly]
 interface CanonicalBrowsingContext : BrowsingContext {
+  // Top-level only download folder override for WebDriver BiDi's.
+  [SetterThrows] attribute DOMString downloadFolderOverride;
+
   sequence<WindowGlobalParent> getWindowGlobals();
 
   readonly attribute WindowGlobalParent? currentWindowGlobal;
@@ -426,10 +484,21 @@ interface CanonicalBrowsingContext : BrowsingContext {
   readonly attribute nsISHEntry? mostRecentLoadingSessionHistoryEntry;
 
   /**
+   * Prefs that are stored in the top-level browsing context which persist for
+   * the lifetime of the tab
+   */
+  readonly attribute nsIScopedPrefs? scopedPrefs;
+
+  /**
    * Indicates if the embedder element or an ancestor has hidden
    * visibility, or no frame.
    */
   readonly attribute boolean isUnderHiddenEmbedderElement;
+
+  /**
+   * Indicates whether opening a modal picker is permitted.
+   */
+  readonly attribute boolean canOpenModalPicker;
 };
 
 [Exposed=Window, ChromeOnly]

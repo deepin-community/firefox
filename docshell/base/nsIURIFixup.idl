@@ -1,10 +1,10 @@
-/* -*- Mode: IDL; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsISupports.idl"
+#include "nsILoadInfo.idl"
 
 interface nsIURI;
 interface nsIInputStream;
@@ -52,7 +52,7 @@ interface nsIURIFixupInfo : nsISupports
   /**
    * Whether there was no protocol at all and we had to add one in the first place.
    */
-  attribute boolean wasSchemelessInput;
+  attribute nsILoadInfo_SchemelessInputType schemelessInput;
 
   /**
    * Whether we changed the protocol instead of using one from the input as-is.
@@ -73,7 +73,7 @@ interface nsIURIFixupInfo : nsISupports
   attribute AUTF8String originalInput;
 
   /**
-   * The POST data to submit with the returned URI (see nsISearchSubmission).
+   * The POST data to submit with the returned URI.
    */
   attribute nsIInputStream postData;
 };

@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_indexeddb_key_h__
-#define mozilla_dom_indexeddb_key_h__
+#ifndef mozilla_dom_indexeddb_key_h_
+#define mozilla_dom_indexeddb_key_h_
 
 #include "mozilla/dom/indexedDB/IDBResult.h"
 
@@ -23,6 +21,10 @@ namespace JS {
 class ArrayBufferOrView;
 class AutoCheckCannotGC;
 }  // namespace JS
+
+namespace mozilla::dom {
+class IDBTransaction;
+}  // namespace mozilla::dom
 
 namespace mozilla::dom::indexedDB {
 
@@ -146,7 +148,8 @@ class Key {
   // A key return value is indicated by returning `true` whereas `false` means
   // either invalid (if `aRv.Failed()` is `false`) or an exception (otherwise).
   IDBResult<Ok, IDBSpecialValue::Invalid> SetFromJSVal(
-      JSContext* aCx, JS::Handle<JS::Value> aVal);
+      JSContext* aCx, JS::Handle<JS::Value> aVal,
+      mozilla::dom::IDBTransaction* aTransaction = nullptr);
 
   nsresult ToJSVal(JSContext* aCx, JS::MutableHandle<JS::Value> aVal) const;
 
@@ -185,12 +188,15 @@ class Key {
 
   void ReserveAutoIncrementKey(bool aFirstOfArray);
 
-  void MaybeUpdateAutoIncrementKey(int64_t aKey);
+  Result<Ok, nsresult> MaybeUpdateAutoIncrementKey(int64_t aKey);
+
+  using EncodedDataType = unsigned char;
+
+  static uint32_t LengthOfEncodedBinary(const EncodedDataType* aPos,
+                                        const EncodedDataType* aEnd);
 
  private:
   class MOZ_STACK_CLASS ArrayValueEncoder;
-
-  using EncodedDataType = unsigned char;
 
   const EncodedDataType* BufferStart() const {
     // TODO it would be nicer if mBuffer was also using EncodedDataType
@@ -204,6 +210,9 @@ class Key {
   // Encoding helper. Trims trailing zeros off of mBuffer as a post-processing
   // step.
   void TrimBuffer() {
+    if (mBuffer.IsEmpty()) {
+      return;
+    }
     const char* end = mBuffer.EndReading() - 1;
     while (!*end) {
       --end;
@@ -261,9 +270,6 @@ class Key {
       const EncodedDataType* aBegin, const EncodedDataType* aEnd,
       const EncodedDataType** aOutEncodedSectionEnd);
 
-  static uint32_t LengthOfEncodedBinary(const EncodedDataType* aPos,
-                                        const EncodedDataType* aEnd);
-
   template <typename T>
   static void DecodeAsStringy(const EncodedDataType* aEncodedSectionBegin,
                               const EncodedDataType* aEncodedSectionEnd,
@@ -294,4 +300,4 @@ class Key {
 
 }  // namespace mozilla::dom::indexedDB
 
-#endif  // mozilla_dom_indexeddb_key_h__
+#endif  // mozilla_dom_indexeddb_key_h_

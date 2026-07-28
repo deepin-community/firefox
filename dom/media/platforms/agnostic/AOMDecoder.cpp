@@ -1,20 +1,22 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "AOMDecoder.h"
 
+#include <aom/aom_image.h>
+#include <aom/aomdx.h>
+#include <stdint.h>
+
 #include <algorithm>
 
-#include "BitWriter.h"
 #include "BitReader.h"
+#include "BitWriter.h"
+#include "BufferReader.h"
 #include "ImageContainer.h"
 #include "MediaResult.h"
 #include "TimeUnits.h"
-#include <aom/aom_image.h>
-#include <aom/aomdx.h>
+#include "VideoUtils.h"
 #include "gfx2DGlue.h"
 #include "gfxUtils.h"
 #include "mozilla/PodOperations.h"
@@ -23,7 +25,6 @@
 #include "nsError.h"
 #include "nsThreadUtils.h"
 #include "prsystem.h"
-#include "VideoUtils.h"
 
 #undef LOG
 #define LOG(arg, ...)                                                  \
@@ -100,6 +101,7 @@ AOMDecoder::~AOMDecoder() = default;
 RefPtr<ShutdownPromise> AOMDecoder::Shutdown() {
   RefPtr<AOMDecoder> self = this;
   return InvokeAsync(mTaskQueue, __func__, [self]() {
+    AUTO_PROFILER_LABEL("AOMDecoder::Shutdown", MEDIA_PLAYBACK);
     auto res = aom_codec_destroy(&self->mCodec);
     if (res != AOM_CODEC_OK) {
       LOGEX_RESULT(self.get(), res, "aom_codec_destroy");
@@ -109,6 +111,7 @@ RefPtr<ShutdownPromise> AOMDecoder::Shutdown() {
 }
 
 RefPtr<MediaDataDecoder::InitPromise> AOMDecoder::Init() {
+  AUTO_PROFILER_LABEL("AOMDecoder::Init", MEDIA_PLAYBACK);
   MediaResult rv = InitContext(*this, &mCodec, mInfo);
   if (NS_FAILED(rv)) {
     return AOMDecoder::InitPromise::CreateAndReject(rv, __func__);
@@ -119,6 +122,7 @@ RefPtr<MediaDataDecoder::InitPromise> AOMDecoder::Init() {
 
 RefPtr<MediaDataDecoder::FlushPromise> AOMDecoder::Flush() {
   return InvokeAsync(mTaskQueue, __func__, [this, self = RefPtr(this)]() {
+    AUTO_PROFILER_LABEL("AOMDecoder::Flush", MEDIA_PLAYBACK);
     mPerformanceRecorder.Record(std::numeric_limits<int64_t>::max());
     return FlushPromise::CreateAndResolve(true, __func__);
   });
@@ -131,6 +135,7 @@ struct AomImageFree {
 
 RefPtr<MediaDataDecoder::DecodePromise> AOMDecoder::ProcessDecode(
     MediaRawData* aSample) {
+  AUTO_PROFILER_LABEL("AOMDecoder::ProcessDecode", MEDIA_PLAYBACK);
   MOZ_ASSERT(mTaskQueue->IsCurrentThreadIn());
 
 #if defined(DEBUG)
@@ -300,6 +305,7 @@ RefPtr<MediaDataDecoder::DecodePromise> AOMDecoder::Decode(
 
 RefPtr<MediaDataDecoder::DecodePromise> AOMDecoder::Drain() {
   return InvokeAsync(mTaskQueue, __func__, [] {
+    AUTO_PROFILER_LABEL("AOMDecoder::Drain", MEDIA_PLAYBACK);
     return DecodePromise::CreateAndResolve(DecodedData(), __func__);
   });
 }
@@ -307,6 +313,17 @@ RefPtr<MediaDataDecoder::DecodePromise> AOMDecoder::Drain() {
 /* static */
 bool AOMDecoder::IsAV1(const nsACString& aMimeType) {
   return aMimeType.EqualsLiteral("video/av1");
+}
+
+/* static */
+bool AOMDecoder::IsMainProfile(const MediaByteBuffer* aBox) {
+  if (!aBox || aBox->IsEmpty()) {
+    return false;
+  }
+  AV1SequenceInfo av1Info;
+  MediaResult seqHdrResult;
+  TryReadAV1CBox(aBox, av1Info, seqHdrResult);
+  return seqHdrResult.Code() == NS_OK && av1Info.mProfile == 0;
 }
 
 /* static */
@@ -512,15 +529,15 @@ MediaResult AOMDecoder::ReadSequenceHeaderInfo(
   // begin sequence_header_obu( )
   // https://aomediacodec.github.io/av1-spec/#general-sequence-header-obu-syntax
   tempInfo.mProfile = br.ReadBits(3);
-  const bool stillPicture = br.ReadBit();
-  const bool reducedStillPicture = br.ReadBit();
-  if (!stillPicture && reducedStillPicture) {
+  const bool still_picture = br.ReadBit();
+  const bool reduced_still_picture_header = br.ReadBit();
+  if (!still_picture && reduced_still_picture_header) {
     return MediaResult(
         NS_ERROR_DOM_MEDIA_DECODE_ERR,
         "reduced_still_picture is true while still_picture is false");
   }
 
-  if (reducedStillPicture) {
+  if (reduced_still_picture_header) {
     OperatingPoint op;
     op.mLayers = 0;
     op.mLevel = br.ReadBits(5);  // seq_level_idx[0]
@@ -528,9 +545,9 @@ MediaResult AOMDecoder::ReadSequenceHeaderInfo(
     tempInfo.mOperatingPoints.SetCapacity(1);
     tempInfo.mOperatingPoints.AppendElement(op);
   } else {
-    bool decoderModelInfoPresent;
-    uint8_t operatingPointCountMinusOne;
-
+    bool decoder_model_info_present_flag;
+    uint8_t operating_points_cnt_minus_1;
+    uint8_t buffer_delay_length_minus_1;
     if (br.ReadBit()) {  // timing_info_present_flag
       // begin timing_info( )
       // https://aomediacodec.github.io/av1-spec/#timing-info-syntax
@@ -541,47 +558,57 @@ MediaResult AOMDecoder::ReadSequenceHeaderInfo(
       }
       // end timing_info( )
 
-      decoderModelInfoPresent = br.ReadBit();
-      if (decoderModelInfoPresent) {
+      decoder_model_info_present_flag = br.ReadBit();
+      if (decoder_model_info_present_flag) {
         // begin decoder_model_info( )
         // https://aomediacodec.github.io/av1-spec/#decoder-model-info-syntax
-        br.ReadBits(5);   // buffer_delay_length_minus_1
+        buffer_delay_length_minus_1 = br.ReadBits(5);
         br.ReadBits(32);  // num_units_in_decoding_tick
         br.ReadBits(5);   // buffer_removal_time_length_minus_1
         br.ReadBits(5);   // frame_presentation_time_length_minus_1
         // end decoder_model_info( )
       }
     } else {
-      decoderModelInfoPresent = false;
+      decoder_model_info_present_flag = false;
     }
 
-    bool initialDisplayDelayPresent = br.ReadBit();
-    operatingPointCountMinusOne = br.ReadBits(5);
-    tempInfo.mOperatingPoints.SetCapacity(operatingPointCountMinusOne + 1);
-    for (uint8_t i = 0; i <= operatingPointCountMinusOne; i++) {
+    bool initial_display_delay_present_flag = br.ReadBit();
+    operating_points_cnt_minus_1 = br.ReadBits(5);
+    tempInfo.mOperatingPoints.SetCapacity(operating_points_cnt_minus_1 + 1);
+    for (uint8_t i = 0; i <= operating_points_cnt_minus_1; i++) {
       OperatingPoint op;
       op.mLayers = br.ReadBits(12);  // operating_point_idc[ i ]
       op.mLevel = br.ReadBits(5);    // seq_level_idx[ i ]
       op.mTier = op.mLevel > 7 ? br.ReadBits(1) : 0;
-      if (decoderModelInfoPresent) {
-        br.ReadBit();  // decoder_model_present_for_this_op[ i ]
+      if (decoder_model_info_present_flag) {
+        if (br.ReadBit()) {  // decoder_model_present_for_this_op[ i ]
+          // begin operating_parameters_info()
+          // https://aomediacodec.github.io/av1-spec/#operating-parameters-info-syntax
+          uint8_t n = buffer_delay_length_minus_1 + 1;
+          br.ReadBits(n);  // decoder_buffer_delay[ op ]
+          br.ReadBits(n);  // encoder_buffer_delay[ op ]
+          br.ReadBit();    // low_delay_mode_flag[ op ]
+          // end operating_parameters_info()
+        }
       }
-      if (initialDisplayDelayPresent) {
+      if (initial_display_delay_present_flag) {
         if (br.ReadBit()) {  // initial_display_delay_present_for_this_op[ i ]
-          br.ReadBits(4);
+          br.ReadBits(4);    // initial_display_delay_minus_1[ i ]
         }
       }
       tempInfo.mOperatingPoints.AppendElement(op);
     }
   }
 
-  uint8_t frameWidthBits = br.ReadBits(4) + 1;
-  uint8_t frameHeightBits = br.ReadBits(4) + 1;
-  uint32_t maxWidth = br.ReadBits(frameWidthBits) + 1;
-  uint32_t maxHeight = br.ReadBits(frameHeightBits) + 1;
-  tempInfo.mImage = gfx::IntSize(maxWidth, maxHeight);
+  uint8_t frame_width_bits_minus_1 = br.ReadBits(4);
+  uint8_t frame_height_bits_minus_1 = br.ReadBits(4);
+  uint32_t max_frame_width_minus_1 = br.ReadBits(frame_width_bits_minus_1 + 1);
+  uint32_t max_frame_height_minus_1 =
+      br.ReadBits(frame_height_bits_minus_1 + 1);
+  tempInfo.mImage =
+      gfx::IntSize(max_frame_width_minus_1 + 1, max_frame_height_minus_1 + 1);
 
-  if (!reducedStillPicture) {
+  if (!reduced_still_picture_header) {
     if (br.ReadBit()) {  // frame_id_numbers_present_flag
       br.ReadBits(4);    // delta_frame_id_length_minus_2
       br.ReadBits(3);    // additional_frame_id_legnth_minus_1
@@ -592,7 +619,7 @@ MediaResult AOMDecoder::ReadSequenceHeaderInfo(
   br.ReadBit();  // enable_filter_intra
   br.ReadBit();  // enable_intra_edge_filter
 
-  if (reducedStillPicture) {
+  if (reduced_still_picture_header) {
     // enable_interintra_compound = 0
     // enable_masked_compound = 0
     // enable_warped_motion = 0
@@ -609,28 +636,25 @@ MediaResult AOMDecoder::ReadSequenceHeaderInfo(
     br.ReadBit();  // enable_warped_motion
     br.ReadBit();  // enable_dual_filter
 
-    const bool enableOrderHint = br.ReadBit();
-
-    if (enableOrderHint) {
+    const bool enable_order_hint = br.ReadBit();
+    if (enable_order_hint) {
       br.ReadBit();  // enable_jnt_comp
       br.ReadBit();  // enable_ref_frame_mvs
     }
 
-    uint8_t forceScreenContentTools;
-
-    if (br.ReadBit()) {             // seq_choose_screen_content_tools
-      forceScreenContentTools = 2;  // SELECT_SCREEN_CONTENT_TOOLS
+    uint8_t seq_choose_screen_content_tools = br.ReadBit();
+    if (seq_choose_screen_content_tools) {
+      seq_choose_screen_content_tools = 2;  // SELECT_SCREEN_CONTENT_TOOLS
     } else {
-      forceScreenContentTools = br.ReadBits(1);
+      seq_choose_screen_content_tools = br.ReadBits(1);
     }
-
-    if (forceScreenContentTools > 0) {
+    if (seq_choose_screen_content_tools > 0) {
       if (!br.ReadBit()) {  // seq_choose_integer_mv
         br.ReadBit();       // seq_force_integer_mv
       }
     }
 
-    if (enableOrderHint) {
+    if (enable_order_hint) {
       br.ReadBits(3);  // order_hint_bits_minus_1
     }
   }
@@ -729,6 +753,112 @@ MediaResult AOMDecoder::ReadSequenceHeaderInfo(
 
   aDestInfo = tempInfo;
   return NS_OK;
+}
+
+/* static */
+mozilla::Maybe<mozilla::gfx::HDRMetadata> AOMDecoder::ReadMetadataOBUHDR(
+    const Span<const uint8_t>& aSample) {
+  // AV1 Metadata OBU semantics:
+  // https://aomediacodec.github.io/av1-spec/#metadata-obu-semantics
+  // METADATA_TYPE_HDR_CLL  = 1 (CTA-861.3 content light level)
+  // METADATA_TYPE_HDR_MDCV = 2 (SMPTE ST 2086 mastering display)
+  static constexpr uint64_t kMetadataTypeCLL = 1;
+  static constexpr uint64_t kMetadataTypeMDCV = 2;
+  // AV1 §6.7.4: primary_chromaticity is 0.16 fixed-point (divide by 2^16).
+  // luminance_max is 24.8 fixed-point (divide by 2^8).
+  // luminance_min is 18.14 fixed-point (divide by 2^14).
+  static constexpr float kPrimariesDivisor = 65536.0f;
+  static constexpr float kMaxLuminanceDivisor = 256.0f;
+  static constexpr float kMinLuminanceDivisor = 16384.0f;
+
+  gfx::HDRMetadata hdr;
+  bool hasMDCV = false;
+  bool hasCLL = false;
+
+  OBUIterator iter = ReadOBUs(aSample);
+  while (iter.HasNext()) {
+    OBUInfo obu = iter.Next();
+    if (obu.mType != OBUType::Metadata || obu.mContents.IsEmpty()) {
+      continue;
+    }
+
+    // metadata_type is a leb128-encoded value at the start of the OBU payload.
+    // https://aomediacodec.github.io/av1-spec/#metadata-obu-syntax
+    BitReader br(obu.mContents.Elements(), obu.mContents.Length() * 8);
+    CheckedUint64 checkedMetadataType = br.ReadULEB128();
+    if (!checkedMetadataType.isValid()) {
+      continue;
+    }
+    uint64_t metadataType = checkedMetadataType.value();
+    size_t headerBytes = br.BitCount() / 8;
+    if (headerBytes >= obu.mContents.Length()) {
+      continue;
+    }
+    const uint8_t* payload = obu.mContents.Elements() + headerBytes;
+    size_t payloadLen = obu.mContents.Length() - headerBytes;
+
+    if (metadataType == kMetadataTypeMDCV) {
+      if (payloadLen < 24) {
+        NS_WARNING("AV1 MDCV metadata OBU: unexpected payload size");
+        continue;
+      }
+      // AV1 §6.7.4 primary order: R[0], G[1], B[2]
+      BufferReader br(payload, payloadLen);
+      auto r0x = br.ReadU16();
+      auto r0y = br.ReadU16();
+      auto g1x = br.ReadU16();
+      auto g1y = br.ReadU16();
+      auto b2x = br.ReadU16();
+      auto b2y = br.ReadU16();
+      auto wpx = br.ReadU16();
+      auto wpy = br.ReadU16();
+      auto maxL = br.ReadU32();
+      auto minL = br.ReadU32();
+      if (r0x.isErr() || r0y.isErr() || g1x.isErr() || g1y.isErr() ||
+          b2x.isErr() || b2y.isErr() || wpx.isErr() || wpy.isErr() ||
+          maxL.isErr() || minL.isErr()) {
+        MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug,
+                ("AOMDecoder::ReadMetadataOBUHDR: failed to read MDCV fields"));
+        continue;
+      }
+      gfx::Chromaticity red{r0x.unwrap() / kPrimariesDivisor,
+                            r0y.unwrap() / kPrimariesDivisor};
+      gfx::Chromaticity green{g1x.unwrap() / kPrimariesDivisor,
+                              g1y.unwrap() / kPrimariesDivisor};
+      gfx::Chromaticity blue{b2x.unwrap() / kPrimariesDivisor,
+                             b2y.unwrap() / kPrimariesDivisor};
+      gfx::Chromaticity whitePoint{wpx.unwrap() / kPrimariesDivisor,
+                                   wpy.unwrap() / kPrimariesDivisor};
+      float maxLuminance = maxL.unwrap() / kMaxLuminanceDivisor;
+      float minLuminance = minL.unwrap() / kMinLuminanceDivisor;
+
+      hdr.mSmpte2086 = Some(gfx::Smpte2086Metadata{red, green, blue, whitePoint,
+                                                   maxLuminance, minLuminance});
+      hasMDCV = true;
+    } else if (metadataType == kMetadataTypeCLL) {
+      if (payloadLen < 4) {
+        NS_WARNING("AV1 CLL metadata OBU: unexpected payload size");
+        continue;
+      }
+      BufferReader br(payload, payloadLen);
+      auto maxCLL = br.ReadU16();
+      auto maxFALL = br.ReadU16();
+      if (maxCLL.isErr() || maxFALL.isErr()) {
+        MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug,
+                ("AOMDecoder::ReadMetadataOBUHDR: failed to read CLL fields"));
+        continue;
+      }
+      hdr.mContentLightLevel =
+          Some(gfx::ContentLightLevel{maxCLL.unwrap(), maxFALL.unwrap()});
+      hasCLL = true;
+    }
+  }
+
+  if (!hasMDCV && !hasCLL) {
+    return Nothing();
+  }
+  MOZ_ASSERT(hdr.IsValid());
+  return Some(hdr);
 }
 
 /* static */

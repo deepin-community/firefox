@@ -13,27 +13,9 @@ import org.mozilla.fenix.ext.settings
  */
 interface FeatureSettingsHelper {
     /**
-     * Whether the onboarding for existing users should be shown or not.
-     * It should appear only once on the first visit to homescreen.
-     */
-    var isHomeOnboardingDialogEnabled: Boolean
-
-    /**
      * Whether the Pocket stories feature is enabled or not.
      */
     var isPocketEnabled: Boolean
-
-    /**
-     * Whether the "Jump back in" CFR should be shown or not.
-     * It should appear on the first visit to homescreen given that there is a tab opened.
-     */
-    var isJumpBackInCFREnabled: Boolean
-
-    /**
-     * Whether the "Navigation bar" CFR should be shown or not.
-     * It should appear on the first visit to homescreen given that there is a navigation bar.
-     */
-    var isNavigationBarCFREnabled: Boolean
 
     /**
      * Whether the onboarding dialog for choosing wallpapers should be shown or not.
@@ -64,9 +46,14 @@ interface FeatureSettingsHelper {
     var isDeleteSitePermissionsEnabled: Boolean
 
     /**
-     * Enable or disable showing the TCP CFR when accessing a webpage for the first time.
+     * Whether the Unified Trust Panel is enabled or not.
      */
-    var isTCPCFREnabled: Boolean
+    var isUnifiedTrustPanelEnabled: Boolean
+
+    /**
+     * Whether the Homepage Sports Widget is visible or not.
+     */
+    var isHomepageSportsWidgetVisible: Boolean
 
     /**
      * The current "Enhanced Tracking Protection" policy.
@@ -80,19 +67,14 @@ interface FeatureSettingsHelper {
     var isOpenInAppBannerEnabled: Boolean
 
     /**
-     * Enable or disable the Top Sites to Compose rewrite.
-     */
-    var composeTopSitesEnabled: Boolean
-
-    /**
      * Enable or disable all location permission requests.
      */
     var isLocationPermissionEnabled: SitePermissionsRules.Action
 
     /**
-     * Enable or disable the new navigation toolbar.
+     * Enable or disable the new main menu CFR.
      */
-    var isNavigationToolbarEnabled: Boolean
+    var isMenuRedesignCFREnabled: Boolean
 
     /**
      * Enable or disable the new microsurvey feature.
@@ -100,9 +82,68 @@ interface FeatureSettingsHelper {
     var isMicrosurveyEnabled: Boolean
 
     /**
-     * Enable or disable the "Set as default browser" dialog.
+     * Enable or disable bottom toolbar position.
      */
-    var isSetAsDefaultBrowserPromptEnabled: Boolean
+    var shouldUseBottomToolbar: Boolean
+
+    /**
+     * Enable or disable the onboarding feature.
+     */
+    var onboardingFeatureEnabled: Boolean
+
+    /**
+     * Enable or disable new crash reporter flow.
+     */
+    var isUseNewCrashReporterFlow: Boolean
+
+    /**
+     * Enable or disable the tab swipe CFR.
+     */
+    var isTabSwipeCFREnabled: Boolean
+
+    /**
+     * Accept or not the terms of service.
+     */
+    var isTermsOfServiceAccepted: Boolean
+
+    /**
+     * Enable or disable the private mode and stories entry point.
+     */
+    var isPrivateModeAndStoriesEntryPointEnabled: Boolean
+
+    /**
+     * The Open links in External apps settings, between the following options:
+     * - Ask before opening
+     * - Never
+     * - Always open in app
+     */
+    var openLinksInExternalApp: OpenLinksInApp
+
+    /**
+     * Enable or disable the Tab Manager's opening animation.
+     */
+    var tabManagerOpeningAnimationEnabled: Boolean
+
+    /**
+     * Indicates if the shake to summarize toolbar CFR was displayed to the user.
+     */
+    var hasSeenShakeToSummarizeToolbarCfr: Boolean
+
+    /**
+     * Enable or disable expanded toolbar layout.
+     */
+    var shouldUseExpandedToolbar: Boolean
+
+    /**
+     * Enable or disable the translations prompt after a page that can be translated is loaded.
+     */
+    fun enableOrDisablePageLoadTranslationsPrompt(enableTranslationsPrompt: Boolean) {
+        if (enableTranslationsPrompt) {
+            FxNimbusHelper.enablePageLoadTranslationsPrompt()
+        } else {
+            FxNimbusHelper.disablePageLoadTranslationsPrompt()
+        }
+    }
 
     fun applyFlagUpdates()
 
@@ -120,4 +161,10 @@ enum class ETPPolicy {
     STANDARD,
     STRICT,
     CUSTOM,
+}
+
+enum class OpenLinksInApp {
+    ALWAYS,
+    NEVER,
+    ASK,
 }

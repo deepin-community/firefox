@@ -14,12 +14,23 @@ ChromeUtils.defineESModuleGetters(lazy, {
 
 ChromeUtils.defineLazyGetter(lazy, "console", () => lazy.Utils.log);
 
+class EmptyDatabaseError extends Error {
+  constructor(cid) {
+    super(`"${cid}" has not been synced yet`);
+    this.name = "EmptyDatabaseError";
+  }
+}
+
 /**
  * Database is a tiny wrapper with the objective
  * of providing major kinto-offline-client collection API.
  * (with the objective of getting rid of kinto-offline-client)
  */
 export class Database {
+  static get EmptyDatabaseError() {
+    return EmptyDatabaseError;
+  }
+
   static destroy() {
     return destroyIDB();
   }
@@ -32,20 +43,30 @@ export class Database {
   async list(options = {}) {
     const { filters = {}, order = "" } = options;
     let results = [];
+    let timestamp = null;
     try {
       await executeIDB(
-        "records",
-        (store, rejectTransaction) => {
+        ["timestamps", "records"],
+        (stores, rejectTransaction) => {
+          const [storeTimestamps, storeRecords] = stores;
+          // Since we cannot distinguish an empty collection from
+          // a collection that has not been synced yet, we also
+          // retrieve the timestamp for the collection.
+          storeTimestamps.get(this.identifier).onsuccess = evt =>
+            (timestamp = evt.target.result);
+
           // Fast-path the (very common) no-filters case
           if (lazy.ObjectUtils.isEmpty(filters)) {
             const range = IDBKeyRange.only(this.identifier);
-            const request = store.index("cid").getAll(range);
+            const request = storeRecords.index("cid").getAll(range);
             request.onsuccess = e => {
               results = e.target.result;
             };
             return;
           }
-          const request = store
+          // If we have filters, we need to iterate over the records
+          // and apply the filters to each record using a cursor.
+          const request = storeRecords
             .index("cid")
             .openCursor(IDBKeyRange.only(this.identifier));
           const objFilters = transformSubObjectFilters(filters);
@@ -68,6 +89,11 @@ export class Database {
       );
     } catch (e) {
       throw new lazy.IDBHelpers.IndexedDBError(e, "list()", this.identifier);
+    }
+    // Throw an error if consumer tries to list records of a collection
+    // that has not been synced yet.
+    if (results.length === 0 && !timestamp) {
+      throw new EmptyDatabaseError(this.identifier);
     }
     // Remove IDB key field from results.
     for (const result of results) {
@@ -233,22 +259,34 @@ export class Database {
   }
 
   async saveAttachment(attachmentId, attachment) {
+    return await this.saveAttachments([[attachmentId, attachment]]);
+  }
+
+  async saveAttachments(idsAndBlobs) {
     try {
       await executeIDB(
         "attachments",
         store => {
-          if (attachment) {
-            store.put({ cid: this.identifier, attachmentId, attachment });
-          } else {
-            store.delete([this.identifier, attachmentId]);
+          for (const [attachmentId, attachment] of idsAndBlobs) {
+            if (attachment) {
+              store.put({ cid: this.identifier, attachmentId, attachment });
+            } else {
+              store.delete([this.identifier, attachmentId]);
+            }
           }
         },
-        { desc: "saveAttachment(" + attachmentId + ") in " + this.identifier }
+        {
+          desc:
+            "saveAttachments(<" +
+            idsAndBlobs.length +
+            " items>) in " +
+            this.identifier,
+        }
       );
     } catch (e) {
       throw new lazy.IDBHelpers.IndexedDBError(
         e,
-        "saveAttachment()",
+        "saveAttachments()",
         this.identifier
       );
     }
@@ -291,7 +329,7 @@ export class Database {
    * Since we run the pruning logic after syncing, any attachment without a
    * matching record can be discarded as they will be unreachable forever.
    *
-   * @param {Array<String>} excludeIds List of attachments IDs to exclude from pruning.
+   * @param {Array<string>} excludeIds List of attachments IDs to exclude from pruning.
    */
   async pruneAttachments(excludeIds) {
     const _cid = this.identifier;
@@ -458,11 +496,11 @@ const gPendingWriteOperations = new Set();
  * Helper to wrap some IDBObjectStore operations into a promise.
  *
  * @param {IDBDatabase} db
- * @param {String|String[]} storeNames - either a string or an array of strings.
+ * @param {string | string[]} storeNames - either a string or an array of strings.
  * @param {function} callback
- * @param {Object} options
- * @param {String} options.mode
- * @param {String} options.desc   for shutdown tracking.
+ * @param {object} options
+ * @param {string} options.mode
+ * @param {string} options.desc   for shutdown tracking.
  */
 async function executeIDB(storeNames, callback, options = {}) {
   if (!gDB) {
@@ -582,7 +620,6 @@ Database._cancelShutdown = () => {
 let gShutdownBlocker = false;
 Database._shutdownHandler = () => {
   gShutdownStarted = true;
-  const NS_ERROR_DOM_INDEXEDDB_NOT_ALLOWED_ERR = 0x80660006;
   // Duplicate the list (to avoid it being modified) and then
   // abort all read-only transactions.
   for (let transaction of Array.from(gPendingReadOnlyTransactions)) {
@@ -595,7 +632,7 @@ Database._shutdownHandler = () => {
       // is complete, ie if we manage to get called in between the
       // transaction completing, and our completion handler being called
       // to remove the item from the set. We don't care about that.
-      if (ex.result != NS_ERROR_DOM_INDEXEDDB_NOT_ALLOWED_ERR) {
+      if (ex.result != Cr.NS_ERROR_DOM_INDEXEDDB_NOT_ALLOWED_ERR) {
         // Report any other errors:
         console.error(ex);
       }

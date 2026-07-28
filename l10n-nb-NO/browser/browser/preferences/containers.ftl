@@ -10,10 +10,15 @@ containers-window-new2 =
 containers-window-update-settings2 =
     .title = Beholderinstillinger for { $name }
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = Navn
+    .placeholder = Legg til et navn
+containers-icon-label2 =
+    .label = Ikon
+containers-color-label2 =
+    .label = Farge
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,26 +29,20 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 4rem
-
 containers-name-label = Navn
     .accesskey = N
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = Oppgi et beholdernavn
-
 containers-icon-label = Ikon
     .accesskey = I
     .style = { -containers-labels-style }
-
 containers-color-label = Farge
     .accesskey = a
     .style = { -containers-labels-style }
-
 containers-dialog =
     .buttonlabelaccept = Ferdig
     .buttonaccesskeyaccept = F
-
 containers-color-blue =
     .label = Blå
 containers-color-turquoise =
@@ -62,7 +61,6 @@ containers-color-purple =
     .label = Lilla
 containers-color-toolbar =
     .label = Samsvar med verktøylinjen
-
 containers-icon-fence =
     .label = Gjerde
 containers-icon-fingerprint =
@@ -91,3 +89,19 @@ containers-icon-tree =
     .label = Tre
 containers-icon-chill =
     .label = Avslapping
+containers-window-new3 =
+    .title = Legg til ny beholder
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = Beholderinstillinger for { $name }
+    .style = min-width: 32em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-title = Legg til ny beholder
+containers-panel-create-button =
+    .label = Ferdig
+containers-panel-cancel-button =
+    .label = Avbryt

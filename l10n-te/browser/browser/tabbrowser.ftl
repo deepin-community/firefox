@@ -7,6 +7,19 @@ tabbrowser-menuitem-close-tab =
     .label = ట్యాబును మూసివేయి
 tabbrowser-menuitem-close =
     .label = మూసివేయి
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs in a container.
+# Variables:
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-container = { $containerName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } — { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -32,33 +45,16 @@ tabbrowser-close-tabs-tooltip =
            *[other] { $tabCount } ట్యాబులను మూసివేయి
         }
 
-## Tooltips for tab audio control
-## Variables:
-##   $tabCount (Number): The number of tabs that will be affected.
-
-
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
 tabbrowser-confirm-close-tabs-button = ట్యాబులను మూసివేయి
-
-## Confirmation dialog when quitting using the menu and multiple windows are open.
-
-
-## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
-## Windows does not show a prompt on quit when using the keyboard shortcut by default.
-
+tabbrowser-ask-close-tabs-checkbox = పలు ట్యాబులను ఒకేసారి మూసివేస్తున్నప్పుడు అడుగు
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
 tabbrowser-confirm-open-multiple-tabs-title = తెరవడాన్ని నిర్ధారించండి
 tabbrowser-confirm-open-multiple-tabs-button = ట్యాబులను తెరువు
-
-## Confirmation dialog for enabling caret browsing
-
-
-## Confirmation dialog for closing all duplicate tabs
-
 
 ##
 
@@ -84,5 +80,20 @@ tabbrowser-context-unmute-tab =
 tabbrowser-ctrl-tab-list-all-tabs =
     .label = అన్ని { $tabCount } ట్యాబ్లను జాబితాచేయి
 
-## Tab manager menu buttons
+##
 
+tab-group-editor-name-label = పేరు
+tab-group-editor-cancel =
+    .label = రద్దుచేయి
+    .accesskey = C
+tab-group-editor-color-selector2-blue = నీలం
+    .title = నీలం
+
+## Tab Notes
+
+tab-note-editor-button-cancel =
+    .label = రద్దుచేయి
+    .accesskey = C
+tab-note-editor-button-save =
+    .label = భద్రపరుచు
+    .accesskey = S

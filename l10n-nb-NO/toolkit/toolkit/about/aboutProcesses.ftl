@@ -60,6 +60,20 @@ about-processes-inference-process = Inferens ({ $pid })
 #    $type (String) The raw type for this process.
 about-processes-unknown-process = Annet: { $type }({ $pid })
 
+## Properties of isolated web processes
+
+about-processes-web-isolated-property-private = privat
+about-processes-web-isolated-property-serviceworker = serviceworker
+about-processes-web-isolated-property-jit-disabled = JIT deaktivert
+about-processes-web-isolated-property-with-coop-coep = kryssende-opprinnelse-isolert
+
+## Isolated process names
+## Variables:
+##    $origin (String) The domain name for this process.
+##    $properties (String) A formatted list of properties from the above strings.
+
+about-processes-web-isolated-process2 = { $origin } ({ $properties })
+
 ## Isolated process names
 ## Variables:
 ##    $pid (String) The process id of this process, assigned by the OS.
@@ -67,7 +81,7 @@ about-processes-unknown-process = Annet: { $type }({ $pid })
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
 about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
-about-processes-with-coop-coep-process = { $origin } ({ $pid }, cross-origin isolert)
+about-processes-with-coop-coep-process = { $origin } ({ $pid }, kryssende-opprinnelse-isolert)
 about-processes-web-isolated-process-private = { $origin } — Privat ({ $pid })
 about-processes-with-coop-coep-process-private = { $origin } — Privat ({ $pid }, cross-origin isolert)
 
@@ -131,6 +145,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windows-verktøy
 about-processes-utility-actor-windows-file-dialog = Windows fildialog
+about-processes-utility-actor-pkcs11-module = Sikkerhetsmodul-hjelper
 
 ## Displaying CPU (percentage and total)
 ## Variables:

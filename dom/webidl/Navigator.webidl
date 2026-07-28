@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -28,13 +27,7 @@ interface URI;
 
 // https://html.spec.whatwg.org/#the-navigator-object
 [HeaderFile="Navigator.h",
- Exposed=Window,
- InstrumentedProps=(canShare,
-                    clearAppBadge,
-                    setAppBadge,
-                    share,
-                    userActivation,
-                    wakeLock)]
+ Exposed=Window]
 interface Navigator {
   // objects implementing this interface also implement the interfaces given below
 };
@@ -106,8 +99,9 @@ interface mixin NavigatorStorageUtils {
   //undefined yieldForStorageUpdates();
 };
 
+// https://w3c.github.io/permissions/#webidl-2112232240
 partial interface Navigator {
-  [Throws]
+  [Throws, SameObject]
   readonly attribute Permissions permissions;
 };
 
@@ -255,10 +249,25 @@ partial interface Navigator {
   readonly attribute XRSystem xr;
 };
 
+// https://wicg.github.io/serial/
+partial interface Navigator {
+  [SecureContext, Throws, SameObject, Pref="dom.webserial.enabled"]
+  readonly attribute Serial serial;
+};
+
 // http://webaudio.github.io/web-midi-api/#requestmidiaccess
 partial interface Navigator {
-  [NewObject, Func="Navigator::HasMidiSupport"]
+  [UseCounter, NewObject, Func="Navigator::HasMidiSupport"]
   Promise<MIDIAccess> requestMIDIAccess(optional MIDIOptions options = {});
+
+  // Deprecated. Use mediaDevices.getUserMedia instead.
+  [Deprecated="NavigatorGetUserMedia", Throws,
+   Func="Navigator::MozGetUserMediaSupport",
+   NeedsCallerType,
+   UseCounter]
+  undefined mozGetUserMedia(MediaStreamConstraints constraints,
+                            NavigatorUserMediaSuccessCallback successCallback,
+                            NavigatorUserMediaErrorCallback errorCallback);
 };
 
 callback NavigatorUserMediaSuccessCallback = undefined (MediaStream stream);
@@ -267,18 +276,10 @@ callback NavigatorUserMediaErrorCallback = undefined (MediaStreamError error);
 partial interface Navigator {
   [Throws, Func="Navigator::HasUserMediaSupport"]
   readonly attribute MediaDevices mediaDevices;
-
-  // Deprecated. Use mediaDevices.getUserMedia instead.
-  [Deprecated="NavigatorGetUserMedia", Throws,
-   Func="Navigator::HasUserMediaSupport",
-   NeedsCallerType,
-   UseCounter]
-  undefined mozGetUserMedia(MediaStreamConstraints constraints,
-                            NavigatorUserMediaSuccessCallback successCallback,
-                            NavigatorUserMediaErrorCallback errorCallback);
 };
 
 // Service Workers/Navigation Controllers
+// https://w3c.github.io/ServiceWorker/#navigator-serviceworker
 partial interface Navigator {
   [Func="ServiceWorkersEnabled", SameObject, BinaryName="serviceWorkerJS"]
   readonly attribute ServiceWorkerContainer serviceWorker;
@@ -401,4 +402,17 @@ partial interface Navigator {
 partial interface Navigator {
   [SameObject, Trial="PrivateAttributionV2"]
   readonly attribute PrivateAttribution privateAttribution;
+};
+
+// https://w3c-fedid.github.io/login-status/#login-status-javascript
+[SecureContext]
+partial interface Navigator {
+  [SameObject] readonly attribute NavigatorLogin login;
+};
+
+// Model Context API
+[SecureContext]
+partial interface Navigator {
+  [SameObject, Pref="dom.modelcontext.enabled"]
+  readonly attribute ModelContext modelContext;
 };

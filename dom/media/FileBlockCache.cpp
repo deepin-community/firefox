@@ -1,19 +1,19 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "FileBlockCache.h"
+
+#include <algorithm>
+
 #include "MediaCache.h"
 #include "VideoUtils.h"
-#include "prio.h"
-#include <algorithm>
+#include "mozilla/ScopeExit.h"
+#include "mozilla/dom/ContentChild.h"
 #include "nsAnonymousTemporaryFile.h"
 #include "nsIThreadManager.h"
-#include "mozilla/dom/ContentChild.h"
-#include "mozilla/ScopeExit.h"
 #include "nsXULAppAPI.h"
+#include "prio.h"
 
 namespace mozilla {
 
@@ -176,18 +176,14 @@ void FileBlockCache::Close() {
     mFD = nullptr;
   }
 
-  // Let the thread close the FD, and then trigger its own shutdown.
-  // Note that mBackgroundET is now empty, so no other task will be posted
-  // there. Also mBackgroundET and mFD are empty and therefore can be reused
-  // immediately.
+  // Let the thread close the FD. Note that mBackgroundET is now empty, so no
+  // other task will be posted there. Also mBackgroundET and mFD are empty and
+  // therefore can be reused immediately.
   nsresult rv = thread->Dispatch(NS_NewRunnableFunction("FileBlockCache::Close",
-                                                        [thread, fd] {
+                                                        [fd] {
                                                           if (fd) {
                                                             CloseFD(fd);
                                                           }
-                                                          // No need to shutdown
-                                                          // background task
-                                                          // queues.
                                                         }),
                                  NS_DISPATCH_EVENT_MAY_BLOCK);
   NS_ENSURE_SUCCESS_VOID(rv);
@@ -379,8 +375,8 @@ void FileBlockCache::PerformBlockIOs() {
   mIsWriteScheduled = false;
 }
 
-nsresult FileBlockCache::Read(int64_t aOffset, uint8_t* aData, int32_t aLength,
-                              int32_t* aBytes) {
+nsresult FileBlockCache::Read(int64_t aOffset, uint8_t* aData,
+                              int32_t aLength) {
   MutexAutoLock mon(mDataMutex);
 
   if (!mBackgroundET || (aOffset / BLOCK_SIZE) > INT32_MAX) {
@@ -447,7 +443,6 @@ nsresult FileBlockCache::Read(int64_t aOffset, uint8_t* aData, int32_t aLength,
     offset += bytesRead;
     bytesToRead -= bytesRead;
   }
-  *aBytes = aLength - bytesToRead;
   return NS_OK;
 }
 

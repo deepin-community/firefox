@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,8 +5,13 @@
 #include "CrashReporterClient.h"
 #include "nsISupportsImpl.h"
 
-namespace mozilla {
-namespace ipc {
+#if defined(XP_LINUX) && defined(MOZ_CRASHREPORTER) && \
+    defined(MOZ_OXIDIZED_BREAKPAD)
+#  include "mozilla/toolkit/crashreporter/rust_minidump_writer_linux_ffi_generated.h"
+#endif  // defined(XP_LINUX) && defined(MOZ_CRASHREPORTER) &&
+        // defined(MOZ_OXIDIZED_BREAKPAD)
+
+namespace mozilla::ipc {
 
 StaticMutex CrashReporterClient::sLock;
 StaticRefPtr<CrashReporterClient> CrashReporterClient::sClientSingleton;
@@ -31,6 +34,25 @@ void CrashReporterClient::InitSingleton() {
   }
 }
 
+/*static*/
+CrashReporter::CrashReporterInitArgs CrashReporterClient::CreateInitArgs() {
+  CrashReporter::CrashReporterInitArgs initArgs;
+  initArgs.threadId() = CrashReporter::CurrentThreadId();
+
+#if defined(XP_LINUX) && defined(MOZ_CRASHREPORTER) && \
+    defined(MOZ_OXIDIZED_BREAKPAD)
+  DirectAuxvDumpInfo auxvInfo = {};
+  CrashReporter::GetCurrentProcessAuxvInfo(&auxvInfo);
+  initArgs.auxvInfo().programHeaderCount() = auxvInfo.program_header_count;
+  initArgs.auxvInfo().programHeaderAddress() = auxvInfo.program_header_address;
+  initArgs.auxvInfo().linuxGateAddress() = auxvInfo.linux_gate_address;
+  initArgs.auxvInfo().entryAddress() = auxvInfo.entry_address;
+#endif  // defined(XP_LINUX) && defined(MOZ_CRASHREPORTER) &&
+        // defined(MOZ_OXIDIZED_BREAKPAD)
+
+  return initArgs;
+}
+
 /* static */
 void CrashReporterClient::DestroySingleton() {
   StaticMutexAutoLock lock(sLock);
@@ -43,5 +65,4 @@ RefPtr<CrashReporterClient> CrashReporterClient::GetSingleton() {
   return sClientSingleton;
 }
 
-}  // namespace ipc
-}  // namespace mozilla
+}  // namespace mozilla::ipc

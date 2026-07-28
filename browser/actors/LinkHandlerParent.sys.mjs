@@ -2,13 +2,79 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import {
+  TYPE_ICO,
+  SVG_DATA_URI_PREFIX,
+  TRUSTED_FAVICON_SCHEMES,
+  blobAsDataURL,
+} from "moz-src:///toolkit/modules/FaviconUtils.sys.mjs";
+
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+  OpenSearchManager:
+    "moz-src:///browser/components/search/OpenSearchManager.sys.mjs",
 });
 
 let gTestListeners = new Set();
+
+async function drawImageOnCanvas(canvas, image) {
+  let data = await image.blob.bytes();
+  let frame = new VideoFrame(data, {
+    timestamp: 0,
+    format: image.format,
+    codedWidth: image.displayWidth,
+    codedHeight: image.displayHeight,
+  });
+
+  canvas.width = frame.displayWidth;
+  canvas.height = frame.displayHeight;
+  let ctx = canvas.getContext("2d");
+  ctx.drawImage(frame, 0, 0);
+}
+
+// Re-construct the ICO file with different sized PNG images.
+// See https://en.wikipedia.org/wiki/ICO_(file_format).
+function createICO(images) {
+  const ICO_HEADER_SIZE = 6;
+  const ICO_DIR_ENTRY_SIZE = 16;
+
+  const metadataSize = ICO_HEADER_SIZE + ICO_DIR_ENTRY_SIZE * images.length;
+  const size =
+    metadataSize + images.reduce((acc, image) => acc + image.byteLength, 0);
+
+  let buffer = new ArrayBuffer(size);
+  let u8 = new Uint8Array(buffer);
+  let view = new DataView(buffer);
+
+  view.setUint16(0, 0, true); // idReserved
+  view.setUint16(2, 1, true); // idType (1 = ICO)
+  view.setUint16(4, images.length, true); // idCount
+
+  let dataOffset = metadataSize; // Append image data directly after the meta data.
+  for (let i = 0; i < images.length; i++) {
+    const off = ICO_HEADER_SIZE + ICO_DIR_ENTRY_SIZE * i;
+
+    // We use a zero width and height because we always use compressed PNGs,
+    // which require this and have their own width/height information.
+    view.setUint8(off, 0); // bWidth
+    view.setUint8(off + 1, 0); // bHeight
+    view.setUint8(off + 2, 0); // bColorCount
+    view.setUint8(off + 3, 0); // bReserved
+    view.setUint16(off + 4, 1, true); // wPlanes
+    view.setUint16(off + 6, 32, true); // wBitCount
+    view.setUint32(off + 8, images[i].byteLength, true); // dwBytesInRes
+    view.setUint32(off + 12, dataOffset, true); // dwImageOffset
+
+    // Copy the image's bytes into the ICO buffer.
+    u8.set(images[i], dataOffset);
+
+    dataOffset += images[i].byteLength;
+  }
+
+  return buffer;
+}
 
 export class LinkHandlerParent extends JSWindowActorParent {
   static addListenerForTests(listener) {
@@ -25,7 +91,7 @@ export class LinkHandlerParent extends JSWindowActorParent {
       return;
     }
 
-    let win = browser.ownerGlobal;
+    let win = browser.documentGlobal;
 
     let gBrowser = win.gBrowser;
 
@@ -35,7 +101,7 @@ export class LinkHandlerParent extends JSWindowActorParent {
           return;
         }
 
-        if (aMsg.data.canUseForTab) {
+        if (!aMsg.data.isRichIcon) {
           let tab = gBrowser.getTabForBrowser(browser);
           if (tab.hasAttribute("busy")) {
             tab.setAttribute("pendingicon", "true");
@@ -46,13 +112,6 @@ export class LinkHandlerParent extends JSWindowActorParent {
         break;
 
       case "Link:SetIcon":
-        // Cache the most recent icon and rich icon locally.
-        if (aMsg.data.canUseForTab) {
-          this.icon = aMsg.data;
-        } else {
-          this.richIcon = aMsg.data;
-        }
-
         if (!gBrowser) {
           return;
         }
@@ -67,14 +126,14 @@ export class LinkHandlerParent extends JSWindowActorParent {
           return;
         }
 
-        if (aMsg.data.canUseForTab) {
+        if (!aMsg.data.isRichIcon) {
           this.clearPendingIcon(gBrowser, browser);
         }
 
         this.notifyTestListeners("SetFailedIcon", aMsg.data);
         break;
 
-      case "Link:AddSearch":
+      case "Link:AddSearch": {
         if (!gBrowser) {
           return;
         }
@@ -84,10 +143,9 @@ export class LinkHandlerParent extends JSWindowActorParent {
           break;
         }
 
-        if (win.BrowserSearch) {
-          win.BrowserSearch.addEngine(browser, aMsg.data.engine);
-        }
+        lazy.OpenSearchManager.addEngine(browser, aMsg.data.engine);
         break;
+      }
     }
   }
 
@@ -102,17 +160,18 @@ export class LinkHandlerParent extends JSWindowActorParent {
     tab.removeAttribute("pendingicon");
   }
 
-  setIconFromLink(
+  async setIconFromLink(
     gBrowser,
     browser,
     {
       pageURL,
       originalURL,
-      canUseForTab,
       expiration,
       iconURL,
+      images,
       canStoreIcon,
       beforePageShow,
+      isRichIcon,
     }
   ) {
     let tab = gBrowser.getTabForBrowser(browser);
@@ -120,7 +179,36 @@ export class LinkHandlerParent extends JSWindowActorParent {
       return;
     }
 
-    if (canUseForTab) {
+    if (images) {
+      let canvas = tab.ownerDocument.createElement("canvas");
+
+      // We have multiple images, need to create an ICO file to collect them.
+      if (images.length > 1) {
+        // Convert all images to PNG bytes.
+        let blobs = [];
+        for (let image of images) {
+          await drawImageOnCanvas(canvas, image);
+          blobs.push(await new Promise(resolve => canvas.toBlob(resolve)));
+        }
+        let buffers = await Promise.all(blobs.map(blob => blob.bytes()));
+
+        // Create an ICO "file" containing all the PNGs.
+        let ico = createICO(buffers);
+
+        // Convert the ICO bytes to a data URL.
+        iconURL = await blobAsDataURL(new Blob([ico], { type: TYPE_ICO }));
+      } else {
+        await drawImageOnCanvas(canvas, images[0]);
+        iconURL = canvas.toDataURL();
+      }
+    }
+
+    // The browser might have gone away during `await` above.
+    if (!gBrowser.getBrowserForTab(tab)) {
+      return;
+    }
+
+    if (!isRichIcon) {
       this.clearPendingIcon(gBrowser, browser);
     }
 
@@ -131,6 +219,19 @@ export class LinkHandlerParent extends JSWindowActorParent {
       console.error(ex);
       return;
     }
+
+    // The content process should send decoded images for all schemes except for trusted schemes and SVGs, which should not be rasterized.
+    if (
+      !images &&
+      !TRUSTED_FAVICON_SCHEMES.includes(iconURI.scheme) &&
+      !iconURL.startsWith(SVG_DATA_URI_PREFIX)
+    ) {
+      console.error(
+        `Not allowed to set favicon "${iconURL}" with that scheme!`
+      );
+      return;
+    }
+
     if (!iconURI.schemeIs("data")) {
       try {
         Services.scriptSecurityManager.checkLoadURIWithPrincipal(
@@ -144,19 +245,22 @@ export class LinkHandlerParent extends JSWindowActorParent {
     }
     if (canStoreIcon) {
       try {
-        lazy.PlacesUtils.favicons.setFaviconForPage(
-          Services.io.newURI(pageURL),
-          Services.io.newURI(originalURL),
-          iconURI,
-          expiration && lazy.PlacesUtils.toPRTime(expiration)
-        );
+        lazy.PlacesUtils.favicons
+          .setFaviconForPage(
+            Services.io.newURI(pageURL),
+            Services.io.newURI(originalURL),
+            iconURI,
+            expiration && lazy.PlacesUtils.toPRTime(expiration),
+            isRichIcon
+          )
+          .catch(console.error);
       } catch (ex) {
         console.error(ex);
       }
     }
 
-    if (canUseForTab) {
-      gBrowser.setIcon(tab, iconURL, originalURL, null, beforePageShow);
+    if (!isRichIcon) {
+      gBrowser.setIcon(tab, iconURL, originalURL, beforePageShow);
     }
   }
 }

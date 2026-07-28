@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } gặp sự cố và đ
 crashreporter-plea = Để giúp chúng tôi chẩn đoán và sửa chữa, bạn có thể gửi báo cáo lỗi cho chúng tôi.
 crashreporter-information = Ứng dụng này được chạy sau khi gặp sự cố để báo cáo nó cho { -vendor-short-name }. Nó không nên được chạy trực tiếp.
 crashreporter-error = { -brand-short-name } gặp sự cố và đã thoát. Thật không may, trình báo cáo sự cố không thể gửi báo cáo về sự cố này.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Chi tiết: { $details }
+crashreporter-error-details-header = Chi tiết:
 crashreporter-no-run-message = Ứng dụng này được chạy sau khi gặp lỗi để báo cáo vấn đề tới nhà cung cấp ứng dụng. Không nên chạy nó trực tiếp.
 crashreporter-button-details = Chi tiết…
 crashreporter-loading-details = Đang tải…
 crashreporter-view-report-title = Báo cáo nội dung
 crashreporter-comment-prompt = Thêm bình luận (bình luận sễ được hiển thị công khai)
 crashreporter-report-info = Báo cáo cũng bao gồm thông tin kĩ thuật về trạng thái ứng dụng lúc bị lỗi.
-crashreporter-send-report = Hãy cho { -vendor-short-name } biết về sự cố này để họ có thể khắc phục nó.
-crashreporter-include-url = Bao gồm địa chỉ của trang tôi đã truy cập.
+crashreporter-checkbox-test-hardware = Kiểm tra các vấn đề về phần cứng và cấu hình trên thiết bị của tôi.
+crashreporter-checkbox-send-report = Hãy cho { -vendor-short-name } biết về sự cố này để họ có thể khắc phục nó.
+crashreporter-checkbox-include-url = Bao gồm địa chỉ của trang tôi đã truy cập.
 crashreporter-submit-status = Báo cáo của bạn sẽ được gửi trước khi bạn thoát hoặc khởi động lại.
+crashreporter-submit-waiting-hardware-tests = Đang kiểm tra các vấn đề về phần cứng và cấu hình…
 crashreporter-submit-in-progress = Đang gửi báo cáo của bạn…
 crashreporter-submit-success = Báo cáo đã được gửi thành công!
 crashreporter-submit-failure = Có vấn đề trong khi gửi báo cáo của bạn.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Bạn có thể xem chi tiết về sự cố này
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Không thể chạy minidump-analyzer
 # $path (String) - the file path
 crashreporter-error-opening-file = Không thể mở tập tin ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Thiếu thư mục home
 # $to (String) - the destination path
 crashreporter-error-moving-path = Không thể di chuyển { $from } đến { $to }
 crashreporter-error-version-eol = Phiên bản đã lỗi thời: báo cáo sự cố không còn được chấp nhận.
+crashreporter-error-failed-to-generate-minidump = Ứng dụng không thể truy xuất thông tin sự cố.

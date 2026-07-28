@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 const SLOW_PAGE =
@@ -64,9 +62,8 @@ async function runTest(stopLoadFunc) {
   stopLoadFunc(slowTab);
 
   // Retrieve the requestId from onBeforeRequest
-  let requestIdOnBeforeRequest = await extension.awaitMessage(
-    "onBeforeRequest"
-  );
+  let requestIdOnBeforeRequest =
+    await extension.awaitMessage("onBeforeRequest");
 
   // Now verify that we got the correct event and request id
   let doneMessage = await extension.awaitMessage("done");
@@ -82,6 +79,12 @@ async function runTest(stopLoadFunc) {
   BrowserTestUtils.removeTab(slowTab);
   await extension.unload();
 }
+
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
 
 /**
  * Check that after we cancel a slow page load, we get an error associated with

@@ -5,7 +5,7 @@
 
 ## OS Prompt Dialog
 
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = ᱟᱡ ᱛᱮ ᱯᱟᱨᱮᱡ ᱯᱷᱚᱨᱢ ᱠᱩᱥᱤ ᱪᱷᱟᱲᱟ ᱠᱚ
 autofill-options-link-osx = ᱯᱷᱚᱨᱢ ᱟᱡ ᱛᱮ ᱯᱮᱨᱮᱡ ᱠᱩᱥᱤᱭᱟᱜ
 
@@ -44,3 +44,6 @@ autofill-category-name = ᱧᱩᱛᱩᱢ
 autofill-category-organization = ᱜᱟᱶᱛᱟ
 autofill-category-tel = ᱯᱷᱚᱱ
 autofill-category-email = ᱤᱼᱢᱮᱞ
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } ᱫᱚ ᱵᱟᱝ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱥᱟᱭᱤᱴ ᱮ ᱪᱤᱱᱦᱟᱹᱣ ᱠᱮᱜᱼᱟᱭ ᱾ ᱯᱷᱚᱨᱢ ᱟᱡ ᱛᱮ ᱨᱮᱨᱮᱡ ᱫᱚ ᱛᱤᱱᱟᱹᱜ ᱜᱮᱱ ᱚᱠᱛᱚ ᱞᱟᱹᱜᱤᱫ ᱵᱚᱸᱫ ᱛᱷᱟᱲᱚᱜᱼᱟ ᱾

@@ -1,15 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "js/MemoryMetrics.h"
 
-#include "mozilla/MathAlgorithms.h"
-
 #include <algorithm>
 
+#include "gc/BufferAllocator.h"
 #include "gc/GC.h"
 #include "gc/Memory.h"
 #include "gc/Nursery.h"
@@ -188,14 +185,10 @@ struct StatsClosure {
 };
 
 static void DecommittedPagesChunkCallback(JSRuntime* rt, void* data,
-                                          gc::TenuredChunk* chunk,
+                                          gc::ArenaChunk* chunk,
                                           const JS::AutoRequireNoGC& nogc) {
-  size_t n = 0;
-  for (uint32_t word : chunk->decommittedPages.Storage()) {
-    n += mozilla::CountPopulation32(word);
-  }
-
-  *static_cast<size_t*>(data) += n * gc::PageSize;
+  auto* gcHeapDecommittedPages = static_cast<size_t*>(data);
+  *gcHeapDecommittedPages += chunk->decommittedPages.Count() * gc::PageSize;
 }
 
 static void StatsZoneCallback(JSRuntime* rt, void* data, Zone* zone,
@@ -213,10 +206,13 @@ static void StatsZoneCallback(JSRuntime* rt, void* data, Zone* zone,
   zone->addSizeOfIncludingThis(
       rtStats->mallocSizeOf_, &zStats.zoneObject, &zStats.code,
       &zStats.regexpZone, &zStats.jitZone, &zStats.cacheIRStubs,
-      &zStats.uniqueIdMap, &zStats.initialPropMapTable, &zStats.shapeTables,
-      &rtStats->runtime.atomsMarkBitmaps, &zStats.compartmentObjects,
-      &zStats.crossCompartmentWrappersTables, &zStats.compartmentsPrivateData,
-      &zStats.scriptCountsMap);
+      &zStats.objectFuses, &zStats.uniqueIdMap, &zStats.initialPropMapTable,
+      &zStats.shapeTables, &rtStats->runtime.atomsMarkBitmaps,
+      &zStats.compartmentObjects, &zStats.crossCompartmentWrappersTables,
+      &zStats.compartmentsPrivateData, &zStats.scriptCountsMap);
+  zone->bufferAllocator.addSizeOfExcludingThis(&zStats.gcBuffers.usedBytes,
+                                               &zStats.gcBuffers.freeBytes,
+                                               &zStats.gcBuffers.adminBytes);
 }
 
 static void StatsRealmCallback(JSContext* cx, void* data, Realm* realm,
@@ -390,8 +386,7 @@ static void StatsCellCallback(JSRuntime* rt, void* data, JS::GCCellPtr cellptr,
       BaseScript* base = &cellptr.as<BaseScript>();
       RealmStats& realmStats = base->realm()->realmStats();
       realmStats.scriptsGCHeap += thingSize;
-      realmStats.scriptsMallocHeapData +=
-          base->sizeOfExcludingThis(rtStats->mallocSizeOf_);
+      realmStats.scriptsGCBuffers += base->sizeOfExcludingThis();
       if (base->hasJitScript()) {
         JSScript* script = static_cast<JSScript*>(base);
         script->addSizeOfJitScript(rtStats->mallocSizeOf_,
@@ -455,8 +450,7 @@ static void StatsCellCallback(JSRuntime* rt, void* data, JS::GCCellPtr cellptr,
         size += Nursery::nurseryCellHeaderSize();
       }
       zStats->bigIntsGCHeap += size;
-      zStats->bigIntsMallocHeap +=
-          bi->sizeOfExcludingThis(rtStats->mallocSizeOf_);
+      zStats->bigIntsGCBuffers += bi->sizeOfExcludingThis();
       break;
     }
 
@@ -470,7 +464,12 @@ static void StatsCellCallback(JSRuntime* rt, void* data, JS::GCCellPtr cellptr,
     }
 
     case JS::TraceKind::GetterSetter: {
-      zStats->getterSettersGCHeap += thingSize;
+      GetterSetter* gs = &cellptr.as<GetterSetter>();
+      size_t size = thingSize;
+      if (!gs->isTenured()) {
+        size += Nursery::nurseryCellHeaderSize();
+      }
+      zStats->getterSettersGCHeap += size;
       break;
     }
 
@@ -513,8 +512,7 @@ static void StatsCellCallback(JSRuntime* rt, void* data, JS::GCCellPtr cellptr,
     case JS::TraceKind::Scope: {
       Scope* scope = &cellptr.as<Scope>();
       zStats->scopesGCHeap += thingSize;
-      zStats->scopesMallocHeap +=
-          scope->sizeOfExcludingThis(rtStats->mallocSizeOf_);
+      zStats->scopesGCBuffers += scope->sizeOfExcludingThis();
       break;
     }
 
@@ -550,10 +548,9 @@ static bool FindNotableStrings(ZoneStats& zStats) {
   // We should only run FindNotableStrings once per ZoneStats object.
   MOZ_ASSERT(zStats.notableStrings.empty());
 
-  for (ZoneStats::StringsHashMap::Range r = zStats.allStrings->all();
-       !r.empty(); r.popFront()) {
-    JSString* str = r.front().key();
-    StringInfo& info = r.front().value();
+  for (auto iter = zStats.allStrings->iter(); !iter.done(); iter.next()) {
+    JSString* str = iter.get().key();
+    StringInfo& info = iter.get().value();
 
     if (!info.isNotable()) {
       continue;
@@ -579,10 +576,9 @@ static bool FindNotableClasses(RealmStats& realmStats) {
   // We should only run FindNotableClasses once per ZoneStats object.
   MOZ_ASSERT(realmStats.notableClasses.empty());
 
-  for (RealmStats::ClassesHashMap::Range r = realmStats.allClasses->all();
-       !r.empty(); r.popFront()) {
-    const char* className = r.front().key();
-    ClassInfo& info = r.front().value();
+  for (auto iter = realmStats.allClasses->iter(); !iter.done(); iter.next()) {
+    const char* className = iter.get().key();
+    ClassInfo& info = iter.get().value();
 
     // If this class isn't notable, or if we can't grow the notableStrings
     // vector, skip this string.
@@ -610,11 +606,10 @@ static bool FindNotableScriptSources(JS::RuntimeSizes& runtime) {
   // We should only run FindNotableScriptSources once per RuntimeSizes.
   MOZ_ASSERT(runtime.notableScriptSources.empty());
 
-  for (RuntimeSizes::ScriptSourcesHashMap::Range r =
-           runtime.allScriptSources->all();
-       !r.empty(); r.popFront()) {
-    const char* filename = r.front().key();
-    ScriptSourceInfo& info = r.front().value();
+  for (auto iter = runtime.allScriptSources->iter(); !iter.done();
+       iter.next()) {
+    const char* filename = iter.get().key();
+    ScriptSourceInfo& info = iter.get().value();
 
     if (!info.isNotable()) {
       continue;
@@ -638,8 +633,9 @@ static bool CollectRuntimeStatsHelper(JSContext* cx, RuntimeStats* rtStats,
                                       ObjectPrivateVisitor* opv, bool anonymize,
                                       IterateCellCallback statsCellCallback) {
   // Finish any ongoing incremental GC that may change the data we're gathering
-  // and ensure that we don't do anything that could start another one.
-  gc::FinishGC(cx);
+  // and start a trace session. Ensure that we don't do anything that could
+  // start another GC.
+  js::gc::AutoPrepareForTracing session(cx);
   JS::AutoAssertNoGC nogc(cx);
 
   // Wait for any background tasks to finish.
@@ -663,13 +659,13 @@ static bool CollectRuntimeStatsHelper(JSContext* cx, RuntimeStats* rtStats,
 
   if (js::gc::DecommitEnabled()) {
     IterateChunks(cx, &rtStats->gcHeapDecommittedPages,
-                  DecommittedPagesChunkCallback);
+                  DecommittedPagesChunkCallback, session);
   }
 
   // Take the per-compartment measurements.
   StatsClosure closure(rtStats, opv, anonymize);
   IterateHeapUnbarriered(cx, &closure, StatsZoneCallback, StatsRealmCallback,
-                         StatsArenaCallback, statsCellCallback);
+                         StatsArenaCallback, statsCellCallback, session);
 
   // Take the "explicit/js/runtime/" measurements.
   rt->addSizeOfIncludingThis(rtStats->mallocSizeOf_, &rtStats->runtime);
@@ -731,7 +727,7 @@ static bool CollectRuntimeStatsHelper(JSContext* cx, RuntimeStats* rtStats,
   size_t numDirtyChunks =
       (rtStats->gcHeapChunkTotal - rtStats->gcHeapUnusedChunks) / gc::ChunkSize;
   size_t perChunkAdmin =
-      sizeof(gc::TenuredChunk) - (sizeof(gc::Arena) * gc::ArenasPerChunk);
+      sizeof(gc::ArenaChunk) - (sizeof(gc::Arena) * gc::ArenasPerChunk);
   rtStats->gcHeapChunkAdmin = numDirtyChunks * perChunkAdmin;
 
   // |gcHeapUnusedArenas| is the only thing left.  Compute it in terms of
@@ -821,12 +817,11 @@ class SimpleJSRuntimeStats : public JS::RuntimeStats {
                                    const JS::AutoRequireNoGC& nogc) override {}
 };
 
-JS_PUBLIC_API bool AddSizeOfTab(JSContext* cx, HandleObject obj,
+JS_PUBLIC_API bool AddSizeOfTab(JSContext* cx, JS::Zone* zone,
                                 MallocSizeOf mallocSizeOf,
-                                ObjectPrivateVisitor* opv, TabSizes* sizes) {
+                                ObjectPrivateVisitor* opv, TabSizes* sizes,
+                                const JS::AutoRequireNoGC& nogc) {
   SimpleJSRuntimeStats rtStats(mallocSizeOf);
-
-  JS::Zone* zone = GetObjectZone(obj);
 
   size_t numRealms = 0;
   for (CompartmentsInZoneIter comp(zone); !comp.done(); comp.next()) {
@@ -844,9 +839,11 @@ JS_PUBLIC_API bool AddSizeOfTab(JSContext* cx, HandleObject obj,
   // Take the per-compartment measurements. No need to anonymize because
   // these measurements will be aggregated.
   StatsClosure closure(&rtStats, opv, /* anonymize = */ false);
+  MOZ_ASSERT(!JS::IsIncrementalGCInProgress(cx));
+  js::gc::AutoTraceSession session(cx->runtime());
   IterateHeapUnbarrieredForZone(cx, zone, &closure, StatsZoneCallback,
                                 StatsRealmCallback, StatsArenaCallback,
-                                StatsCellCallback<CoarseGrained>);
+                                StatsCellCallback<CoarseGrained>, session);
 
   MOZ_ASSERT(rtStats.zoneStatsVector.length() == 1);
   rtStats.zTotals.addSizes(rtStats.zoneStatsVector[0]);
@@ -861,34 +858,6 @@ JS_PUBLIC_API bool AddSizeOfTab(JSContext* cx, HandleObject obj,
 
   rtStats.zTotals.addToTabSizes(sizes);
   rtStats.realmTotals.addToTabSizes(sizes);
-
-  return true;
-}
-
-JS_PUBLIC_API bool AddServoSizeOf(JSContext* cx, MallocSizeOf mallocSizeOf,
-                                  ObjectPrivateVisitor* opv,
-                                  ServoSizes* sizes) {
-  SimpleJSRuntimeStats rtStats(mallocSizeOf);
-
-  // No need to anonymize because the results will be aggregated.
-  if (!CollectRuntimeStatsHelper(cx, &rtStats, opv, /* anonymize = */ false,
-                                 StatsCellCallback<CoarseGrained>))
-    return false;
-
-#ifdef DEBUG
-  size_t gcHeapTotalOriginal = sizes->gcHeapUsed + sizes->gcHeapUnused +
-                               sizes->gcHeapAdmin + sizes->gcHeapDecommitted;
-#endif
-
-  rtStats.addToServoSizes(sizes);
-  rtStats.zTotals.addToServoSizes(sizes);
-  rtStats.realmTotals.addToServoSizes(sizes);
-
-#ifdef DEBUG
-  size_t gcHeapTotal = sizes->gcHeapUsed + sizes->gcHeapUnused +
-                       sizes->gcHeapAdmin + sizes->gcHeapDecommitted;
-  MOZ_ASSERT(rtStats.gcHeapChunkTotal == gcHeapTotal - gcHeapTotalOriginal);
-#endif
 
   return true;
 }

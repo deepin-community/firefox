@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +5,7 @@
 #ifndef mozilla_AppleDecoderModule_h
 #define mozilla_AppleDecoderModule_h
 
+#include "MediaCodecsSupport.h"
 #include "PlatformDecoderModule.h"
 
 namespace mozilla {
@@ -16,6 +15,7 @@ class AppleDecoderModule : public PlatformDecoderModule {
   friend already_AddRefed<T> MakeAndAddRef(Args&&...);
 
  public:
+  const char* Name() const override { return "Apple"; }
   static already_AddRefed<PlatformDecoderModule> Create();
 
   nsresult Startup() override;
@@ -38,9 +38,6 @@ class AppleDecoderModule : public PlatformDecoderModule {
 
   static void Init();
 
-  static bool sCanUseVP9Decoder;
-  static bool sCanUseAV1Decoder;
-
   static constexpr int kCMVideoCodecType_H264{'avc1'};
   static constexpr int kCMVideoCodecType_VP9{'vp09'};
 
@@ -48,14 +45,18 @@ class AppleDecoderModule : public PlatformDecoderModule {
   AppleDecoderModule() = default;
   virtual ~AppleDecoderModule() = default;
 
-  static bool sInitialized;
+  static inline bool sInitialized = false;
+  static inline EnumeratedArray<media::MediaCodec, bool,
+                                size_t(media::MediaCodec::SENTINEL)>
+      sCanUseHWDecoder;
+
   bool IsVideoSupported(const VideoInfo& aConfig,
                         const CreateDecoderParams::OptionSet& aOptions =
                             CreateDecoderParams::OptionSet()) const;
-  // Enable VP9 HW decoder.
-  static bool RegisterSupplementalVP9Decoder();
+  // Register a HW decoder if it's not registered by default.
+  static bool RegisterSupplementalDecoder(const media::MediaCodec& aCodec);
   // Return true if a dummy hardware decoder could be created.
-  static bool CanCreateHWDecoder(media::MediaCodec aCodec);
+  static bool CanCreateHWDecoder(const media::MediaCodec& aCodec);
 };
 
 }  // namespace mozilla

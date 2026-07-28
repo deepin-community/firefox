@@ -46,24 +46,16 @@ support-files = ["readerModeArticleHiddenNodes.html"]
 ["browser_readerMode_menu.js"]
 support-files = ["readerModeArticleShort.html"]
 
-["browser_readerMode_pocket.js"]
-support-files = [
-  "readerModeArticleShort.html",
-  "readerModeArticleMedium.html",
-]
-
 ["browser_readerMode_readingTime.js"]
 support-files = [
   "readerModeArticle.html",
   "readerModeArticleShort.html",
   "readerModeArticleMedium.html",
+  "readerModeArticleLong.html",
+  "readerModeArticleVeryLong.html",
 ]
 
 ["browser_readerMode_refresh.js"]
-skip-if = [
-   "apple_catalina", # Bug 1776032
-]
-
 support-files = [
   "readerModeArticleShort.html",
   "readerModeArticleTextPlain.txt",
@@ -78,6 +70,8 @@ support-files = [
   "setSameSiteCookie.html",
   "setSameSiteCookie.html^headers^",
 ]
+
+["browser_readerMode_tabnavigation.js"]
 
 ["browser_readerMode_textLayoutPref.js"]
 support-files = ["readerModeArticle.html"]

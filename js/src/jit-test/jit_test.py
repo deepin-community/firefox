@@ -11,10 +11,9 @@ import shlex
 import subprocess
 import sys
 import traceback
+from copy import deepcopy
 
 read_input = input
-if sys.version_info.major == 2:
-    read_input = raw_input
 
 
 def add_tests_dir_to_path():
@@ -50,21 +49,27 @@ def which(name):
     return name
 
 
-def choose_item(jobs, max_items, display):
+def choose_item(jobs, max_items):
     job_count = len(jobs)
 
     # Don't present a choice if there are too many tests
     if job_count > max_items:
         raise Exception("Too many jobs.")
 
+    def display_job(job):
+        flags = ""
+        if len(job.jitflags) != 0:
+            flags = "({})".format(" ".join(job.jitflags))
+        return f"{job.path} {flags}"
+
     for i, job in enumerate(jobs, 1):
-        print("{}) {}".format(i, display(job)))
+        print(f"{i}) {display_job(job)}")
 
     item = read_input("Which one:\n")
     try:
         item = int(item)
         if item > job_count or item < 1:
-            raise Exception("Input isn't between 1 and {}".format(job_count))
+            raise Exception(f"Input isn't between 1 and {job_count}")
     except ValueError:
         raise Exception("Unrecognized input")
 
@@ -103,13 +108,13 @@ def main(argv):
         "--failed-only",
         dest="failed_only",
         action="store_true",
-        help="if --show-output is given, only print output for" " failed tests",
+        help="if --show-output is given, only print output for failed tests",
     )
     op.add_argument(
         "--no-show-failed",
         dest="no_show_failed",
         action="store_true",
-        help="don't print output for failed tests" " (no-op with --show-output)",
+        help="don't print output for failed tests (no-op with --show-output)",
     )
     op.add_argument(
         "-x",
@@ -169,14 +174,16 @@ def main(argv):
         "--args",
         dest="shell_args",
         metavar="ARGS",
-        default="",
+        default=[],
+        action="append",
         help="extra args to pass to the JS shell",
     )
     op.add_argument(
         "--feature-args",
         dest="feature_args",
         metavar="ARGS",
-        default="",
+        default=[],
+        action="append",
         help="even more args to pass to the JS shell "
         "(for compatibility with jstests.py)",
     )
@@ -227,6 +234,7 @@ def main(argv):
     op.add_argument(
         "--debugger", type=str, help="Run a single test under the specified debugger"
     )
+    op.add_argument("--one", action="store_true", help="Run a single test only.")
     op.add_argument(
         "--valgrind",
         dest="valgrind",
@@ -320,14 +328,14 @@ def main(argv):
         action="store",
         type=str,
         default="/data/local/tmp/test_root",
-        help="The remote directory to use as test root" " (e.g.  %(default)s)",
+        help="The remote directory to use as test root (e.g.  %(default)s)",
     )
     op.add_argument(
         "--localLib",
         dest="local_lib",
         action="store",
         type=str,
-        help="The location of libraries to push -- preferably" " stripped",
+        help="The location of libraries to push -- preferably stripped",
     )
     op.add_argument(
         "--repeat", type=int, default=1, help="Repeat tests the given number of times."
@@ -413,13 +421,13 @@ def main(argv):
             for line in f:
                 test_list.append(os.path.join(jittests.TEST_DIR, line.strip("\n")))
             f.close()
-        except IOError:
+        except OSError:
             if options.retest:
                 read_all = True
             else:
                 sys.stderr.write(
                     "Exception thrown trying to read test file"
-                    " '{}'\n".format(options.read_tests)
+                    f" '{options.read_tests}'\n"
                 )
                 traceback.print_exc()
                 sys.stderr.write("---\n")
@@ -478,17 +486,7 @@ def main(argv):
     job_count = len(test_list)
 
     if options.repeat:
-
-        def repeat_copy(job_list_generator, repeat):
-            job_list = list(job_list_generator)
-            for i in range(repeat):
-                for test in job_list:
-                    if i == 0:
-                        yield test
-                    else:
-                        yield test.copy()
-
-        job_list = repeat_copy(job_list, options.repeat)
+        job_list = (deepcopy(test) for test in job_list for _ in range(options.repeat))
         job_count *= options.repeat
 
     if options.ignore_timeouts:
@@ -500,13 +498,13 @@ def main(argv):
                     path = line.strip("\n")
                     ignore.add(path)
                 options.ignore_timeouts = ignore
-        except IOError:
+        except OSError:
             sys.exit("Error reading file: " + options.ignore_timeouts)
     else:
         options.ignore_timeouts = set()
 
-    prefix = (
-        [js_shell] + shlex.split(options.shell_args) + shlex.split(options.feature_args)
+    prefix = [js_shell] + split_extra_shell_args(
+        options.shell_args + options.feature_args
     )
     prologue = os.path.join(jittests.LIB_DIR, "prologue.js")
     if options.remote:
@@ -514,22 +512,27 @@ def main(argv):
 
     prefix += ["-p", prologue]
 
-    if options.debugger:
+    if options.one:
+        try:
+            jobs = list(job_list)
+            tc = choose_item(jobs, max_items=50)
+        except Exception as e:
+            sys.exit(str(e))
+
+        with change_env(test_environment):
+            with TemporaryDirectory() as tempdir:
+                cmd = tc.command(prefix, jittests.LIB_DIR, jittests.MODULE_DIR, tempdir)
+                os.execvp(cmd[0], cmd)
+        sys.exit()
+    elif options.debugger:
         if job_count > 1:
             print(
-                "Multiple tests match command line"
-                " arguments, debugger can only run one"
+                "Multiple tests match command line arguments, debugger can only run one"
             )
             jobs = list(job_list)
 
-            def display_job(job):
-                flags = ""
-                if len(job.jitflags) != 0:
-                    flags = "({})".format(" ".join(job.jitflags))
-                return "{} {}".format(job.path, flags)
-
             try:
-                tc = choose_item(jobs, max_items=50, display=display_job)
+                tc = choose_item(jobs, max_items=50)
             except Exception as e:
                 sys.exit(str(e))
         else:
@@ -576,12 +579,19 @@ def main(argv):
     except OSError:
         if not os.path.exists(prefix[0]):
             print(
-                "JS shell argument: file does not exist:" " '{}'".format(prefix[0]),
+                f"JS shell argument: file does not exist: '{prefix[0]}'",
                 file=sys.stderr,
             )
             sys.exit(1)
         else:
             raise
+
+
+def split_extra_shell_args(args):
+    result = []
+    for option in args:
+        result.extend(shlex.split(option))
+    return result
 
 
 if __name__ == "__main__":

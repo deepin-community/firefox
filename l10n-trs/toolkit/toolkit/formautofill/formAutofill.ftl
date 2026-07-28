@@ -3,15 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## OS Prompt Dialog
-
-
-## The credit card capture doorhanger
-
-
-# Used on the doorhanger when an credit card change is detected.
-
-
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 
 autofill-card-network-amex = American Express
@@ -23,3 +14,6 @@ autofill-card-network-mastercard = MasterCard
 autofill-card-network-mir = MIR
 autofill-card-network-unionpay = Union Pay
 autofill-card-network-visa = Visa
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } nari'ij 'ngò sitio hua ahī . Nitaj si hua gi'iaj gi'ìaj sun ma'an ma.

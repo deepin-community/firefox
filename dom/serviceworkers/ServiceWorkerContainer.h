@@ -1,17 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_serviceworkercontainer_h__
-#define mozilla_dom_serviceworkercontainer_h__
+#ifndef mozilla_dom_serviceworkercontainer_h_
+#define mozilla_dom_serviceworkercontainer_h_
 
 #include "mozilla/DOMEventTargetHelper.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/dom/ServiceWorkerUtils.h"
 
 class nsIGlobalWindow;
+class nsIPrincipal;
 
 namespace mozilla::dom {
 
@@ -21,6 +20,7 @@ class Promise;
 struct RegistrationOptions;
 class ServiceWorker;
 class ServiceWorkerContainerChild;
+class TrustedScriptURLOrUSVString;
 
 // Lightweight serviceWorker APIs collection.
 class ServiceWorkerContainer final : public DOMEventTargetHelper {
@@ -51,10 +51,10 @@ class ServiceWorkerContainer final : public DOMEventTargetHelper {
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;
 
-  already_AddRefed<Promise> Register(const nsAString& aScriptURL,
-                                     const RegistrationOptions& aOptions,
-                                     const CallerType aCallerType,
-                                     ErrorResult& aRv);
+  MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> Register(
+      const TrustedScriptURLOrUSVString& aScriptURL,
+      const RegistrationOptions& aOptions, nsIPrincipal* aSubjectPrincipal,
+      ErrorResult& aRv);
 
   already_AddRefed<ServiceWorker> GetController();
 
@@ -96,7 +96,8 @@ class ServiceWorkerContainer final : public DOMEventTargetHelper {
   // devtools console.
   nsIGlobalObject* GetGlobalIfValid(
       ErrorResult& aRv,
-      const std::function<void(Document*)>&& aStorageFailureCB = nullptr) const;
+      const std::function<void(nsIGlobalObject*)>&& aStorageFailureCB =
+          nullptr) const;
 
   struct ReceivedMessage;
 
@@ -115,8 +116,7 @@ class ServiceWorkerContainer final : public DOMEventTargetHelper {
   static Result<Ok, bool> FillInMessageEventInit(JSContext* aCx,
                                                  nsIGlobalObject* aGlobal,
                                                  ReceivedMessage& aMessage,
-                                                 MessageEventInit& aInit,
-                                                 ErrorResult& aRv);
+                                                 MessageEventInit& aInit);
 
   void Shutdown();
 
@@ -140,4 +140,4 @@ class ServiceWorkerContainer final : public DOMEventTargetHelper {
 
 }  // namespace mozilla::dom
 
-#endif /* mozilla_dom_serviceworkercontainer_h__ */
+#endif /* mozilla_dom_serviceworkercontainer_h_ */

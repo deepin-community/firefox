@@ -11,16 +11,18 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = Angi policyer som WebExtensions kan få tilgang til via chrome.storage.managed.
+policy-AIControls = Konfigurer AI-kontroller.
 policy-AllowedDomainsForApps = Definier domener som får tilgang til Google Workspace.
 policy-AllowFileSelectionDialogs = Tillat dialogvindu for valg av filer.
 policy-AppAutoUpdate = Slå på eller slå av automatisk programoppdateringer.
 policy-AppUpdatePin = Forhindre at { -brand-short-name } oppdateres utover den angitte versjonen.
-policy-AppUpdateURL = Angi egendefinert programoppdateringsadresse.
+policy-AppUpdateURL = Angi tilpasset programoppdateringsadresse.
 policy-Authentication = Konfigurer integrert godkjenning for nettsteder som støtter det.
 policy-AutofillAddressEnabled = Aktiver autofyll for adresser.
 policy-AutofillCreditCardEnabled = Aktiver autofyll for betalingsmåter.
 policy-AutoLaunchProtocolsFromOrigins = Definer en liste over eksterne protokoller som kan brukes fra listede kilder uten å spørre brukeren.
 policy-BackgroundAppUpdate2 = Slå på eller av bakgrunnsoppdatereren.
+policy-Backup = Deaktiver sikkerhetskopiering eller gjenoppretting av profildata.
 policy-BlockAboutAddons = Blokker tilgang til Utvidelsesbehandleren (about:addons).
 policy-BlockAboutConfig = Blokker tilgang til about:config-siden.
 policy-BlockAboutProfiles = Blokker tilgang til about:profiles-siden.
@@ -35,6 +37,7 @@ policy-Containers = Angi policyer relatert til beholdere.
 policy-DisableAccounts = Slå av kontobaserte tjenester, inkludert synkronisering.
 policy-DisabledCiphers = Deaktiver krypteringsmetoder.
 policy-DefaultDownloadDirectory = Velg standardmappe for nedlastinger.
+policy-DefaultSerialGuardSetting = Kontroller bruk av serieport-API-et.
 policy-DisableAppUpdate = Forhindre oppdatering av nettleseren.
 policy-DisableBuiltinPDFViewer = Deaktiver PDF.js, det innebygde PDF-visningsprogrammet i { -brand-short-name }
 policy-DisableDefaultBrowserAgent = Hindrer at standardnettleseren gjør noe. Gjelder bare for Windows; andre plattformer har ikke agenten.
@@ -55,6 +58,8 @@ policy-DisablePocket2 = Deaktiver funksjonen for å lagre nettsider til { -pocke
 policy-DisablePrivateBrowsing = Slå av privat nettlesing.
 policy-DisableProfileImport = Deaktiver meny-kommandoen for å importere data fra en annen nettleser.
 policy-DisableProfileRefresh = Deaktiver knappen Tilbakestill { -brand-short-name } på siden about:support.
+policy-DisableRemoteImprovements = Hindre { -brand-short-name } i å bruke endringer i ytelse, stabilitet og funksjoner mellom oppdateringer.
+policy-DisableRemoteSettingsAndAcceptSecurityConsequences = Slå av fjerninnstillinger.
 policy-DisableSafeMode = Deaktiver funksjonen for å starte på nytt i sikker modus. NB: Deaktivering av tasten skift for å starte sikker modus kan kun gjennomføres i Windows via gruppepolicy.
 policy-DisableSecurityBypass = Forhindre brukerens mulighet til å omgå visse sikkerhetsadvarsler.
 policy-DisableSetAsDesktopBackground = Deaktiver menykommandoen Bruk som skrivebordsbakgrunn for bilder.
@@ -63,7 +68,7 @@ policy-DisableTelemetry = Slå av av telemetri.
 policy-DisableThirdPartyModuleBlocking = Hindre brukeren fra å blokkere tredjepartsmoduler som blir injisert i { -brand-short-name }-prosessen.
 policy-DisplayBookmarksToolbar = Vise bokmerkeverktøylinjen som standard.
 policy-DisplayMenuBar = Vise menylinjen som standard.
-policy-DNSOverHTTPS = Konfigurer DNS-oppslag over HTTPS.
+policy-DNSOverHTTPS = Konfigurer DNS-over-HTTPS.
 policy-DontCheckDefaultBrowser = Deaktiver sjekk om standard-nettleser ved oppstart.
 policy-DownloadDirectory = Angi og lås netlastingskatalogen.
 # “lock” means that the user won’t be able to change this setting
@@ -79,6 +84,7 @@ policy-ExtensionSettings = Håndter alle aspekter av utvidelsesinstallasjon.
 policy-ExtensionUpdate = Slå på eller slå av automatisk utvidelsesoppdateringer.
 policy-FirefoxHome2 = Konfigurer { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Konfigurer { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Konfigurer generative AI-funksjoner.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Tving direkte navigering på intranettet i stedet for å søke når du skriver inn enkeltord i adressefeltet.
 policy-Handlers = Konfigurer standard applikasjonsbehandlere.
 policy-HardwareAcceleration = Hvis deaktivert, slå av maskinvareakselerasjon.
@@ -87,6 +93,7 @@ policy-Homepage = Sett og eventuelt lås startsiden.
 policy-HttpAllowlist = Opphav som ikke vil bli oppgradert til HTTPS.
 policy-HttpsOnlyMode = Tillat at kun-HTTPS-modus aktiveres.
 policy-InstallAddonsPermission = Tillat visse nettsteder å installere utvidelser.
+policy-IPProtectionAvailable = Forhindre at den innebygde VPN-en er tilgjengelig for brukere.
 policy-LegacyProfiles = Slå av funksjonen som påtvinger en egen profil for hver installasjon
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
@@ -97,6 +104,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Gå tilbake til foreld
 ##
 
 policy-LocalFileLinks = Tillat at bestemte nettsteder kobler til lokale filer.
+policy-LocalNetworkAccess = Aktiver eller deaktiver kontroller for lokal nettverkstilgang.
 policy-ManagedBookmarks = Konfigurerer en liste over bokmerker som administreres av en administrator og som ikke kan endres av brukeren.
 policy-ManualAppUpdateOnly = Tillat kun manuelle oppdateringer og gi ikke brukeren varsel om oppdateringer.
 policy-PrimaryPassword = Krev eller forhindre bruk av hovedpassord.
@@ -117,11 +125,13 @@ policy-PostQuantumKeyAgreementEnabled = Aktiver post-kvantenøkkelavtale for TLS
 policy-PDFjs = Deaktiver eller konfigurer PDF.js, det innebygde PDF-visningsprogrammet i { -brand-short-name }.
 policy-Permissions2 = Konfigurer tillatelser for kamera, mikrofon, plassering og auto-avspilling.
 policy-PictureInPicture = Slå på eller av bilde-i-bilde
+policy-PopupBlocking2 = Tillat enkelte nettsteder å vise sprettoppvinduer og videresendes av tredjepartsrammer.
 policy-PopupBlocking = Tillat at visse nettsteder skal kunne vise sprettoppvinduer som standard.
 policy-Preferences = Still inn og lås verdien for en undergruppe av innstillingene.
 policy-PrivateBrowsingModeAvailability = Angi tilgjengeligheten av privat nettlesingsmodus.
 policy-PromptForDownloadLocation = Spør hvor du skal lagre filer når du laster ned.
 policy-Proxy = Konfigurer proxy-innstillinger.
+policy-RelaunchRequired = Krev at { -brand-short-name } startes på nytt innen en gitt tidsperiode, og varsle brukeren om den kommende omstarten.
 policy-RequestedLocales = Velg rekkefølgen av språk, som skal brukes i programmet.
 policy-SanitizeOnShutdown2 = Fjern nettlesingsdata ved avslutning.
 policy-SearchBar = Angi standardplassering for søkelinjen. Brukeren kan fortsatt tilpasse den.
@@ -130,6 +140,9 @@ policy-SearchSuggestEnabled = Slå av eller på søkeforslag.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Legg til eller slett PKCS #11-moduler.
 policy-ShowHomeButton = Vis hjemknappen på verktøylinjen.
+policy-SitePolicies = Nettstedsspesifikke policyer
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Ikke vis vilkårene for bruk og personvernerklæringen ved oppstart. Du bekrefter at du aksepterer og har fullmakt til å godta vilkårene for bruk på vegne av alle personer som du gir tilgang til denne nettleseren.
 policy-SSLVersionMax = Angi den maksimale SSL-versjonen.
 policy-SSLVersionMin = Angi den minimale SSL-versjonen.
 policy-StartDownloadsInTempDirectory = Tving nedlastinger til å starte på en lokal, midlertidig plassering i stedet for standard nedlastingskatalog.
@@ -137,6 +150,11 @@ policy-SupportMenu = Legg til et tilpasset menyelement med hjelp i hjelpemenyen.
 policy-TranslateEnabled = Slå på eller av nettsideoversettelse.
 policy-UserMessaging = Ikke vis visse meldinger til brukeren.
 policy-UseSystemPrintDialog = Skriv ut ved hjelp av systemets utskriftsdialogvindu.
+policy-VisualSearchEnabled = Aktiver eller deaktiver visuelt søk.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokker besøk på nettsteder. Les dokumentasjonen for detaljer om formatet.
 policy-Windows10SSO = Tillat Windows enkel pålogging for Microsoft, arbeids- og skolekontoer.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Tillat enkel pålogging for Microsoft Entra-kontoer.
+# Do not translate "XSLTProcessor" as it is the name of an API interface.
+policy-XSLTEnabled = Aktiver eller deaktiver støtte for XSLTProcessor JavaScript-API-et og XSLT-behandlingsinstruksjonen.

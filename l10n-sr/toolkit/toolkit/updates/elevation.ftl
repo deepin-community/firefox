@@ -9,12 +9,18 @@ elevation-details-link-label =
     .value = Детаљи
 elevation-error-manual =
     { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "acc") }
-        [feminine] { -brand-short-name(case: "acc") }
-        [neuter] { -brand-short-name(case: "acc") }
-       *[other] Програм { -brand-short-name }
-    } можете да ажурирате ручно преузимањем најновије верзије са ове адресе:
+        [masculine] { -brand-short-name(case: "acc") } можете да ажурирате ручно преузимањем најновије верзије са ове адресе:
+        [feminine] { -brand-short-name(case: "acc") } можете да ажурирате ручно преузимањем најновије верзије са ове адресе:
+        [neuter] { -brand-short-name(case: "acc") } можете да ажурирате ручно преузимањем најновије верзије са ове адресе:
+       *[other] Програм { -brand-short-name } можете да ажурирате ручно преузимањем најновије верзије са ове адресе:
+    }
 elevation-finished-page = Ажурирање је спремно за инсталацију
 elevation-finished-background-page = Преузето је ажурирање са побољшањима безбедности и стабилности за { -brand-short-name } и спремно је за инсталирање.
 elevation-finished-background = Ажурирање:
 elevation-more-elevated = За ово ажурирање су потребне привилегије администратора. Ажурирање ће се инсталирати следећи пут када покренете { -brand-short-name(case: "acc") }. Можете да рестартујете { -brand-short-name(case: "acc") } сада, наставите са радом и поново покренете касније или занемарите ово ажурирање.
+sandbox-missing-unprivileged-namespaces = Неки од { -brand-short-name } безбедносних функција могу да понуде слабију заштиту на вашем тренутном оперативном систему.
+sandbox-unprivileged-namespaces-dismiss-button =
+    .label = Не приказуј поново
+    .accesskey = Н
+sandbox-unprivileged-namespaces-howtofix = Како решити овај проблем
+sandbox-content-disabled-warning = Сигурносно изоловано окружење (sandbox) је онемогућено. Ваша конфигурација је неподржана и мање безбедна.

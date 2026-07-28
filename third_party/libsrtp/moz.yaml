@@ -12,8 +12,8 @@ origin:
   license: BSD-3-Clause
   license-file: LICENSE
 
-  release: v2.4.2 (2021-09-20T16:10:47+02:00).
-  revision: v2.4.2
+  release: v2.8.0 (2026-03-14T10:49:34+01:00).
+  revision: v2.8.0
 
 
 updatebot:
@@ -31,6 +31,9 @@ vendoring:
 
   exclude:
     - "**"
+
+  patches:
+    - 00_use_consistent_printf_types.patch
 
   include:
     - srtp

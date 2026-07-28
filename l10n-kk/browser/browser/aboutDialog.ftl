@@ -12,23 +12,37 @@ update-updateButton =
     .label = { -brand-shorter-name } жаңарту үшін қайта іске қосу
     .accesskey = р
 update-checkingForUpdates = Жаңартуларды тексеру…
+settings-update-checking-for-updates =
+    .label = Жаңартуларды тексеру…
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
 settings-update-downloading = <img data-l10n-name="icon"/>Жаңартуды жүктеп алу — <label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = Жаңартуды жүктеп алу — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = Жаңартуды жүктеп алу — { $transfer }
 
 ##
 
 update-applying = Жаңартуды іске асыру…
+settings-update-applying =
+    .label = Жаңартуды іске асыру…
 update-failed = Жаңарту сәтсіз. <label data-l10n-name="failed-link">Соңғы нұсқасын жүктеп алу</label>
 update-failed-main = Жаңарту сәтсіз. <a data-l10n-name="failed-link-main">Соңғы нұсқасын жүктеп алу</a>
 update-adminDisabled = Жаңарту мүмкіндігін жүйелік администраторыңыз сөндірген
 update-policy-disabled = Жаңартуларды сіздің ұйымыңыз сөндірген
+settings-update-policy-disabled =
+    .label = Жаңартуларды сіздің ұйымыңыз сөндірген
 update-noUpdatesFound = { -brand-short-name } ескірмеді
+settings-update-no-updates-found =
+    .label = { -brand-short-name } ескірмеді
 aboutdialog-update-checking-failed = Жаңартуларды тексеру сәтсіз аяқталды.
+settings-update-checking-failed =
+    .label = Жаңартуларды тексеру сәтсіз аяқталды.
 update-otherInstanceHandlingUpdates = { -brand-short-name } басқа экземплярмен жаңартылуда
+settings-update-other-instance-handling-updates =
+    .label = { -brand-short-name } басқа экземплярмен жаңартылуда
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -36,8 +50,12 @@ update-otherInstanceHandlingUpdates = { -brand-short-name } басқа экзе�
 aboutdialog-update-manual-with-link = Жаңартулар қолжетімді жері: <label data-l10n-name="manual-link">{ $displayUrl }</label>
 settings-update-manual-with-link = Жаңартулар қолжетімді жері: <a data-l10n-name="manual-link">{ $displayUrl }</a>
 update-unsupported = Бұл жүйе үшін болашақ жаңартуларды орната алмайсыз. <label data-l10n-name="unsupported-link">Көбірек білу</label>
+settings-update-unsupported = Бұл жүйе үшін болашақ жаңартуларды орната алмайсыз. <a data-l10n-name="unsupported-link">Көбірек білу</a>
 update-restarting = Қайта қосылуда…
+settings-update-restarting =
+    .label = Қайта қосылуда…
 update-internal-error2 = Ішкі қатеге байланысты жаңартуларды тексеру мүмкін емес. Жаңартулар <label data-l10n-name="manual-link">{ $displayUrl }</label> адресі бойынша қолжетімді
+settings-update-internal-error = Ішкі қатеге байланысты жаңартуларды тексеру мүмкін емес. Жаңартулар <a data-l10n-name="manual-link">{ $displayUrl }</a> адресі бойынша қолжетімді
 
 ##
 
@@ -51,6 +69,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } жасаған <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, ол <label data-l10n-name="community-creditsLink">глобалды қоғамдастық,</label> Интернетті ашық, ортақ және қолжетімді қылуға бірге жұмыс істейді.
 helpus = Көмектескіңіз келе ме? <label data-l10n-name="helpus-donateLink">Демеушілік етуге</label>, немесе <label data-l10n-name="helpus-getInvolvedLink">үлес қосуға болады!</label>
 bottomLinks-license = Лицензиялық ақпарат
+bottom-links-terms = Қолдану шарттары
+bottom-links-privacy = Жекелік ескертуі
 bottomLinks-rights = Түпкі пайдаланушы құқықтары
 bottomLinks-privacy = Жекелік саясаты
 # Example of resulting string: 66.0.1 (64-bit)

@@ -33,3 +33,71 @@ searchbar-icon =
 removed-search-engine-message = <strong>Tu motor de recerca predefinite ha essite cambiate.</strong> { $oldEngine } non es plus disponibile como motor de recerca predefinite in { -brand-short-name }. { $newEngine } es ora tu motor de recerca predefinite. Pro cambiar a un altere motor de recerca predefinite, vade a parametros. <label data-l10n-name="remove-search-engine-article">Pro saper plus</label>
 removed-search-engine-message2 = <strong>Tu motor de recerca predefinite ha essite cambiate.</strong> { $oldEngine } non es plus disponibile como motor de recerca predefinite in { -brand-short-name }. { $newEngine } es ora tu motor de recerca predefinite. Pro cambiar a un altere motor de recerca predefinite, vade a parametros.
 remove-search-engine-button = OK
+
+## Infobar shown when default search engine is reset due to an issue reading the settings file.
+## Variables
+## $newEngine (String) - the name of the new default search engine.
+
+reset-search-settings-message = A causa de un problema technic, tu motor de recerca predefinite ha essite cambiate retro a { $newEngine }. Pro cambiar le motor de recerca predefinite, visita le parametros.
+reset-search-settings-button = OK
+
+## Infobar shown when user is prompted to install search engine.
+## Variables
+## $engineName (String) - the name of the search engine to install.
+
+install-search-engine = Adder { $engineName } como motor de recerca?
+install-search-engine-add = Adder
+install-search-engine-no = No
+
+## The following strings are used as input labels.
+
+add-engine-window =
+    .title = Adder motor de recerca
+    .style = min-width: 32em;
+edit-engine-window =
+    .title = Modificar motor de recerca
+    .style = min-width: 32em;
+add-engine-button = Adder motor personalisate
+add-engine-name = Nomine del motor de recerca
+add-engine-url2 = URL con %s in loco del termino de recerca
+add-engine-keyword2 = Parola clave (optional)
+# POST and GET refer to the HTTP methods.
+add-engine-post-data = Datos de POST con %s in loco del termino de recerca (lassar vacue pro GET)
+add-engine-suggest-url = URL pro suggestiones con %s in loco del termino de recerca (optional)
+
+## The following placeholders are shown in the inputs when adding a new engine.
+
+add-engine-name-placeholder =
+    .placeholder = p. ex., Rete del disveloppatores de Mozilla
+add-engine-url-placeholder =
+    .placeholder = p.ex., https://developer.mozilla.com/search?q=%s
+add-engine-keyword-placeholder =
+    .placeholder = p. ex., @mdn
+
+## The following strings are used as error messages.
+
+add-engine-keyword-exists = Ille parola clave es jam usate. Tenta un altere.
+add-engine-name-exists = Ille nomine es jam usate. Elige un altere.
+add-engine-no-name = Adde un nomine.
+add-engine-no-url = Insere un URL.
+add-engine-invalid-url = Ille URL non appare ben. Verifica lo e retenta.
+add-engine-invalid-protocol = Ille URL non appare ben. Usa un URL que comencia con http o https.
+# This error is shown when the user typed URL is missing %s.
+add-engine-missing-terms-url = Tenta includer %s in loco del termino de recerca.
+# This error is shown when the user typed post data is missing %s.
+add-engine-missing-terms-post-data = Tenta includer %s in loco del termino de recerca.
+
+## The following strings are used as labels for the dialog's buttons.
+
+# buttonlabelextra1 is the label of a button to open the advanced section
+# of the dialog.
+add-engine-dialog2 =
+    .buttonlabelaccept = Adder motor
+    .buttonaccesskeyaccept = A
+    .buttonlabelextra1 = Avantiate
+# buttonlabelextra1 is the label of a button to open the advanced section
+# of the dialog.
+edit-engine-dialog =
+    .buttonlabelaccept = Salvar motor
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra1 = Avantiate

@@ -1,24 +1,22 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "PerformanceObserver.h"
 
+#include "LargestContentfulPaint.h"
+#include "PerformanceEntry.h"
+#include "PerformanceObserverEntryList.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/Performance.h"
 #include "mozilla/dom/PerformanceBinding.h"
 #include "mozilla/dom/PerformanceEntryBinding.h"
 #include "mozilla/dom/PerformanceObserverBinding.h"
 #include "mozilla/dom/WorkerScope.h"
-#include "mozilla/StaticPrefs_dom.h"
 #include "nsIScriptError.h"
 #include "nsPIDOMWindow.h"
 #include "nsQueryObject.h"
 #include "nsString.h"
-#include "PerformanceEntry.h"
-#include "LargestContentfulPaint.h"
-#include "PerformanceObserverEntryList.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -28,14 +26,14 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(PerformanceObserver)
   tmp->Disconnect();
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mCallback)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mPerformance)
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mOwner)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mGlobal)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mQueuedEntries)
   NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(PerformanceObserver)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mCallback)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mPerformance)
-  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mOwner)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mGlobal)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mQueuedEntries)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
@@ -46,23 +44,23 @@ NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(PerformanceObserver)
   NS_INTERFACE_MAP_ENTRY(nsISupports)
 NS_INTERFACE_MAP_END
 
-const char UnsupportedEntryTypesIgnoredMsgId[] = "UnsupportedEntryTypesIgnored";
-const char AllEntryTypesIgnoredMsgId[] = "AllEntryTypesIgnored";
-
 PerformanceObserver::PerformanceObserver(nsPIDOMWindowInner* aOwner,
                                          PerformanceObserverCallback& aCb)
-    : mOwner(aOwner),
+    : mGlobal(aOwner->AsGlobal()),
       mCallback(&aCb),
       mObserverType(ObserverTypeUndefined),
       mConnected(false) {
-  MOZ_ASSERT(mOwner);
+  MOZ_ASSERT(mGlobal);
   mPerformance = aOwner->GetPerformance();
 }
 
 PerformanceObserver::PerformanceObserver(WorkerPrivate* aWorkerPrivate,
                                          PerformanceObserverCallback& aCb)
-    : mCallback(&aCb), mObserverType(ObserverTypeUndefined), mConnected(false) {
-  MOZ_ASSERT(aWorkerPrivate);
+    : mGlobal(aWorkerPrivate->GlobalScope()),
+      mCallback(&aCb),
+      mObserverType(ObserverTypeUndefined),
+      mConnected(false) {
+  MOZ_ASSERT(aWorkerPrivate->GlobalScope());
   mPerformance = aWorkerPrivate->GlobalScope()->GetPerformance();
 }
 
@@ -137,29 +135,13 @@ static constexpr nsLiteralString kValidTypeNames[5] = {
     u"mark"_ns, u"measure"_ns, u"navigation"_ns, u"paint"_ns, u"resource"_ns,
 };
 
-void PerformanceObserver::ReportUnsupportedTypesErrorToConsole(
-    bool aIsMainThread, const char* msgId, const nsString& aInvalidTypes) {
-  if (!aIsMainThread) {
-    nsTArray<nsString> params;
-    params.AppendElement(aInvalidTypes);
-    WorkerPrivate::ReportErrorToConsole(msgId, params);
-  } else {
-    nsCOMPtr<nsPIDOMWindowInner> ownerWindow = do_QueryInterface(mOwner);
-    Document* document = ownerWindow->GetExtantDoc();
-    AutoTArray<nsString, 1> params = {aInvalidTypes};
-    nsContentUtils::ReportToConsole(nsIScriptError::warningFlag, "DOM"_ns,
-                                    document, nsContentUtils::eDOM_PROPERTIES,
-                                    msgId, params);
-  }
-}
-
 void PerformanceObserver::Observe(const PerformanceObserverInit& aOptions,
                                   ErrorResult& aRv) {
   const Optional<Sequence<nsString>>& maybeEntryTypes = aOptions.mEntryTypes;
   const Optional<nsString>& maybeType = aOptions.mType;
   const Optional<bool>& maybeBuffered = aOptions.mBuffered;
 
-  if (!mPerformance) {
+  if (!mPerformance || !mGlobal) {
     aRv.Throw(NS_ERROR_FAILURE);
     return;
   }
@@ -170,9 +152,14 @@ void PerformanceObserver::Observe(const PerformanceObserverInit& aOptions,
     return;
   }
 
-  if (maybeEntryTypes.WasPassed() &&
-      (maybeType.WasPassed() || maybeBuffered.WasPassed())) {
+  if (maybeEntryTypes.WasPassed() && maybeType.WasPassed()) {
     /* Per spec (3.3.1.3), this, too, should be a syntax error. */
+    /*
+     * As per the spec we also need to throw a type error if there are both
+     * `entryTypes` and `buffered` options, but either Blink or WebKit doesn't
+     * throw the error so we don't throw to align the behavior with them.
+     * https://github.com/w3c/performance-timeline/issues/215
+     */
     aRv.ThrowTypeError("Can't call observe with both `type` and `entryTypes`");
     return;
   }
@@ -241,16 +228,18 @@ void PerformanceObserver::Observe(const PerformanceObserverInit& aOptions,
     }
 
     if (!invalidTypesJoined.IsEmpty()) {
-      ReportUnsupportedTypesErrorToConsole(NS_IsMainThread(),
-                                           UnsupportedEntryTypesIgnoredMsgId,
-                                           invalidTypesJoined);
+      AutoTArray<nsString, 1> params = {invalidTypesJoined};
+      mGlobal->ReportToConsole(nsIScriptError::warningFlag, "DOM"_ns,
+                               PropertiesFile::DOM_PROPERTIES,
+                               "UnsupportedEntryTypesIgnored"_ns, params);
+      // (we don't return because we're ignoring and we keep going)
     }
 
     /* 3.3.1.5.3 */
     if (validEntryTypes.IsEmpty()) {
-      nsString errorString;
-      ReportUnsupportedTypesErrorToConsole(
-          NS_IsMainThread(), AllEntryTypesIgnoredMsgId, errorString);
+      mGlobal->ReportToConsole(nsIScriptError::warningFlag, "DOM"_ns,
+                               PropertiesFile::DOM_PROPERTIES,
+                               "AllEntryTypesIgnored"_ns);
       return;
     }
 
@@ -289,8 +278,10 @@ void PerformanceObserver::Observe(const PerformanceObserverInit& aOptions,
     }
 
     if (!typeValid) {
-      ReportUnsupportedTypesErrorToConsole(
-          NS_IsMainThread(), UnsupportedEntryTypesIgnoredMsgId, type);
+      AutoTArray<nsString, 1> params = {type};
+      mGlobal->ReportToConsole(nsIScriptError::warningFlag, "DOM"_ns,
+                               PropertiesFile::DOM_PROPERTIES,
+                               "UnsupportedEntryTypesIgnored"_ns, params);
       return;
     }
 

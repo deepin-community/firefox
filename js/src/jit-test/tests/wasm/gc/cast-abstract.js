@@ -1,5 +1,3 @@
-// |jit-test| skip-if: !wasmGcEnabled()
-
 load(libdir + "wasm-binary.js");
 
 // Replace this with a string like 'non-null (ref $s1) -> (ref any) -> (ref any)' to test exactly one specific case. Makes debugging easier.

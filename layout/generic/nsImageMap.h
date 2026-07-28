@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,13 +7,13 @@
 #ifndef nsImageMap_h
 #define nsImageMap_h
 
+#include "Units.h"
 #include "mozilla/gfx/2D.h"
 #include "nsCOMPtr.h"
 #include "nsCoord.h"
-#include "nsTArray.h"
-#include "nsStubMutationObserver.h"
 #include "nsIDOMEventListener.h"
-#include "Units.h"
+#include "nsStubMutationObserver.h"
+#include "nsTArray.h"
 
 class Area;
 class nsImageFrame;
@@ -46,19 +44,18 @@ class nsImageMap final : public nsStubMutationObserver,
    */
   mozilla::dom::HTMLAreaElement* GetArea(const mozilla::CSSIntPoint& aPt) const;
 
-  /**
-   * Return area elements count associated with the image map.
-   */
+  // Return area elements count associated with the image map.
   uint32_t AreaCount() const { return mAreas.Length(); }
 
-  /**
-   * Return area element at the given index.
-   */
+  // Returns whether any of our area elements have focus, currently.
+  bool HasFocus() const { return mHasFocus; }
+
+  // Return area element at the given index.
   mozilla::dom::HTMLAreaElement* GetAreaAt(uint32_t aIndex) const;
 
-  void Draw(nsIFrame* aFrame, DrawTarget& aDrawTarget,
-            const ColorPattern& aColor,
-            const StrokeOptions& aStrokeOptions = StrokeOptions());
+  void DrawFocus(nsIFrame* aFrame, DrawTarget& aDrawTarget,
+                 const ColorPattern& aColor,
+                 const StrokeOptions& aStrokeOptions = StrokeOptions());
 
   /**
    * Called just before the nsImageFrame releases us.
@@ -97,7 +94,7 @@ class nsImageMap final : public nsStubMutationObserver,
 
   void MaybeUpdateAreas(nsIContent* aContent);
 
-  nsImageFrame* mImageFrame;  // the frame that owns us
+  nsImageFrame* mImageFrame = nullptr;  // the frame that owns us
   nsCOMPtr<nsIContent> mMap;
 
   // almost always has some entries
@@ -106,7 +103,10 @@ class nsImageMap final : public nsStubMutationObserver,
   // This is set when we search for all area children and tells us whether we
   // should consider the whole subtree or just direct children when we get
   // content notifications about changes inside the map subtree.
-  bool mConsiderWholeSubtree;
+  bool mConsiderWholeSubtree = false;
+
+  // Whether any of our areas has focus.
+  bool mHasFocus = false;
 };
 
 #endif /* nsImageMap_h */

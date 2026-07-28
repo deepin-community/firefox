@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# vim: set expandtab tabstop=4 shiftwidth=4:
 
 import os
 import shutil
@@ -33,6 +32,7 @@ def repackage_snap(
     appname,
     reponame="canonical/firefox-snap",
     branchname="nightly",
+    wmclass=None,
     arch="amd64",
     dry_run=False,
 ):
@@ -56,14 +56,16 @@ def repackage_snap(
 
     os.chmod(os.path.join(snapdir, "firefox.launcher"), 0o0777)
 
-    shutil.copy(os.path.join(objdir, "dist", "bin", "geckodriver"), pkgsrc)
+    shutil.copy(os.path.join(objdir, "dist", "host", "bin", "geckodriver"), pkgsrc)
 
     shutil.copy(
         os.path.join(srcdir, "browser/branding/nightly/default256.png"), snapdir
     )
     with open(os.path.join(snapdir, "firefox.desktop"), "w") as desktop_file:
         desktop_file.write(
-            SnapDesktopFile(log, appname=appname, branchname=branchname).repack()
+            SnapDesktopFile(
+                log, appname=appname, branchname=branchname, wmclass=wmclass
+            ).repack()
         )
 
     source_yaml = os.path.join(snapdir, "original.snapcraft.yaml")
@@ -115,16 +117,14 @@ def repackage_snap(
 
 def unpack_tarball(package, destdir):
     os.makedirs(destdir, exist_ok=True)
-    subprocess.check_call(
-        [
-            "tar",
-            "-C",
-            destdir,
-            "-xvf",
-            package,
-            "--strip-components=1",
-        ]
-    )
+    subprocess.check_call([
+        "tar",
+        "-C",
+        destdir,
+        "-xvf",
+        package,
+        "--strip-components=1",
+    ])
 
 
 def missing_connections(app_name):

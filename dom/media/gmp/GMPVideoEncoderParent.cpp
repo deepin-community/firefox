@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,7 +11,6 @@
 #include "GMPVideoEncodedFrameImpl.h"
 #include "GMPVideoi420FrameImpl.h"
 #include "mozilla/gmp/GMPTypes.h"
-#include "mozilla/Unused.h"
 #include "nsAutoRef.h"
 #include "nsThread.h"
 #include "nsThreadUtils.h"
@@ -36,18 +34,18 @@ namespace mozilla::gmp {
 // Dead: mIsOpen == false
 
 GMPVideoEncoderParent::GMPVideoEncoderParent(GMPContentParent* aPlugin)
-    : GMPSharedMemManager(aPlugin),
-      mIsOpen(false),
+    : mIsOpen(false),
       mShuttingDown(false),
       mActorDestroyed(false),
       mPlugin(aPlugin),
       mCallback(nullptr),
-      mVideoHost(this),
       mPluginId(aPlugin->GetPluginId()) {
   MOZ_ASSERT(mPlugin);
 }
 
-GMPVideoHostImpl& GMPVideoEncoderParent::Host() { return mVideoHost; }
+bool GMPVideoEncoderParent::MgrIsOnOwningThread() const {
+  return !mPlugin || mPlugin->GMPEventTarget()->IsOnCurrentThread();
+}
 
 // Note: may be called via Terminated()
 void GMPVideoEncoderParent::Close() {
@@ -74,7 +72,6 @@ GMPErr GMPVideoEncoderParent::InitEncode(
   if (mIsOpen) {
     NS_WARNING("Trying to re-init an in-use GMP video encoder!");
     return GMPGenericErr;
-    ;
   }
 
   MOZ_ASSERT(mPlugin->GMPEventTarget()->IsOnCurrentThread());
@@ -109,27 +106,23 @@ GMPErr GMPVideoEncoderParent::Encode(
   GMPUniquePtr<GMPVideoi420FrameImpl> inputFrameImpl(
       static_cast<GMPVideoi420FrameImpl*>(aInputFrame.release()));
 
-  // Very rough kill-switch if the plugin stops processing.  If it's merely
-  // hung and continues, we'll come back to life eventually.
-  // 3* is because we're using 3 buffers per frame for i420 data for now.
-  if ((NumInUse(GMPSharedMem::kGMPFrameData) >
-       3 * GMPSharedMem::kGMPBufLimit) ||
-      (NumInUse(GMPSharedMem::kGMPEncodedData) > GMPSharedMem::kGMPBufLimit)) {
-    GMP_LOG_ERROR(
-        "%s::%s: Out of mem buffers. Frame Buffers:%lu Max:%lu, Encoded "
-        "Buffers: %lu Max: %lu",
-        __CLASS__, __FUNCTION__,
-        static_cast<unsigned long>(NumInUse(GMPSharedMem::kGMPFrameData)),
-        static_cast<unsigned long>(3 * GMPSharedMem::kGMPBufLimit),
-        static_cast<unsigned long>(NumInUse(GMPSharedMem::kGMPEncodedData)),
-        static_cast<unsigned long>(GMPSharedMem::kGMPBufLimit));
+  GMPVideoi420FrameData frameData;
+  ipc::Shmem frameShmem;
+  if (!inputFrameImpl->InitFrameData(frameData, frameShmem)) {
+    GMP_LOG_ERROR("%s::%s: failed to init frame data", __CLASS__, __FUNCTION__);
     return GMPGenericErr;
   }
 
-  GMPVideoi420FrameData frameData;
-  inputFrameImpl->InitFrameData(frameData);
+  if (mEncodedShmemSize > 0) {
+    ipc::Shmem outputShmem;
+    if (MgrTakeShmem(GMPSharedMemClass::Encoded, mEncodedShmemSize,
+                     &outputShmem)) {
+      (void)SendGiveShmem(std::move(outputShmem));
+    }
+  }
 
-  if (!SendEncode(frameData, aCodecSpecificInfo, aFrameTypes)) {
+  if (!SendEncode(frameData, std::move(frameShmem), aCodecSpecificInfo,
+                  aFrameTypes)) {
     GMP_LOG_ERROR("%s::%s: failed to send encode", __CLASS__, __FUNCTION__);
     return GMPGenericErr;
   }
@@ -206,7 +199,7 @@ void GMPVideoEncoderParent::Shutdown() {
 
   mIsOpen = false;
   if (!mActorDestroyed) {
-    Unused << SendEncodingComplete();
+    (void)Send__delete__(this);
   }
 }
 
@@ -226,17 +219,49 @@ void GMPVideoEncoderParent::ActorDestroy(ActorDestroyReason aWhy) {
     mPlugin->VideoEncoderDestroyed(this);
     mPlugin = nullptr;
   }
-  mVideoHost.ActorDestroyed();  // same as DoneWithAPI
+  MgrPurgeShmems();
   MaybeDisconnect(aWhy == AbnormalShutdown);
 }
 
-mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvEncoded(
-    const GMPVideoEncodedFrameData& aEncodedFrame,
+mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvReturnShmem(
+    ipc::Shmem&& aInputShmem) {
+  MgrGiveShmem(GMPSharedMemClass::Decoded, std::move(aInputShmem));
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvEncodedShmem(
+    const GMPVideoEncodedFrameData& aEncodedFrame, ipc::Shmem&& aEncodedShmem,
     nsTArray<uint8_t>&& aCodecSpecificInfo) {
-  if (mCallback) {
-    auto f = new GMPVideoEncodedFrameImpl(aEncodedFrame, &mVideoHost);
+  if (mCallback && GMPVideoEncodedFrameImpl::CheckFrameData(
+                       aEncodedFrame, aEncodedShmem.Size<uint8_t>())) {
+    auto* f = new GMPVideoEncodedFrameImpl(aEncodedFrame,
+                                           std::move(aEncodedShmem), this);
     mCallback->Encoded(f, aCodecSpecificInfo);
     f->Destroy();
+  } else {
+    DeallocShmem(aEncodedShmem);
+  }
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvEncodedData(
+    const GMPVideoEncodedFrameData& aEncodedFrame,
+    nsTArray<uint8_t>&& aEncodedData, nsTArray<uint8_t>&& aCodecSpecificInfo) {
+  if (mCallback && GMPVideoEncodedFrameImpl::CheckFrameData(
+                       aEncodedFrame, aEncodedData.Length())) {
+    mEncodedShmemSize = std::max(mEncodedShmemSize, aEncodedData.Length());
+    auto* f = new GMPVideoEncodedFrameImpl(aEncodedFrame,
+                                           std::move(aEncodedData), this);
+    mCallback->Encoded(f, aCodecSpecificInfo);
+    f->Destroy();
+  }
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvDroppedFrame(
+    const uint64_t& aTimestamp) {
+  if (mCallback) {
+    mCallback->Dropped(aTimestamp);
   }
   return IPC_OK();
 }
@@ -251,54 +276,6 @@ mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvError(const GMPErr& aError) {
 
 mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvShutdown() {
   Shutdown();
-  return IPC_OK();
-}
-
-mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvParentShmemForPool(
-    Shmem&& aFrameBuffer) {
-  if (aFrameBuffer.IsWritable()) {
-    // This test may be paranoia now that we don't shut down the VideoHost
-    // in ::Shutdown, but doesn't hurt
-    if (mVideoHost.SharedMemMgr()) {
-      mVideoHost.SharedMemMgr()->MgrDeallocShmem(GMPSharedMem::kGMPFrameData,
-                                                 aFrameBuffer);
-    } else {
-      GMP_LOG_DEBUG(
-          "%s::%s: %p Called in shutdown, ignoring and freeing directly",
-          __CLASS__, __FUNCTION__, this);
-      DeallocShmem(aFrameBuffer);
-    }
-  }
-  return IPC_OK();
-}
-
-mozilla::ipc::IPCResult GMPVideoEncoderParent::RecvNeedShmem(
-    const uint32_t& aEncodedBufferSize, Shmem* aMem) {
-  ipc::Shmem mem;
-
-  // This test may be paranoia now that we don't shut down the VideoHost
-  // in ::Shutdown, but doesn't hurt
-  if (!mVideoHost.SharedMemMgr() ||
-      !mVideoHost.SharedMemMgr()->MgrAllocShmem(GMPSharedMem::kGMPEncodedData,
-                                                aEncodedBufferSize, &mem)) {
-    GMP_LOG_ERROR(
-        "%s::%s: Failed to get a shared mem buffer for Child! size %u",
-        __CLASS__, __FUNCTION__, aEncodedBufferSize);
-    return IPC_FAIL(this, "Failed to get a shared mem buffer for Child!");
-  }
-  *aMem = mem;
-  mem = ipc::Shmem();
-  return IPC_OK();
-}
-
-mozilla::ipc::IPCResult GMPVideoEncoderParent::Recv__delete__() {
-  if (mPlugin) {
-    // Ignore any return code. It is OK for this to fail without killing the
-    // process.
-    mPlugin->VideoEncoderDestroyed(this);
-    mPlugin = nullptr;
-  }
-
   return IPC_OK();
 }
 

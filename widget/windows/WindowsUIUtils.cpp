@@ -1,10 +1,12 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <windows.h>
+#include <winreg.h>
 #include <wrl.h>
+#include <powerbase.h>
+#include <cfgmgr32.h>
 
 #include "nsServiceManagerUtils.h"
 
@@ -20,7 +22,6 @@
 #include "mozilla/WidgetUtils.h"
 #include "mozilla/WindowsVersion.h"
 #include "mozilla/LookAndFeel.h"
-#include "mozilla/ScopeExit.h"
 #include "mozilla/media/MediaUtils.h"
 #include "nsString.h"
 #include "nsGlobalWindowOuter.h"
@@ -29,18 +30,22 @@
 #include "nsPIDOMWindow.h"
 #include "nsWindowGfx.h"
 #include "Units.h"
+#include "nsWindowsHelpers.h"
+#include "WinRegistry.h"
+#include "WinUtils.h"
+
+mozilla::LazyLogModule gTabletModeLog("TabletMode");
+extern mozilla::LazyLogModule gWindowsLog;
 
 /* mingw currently doesn't support windows.ui.viewmanagement.h, so we disable it
  * until it's fixed. */
 
-// See
-// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.14393.0/winrt/windows.ui.viewmanagement.h
-// for the source of some of these definitions for older SDKs.
 #ifndef __MINGW32__
 
 #  include <inspectable.h>
 #  include <roapi.h>
 #  include <windows.ui.viewmanagement.h>
+#  include <uiviewsettingsinterop.h>
 
 #  pragma comment(lib, "runtimeobject.lib")
 
@@ -51,145 +56,14 @@ using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::ApplicationModel::DataTransfer;
 
-#  ifndef RuntimeClass_Windows_UI_ViewManagement_UIViewSettings
-#    define RuntimeClass_Windows_UI_ViewManagement_UIViewSettings \
-      L"Windows.UI.ViewManagement.UIViewSettings"
-#  endif
-
-#  ifndef IUIViewSettingsInterop
-
-using IUIViewSettingsInterop = interface IUIViewSettingsInterop;
-
-MIDL_INTERFACE("3694dbf9-8f68-44be-8ff5-195c98ede8a6")
-IUIViewSettingsInterop : public IInspectable {
- public:
-  virtual HRESULT STDMETHODCALLTYPE GetForWindow(HWND hwnd, REFIID riid,
-                                                 void** ppv) = 0;
-};
-#  endif
-
-#  ifndef __IDataTransferManagerInterop_INTERFACE_DEFINED__
-#    define __IDataTransferManagerInterop_INTERFACE_DEFINED__
-
-using IDataTransferManagerInterop = interface IDataTransferManagerInterop;
-
-MIDL_INTERFACE("3A3DCD6C-3EAB-43DC-BCDE-45671CE800C8")
-IDataTransferManagerInterop : public IUnknown {
- public:
-  virtual HRESULT STDMETHODCALLTYPE GetForWindow(
-      HWND appWindow, REFIID riid, void** dataTransferManager) = 0;
-  virtual HRESULT STDMETHODCALLTYPE ShowShareUIForWindow(HWND appWindow) = 0;
-};
-
-#  endif
-
-#  if !defined( \
-      ____x_ABI_CWindows_CApplicationModel_CDataTransfer_CIDataPackage4_INTERFACE_DEFINED__)
-#    define ____x_ABI_CWindows_CApplicationModel_CDataTransfer_CIDataPackage4_INTERFACE_DEFINED__
-
-MIDL_INTERFACE("13a24ec8-9382-536f-852a-3045e1b29a3b")
-IDataPackage4 : public IInspectable {
- public:
-  virtual HRESULT STDMETHODCALLTYPE add_ShareCanceled(
-      __FITypedEventHandler_2_Windows__CApplicationModel__CDataTransfer__CDataPackage_IInspectable *
-          handler,
-      EventRegistrationToken * token) = 0;
-  virtual HRESULT STDMETHODCALLTYPE remove_ShareCanceled(
-      EventRegistrationToken token) = 0;
-};
-
-#  endif
-
-#  ifndef RuntimeClass_Windows_UI_ViewManagement_UISettings
-#    define RuntimeClass_Windows_UI_ViewManagement_UISettings \
-      L"Windows.UI.ViewManagement.UISettings"
-#  endif
-#  if WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION < 0x80000
-namespace ABI {
-namespace Windows {
-namespace UI {
-namespace ViewManagement {
-
-class UISettings;
-class UISettingsAutoHideScrollBarsChangedEventArgs;
-interface IUISettingsAutoHideScrollBarsChangedEventArgs;
-MIDL_INTERFACE("87afd4b2-9146-5f02-8f6b-06d454174c0f")
-IUISettingsAutoHideScrollBarsChangedEventArgs : public IInspectable{};
-
-}  // namespace ViewManagement
-}  // namespace UI
-}  // namespace Windows
-}  // namespace ABI
-
-namespace ABI {
-namespace Windows {
-namespace Foundation {
-
-template <>
-struct __declspec(uuid("808aef30-2660-51b0-9c11-f75dd42006b4"))
-ITypedEventHandler<ABI::Windows::UI::ViewManagement::UISettings*,
-                   ABI::Windows::UI::ViewManagement::
-                       UISettingsAutoHideScrollBarsChangedEventArgs*>
-    : ITypedEventHandler_impl<
-          ABI::Windows::Foundation::Internal::AggregateType<
-              ABI::Windows::UI::ViewManagement::UISettings*,
-              ABI::Windows::UI::ViewManagement::IUISettings*>,
-          ABI::Windows::Foundation::Internal::AggregateType<
-              ABI::Windows::UI::ViewManagement::
-                  UISettingsAutoHideScrollBarsChangedEventArgs*,
-              ABI::Windows::UI::ViewManagement::
-                  IUISettingsAutoHideScrollBarsChangedEventArgs*>> {
-  static const wchar_t* z_get_rc_name_impl() {
-    return L"Windows.Foundation.TypedEventHandler`2<Windows.UI.ViewManagement."
-           L"UISettings, "
-           L"Windows.UI.ViewManagement."
-           L"UISettingsAutoHideScrollBarsChangedEventArgs>";
-  }
-};
-// Define a typedef for the parameterized interface specialization's mangled
-// name. This allows code which uses the mangled name for the parameterized
-// interface to access the correct parameterized interface specialization.
-typedef ITypedEventHandler<ABI::Windows::UI::ViewManagement::UISettings*,
-                           ABI::Windows::UI::ViewManagement::
-                               UISettingsAutoHideScrollBarsChangedEventArgs*>
-    __FITypedEventHandler_2_Windows__CUI__CViewManagement__CUISettings_Windows__CUI__CViewManagement__CUISettingsAutoHideScrollBarsChangedEventArgs_t;
-#    define __FITypedEventHandler_2_Windows__CUI__CViewManagement__CUISettings_Windows__CUI__CViewManagement__CUISettingsAutoHideScrollBarsChangedEventArgs \
-      ABI::Windows::Foundation::                                                                                                                            \
-          __FITypedEventHandler_2_Windows__CUI__CViewManagement__CUISettings_Windows__CUI__CViewManagement__CUISettingsAutoHideScrollBarsChangedEventArgs_t
-
-}  // namespace Foundation
-}  // namespace Windows
-}  // namespace ABI
-
-namespace ABI {
-namespace Windows {
-namespace UI {
-namespace ViewManagement {
-class UISettings;
-class UISettingsAutoHideScrollBarsChangedEventArgs;
-interface IUISettings5;
-MIDL_INTERFACE("5349d588-0cb5-5f05-bd34-706b3231f0bd")
-IUISettings5 : public IInspectable {
- public:
-  virtual HRESULT STDMETHODCALLTYPE get_AutoHideScrollBars(boolean * value) = 0;
-  virtual HRESULT STDMETHODCALLTYPE add_AutoHideScrollBarsChanged(
-      __FITypedEventHandler_2_Windows__CUI__CViewManagement__CUISettings_Windows__CUI__CViewManagement__CUISettingsAutoHideScrollBarsChangedEventArgs *
-          handler,
-      EventRegistrationToken * token) = 0;
-  virtual HRESULT STDMETHODCALLTYPE remove_AutoHideScrollBarsChanged(
-      EventRegistrationToken token) = 0;
-};
-}  // namespace ViewManagement
-}  // namespace UI
-}  // namespace Windows
-}  // namespace ABI
-#  endif
 #endif
 
 using namespace mozilla;
 
+// Since Win10 and Win11 tablet modes can't both be simultaneously active, we
+// only need one backing variable for the both of them.
 enum class TabletModeState : uint8_t { Unknown, Off, On };
-static TabletModeState sInTabletModeState;
+static TabletModeState sInTabletModeState = TabletModeState::Unknown;
 
 WindowsUIUtils::WindowsUIUtils() = default;
 WindowsUIUtils::~WindowsUIUtils() = default;
@@ -225,13 +99,17 @@ WindowsUIUtils::SetWindowIcon(mozIDOMWindowProxy* aWindow,
   nsCOMPtr<nsIWidget> widget =
       nsGlobalWindowOuter::Cast(aWindow)->GetMainWidget();
   nsWindow* window = static_cast<nsWindow*>(widget.get());
+  if (!window) {
+    NS_WARNING("SetWindowIcon failed - missing widget");
+    return NS_OK;
+  }
 
   nsresult rv;
 
   if (aSmallIcon) {
     HICON hIcon = nullptr;
     rv = nsWindowGfx::CreateIcon(
-        aSmallIcon, false, mozilla::LayoutDeviceIntPoint(),
+        aSmallIcon, nullptr, false, mozilla::LayoutDeviceIntPoint(),
         nsWindowGfx::GetIconMetrics(nsWindowGfx::kSmallIcon), &hIcon);
     NS_ENSURE_SUCCESS(rv, rv);
 
@@ -241,7 +119,7 @@ WindowsUIUtils::SetWindowIcon(mozIDOMWindowProxy* aWindow,
   if (aBigIcon) {
     HICON hIcon = nullptr;
     rv = nsWindowGfx::CreateIcon(
-        aBigIcon, false, mozilla::LayoutDeviceIntPoint(),
+        aBigIcon, nullptr, false, mozilla::LayoutDeviceIntPoint(),
         nsWindowGfx::GetIconMetrics(nsWindowGfx::kRegularIcon), &hIcon);
     NS_ENSURE_SUCCESS(rv, rv);
 
@@ -259,6 +137,10 @@ WindowsUIUtils::SetWindowIconFromExe(mozIDOMWindowProxy* aWindow,
   nsCOMPtr<nsIWidget> widget =
       nsGlobalWindowOuter::Cast(aWindow)->GetMainWidget();
   nsWindow* window = static_cast<nsWindow*>(widget.get());
+  if (!window) {
+    NS_WARNING("SetWindowIconFromExe failed - missing widget");
+    return NS_OK;
+  }
 
   HICON icon = ::LoadIconW(::GetModuleHandleW(PromiseFlatString(aExe).get()),
                            MAKEINTRESOURCEW(aIndex));
@@ -275,6 +157,10 @@ WindowsUIUtils::SetWindowIconNoData(mozIDOMWindowProxy* aWindow) {
   nsCOMPtr<nsIWidget> widget =
       nsGlobalWindowOuter::Cast(aWindow)->GetMainWidget();
   nsWindow* window = static_cast<nsWindow*>(widget.get());
+  if (!window) {
+    NS_WARNING("SetWindowIconNoData failed - missing widget");
+    return NS_OK;
+  }
 
   window->SetSmallIconNoData();
   window->SetBigIconNoData();
@@ -282,17 +168,37 @@ WindowsUIUtils::SetWindowIconNoData(mozIDOMWindowProxy* aWindow) {
   return NS_OK;
 }
 
-bool WindowsUIUtils::GetInTabletMode() {
+bool WindowsUIUtils::GetInWin10TabletMode() {
   MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread());
+  if (IsWin11OrLater()) {
+    return false;
+  }
   if (sInTabletModeState == TabletModeState::Unknown) {
-    UpdateInTabletMode();
+    UpdateInWin10TabletMode();
+  }
+  return sInTabletModeState == TabletModeState::On;
+}
+
+bool WindowsUIUtils::GetInWin11TabletMode() {
+  MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread());
+  if (!IsWin11OrLater()) {
+    return false;
+  }
+  if (sInTabletModeState == TabletModeState::Unknown) {
+    UpdateInWin11TabletMode();
   }
   return sInTabletModeState == TabletModeState::On;
 }
 
 NS_IMETHODIMP
-WindowsUIUtils::GetInTabletMode(bool* aResult) {
-  *aResult = GetInTabletMode();
+WindowsUIUtils::GetInWin10TabletMode(bool* aResult) {
+  *aResult = GetInWin10TabletMode();
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+WindowsUIUtils::GetInWin11TabletMode(bool* aResult) {
+  *aResult = GetInWin11TabletMode();
   return NS_OK;
 }
 
@@ -543,7 +449,18 @@ bool WindowsUIUtils::ComputeTransparencyEffects() {
 #endif
 }
 
-void WindowsUIUtils::UpdateInTabletMode() {
+void WindowsUIUtils::UpdateInWin10TabletMode() {
+  if (IsWin11OrLater()) {
+    // (In theory we should never get here under Win11; but it's conceivable
+    // that there are third-party applications that try to "assist" legacy Win10
+    // apps by synthesizing Win10-style tablet-mode notifications.)
+    return;
+  }
+
+  // The getter below relies on querying a HWND which is affine to the main
+  // thread; its operation is not known to be thread-safe, let alone lock-free.
+  MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread());
+
 #ifndef __MINGW32__
   nsresult rv;
   nsCOMPtr<nsIWindowMediator> winMediator(
@@ -568,6 +485,8 @@ void WindowsUIUtils::UpdateInTabletMode() {
   }
 
   HWND winPtr = (HWND)widget->GetNativeData(NS_NATIVE_WINDOW);
+  NS_ENSURE_TRUE_VOID(winPtr);
+
   ComPtr<IUIViewSettingsInterop> uiViewSettingsInterop;
 
   HRESULT hr = GetActivationFactory(
@@ -592,15 +511,243 @@ void WindowsUIUtils::UpdateInTabletMode() {
   TabletModeState oldTabletModeState = sInTabletModeState;
   sInTabletModeState = mode == UserInteractionMode_Touch ? TabletModeState::On
                                                          : TabletModeState::Off;
+
   if (sInTabletModeState != oldTabletModeState) {
     nsCOMPtr<nsIObserverService> observerService =
         mozilla::services::GetObserverService();
     observerService->NotifyObservers(nullptr, "tablet-mode-change",
                                      sInTabletModeState == TabletModeState::On
-                                         ? u"tablet-mode"
+                                         ? u"win10-tablet-mode"
                                          : u"normal-mode");
   }
 #endif
+}
+
+// Cache: whether this device is believed to be capable of entering tablet mode.
+//
+// Meaningful only if `IsWin11OrLater()`.
+static Maybe<bool> sIsTabletCapable = Nothing();
+
+// The UUID of a GPIO pin which indicates whether or not a convertible device is
+// currently in tablet mode. (We copy `DEFINE_GUID`'s implementation here since
+// we can't control `INITGUID`, which the canonical one is conditional on.)
+//
+// https://learn.microsoft.com/en-us/windows-hardware/drivers/gpiobtn/laptop-slate-mode-toggling-between-states
+#define MOZ_DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+  EXTERN_C const GUID DECLSPEC_SELECTANY name = {                        \
+      l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
+/* 317fc439-3f77-41c8-b09e-08ad63272aa3 */ MOZ_DEFINE_GUID(
+    MOZ_GUID_GPIOBUTTONS_LAPTOPSLATE_INTERFACE, 0x317fc439, 0x3f77, 0x41c8,
+    0xb0, 0x9e, 0x08, 0xad, 0x63, 0x27, 0x2a, 0xa3);
+
+void WindowsUIUtils::UpdateInWin11TabletMode() {
+  // The OS-level getter itself is threadsafe, but we retain the main-thread
+  // restriction to parallel the Win10 getter's (presumed) restriction.
+  MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread());
+
+  if (!IsWin11OrLater()) {
+    // We should ordinarily never reach this point in Win10 -- but there may
+    // well be some third-party application out there that synthesizes Win11-
+    // style tablet-mode notifications.
+    return;
+  }
+
+  // ***  ***  ***  WARNING: RELIANCE ON UNDOCUMENTED BEHAVIOR  ***  ***  ***
+  //
+  // Windows 10's `UserInteractionMode` API is no longer useful under Windows
+  // 11: it always returns `UserInteractionMode_Mouse`.
+  //
+  // The documented API to query whether we're in tablet mode (alt.: "slate
+  // mode") under Windows 11 is `::GetSystemMetrics(SM_CONVERTIBLESLATEMODE)`.
+  // This returns 0 if we are in slate mode and 1 otherwise... except on devices
+  // where tablet mode is unavailable (such as desktops), in which case it
+  // returns 0 unconditionally.
+  //
+  // Unfortunately, there is no documented API to determine whether
+  // `SM_CONVERTIBLESLATEMODE` is `0` because the device is currently in slate
+  // mode or because the device can never be in slate mode.
+  //
+  // As such, we follow Chromium's lead here, and attempt to determine
+  // heuristically whether that API is going to return anything sensible.
+  // (Indeed, the heuristic below is in large part taken from Chromium.)
+
+  if (sIsTabletCapable.isNothing()) {
+    bool const heuristic = ([]() -> bool {
+      // If the user has set the relevant pref to override our tablet-detection
+      // heuristics, go with that.
+      switch (StaticPrefs::widget_windows_tablet_detection_override()) {
+        case -1:
+          MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                  ("TCH: override detected (-1)"));
+          return false;
+        case 1:
+          MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                  ("TCH: override detected (+1)"));
+          return true;
+        default:
+          break;
+      }
+
+      // If ::GSM(SM_CONVERTIBLESLATEMODE) is _currently_ nonzero, we must be on
+      // a system that does somnething with SM_CONVERTIBLESLATEMODE, so we can
+      // trust it.
+      if (::GetSystemMetrics(SM_CONVERTIBLESLATEMODE) != 0) {
+        MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                ("TCH: SM_CONVERTIBLESLATEMODE != 0"));
+        return true;
+      }
+
+      // If the device does not support touch it can't possibly be a tablet.
+      if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0) {
+        MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                ("TCH: SM_MAXIMUMTOUCHES != 0"));
+        return false;
+      }
+
+      if (MOZ_LOG_TEST(gTabletModeLog, LogLevel::Info)) {
+        [&]() -> void {
+          // Check to see if a particular registry key [1] exists, and what its
+          // value is.
+          //
+          // This is not presently considered reliable, as some
+          // non-tablet-capable devices have this registry key present, but not
+          // set to 1 -- see bug 1932775, as well as comments in Chromium [2].
+          //
+          // This is probably strictly redundant with the CONVERTIBLESLATEMODE
+          // check above, so we only even look at it if we're logging.
+          //
+          // [1] https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-gpiobuttons-convertibleslatemode
+          // [2] https://source.chromium.org/chromium/chromium/src/+/main:base/win/win_util.cc;l=240;drc=5a02fc6cdee77d0a39e9c43a4c2a29bbccc88852
+          namespace Reg = mozilla::widget::WinRegistry;
+          Reg::Key key(
+              HKEY_LOCAL_MACHINE,
+              uR"(System\CurrentControlSet\Control\PriorityControl)"_ns,
+              Reg::KeyMode::QueryValue);
+          if (!key) {
+            MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                    ("TCH: \"PriorityControl\" registry path not found"));
+          }
+
+          auto const valueType = key.GetValueType(u"ConvertibleSlateMode"_ns);
+          if (valueType == Reg::ValueType::None) {
+            MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                    ("TCH: 'ConvertibleSlateMode' not found"));
+            return;
+          }
+
+          if (auto const val =
+                  key.GetValueAsDword(u"ConvertibleSlateMode"_ns)) {
+            MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                    ("TCH: 'ConvertibleSlateMode' found; value is 0x%08" PRIX32,
+                     *val));
+          } else {
+            MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                    ("TCH: 'ConvertibleSlateMode' found, but not a DWORD "
+                     "(type=0x%08" PRIX32 ")",
+                     uint32_t(valueType)));
+          }
+        }();
+      }
+
+      // If the device has this GUID mapped to a GPIO pin, it's almost certainly
+      // tablet-capable. (It's not certain whether the converse is true.)
+      //
+      // https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/continuum#designing-your-device-for-tablet-mode
+      bool const hasTabletGpioPin = [&]() {
+        ULONG size = 0;
+        GUID guid{MOZ_GUID_GPIOBUTTONS_LAPTOPSLATE_INTERFACE};
+
+        CONFIGRET const err = ::CM_Get_Device_Interface_List_SizeW(
+            &size, &guid, nullptr, CM_GET_DEVICE_INTERFACE_LIST_PRESENT);
+
+        // (The next step at this point would usually be to call the function
+        // "::CM_Get_Device_Interface_ListW()" -- but we don't care where the
+        // associated device interface is actually mapped to; we only care
+        // whether it's mapped at all.
+        //
+        // For our purposes, a zero-length null-terminated string doesn't count
+        // as "present".)
+        return err == CR_SUCCESS && size > 1;
+      }();
+      if (hasTabletGpioPin) {
+        MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                ("TCH: relevant GPIO interface found"));
+        return true;
+      }
+
+      // If the device has no rotation sensor, it's _probably_ not a convertible
+      // device. (There are exceptions! See bug 1918292.)
+      AR_STATE rotation_state;
+      if (HRESULT hr = ::GetAutoRotationState(&rotation_state); !FAILED(hr)) {
+        if ((rotation_state & (AR_NOT_SUPPORTED | AR_LAPTOP | AR_NOSENSOR)) !=
+            0) {
+          MOZ_LOG(gTabletModeLog, LogLevel::Info, ("TCH: no rotation sensor"));
+          return false;
+        }
+      }
+
+      // If the device returns `PlatformRoleSlate` for its POWER_PLATFORM_ROLE,
+      // it's probably tablet-capable.
+      //
+      // The converse is known to be false; the tablet-capable Dell Inspiron 14
+      // 7445 2-in-1 returns `PlatformRoleMobile`.
+      //
+      // (Chromium checks for PlatformRoleMobile as well, but (e.g.) a Dell XPS
+      // 15 9500 also returns `PlatformRoleMobile` despite *not* being tablet-
+      // capable.)
+      POWER_PLATFORM_ROLE const role =
+          mozilla::widget::WinUtils::GetPowerPlatformRole();
+      if (role == PlatformRoleSlate) {
+        MOZ_LOG(gTabletModeLog, LogLevel::Info,
+                ("TCH: role == PlatformRoleSlate"));
+        return true;
+      }
+
+      // Without some specific indicator of tablet-capability, assume that we're
+      // tablet-incapable.
+      MOZ_LOG(gTabletModeLog, LogLevel::Info,
+              ("TCH: no indication; falling through"));
+      return false;
+    })();
+
+    MOZ_LOG(gTabletModeLog, LogLevel::Info,
+            ("tablet-capability heuristic: %s", heuristic ? "true" : "false"));
+
+    sIsTabletCapable = Some(heuristic);
+    // If we appear not to be tablet-capable, don't bother doing the check.
+    // (We also don't need to send a signal.)
+    if (!heuristic) {
+      sInTabletModeState = TabletModeState::Off;
+      return;
+    }
+  } else if (sIsTabletCapable == Some(false)) {
+    // We've been in here before, and the heuristic came back false... but
+    // somehow, we've just gotten an update for the convertible-slate-mode
+    // state.
+    //
+    // Clearly the heuristic was wrong!
+    //
+    // TODO(rkraesig): should we add telemetry to see how often this gets hit?
+    MOZ_LOG(gTabletModeLog, LogLevel::Warning,
+            ("recv'd update signal after false heuristic run; reversing"));
+    sIsTabletCapable = Some(true);
+  }
+
+  // at this point, we must be tablet-capable
+  MOZ_ASSERT(sIsTabletCapable == Some(true));
+
+  TabletModeState const oldState = sInTabletModeState;
+  bool const isTableting =
+      ::GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0 /* [sic!] */;
+  sInTabletModeState = isTableting ? TabletModeState::On : TabletModeState::Off;
+  if (oldState != sInTabletModeState) {
+    nsCOMPtr<nsIObserverService> observerService =
+        mozilla::services::GetObserverService();
+    observerService->NotifyObservers(nullptr, "tablet-mode-change",
+                                     sInTabletModeState == TabletModeState::On
+                                         ? u"win11-tablet-mode"
+                                         : u"normal-mode");
+  }
 }
 
 #ifndef __MINGW32__
@@ -623,7 +770,7 @@ Result<HStringUniquePtr, HRESULT> ConvertToWindowsString(
 }
 
 static Result<Ok, nsresult> RequestShare(
-    const std::function<HRESULT(IDataRequestedEventArgs* pArgs)>& aCallback) {
+    std::function<HRESULT(IDataRequestedEventArgs* pArgs)>&& aCallback) {
   HWND hwnd = GetForegroundWindow();
   if (!hwnd) {
     return Err(NS_ERROR_FAILURE);
@@ -798,4 +945,353 @@ WindowsUIUtils::ShareUrl(const nsAString& aUrlToShare,
   WindowsUIUtils::Share(nsAutoString(aShareTitle), text,
                         nsAutoString(aUrlToShare));
   return NS_OK;
+}
+
+// Definitions pulled from the Windows App SDK
+namespace winrt {
+namespace Microsoft {
+namespace UI {
+struct WindowId {
+  uint64_t value;
+};
+namespace Windowing {
+MIDL_INTERFACE("3C315C24-D540-5D72-B518-B226B83627CB")
+IAppWindowStatics : IInspectable {
+  virtual int32_t __stdcall Create(void**) noexcept = 0;
+  virtual int32_t __stdcall CreateWithPresenter(void*, void**) noexcept = 0;
+  virtual int32_t __stdcall CreateWithPresenterAndOwner(
+      void*, struct winrt::Microsoft::UI::WindowId, void**) noexcept = 0;
+  virtual int32_t __stdcall GetFromWindowId(
+      struct winrt::Microsoft::UI::WindowId, void**) noexcept = 0;
+};
+
+MIDL_INTERFACE("CFA788B3-643B-5C5E-AD4E-321D48A82ACD")
+IAppWindow : IInspectable {
+  virtual int32_t __stdcall get_Id(
+      struct struct_Microsoft_UI_WindowId*) noexcept = 0;
+  virtual int32_t __stdcall get_IsShownInSwitchers(bool*) noexcept = 0;
+  virtual int32_t __stdcall put_IsShownInSwitchers(bool) noexcept = 0;
+  virtual int32_t __stdcall get_IsVisible(bool*) noexcept = 0;
+  virtual int32_t __stdcall get_OwnerWindowId(
+      struct struct_Microsoft_UI_WindowId*) noexcept = 0;
+  virtual int32_t __stdcall get_Position(
+      struct struct_Windows_Graphics_PointInt32*) noexcept = 0;
+  virtual int32_t __stdcall get_Presenter(void**) noexcept = 0;
+  virtual int32_t __stdcall get_Size(
+      struct struct_Windows_Graphics_SizeInt32*) noexcept = 0;
+  virtual int32_t __stdcall get_Title(void**) noexcept = 0;
+  virtual int32_t __stdcall put_Title(void*) noexcept = 0;
+  virtual int32_t __stdcall get_TitleBar(void**) noexcept = 0;
+  virtual int32_t __stdcall Destroy() noexcept = 0;
+  virtual int32_t __stdcall Hide() noexcept = 0;
+  virtual int32_t __stdcall Move(
+      struct struct_Windows_Graphics_PointInt32) noexcept = 0;
+  virtual int32_t __stdcall MoveAndResize(
+      struct struct_Windows_Graphics_RectInt32) noexcept = 0;
+  virtual int32_t __stdcall MoveAndResizeRelativeToDisplayArea(
+      struct struct_Windows_Graphics_RectInt32, void*) noexcept = 0;
+  virtual int32_t __stdcall Resize(
+      struct struct_Windows_Graphics_SizeInt32) noexcept = 0;
+  virtual int32_t __stdcall SetIcon(void*) noexcept = 0;
+  virtual int32_t __stdcall SetIconWithIconId(
+      struct struct_Microsoft_UI_IconId) noexcept = 0;
+  virtual int32_t __stdcall SetPresenter(void*) noexcept = 0;
+  virtual int32_t __stdcall SetPresenterByKind(int32_t) noexcept = 0;
+  virtual int32_t __stdcall Show() noexcept = 0;
+  virtual int32_t __stdcall ShowWithActivation(bool) noexcept = 0;
+  virtual int32_t __stdcall add_Changed(void*, void**) noexcept = 0;
+  virtual int32_t __stdcall remove_Changed(void*) noexcept = 0;
+  virtual int32_t __stdcall add_Closing(void*, void**) noexcept = 0;
+  virtual int32_t __stdcall remove_Closing(void*) noexcept = 0;
+  virtual int32_t __stdcall add_Destroying(void*, void**) noexcept = 0;
+  virtual int32_t __stdcall remove_Destroying(void*) noexcept = 0;
+};
+
+MIDL_INTERFACE("5574EFA2-C91C-5700-A363-539C71A7AAF4")
+IAppWindowTitleBar : IInspectable {
+  virtual int32_t __stdcall get_BackgroundColor(void**) noexcept = 0;
+  virtual int32_t __stdcall put_BackgroundColor(void*) noexcept = 0;
+  virtual int32_t __stdcall get_ButtonBackgroundColor(void**) noexcept = 0;
+  virtual int32_t __stdcall put_ButtonBackgroundColor(void*) noexcept = 0;
+  virtual int32_t __stdcall get_ButtonForegroundColor(void**) noexcept = 0;
+  virtual int32_t __stdcall put_ButtonForegroundColor(void*) noexcept = 0;
+  virtual int32_t __stdcall get_ButtonHoverBackgroundColor(void**) noexcept = 0;
+  virtual int32_t __stdcall put_ButtonHoverBackgroundColor(void*) noexcept = 0;
+  virtual int32_t __stdcall get_ButtonHoverForegroundColor(void**) noexcept = 0;
+  virtual int32_t __stdcall put_ButtonHoverForegroundColor(void*) noexcept = 0;
+  virtual int32_t __stdcall get_ButtonInactiveBackgroundColor(
+      void**) noexcept = 0;
+  virtual int32_t __stdcall put_ButtonInactiveBackgroundColor(
+      void*) noexcept = 0;
+  virtual int32_t __stdcall get_ButtonInactiveForegroundColor(
+      void**) noexcept = 0;
+  virtual int32_t __stdcall put_ButtonInactiveForegroundColor(
+      void*) noexcept = 0;
+  virtual int32_t __stdcall get_ButtonPressedBackgroundColor(
+      void**) noexcept = 0;
+  virtual int32_t __stdcall put_ButtonPressedBackgroundColor(
+      void*) noexcept = 0;
+  virtual int32_t __stdcall get_ButtonPressedForegroundColor(
+      void**) noexcept = 0;
+  virtual int32_t __stdcall put_ButtonPressedForegroundColor(
+      void*) noexcept = 0;
+  virtual int32_t __stdcall get_ExtendsContentIntoTitleBar(bool*) noexcept = 0;
+  virtual int32_t __stdcall put_ExtendsContentIntoTitleBar(bool) noexcept = 0;
+  virtual int32_t __stdcall get_ForegroundColor(void**) noexcept = 0;
+  virtual int32_t __stdcall put_ForegroundColor(void*) noexcept = 0;
+  virtual int32_t __stdcall get_Height(int32_t*) noexcept = 0;
+  virtual int32_t __stdcall get_IconShowOptions(int32_t*) noexcept = 0;
+  virtual int32_t __stdcall put_IconShowOptions(int32_t) noexcept = 0;
+  virtual int32_t __stdcall get_InactiveBackgroundColor(void**) noexcept = 0;
+  virtual int32_t __stdcall put_InactiveBackgroundColor(void*) noexcept = 0;
+  virtual int32_t __stdcall get_InactiveForegroundColor(void**) noexcept = 0;
+  virtual int32_t __stdcall put_InactiveForegroundColor(void*) noexcept = 0;
+  virtual int32_t __stdcall get_LeftInset(int32_t*) noexcept = 0;
+  virtual int32_t __stdcall get_RightInset(int32_t*) noexcept = 0;
+  virtual int32_t __stdcall ResetToDefault() noexcept = 0;
+  virtual int32_t __stdcall SetDragRectangles(
+      uint32_t, struct struct_Windows_Graphics_RectInt32*) noexcept = 0;
+};
+
+MIDL_INTERFACE("86FAED38-748A-5B4B-9CCF-3BA0496C9041")
+IAppWindowTitleBar2 : IInspectable {
+  virtual int32_t __stdcall get_PreferredHeightOption(int32_t*) noexcept = 0;
+  virtual int32_t __stdcall put_PreferredHeightOption(int32_t) noexcept = 0;
+};
+
+enum TitleBarHeightOption : int32_t {
+  Standard = 0,
+  Tall = 1,
+  Collapsed = 2,
+};
+}  // namespace Windowing
+}  // namespace UI
+}  // namespace Microsoft
+}  // namespace winrt
+
+#ifndef __MINGW32__
+static StaticRefPtr<winrt::Microsoft::UI::Windowing::IAppWindowStatics>
+    sAppWindowStatics;
+using GetWindowIdFromWindowType = HRESULT(STDAPICALLTYPE*)(
+    HWND hwnd, struct winrt::Microsoft::UI::WindowId* windowId);
+static GetWindowIdFromWindowType sGetWindowIdFromWindowProc = nullptr;
+
+// Returns whether initialization succeeded
+[[nodiscard]] static bool InitializeWindowsAppSDKStatics() {
+  MOZ_ASSERT(NS_IsMainThread());
+  // This function is needed to avoid drawing the titlebar buttons
+  // when the Windows mica backdrop is enabled. (bug 1934040)
+  // If it isn't possible for mica to be enabled, we don't need to do anything.
+  // The Windows App SDK that we use here doesn't support older versions of
+  // Windows 10 that Firefox does.
+  if (!widget::WinUtils::MicaAvailable()) {
+    MOZ_LOG(
+        gWindowsLog, LogLevel::Info,
+        ("Skipping SetIsTitlebarCollapsed() because mica is not available"));
+    return false;
+  }
+  // This pref is only false on certain test runs (most notably
+  // opt-talos-xperf), the Windows App SDK fails calling
+  // DCompositionCreateDevice3() with ERROR_ACCESS_DENIED, and the code assumes
+  // it is going to succeed so it proceeds to crash deferencing null.
+  //
+  // We're not exactly sure why this is happening right now, but I'm pretty sure
+  // it's specific to how we're running Firefox on those test runs, and
+  // I don't think any users will run into this. So those tests pass the
+  // --disable-windowsappsdk command line argument to avoid using
+  // the Windows App SDK.
+  if (!StaticPrefs::widget_windows_windowsappsdk_enabled()) {
+    MOZ_LOG(gWindowsLog, LogLevel::Info,
+            ("Skipping SetIsTitlebarCollapsed() because "
+             "widget.windows.windowsappsdk.enabled is false"));
+    return false;
+  }
+  if (!sGetWindowIdFromWindowProc) {
+    HMODULE frameworkUdkModule =
+        ::LoadLibraryW(L"Microsoft.Internal.FrameworkUdk.dll");
+    if (!frameworkUdkModule) {
+      uint32_t lastError = static_cast<uint32_t>(::GetLastError());
+      MOZ_LOG(gWindowsLog, LogLevel::Error,
+              ("Skipping SetIsTitlebarCollapsed() because "
+               "Microsoft.Internal.FrameworkUdk.dll could not be loaded, "
+               "error=%" PRIu32,
+               lastError));
+      MOZ_ASSERT_UNREACHABLE(
+          "Microsoft.Internal.FrameworkUdk.dll could not be loaded");
+      return false;
+    }
+
+    sGetWindowIdFromWindowProc = (GetWindowIdFromWindowType)::GetProcAddress(
+        frameworkUdkModule, "Windowing_GetWindowIdFromWindow");
+  }
+  if (!sGetWindowIdFromWindowProc) {
+    MOZ_LOG(gWindowsLog, LogLevel::Error,
+            ("Skipping SetIsTitlebarCollapsed() because "
+             "GetWindowIdFromWindow could not be found in "
+             "Microsoft.Internal.FrameworkUdk.dll, error=%" PRIu32,
+             static_cast<uint32_t>(::GetLastError())));
+    MOZ_ASSERT_UNREACHABLE(
+        "GetWindowIdFromWindow could not be found in "
+        "Microsoft.Internal.FrameworkUdk.dll");
+    return false;
+  }
+  if (!sAppWindowStatics) {
+    HMODULE uiWindowingModule = ::LoadLibraryW(L"Microsoft.UI.Windowing.dll");
+    if (!uiWindowingModule) {
+      MOZ_LOG(gWindowsLog, LogLevel::Error,
+              ("Skipping SetIsTitlebarCollapsed() because "
+               "Microsoft.UI.Windowing.dll could not be loaded, error=%" PRIu32,
+               static_cast<uint32_t>(::GetLastError())));
+      MOZ_ASSERT_UNREACHABLE("Microsoft.UI.Windowing.dll could not be loaded");
+      return false;
+    }
+
+    using DllGetActivationFactoryType = HRESULT(WINAPI*)(
+        HSTRING activatableClassId, IActivationFactory * *factory);
+    auto dllGetActivationFactoryProc =
+        (DllGetActivationFactoryType)::GetProcAddress(
+            uiWindowingModule, "DllGetActivationFactory");
+    if (!dllGetActivationFactoryProc) {
+      MOZ_LOG(gWindowsLog, LogLevel::Error,
+              ("Skipping SetIsTitlebarCollapsed() because "
+               "DllGetActivationFactory could not be found in "
+               "Microsoft.UI.Windowing.dll, error=%" PRIu32,
+               static_cast<uint32_t>(::GetLastError())));
+      MOZ_ASSERT_UNREACHABLE(
+          "DllGetActivationFactory could not be found in "
+          "Microsoft.UI.Windowing.dll");
+      return false;
+    }
+    ComPtr<IActivationFactory> activationFactory;
+    HRESULT hr = dllGetActivationFactoryProc(
+        HStringReference(L"Microsoft.UI.Windowing.AppWindow").Get(),
+        activationFactory.GetAddressOf());
+    if (FAILED(hr)) {
+      MOZ_LOG(gWindowsLog, LogLevel::Error,
+              ("Skipping SetIsTitlebarCollapsed() because "
+               "DllGetActivationFactory failed, hr=%" PRIX32,
+               static_cast<uint32_t>(hr)));
+      MOZ_ASSERT_UNREACHABLE("DllGetActivationFactory failed");
+      return false;
+    }
+    RefPtr<winrt::Microsoft::UI::Windowing::IAppWindowStatics> appWindowStatics;
+    hr = activationFactory->QueryInterface(
+        __uuidof(winrt::Microsoft::UI::Windowing::IAppWindowStatics),
+        getter_AddRefs(appWindowStatics));
+    if (FAILED(hr) || !appWindowStatics) {
+      MOZ_LOG(gWindowsLog, LogLevel::Error,
+              ("Skipping SetIsTitlebarCollapsed() because "
+               "IAppWindowStatics could not be acquired, hr=%" PRIX32,
+               static_cast<uint32_t>(hr)));
+      MOZ_ASSERT_UNREACHABLE("IAppWindowStatics could not be acquired");
+      return false;
+    }
+    sAppWindowStatics = std::move(appWindowStatics);
+  }
+  if (!sAppWindowStatics) {
+    MOZ_LOG(gWindowsLog, LogLevel::Error,
+            ("Skipping SetIsTitlebarCollapsed() because "
+             "IAppWindowStatics could not be acquired"));
+    MOZ_ASSERT_UNREACHABLE("IAppWindowStatics could not be acquired");
+    return false;
+  }
+  return true;
+}
+
+static RefPtr<winrt::Microsoft::UI::Windowing::IAppWindow>
+GetAppWindowForWindow(HWND aWnd) {
+  if (!InitializeWindowsAppSDKStatics()) {
+    return nullptr;
+  }
+  // Retrieve the WindowId that corresponds to hWnd.
+  struct winrt::Microsoft::UI::WindowId windowId{0};
+  HRESULT hr = sGetWindowIdFromWindowProc(aWnd, &windowId);
+  if (FAILED(hr) || windowId.value == 0) {
+    MOZ_LOG(gWindowsLog, LogLevel::Error,
+            ("Skipping SetIsTitlebarCollapsed() because "
+             "GetWindowIdFromWindow failed, hr=0x%" PRIX32,
+             static_cast<uint32_t>(hr)));
+    MOZ_ASSERT_UNREACHABLE("GetWindowIdFromWindow failed");
+    return nullptr;
+  }
+
+  RefPtr<winrt::Microsoft::UI::Windowing::IAppWindow> appWindow;
+  sAppWindowStatics->GetFromWindowId(windowId, getter_AddRefs(appWindow));
+  return appWindow;
+}
+#endif
+
+void WindowsUIUtils::AssociateWithWinAppSDK(HWND aWnd) {
+#ifndef __MINGW32__
+  RefPtr win = GetAppWindowForWindow(aWnd);
+  (void)win;
+#endif
+}
+
+void WindowsUIUtils::SetIsTitlebarCollapsed(HWND aWnd, bool aIsCollapsed) {
+#ifndef __MINGW32__
+  // The Microsoft documentation says that we should be checking
+  // AppWindowTitleBar::IsCustomizationSupported() before calling methods
+  // on the title bar. However, it also says that customization is fully
+  // supported since Windows App SDK v1.2 on Windows 11, and Mica is only
+  // available on Windows 11, so it should be safe to skip this check.
+  RefPtr appWindow = GetAppWindowForWindow(aWnd);
+  if (!appWindow) {
+    MOZ_LOG(gWindowsLog, LogLevel::Warning,
+            ("Skipping SetIsTitlebarCollapsed() because "
+             "IAppWindow could not be acquired from window id"));
+    return;
+  }
+
+  RefPtr<winrt::Microsoft::UI::Windowing::IAppWindowTitleBar> titleBar;
+  HRESULT hr = appWindow->get_TitleBar(getter_AddRefs(titleBar));
+  if (FAILED(hr) || !titleBar) {
+    // Hedge our bets here and don't assert because it's possible this
+    // is a weird sort of window or something.
+    MOZ_LOG(gWindowsLog, LogLevel::Warning,
+            ("Skipping SetIsTitlebarCollapsed() because "
+             "titlebar could not be acquired, hr=%" PRIX32,
+             static_cast<uint32_t>(hr)));
+    return;
+  }
+  if (aIsCollapsed) {
+    hr = titleBar->put_ExtendsContentIntoTitleBar(aIsCollapsed);
+  } else {
+    hr = titleBar->ResetToDefault();
+  }
+  if (FAILED(hr)) {
+    MOZ_LOG(gWindowsLog, LogLevel::Error,
+            ("Skipping SetIsTitlebarCollapsed() because "
+             "put_ExtendsContentIntoTitleBar failed, hr=%" PRIX32,
+             static_cast<uint32_t>(hr)));
+    MOZ_ASSERT_UNREACHABLE("put_ExtendsContentIntoTitleBar failed");
+    return;
+  }
+  if (aIsCollapsed) {
+    // PreferredHeightOption is only valid if ExtendsContentIntoTitleBar is true
+    RefPtr<winrt::Microsoft::UI::Windowing::IAppWindowTitleBar2> titleBar2;
+    hr = titleBar->QueryInterface(
+        __uuidof(winrt::Microsoft::UI::Windowing::IAppWindowTitleBar2),
+        (void**)getter_AddRefs(titleBar2));
+    if (FAILED(hr) || !titleBar2) {
+      MOZ_LOG(gWindowsLog, LogLevel::Error,
+              ("Skipping SetIsTitlebarCollapsed() because "
+               "IAppWindowTitleBar2 could not be acquired, hr=%" PRIX32,
+               static_cast<uint32_t>(hr)));
+      MOZ_ASSERT_UNREACHABLE("IAppWindowTitleBar2 could not be acquired");
+      return;
+    }
+
+    hr = titleBar2->put_PreferredHeightOption(
+        winrt::Microsoft::UI::Windowing::TitleBarHeightOption::Collapsed);
+    if (FAILED(hr)) {
+      MOZ_LOG(gWindowsLog, LogLevel::Error,
+              ("Skipping SetIsTitlebarCollapsed() because "
+               "put_PreferredHeightOption failed, hr=%" PRIX32,
+               static_cast<uint32_t>(hr)));
+      MOZ_ASSERT_UNREACHABLE("put_PreferredHeightOption failed");
+      return;
+    }
+  }
+#endif
 }

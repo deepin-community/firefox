@@ -15,7 +15,11 @@ development process and source code documentation.
    reviews
    levelling-up
    how_to_submit_a_patch
+   data-collection
    data-review
+   jujutsu
+   searchfox
+   ai-coding
 
 
 .. toctree::
@@ -24,14 +28,6 @@ development process and source code documentation.
 
    Code_Review_FAQ
    reviewer_checklist
-
-
-.. toctree::
-   :caption: The Mercurial Version Control System
-   :maxdepth: 1
-   :glob:
-
-   vcs/*
 
 
 .. toctree::
@@ -58,5 +54,6 @@ development process and source code documentation.
    build/artifact_builds
    build/building_mobile_firefox
    build/supported
+   build/working_with_esr_115
    engineering_show_and_tell
    filing-good-bugs

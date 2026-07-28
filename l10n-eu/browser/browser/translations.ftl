@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Aldatu iturburu-hizkuntza
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Sentitzen dugu, oraindik ez dugu { $language } onartzen.
+translations-panel-error-unsupported-hint-unknown-2 = Sentitzen dugu, oraindik ez dugu itzulpenik onartzen hizkuntza honetatik.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,6 +134,7 @@ translations-manage-description = Deskargatu hizkuntzak lineaz kanpoko itzulpene
 translations-manage-all-language = Hizkuntza guztiak
 translations-manage-download-button = Deskargatu
 translations-manage-delete-button = Ezabatu
+translations-manage-intro-2 = Ezarri zure hizkuntza eta guneen itzulpenerako hobespenak eta kudeatu lineaz kanpoko itzulpenerako deskargatuta dauden hizkuntzak.
 translations-manage-download-description = Deskargatu hizkuntzak lineaz kanpoko itzulpenerako
 translations-manage-language-download-button =
     .label = Deskargatu
@@ -186,8 +195,20 @@ main-context-menu-translate-selection-to-language =
 main-context-menu-translate-link-text =
     .label = Itzuli loturaren testua…
     .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Itzuli loturaren testua { $language } hizkuntzara
+    .accesskey = u
 # Text displayed in the select translations panel header.
 select-translations-panel-header = Itzulpena
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Nondik
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = Nora
 # Text displayed above the try-another-source-language dropdown menu.
 select-translations-panel-try-another-language-label = Probatu beste iturburu-hizkuntza bat
 select-translations-panel-cancel-button =
@@ -215,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Arazo bat gertatu da itzultzean. Saiatu berriro mesedez.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Sentitzen dugu, oraindik ez dugu { $language } onartzen.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Sentitzen dugu, oraindik ez dugu itzulpenik onartzen hizkuntza honetatik.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

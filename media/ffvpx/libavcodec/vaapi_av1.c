@@ -50,7 +50,7 @@ typedef struct VAAPIAV1DecContext {
 
 static VASurfaceID vaapi_av1_surface_id(AV1Frame *vf)
 {
-    if (vf)
+    if (vf->f)
         return ff_vaapi_get_surface_id(vf->f);
     else
         return VA_INVALID_SURFACE;
@@ -74,7 +74,7 @@ static int8_t vaapi_av1_get_bit_depth_idx(AVCodecContext *avctx)
     return bit_depth == 8 ? 0 : bit_depth == 10 ? 1 : 2;
 }
 
-static int vaapi_av1_decode_init(AVCodecContext *avctx)
+static av_cold int vaapi_av1_decode_init(AVCodecContext *avctx)
 {
     VAAPIAV1DecContext *ctx = avctx->internal->hwaccel_priv_data;
 
@@ -92,7 +92,7 @@ static int vaapi_av1_decode_init(AVCodecContext *avctx)
     return ff_vaapi_decode_init(avctx);
 }
 
-static int vaapi_av1_decode_uninit(AVCodecContext *avctx)
+static av_cold int vaapi_av1_decode_uninit(AVCodecContext *avctx)
 {
     VAAPIAV1DecContext *ctx = avctx->internal->hwaccel_priv_data;
 
@@ -108,6 +108,7 @@ static int vaapi_av1_decode_uninit(AVCodecContext *avctx)
 
 
 static int vaapi_av1_start_frame(AVCodecContext *avctx,
+                                 av_unused const AVBufferRef *buffer_ref,
                                  av_unused const uint8_t *buffer,
                                  av_unused uint32_t size)
 {
@@ -138,7 +139,7 @@ static int vaapi_av1_start_frame(AVCodecContext *avctx,
             goto fail;
         pic->output_surface = ff_vaapi_get_surface_id(ctx->tmp_frame);
     } else {
-        pic->output_surface = vaapi_av1_surface_id(&s->cur_frame);
+        pic->output_surface = ff_vaapi_get_surface_id(s->cur_frame.f);
     }
 
     memset(&pic_param, 0, sizeof(VADecPictureParameterBufferAV1));
@@ -148,7 +149,7 @@ static int vaapi_av1_start_frame(AVCodecContext *avctx,
         .bit_depth_idx              = bit_depth_idx,
         .matrix_coefficients        = seq->color_config.matrix_coefficients,
         .current_frame              = pic->output_surface,
-        .current_display_picture    = vaapi_av1_surface_id(&s->cur_frame),
+        .current_display_picture    = ff_vaapi_get_surface_id(s->cur_frame.f),
         .frame_width_minus1         = frame_header->frame_width_minus_1,
         .frame_height_minus1        = frame_header->frame_height_minus_1,
         .primary_ref_frame          = frame_header->primary_ref_frame,
@@ -226,7 +227,7 @@ static int vaapi_av1_start_frame(AVCodecContext *avctx,
             .error_resilient_mode         = frame_header->error_resilient_mode,
             .disable_cdf_update           = frame_header->disable_cdf_update,
             .allow_screen_content_tools   = frame_header->allow_screen_content_tools,
-            .force_integer_mv             = frame_header->force_integer_mv,
+            .force_integer_mv             = s->cur_frame.force_integer_mv,
             .allow_intrabc                = frame_header->allow_intrabc,
             .use_superres                 = frame_header->use_superres,
             .allow_high_precision_mv      = frame_header->allow_high_precision_mv,
@@ -404,14 +405,15 @@ static int vaapi_av1_decode_slice(AVCodecContext *avctx,
 
     nb_params = s->tg_end - s->tg_start + 1;
     if (ctx->nb_slice_params < nb_params) {
-        ctx->slice_params = av_realloc_array(ctx->slice_params,
-                                             nb_params,
-                                             sizeof(*ctx->slice_params));
-        if (!ctx->slice_params) {
+        VASliceParameterBufferAV1 *tmp = av_realloc_array(ctx->slice_params,
+                                                          nb_params,
+                                                          sizeof(*ctx->slice_params));
+        if (!tmp) {
             ctx->nb_slice_params = 0;
             err = AVERROR(ENOMEM);
             goto fail;
         }
+        ctx->slice_params    = tmp;
         ctx->nb_slice_params = nb_params;
     }
 

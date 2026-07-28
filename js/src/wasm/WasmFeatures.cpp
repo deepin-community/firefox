@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2016 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +15,8 @@
  */
 
 #include "wasm/WasmFeatures.h"
+
+#include <bit>
 
 #include "jit/AtomicOperations.h"
 #include "jit/JitContext.h"
@@ -165,7 +165,6 @@ bool wasm::IonAvailable(JSContext* cx) {
   MOZ_ALWAYS_TRUE(IonDisabledByFeatures(cx, &isDisabled));
   return !isDisabled;
 }
-
 bool wasm::WasmCompilerForAsmJSAvailable(JSContext* cx) {
   return IonAvailable(cx);
 }
@@ -198,13 +197,17 @@ bool wasm::IonDisabledByFeatures(JSContext* cx, bool* isDisabled,
                                  JSStringBuilder* reason) {
   // Ion has no debugging support.
   bool debug = WasmDebuggerActive(cx);
+  bool customPageSizes = WasmCustomPageSizesFlag(cx);
   if (reason) {
     char sep = 0;
     if (debug && !Append(reason, "debug", &sep)) {
       return false;
     }
+    if (customPageSizes && !Append(reason, "custom-page-sizes", &sep)) {
+      return false;
+    }
   }
-  *isDisabled = debug;
+  *isDisabled = debug || customPageSizes;
   return true;
 }
 
@@ -227,11 +230,9 @@ bool wasm::AnyCompilerAvailable(JSContext* cx) {
 JS_FOR_WASM_FEATURES(WASM_FEATURE)
 #undef WASM_FEATURE
 
-bool wasm::IsSimdPrivilegedContext(JSContext* cx) {
-  // This may be slightly more lenient than we want in an ideal world, but it
-  // remains safe.
+bool wasm::IsPrivilegedContext(JSContext* cx) {
   return cx->realm() && cx->realm()->principals() &&
-         cx->realm()->principals()->isSystemOrAddonPrincipal();
+         cx->realm()->principals()->isSystemPrincipal();
 }
 
 bool wasm::SimdAvailable(JSContext* cx) {
@@ -243,15 +244,15 @@ bool wasm::ThreadsAvailable(JSContext* cx) {
 }
 
 bool wasm::HasPlatformSupport() {
-#if !MOZ_LITTLE_ENDIAN()
-  return false;
-#else
+  if constexpr (std::endian::native != std::endian::little) {
+    return false;
+  }
 
   if (!HasJitBackend()) {
     return false;
   }
 
-  if (gc::SystemPageSize() > wasm::PageSize) {
+  if (gc::SystemPageSize() > wasm::StandardPageSizeBytes) {
     return false;
   }
 
@@ -271,7 +272,6 @@ bool wasm::HasPlatformSupport() {
   // Test only whether the compilers are supported on the hardware, not whether
   // they are enabled.
   return BaselinePlatformSupport() || IonPlatformSupport();
-#endif
 }
 
 bool wasm::HasSupport(JSContext* cx) {
@@ -303,8 +303,8 @@ bool wasm::CodeCachingAvailable(JSContext* cx) {
   return false;
 #else
 
-  // We temporarily don't support caching with our new compile pipeline
-  if (ExperimentalCompilePipelineAvailable(cx)) {
+  // TODO(bug 1913109): lazy tiering doesn't support serialization
+  if (JS::Prefs::wasm_lazy_tiering()) {
     return false;
   }
 

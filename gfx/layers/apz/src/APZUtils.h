@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,14 +11,13 @@
 // Do not include this header from source files outside of gfx/layers.
 
 #include <stdint.h>  // for uint32_t
-#include <type_traits>
 #include "gfxTypes.h"
 #include "FrameMetrics.h"
 #include "LayersTypes.h"
 #include "UnitTransforms.h"
 #include "mozilla/gfx/CompositorHitTestInfo.h"
 #include "mozilla/gfx/Point.h"
-#include "mozilla/DefineEnum.h"
+#include "mozilla/layers/APZPublicUtils.h"  // for DispatchToContent
 #include "mozilla/EnumSet.h"
 #include "mozilla/FloatingPoint.h"
 
@@ -29,12 +26,12 @@ namespace mozilla {
 namespace layers {
 
 enum CancelAnimationFlags : uint32_t {
-  Default = 0x0,             /* Cancel all animations */
-  ExcludeOverscroll = 0x1,   /* Don't clear overscroll */
-  ScrollSnap = 0x2,          /* Snap to snap points */
-  ExcludeWheel = 0x4,        /* Don't stop wheel smooth-scroll animations */
-  TriggeredExternally = 0x8, /* Cancellation was not triggered by APZ in
-                                response to an input event */
+  Default = 0,                    /* Cancel all animations */
+  ExcludeOverscroll = (1 << 0),   /* Don't clear overscroll */
+  ScrollSnap = (1 << 1),          /* Snap to snap points */
+  TriggeredExternally = (1 << 2), /* Cancellation was not triggered by APZ in
+                                     response to an input event */
+  ExcludeAutoscroll = (1 << 3)    /* Don't cancel overscroll animations */
 };
 
 inline CancelAnimationFlags operator|(CancelAnimationFlags a,
@@ -112,8 +109,6 @@ inline AsyncTransformMatrix CompleteAsyncTransform(
       aMatrix, PixelCastJustification::MultipleAsyncTransforms);
 }
 
-enum class DispatchToContent : bool { No, Yes };
-
 struct TargetConfirmationFlags final {
   explicit TargetConfirmationFlags(bool aTargetConfirmed)
       : mTargetConfirmed(aTargetConfirmed),
@@ -183,27 +178,35 @@ enum class AsyncTransformConsumer {
  */
 enum class HandoffConsumer { Scrolling, PullToRefresh };
 
-/**
- * Metrics that GeckoView wants to know at every composite.
- * These are the effective visual scroll offset and zoom level of
- * the root content APZC at composition time.
- */
-struct GeckoViewMetrics {
-  CSSPoint mVisualScrollOffset;
-  CSSToParentLayerScale mZoom;
-};
-
 namespace apz {
 
 /**
- * Is aAngle within the given threshold of the horizontal axis?
- * @param aAngle an angle in radians in the range [0, pi]
+ * Is aVector within the given threshold of the horizontal axis?
+ * Returns false if aVector is a zero vector.
  * @param aThreshold an angle in radians in the range [0, pi/2]
  */
-bool IsCloseToHorizontal(float aAngle, float aThreshold);
+inline bool IsCloseToHorizontal(const ParentLayerPoint& aVector,
+                                float aThreshold) {
+  if (aVector == ParentLayerPoint()) {
+    return false;
+  }
+  float angle = float(fabs(atan2(aVector.y, aVector.x)));
+  return angle < aThreshold || angle > (M_PI - aThreshold);
+}
 
-// As above, but for the vertical axis.
-bool IsCloseToVertical(float aAngle, float aThreshold);
+/**
+ * Is aVector within the given threshold of the vertical axis?
+ * Returns false if aVector is a zero vector.
+ * @param aThreshold an angle in radians in the range [0, pi/2]
+ */
+inline bool IsCloseToVertical(const ParentLayerPoint& aVector,
+                              float aThreshold) {
+  if (aVector == ParentLayerPoint()) {
+    return false;
+  }
+  float angle = float(fabs(atan2(aVector.y, aVector.x)));
+  return fabs(angle - float(M_PI / 2)) < aThreshold;
+}
 
 // Returns true if a sticky layer with async translation |aTranslation| is
 // stuck with a bottom margin. The inner/outer ranges are produced by the main
@@ -217,14 +220,6 @@ bool IsStuckAtBottom(gfxFloat aTranslation,
 // stuck with a top margin.
 bool IsStuckAtTop(gfxFloat aTranslation, const LayerRectAbsolute& aInnerRange,
                   const LayerRectAbsolute& aOuterRange);
-
-/**
- * Compute the translation that should be applied to a layer that's fixed
- * at |eFixedSides|, to respect the fixed layer margins |aFixedMargins|.
- */
-ScreenPoint ComputeFixedMarginsOffset(
-    const ScreenMargin& aCompositorFixedLayerMargins, SideBits aFixedSides,
-    const ScreenMargin& aGeckoFixedLayerMargins);
 
 /**
  * Takes the visible rect from the compositor metrics, adds a pref-based

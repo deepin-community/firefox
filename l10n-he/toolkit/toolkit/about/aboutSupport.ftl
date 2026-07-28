@@ -18,6 +18,10 @@ support-addons-type = סוג
 support-addons-enabled = מופעלת
 support-addons-version = גרסה
 support-addons-id = מזהה
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = מיקום
 legacy-user-stylesheets-enabled = פעיל
 legacy-user-stylesheets-stylesheet-types = גיליונות סגנונות
 legacy-user-stylesheets-no-stylesheets-found = לא נמצאו גליונות סגנונות
@@ -62,7 +66,7 @@ app-basics-os-theme = ערכת נושא של מערכת ההפעלה
 app-basics-memory-use = שימוש בזכרון
 app-basics-performance = ביצועים
 app-basics-service-workers = Service Workers רשומים
-app-basics-third-party = מודולים מצד־שלישי
+app-basics-third-party = מודולים מצד שלישי
 app-basics-profiles = פרופילים
 app-basics-multi-process-support = חלונות מרובי תהליכים
 app-basics-remote-processes-count = תהליכים מרוחקים
@@ -122,6 +126,10 @@ place-database-stats-efficiency-perc = יעילות (%)
 place-database-stats-sequentiality-perc = רצף (%)
 place-database-integrity = תקינות
 place-database-verify-integrity = וידוא תקינות
+place-database-last-idle-maintenance-data = תאריך תחזוקה אחרון במצב מנוחה
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = תאריך שאיבה אחרון
+place-database-last-integrity-corruption-date = תאריך השחתה אחרון של התקינות
 a11y-title = נגישות
 a11y-activated = מופעל
 a11y-force-disabled = מניעת נגישות
@@ -168,6 +176,8 @@ media-codec-support-info = מידע על תמיכה במקודדים
 
 media-codec-support-sw-decoding = קידוד תוכנה
 media-codec-support-hw-decoding = קידוד חומרה
+media-codec-support-sw-encoding = קידוד תוכנה
+media-codec-support-hw-encoding = קידוד חומרה
 media-codec-support-codec-name = שם קודק
 media-codec-support-supported = נתמך
 media-codec-support-unsupported = לא נתמך
@@ -350,10 +360,6 @@ touch-enabled = קלט מגע מופעל
 drag-enabled = גרירת פס גלילה מופעלת
 keyboard-enabled = מקלדת פעילה
 autoscroll-enabled = גלילה אוטומטית פעילה
-
-## Variables
-## $preferenceKey (string) - String ID of preference
-
 
 ## Strings representing the status of the Enterprise Policies engine.
 

@@ -35,7 +35,7 @@ about-reader-estimated-read-time =
        *[other] { $range } minutu
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Txikiagotu letra-tipoaren tamaina
@@ -74,19 +74,24 @@ about-reader-customtheme-tab = Pertsonalizatua
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Testua
-    .title = Editatu kolorea
-about-reader-custom-colors-background = Atzeko planoa
-    .title = Editatu kolorea
-about-reader-custom-colors-unvisited-links = Bisitatu gabeko loturak
-    .title = Editatu kolorea
-about-reader-custom-colors-visited-links = Bisitatutako loturak
-    .title = Editatu kolorea
-about-reader-custom-colors-selection-highlight = Ozen irakurtzeko nabarmengailua
-    .title = Editatu kolorea
 about-reader-reset-button = Berrezarri lehenespenak
+about-reader-custom-colors-foreground2 =
+    .label = Testua
+    .title = Editatu kolorea
+about-reader-custom-colors-background2 =
+    .label = Atzeko planoa
+    .title = Editatu kolorea
+about-reader-custom-colors-unvisited-links2 =
+    .label = Bisitatu gabeko loturak
+    .title = Editatu kolorea
+about-reader-custom-colors-visited-links2 =
+    .label = Bisitatutako loturak
+    .title = Editatu kolorea
+about-reader-custom-colors-selection-highlight2 =
+    .label = Ozen irakurtzeko nabarmengailua
+    .title = Editatu kolorea
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Testua
 about-reader-text-size-label = Testuaren tamaina
@@ -114,3 +119,5 @@ about-reader-text-alignment-center =
     .title = Lerrokatu testua erdian
 about-reader-text-alignment-right =
     .title = Lerrokatu testua eskuinean
+about-reader-text-alignment-justify =
+    .title = Justifikatu testua

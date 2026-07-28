@@ -10,27 +10,26 @@
 
 #include "pc/rtp_transceiver.h"
 
-#include <stdint.h>
-
-#include <algorithm>
 #include <cstddef>
-#include <functional>
+#include <cstdint>
 #include <iterator>
 #include <memory>
-#include <set>
+#include <optional>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/base/nullability.h"
+#include "absl/functional/any_invocable.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
-#include "api/array_view.h"
-#include "api/audio_codecs/audio_codec_pair_id.h"
 #include "api/audio_options.h"
 #include "api/crypto/crypto_options.h"
-#include "api/field_trials_view.h"
+#include "api/environment/environment.h"
 #include "api/jsep.h"
+#include "api/make_ref_counted.h"
+#include "api/media_stream_interface.h"
 #include "api/media_types.h"
 #include "api/rtc_error.h"
 #include "api/rtp_parameters.h"
@@ -43,167 +42,387 @@
 #include "api/task_queue/task_queue_base.h"
 #include "api/video/video_bitrate_allocator_factory.h"
 #include "api/video_codecs/scalability_mode.h"
+#include "call/call.h"
 #include "media/base/codec.h"
+#include "media/base/codec_comparators.h"
 #include "media/base/media_channel.h"
 #include "media/base/media_config.h"
 #include "media/base/media_engine.h"
+#include "media/base/stream_params.h"
+#include "pc/audio_rtp_receiver.h"
 #include "pc/channel.h"
 #include "pc/channel_interface.h"
+#include "pc/codec_vendor.h"
 #include "pc/connection_context.h"
+#include "pc/dtls_transport.h"
+#include "pc/legacy_stats_collector_interface.h"
 #include "pc/rtp_media_utils.h"
 #include "pc/rtp_receiver.h"
 #include "pc/rtp_receiver_proxy.h"
 #include "pc/rtp_sender.h"
 #include "pc/rtp_sender_proxy.h"
 #include "pc/rtp_transport_internal.h"
+#include "pc/scoped_operations_batcher.h"
 #include "pc/session_description.h"
+#include "pc/video_rtp_receiver.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/crypto_random.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/system/plan_b_only.h"
 #include "rtc_base/thread.h"
 
 namespace webrtc {
 namespace {
 
-RTCError VerifyCodecPreferences(
-    const std::vector<RtpCodecCapability>& unfiltered_codecs,
-    const std::vector<cricket::Codec>& recv_codecs,
-    const FieldTrialsView& field_trials) {
-  // If the intersection between codecs and
-  // RTCRtpReceiver.getCapabilities(kind).codecs only contains RTX, RED, FEC
-  // codecs or Comfort Noise codecs or is an empty set, throw
+bool HasAnyMediaCodec(const std::vector<RtpCodecCapability>& codecs) {
+  return absl::c_any_of(codecs, [](const RtpCodecCapability& codec) {
+    return codec.IsMediaCodec();
+  });
+}
+
+RTCError VerifyCodecPreferences(const std::vector<RtpCodecCapability>& codecs,
+                                const std::vector<Codec>& send_codecs,
+                                const std::vector<Codec>& recv_codecs) {
+  // `codec_capabilities` is the union of `send_codecs` and `recv_codecs`.
+  std::vector<Codec> codec_capabilities;
+  codec_capabilities.reserve(send_codecs.size() + recv_codecs.size());
+  codec_capabilities.insert(codec_capabilities.end(), send_codecs.begin(),
+                            send_codecs.end());
+  codec_capabilities.insert(codec_capabilities.end(), recv_codecs.begin(),
+                            recv_codecs.end());
+  // If a media codec is not recognized from `codec_capabilities`, throw
   // InvalidModificationError.
-  // This ensures that we always have something to offer, regardless of
-  // transceiver.direction.
-  // TODO(fippo): clean up the filtering killswitch
-  std::vector<RtpCodecCapability> codecs = unfiltered_codecs;
-  if (!absl::c_any_of(codecs, [&recv_codecs](const RtpCodecCapability& codec) {
-        return codec.IsMediaCodec() &&
-               absl::c_any_of(recv_codecs,
-                              [&codec](const cricket::Codec& recv_codec) {
-                                return recv_codec.MatchesRtpCodec(codec);
+  if (!absl::c_all_of(codecs, [&codec_capabilities](
+                                  const RtpCodecCapability& codec) {
+        return !codec.IsMediaCodec() ||
+               absl::c_any_of(codec_capabilities,
+                              [&codec](const Codec& codec_capability) {
+                                return IsSameRtpCodec(codec_capability, codec);
                               });
       })) {
-    LOG_AND_RETURN_ERROR(RTCErrorType::INVALID_MODIFICATION,
-                         "Invalid codec preferences: Missing codec from recv "
-                         "codec capabilities.");
+    return LOG_ERROR(RTCError::InvalidModification()
+                     << "Invalid codec preferences: Missing codec from codec "
+                        "capabilities.");
   }
-
-  // Let codecCapabilities RTCRtpReceiver.getCapabilities(kind).codecs.
-  // For each codec in codecs, If
-  // codec is not in codecCapabilities, throw InvalidModificationError.
-  for (const auto& codec_preference : codecs) {
-    bool is_recv_codec = absl::c_any_of(
-        recv_codecs, [&codec_preference](const cricket::Codec& codec) {
-          return codec.MatchesRtpCodec(codec_preference);
-        });
-    if (!is_recv_codec) {
-      if (!field_trials.IsDisabled(
-              "WebRTC-SetCodecPreferences-ReceiveOnlyFilterInsteadOfThrow")) {
-        LOG_AND_RETURN_ERROR(
-            RTCErrorType::INVALID_MODIFICATION,
-            std::string(
-                "Invalid codec preferences: invalid codec with name \"") +
-                codec_preference.name + "\".");
-      } else {
-        // Killswitch behavior: filter out any codec not in receive codecs.
-        codecs.erase(std::remove_if(
-            codecs.begin(), codecs.end(),
-            [&recv_codecs](const RtpCodecCapability& codec) {
-              return codec.IsMediaCodec() &&
-                     !absl::c_any_of(
-                         recv_codecs,
-                         [&codec](const cricket::Codec& recv_codec) {
-                           return recv_codec.MatchesRtpCodec(codec);
-                         });
-            }));
-      }
-    }
+  // If `codecs` only contains entries for RTX, RED, FEC or Comfort Noise, throw
+  // InvalidModificationError.
+  if (!HasAnyMediaCodec(codecs)) {
+    return LOG_ERROR(RTCError::InvalidModification()
+                     << "Invalid codec preferences: codec list must have a non "
+                        "RTX, RED, FEC or Comfort Noise entry.");
   }
-
-  // Check we have a real codec (not just rtx, red, fec or CN)
-  if (absl::c_all_of(codecs, [](const RtpCodecCapability& codec) {
-        return !codec.IsMediaCodec();
-      })) {
-    LOG_AND_RETURN_ERROR(
-        RTCErrorType::INVALID_MODIFICATION,
-        "Invalid codec preferences: codec list must have a non "
-        "RTX, RED or FEC entry.");
-  }
-
   return RTCError::OK();
 }
 
-TaskQueueBase* GetCurrentTaskQueueOrThread() {
-  TaskQueueBase* current = TaskQueueBase::Current();
-  if (!current)
-    current = rtc::ThreadManager::Instance()->CurrentThread();
-  return current;
+// Set default header extensions depending on whether simulcast/SVC is used.
+void ConfigureExtraVideoHeaderExtensions(
+    const std::vector<RtpEncodingParameters>& encodings,
+    std::vector<RtpHeaderExtensionCapability>& extensions) {
+  bool uses_simulcast = encodings.size() > 1;
+  bool uses_svc = !encodings.empty() &&
+                  encodings[0].scalability_mode.has_value() &&
+                  encodings[0].scalability_mode !=
+                      ScalabilityModeToString(ScalabilityMode::kL1T1);
+  if (!uses_simulcast && !uses_svc)
+    return;
+
+  // Enable DD and VLA extensions, can be deactivated by the API. Skip this if
+  // the GFD extension was enabled via field trial for backward compatibility
+  // reasons.
+  bool uses_frame_descriptor =
+      absl::c_any_of(extensions, [](const RtpHeaderExtensionCapability& ext) {
+        return ext.uri == RtpExtension::kGenericFrameDescriptorUri00 &&
+               ext.direction != RtpTransceiverDirection::kStopped;
+      });
+  if (!uses_frame_descriptor) {
+    for (RtpHeaderExtensionCapability& ext : extensions) {
+      if (ext.uri == RtpExtension::kVideoLayersAllocationUri ||
+          ext.uri == RtpExtension::kDependencyDescriptorUri) {
+        ext.direction = RtpTransceiverDirection::kSendRecv;
+      }
+    }
+  }
+}
+
+void ConfigureSendCodecs(CodecVendor& codec_vendor,
+                         MediaType media_type,
+                         RtpSenderInternal* sender) {
+  sender->SetSendCodecs(media_type == MediaType::VIDEO
+                            ? codec_vendor.video_send_codecs().codecs()
+                            : codec_vendor.audio_send_codecs().codecs());
+}
+
+scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>> CreateSender(
+    MediaType media_type,
+    const Environment& env,
+    ConnectionContext* context,
+    LegacyStatsCollectorInterface* legacy_stats,
+    RtpSenderBase::SetStreamsObserver* set_streams_observer,
+    absl::string_view sender_id,
+    MediaSendChannelInterface* media_send_channel) {
+  if (media_type == MediaType::AUDIO) {
+    return RtpSenderProxyWithInternal<RtpSenderInternal>::Create(
+        context->signaling_thread(),
+        AudioRtpSender::Create(
+            env, context->signaling_thread(), context->worker_thread(),
+            sender_id, legacy_stats, set_streams_observer,
+            static_cast<VoiceMediaSendChannelInterface*>(media_send_channel)));
+  }
+  RTC_DCHECK_EQ(media_type, MediaType::VIDEO);
+  return RtpSenderProxyWithInternal<RtpSenderInternal>::Create(
+      context->signaling_thread(),
+      VideoRtpSender::Create(
+          env, context->signaling_thread(), context->worker_thread(), sender_id,
+          set_streams_observer,
+          static_cast<VideoMediaSendChannelInterface*>(media_send_channel)));
+}
+
+void ConfigureSender(
+    scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>>& sender,
+    MediaStreamTrackInterface* track,
+    const std::vector<std::string>& stream_ids,
+    const std::vector<RtpEncodingParameters>& send_encodings,
+    CodecVendor& codec_vendor) {
+  bool set_track_succeeded = sender->SetTrack(track);
+  RTC_DCHECK(set_track_succeeded);
+  auto* internal = sender->internal();
+  internal->set_stream_ids(stream_ids);
+  internal->set_init_send_encodings(send_encodings);
+  ConfigureSendCodecs(codec_vendor, sender->media_type(), internal);
+}
+
+template <typename RtpReceiverT, typename ReceiveInterface>
+scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>>
+CreateReceiverOfType(Thread* signaling_thread,
+                     Thread* worker_thread,
+                     absl::string_view receiver_id,
+                     MediaReceiveChannelInterface* receive_channel) {
+  return RtpReceiverProxyWithInternal<RtpReceiverInternal>::Create(
+      signaling_thread, worker_thread,
+      make_ref_counted<RtpReceiverT>(
+          worker_thread, receiver_id, std::vector<std::string>(),
+          static_cast<ReceiveInterface*>(receive_channel)));
+}
+
+scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>> CreateReceiver(
+    MediaType media_type,
+    Thread* signaling_thread,
+    Thread* worker_thread,
+    absl::string_view receiver_id,
+    MediaReceiveChannelInterface* receive_channel) {
+  if (media_type == MediaType::AUDIO) {
+    return CreateReceiverOfType<AudioRtpReceiver,
+                                VoiceMediaReceiveChannelInterface>(
+        signaling_thread, worker_thread, receiver_id, receive_channel);
+  }
+  RTC_DCHECK_EQ(media_type, MediaType::VIDEO);
+  return CreateReceiverOfType<VideoRtpReceiver,
+                              VideoMediaReceiveChannelInterface>(
+      signaling_thread, worker_thread, receiver_id, receive_channel);
+}
+
+std::pair<std::unique_ptr<MediaSendChannelInterface>,
+          std::unique_ptr<MediaReceiveChannelInterface>>
+CreateMediaContentChannels(
+    MediaType media_type,
+    const Environment& env,
+    MediaEngineInterface* media_engine,
+    Call* call,
+    const MediaConfig& media_config,
+    const AudioOptions& audio_options,
+    const VideoOptions& video_options,
+    const CryptoOptions& crypto_options,
+    VideoBitrateAllocatorFactory* video_bitrate_allocator_factory,
+    VideoMediaSendChannelInterface::EncoderSwitchRequestCallback
+        video_encoder_switch_request_callback = nullptr) {
+  if (media_type == MediaType::AUDIO) {
+    return {media_engine->voice().CreateSendChannel(
+                env, call, media_config, audio_options, crypto_options),
+            media_engine->voice().CreateReceiveChannel(
+                env, call, media_config, audio_options, crypto_options)};
+  }
+  return {media_engine->video().CreateSendChannel(
+              env, call, media_config, video_options, crypto_options,
+              video_bitrate_allocator_factory,
+              std::move(video_encoder_switch_request_callback)),
+          media_engine->video().CreateReceiveChannel(
+              env, call, media_config, video_options, crypto_options)};
+}
+
+// Helper template to wrap the construction of either a VoiceChannel
+// or VideoChannel object from a given send and receive channel objects.
+template <typename Channel, typename Send, typename Receive>
+std::unique_ptr<ChannelInterface> CreateMediaChannel(
+    ConnectionContext* context,
+    std::unique_ptr<MediaSendChannelInterface>& send,
+    std::unique_ptr<MediaReceiveChannelInterface>& receive,
+    absl::string_view mid,
+    bool srtp_required,
+    CryptoOptions crypto_options) {
+  return std::make_unique<Channel>(
+      context->worker_thread(), context->network_thread(),
+      context->signaling_thread(),
+      std::unique_ptr<Send>(static_cast<Send*>(send.release())),
+      std::unique_ptr<Receive>(static_cast<Receive*>(receive.release())), mid,
+      srtp_required, crypto_options, context->ssrc_generator());
+}
+
+std::vector<absl::AnyInvocable<void() &&>> DetachAndGetStopTasksForSenders(
+    std::vector<scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>>>&
+        senders) {
+  std::vector<absl::AnyInvocable<void() &&>> tasks;
+  for (const auto& sender : senders) {
+    auto task = sender->internal()->DetachTrackAndGetStopTask();
+    if (task)
+      tasks.push_back(std::move(task));
+  }
+  return tasks;
 }
 
 }  // namespace
 
-RtpTransceiver::RtpTransceiver(cricket::MediaType media_type,
-                               ConnectionContext* context)
-    : thread_(GetCurrentTaskQueueOrThread()),
+RtpTransceiver::RtpTransceiver(const Environment& env,
+                               MediaType media_type,
+                               ConnectionContext* context,
+                               CodecLookupHelper* codec_lookup_helper,
+                               LegacyStatsCollectorInterface* legacy_stats)
+    : env_(env),
+      thread_(context->signaling_thread()),
       unified_plan_(false),
       media_type_(media_type),
-      context_(context) {
-  RTC_DCHECK(media_type == cricket::MEDIA_TYPE_AUDIO ||
-             media_type == cricket::MEDIA_TYPE_VIDEO);
+      signaling_thread_safety_(PendingTaskSafetyFlag::CreateAttachedToTaskQueue(
+          /*alive=*/false,
+          context->signaling_thread())),
+      network_thread_safety_(PendingTaskSafetyFlag::CreateAttachedToTaskQueue(
+          /*alive=*/true,
+          context->network_thread())),
+      context_(context),
+      codec_lookup_helper_(codec_lookup_helper),
+      legacy_stats_(legacy_stats) {
+  RTC_DCHECK(media_type == MediaType::AUDIO || media_type == MediaType::VIDEO);
+  RTC_DCHECK(context_);
+  RTC_DCHECK(context_->is_configured_for_media());
+  RTC_DCHECK(codec_lookup_helper_);
 }
 
 RtpTransceiver::RtpTransceiver(
-    rtc::scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>> sender,
-    rtc::scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>>
-        receiver,
+    const Environment& env,
+    scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>> sender,
+    scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>> receiver,
     ConnectionContext* context,
+    CodecLookupHelper* codec_lookup_helper,
     std::vector<RtpHeaderExtensionCapability> header_extensions_to_negotiate,
-    std::function<void()> on_negotiation_needed)
-    : thread_(GetCurrentTaskQueueOrThread()),
+    absl::AnyInvocable<void()> on_negotiation_needed)
+    : env_(env),
+      thread_(context->signaling_thread()),
       unified_plan_(true),
       media_type_(sender->media_type()),
+      signaling_thread_safety_(PendingTaskSafetyFlag::CreateAttachedToTaskQueue(
+          /*alive=*/false,
+          context->signaling_thread())),
+      network_thread_safety_(PendingTaskSafetyFlag::CreateAttachedToTaskQueue(
+          /*alive=*/true,
+          context->network_thread())),
       context_(context),
+      codec_lookup_helper_(codec_lookup_helper),
+      legacy_stats_(nullptr),
       header_extensions_to_negotiate_(
           std::move(header_extensions_to_negotiate)),
       on_negotiation_needed_(std::move(on_negotiation_needed)) {
-  RTC_DCHECK(media_type_ == cricket::MEDIA_TYPE_AUDIO ||
-             media_type_ == cricket::MEDIA_TYPE_VIDEO);
+  RTC_DCHECK(context_);
+  RTC_DCHECK(context_->is_configured_for_media());
+  RTC_DCHECK(media_type_ == MediaType::AUDIO ||
+             media_type_ == MediaType::VIDEO);
+  RTC_DCHECK(codec_lookup_helper_);
   RTC_DCHECK_EQ(sender->media_type(), receiver->media_type());
-  sender->internal()->SetSendCodecs(
-      sender->media_type() == cricket::MEDIA_TYPE_VIDEO
-          ? media_engine()->video().send_codecs(false)
-          : media_engine()->voice().send_codecs());
-  senders_.push_back(sender);
-  receivers_.push_back(receiver);
-
-  // Set default header extensions depending on whether simulcast/SVC is used.
-  RtpParameters parameters = sender->internal()->GetParametersInternal();
-  bool uses_simulcast = parameters.encodings.size() > 1;
-  bool uses_svc = !parameters.encodings.empty() &&
-                  parameters.encodings[0].scalability_mode.has_value() &&
-                  parameters.encodings[0].scalability_mode !=
-                      ScalabilityModeToString(ScalabilityMode::kL1T1);
-  if (uses_simulcast || uses_svc) {
-    // Enable DD and VLA extensions, can be deactivated by the API.
-    // Skip this if the GFD extension was enabled via field trial
-    // for backward compability reasons.
-    bool uses_gfd =
-        absl::c_find_if(
-            header_extensions_to_negotiate_,
-            [](const RtpHeaderExtensionCapability& ext) {
-              return ext.uri == RtpExtension::kGenericFrameDescriptorUri00 &&
-                     ext.direction != webrtc::RtpTransceiverDirection::kStopped;
-            }) != header_extensions_to_negotiate_.end();
-    if (!uses_gfd) {
-      for (RtpHeaderExtensionCapability& ext :
-           header_extensions_to_negotiate_) {
-        if (ext.uri == RtpExtension::kVideoLayersAllocationUri ||
-            ext.uri == RtpExtension::kDependencyDescriptorUri) {
-          ext.direction = RtpTransceiverDirection::kSendRecv;
-        }
-      }
-    }
+  RTC_DCHECK_EQ(media_type_, sender->media_type());
+  RTC_DCHECK_DISALLOW_THREAD_BLOCKING_CALLS();
+  auto* sender_internal = sender->internal();
+  senders_.push_back(std::move(sender));
+  receivers_.push_back(std::move(receiver));
+  if (media_type_ == MediaType::VIDEO) {
+    ConfigureExtraVideoHeaderExtensions(
+        sender_internal
+            ->GetParametersInternal(/*may_use_cache*/ true,
+                                    /*with_all_layers=*/false)
+            .encodings,
+        header_extensions_to_negotiate_);
   }
+  ConfigureSendCodecs(codec_vendor(), media_type_, sender_internal);
+}
+
+RtpTransceiver::RtpTransceiver(
+    const Environment& env,
+    Call* call,
+    const MediaConfig& media_config,
+    absl::string_view sender_id,
+    absl::string_view receiver_id,
+    MediaType media_type,
+    scoped_refptr<MediaStreamTrackInterface> track,
+    const std::vector<std::string>& stream_ids,
+    const std::vector<RtpEncodingParameters>& init_send_encodings,
+    ConnectionContext* context,
+    CodecLookupHelper* codec_lookup_helper,
+    LegacyStatsCollectorInterface* legacy_stats,
+    RtpSenderBase::SetStreamsObserver* set_streams_observer,
+    const AudioOptions& audio_options,
+    const VideoOptions& video_options,
+    const CryptoOptions& crypto_options,
+    VideoBitrateAllocatorFactory* video_bitrate_allocator_factory,
+    std::vector<RtpHeaderExtensionCapability> header_extensions_to_negotiate,
+    absl::AnyInvocable<void()> on_negotiation_needed)
+    : env_(env),
+      thread_(context->signaling_thread()),
+      unified_plan_(true),
+      media_type_(media_type),
+      signaling_thread_safety_(PendingTaskSafetyFlag::CreateAttachedToTaskQueue(
+          /*alive=*/false,
+          context->signaling_thread())),
+      network_thread_safety_(PendingTaskSafetyFlag::CreateAttachedToTaskQueue(
+          /*alive=*/true,
+          context->network_thread())),
+      media_engine_ref_(nullptr),
+      context_(context),
+      codec_lookup_helper_(codec_lookup_helper),
+      legacy_stats_(legacy_stats),
+      set_streams_observer_(set_streams_observer),
+      header_extensions_to_negotiate_(
+          std::move(header_extensions_to_negotiate)),
+      on_negotiation_needed_(std::move(on_negotiation_needed)) {
+  RTC_DCHECK(context_);
+  RTC_DCHECK(context_->is_configured_for_media());
+  RTC_DCHECK(media_type_ == MediaType::AUDIO ||
+             media_type_ == MediaType::VIDEO);
+  RTC_LOG_THREAD_BLOCK_COUNT();
+  if (media_type_ == MediaType::VIDEO) {
+    ConfigureExtraVideoHeaderExtensions(init_send_encodings,
+                                        header_extensions_to_negotiate_);
+  }
+
+  // This should be possible without a blocking call to the worker, perhaps done
+  // asynchronously. At the moment this is complicated by the fact that
+  // construction of the channels actually changes the settings of the engine.
+  context_->worker_thread()->BlockingCall([&]() {
+    RTC_DCHECK_RUN_ON(this->context()->worker_thread());
+    auto channels = CreateMediaContentChannels(
+        media_type_, env_, media_engine(), call, media_config, audio_options,
+        video_options, crypto_options, video_bitrate_allocator_factory,
+        GetEncoderSwitchRequestCallback());
+    owned_send_channel_ = std::move(channels.first);
+    owned_receive_channel_ = std::move(channels.second);
+    senders_.push_back(CreateSender(media_type_, env_, context_, legacy_stats_,
+                                    set_streams_observer_, sender_id,
+                                    owned_send_channel_.get()));
+  });
+
+  ConfigureSender(senders_.back(), track.get(), stream_ids, init_send_encodings,
+                  codec_vendor());
+
+  receivers_.push_back(CreateReceiver(
+      media_type_, context_->signaling_thread(), context_->worker_thread(),
+      receiver_id.empty() ? CreateRandomUuid() : receiver_id,
+      owned_receive_channel_.get()));
+  RTC_DCHECK_BLOCK_COUNT_NO_MORE_THAN(1);
 }
 
 RtpTransceiver::~RtpTransceiver() {
@@ -216,133 +435,109 @@ RtpTransceiver::~RtpTransceiver() {
   }
 
   RTC_CHECK(!channel_) << "Missing call to ClearChannel?";
+  RTC_DCHECK(!media_engine_ref_);
+  RTC_DCHECK(!owned_send_channel_);
+  RTC_DCHECK(!owned_receive_channel_);
 }
 
 RTCError RtpTransceiver::CreateChannel(
     absl::string_view mid,
     Call* call_ptr,
-    const cricket::MediaConfig& media_config,
+    const MediaConfig& media_config,
     bool srtp_required,
     CryptoOptions crypto_options,
-    const cricket::AudioOptions& audio_options,
-    const cricket::VideoOptions& video_options,
+    const AudioOptions& audio_options,
+    const VideoOptions& video_options,
     VideoBitrateAllocatorFactory* video_bitrate_allocator_factory,
-    std::function<RtpTransportInternal*(absl::string_view)> transport_lookup) {
+    absl::AnyInvocable<RtpTransportInternal*(absl::string_view) &&>
+        transport_lookup) {
   RTC_DCHECK_RUN_ON(thread_);
-  if (!media_engine()) {
-    // TODO(hta): Must be a better way
-    return RTCError(RTCErrorType::INTERNAL_ERROR,
-                    "No media engine for mid=" + std::string(mid));
-  }
-  std::unique_ptr<cricket::ChannelInterface> new_channel;
-  if (media_type() == cricket::MEDIA_TYPE_AUDIO) {
-    // TODO(bugs.webrtc.org/11992): CreateVideoChannel internally switches to
-    // the worker thread. We shouldn't be using the `call_ptr_` hack here but
-    // simply be on the worker thread and use `call_` (update upstream code).
-    RTC_DCHECK(call_ptr);
-    RTC_DCHECK(media_engine());
-    // TODO(bugs.webrtc.org/11992): Remove this workaround after updates in
-    // PeerConnection and add the expectation that we're already on the right
-    // thread.
-    context()->worker_thread()->BlockingCall([&] {
-      RTC_DCHECK_RUN_ON(context()->worker_thread());
+  RTC_DCHECK(!channel_);
+  RTC_DCHECK(!mid_ || mid_.value() == mid);
+  RTC_DCHECK(!stopped_);
 
-      AudioCodecPairId codec_pair_id = AudioCodecPairId::Create();
+  mid_ = mid;
 
-      std::unique_ptr<cricket::VoiceMediaSendChannelInterface>
-          media_send_channel = media_engine()->voice().CreateSendChannel(
-              call_ptr, media_config, audio_options, crypto_options,
-              codec_pair_id);
-      if (!media_send_channel) {
-        // TODO(bugs.webrtc.org/14912): Consider CHECK or reporting failure
-        return;
-      }
-      std::unique_ptr<cricket::VoiceMediaReceiveChannelInterface>
-          media_receive_channel = media_engine()->voice().CreateReceiveChannel(
-              call_ptr, media_config, audio_options, crypto_options,
-              codec_pair_id);
-      if (!media_receive_channel) {
-        return;
-      }
-      // Note that this is safe because both sending and
-      // receiving channels will be deleted at the same time.
-      media_send_channel->SetSsrcListChangedCallback(
-          [receive_channel =
-               media_receive_channel.get()](const std::set<uint32_t>& choices) {
-            receive_channel->ChooseReceiverReportSsrc(choices);
-          });
-
-      new_channel = std::make_unique<cricket::VoiceChannel>(
-          context()->worker_thread(), context()->network_thread(),
-          context()->signaling_thread(), std::move(media_send_channel),
-          std::move(media_receive_channel), mid, srtp_required, crypto_options,
-          context()->ssrc_generator());
-    });
+  if (!signaling_thread_safety_) {
+    // This code path is hit during rollback.
+    signaling_thread_safety_ = PendingTaskSafetyFlag::Create();
   } else {
-    RTC_DCHECK_EQ(cricket::MEDIA_TYPE_VIDEO, media_type());
-
-    // TODO(bugs.webrtc.org/11992): CreateVideoChannel internally switches to
-    // the worker thread. We shouldn't be using the `call_ptr_` hack here but
-    // simply be on the worker thread and use `call_` (update upstream code).
-    context()->worker_thread()->BlockingCall([&] {
-      RTC_DCHECK_RUN_ON(context()->worker_thread());
-
-      std::unique_ptr<cricket::VideoMediaSendChannelInterface>
-          media_send_channel = media_engine()->video().CreateSendChannel(
-              call_ptr, media_config, video_options, crypto_options,
-              video_bitrate_allocator_factory);
-      if (!media_send_channel) {
-        return;
-      }
-
-      std::unique_ptr<cricket::VideoMediaReceiveChannelInterface>
-          media_receive_channel = media_engine()->video().CreateReceiveChannel(
-              call_ptr, media_config, video_options, crypto_options);
-      if (!media_receive_channel) {
-        return;
-      }
-      // Note that this is safe because both sending and
-      // receiving channels will be deleted at the same time.
-      media_send_channel->SetSsrcListChangedCallback(
-          [receive_channel =
-               media_receive_channel.get()](const std::set<uint32_t>& choices) {
-            receive_channel->ChooseReceiverReportSsrc(choices);
-          });
-
-      new_channel = std::make_unique<cricket::VideoChannel>(
-          context()->worker_thread(), context()->network_thread(),
-          context()->signaling_thread(), std::move(media_send_channel),
-          std::move(media_receive_channel), mid, srtp_required, crypto_options,
-          context()->ssrc_generator());
-    });
+    // Newly constructed.
+    RTC_DCHECK(!signaling_thread_safety_->alive());
+    signaling_thread_safety_->SetAlive();
   }
-  if (!new_channel) {
-    // TODO(hta): Must be a better way
-    return RTCError(RTCErrorType::INTERNAL_ERROR,
-                    "Failed to create channel for mid=" + std::string(mid));
-  }
-  SetChannel(std::move(new_channel), transport_lookup);
-  return RTCError::OK();
+
+  std::unique_ptr<ChannelInterface> new_channel;
+  // TODO(bugs.webrtc.org/11992): CreateVideoChannel internally switches to
+  // the worker thread. We shouldn't be using the `call_ptr_` hack here but
+  // simply be on the worker thread and use `call_` (update upstream code).
+  context()->worker_thread()->BlockingCall([&] {
+    RTC_DCHECK_RUN_ON(context()->worker_thread());
+
+    std::unique_ptr<MediaSendChannelInterface> media_send_channel;
+    std::unique_ptr<MediaReceiveChannelInterface> media_receive_channel;
+
+    if (owned_send_channel_) {
+      RTC_DCHECK(owned_receive_channel_);
+      media_send_channel = std::move(owned_send_channel_);
+      media_receive_channel = std::move(owned_receive_channel_);
+      // Apply options to the voice channels for audio and send channel for
+      // video. Note that the video options are primarily for sending.
+      if (media_type() == MediaType::AUDIO) {
+        media_send_channel->AsVoiceSendChannel()->SetOptions(audio_options);
+        media_receive_channel->AsVoiceReceiveChannel()->SetOptions(
+            audio_options);
+      } else if (media_type() == MediaType::VIDEO) {
+        media_send_channel->AsVideoSendChannel()->SetOptions(video_options);
+      }
+    } else {
+      auto channels = CreateMediaContentChannels(
+          media_type(), env_, media_engine(), call_ptr, media_config,
+          audio_options, video_options, crypto_options,
+          video_bitrate_allocator_factory, GetEncoderSwitchRequestCallback());
+      media_send_channel = std::move(channels.first);
+      media_receive_channel = std::move(channels.second);
+      SetMediaChannels(media_send_channel.get(), media_receive_channel.get());
+    }
+
+    if (media_type() == MediaType::AUDIO) {
+      new_channel =
+          CreateMediaChannel<VoiceChannel, VoiceMediaSendChannelInterface,
+                             VoiceMediaReceiveChannelInterface>(
+              context(), media_send_channel, media_receive_channel, mid,
+              srtp_required, crypto_options);
+    } else {
+      new_channel =
+          CreateMediaChannel<VideoChannel, VideoMediaSendChannelInterface,
+                             VideoMediaReceiveChannelInterface>(
+              context(), media_send_channel, media_receive_channel, mid,
+              srtp_required, crypto_options);
+    }
+  });
+  return SetChannel(std::move(new_channel), std::move(transport_lookup),
+                    /*set_media_channels=*/false);
 }
 
-void RtpTransceiver::SetChannel(
-    std::unique_ptr<cricket::ChannelInterface> channel,
-    std::function<RtpTransportInternal*(const std::string&)> transport_lookup) {
+RTCError RtpTransceiver::SetChannel(
+    std::unique_ptr<ChannelInterface> channel,
+    absl::AnyInvocable<RtpTransportInternal*(const std::string&) &&>
+        transport_lookup,
+    bool set_media_channels) {
   RTC_DCHECK_RUN_ON(thread_);
   RTC_DCHECK(channel);
   RTC_DCHECK(transport_lookup);
   RTC_DCHECK(!channel_);
   // Cannot set a channel on a stopped transceiver.
   if (stopped_) {
-    return;
+    return RTCError::InvalidState();
   }
 
   RTC_LOG_THREAD_BLOCK_COUNT();
 
   RTC_DCHECK_EQ(media_type(), channel->media_type());
-  signaling_thread_safety_ = PendingTaskSafetyFlag::Create();
-
-  std::unique_ptr<cricket::ChannelInterface> channel_to_delete;
+  RTC_DCHECK(mid_ || channel->mid().empty());
+  channel_ = std::move(channel);
+  transport_name_ = std::nullopt;
 
   // An alternative to this, could be to require SetChannel to be called
   // on the network thread. The channel object operates for the most part
@@ -353,107 +548,221 @@ void RtpTransceiver::SetChannel(
   // Similarly, if the channel() accessor is limited to the network thread, that
   // helps with keeping the channel implementation requirements being met and
   // avoids synchronization for accessing the pointer or network related state.
-  context()->network_thread()->BlockingCall([&]() {
-    if (channel_) {
-      channel_->SetFirstPacketReceivedCallback(nullptr);
-      channel_->SetRtpTransport(nullptr);
-      channel_to_delete = std::move(channel_);
+  std::optional<std::string> transport_name;
+  RTCError err = context()->network_thread()->BlockingCall(
+      [&, flag = signaling_thread_safety_, channel = channel_.get()]() {
+        RtpTransportInternal* transport =
+            std::move(transport_lookup)(channel->mid());
+        if (!channel->SetRtpTransport(transport)) {
+          return RTCError::InvalidParameter()
+                 << "Invalid transport for mid=" << channel->mid();
+        }
+        if (transport) {
+          transport_name = transport->transport_name();
+        }
+        channel->SetFirstPacketReceivedCallback_n(
+            [thread = thread_, flag = flag,
+             this](const RtpPacketReceived& packet) mutable {
+              thread->PostTask(
+                  SafeTask(std::move(flag), [this, ssrc = packet.Ssrc()]() {
+                    OnFirstPacketReceived(ssrc);
+                  }));
+            });
+        channel->SetFirstPacketSentCallback_n(
+            [thread = thread_, flag = flag, this]() mutable {
+              thread->PostTask(
+                  SafeTask(std::move(flag), [this]() { OnFirstPacketSent(); }));
+            });
+        channel->SetPacketReceivedCallback_n(
+            [this, flag = flag](const RtpPacketReceived& packet) {
+              RTC_DCHECK_RUN_ON(context()->network_thread());
+              OnPacketReceived(packet.Ssrc(), flag);
+            });
+        return RTCError::OK();
+      });
+
+  if (err.ok()) {
+    transport_name_ = std::move(transport_name);
+    if (set_media_channels) {
+      PushNewMediaChannel();
     }
-
-    channel_ = std::move(channel);
-
-    channel_->SetRtpTransport(transport_lookup(channel_->mid()));
-    channel_->SetFirstPacketReceivedCallback(
-        [thread = thread_, flag = signaling_thread_safety_, this]() mutable {
-          thread->PostTask(
-              SafeTask(std::move(flag), [this]() { OnFirstPacketReceived(); }));
-        });
-  });
-  PushNewMediaChannelAndDeleteChannel(nullptr);
+  }
 
   RTC_DCHECK_BLOCK_COUNT_NO_MORE_THAN(2);
+
+  return err;
+}
+
+absl::AnyInvocable<void() &&> RtpTransceiver::GetClearChannelNetworkTask() {
+  RTC_DCHECK_RUN_ON(thread_);
+  // GetClearChannelNetworkTask must be called before GetDeleteChannelWorkerTask
+  // since that's where we clear the `channel_` pointer. Perhaps we should
+  // combine these into one function to avoid an ordering mistake?
+
+  if (!channel_) {
+    RTC_DCHECK(!signaling_thread_safety_ || !signaling_thread_safety_->alive());
+    return nullptr;
+  }
+
+  signaling_thread_safety_->SetNotAlive();
+  signaling_thread_safety_ = nullptr;
+
+  ChannelInterface* channel = channel_.get();
+  return [channel, flag = network_thread_safety_] {
+    flag->SetNotAlive();
+    channel->SetFirstPacketReceivedCallback_n(nullptr);
+    channel->SetFirstPacketSentCallback_n(nullptr);
+    channel->SetPacketReceivedCallback_n(nullptr);
+    channel->SetRtpTransport(nullptr);
+  };
+}
+
+absl::AnyInvocable<void() &&> RtpTransceiver::GetDeleteChannelWorkerTask(
+    bool stop_senders) {
+  RTC_DCHECK_RUN_ON(thread_);
+  RTC_DCHECK(!signaling_thread_safety_ || !signaling_thread_safety_->alive())
+      << "GetClearChannelNetworkTask() must be called first";
+
+  if (!channel_) {
+    return nullptr;
+  }
+
+  std::vector<absl::AnyInvocable<void() &&>> stop_sender_actions;
+  if (stop_senders) {
+    stop_sender_actions = DetachAndGetStopTasksForSenders(senders_);
+  }
+
+  transport_name_ = std::nullopt;
+
+  // Ensure that channel_ is not reachable via the transceiver, but is deleted
+  // only after clearing the references in senders_ and receivers_.
+  return [this, channel = std::move(channel_), senders = senders_,
+          receivers = receivers_,
+          stop_sender_actions = std::move(stop_sender_actions)]() mutable {
+    RTC_DCHECK_RUN_ON(context()->worker_thread());
+    for (auto& task : stop_sender_actions) {
+      std::move(task)();
+    }
+    ClearMediaChannelReferences();
+    channel.reset();
+  };
 }
 
 void RtpTransceiver::ClearChannel() {
   RTC_DCHECK_RUN_ON(thread_);
-
   if (!channel_) {
     return;
   }
 
-  RTC_LOG_THREAD_BLOCK_COUNT();
-
-  if (channel_) {
-    signaling_thread_safety_->SetNotAlive();
-    signaling_thread_safety_ = nullptr;
+  absl::AnyInvocable<void() &&> network_task = GetClearChannelNetworkTask();
+  if (network_task) {
+    context()->network_thread()->BlockingCall(
+        [&] { std::move(network_task)(); });
   }
-  std::unique_ptr<cricket::ChannelInterface> channel_to_delete;
 
-  context()->network_thread()->BlockingCall([&]() {
-    if (channel_) {
-      channel_->SetFirstPacketReceivedCallback(nullptr);
-      channel_->SetRtpTransport(nullptr);
-      channel_to_delete = std::move(channel_);
-    }
-  });
-
-  RTC_DCHECK_BLOCK_COUNT_NO_MORE_THAN(1);
-  PushNewMediaChannelAndDeleteChannel(std::move(channel_to_delete));
-
-  RTC_DCHECK_BLOCK_COUNT_NO_MORE_THAN(2);
+  absl::AnyInvocable<void() &&> worker_task =
+      GetDeleteChannelWorkerTask(/*stop_senders=*/false);
+  if (worker_task) {
+    context()->worker_thread()->BlockingCall([&] { std::move(worker_task)(); });
+  }
 }
 
-void RtpTransceiver::PushNewMediaChannelAndDeleteChannel(
-    std::unique_ptr<cricket::ChannelInterface> channel_to_delete) {
-  // The clumsy combination of pushing down media channel and deleting
-  // the channel is due to the desire to do both things in one Invoke().
-  if (!channel_to_delete && senders_.empty() && receivers_.empty()) {
+void RtpTransceiver::PushNewMediaChannel() {
+  RTC_DCHECK_RUN_ON(thread_);
+  RTC_DCHECK(channel_);
+  if (senders_.empty() && receivers_.empty()) {
     return;
   }
-  context()->worker_thread()->BlockingCall([&]() {
-    // Push down the new media_channel, if any, otherwise clear it.
-    auto* media_send_channel =
-        channel_ ? channel_->media_send_channel() : nullptr;
-    for (const auto& sender : senders_) {
-      sender->internal()->SetMediaChannel(media_send_channel);
-    }
-
-    auto* media_receive_channel =
-        channel_ ? channel_->media_receive_channel() : nullptr;
-    for (const auto& receiver : receivers_) {
-      receiver->internal()->SetMediaChannel(media_receive_channel);
-    }
-
-    // Destroy the channel, if we had one, now _after_ updating the receivers
-    // who might have had references to the previous channel.
-    if (channel_to_delete) {
-      channel_to_delete.reset(nullptr);
-    }
+  context()->worker_thread()->BlockingCall([&, channel = channel_.get()]() {
+    RTC_DCHECK_RUN_ON(context()->worker_thread());
+    SetMediaChannels(channel->media_send_channel(),
+                     channel->media_receive_channel());
   });
 }
 
-void RtpTransceiver::AddSender(
-    rtc::scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>> sender) {
+// RTC_RUN_ON(context()->worker_thread());
+void RtpTransceiver::SetMediaChannels(MediaSendChannelInterface* send,
+                                      MediaReceiveChannelInterface* receive) {
+  for (const auto& sender : senders_) {
+    sender->internal()->SetMediaChannel(send);
+  }
+  for (const auto& receiver : receivers_) {
+    receiver->internal()->SetMediaChannel(receive);
+  }
+}
+VideoMediaSendChannelInterface::EncoderSwitchRequestCallback
+RtpTransceiver::GetEncoderSwitchRequestCallback() {
+  if (media_type() != MediaType::VIDEO) {
+    return nullptr;
+  }
+  RTC_DCHECK(signaling_thread_safety_);
+  // Return a task that first clears the sender parameter cache on the signaling
+  // thread and then posts a task to apply the codec switch changes to the
+  // parameters on the worker.
+  return
+      [this, signaling_thread = context_->signaling_thread(),
+       worker_thread = context_->worker_thread(),
+       signaling_safety = signaling_thread_safety_](
+          VideoMediaSendChannelInterface::EncoderSwitchRequestAction action) {
+        // Called on the encoder task queue.
+        signaling_thread->PostTask(SafeTask(
+            signaling_safety,
+            [this, worker_thread, action = std::move(action)]() mutable {
+              for (const auto& sender : senders_) {
+                sender->internal()->SetCachedParameters(std::nullopt);
+              }
+              worker_thread->PostTask([action = std::move(action)]() mutable {
+                std::move(action)();
+              });
+            }));
+      };
+}
+
+// RTC_RUN_ON(context()->worker_thread());
+void RtpTransceiver::ClearMediaChannelReferences() {
+  SetMediaChannels(nullptr, nullptr);
+  owned_send_channel_ = nullptr;
+  owned_receive_channel_ = nullptr;
+  media_engine_ref_ = nullptr;
+}
+
+PLAN_B_ONLY void RtpTransceiver::AddSenderPlanB(
+    scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>> sender) {
   RTC_DCHECK_RUN_ON(thread_);
   RTC_DCHECK(!stopped_);
   RTC_DCHECK(!unified_plan_);
   RTC_DCHECK(sender);
   RTC_DCHECK_EQ(media_type(), sender->media_type());
   RTC_DCHECK(!absl::c_linear_search(senders_, sender));
-
-  std::vector<cricket::Codec> send_codecs =
-      media_type() == cricket::MEDIA_TYPE_VIDEO
-          ? media_engine()->video().send_codecs(false)
-          : media_engine()->voice().send_codecs();
-  sender->internal()->SetSendCodecs(send_codecs);
+  ConfigureSendCodecs(codec_vendor(), media_type(), sender->internal());
   senders_.push_back(sender);
 }
 
-bool RtpTransceiver::RemoveSender(RtpSenderInterface* sender) {
+PLAN_B_ONLY scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>>
+RtpTransceiver::AddSenderPlanB(
+    scoped_refptr<MediaStreamTrackInterface> track,
+    absl::string_view sender_id,
+    const std::vector<std::string>& stream_ids,
+    const std::vector<RtpEncodingParameters>& send_encodings) {
+  RTC_DCHECK_RUN_ON(thread_);
+  RTC_DCHECK(!stopped_);
   RTC_DCHECK(!unified_plan_);
-  if (sender) {
-    RTC_DCHECK_EQ(media_type(), sender->media_type());
-  }
+  RTC_DCHECK(media_type_ == MediaType::AUDIO ||
+             media_type_ == MediaType::VIDEO);
+  context_->worker_thread()->BlockingCall([&]() mutable {
+    RTC_DCHECK_RUN_ON(context()->worker_thread());
+    senders_.push_back(CreateSender(
+        media_type_, env_, context_, legacy_stats_, set_streams_observer_,
+        sender_id, channel_ ? channel_->media_send_channel() : nullptr));
+  });
+  ConfigureSender(senders_.back(), track.get(), stream_ids, send_encodings,
+                  codec_vendor());
+  return senders_.back();
+}
+
+PLAN_B_ONLY bool RtpTransceiver::RemoveSenderPlanB(RtpSenderInterface* sender) {
+  RTC_DCHECK(!unified_plan_);
+  RTC_DCHECK_EQ(media_type(), sender->media_type());
   auto it = absl::c_find(senders_, sender);
   if (it == senders_.end()) {
     return false;
@@ -463,9 +772,8 @@ bool RtpTransceiver::RemoveSender(RtpSenderInterface* sender) {
   return true;
 }
 
-void RtpTransceiver::AddReceiver(
-    rtc::scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>>
-        receiver) {
+PLAN_B_ONLY void RtpTransceiver::AddReceiverPlanB(
+    scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>> receiver) {
   RTC_DCHECK_RUN_ON(thread_);
   RTC_DCHECK(!stopped_);
   RTC_DCHECK(!unified_plan_);
@@ -475,12 +783,11 @@ void RtpTransceiver::AddReceiver(
   receivers_.push_back(receiver);
 }
 
-bool RtpTransceiver::RemoveReceiver(RtpReceiverInterface* receiver) {
+PLAN_B_ONLY bool RtpTransceiver::RemoveReceiverPlanB(
+    RtpReceiverInterface* receiver) {
   RTC_DCHECK_RUN_ON(thread_);
   RTC_DCHECK(!unified_plan_);
-  if (receiver) {
-    RTC_DCHECK_EQ(media_type(), receiver->media_type());
-  }
+  RTC_DCHECK_EQ(media_type(), receiver->media_type());
   auto it = absl::c_find(receivers_, receiver);
   if (it == receivers_.end()) {
     return false;
@@ -488,7 +795,6 @@ bool RtpTransceiver::RemoveReceiver(RtpReceiverInterface* receiver) {
 
   (*it)->internal()->Stop();
   context()->worker_thread()->BlockingCall([&]() {
-    // `Stop()` will clear the receiver's pointer to the media channel.
     (*it)->internal()->SetMediaChannel(nullptr);
   });
 
@@ -496,53 +802,91 @@ bool RtpTransceiver::RemoveReceiver(RtpReceiverInterface* receiver) {
   return true;
 }
 
-rtc::scoped_refptr<RtpSenderInternal> RtpTransceiver::sender_internal() const {
+scoped_refptr<RtpSenderInternal> RtpTransceiver::sender_internal() const {
   RTC_DCHECK(unified_plan_);
   RTC_CHECK_EQ(1u, senders_.size());
-  return rtc::scoped_refptr<RtpSenderInternal>(senders_[0]->internal());
+  return scoped_refptr<RtpSenderInternal>(senders_[0]->internal());
 }
 
-rtc::scoped_refptr<RtpReceiverInternal> RtpTransceiver::receiver_internal()
-    const {
+scoped_refptr<RtpReceiverInternal> RtpTransceiver::receiver_internal() const {
   RTC_DCHECK(unified_plan_);
   RTC_CHECK_EQ(1u, receivers_.size());
-  return rtc::scoped_refptr<RtpReceiverInternal>(receivers_[0]->internal());
+  return scoped_refptr<RtpReceiverInternal>(receivers_[0]->internal());
 }
 
-cricket::MediaType RtpTransceiver::media_type() const {
+MediaType RtpTransceiver::media_type() const {
   return media_type_;
 }
 
-absl::optional<std::string> RtpTransceiver::mid() const {
+std::optional<std::string> RtpTransceiver::mid() const {
   return mid_;
 }
 
-void RtpTransceiver::OnFirstPacketReceived() {
+// RTC_RUN_ON(context()->worker_thread())
+MediaEngineInterface* RtpTransceiver::media_engine() {
+  if (!media_engine_ref_) {
+    media_engine_ref_ =
+        std::make_unique<ConnectionContext::MediaEngineReference>(
+            scoped_refptr<ConnectionContext>(context_));
+  }
+  return media_engine_ref_->media_engine();
+}
+
+void RtpTransceiver::OnFirstPacketReceived(uint32_t ssrc) {
   for (const auto& receiver : receivers_) {
-    receiver->internal()->NotifyFirstPacketReceived();
+    receiver->internal()->NotifyFirstPacketReceived(ssrc);
   }
 }
 
-rtc::scoped_refptr<RtpSenderInterface> RtpTransceiver::sender() const {
+// RTC_RUN_ON(context()->network_thread())
+void RtpTransceiver::OnPacketReceived(
+    uint32_t ssrc,
+    scoped_refptr<PendingTaskSafetyFlag> safety) {
+  if (!receptive_n_) {
+    return;
+  }
+  if (packet_notified_after_receptive_) {
+    return;
+  }
+  packet_notified_after_receptive_ = true;
+  thread_->PostTask(SafeTask(safety, [this, ssrc]() {
+    RTC_DCHECK_RUN_ON(thread_);
+    if (stopping() || stopped() || !receptive_) {
+      return;
+    }
+    for (const auto& receiver : receivers_) {
+      receiver->internal()->NotifyFirstPacketReceivedAfterReceptiveChange(ssrc);
+    }
+  }));
+}
+
+void RtpTransceiver::OnFirstPacketSent() {
+  for (const auto& sender : senders_) {
+    sender->internal()->NotifyFirstPacketSent();
+  }
+}
+
+scoped_refptr<RtpSenderInterface> RtpTransceiver::sender() const {
   RTC_DCHECK(unified_plan_);
   RTC_CHECK_EQ(1u, senders_.size());
   return senders_[0];
 }
 
-rtc::scoped_refptr<RtpReceiverInterface> RtpTransceiver::receiver() const {
+scoped_refptr<RtpReceiverInterface> RtpTransceiver::receiver() const {
   RTC_DCHECK(unified_plan_);
   RTC_CHECK_EQ(1u, receivers_.size());
   return receivers_[0];
 }
 
 void RtpTransceiver::set_current_direction(RtpTransceiverDirection direction) {
+  if (current_direction_ == direction)
+    return;
   RTC_LOG(LS_INFO) << "Changing transceiver (MID=" << mid_.value_or("<not set>")
                    << ") current direction from "
                    << (current_direction_ ? RtpTransceiverDirectionToString(
                                                 *current_direction_)
                                           : "<not set>")
-                   << " to " << RtpTransceiverDirectionToString(direction)
-                   << ".";
+                   << " to " << RtpTransceiverDirectionToString(direction);
   current_direction_ = direction;
   if (RtpTransceiverDirectionHasSend(*current_direction_)) {
     has_ever_been_used_to_send_ = true;
@@ -550,7 +894,7 @@ void RtpTransceiver::set_current_direction(RtpTransceiverDirection direction) {
 }
 
 void RtpTransceiver::set_fired_direction(
-    absl::optional<RtpTransceiverDirection> direction) {
+    std::optional<RtpTransceiverDirection> direction) {
   fired_direction_ = direction;
 }
 
@@ -574,15 +918,15 @@ RtpTransceiverDirection RtpTransceiver::direction() const {
 RTCError RtpTransceiver::SetDirectionWithError(
     RtpTransceiverDirection new_direction) {
   if (unified_plan_ && stopping()) {
-    LOG_AND_RETURN_ERROR(RTCErrorType::INVALID_STATE,
-                         "Cannot set direction on a stopping transceiver.");
+    return LOG_ERROR(RTCError::InvalidState()
+                     << "Cannot set direction on a stopping transceiver.");
   }
   if (new_direction == direction_)
     return RTCError::OK();
 
   if (new_direction == RtpTransceiverDirection::kStopped) {
-    LOG_AND_RETURN_ERROR(RTCErrorType::INVALID_PARAMETER,
-                         "The set direction 'stopped' is invalid.");
+    return LOG_ERROR(RTCError::InvalidParameter()
+                     << "The set direction 'stopped' is invalid.");
   }
 
   direction_ = new_direction;
@@ -591,7 +935,7 @@ RTCError RtpTransceiver::SetDirectionWithError(
   return RTCError::OK();
 }
 
-absl::optional<RtpTransceiverDirection> RtpTransceiver::current_direction()
+std::optional<RtpTransceiverDirection> RtpTransceiver::current_direction()
     const {
   if (unified_plan_ && stopped())
     return RtpTransceiverDirection::kStopped;
@@ -599,36 +943,65 @@ absl::optional<RtpTransceiverDirection> RtpTransceiver::current_direction()
   return current_direction_;
 }
 
-absl::optional<RtpTransceiverDirection> RtpTransceiver::fired_direction()
-    const {
+std::optional<RtpTransceiverDirection> RtpTransceiver::fired_direction() const {
   return fired_direction_;
 }
 
-void RtpTransceiver::StopSendingAndReceiving() {
+bool RtpTransceiver::receptive() const {
+  RTC_DCHECK_RUN_ON(thread_);
+  return receptive_;
+}
+
+void RtpTransceiver::set_receptive(bool receptive) {
+  RTC_DCHECK_RUN_ON(thread_);
+  if (receptive != receptive_) {
+    receptive_ = receptive;
+    context()->network_thread()->PostTask(
+        SafeTask(network_thread_safety_, [this, receptive = receptive]() {
+          RTC_DCHECK_RUN_ON(context()->network_thread());
+          receptive_n_ = receptive;
+          packet_notified_after_receptive_ = false;
+        }));
+  }
+}
+
+absl_nonnull absl::AnyInvocable<void() &&>
+RtpTransceiver::GetStopSendingAndReceiving() {
+  RTC_DCHECK_RUN_ON(thread_);
+  RTC_DCHECK(!stopped_);
+  RTC_DCHECK(!stopping_);
   // 1. Let sender be transceiver.[[Sender]].
   // 2. Let receiver be transceiver.[[Receiver]].
-  //
-  // 3. Stop sending media with sender.
-  //
-  RTC_DCHECK_RUN_ON(thread_);
 
-  // 4. Send an RTCP BYE for each RTP stream that was being sent by sender, as
-  // specified in [RFC3550].
-  for (const auto& sender : senders_)
-    sender->internal()->Stop();
+  RTC_DCHECK_DISALLOW_THREAD_BLOCKING_CALLS();
 
   // Signal to receiver sources that we're stopping.
-  for (const auto& receiver : receivers_)
+  for (const auto& receiver : receivers_) {
     receiver->internal()->Stop();
+  }
 
-  context()->worker_thread()->BlockingCall([&]() {
-    // 5 Stop receiving media with receiver.
-    for (const auto& receiver : receivers_)
-      receiver->internal()->SetMediaChannel(nullptr);
-  });
+  // 4. Stop sending media with sender.
+  // We do this *after* the media channel has been set to nullptr on the
+  // worker thread to avoid each sender doing that within `Stop()`.
+  // Senders will have already cleared send when the media channel was set to
+  // nullptr.
+  std::vector<absl::AnyInvocable<void() &&>> stop_sender_actions =
+      DetachAndGetStopTasksForSenders(senders_);
 
   stopping_ = true;
   direction_ = RtpTransceiverDirection::kInactive;
+
+  // 3. Send an RTCP BYE for each RTP stream that was being sent by sender, as
+  // specified in [RFC3550].
+
+  return
+      [this, stop_sender_actions = std::move(stop_sender_actions)]() mutable {
+        RTC_DCHECK_RUN_ON(context()->worker_thread());
+        for (auto& task : stop_sender_actions) {
+          std::move(task)();
+        }
+        ClearMediaChannelReferences();
+      };
 }
 
 RTCError RtpTransceiver::StopStandard() {
@@ -645,18 +1018,18 @@ RTCError RtpTransceiver::StopStandard() {
   // transceiver.
   //
   // 3. If connection.[[IsClosed]] is true, throw an InvalidStateError.
-  if (is_pc_closed_) {
-    LOG_AND_RETURN_ERROR(RTCErrorType::INVALID_STATE,
-                         "PeerConnection is closed.");
-  }
-
+  //    (Note: Checking for IsClosed() is implemented by the user agent).
+  //
   // 4. If transceiver.[[Stopping]] is true, abort these steps.
-  if (stopping_)
+  if (stopping_) {
     return RTCError::OK();
+  }
 
   // 5. Stop sending and receiving given transceiver, and update the
   // negotiation-needed flag for connection.
-  StopSendingAndReceiving();
+  auto stop_task = GetStopSendingAndReceiving();
+  context_->worker_thread()->BlockingCall(
+      [&]() mutable { std::move(stop_task)(); });
   on_negotiation_needed_();
 
   return RTCError::OK();
@@ -664,88 +1037,188 @@ RTCError RtpTransceiver::StopStandard() {
 
 void RtpTransceiver::StopInternal() {
   RTC_DCHECK_RUN_ON(thread_);
-  StopTransceiverProcedure();
+  auto stop_task = GetStopTransceiverProcedure();
+  if (stop_task) {
+    context_->worker_thread()->BlockingCall(
+        [stop_task = std::move(stop_task)]() mutable {
+          std::move(stop_task)();
+        });
+  }
 }
 
-void RtpTransceiver::StopTransceiverProcedure() {
+absl_nullable absl::AnyInvocable<void() &&>
+RtpTransceiver::GetStopTransceiverProcedure() {
   RTC_DCHECK_RUN_ON(thread_);
   // As specified in the "Stop the RTCRtpTransceiver" procedure
   // 1. If transceiver.[[Stopping]] is false, stop sending and receiving given
   // transceiver.
+  absl::AnyInvocable<void() &&> stop_task;
   if (!stopping_)
-    StopSendingAndReceiving();
+    stop_task = GetStopSendingAndReceiving();
 
   // 2. Set transceiver.[[Stopped]] to true.
   stopped_ = true;
 
-  // Signal the updated change to the senders.
-  for (const auto& sender : senders_)
-    sender->internal()->SetTransceiverAsStopped();
-
   // 3. Set transceiver.[[Receptive]] to false.
+  receptive_ = false;
+
   // 4. Set transceiver.[[CurrentDirection]] to null.
-  current_direction_ = absl::nullopt;
+  current_direction_ = std::nullopt;
+
+  return stop_task;
 }
 
 RTCError RtpTransceiver::SetCodecPreferences(
-    rtc::ArrayView<RtpCodecCapability> codec_capabilities) {
+    std::span<RtpCodecCapability> codec_capabilities) {
   RTC_DCHECK(unified_plan_);
   // 3. If codecs is an empty list, set transceiver's [[PreferredCodecs]] slot
   // to codecs and abort these steps.
   if (codec_capabilities.empty()) {
     codec_preferences_.clear();
+    sendrecv_codec_preferences_.clear();
+    sendonly_codec_preferences_.clear();
+    recvonly_codec_preferences_.clear();
     return RTCError::OK();
   }
-
   // 4. Remove any duplicate values in codecs.
   std::vector<RtpCodecCapability> codecs;
   absl::c_remove_copy_if(codec_capabilities, std::back_inserter(codecs),
                          [&codecs](const RtpCodecCapability& codec) {
                            return absl::c_linear_search(codecs, codec);
                          });
+  // TODO(https://crbug.com/webrtc/391530822): Move logic in
+  // MediaSessionDescriptionFactory to this level.
+  return UpdateCodecPreferencesCaches(codecs);
+}
 
-  // 6. to 8.
-  RTCError result;
-  std::vector<cricket::Codec> recv_codecs;
-  if (media_type_ == cricket::MEDIA_TYPE_AUDIO) {
-    recv_codecs = media_engine()->voice().recv_codecs();
-  } else if (media_type_ == cricket::MEDIA_TYPE_VIDEO) {
-    recv_codecs = media_engine()->video().recv_codecs(context()->use_rtx());
+RTCError RtpTransceiver::UpdateCodecPreferencesCaches(
+    const std::vector<RtpCodecCapability>& codecs) {
+  // Get codec capabilities from media engine.
+  std::vector<Codec> send_codecs, recv_codecs;
+  if (media_type_ == MediaType::AUDIO) {
+    send_codecs = codec_vendor().audio_send_codecs().codecs();
+    recv_codecs = codec_vendor().audio_recv_codecs().codecs();
+  } else if (media_type_ == MediaType::VIDEO) {
+    send_codecs = codec_vendor().video_send_codecs().codecs();
+    recv_codecs = codec_vendor().video_recv_codecs().codecs();
   }
-  result = VerifyCodecPreferences(codecs, recv_codecs,
-                                  context()->env().field_trials());
-
-  if (result.ok()) {
-    codec_preferences_ = codecs;
+  RTCError error = VerifyCodecPreferences(codecs, send_codecs, recv_codecs);
+  if (!error.ok()) {
+    return error;
   }
+  codec_preferences_ = codecs;
+  // Update the filtered views of `codec_preferences_` so that we don't have
+  // to query codec capabilities when calling filtered_codec_preferences() or
+  // every time the direction changes.
+  sendrecv_codec_preferences_.clear();
+  sendonly_codec_preferences_.clear();
+  recvonly_codec_preferences_.clear();
+  for (const RtpCodecCapability& codec : codec_preferences_) {
+    if (!codec.IsMediaCodec()) {
+      // Non-media codecs don't need to be filtered at this level.
+      sendrecv_codec_preferences_.push_back(codec);
+      sendonly_codec_preferences_.push_back(codec);
+      recvonly_codec_preferences_.push_back(codec);
+      continue;
+    }
+    // Is this a send codec, receive codec or both?
+    bool is_send_codec =
+        absl::c_any_of(send_codecs, [&codec](const Codec& send_codec) {
+          return IsSameRtpCodecIgnoringLevel(send_codec, codec);
+        });
+    bool is_recv_codec =
+        absl::c_any_of(recv_codecs, [&codec](const Codec& recv_codec) {
+          return IsSameRtpCodecIgnoringLevel(recv_codec, codec);
+        });
+    // The codec being neither for sending or receving is not possible because
+    // of prior validation by VerifyCodecPreferences().
+    RTC_CHECK(is_send_codec || is_recv_codec);
+    if (is_send_codec && is_recv_codec) {
+      sendrecv_codec_preferences_.push_back(codec);
+    }
+    if (is_send_codec) {
+      sendonly_codec_preferences_.push_back(codec);
+    }
+    if (is_recv_codec) {
+      recvonly_codec_preferences_.push_back(codec);
+    }
+  }
+  // If filtering results in an empty list this is the same as not having any
+  // preferences.
+  if (!HasAnyMediaCodec(sendrecv_codec_preferences_)) {
+    sendrecv_codec_preferences_.clear();
+  }
+  if (!HasAnyMediaCodec(sendonly_codec_preferences_)) {
+    sendonly_codec_preferences_.clear();
+  }
+  if (!HasAnyMediaCodec(recvonly_codec_preferences_)) {
+    recvonly_codec_preferences_.clear();
+  }
+  return RTCError::OK();
+}
 
-  return result;
+std::vector<RtpCodecCapability> RtpTransceiver::codec_preferences() const {
+  return codec_preferences_;
+}
+
+std::vector<RtpCodecCapability> RtpTransceiver::filtered_codec_preferences()
+    const {
+  switch (direction_) {
+    case RtpTransceiverDirection::kSendRecv:
+    case RtpTransceiverDirection::kInactive:
+    case RtpTransceiverDirection::kStopped:
+      return sendrecv_codec_preferences_;
+    case RtpTransceiverDirection::kSendOnly:
+      return sendonly_codec_preferences_;
+    case RtpTransceiverDirection::kRecvOnly:
+      return recvonly_codec_preferences_;
+  }
+  return codec_preferences_;
 }
 
 std::vector<RtpHeaderExtensionCapability>
 RtpTransceiver::GetHeaderExtensionsToNegotiate() const {
+  RTC_DCHECK_RUN_ON(thread_);
   return header_extensions_to_negotiate_;
 }
 
-std::vector<RtpHeaderExtensionCapability>
-RtpTransceiver::GetNegotiatedHeaderExtensions() const {
-  RTC_DCHECK_RUN_ON(thread_);
+std::vector<RtpHeaderExtensionCapability> ModifyCapabilitiesAccordingToHeaders(
+    const std::vector<RtpHeaderExtensionCapability>& old_values,
+    const std::vector<RtpExtension>& extension_list) {
   std::vector<RtpHeaderExtensionCapability> result;
-  result.reserve(header_extensions_to_negotiate_.size());
-  for (const auto& ext : header_extensions_to_negotiate_) {
-    auto negotiated = absl::c_find_if(negotiated_header_extensions_,
-                                      [&ext](const RtpExtension& negotiated) {
-                                        return negotiated.uri == ext.uri;
-                                      });
-    RtpHeaderExtensionCapability capability(ext.uri);
+  result.reserve(old_values.size());
+  // Create new capability objects that start as a copy of the old values.
+  for (RtpHeaderExtensionCapability capability : old_values) {
+    auto negotiated = absl::c_find_if(
+        extension_list, [&capability](const RtpExtension& negotiated) {
+          return negotiated.uri == capability.uri;
+        });
     // TODO(bugs.webrtc.org/7477): extend when header extensions support
     // direction.
-    capability.direction = negotiated != negotiated_header_extensions_.end()
-                               ? RtpTransceiverDirection::kSendRecv
-                               : RtpTransceiverDirection::kStopped;
+    if (negotiated != extension_list.end()) {
+      capability.direction = RtpTransceiverDirection::kSendRecv;
+      capability.preferred_id = negotiated->id;
+      capability.preferred_encrypt = negotiated->encrypt;
+    } else {
+      capability.direction = RtpTransceiverDirection::kStopped;
+    }
     result.push_back(capability);
   }
   return result;
+}
+std::vector<RtpHeaderExtensionCapability>
+RtpTransceiver::GetNegotiatedHeaderExtensions() const {
+  RTC_DCHECK_RUN_ON(thread_);
+  return ModifyCapabilitiesAccordingToHeaders(header_extensions_to_negotiate_,
+                                              negotiated_header_extensions_);
+}
+
+std::vector<RtpHeaderExtensionCapability>
+RtpTransceiver::GetOfferedAndImplementedHeaderExtensions(
+    const MediaContentDescription* content) const {
+  RTC_DCHECK_RUN_ON(thread_);
+  return ModifyCapabilitiesAccordingToHeaders(header_extensions_to_negotiate_,
+                                              content->rtp_header_extensions());
 }
 
 // Helper function to determine mandatory-to-negotiate extensions.
@@ -753,28 +1226,29 @@ RtpTransceiver::GetNegotiatedHeaderExtensions() const {
 // and https://w3c.github.io/webrtc-extensions/#rtcrtptransceiver-interface
 // Since BUNDLE is offered by default, MID is mandatory and can not be turned
 // off via this API.
-bool IsMandatoryHeaderExtension(const std::string& uri) {
+bool IsMandatoryHeaderExtension(absl::string_view uri) {
   return uri == RtpExtension::kMidUri;
 }
 
 RTCError RtpTransceiver::SetHeaderExtensionsToNegotiate(
-    rtc::ArrayView<const RtpHeaderExtensionCapability> header_extensions) {
+    std::span<const RtpHeaderExtensionCapability> header_extensions) {
+  RTC_DCHECK_RUN_ON(thread_);
   // https://w3c.github.io/webrtc-extensions/#dom-rtcrtptransceiver-setheaderextensionstonegotiate
   if (header_extensions.size() != header_extensions_to_negotiate_.size()) {
-    return RTCError(RTCErrorType::INVALID_MODIFICATION,
-                    "Size of extensions to negotiate does not match.");
+    return RTCError::InvalidModification()
+           << "Size of extensions to negotiate does not match.";
   }
   // For each index i of extensions, run the following steps: ...
   for (size_t i = 0; i < header_extensions.size(); i++) {
     const auto& extension = header_extensions[i];
     if (extension.uri != header_extensions_to_negotiate_[i].uri) {
-      return RTCError(RTCErrorType::INVALID_MODIFICATION,
-                      "Reordering extensions is not allowed.");
+      return RTCError::InvalidModification()
+             << "Reordering extensions is not allowed.";
     }
     if (IsMandatoryHeaderExtension(extension.uri) &&
         extension.direction != RtpTransceiverDirection::kSendRecv) {
-      return RTCError(RTCErrorType::INVALID_MODIFICATION,
-                      "Attempted to stop a mandatory extension.");
+      return RTCError::InvalidModification()
+             << "Attempted to stop a mandatory extension.";
     }
 
     // TODO(bugs.webrtc.org/7477): Currently there are no recvonly extensions so
@@ -794,15 +1268,203 @@ RTCError RtpTransceiver::SetHeaderExtensionsToNegotiate(
 
 void RtpTransceiver::OnNegotiationUpdate(
     SdpType sdp_type,
-    const cricket::MediaContentDescription* content) {
+    const MediaContentDescription* content) {
   RTC_DCHECK_RUN_ON(thread_);
   RTC_DCHECK(content);
-  if (sdp_type == SdpType::kAnswer)
+  if (sdp_type == SdpType::kAnswer || sdp_type == SdpType::kPrAnswer) {
     negotiated_header_extensions_ = content->rtp_header_extensions();
+    if (!env_.field_trials().IsDisabled(
+            "WebRTC-HeaderExtensionNegotiateMemory")) {
+      header_extensions_to_negotiate_ = GetNegotiatedHeaderExtensions();
+    }
+  } else if (sdp_type == SdpType::kOffer) {
+    if (!env_.field_trials().IsDisabled(
+            "WebRTC-HeaderExtensionNegotiateMemory")) {
+      header_extensions_for_rollback_ = header_extensions_to_negotiate_;
+      header_extensions_to_negotiate_ =
+          GetOfferedAndImplementedHeaderExtensions(content);
+    }
+  } else if (sdp_type == SdpType::kRollback) {
+    if (!env_.field_trials().IsDisabled(
+            "WebRTC-HeaderExtensionNegotiateMemory")) {
+      RTC_CHECK(!header_extensions_for_rollback_.empty());
+      header_extensions_to_negotiate_ = header_extensions_for_rollback_;
+    }
+  }
 }
 
-void RtpTransceiver::SetPeerConnectionClosed() {
-  is_pc_closed_ = true;
+bool RtpTransceiver::SetChannelRtpTransport(
+    RtpTransportInternal* rtp_transport) {
+  RTC_DCHECK_RUN_ON(context()->network_thread());
+  RTC_DCHECK(channel_);
+  return channel_->SetRtpTransport(rtp_transport);
+}
+
+void RtpTransceiver::SetChannelLocalContent(
+    const MediaContentDescription* content,
+    SdpType type,
+    ScopedOperationsBatcher& batcher) {
+  RTC_DCHECK_RUN_ON(context()->signaling_thread());
+  SetChannelContent(
+      [this, content, type]() {
+        return channel_->SetLocalContent(content, type);
+      },
+      batcher);
+}
+
+void RtpTransceiver::SetChannelRemoteContent(
+    const MediaContentDescription* content,
+    SdpType type,
+    ScopedOperationsBatcher& batcher) {
+  RTC_DCHECK_RUN_ON(context()->signaling_thread());
+  SetChannelContent(
+      [this, content, type]() {
+        return channel_->SetRemoteContent(content, type);
+      },
+      batcher);
+}
+
+void RtpTransceiver::SetChannelContent(
+    absl::AnyInvocable<RTCError() &&> set_content,
+    ScopedOperationsBatcher& batcher) {
+  RTC_DCHECK_RUN_ON(context()->signaling_thread());
+
+  struct SenderParameters {
+    const uint32_t ssrc;
+    RtpSenderInternal* const sender;
+    std::optional<RtpParameters> parameters;
+  };
+
+  std::vector<SenderParameters> sender_parameters;
+  sender_parameters.reserve(senders_.size());
+  for (const auto& sender : senders_) {
+    sender_parameters.push_back(
+        {.ssrc = sender->ssrc(), .sender = sender->internal()});
+  }
+
+  batcher.AddWithFinalizer(
+      [this, set_content = std::move(set_content),
+       sender_parameters = std::move(sender_parameters)]() mutable
+          -> RTCErrorOr<ScopedOperationsBatcher::FinalizerTask> {
+        RTC_DCHECK_RUN_ON(context()->worker_thread());
+        if (!channel_) {
+          return RTCError::InvalidState() << "No channel";
+        }
+        RTCError result = std::move(set_content)();
+        if (!result.ok()) {
+          return result;
+        }
+        for (auto& entry : sender_parameters) {
+          if (entry.ssrc != 0) {
+            entry.parameters =
+                channel_->media_send_channel()->GetRtpSendParameters(
+                    entry.ssrc);
+          }
+        }
+        return ScopedOperationsBatcher::FinalizerTask(
+            [sender_parameters = std::move(sender_parameters)]() mutable {
+              for (auto& entry : sender_parameters) {
+                if (entry.parameters) {
+                  entry.sender->SetCachedParameters(
+                      std::move(*entry.parameters));
+                }
+              }
+            });
+      });
+}
+void RtpTransceiver::EnableChannel(bool enable) {
+  RTC_DCHECK_RUN_ON(thread_);
+  RTC_DCHECK(channel_);
+  channel_->Enable(enable);
+}
+
+void RtpTransceiver::ResetUnsignaledRecvStream() {
+  RTC_DCHECK_RUN_ON(thread_);
+  if (MediaReceiveChannelInterface* receive_channel = media_receive_channel()) {
+    receive_channel->ResetUnsignaledRecvStream();
+  }
+}
+
+const std::vector<StreamParams>& RtpTransceiver::channel_local_streams() const {
+  RTC_DCHECK_RUN_ON(thread_);
+  RTC_DCHECK(channel_);
+  return channel_->local_streams();
+}
+
+const std::vector<StreamParams>& RtpTransceiver::channel_remote_streams()
+    const {
+  RTC_DCHECK_RUN_ON(thread_);
+  RTC_DCHECK(channel_);
+  return channel_->remote_streams();
+}
+
+absl::string_view RtpTransceiver::channel_transport_name() const {
+  RTC_DCHECK_RUN_ON(context()->network_thread());
+  RTC_DCHECK(channel_);
+  return channel_->transport_name();
+}
+
+MediaSendChannelInterface* RtpTransceiver::media_send_channel() {
+  RTC_DCHECK_RUN_ON(thread_);
+  return channel_ ? channel_->media_send_channel() : nullptr;
+}
+
+const MediaSendChannelInterface* RtpTransceiver::media_send_channel() const {
+  RTC_DCHECK_RUN_ON(thread_);
+  return channel_ ? channel_->media_send_channel() : nullptr;
+}
+
+MediaReceiveChannelInterface* RtpTransceiver::media_receive_channel() {
+  RTC_DCHECK_RUN_ON(thread_);
+  return channel_ ? channel_->media_receive_channel() : nullptr;
+}
+
+const MediaReceiveChannelInterface* RtpTransceiver::media_receive_channel()
+    const {
+  RTC_DCHECK_RUN_ON(thread_);
+  return channel_ ? channel_->media_receive_channel() : nullptr;
+}
+
+VideoMediaSendChannelInterface* RtpTransceiver::video_media_send_channel() {
+  // Accessed from multiple threads.
+  // See https://issues.webrtc.org/475126742
+  return channel_ ? channel_->video_media_send_channel() : nullptr;
+}
+
+VoiceMediaSendChannelInterface* RtpTransceiver::voice_media_send_channel() {
+  // Accessed from multiple threads.
+  // See https://issues.webrtc.org/475126742
+  return channel_ ? channel_->voice_media_send_channel() : nullptr;
+}
+
+VideoMediaReceiveChannelInterface*
+RtpTransceiver::video_media_receive_channel() {
+  // Accessed from multiple threads.
+  // See https://issues.webrtc.org/475126742
+  return channel_ ? channel_->video_media_receive_channel() : nullptr;
+}
+
+VoiceMediaReceiveChannelInterface*
+RtpTransceiver::voice_media_receive_channel() {
+  // Accessed from multiple threads.
+  // See https://issues.webrtc.org/475126742
+  return channel_ ? channel_->voice_media_receive_channel() : nullptr;
+}
+
+void RtpTransceiver::SetTransport(scoped_refptr<DtlsTransport> transport,
+                                  std::optional<std::string> transport_name) {
+  RTC_DCHECK_RUN_ON(thread_);
+  RTC_DCHECK(HasChannel() || !transport);
+  RTC_DCHECK((transport && transport_name.has_value()) ||
+             (!transport && !transport_name));
+  RTC_DCHECK(!transport_name.has_value() || !transport_name.value().empty());
+  transport_name_ = std::move(transport_name);
+  for (auto& sender : senders_) {
+    sender->internal()->set_transport(transport);
+  }
+  for (auto& receiver : receivers_) {
+    receiver->internal()->set_transport(transport);
+  }
 }
 
 }  // namespace webrtc

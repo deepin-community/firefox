@@ -15,7 +15,25 @@ webext-perms-header-with-perms = 要添加“{ $extension }”吗？此扩展将
 webext-perms-header-unsigned = 要添加“{ $extension }”吗？此扩展未经验证。恶意的扩展可能会窃取您的私密信息或损坏您的计算机。请仅在信任其来源时才安装。
 webext-perms-header-unsigned-with-perms = 要添加“{ $extension }”吗？此扩展未经验证。恶意的扩展可能会窃取您的私密信息或损坏您的计算机。请仅在信任其来源时才安装。此扩展将可执行下列操作：
 webext-perms-sideload-header = 已添加“{ $extension }”
-webext-perms-optional-perms-header = “{ $extension }”需要额外权限。
+webext-perms-optional-perms-header2 = “{ $extension }”请求获取额外权限
+webext-perms-optional-perms-header = “{ $extension }”请求获取额外权限。
+webext-perms-header2 = 添加“{ $extension }”
+webext-perms-list-intro-unsigned = 此扩展未经验证，可能使您的隐私面临风险或损害您的设备。请仅在信任其来源时才安装。
+
+## Headers used in the webextension permissions dialog, inside the content.
+
+webext-perms-header-required-perms = 必要权限：
+webext-perms-header-optional-settings = 可选设置：
+webext-perms-header-update-required-perms = 新必要权限：
+webext-perms-header-optional-required-perms = 新权限：
+webext-perms-header-data-collection-perms = 收集的必要数据：
+webext-perms-header-data-collection-is-none = 收集的数据：
+# This is a header used in the add-ons "update" prompt, shown when the new
+# version requires new data collection permissions.
+webext-perms-header-update-data-collection-perms = 新增收集的必要数据：
+# This is a header used in the add-ons "optional" prompt, shown when the
+# extension requests new data collection permissions programmatically.
+webext-perms-header-optional-data-collection-perms = 新增收集的数据：
 
 ##
 
@@ -35,6 +53,9 @@ webext-perms-sideload-cancel =
     .accesskey = C
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text2 = “{ $extension }”已有更新。您必须授予新的权限才能安装新版本，也可选择“取消”保持目前使用的版本。
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
 webext-perms-update-text = “{ $extension }”已有更新。您必须接受新版本中的新权限才能安装更新。也可选择“取消”保持目前使用的版本。此扩展将可执行下列操作：
 webext-perms-update-accept =
     .label = 更新
@@ -47,20 +68,55 @@ webext-perms-optional-perms-deny =
     .label = 拒绝
     .accesskey = D
 webext-perms-host-description-all-urls = 访问您在所有网站的数据
+webext-perms-host-description-file-urls = 访问您计算机上的本地文件
 # Variables:
 #   $domain (String): will be replaced by the DNS domain for which a webextension is requesting access (e.g., mozilla.org)
-webext-perms-host-description-wildcard = 访问您在 { $domain } 域名的数据
+webext-perms-host-description-wildcard = 访问您用于 { $domain } 域名的网站的数据
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
-webext-perms-host-description-too-many-wildcards = 访问您用于其他 { $domainCount } 个域名的数据
+webext-perms-host-description-too-many-wildcards = 访问您在其他 { $domainCount } 个域名的数据
 # Variables:
 #   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., www.mozilla.org)
-webext-perms-host-description-one-site = 访问您在 { $domain } 的数据
+webext-perms-host-description-one-site = 访问您用于 { $domain } 的数据
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
-webext-perms-host-description-too-many-sites = 访问您用于其他 { $domainCount } 个网站的数据
+webext-perms-host-description-too-many-sites = 访问您在其他 { $domainCount } 个网站的数据
+# Variables:
+#   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., mozilla.org),
+#     $domain should be treated as plural (because it may also include all subdomains, e.g www.mozilla.org, ftp.mozilla.org).
+webext-perms-host-description-one-domain = 访问您用于 { $domain } 域名的网站的数据
+# Permission string used for webextensions requesting access to 2 or more domains (and so $domainCount is expected to always
+# be >= 2, for webextensions requesting access to only one domain the `webext-perms-host-description-one-domain` string is
+# used instead).
+# Variables:
+#   $domainCount (Number): Integer indicating the number of websites domains for which this webextension is requesting permission
+#     (the list of domains will follow this string).
+webext-perms-host-description-multiple-domains = 访问您用于 { $domainCount } 个域名的网站的数据
+
+## Strings for data collection permissions in the permission prompt.
+
+webext-perms-description-data-none = 开发者称此扩展无需收集数据。
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some = 开发者称此扩展收集：{ $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-update = 开发者称此扩展将收集：{ $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-optional = 开发者称此扩展希望收集：{ $permissions }
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text-with-data-collection = “{ $extension }”需要新的设置才能更新
+webext-perms-update-list-intro-with-data-collection = 选择“取消”可保持当前版本和设置，或选择“更新”以获取新版本并批准更改。
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection = “{ $extension }”请求进行额外设置
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection-only = “{ $extension }”请求收集额外数据
 
 ## Headers used in the webextension permissions dialog for synthetic add-ons.
 ## The part of the string describing what privileges the extension gives should be consistent
@@ -71,6 +127,7 @@ webext-perms-host-description-too-many-sites = 访问您用于其他 { $domainCo
 
 webext-site-perms-header-with-gated-perms-midi = 此附加组件会准许 { $hostname } 访问您的 MIDI 设备。
 webext-site-perms-header-with-gated-perms-midi-sysex = 此附加组件会准许 { $hostname } 访问您的 MIDI 设备（支持 SysEx）。
+webext-site-perms-header-with-gated-perms-serial = 此附加组件会准许 { $hostname } 访问您的串行设备。
 
 ##
 
@@ -81,6 +138,12 @@ webext-site-perms-description-gated-perms-midi =
     这些通常是音频合成器等插拔设备，但也可能内置于您的计算机中。
     
     通常网站不被允许访问 MIDI 设备。使用不当可能会造成损坏或危及信息安全。
+webext-site-perms-description-gated-perms-webserial =
+    此类设备包括微控制器、3D 打印机等通过 USB、串行端口或蓝牙连接的设备。
+    
+    您可以选择网站能够访问哪些设备。
+    
+    通常不应允许网站访问串行设备。不当使用可能会导致设备损坏或引发安全问题。
 
 ## Headers used in the webextension permissions dialog.
 ## Note: This string will be used as raw markup. Avoid characters like <, >, &
@@ -95,3 +158,9 @@ webext-site-perms-header-unsigned-with-perms = 要安装“{ $extension }”吗�
 
 webext-site-perms-midi = 访问 MIDI 设备
 webext-site-perms-midi-sysex = 访问支持 SysEx 的 MIDI 设备
+webext-site-perms-serial = 访问串行设备
+
+## Colorway theme migration
+
+webext-colorway-theme-migration-notification-message = <b>您的配色主题已移除。</b>{ -brand-shorter-name } 更新了配色收藏集，您可以在附加组件站上获取最新版本。
+webext-colorway-theme-migration-notification-button = 获取新版配色主题

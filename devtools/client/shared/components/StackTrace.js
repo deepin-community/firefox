@@ -7,8 +7,8 @@
 const {
   Component,
   createFactory,
-} = require("resource://devtools/client/shared/vendor/react.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const Frame = createFactory(
@@ -16,7 +16,7 @@ const Frame = createFactory(
 );
 
 const l10n = new LocalizationHelper(
-  "devtools/client/locales/webconsole.properties"
+  "devtools/shared/locales/webconsole.properties"
 );
 
 class AsyncFrameClass extends Component {

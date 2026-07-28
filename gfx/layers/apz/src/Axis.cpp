@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,7 +11,6 @@
 #include "AsyncPanZoomController.h"         // for AsyncPanZoomController
 #include "FrameMetrics.h"                   // for FrameMetrics
 #include "SimpleVelocityTracker.h"          // for FrameMetrics
-#include "mozilla/Attributes.h"             // for final
 #include "mozilla/Preferences.h"            // for Preferences
 #include "mozilla/gfx/Rect.h"               // for RoundedIn
 #include "mozilla/layers/APZThreadUtils.h"  // for AssertOnControllerThread
@@ -32,6 +29,11 @@ namespace layers {
 bool FuzzyEqualsCoordinate(CSSCoord aValue1, CSSCoord aValue2) {
   return FuzzyEqualsAdditive(aValue1, aValue2, COORDINATE_EPSILON) ||
          FuzzyEqualsMultiplicative(aValue1, aValue2);
+}
+
+bool FuzzyEqualsPoint(const CSSPoint& aValue1, const CSSPoint& aValue2) {
+  return FuzzyEqualsCoordinate(aValue1.x, aValue2.x) &&
+         FuzzyEqualsCoordinate(aValue1.y, aValue2.y);
 }
 
 Axis::Axis(AsyncPanZoomController* aAsyncPanZoomController)
@@ -141,7 +143,7 @@ ParentLayerCoord Axis::ApplyResistance(
       (1 - fabsf(GetOverscroll()) / GetCompositionLength()) / 16;
   float result = resistanceFactor < 0 ? ParentLayerCoord(0)
                                       : aRequestedOverscroll * resistanceFactor;
-  result = clamped(result, -8.0f, 8.0f);
+  result = std::clamp(result, -8.0f, 8.0f);
   return result;
 }
 
@@ -192,7 +194,7 @@ void Axis::RestoreOverscroll(ParentLayerCoord aOverscroll) {
 
 void Axis::StartOverscrollAnimation(float aVelocity) {
   const float maxVelocity = StaticPrefs::apz_overscroll_max_velocity();
-  aVelocity = clamped(aVelocity / 2.0f, -maxVelocity, maxVelocity);
+  aVelocity = std::clamp(aVelocity / 2.0f, -maxVelocity, maxVelocity);
   SetVelocity(aVelocity);
   mMSDModel.SetPosition(mOverscroll);
   // Convert velocity from ParentLayerCoords/millisecond to

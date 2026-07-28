@@ -36,10 +36,17 @@ certificate-viewer-key-size = Anahtar boyutu
 certificate-viewer-inc-locality = Kuruluş yeri
 certificate-viewer-locality = Bölge
 certificate-viewer-location = Konum
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Günlük adı
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Log kimliği
 certificate-viewer-method = Yöntem
 certificate-viewer-modulus = Modülüs
 certificate-viewer-name = Adı
+certificate-viewer-surname = Soyadı
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Adı
 certificate-viewer-not-after = Bitiş
 certificate-viewer-not-before = Başlangıç
 certificate-viewer-organization = Kurum
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = Makam Bilgileri (AIA)
 certificate-viewer-certificate-policies = Sertifika İlkeleri
 certificate-viewer-embedded-scts = Gömülü SCT’ler
 certificate-viewer-crl-endpoints = CRL uç noktaları
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = İndir
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (sertifika)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (zincir)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Bu uzantı kritik olarak işaretlenmiş. Yani istemciler sertifikayı anlamadılarsa sertifikayı reddetmeleri gerekir.
@@ -112,6 +117,8 @@ certificate-viewer-export = Dışa aktar
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (bilinmiyor)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = sertifika
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

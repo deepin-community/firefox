@@ -17,10 +17,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = تازہ کاری نا کریں
     .accesskey = م
+primary-password-prompt-message = براہ مہربانی اپنا بنیادی پاس ورڈ درج کریں۔
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = کوئی نام صارف نہیں
-password-manager-toggle-password =
-    .label = پاس ورڈ دکھائیں
-    .accesskey = h
 password-manager-confirm-password-change = پاس ورڈ کی تبدیلی کی تصدیق کریں
 password-manager-select-username = جس لاگ ان کی تازہ کاری کرنی ہے منتخب کریں:

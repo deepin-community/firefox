@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 ChromeUtils.defineESModuleGetters(this, {
@@ -39,22 +37,28 @@ function disableAddon(addon) {
 add_task(async function test_update_defined_command() {
   let extension;
   let updatedExtension;
-
-  registerCleanupFunction(async () => {
-    await extension.unload();
-
-    // updatedExtension might not have started up if we didn't make it that far.
-    if (updatedExtension) {
-      await updatedExtension.unload();
+  let needsCleanup = true;
+  const cleanup = async () => {
+    if (!needsCleanup) {
+      return;
     }
+    needsCleanup = false;
+    const extensionId = extension.id;
+    await extension?.unload();
+    // updatedExtension might not have started up if we didn't make it that far.
+    await updatedExtension?.unload();
 
     // Check that ESS is cleaned up on uninstall.
-    let storedCommands = ExtensionSettingsStore.getAllForExtension(
-      extension.id,
-      "commands"
-    );
-    is(storedCommands.length, 0, "There are no stored commands after unload");
-  });
+    if (extensionId) {
+      let storedCommands = ExtensionSettingsStore.getAllForExtension(
+        extensionId,
+        "commands"
+      );
+      is(storedCommands.length, 0, "There are no stored commands after unload");
+    }
+  };
+
+  registerCleanupFunction(cleanup);
 
   extension = ExtensionTestUtils.loadExtension({
     useAddonManager: "permanent",
@@ -352,6 +356,8 @@ add_task(async function test_update_defined_command() {
   await TestUtils.waitForCondition(() => extensionKeyset(extension.id));
   // Shortcut is unchanged since it was previously updated.
   checkNumericKey(extension.id, "9", "alt,shift");
+
+  await cleanup();
 });
 
 add_task(async function updateSidebarCommand() {
@@ -516,4 +522,60 @@ add_task(async function test_extension_sidebar_shortcuts() {
   await BrowserTestUtils.closeWindow(win);
 
   await SpecialPowers.popPrefEnv();
+});
+
+add_task(async function test_extended_function_keys() {
+  const extension = ExtensionTestUtils.loadExtension({
+    useAddonManager: "permanent",
+    manifest: {
+      version: "1.0",
+      browser_specific_settings: { gecko: { id: "commands@mochi.test" } },
+      commands: {
+        foo: {
+          suggested_key: {
+            default: "Alt+Shift+F12",
+          },
+          description: "The foo command",
+        },
+      },
+    },
+    background() {
+      browser.test.onMessage.addListener(async (msg, data) => {
+        if (msg == "update") {
+          await browser.commands.update(data);
+          return browser.test.sendMessage("updateDone");
+        }
+      });
+      browser.commands.onCommand.addListener(name =>
+        browser.test.sendMessage("oncommand", name)
+      );
+      browser.test.sendMessage("bgpage:ready");
+    },
+  });
+
+  await extension.startup();
+  await extension.awaitMessage("bgpage:ready");
+
+  // Sanity check.
+  info("Verify command listener called on original manifest-assigned shortcut");
+  EventUtils.synthesizeKey("VK_F12", { altKey: true, shiftKey: true });
+  is(
+    await extension.awaitMessage("oncommand"),
+    "foo",
+    "Expect onCommand listener call for command foo on Alt+Shift+F12"
+  );
+
+  info("Update foo command shortcut to be set to Alt+Shift+F19");
+  extension.sendMessage("update", { name: "foo", shortcut: "Alt+Shift+F19" });
+  await extension.awaitMessage("updateDone");
+
+  info("Verify command listener called on extension-updated shortcut");
+  EventUtils.synthesizeKey("VK_F19", { altKey: true, shiftKey: true });
+  is(
+    await extension.awaitMessage("oncommand"),
+    "foo",
+    "Expect onCommand listener call for command foo on Alt+Shift+F19"
+  );
+
+  await extension.unload();
 });

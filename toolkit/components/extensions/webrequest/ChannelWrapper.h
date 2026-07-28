@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -34,12 +32,8 @@
 #include "nsIWeakReferenceUtils.h"
 #include "nsWrapperCache.h"
 
-#define NS_CHANNELWRAPPER_IID                        \
-  {                                                  \
-    0xc06162d2, 0xb803, 0x43b4, {                    \
-      0xaa, 0x31, 0xcf, 0x69, 0x7f, 0x93, 0x68, 0x1c \
-    }                                                \
-  }
+#define NS_CHANNELWRAPPER_IID \
+  {0xc06162d2, 0xb803, 0x43b4, {0xaa, 0x31, 0xcf, 0x69, 0x7f, 0x93, 0x68, 0x1c}}
 
 class nsILoadContext;
 class nsITraceableChannel;
@@ -123,7 +117,7 @@ class ChannelWrapper final : public DOMEventTargetHelper,
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(ChannelWrapper, DOMEventTargetHelper)
 
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_CHANNELWRAPPER_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_CHANNELWRAPPER_IID)
 
   void Die();
 
@@ -289,6 +283,9 @@ class ChannelWrapper final : public DOMEventTargetHelper,
 
   void CheckEventListeners();
 
+  void ActivityErrorFallbackCheck();
+  void FireErrorEvent();
+
   class ChannelWrapperStub final : public nsISupports {
    public:
     NS_DECL_CYCLE_COLLECTING_ISUPPORTS
@@ -324,6 +321,8 @@ class ChannelWrapper final : public DOMEventTargetHelper,
   bool mSuspended = false;
   bool mResponseStarted = false;
 
+  nsString mActivityError;
+
   nsInterfaceHashtable<nsAtomHashKey, nsIRemoteTab> mAddonEntries;
 
   // The text for the "Extension Suspend" marker, set from the Suspend method
@@ -352,8 +351,6 @@ class ChannelWrapper final : public DOMEventTargetHelper,
     nsCOMPtr<nsIStreamListener> mOrigStreamListener;
   };
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(ChannelWrapper, NS_CHANNELWRAPPER_IID)
 
 }  // namespace extensions
 }  // namespace mozilla

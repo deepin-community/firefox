@@ -7,24 +7,36 @@ do-not-track-learn-more = مزید سیکھیں
 do-not-track-option-always =
     .label = ہمیشہ
 settings-page-title = سیٹنگ
+category-nav-heading =
+    .heading = سیٹنگ
 managed-notice = آپ کا براؤزر آپ کی تنظیم کے زیر انتظام ہے۔
+managed-notice-nav =
+    .label = آپ کا براؤزر آپ کی تنظیم کے زیر انتظام ہے۔
 category-list =
     .aria-label = زمرہ جات
 pane-general-title = عمومی
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = ابتدائی صفحہ
+pane-search-title2 = تلاش کریں
+    .title = تلاش کریں
+pane-privacy-title3 = رازداری اور سلامتی
+    .title = رازداری اور سلامتی
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = تلاش کریں
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = رازداری اور سلامتی
 pane-privacy-title = رازداری اور سلامتی
 category-privacy =
     .tooltiptext = { pane-privacy-title }
 pane-sync-title3 = سنک
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 pane-experimental-title = { -brand-short-name } تجربات
 category-experimental =
     .tooltiptext = { -brand-short-name } تجربات
@@ -32,6 +44,10 @@ pane-experimental-subtitle = احتیاط سے آگے بڑھیں
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = { -brand-short-name } تعاون
+    .title = { -brand-short-name } تعاون
+addons-button-label2 = ایکسٹینشن اور تھیم
+    .title = ایکسٹینشن اور تھیم
 help-button-label = { -brand-short-name } تعاون
 addons-button-label = ایکسٹینشن اور تھیم
 focus-search =
@@ -47,17 +63,6 @@ should-restart-title = { -brand-short-name } دوبارہ شروع کریں
 should-restart-ok = { -brand-short-name } کو ابھی دوباره شروع کریں
 cancel-no-restart-button = منسوخ کریں
 restart-later = بعد میں دوباره شروع کریں
-
-## Extension Control Notifications
-##
-## These strings are used to inform the user
-## about changes made by extensions to browser settings.
-##
-## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
-##
-## Variables:
-##   $name (string) - Name of the extension
-
 
 ## Preferences UI Search Results
 
@@ -82,6 +87,8 @@ startup-restore-warn-on-quit =
     .label = برائوزر چھوڑتے وقت تنبیہ کریں
 disable-extension =
     .label = ایکسٹینشن غیرفعال بنائیں
+tabs-group-header2 =
+    .label = ٹیبس
 tabs-group-header = ٹیبس
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab ٹہبس کے زرِیعے دورہ حالیہ اسرتعمال شدپ ترغیب میں
@@ -106,6 +113,8 @@ browser-containers-settings =
     .label = سیٹنگز…
     .accesskey = i
 containers-disable-alert-title = تمام  حامل ٹیبس بند کریں
+startup-group =
+    .label = سٹارٹ اپ
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -121,7 +130,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = اہل بنایا رکھیں
 containers-remove-alert-title = اس حامل کو ہٹائیں؟
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] اگر اپ اس کنٹینر کو ابھی ہٹاتیں ہے، تو { $count } کا کنٹینر ٹیب بند ہو جائے گا۔ کیا یقینن اپ اس کنٹینر کو ہٹانا چاہتے ہے؟
@@ -140,10 +149,15 @@ default-font-size = ماپ
 advanced-fonts =
     .label = اعلٰی…
     .accesskey = A
+preferences-default-zoom-label =
+    .label = طے شدہ زوم
+    .accesskey = z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = زوم
 preferences-default-zoom = طے شدہ زوم
     .accesskey = z
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -159,6 +173,8 @@ manage-browser-languages-button =
     .accesskey = I
 confirm-browser-language-change-description = { -brand-short-name } دوبارہ شروع کریں ان تبدیلیوں کو لاگو کرنے کے لیے
 confirm-browser-language-change-button = لاگو کرے اور دوبارہ شروع کریں
+browser-language-install-error =
+    .message = { -brand-short-name } آپکے زبانیں اس وقت تازہ نہیں کر سکتا۔ جانچ پڑتال کریں کہ آپ انٹرنیٹ سے جڑے ہوئے ہیں یا دوبارہ کوشش کریں۔
 translate-web-pages =
     .label = ترجمہ کریں ویب کے مواد کا
     .accesskey = T
@@ -175,6 +191,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = فلیں اور ایپلی کیشن
+download-save-files-header =
+    .label = مسل محفوظ کریں بر
+download-save-where-3 =
+    .aria-label = مسل محفوظ کریں بر
 download-header = ڈاؤن لوڈ
 download-save-where = مسل محفوظ کریں بر
     .accesskey = v
@@ -198,9 +218,11 @@ applications-filter =
 applications-type-column =
     .label = مواد قسم
     .accesskey = T
+applications-type-heading = مواد قسم
 applications-action-column =
     .label = عمل
     .accesskey = A
+applications-action-heading = عمل
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = { $extension } مسل
@@ -222,15 +244,15 @@ applications-manage-app =
 applications-always-ask =
     .label = ہمیشہ پوچھیں
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending }{ $type }
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name } کو ({ -brand-short-name }) میں استعمال کریں
 applications-open-inapp =
@@ -257,15 +279,22 @@ applications-use-other-label =
 applications-use-os-default-label =
     .value = { applications-use-os-default.label }
 
-##
+## Firefox updates
 
+drm-group =
+    .label = عددی حقوق بندرستگی(DRM) مواد
 drm-content-header = عددی حقوق بندرستگی(DRM) مواد
 play-drm-content =
     .label = DRM کے زیرانتظام مواد چلائیں
     .accesskey = P
 play-drm-content-learn-more = مزید سیکھیں
 update-application-title = { -brand-short-name } تازہ کاریاں:
+# Variables:
+# $version (string) - Firefox version
 update-application-version = ورژن{ $version } <a data-l10n-name="learn-more">نیا کیا ہے</a>
+update-history-2 =
+    .label = تازہ ترین سابقات دکھائیں
+    .accesskey = p
 update-history =
     .label = تازہ ترین سابقات دکھائیں
     .accesskey = p
@@ -303,11 +332,13 @@ performance-allow-hw-accel =
 performance-limit-content-process-option = مواد کی عمل کی حد
     .accesskey = I
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (default)
+performance-group =
+    .label = کارکردگی
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = براؤزنگ
 browsing-use-autoscroll =
@@ -337,6 +368,8 @@ browsing-cfr-features =
     .label = براؤز کرتے وقت خصوصیات کی تجویز کریں
     .accesskey = f
 browsing-cfr-recommendations-learn-more = مزید سیکھیں
+browsing-group =
+    .label = براؤزنگ
 
 ## General Section - Proxy
 
@@ -351,10 +384,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = نئے دریچے اور ٹیبس
 home-new-windows-tabs-description2 = جب آپ اپنا ابتدیی صفحہ ، نئی ونڈوز اور نئی ٹیبز کھولتے ہیں تو  کا انتخاب کریں اپ کیا دیکھنا چاہتے ہیں۔
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = طے شدہ بنائیں
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = ابتدائی صفحہ اور نیا ونڈوں
 home-newtabs-mode-label = نئے ٹیبس
+home-homepage-new-tabs =
+    .label = نئے ٹیبس
 home-restore-defaults =
     .label = طےشدہ بحال کریں
     .accesskey = R
@@ -386,9 +427,10 @@ home-prefs-search-header =
 home-prefs-shortcuts-header =
     .label = تیز راہ
 home-prefs-shortcuts-description = وہ سائٹس جو آپ محفوظ کرتے ہیں یا ملاحظہ کرتے ہیں۔
+home-prefs-shortcuts-select =
+    .aria-label = تیز راہ
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } کی جانب سے تجویز کردہ
@@ -408,12 +450,16 @@ home-prefs-highlights-option-saved-to-pocket =
     .label = صفحات { -pocket-brand-name } میں محفوظ کر دیئے گئے ہیں
 home-prefs-recent-activity-header =
     .label = حالیہ سرگرمی
+home-prefs-recent-activity-select =
+    .aria-label = حالیہ سرگرمی
 # For the "Snippets" feature traditionally on about:home.
 # Alternative translation options: "Small Note" or something that
 # expresses the idea of "a small message, shortened from something else,
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = سنپیٹ
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -442,6 +488,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = ایڈریس بار کے نتائج میں تلاش کی تجاویز دکھائیں
     .accesskey = I
+search-suggestions-cant-show-2 =
+    .message = تلاش کردہ تجاویز محل وقوع کے بار کے نتائج میں دکھاءی نھیں جائنگے کیونکہ { -brand-short-name } سابقات کبھی یاد نہیں رکھنے پر تشکیل کردہ ہے۔
 search-show-suggestions-private-windows =
     .label = نجی ونڈوز میں تلاش کی تجاویز دکھائیں
 search-suggestions-cant-show = تلاش کردہ تجاویز محل وقوع کے بار کے نتائج میں دکھاءی نھیں جائنگے کیونکہ { -brand-short-name } سابقات کبھی یاد نہیں رکھنے پر تشکیل کردہ ہے۔
@@ -463,13 +511,19 @@ search-find-more-link = مزید تلاش انجن تلاش کریں
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = کلیدی لفظ مثنی کریں
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = آپ نے ایسا کلیدی لفظ منتخب کیا ہے جسے "{ $name }" اس وقت استعمال کر رہا ہے۔ مہربانی کر کہ کوئی اور منتخب کیجیے۔
 search-keyword-warning-bookmark = آپ نے ایسا کلیدی لفظ منتخب کیا ہے جسے ایک نشانی اس وقت استعمال کر رہی ہے۔ مہربانی کر کہ کوئی اور منتخب کیجیے۔
+search-engine-group =
+    .label = طےشدہ تلاش انجن
+search-default-engine =
+    .aria-label = طےشدہ تلاش انجن
 
 ## Containers Section
 
 containers-header = حامل ٹیبز
+containers-section-header =
+    .heading = حامل ٹیبز
 containers-add-button =
     .label = نئے حامل کا اضافہ کریں
     .accesskey = A
@@ -480,6 +534,11 @@ containers-settings-button =
     .label = سیٹنگز
 containers-remove-button =
     .label = ہٹائیں
+
+## Account and sync
+
+sync-group-label =
+    .label = سنک
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -508,11 +567,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = سائن آؤٹ…
     .accesskey = گ
+sync-sign-out2 =
+    .label = سائن آؤٹ
+    .accesskey = گ
 sync-manage-account = اکاؤنٹ کا منظم کریں
+    .accesskey = o
+sync-manage-account2 =
+    .label = اکاؤنٹ کا منظم کریں
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } توثیق شدہ نہیں ہے۔
 sync-signedin-login-failure = پھر جڑنے کے لیے سائن ان کریں { $email }
@@ -536,6 +602,9 @@ prefs-syncing-off = سنکنگ بند ہے
 prefs-sync-turn-on-syncing =
     .label = سنک چالو کریں…
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = سنک چالو کریں
+    .accesskey = s
 prefs-sync-now =
     .labelnotsyncing = ابھی ہمہ وقت سازی کریں
     .accesskeynotsyncing = ن
@@ -543,8 +612,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = ابھی ہمہ وقت سازی کریں
     .accesskey = ن
+prefs-sync-now-button-2 =
+    .label = ابھی ہمہ وقت سازی کریں
+    .accesskey = ن
 prefs-syncing-button =
     .label = ہمہ وقت سازی کر رہا ہے…
+prefs-syncing-button-2 =
+    .label = ہمہ وقت سازی کر رہا ہے…
+    .title = ابھی ہمہ وقت سازی کریں
 
 ## The list of things currently syncing.
 
@@ -595,6 +670,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = آلہ کا نام
+sync-device-name-header-2 =
+    .label = آلہ کا نام
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = آلہ کا نام
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = آلہ کا نام تبدیل کریں
+    .accesskey = h
 sync-device-name-change =
     .label = آلہ کا نام تبدیل کریں…
     .accesskey = h
@@ -605,6 +690,8 @@ sync-device-name-save =
     .label = محفوظ کریں
     .accesskey = v
 sync-connect-another-device = ایک اور آلہ جوڑیں
+sync-connect-another-device-2 =
+    .label = ایک اور آلہ جوڑیں
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -630,7 +717,7 @@ forms-ask-to-save-logins =
     .label = ویب سائٹس کے لئے لاگ ان اور پاس ورڈ کو محفوظ کرنے کے لئے پوچھیں
     .accesskey = r
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = استثنیات…
@@ -674,9 +761,6 @@ forms-master-pw-fips-desc = پاس ورڈ تبدیلی ناکام
 primary-password-os-auth-dialog-message-macosx = ایک بنیادی پاس ورڈ بنائیں
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = سابقات
@@ -690,13 +774,19 @@ history-header = سابقات
 #     This will result in "Firefox" + "Will remember history", etc.
 #   - As a stand-alone message, for example "Firefox history settings:".
 history-remember-label = { -brand-short-name }
-    .accesskey = 	w
+    .accesskey = w
 history-remember-option-all =
     .label = سابقات یاد رکھے
 history-remember-option-never =
     .label = کبھی سابقات نہ یاد رکھے
 history-remember-option-custom =
     .label = سابقات کے لیے مخصوص سیٹنگز استعمال کریں
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } آپکی برائوزنگ ڈائونلوڈ اور تلاش سابقات یاد رکھے گا۔
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } نجی براؤزنگ کی سیٹنگز استعمال کرے گا، اور آپ کے براوز کرتے وقت کوئی سابقات نہیں یاد رکھے گا۔
 history-remember-description = { -brand-short-name } آپکی برائوزنگ ڈائونلوڈ اور تلاش سابقات یاد رکھے گا۔
 history-dontremember-description = { -brand-short-name } نجی براؤزنگ کی سیٹنگز استعمال کرے گا، اور آپ کے براوز کرتے وقت کوئی سابقات نہیں یاد رکھے گا۔
 history-private-browsing-permanent =
@@ -717,6 +807,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = سابقات صاف کریں
     .accesskey = s
+history-group =
+    .label = سابقات
 
 ## Privacy Section - Site Data
 
@@ -751,14 +843,10 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = مستثنیات کو منظم کریں…
     .accesskey = x
+cookies-site-data-group =
+    .label = کوکیز اور سائٹ کے کواِئف
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = پتہ کی بار
 addressbar-suggest = ہتہ کی بار استعمال کرتے وقت، تجویز دیں
@@ -875,6 +963,8 @@ permissions-notification-settings =
     .label = سیٹنگز…
     .accesskey = t
 permissions-notification-link = مزید سیکھیں
+permissions-autoplay2 =
+    .label = آٹو پلے
 permissions-autoplay = آٹو پلے
 permissions-autoplay-settings =
     .label = سیٹنگز…
@@ -888,6 +978,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = استثنیات…
     .accesskey = E
+permissions-location2 =
+    .label = محل وقوع
+permissions-xr2 =
+    .label = مجازی حقیقت
+permissions-camera2 =
+    .label = کیمرہ
+permissions-microphone2 =
+    .label = مائیکروفون
+permissions-notification2 =
+    .label = اعلانات
 
 ## Privacy Section - Data Collection
 
@@ -896,9 +996,8 @@ collection-health-report-telemetry-disabled-link = مزید سیکھیں
 collection-health-report-link = مزید سیکھیں
 collection-studies-link = { -brand-short-name } کی مطالعات دیکھیں
 addon-recommendations-link = مزید سیکھیں
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-studies-link =
+    .label = { -brand-short-name } کی مطالعات دیکھیں
 
 ## Privacy Section - Security
 ##
@@ -929,6 +1028,7 @@ certs-view =
 certs-devices =
     .label = سلامتی آلات
     .accesskey = D
+certs-devices-enable-fips = ایف آئی پی ایس اہل بنائیں
 space-alert-over-5gb-settings-button =
     .label = سیٹنگز کھولیں
     .accesskey = O
@@ -936,9 +1036,6 @@ space-alert-over-5gb-settings-button =
 ## Privacy Section - HTTPS-Only
 
 httpsonly-learn-more = اورجانیے
-
-## DoH Section
-
 
 ## The following strings are used in the Download section of settings
 

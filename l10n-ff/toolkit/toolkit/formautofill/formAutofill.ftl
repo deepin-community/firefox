@@ -5,7 +5,7 @@
 
 ## OS Prompt Dialog
 
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Cuɓe humpito yaawngo formileer
 autofill-options-link-osx = Cuɓe cuɓoraaɗe humpito yaawngo
 
@@ -44,3 +44,6 @@ autofill-category-name = innde
 autofill-category-organization = fedde
 autofill-category-tel = noddirgel
 autofill-category-email = iimeel
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } yiytii lowre nde hisaani. Humito yaawngo formileer daaƴaama mudda

@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } kohtasi ongelman ja se
 crashreporter-plea = Lähettämällä kaatumisilmoituksen autat meitä tunnistamaan ja korjaamaan ongelman.
 crashreporter-information = Tämä ohjelma suoritetaan kaatumisen jälkeen, ja se ilmoittaa kaatumiseen johtaneesta ongelmasta { -vendor-short-name }lle. Tätä ohjelmaa ei pidä käynnistää erikseen.
 crashreporter-error = { -brand-short-name } kohtasi ongelman ja se kaatui. Valitettavasti kaatumisraportointi ei voi lähettää raporttia tästä kaatumisesta.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Lisätietoja: { $details }
+crashreporter-error-details-header = Yksityiskohdat:
 crashreporter-no-run-message = Tämä ohjelma ilmoittaa kaatumiseen johtaneesta ohjelmavirheestä ohjelman jakelijalle. Tätä ohjelmaa ei pidä käynnistää erikseen.
 crashreporter-button-details = Lisätietoja…
 crashreporter-loading-details = Ladataan…
 crashreporter-view-report-title = Ilmoituksen sisältö
 crashreporter-comment-prompt = Lisää kommenttisi englanniksi (Kommentit ovat julkisia ja kaikkien nähtävillä)
 crashreporter-report-info = Ilmoitus sisältää myös teknisiä tietoja ohjelman tilasta sen kaatumishetkellä.
-crashreporter-send-report = Kerro kaatumisesta { -vendor-short-name }lle, jotta he voivat korjata sen.
-crashreporter-include-url = Liitä ilmoitukseen kaatumishetkellä avoimen sivun osoite.
+crashreporter-checkbox-test-hardware = Tarkista laitteeni mahdolliset laitteisto- ja määritysongelmat.
+crashreporter-checkbox-send-report = Kerro { -vendor-short-name }lle tästä kaatumisesta, jotta se on mahdollista korjata.
+crashreporter-checkbox-include-url = Liitä mukaan sen sivun osoite, jolla olin.
 crashreporter-submit-status = Kaatumisilmoitus lähetetään ennen kuin lopetat tai käynnistät ohjelman uudestaan.
+crashreporter-submit-waiting-hardware-tests = Tarkistetaan laitteisto- ja määritysongelmia…
 crashreporter-submit-in-progress = Lähetetään ilmoitusta…
 crashreporter-submit-success = Kaatumisilmoituksen lähettäminen onnistui.
 crashreporter-submit-failure = Kaatumisilmoituksen lähettäminen epäonnistui.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Kerätyt kaatumistiedot löytyvät osoitteesta { $
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Ei voitu suorittaa minidump-analyzeria
 # $path (String) - the file path
 crashreporter-error-opening-file = Tiedoston ({ $path }) avaaminen epäonnistui
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Kotihakemisto puuttuu
 # $to (String) - the destination path
 crashreporter-error-moving-path = Kohdetta { $from } ei voitu siirtää sijaintiin { $to }
 crashreporter-error-version-eol = Version käyttöikä loppu: virheraportteja ei enää hyväksytä.
+crashreporter-error-failed-to-generate-minidump = Sovellus ei onnistunut luomaan tietoja kaatumiseen liittyen.

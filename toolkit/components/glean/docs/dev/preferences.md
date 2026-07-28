@@ -4,11 +4,14 @@
 
 `datareporting.healthreport.uploadEnabled`
 
-This determines whether the Glean SDK is enabled.
+This determines whether the Glean SDK has `collection_enabled` set.
 It can be controlled by users via `about:preferences#privacy`.
 If this is set to false from true, we send a
-["deletion-request" ping](https://mozilla.github.io/glean/book/user/pings/deletion_request.html)
-and no data collections will be persisted or reported from that point.
+["deletion-request" ping](https://mozilla.github.io/glean/book/user/pings/deletion_request.html),
+and the only data collection that can happen are for
+[pings that set `follows_collection_enabled: false`](https://searchfox.org/firefox-main/search?q=follows_collection_enabled%3A%20false&path=).
+More information can be found in
+[this support article](https://support.mozilla.org/kb/technical-and-interaction-data).
 
 ## Test-only Preferences
 
@@ -45,6 +48,14 @@ Defaults to 120 (activity), 1200 (inactivity).
 
 Read-only. This pref is `true` only if `MOZ_ARTIFACT_BUILDS` was set during configure.
 If true, [JOG](./jog) is enabled so that artifact builds will exhibit changes to their Glean metrics.
+
+`telemetry.fog.init_on_shutdown`
+
+Defaults to `true`.
+Controls whether Glean initializes on shutdown if it hasn't been initialized, in order to capture data from very short sessions.
+In case a policy modal needs to be shown to the user, which will delay Glean initialization,
+it's set to `false` until the user has dealt with the modal. It's turned back to `true` afterwards.
+This ensures we don't capture data until the user had the chance to make an explicit choice.
 
 ## Defines
 
@@ -93,14 +104,4 @@ This is to support [Artifact Builds](/contributing/build/artifact_builds).
 
 See also `telemetry.fog.artifact_build`.
 
-`OS_TARGET`
-
-If not set to `'Android'` we set a `glean_million_queue` Rust feature
-([see gkrust-features.mozbuild][gkrust-features])
-which, when passed to the Glean SDK,
-opts us into a preinit queue that doesn't discard tasks until there are 10^6 of them.
-
-See [bug 1797494](https://bugzilla.mozilla.org/show_bug.cgi?id=1797494) for details.
-
-[gkrust-features]: https://searchfox.org/mozilla-central/source/toolkit/library/rust/gkrust-features.mozbuild
 [gifft]: ../user/gifft

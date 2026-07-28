@@ -7,7 +7,6 @@ import os
 from mach.decorators import Command, CommandArgument
 from mach.util import UserError
 from mozpack.files import FileFinder
-from mozpack.path import basedir
 
 
 def run_module_main_on(module, input_filename, output_is_binary):
@@ -54,6 +53,13 @@ def is_sctspec_file(filename):
     return filename.endswith(".sctspec")
 
 
+def is_bindingspec_file(filename):
+    """Returns True if the given filename is a TLS certificate
+    binding specification file (.bindingspec) and False
+    otherwise."""
+    return filename.endswith(".bindingspec")
+
+
 def is_specification_file(filename):
     """Returns True if the given filename is a specification
     file supported by this script, and False otherewise."""
@@ -62,18 +68,8 @@ def is_specification_file(filename):
         or is_keyspec_file(filename)
         or is_pkcs12spec_file(filename)
         or is_sctspec_file(filename)
+        or is_bindingspec_file(filename)
     )
-
-
-def is_excluded_directory(directory, exclusions):
-    """Returns True if the given directory is in or is a
-    subdirectory of a directory in the list of exclusions and
-    False otherwise."""
-
-    for exclusion in exclusions:
-        if directory.startswith(exclusion):
-            return True
-    return False
 
 
 @Command(
@@ -92,6 +88,7 @@ def generate_test_certs(command_context, specifications):
     import pyct
     import pykey
     import pypkcs12
+    import pytlsbinding
 
     if not specifications:
         specifications = find_all_specifications(command_context)
@@ -108,11 +105,11 @@ def generate_test_certs(command_context, specifications):
         elif is_sctspec_file(specification):
             module = pyct
             output_is_binary = True
+        elif is_bindingspec_file(specification):
+            module = pytlsbinding
         else:
             raise UserError(
-                "'{}' is not a .certspec, .keyspec, or .pkcs12spec file".format(
-                    specification
-                )
+                f"'{specification}' is not a .certspec, .keyspec, .pkcs12spec, or .bindingspec file"
             )
         run_module_main_on(module, os.path.abspath(specification), output_is_binary)
     return 0
@@ -123,18 +120,16 @@ def find_all_specifications(command_context):
     and returns them as a list."""
     specifications = []
     inclusions = [
+        "browser/base/content/test/siteIdentity/",
         "netwerk/test/unit",
-        "security/manager/ssl/tests",
+        "security/manager/ssl",
         "services/settings/test/unit/test_remote_settings_signatures",
         "testing/xpcshell/moz-http2",
         "toolkit/mozapps/extensions/test/xpcshell/data/productaddons",
     ]
-    exclusions = ["security/manager/ssl/tests/unit/test_signed_apps"]
     finder = FileFinder(command_context.topsrcdir)
     for inclusion_path in inclusions:
         for f, _ in finder.find(inclusion_path):
-            if basedir(f, exclusions):
-                continue
             if is_specification_file(f):
                 specifications.append(os.path.join(command_context.topsrcdir, f))
     return specifications

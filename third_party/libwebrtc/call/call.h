@@ -10,26 +10,34 @@
 #ifndef CALL_CALL_H_
 #define CALL_CALL_H_
 
-#include <algorithm>
+#include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
-#include <vector>
 
 #include "absl/strings/string_view.h"
 #include "api/adaptation/resource.h"
+#include "api/fec_controller.h"
 #include "api/media_types.h"
+#include "api/rtp_headers.h"
+#include "api/rtp_parameters.h"
+#include "api/scoped_refptr.h"
 #include "api/task_queue/task_queue_base.h"
+#include "api/transport/bitrate_settings.h"
+#include "api/video/video_stream_encoder_settings.h"
 #include "call/audio_receive_stream.h"
 #include "call/audio_send_stream.h"
 #include "call/call_basic_stats.h"
 #include "call/call_config.h"
 #include "call/flexfec_receive_stream.h"
 #include "call/packet_receiver.h"
+#include "call/rtp_transport_controller_send_interface.h"
 #include "call/video_receive_stream.h"
 #include "call/video_send_stream.h"
-#include "rtc_base/copy_on_write_buffer.h"
+#include "modules/congestion_controller/rtp/congestion_controller_feedback_stats.h"
+#include "rtc_base/containers/flat_map.h"
 #include "rtc_base/network/sent_packet.h"
-#include "rtc_base/network_route.h"
+#include "video/config/video_encoder_config.h"
 
 namespace webrtc {
 
@@ -47,7 +55,7 @@ class Call {
  public:
   using Stats = CallBasicStats;
 
-  static std::unique_ptr<Call> Create(const CallConfig& config);
+  static std::unique_ptr<Call> Create(CallConfig config);
 
   virtual AudioSendStream* CreateAudioSendStream(
       const AudioSendStream::Config& config) = 0;
@@ -61,11 +69,14 @@ class Call {
 
   virtual VideoSendStream* CreateVideoSendStream(
       VideoSendStream::Config config,
-      VideoEncoderConfig encoder_config) = 0;
+      VideoEncoderConfig encoder_config,
+      EncoderSwitchRequestCallback encoder_switch_request_callback =
+          nullptr) = 0;
   virtual VideoSendStream* CreateVideoSendStream(
       VideoSendStream::Config config,
       VideoEncoderConfig encoder_config,
-      std::unique_ptr<FecController> fec_controller);
+      EncoderSwitchRequestCallback encoder_switch_request_callback,
+      std::unique_ptr<FecController> fec_controller) = 0;
   virtual void DestroyVideoSendStream(VideoSendStream* send_stream) = 0;
 
   virtual VideoReceiveStreamInterface* CreateVideoReceiveStream(
@@ -84,7 +95,7 @@ class Call {
   // When a resource is overused, the Call will try to reduce the load on the
   // sysem, for example by reducing the resolution or frame rate of encoded
   // streams.
-  virtual void AddAdaptationResource(rtc::scoped_refptr<Resource> resource) = 0;
+  virtual void AddAdaptationResource(scoped_refptr<Resource> resource) = 0;
 
   // All received RTP and RTCP packets for the call should be inserted to this
   // PacketReceiver. The PacketReceiver pointer is valid as long as the
@@ -111,29 +122,24 @@ class Call {
   virtual void OnAudioTransportOverheadChanged(
       int transport_overhead_per_packet) = 0;
 
-  // Called when a receive stream's local ssrc has changed and association with
-  // send streams needs to be updated.
-  virtual void OnLocalSsrcUpdated(AudioReceiveStreamInterface& stream,
-                                  uint32_t local_ssrc) = 0;
-  virtual void OnLocalSsrcUpdated(VideoReceiveStreamInterface& stream,
-                                  uint32_t local_ssrc) = 0;
-  virtual void OnLocalSsrcUpdated(FlexfecReceiveStream& stream,
-                                  uint32_t local_ssrc) = 0;
-
   virtual void OnUpdateSyncGroup(AudioReceiveStreamInterface& stream,
                                  absl::string_view sync_group) = 0;
 
-  virtual void OnSentPacket(const rtc::SentPacket& sent_packet) = 0;
+  virtual void OnSentPacket(const SentPacketInfo& sent_packet) = 0;
 
   virtual void SetClientBitratePreferences(
       const BitrateSettings& preferences) = 0;
 
-  virtual const FieldTrialsView& trials() const = 0;
+  // Decides which RTCP feedback type to use for congestion control.
+  virtual void SetPreferredRtcpCcAckType(
+      RtcpFeedbackType preferred_rtcp_cc_ack_type) = 0;
+  virtual std::optional<int> FeedbackAccordingToRfc8888Count() = 0;
+  virtual std::optional<int> FeedbackAccordingToTransportCcCount() = 0;
 
   virtual TaskQueueBase* network_thread() const = 0;
   virtual TaskQueueBase* worker_thread() const = 0;
 
-  virtual ~Call() {}
+  virtual ~Call() = default;
 };
 
 }  // namespace webrtc

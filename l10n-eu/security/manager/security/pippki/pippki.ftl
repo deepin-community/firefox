@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Ikusi
 download-cert-view-text = Aztertu AZren ziurtagiriak
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Jaulkitzailea: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Hemen gordea: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Gogoratu erabaki hau
+client-auth-cert-remember-label = Gogoratu erabaki hau:
+client-auth-cert-remember-never =
+    .label = Behin
+client-auth-cert-remember-always =
+    .label = Modu iraunkorrean
+client-auth-cert-remember-temporarily =
+    .label = Saio honetarako
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Ziurtagiri babeskopiaren pasahitza (berriro):
 set-password-reminder = Garrantzizkoa: Ziurtagiri-babeskopiaren pasahitza ahazten bazaizu, ezin izango duzu geroago babeskopia hori berreskuratu.  Gorde ezazu leku seguru batean.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Babestutako autentifikazioa
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Mesedez autentifikatu segurtasun-gailura ({ $tokenName }). Hori nola egin behar den gailuaren araberakoa da (adibidez, hatz-marken irakurgailu bat erabiliz edo zenbakizko teklatu batekin kode bat sartuz).
 
 ## Protected authentication alert
 

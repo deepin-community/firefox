@@ -36,7 +36,12 @@ toolbox-mode-parent-process-label = Само родителски процес
 toolbox-mode-parent-process-sub-label = (по-бързо)
 toolbox-mode-parent-process-container =
     .title = Съсредоточване се само върху ресурси от родителския процес.
-toolbox-always-on-top-enabled2 = Изключване винаги отгоре
-    .title = Това ще рестартира Инструментите за разработчици
-toolbox-always-on-top-disabled2 = Активиране винаги отгоре
-    .title = Това ще рестартира Инструментите за разработчици
+toolbox-always-on-top-enabled2 = Изключване винаги най-отгоре
+    .title = Ще рестартира Инструментите за разработчици
+toolbox-always-on-top-disabled2 = Включване винаги най-отгоре
+    .title = Ще рестартира инструментите за разработчици
+
+## These two labels are shown when navigating to a file:// URL while having DevTools opened,
+## in order to suggest enabling the Local Mode and load them from https instead.
+
+toolbox-local-mode-notice-add-to-settings-button = Добавяне към настройки

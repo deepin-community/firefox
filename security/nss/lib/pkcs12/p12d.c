@@ -826,6 +826,7 @@ sec_pkcs12_decoder_asafes_notify(void *arg, PRBool before, void *dest,
                 safeContentsCtx->safeContentsA1Dcx = NULL;
             }
             cinfo = SEC_PKCS7DecoderFinish(p12dcx->currentASafeP7Dcx);
+            SEC_ASN1DecoderClearFilterProc(p12dcx->aSafeA1Dcx);
             p12dcx->currentASafeP7Dcx = NULL;
             if (!cinfo) {
                 p12dcx->errorValue = PORT_GetError();
@@ -1264,6 +1265,17 @@ loser:
 }
 
 SECStatus
+SEC_PKCS12DecoderSetMaxElementLen(SEC_PKCS12DecoderContext *p12dcx,
+                                  unsigned long maxLen)
+{
+    if (!p12dcx || p12dcx->error) {
+        return SECFailure;
+    }
+    SEC_ASN1DecoderSetMaximumElementSize(p12dcx->pfxA1Dcx, maxLen);
+    return SECSuccess;
+}
+
+SECStatus
 SEC_PKCS12DecoderSetTargetTokenCAs(SEC_PKCS12DecoderContext *p12dcx,
                                    SECPKCS12TargetTokenCAs tokenCAs)
 {
@@ -1317,6 +1329,19 @@ static const char bufferEnd[] = { "BufferEnd" };
 #endif
 #define FUDGE 128 /* must be as large as bufferEnd or more. */
 
+#ifdef UNSAFE_FUZZER_MODE
+static SECStatus
+sec_pkcs12_decoder_verify_fuzzer(SEC_PKCS12DecoderContext *p12dcx)
+{
+    if (p12dcx->dClose) {
+        (*p12dcx->dClose)(p12dcx->dArg, PR_TRUE);
+        p12dcx->dIsOpen = PR_FALSE;
+    }
+
+    return SECSuccess;
+}
+#endif /* UNSAFE_FUZZER_MODE */
+
 /* verify the hmac by reading the data from the temporary file
  * using the routines specified when the decodingContext was
  * created and return SECSuccess if the hmac matches.
@@ -1339,6 +1364,9 @@ sec_pkcs12_decoder_verify_mac(SEC_PKCS12DecoderContext *p12dcx)
         PORT_SetError(SEC_ERROR_INVALID_ARGS);
         return SECFailure;
     }
+#ifdef UNSAFE_FUZZER_MODE
+    return sec_pkcs12_decoder_verify_fuzzer(p12dcx);
+#endif /* UNSAFE_FUZZER_MODE */
     buf = (unsigned char *)PORT_Alloc(IN_BUF_LEN + FUDGE);
     if (!buf)
         return SECFailure; /* error code has been set. */
@@ -1460,7 +1488,9 @@ SEC_PKCS12DecoderVerify(SEC_PKCS12DecoderContext *p12dcx)
     if (rv != SECSuccess) {
         return rv;
     }
-
+#ifdef UNSAFE_FUZZER_MODE
+    return sec_pkcs12_decoder_verify_fuzzer(p12dcx);
+#else  /* UNSAFE_FUZZER_MODE */
     /* check the signature or the mac depending on the type of
      * integrity used.
      */
@@ -1479,6 +1509,7 @@ SEC_PKCS12DecoderVerify(SEC_PKCS12DecoderContext *p12dcx)
     }
     PORT_SetError(SEC_ERROR_PKCS12_INVALID_MAC);
     return SECFailure;
+#endif /* UNSAFE_FUZZER_MODE */
 }
 
 /* SEC_PKCS12DecoderFinish
@@ -1517,11 +1548,19 @@ SEC_PKCS12DecoderFinish(SEC_PKCS12DecoderContext *p12dcx)
         if (safeContentsCtx) {
             nested = safeContentsCtx->nestedSafeContentsCtx;
             while (nested) {
+                if (nested->currentSafeBagA1Dcx) {
+                    SEC_ASN1DecoderFinish(nested->currentSafeBagA1Dcx);
+                    nested->currentSafeBagA1Dcx = NULL;
+                }
                 if (nested->safeContentsA1Dcx) {
                     SEC_ASN1DecoderFinish(nested->safeContentsA1Dcx);
                     nested->safeContentsA1Dcx = NULL;
                 }
                 nested = nested->nestedSafeContentsCtx;
+            }
+            if (safeContentsCtx->currentSafeBagA1Dcx) {
+                SEC_ASN1DecoderFinish(safeContentsCtx->currentSafeBagA1Dcx);
+                safeContentsCtx->currentSafeBagA1Dcx = NULL;
             }
             if (safeContentsCtx->safeContentsA1Dcx) {
                 SEC_ASN1DecoderFinish(safeContentsCtx->safeContentsA1Dcx);
@@ -1918,7 +1957,7 @@ sec_pkcs12_set_nickname_for_cert(sec_PKCS12SafeBag *cert,
 static SECItem *
 sec_pkcs12_get_der_cert(sec_PKCS12SafeBag *cert)
 {
-    if (!cert) {
+    if (!cert || !cert->safeBagContent.certBag) {
         PORT_SetError(SEC_ERROR_INVALID_ARGS);
         return NULL;
     }
@@ -2409,8 +2448,9 @@ sec_pkcs12_add_cert(sec_PKCS12SafeBag *cert, PRBool keyExists, void *wincx)
     return rv;
 }
 
-static SECItem *
-sec_pkcs12_get_public_value_and_type(SECKEYPublicKey *pubKey, KeyType *type);
+static const SECItem *
+sec_pkcs12_get_public_value_and_type(const SECKEYPublicKey *pubKey,
+                                     KeyType *type);
 
 static SECStatus
 sec_pkcs12_add_key(sec_PKCS12SafeBag *key, SECKEYPublicKey *pubKey,
@@ -2418,7 +2458,7 @@ sec_pkcs12_add_key(sec_PKCS12SafeBag *key, SECKEYPublicKey *pubKey,
                    SECItem *nickName, PRBool forceUnicode, void *wincx)
 {
     SECStatus rv;
-    SECItem *publicValue = NULL;
+    const SECItem *publicValue = NULL;
     KeyType keyType;
 
     /* We should always have values for "key" and "pubKey"
@@ -2879,11 +2919,10 @@ sec_pkcs12_get_public_key_and_usage(sec_PKCS12SafeBag *certBag,
     return pubKey;
 }
 
-static SECItem *
-sec_pkcs12_get_public_value_and_type(SECKEYPublicKey *pubKey,
+static const SECItem *
+sec_pkcs12_get_public_value_and_type(const SECKEYPublicKey *pubKey,
                                      KeyType *type)
 {
-    SECItem *pubValue = NULL;
 
     if (!type || !pubKey) {
         PORT_SetError(SEC_ERROR_INVALID_ARGS);
@@ -2891,24 +2930,7 @@ sec_pkcs12_get_public_value_and_type(SECKEYPublicKey *pubKey,
     }
 
     *type = pubKey->keyType;
-    switch (pubKey->keyType) {
-        case dsaKey:
-            pubValue = &pubKey->u.dsa.publicValue;
-            break;
-        case dhKey:
-            pubValue = &pubKey->u.dh.publicValue;
-            break;
-        case rsaKey:
-            pubValue = &pubKey->u.rsa.modulus;
-            break;
-        case ecKey:
-            pubValue = &pubKey->u.ec.publicValue;
-            break;
-        default:
-            pubValue = NULL;
-    }
-
-    return pubValue;
+    return PK11_GetPublicValueFromPublicKey(pubKey);
 }
 
 /* This function takes two passes over the bags, installing them in the
@@ -3179,6 +3201,12 @@ SEC_PKCS12DecoderIterateNext(SEC_PKCS12DecoderContext *p12dcx,
                 p12dcx->decitem.der = sec_pkcs12_get_der_cert(bag);
                 p12dcx->decitem.friendlyName = sec_pkcs12_get_friendlyName(bag);
                 p12dcx->decitem.hasKey = sec_pkcs12_bagHasKey(p12dcx, bag);
+                /* if we don't understand the cert, or it's not parsable, skip it */
+                /* as per the comment above, friendlyName may be null legitimately */
+                if (!p12dcx->decitem.der) {
+                    p12dcx->decitem.type = 0; /* clear out the type we are ignoring */
+                    continue;
+                }
                 break;
             case SEC_OID_PKCS12_V1_PKCS8_SHROUDED_KEY_BAG_ID:
                 p12dcx->decitem.shroudAlg = PORT_ZNew(SECAlgorithmID);
@@ -3195,6 +3223,7 @@ SEC_PKCS12DecoderIterateNext(SEC_PKCS12DecoderContext *p12dcx,
                 break;
             case SEC_OID_UNKNOWN:
                 /* ignore these */
+                p12dcx->decitem.type = 0; /* clear out the type we are ignoring */
                 continue;
         }
         *ipp = &p12dcx->decitem;

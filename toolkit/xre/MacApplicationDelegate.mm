@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -56,10 +55,19 @@ class AutoAutoreleasePool {
 @interface MacApplicationDelegate : NSObject <NSApplicationDelegate> {
 }
 
-// This is used as a workaround for bug 1478347 in order to make OS-provided
-// menu items such as the emoji picker available in the Edit menu, especially
-// in multi-language environments.
+// Standard Edit menu selectors. Setting these as the action on our Edit
+// menu items lets native text fields (e.g. an NSSavePanel sheet's
+// filename field, bug 2036608) handle Cmd+C/V/X/Z/A natively via the
+// responder chain. When no responder handles them, these forwarders
+// route to [nsMenuBarX::sNativeEventTarget menuItemHit:] so the
+// command still reaches Gecko via the normal menu path.
+- (IBAction)undo:(id)aSender;
+- (IBAction)redo:(id)aSender;
+- (IBAction)cut:(id)aSender;
 - (IBAction)copy:(id)aSender;
+- (IBAction)paste:(id)aSender;
+- (IBAction)delete:(id)aSender;
+- (IBAction)selectAll:(id)aSender;
 
 @end
 
@@ -154,7 +162,31 @@ nsTArray<nsCString> TakeStartupURLs() { return std::move(StartupURLs()); }
 
 @implementation MacApplicationDelegate
 
+- (IBAction)undo:(id)aSender {
+  [nsMenuBarX::sNativeEventTarget menuItemHit:aSender];
+}
+
+- (IBAction)redo:(id)aSender {
+  [nsMenuBarX::sNativeEventTarget menuItemHit:aSender];
+}
+
+- (IBAction)cut:(id)aSender {
+  [nsMenuBarX::sNativeEventTarget menuItemHit:aSender];
+}
+
 - (IBAction)copy:(id)aSender {
+  [nsMenuBarX::sNativeEventTarget menuItemHit:aSender];
+}
+
+- (IBAction)paste:(id)aSender {
+  [nsMenuBarX::sNativeEventTarget menuItemHit:aSender];
+}
+
+- (IBAction)delete:(id)aSender {
+  [nsMenuBarX::sNativeEventTarget menuItemHit:aSender];
+}
+
+- (IBAction)selectAll:(id)aSender {
   [nsMenuBarX::sNativeEventTarget menuItemHit:aSender];
 }
 
@@ -165,7 +197,7 @@ nsTArray<nsCString> TakeStartupURLs() { return std::move(StartupURLs()); }
     if (![NSApp windowsMenu]) {
       // If the application has a windows menu, it will keep it up to date and
       // prepend the window list to the Dock menu automatically.
-      NSMenu* windowsMenu = [[NSMenu alloc] initWithTitle:@"Window"];
+      NSMenu* windowsMenu = [[GeckoNSMenu alloc] initWithTitle:@"Window"];
       [NSApp setWindowsMenu:windowsMenu];
       [windowsMenu release];
     }
@@ -209,7 +241,7 @@ nsTArray<nsCString> TakeStartupURLs() { return std::move(StartupURLs()); }
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
   // Create the NSMenu that will contain the dock menu items.
-  NSMenu* menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+  NSMenu* menu = [[[GeckoNSMenu alloc] initWithTitle:@""] autorelease];
   [menu setAutoenablesItems:NO];
 
   // Add application-specific dock menu items. On error, do not insert the

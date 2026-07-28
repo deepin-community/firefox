@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Toś te sedła sebje pśistup k wašym rědam MIDi (Musical Instrument Digital Interface) pomina. Rědowy pśistup dajo se zmóžniś, gaž dodank instalěrujośo.
 site-permission-install-first-prompt-midi-message = Wěsty pśistup se njegarantěrujo. Póstupujśo jano, jolic toś tomu sedłoju dowěriśo.
+site-permission-install-first-prompt-serial-header = Toś to sedło wó pśistup k wašym serijowym rědam pšosy. Instalěrujśo dodank, aby pśistup k rědam zmóžnił.
+site-permission-install-first-prompt-serial-message = Wěsty pśistup se njegarantěrujo. Póstupujśo jano, jolic toś tomu sedłoju dowěriśo.
 
 ##
 
@@ -81,6 +83,8 @@ addon-removal-title = { $name } wótwónoźeś?
 addon-removal-message = { $name } z { -brand-shorter-name } wótwónoźeś?
 addon-removal-button = Wótwónoźeś
 addon-removal-abuse-report-checkbox = { -vendor-short-name } toś to rozšyrjenje k wěsći daś
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Jolic funkcije abo rozšyrjenja wužywaśo, kótarež toś ten model wužywaju, se ten znowego pśidawa.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -135,14 +139,19 @@ addon-install-error-corrupt-file = Dodank, kótaryž sćo z toś togo sedła ze�
 addon-install-error-file-access = { $addonName } njedajo se instalěrowaś, dokulaž { -brand-short-name } njamóžo trjebnu dataju změniś.
 addon-install-error-not-signed = { -brand-short-name } jo toś tomu sedłoju instalěrowanje njewobkšuśonego dodanka zawoborał.
 addon-install-error-invalid-domain = Dodank { $addonName } njedajo se z toś togo městna instalěrowaś.
+addon-install-error-no-addon-name-file-access = Dodank njedajo se instalěrowaś, dokulaž { -brand-short-name } njamóžo trjebnu dataju změniś.
 addon-local-install-error-network-failure = Toś ten dodank njedajo se systemoweje zmólki dla instalěrowaś.
 addon-local-install-error-incorrect-hash = Toś ten dodank njedajo se instalěrowaś, dokulaž njewótpowědujo dodankoju, kótaryž jo { -brand-short-name } wótcakał.
 addon-local-install-error-corrupt-file = Toś ten dodank njedajo se instalěrowaś, dokulaž zda se, až jo wobškóźony.
 addon-local-install-error-file-access = { $addonName } njedajo se instalěrowaś, dokulaž { -brand-short-name } njamóžo trjebnu dataju změniś.
 addon-local-install-error-not-signed = Toś ten dodank njedajo se instalěrowaś, dokulaž zda se, až jo wobkšuśony.
+addon-local-install-no-addon-name-error-file-access = Dodank njedajo se instalěrowaś, dokulaž { -brand-short-name } njamóžo trjebnu dataju změniś.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } njedajo se instalěrowaś, dokulaž njejo z { -brand-short-name } { $appVersion } kompatibelny.
+addon-install-error-hard-blocked = { $addonName } se pśeśiwo pšawidłam Mozilla pśejźo a njedajo se na { -brand-short-name } instalěrowaś.
+addon-install-error-soft-blocked2 = { $addonName } jo wobgranicowany a njedajo se na { -brand-short-name } instalěrowaś.
 addon-install-error-blocklisted = { $addonName } njedajo se instalěrowaś, dokulaž jo wjelike riziko, až zawinujo stabilnostne abo wěstotne problemy.
+addon-install-error-soft-blocked = { $addonName } se pśeśiwo pšawidłam Mozilla pśejźo a njedajo se na { -brand-short-name } instalěrowaś.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Njamóžośo { $addonName } ako kóńcny wužywaŕ instalěrowaś, dajo se jano wót organizacije z pomocu pśedewześowych pšawidłow instalěrowaś.

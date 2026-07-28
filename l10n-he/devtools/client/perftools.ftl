@@ -25,11 +25,33 @@ perftools-heading-local-build = בנייה מקומית
 ##
 
 perftools-description-intro = ההקלטות פותחות את <a>profiler.firefox.com</a> בלשונית חדשה. כל הנתונים מאוחסנים באופן מקומי, אך באפשרותך לבחור להעלות אותם לצורך שיתוף.
+perftools-pick-local-build-directory = בחירת ספריית בנייה
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = מרווח דגימה:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } מ״ש
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } B
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } KiB
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } MiB
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } GiB
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } TiB
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } PiB
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } EiB
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ZiB
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } YiB
 
 ##
 
@@ -60,6 +82,14 @@ perftools-button-add-directory = הוספת ספרייה
 perftools-button-remove-directory = הסרת הפריט הנבחר
 perftools-button-edit-settings = עריכת הגדרות…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = פעולות נוספות
+perftools-menu-more-actions-restart-with-profiling = הפעלה מחדש של { -brand-shorter-name } עם יצירת פרופיל אתחול מופעל
+perftools-menu-more-actions-copy-for-startup = העתק משתני סביבה עבור יצירת פרופיל אתחול
+perftools-menu-more-actions-copy-for-perf-tests = העתקת פרמטרים למבחני ביצועים
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -73,6 +103,7 @@ perftools-thread-dns-resolver =
 
 ##
 
+perftools-record-all-registered-threads = עקיפת הבחירות לעיל והקלטת כל התהליכונים המזוהים
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
@@ -99,14 +130,17 @@ perftools-presets-graphics-label = Graphics
 perftools-presets-graphics-description = ערכה לחקירת באגים גרפיים ב־{ -brand-shorter-name }.
 perftools-presets-media-label = Media
 perftools-presets-media-description2 = ערכה לחקירת באגים בשמע ווידאו ב־{ -brand-shorter-name }.
+perftools-presets-ml-label = למידת מכונה
+perftools-presets-ml-description2 = ערכה לחקירת באגים של למידת מכונה ב־{ -brand-shorter-name }.
 perftools-presets-networking-label = Networking
 perftools-presets-networking-description = ערכה לחקירת באגים של רשת או תקשורת ב־{ -brand-shorter-name }.
+perftools-presets-networking-with-logs-label = רשת עם יומנים
+perftools-presets-networking-with-logs-description = ערכה לחקירת באגים בתקשורת או ברשת ב־{ -brand-shorter-name }, כולל יומני רשת. יומנים אלה עשויים להכיל מידע רגיש כמו כתובות האתרים שבהם ביקרת.
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = צריכת חשמל
 perftools-presets-power-description = ערכה לחקירת באגים של צריכת חשמל ב־{ -brand-shorter-name }, עם תקורה נמוכה.
 perftools-presets-debug-label = ניפוי שגיאות
 perftools-presets-debug-description = ערכה לניפוי שגיאות ב־{ -brand-shorter-name }. בעל תקורה גבוהה, אין להשתמש לעבודה על ביצועים אלא להשתמש להתמקדות על התנהגות הדפדפן.
+perftools-presets-web-compat-label = תאימות לאתרים
+perftools-presets-web-compat-description = ערכה מומלצת לאיתור בעיות בתאימות לאתרי אינטרנט.
 perftools-presets-custom-label = התאמה אישית
-
-##
-

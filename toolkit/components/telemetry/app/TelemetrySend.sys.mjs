@@ -115,20 +115,45 @@ function isV4PingFormat(aPing) {
 
 /**
  * Check if the provided ping is a deletion-request ping.
- * @param {Object} aPing The ping to check.
- * @return {Boolean} True if the ping is a deletion-request ping, false otherwise.
+ *
+ * @param {object} aPing The ping to check.
+ * @return {boolean} True if the ping is a deletion-request ping, false otherwise.
  */
 function isDeletionRequestPing(aPing) {
   return isV4PingFormat(aPing) && aPing.type == PING_TYPE_DELETION_REQUEST;
 }
 
 /**
+ * Generate a string suitable for including in a profiler marker as a ping description.
+ *
+ * @param {object} aPing The ping to describe.
+ */
+function getPingMarkerString(aPing) {
+  let markerString = aPing.type;
+  let reason = aPing.payload?.info?.reason || aPing.payload?.reason;
+  if (reason) {
+    markerString += ", reason: " + reason;
+  }
+  return markerString;
+}
+
+/**
  * Save the provided ping as a pending ping.
- * @param {Object} aPing The ping to save.
+ *
+ * @param {object} aPing The ping to save.
  * @return {Promise} A promise resolved when the ping is saved.
  */
 function savePing(aPing) {
-  return lazy.TelemetryStorage.savePendingPing(aPing);
+  let startTime = ChromeUtils.now();
+  let promise = lazy.TelemetryStorage.savePendingPing(aPing);
+  promise.then(() => {
+    ChromeUtils.addProfilerMarker(
+      "Ping Save",
+      { category: "Telemetry", startTime },
+      getPingMarkerString(aPing)
+    );
+  });
+  return promise;
 }
 
 function arrayToString(array) {
@@ -146,7 +171,7 @@ function arrayToString(array) {
 }
 
 /**
- * @return {String} This returns a string with the gzip compressed data.
+ * @return {string} This returns a string with the gzip compressed data.
  */
 export function gzipCompressString(string) {
   let observer = {
@@ -167,7 +192,7 @@ export function gzipCompressString(string) {
   let stringStream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  stringStream.data = string;
+  stringStream.setByteStringData(string);
   converter.onStartRequest(null, null);
   converter.onDataAvailable(null, stringStream, 0, string.length);
   converter.onStopRequest(null, null, null);
@@ -208,7 +233,9 @@ export function sendStandalonePing(endpoint, payload, extraHeaders = {}) {
 
     const utf8Payload = new TextEncoder().encode(payload);
 
-    payloadStream.data = gzipCompressString(arrayToString(utf8Payload));
+    payloadStream.setByteStringData(
+      gzipCompressString(arrayToString(utf8Payload))
+    );
     request.sendInputStream(payloadStream);
   });
 }
@@ -229,7 +256,7 @@ export var TelemetrySend = {
   /**
    * Initializes this module.
    *
-   * @param {Boolean} testing Whether this is run in a test. This changes some behavior
+   * @param {boolean} testing Whether this is run in a test. This changes some behavior
    * to enable proper testing.
    * @return {Promise} Resolved when setup is finished.
    */
@@ -261,9 +288,9 @@ export var TelemetrySend = {
    * - send the ping right away if possible or
    * - save the ping to disk and send it at the next opportunity
    *
-   * @param {Object} ping The ping data to send, must be serializable to JSON.
-   * @param {Object} [aOptions] Options object.
-   * @param {Boolean} [options.usePingSender=false] if true, send the ping using the PingSender.
+   * @param {object} ping The ping data to send, must be serializable to JSON.
+   * @param {object} [aOptions] Options object.
+   * @param {boolean} [options.usePingSender=false] if true, send the ping using the PingSender.
    * @return {Promise} Test-only - a promise that is resolved when the ping is sent or saved.
    */
   submitPing(ping, options = {}) {
@@ -276,8 +303,8 @@ export var TelemetrySend = {
    * pings are not sent to the server.
    * If trying to send a deletion-request ping, don't block it.
    *
-   * @param {Object} [ping=null] A ping to be checked.
-   * @return {Boolean} True if pings can be send to the servers, false otherwise.
+   * @param {object} [ping=null] A ping to be checked.
+   * @return {boolean} True if pings can be send to the servers, false otherwise.
    */
   sendingEnabled(ping = null) {
     return TelemetrySendImpl.sendingEnabled(ping);
@@ -373,7 +400,7 @@ var CancellableTimeout = {
   /**
    * This waits until either the given timeout passed or the timeout was cancelled.
    *
-   * @param {Number} timeoutMs The timeout in ms.
+   * @param {number} timeoutMs The timeout in ms.
    * @return {Promise<bool>} Promise that is resolved with false if the timeout was cancelled,
    *                         false otherwise.
    */
@@ -638,9 +665,8 @@ export var SendScheduler = {
           nextSendDelay
       );
       this._sendTaskState = "wait on next send opportunity";
-      const cancelled = await CancellableTimeout.promiseWaitOnTimeout(
-        nextSendDelay
-      );
+      const cancelled =
+        await CancellableTimeout.promiseWaitOnTimeout(nextSendDelay);
       if (cancelled) {
         this._log.trace(
           "_doSendTask - batch send wait was cancelled, resetting backoff timer"
@@ -715,13 +741,8 @@ export var TelemetrySendImpl = {
   _tooLateToSend: false,
   // Array of {url, path} awaiting flushPingSenderBatch().
   _pingSenderBatch: [],
-
-  OBSERVER_TOPICS: [
-    TOPIC_IDLE_DAILY,
-    TOPIC_QUIT_APPLICATION_GRANTED,
-    TOPIC_QUIT_APPLICATION_FORCED,
-    TOPIC_PROFILE_CHANGE_NET_TEARDOWN,
-  ],
+  _quitObserverRegistered: false,
+  _observerRegistered: false,
 
   OBSERVED_PREFERENCES: [
     TelemetryUtils.Preferences.TelemetryEnabled,
@@ -767,8 +788,11 @@ export var TelemetrySendImpl = {
 
     // Install the observer to detect OS shutdown early enough, so
     // that we catch this before the delayed setup happens.
-    Services.obs.addObserver(this, TOPIC_QUIT_APPLICATION_FORCED);
-    Services.obs.addObserver(this, TOPIC_QUIT_APPLICATION_GRANTED);
+    if (!this._quitObserverRegistered) {
+      Services.obs.addObserver(this, TOPIC_QUIT_APPLICATION_FORCED);
+      Services.obs.addObserver(this, TOPIC_QUIT_APPLICATION_GRANTED);
+      this._quitObserverRegistered = true;
+    }
   },
 
   QueryInterface: ChromeUtils.generateQI(["nsISupportsWeakReference"]),
@@ -778,8 +802,11 @@ export var TelemetrySendImpl = {
 
     this._testMode = testing;
 
-    Services.obs.addObserver(this, TOPIC_IDLE_DAILY);
-    Services.obs.addObserver(this, TOPIC_PROFILE_CHANGE_NET_TEARDOWN);
+    if (!this._observerRegistered) {
+      Services.obs.addObserver(this, TOPIC_IDLE_DAILY);
+      Services.obs.addObserver(this, TOPIC_PROFILE_CHANGE_NET_TEARDOWN);
+      this._observerRegistered = true;
+    }
 
     this._server = Services.prefs.getStringPref(
       TelemetryUtils.Preferences.Server,
@@ -855,7 +882,8 @@ export var TelemetrySendImpl = {
 
   /**
    * Discard old pings from the pending pings and detect overdue ones.
-   * @return {Boolean} True if we have overdue pings, false otherwise.
+   *
+   * @return {boolean} True if we have overdue pings, false otherwise.
    */
   async _checkPendingPings() {
     // Scan the pending pings - that gives us a list sorted by last modified, descending.
@@ -873,9 +901,7 @@ export var TelemetrySendImpl = {
       const ageInDays = Utils.millisecondsToDays(
         Math.abs(now.getTime() - pingInfo.lastModificationDate)
       );
-      Services.telemetry
-        .getHistogramById("TELEMETRY_PENDING_PINGS_AGE")
-        .add(ageInDays);
+      Glean.telemetry.pendingPingsAge.accumulateSingleSample(ageInDays);
     }
   },
 
@@ -889,15 +915,15 @@ export var TelemetrySendImpl = {
       Services.prefs.removeObserver(pref, this);
     }
 
-    for (let topic of this.OBSERVER_TOPICS) {
-      try {
-        Services.obs.removeObserver(this, topic);
-      } catch (ex) {
-        this._log.error(
-          "shutdown - failed to remove observer for " + topic,
-          ex
-        );
-      }
+    if (this._observerRegistered) {
+      Services.obs.removeObserver(this, TOPIC_IDLE_DAILY);
+      Services.obs.removeObserver(this, TOPIC_PROFILE_CHANGE_NET_TEARDOWN);
+      this._observerRegistered = false;
+    }
+    if (this._quitObserverRegistered) {
+      Services.obs.removeObserver(this, TOPIC_QUIT_APPLICATION_FORCED);
+      Services.obs.removeObserver(this, TOPIC_QUIT_APPLICATION_GRANTED);
+      this._quitObserverRegistered = false;
     }
 
     // We can't send anymore now.
@@ -1009,8 +1035,8 @@ export var TelemetrySendImpl = {
    * succeeds, the ping is eventually removed from the disk to prevent duplicated
    * submissions.
    *
-   * @param {String} pingId The id of the ping to send.
-   * @param {String} submissionURL The complete Telemetry-compliant URL for the ping.
+   * @param {string} pingId The id of the ping to send.
+   * @param {string} submissionURL The complete Telemetry-compliant URL for the ping.
    */
   _sendWithPingSender(pingId, submissionURL) {
     this._log.trace(
@@ -1034,6 +1060,11 @@ export var TelemetrySendImpl = {
   },
 
   submitPing(ping, options) {
+    ChromeUtils.addProfilerMarker(
+      "Ping Submit",
+      { category: "Telemetry" },
+      getPingMarkerString(ping) + `, options: ${JSON.stringify(options)}`
+    );
     this._log.trace(
       "submitPing - ping id: " +
         ping.id +
@@ -1234,12 +1265,13 @@ export var TelemetrySendImpl = {
         isPersisted
     );
 
-    let sendId = success ? "TELEMETRY_SEND_SUCCESS" : "TELEMETRY_SEND_FAILURE";
-    let hsend = Services.telemetry.getHistogramById(sendId);
-    let hsuccess = Services.telemetry.getHistogramById("TELEMETRY_SUCCESS");
-
-    hsend.add(Utils.monotonicNow() - startTime);
-    hsuccess.add(success);
+    let time = Utils.monotonicNow() - startTime;
+    if (success) {
+      Glean.telemetry.sendSuccess.accumulateSingleSample(time);
+    } else {
+      Glean.telemetry.sendFailure.accumulateSingleSample(time);
+    }
+    Glean.telemetry.success[success ? "true" : "false"].add();
 
     if (!success) {
       // Let the scheduler know about send failures for triggering backoff timeouts.
@@ -1329,29 +1361,30 @@ export var TelemetrySendImpl = {
       JSON.stringify(networkPayload)
     );
 
-    Services.telemetry
-      .getHistogramById("TELEMETRY_STRINGIFY")
-      .add(Utils.monotonicNow() - startTime);
+    Glean.telemetry.stringify.accumulateSingleSample(
+      Utils.monotonicNow() - startTime
+    );
 
     let payloadStream = Cc[
       "@mozilla.org/io/string-input-stream;1"
     ].createInstance(Ci.nsIStringInputStream);
     startTime = Utils.monotonicNow();
-    payloadStream.data = Policy.gzipCompressString(arrayToString(utf8Payload));
+    const compressedPing = Policy.gzipCompressString(
+      arrayToString(utf8Payload)
+    );
+    payloadStream.setByteStringData(compressedPing);
 
     // Check the size and drop pings which are too big.
-    const compressedPingSizeBytes = payloadStream.data.length;
+    const compressedPingSizeBytes = compressedPing.length;
     if (compressedPingSizeBytes > lazy.TelemetryStorage.MAXIMUM_PING_SIZE) {
       this._log.error(
         "_doPing - submitted ping exceeds the size limit, size: " +
           compressedPingSizeBytes
       );
-      Services.telemetry
-        .getHistogramById("TELEMETRY_PING_SIZE_EXCEEDED_SEND")
-        .add();
-      Services.telemetry
-        .getHistogramById("TELEMETRY_DISCARDED_SEND_PINGS_SIZE_MB")
-        .add(Math.floor(compressedPingSizeBytes / 1024 / 1024));
+      Glean.telemetry.pingSizeExceededSend.add(1);
+      Glean.telemetry.discardedSendPingsSize.accumulate(
+        Math.floor(compressedPingSizeBytes / 1024 / 1024)
+      );
       // We don't need to call |request.abort()| as it was not sent yet.
       this._pendingPingRequests.delete(id);
 
@@ -1359,15 +1392,17 @@ export var TelemetrySendImpl = {
       return { promise: lazy.TelemetryStorage.removePendingPing(id) };
     }
 
-    Services.telemetry
-      .getHistogramById("TELEMETRY_COMPRESS")
-      .add(Utils.monotonicNow() - startTime);
+    Glean.telemetry.compress.accumulateSingleSample(
+      Utils.monotonicNow() - startTime
+    );
     request.sendInputStream(payloadStream);
 
     return { payloadStream };
   },
 
   _doPing(ping, id, isPersisted) {
+    let startTime = ChromeUtils.now();
+
     if (!this.sendingEnabled(ping)) {
       // We can't send the pings to the server, so don't try to.
       this._log.trace("_doPing - Can't send ping " + ping.id);
@@ -1377,12 +1412,8 @@ export var TelemetrySendImpl = {
     if (this._tooLateToSend) {
       // Too late to send now. Reject so we pend the ping to send it next time.
       this._log.trace("_doPing - Too late to send ping " + ping.id);
-      Services.telemetry
-        .getHistogramById("TELEMETRY_SEND_FAILURE_TYPE")
-        .add("eTooLate");
-      Services.telemetry
-        .getKeyedHistogramById("TELEMETRY_SEND_FAILURE_TYPE_PER_PING")
-        .add(ping.type, "eTooLate");
+      Glean.telemetry.sendFailureType.eTooLate.add(1);
+      Glean.telemetry.sendFailureTypePerPing.get(ping.type, "eTooLate").add(1);
       return Promise.reject();
     }
 
@@ -1403,6 +1434,11 @@ export var TelemetrySendImpl = {
     let onRequestFinished = (success, event) => {
       let onCompletion = () => {
         if (success) {
+          ChromeUtils.addProfilerMarker(
+            "Ping Send",
+            { category: "Telemetry", startTime },
+            getPingMarkerString(ping)
+          );
           deferred.resolve();
         } else {
           deferred.reject(event);
@@ -1466,12 +1502,8 @@ export var TelemetrySendImpl = {
 
       lazy.TelemetryHealthPing.recordSendFailure(failure);
 
-      Services.telemetry
-        .getHistogramById("TELEMETRY_SEND_FAILURE_TYPE")
-        .add(failure);
-      Services.telemetry
-        .getKeyedHistogramById("TELEMETRY_SEND_FAILURE_TYPE_PER_PING")
-        .add(ping.type, failure);
+      Glean.telemetry.sendFailureType[failure].add(1);
+      Glean.telemetry.sendFailureTypePerPing.get(ping.type, failure).add(1);
 
       this._log.error(
         "_doPing - error making request to " + url + ": " + failure
@@ -1498,9 +1530,7 @@ export var TelemetrySendImpl = {
             status +
             " - ping request broken?"
         );
-        Services.telemetry
-          .getHistogramById("TELEMETRY_PING_EVICTED_FOR_SERVER_ERRORS")
-          .add();
+        Glean.telemetry.pingEvictedForServerErrors.add(1);
         // TODO: we should handle this better, but for now we should avoid resubmitting
         // broken requests by pretending success.
         success = true;
@@ -1549,7 +1579,8 @@ export var TelemetrySendImpl = {
 
   /**
    * Check if sending is temporarily disabled.
-   * @return {Boolean} True if we can send pings to the server right now, false if
+   *
+   * @return {boolean} True if we can send pings to the server right now, false if
    *         sending is temporarily disabled.
    */
   get canSendNow() {
@@ -1567,8 +1598,8 @@ export var TelemetrySendImpl = {
    * If trying to send a "deletion-request" ping, don't block it.
    * If unified telemetry is off, don't send pings if Telemetry is disabled.
    *
-   * @param {Object} [ping=null] A ping to be checked.
-   * @return {Boolean} True if pings can be send to the servers, false otherwise.
+   * @param {object} [ping=null] A ping to be checked.
+   * @return {boolean} True if pings can be send to the servers, false otherwise.
    */
   sendingEnabled(ping = null) {
     // We only send pings from official builds, but allow overriding this for tests.
@@ -1609,7 +1640,8 @@ export var TelemetrySendImpl = {
 
   /**
    * Return a promise that allows to wait on pending pings.
-   * @return {Object<Promise>} A promise resolved when all the pending pings promises
+   *
+   * @return {Promise} A promise resolved when all the pending pings promises
    *         are resolved.
    */
   promisePendingPingActivity() {

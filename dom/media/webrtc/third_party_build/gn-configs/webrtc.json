@@ -1,5 +1,8 @@
 {
-  "target_dir": "third_party/libwebrtc",
+  "build_root_dir": "third_party",
+  "target_dir": "libwebrtc",
+  "moz_build_flag": "build_mozilla_webrtc",
+  "mozilla_add_override_dir": "!/dist/include/libwebrtc_overrides",
   "gn_target": "//:webrtc",
   "gn_sandbox_variables": {
     "COMPILE_FLAGS": {
@@ -13,6 +16,23 @@
       "third_party/libwebrtc/modules/desktop_capture/desktop_capture_gn",
       "third_party/libwebrtc/modules/portal/portal_gn",
       "third_party/libwebrtc/modules/video_capture/video_capture_internal_impl_gn"
+    ],
+    "INCLUDE_SYSTEM_GBM_HANDLING": [
+      "third_party/libwebrtc/modules/desktop_capture/desktop_capture_gn",
+      "third_party/libwebrtc/modules/portal/portal_gn"
+    ],
+    "INCLUDE_SYSTEM_LIBDRM_HANDLING": [
+      "third_party/libwebrtc/modules/desktop_capture/desktop_capture_gn",
+      "third_party/libwebrtc/modules/portal/portal_gn"
+    ],
+    "INCLUDE_SYSTEM_PIPEWIRE_HANDLING": [
+      "third_party/libwebrtc/modules/desktop_capture/desktop_capture_gn",
+      "third_party/libwebrtc/modules/portal/portal_gn",
+      "third_party/libwebrtc/modules/video_capture/video_capture_internal_impl_gn"
+    ],
+    "INCLUDE_SYSTEM_DAV1D_HANDLING": [
+      "third_party/libwebrtc/modules/video_coding/codecs/av1/dav1d_decoder_gn",
+      "third_party/libwebrtc/modules/video_coding/codecs/av1/libaom_av1_encoder_gn"
     ],
     "INCLUDE_SYSTEM_LIBVPX_HANDLING": [
       "third_party/libwebrtc/modules/video_coding/webrtc_libvpx_interface_gn",
@@ -31,6 +51,7 @@
     "third_party/libwebrtc/common_audio/vad/vad_core.c",
     "third_party/libwebrtc/common_audio/vad/webrtc_vad.c",
     "third_party/libwebrtc/common_audio/signal_processing/resample_by_2_mips.c",
+    "third_party/libwebrtc/logging/rtc_event_log/events/rtc_event_field_encoding_parser.cc",
     "third_party/libwebrtc/modules/audio_coding/codecs/isac/fix/source/decode_plc.c",
     "third_party/libwebrtc/modules/audio_coding/codecs/isac/fix/source/lpc_masking_model.c",
     "third_party/libwebrtc/modules/audio_coding/codecs/isac/fix/source/pitch_filter.c",
@@ -49,6 +70,7 @@
     "third_party/libwebrtc/modules/audio_processing/aecm/aecm_core_mips.cc",
     "third_party/libwebrtc/modules/audio_processing/aecm/aecm_core_neon.cc",
     "third_party/libwebrtc/modules/audio_processing/aecm/echo_control_mobile.cc",
+    "third_party/libwebrtc/modules/audio_processing/agc2/speech_level_estimator_experimental_impl.cc",
     "third_party/libwebrtc/modules/audio_processing/echo_control_mobile_impl.cc",
     "third_party/libwebrtc/modules/audio_processing/echo_detector/normalized_covariance_estimator.cc",
     "third_party/libwebrtc/modules/audio_processing/gain_control_impl.cc",
@@ -86,6 +108,7 @@
     "third_party/libwebrtc/third_party/abseil-cpp/absl/synchronization/blocking_counter.cc",
     "third_party/libwebrtc/third_party/abseil-cpp/absl/time/internal/cctz/src/time_zone_posix.cc",
     "third_party/libwebrtc/third_party/abseil-cpp/absl/time/time.cc",
+    "third_party/libwebrtc/video/adaptation/pixel_limit_resource.cc",
     "third_party/libwebrtc/video/rtp_video_stream_receiver2.cc"
   ]
 }

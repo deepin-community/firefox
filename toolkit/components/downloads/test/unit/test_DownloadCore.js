@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
@@ -179,7 +177,7 @@ add_task(function test_DownloadError() {
 
   error = new DownloadError({ result: Cr.NS_ERROR_NOT_RESUMABLE });
   Assert.equal(error.result, Cr.NS_ERROR_NOT_RESUMABLE);
-  Assert.ok(error.message.indexOf("Exception") > 0);
+  Assert.greater(error.message.indexOf("Exception"), 0);
 
   // becauseSourceFailed will be set, but not the unknown property.
   error = new DownloadError({

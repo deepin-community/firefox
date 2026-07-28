@@ -1,14 +1,17 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/dom/WebGPUBinding.h"
 #include "RenderPassEncoder.h"
+
 #include "BindGroup.h"
 #include "CommandEncoder.h"
+#include "ExternalTexture.h"
 #include "RenderBundle.h"
 #include "RenderPipeline.h"
+#include "TextureView.h"
+#include "Utility.h"
+#include "mozilla/dom/WebGPUBinding.h"
 #include "mozilla/webgpu/ffi/wgpu.h"
 
 namespace mozilla::webgpu {
@@ -24,16 +27,6 @@ void ffiWGPURenderPassDeleter::operator()(ffi::WGPURecordedRenderPass* raw) {
   }
 }
 
-static ffi::WGPULoadOp ConvertLoadOp(const dom::GPULoadOp& aOp) {
-  switch (aOp) {
-    case dom::GPULoadOp::Load:
-      return ffi::WGPULoadOp_Load;
-    case dom::GPULoadOp::Clear:
-      return ffi::WGPULoadOp_Clear;
-  }
-  MOZ_CRASH("bad GPULoadOp");
-}
-
 static ffi::WGPUStoreOp ConvertStoreOp(const dom::GPUStoreOp& aOp) {
   switch (aOp) {
     case dom::GPUStoreOp::Store:
@@ -45,11 +38,12 @@ static ffi::WGPUStoreOp ConvertStoreOp(const dom::GPUStoreOp& aOp) {
 }
 
 static ffi::WGPUColor ConvertColor(const dom::Sequence<double>& aSeq) {
-  ffi::WGPUColor color;
-  color.r = aSeq.SafeElementAt(0, 0.0);
-  color.g = aSeq.SafeElementAt(1, 0.0);
-  color.b = aSeq.SafeElementAt(2, 0.0);
-  color.a = aSeq.SafeElementAt(3, 1.0);
+  ffi::WGPUColor color{
+      .r = aSeq.SafeElementAt(0, 0.0),
+      .g = aSeq.SafeElementAt(1, 0.0),
+      .b = aSeq.SafeElementAt(2, 0.0),
+      .a = aSeq.SafeElementAt(3, 1.0),
+  };
   return color;
 }
 
@@ -93,30 +87,77 @@ ffi::WGPURecordedRenderPass* BeginRenderPass(
   ffi::WGPURenderPassDepthStencilAttachment dsDesc = {};
   if (aDesc.mDepthStencilAttachment.WasPassed()) {
     const auto& dsa = aDesc.mDepthStencilAttachment.Value();
-    dsDesc.view = dsa.mView->mId;
+    // NOTE: We're assuming callers reified this to be a view.
+    dsDesc.view = dsa.mView.GetAsGPUTextureView()->GetId();
 
     // -
 
-    if (dsa.mDepthClearValue.WasPassed()) {
-      dsDesc.depth.clear_value = dsa.mDepthClearValue.Value();
-    }
     if (dsa.mDepthLoadOp.WasPassed()) {
-      dsDesc.depth.load_op = ConvertLoadOp(dsa.mDepthLoadOp.Value());
+      dsDesc.depth.load_op.tag =
+          ffi::WGPUFfiOption_LoadOp_FfiOption_f32_Some_LoadOp_FfiOption_f32;
+      switch (dsa.mDepthLoadOp.Value()) {
+        case dom::GPULoadOp::Load:
+          dsDesc.depth.load_op.some.tag =
+              ffi::WGPULoadOp_FfiOption_f32_Load_FfiOption_f32;
+          break;
+        case dom::GPULoadOp::Clear:
+          dsDesc.depth.load_op.some.clear_tag =
+              ffi::WGPULoadOp_FfiOption_f32_Clear_FfiOption_f32;
+          if (dsa.mDepthClearValue.WasPassed()) {
+            dsDesc.depth.load_op.some.clear.tag =
+                ffi::WGPUFfiOption_f32_Some_f32;
+            dsDesc.depth.load_op.some.clear.some = dsa.mDepthClearValue.Value();
+          } else {
+            dsDesc.depth.load_op.some.clear.tag =
+                ffi::WGPUFfiOption_f32_None_f32;
+          }
+          break;
+      }
+    } else {
+      dsDesc.depth.load_op.tag =
+          ffi::WGPUFfiOption_LoadOp_FfiOption_f32_None_LoadOp_FfiOption_f32;
     }
+
     if (dsa.mDepthStoreOp.WasPassed()) {
-      dsDesc.depth.store_op = ConvertStoreOp(dsa.mDepthStoreOp.Value());
+      dsDesc.depth.store_op.tag = ffi::WGPUFfiOption_StoreOp_Some_StoreOp;
+      dsDesc.depth.store_op.some = ConvertStoreOp(dsa.mDepthStoreOp.Value());
+    } else {
+      dsDesc.depth.store_op.tag = ffi::WGPUFfiOption_StoreOp_None_StoreOp;
     }
+
     dsDesc.depth.read_only = dsa.mDepthReadOnly;
 
     // -
 
-    dsDesc.stencil.clear_value = dsa.mStencilClearValue;
     if (dsa.mStencilLoadOp.WasPassed()) {
-      dsDesc.stencil.load_op = ConvertLoadOp(dsa.mStencilLoadOp.Value());
+      dsDesc.stencil.load_op.tag =
+          ffi::WGPUFfiOption_LoadOp_FfiOption_u32_Some_LoadOp_FfiOption_u32;
+      switch (dsa.mStencilLoadOp.Value()) {
+        case dom::GPULoadOp::Load:
+          dsDesc.stencil.load_op.some.tag =
+              ffi::WGPULoadOp_FfiOption_u32_Load_FfiOption_u32;
+          break;
+        case dom::GPULoadOp::Clear:
+          dsDesc.stencil.load_op.some.clear_tag =
+              ffi::WGPULoadOp_FfiOption_u32_Clear_FfiOption_u32;
+          dsDesc.stencil.load_op.some.clear.tag =
+              ffi::WGPUFfiOption_u32_Some_u32;
+          dsDesc.stencil.load_op.some.clear.some = dsa.mStencilClearValue;
+          break;
+      }
+    } else {
+      dsDesc.stencil.load_op.tag =
+          ffi::WGPUFfiOption_LoadOp_FfiOption_u32_None_LoadOp_FfiOption_u32;
     }
+
     if (dsa.mStencilStoreOp.WasPassed()) {
-      dsDesc.stencil.store_op = ConvertStoreOp(dsa.mStencilStoreOp.Value());
+      dsDesc.stencil.store_op.tag = ffi::WGPUFfiOption_StoreOp_Some_StoreOp;
+      dsDesc.stencil.store_op.some =
+          ConvertStoreOp(dsa.mStencilStoreOp.Value());
+    } else {
+      dsDesc.stencil.store_op.tag = ffi::WGPUFfiOption_StoreOp_None_StoreOp;
     }
+
     dsDesc.stencil.read_only = dsa.mStencilReadOnly;
 
     // -
@@ -124,71 +165,148 @@ ffi::WGPURecordedRenderPass* BeginRenderPass(
     desc.depth_stencil_attachment = &dsDesc;
   }
 
-  if (aDesc.mColorAttachments.Length() > WGPUMAX_COLOR_ATTACHMENTS) {
-    aParent->GetDevice()->GenerateValidationError(nsLiteralCString(
-        "Too many color attachments in GPURenderPassDescriptor"));
-    return nullptr;
+  AutoTArray<ffi::WGPUFfiOption_FfiRenderPassColorAttachment,
+             WGPUMAX_COLOR_ATTACHMENTS>
+      colorDescs;
+
+  for (const auto& caOrNull : aDesc.mColorAttachments) {
+    ffi::WGPUFfiOption_FfiRenderPassColorAttachment opt = {};
+    if (caOrNull.IsNull()) {
+      opt.tag = ffi::
+          WGPUFfiOption_FfiRenderPassColorAttachment_None_FfiRenderPassColorAttachment;
+      colorDescs.AppendElement(opt);
+      continue;
+    }
+    const auto& ca = caOrNull.Value();
+    ffi::WGPUFfiRenderPassColorAttachment cd = {};
+    // NOTE: We're assuming callers reified this to be a view.
+    cd.view = ca.mView.GetAsGPUTextureView()->GetId();
+    cd.store_op = ConvertStoreOp(ca.mStoreOp);
+
+    if (ca.mDepthSlice.WasPassed()) {
+      cd.depth_slice.tag = ffi::WGPUFfiOption_u32_Some_u32;
+      cd.depth_slice.some = ca.mDepthSlice.Value();
+    } else {
+      cd.depth_slice.tag = ffi::WGPUFfiOption_u32_None_u32;
+    }
+    if (ca.mResolveTarget.WasPassed()) {
+      // NOTE: We're assuming callers reified this to be a view.
+      cd.resolve_target =
+          ca.mResolveTarget.Value().GetAsGPUTextureView()->GetId();
+    }
+
+    switch (ca.mLoadOp) {
+      case dom::GPULoadOp::Load:
+        cd.load_op.tag = ffi::WGPULoadOp_Color_Load_Color;
+        break;
+      case dom::GPULoadOp::Clear:
+        cd.load_op.clear_tag = ffi::WGPULoadOp_Color_Clear_Color;
+        if (ca.mClearValue.WasPassed()) {
+          cd.load_op.clear = ConvertColor(ca.mClearValue.Value());
+        } else {
+          cd.load_op.clear = ffi::WGPUColor{0};
+        }
+        break;
+    }
+    opt.tag = ffi::
+        WGPUFfiOption_FfiRenderPassColorAttachment_Some_FfiRenderPassColorAttachment;
+    opt.some = cd;
+    colorDescs.AppendElement(opt);
   }
 
-  std::array<ffi::WGPURenderPassColorAttachment, WGPUMAX_COLOR_ATTACHMENTS>
-      colorDescs = {};
-  desc.color_attachments = colorDescs.data();
-  desc.color_attachments_length = aDesc.mColorAttachments.Length();
+  desc.color_attachments = {colorDescs.Elements(), colorDescs.Length()};
 
-  for (size_t i = 0; i < aDesc.mColorAttachments.Length(); ++i) {
-    const auto& ca = aDesc.mColorAttachments[i];
-    ffi::WGPURenderPassColorAttachment& cd = colorDescs[i];
-    cd.view = ca.mView->mId;
-    cd.channel.store_op = ConvertStoreOp(ca.mStoreOp);
+  if (aDesc.mOcclusionQuerySet.WasPassed()) {
+    desc.occlusion_query_set = aDesc.mOcclusionQuerySet.Value().GetId();
+  }
 
-    if (ca.mResolveTarget.WasPassed()) {
-      cd.resolve_target = ca.mResolveTarget.Value().mId;
-    }
-
-    cd.channel.load_op = ConvertLoadOp(ca.mLoadOp);
-    if (ca.mClearValue.WasPassed()) {
-      cd.channel.clear_value = ConvertColor(ca.mClearValue.Value());
-    }
+  ffi::WGPUPassTimestampWrites passTimestampWrites = {};
+  if (aDesc.mTimestampWrites.WasPassed()) {
+    AssignPassTimestampWrites(aDesc.mTimestampWrites.Value(),
+                              passTimestampWrites);
+    desc.timestamp_writes = &passTimestampWrites;
   }
 
   return ffi::wgpu_command_encoder_begin_render_pass(&desc);
 }
 
-RenderPassEncoder::RenderPassEncoder(CommandEncoder* const aParent,
+RenderPassEncoder::RenderPassEncoder(CommandEncoder* const aParent, RawId aId,
                                      const dom::GPURenderPassDescriptor& aDesc)
-    : ChildOf(aParent), mPass(BeginRenderPass(aParent, aDesc)) {
+    : ObjectBase(aParent->GetChild(), aId,
+                 ffi::wgpu_client_drop_render_pass_encoder),
+      ChildOf(aParent),
+      mPass(BeginRenderPass(aParent, aDesc)) {
   mValid = !!mPass;
   if (!mValid) {
     return;
   }
 
-  for (const auto& at : aDesc.mColorAttachments) {
-    mUsedTextureViews.AppendElement(at.mView);
+  // NOTE: We depend on callers ensuring that texture-or-view fields are reified
+  // to views.
+
+  for (const auto& atOrNull : aDesc.mColorAttachments) {
+    if (!atOrNull.IsNull()) {
+      const dom::GPURenderPassColorAttachment& colorAttachment =
+          atOrNull.Value();
+
+      mUsedTextureViews.AppendElement(
+          colorAttachment.mView.GetAsGPUTextureView());
+
+      if (colorAttachment.mResolveTarget.WasPassed()) {
+        mUsedTextureViews.AppendElement(
+            colorAttachment.mResolveTarget.Value().GetAsGPUTextureView());
+      }
+    }
   }
   if (aDesc.mDepthStencilAttachment.WasPassed()) {
     mUsedTextureViews.AppendElement(
-        aDesc.mDepthStencilAttachment.Value().mView);
+        aDesc.mDepthStencilAttachment.Value().mView.GetAsGPUTextureView());
   }
 }
 
-RenderPassEncoder::~RenderPassEncoder() { Cleanup(); }
+RenderPassEncoder::~RenderPassEncoder() = default;
 
-void RenderPassEncoder::Cleanup() {
-  if (mValid) {
-    End();
+void RenderPassEncoder::SetBindGroup(uint32_t aSlot,
+                                     BindGroup* const aBindGroup,
+                                     const uint32_t* aDynamicOffsets,
+                                     size_t aDynamicOffsetsLength) {
+  RawId bindGroup = 0;
+  if (aBindGroup) {
+    mUsedBindGroups.AppendElement(aBindGroup);
+    mUsedCanvasContexts.AppendElements(aBindGroup->GetCanvasContexts());
+    bindGroup = aBindGroup->GetId();
   }
+  ffi::wgpu_recorded_render_pass_set_bind_group(
+      mPass.get(), aSlot, bindGroup, {aDynamicOffsets, aDynamicOffsetsLength});
 }
 
 void RenderPassEncoder::SetBindGroup(
-    uint32_t aSlot, const BindGroup& aBindGroup,
-    const dom::Sequence<uint32_t>& aDynamicOffsets) {
+    uint32_t aSlot, BindGroup* const aBindGroup,
+    const dom::Sequence<uint32_t>& aDynamicOffsets, ErrorResult& aRv) {
   if (!mValid) {
     return;
   }
-  mUsedBindGroups.AppendElement(&aBindGroup);
-  ffi::wgpu_recorded_render_pass_set_bind_group(
-      mPass.get(), aSlot, aBindGroup.mId, aDynamicOffsets.Elements(),
-      aDynamicOffsets.Length());
+  this->SetBindGroup(aSlot, aBindGroup, aDynamicOffsets.Elements(),
+                     aDynamicOffsets.Length());
+}
+
+void RenderPassEncoder::SetBindGroup(
+    uint32_t aSlot, BindGroup* const aBindGroup,
+    const dom::Uint32Array& aDynamicOffsetsData,
+    uint64_t aDynamicOffsetsDataStart, uint64_t aDynamicOffsetsDataLength,
+    ErrorResult& aRv) {
+  if (!mValid) {
+    return;
+  }
+
+  auto dynamicOffsets =
+      GetDynamicOffsetsFromArray(aDynamicOffsetsData, aDynamicOffsetsDataStart,
+                                 aDynamicOffsetsDataLength, aRv);
+
+  if (dynamicOffsets.isSome()) {
+    this->SetBindGroup(aSlot, aBindGroup, dynamicOffsets->Elements(),
+                       dynamicOffsets->Length());
+  }
 }
 
 void RenderPassEncoder::SetPipeline(const RenderPipeline& aPipeline) {
@@ -196,12 +314,13 @@ void RenderPassEncoder::SetPipeline(const RenderPipeline& aPipeline) {
     return;
   }
   mUsedPipelines.AppendElement(&aPipeline);
-  ffi::wgpu_recorded_render_pass_set_pipeline(mPass.get(), aPipeline.mId);
+  ffi::wgpu_recorded_render_pass_set_pipeline(mPass.get(), aPipeline.GetId());
 }
 
 void RenderPassEncoder::SetIndexBuffer(const Buffer& aBuffer,
                                        const dom::GPUIndexFormat& aIndexFormat,
-                                       uint64_t aOffset, uint64_t aSize) {
+                                       uint64_t aOffset,
+                                       const dom::Optional<uint64_t>& aSize) {
   if (!mValid) {
     return;
   }
@@ -209,18 +328,26 @@ void RenderPassEncoder::SetIndexBuffer(const Buffer& aBuffer,
   const auto iformat = aIndexFormat == dom::GPUIndexFormat::Uint32
                            ? ffi::WGPUIndexFormat_Uint32
                            : ffi::WGPUIndexFormat_Uint16;
-  ffi::wgpu_recorded_render_pass_set_index_buffer(mPass.get(), aBuffer.mId,
-                                                  iformat, aOffset, aSize);
+  const uint64_t* sizeRef = aSize.WasPassed() ? &aSize.Value() : nullptr;
+  ffi::wgpu_recorded_render_pass_set_index_buffer(mPass.get(), aBuffer.GetId(),
+                                                  iformat, aOffset, sizeRef);
 }
 
-void RenderPassEncoder::SetVertexBuffer(uint32_t aSlot, const Buffer& aBuffer,
-                                        uint64_t aOffset, uint64_t aSize) {
+void RenderPassEncoder::SetVertexBuffer(uint32_t aSlot,
+                                        const Buffer* const aBuffer,
+                                        uint64_t aOffset,
+                                        const dom::Optional<uint64_t>& aSize) {
   if (!mValid) {
     return;
   }
-  mUsedBuffers.AppendElement(&aBuffer);
-  ffi::wgpu_recorded_render_pass_set_vertex_buffer(mPass.get(), aSlot,
-                                                   aBuffer.mId, aOffset, aSize);
+  RawId bufferId = 0;
+  if (aBuffer) {
+    mUsedBuffers.AppendElement(aBuffer);
+    bufferId = aBuffer->GetId();
+  }
+  const uint64_t* sizeRef = aSize.WasPassed() ? &aSize.Value() : nullptr;
+  ffi::wgpu_recorded_render_pass_set_vertex_buffer(mPass.get(), aSlot, bufferId,
+                                                   aOffset, sizeRef);
 }
 
 void RenderPassEncoder::Draw(uint32_t aVertexCount, uint32_t aInstanceCount,
@@ -249,8 +376,9 @@ void RenderPassEncoder::DrawIndirect(const Buffer& aIndirectBuffer,
   if (!mValid) {
     return;
   }
-  ffi::wgpu_recorded_render_pass_draw_indirect(mPass.get(), aIndirectBuffer.mId,
-                                               aIndirectOffset);
+  mUsedBuffers.AppendElement(&aIndirectBuffer);
+  ffi::wgpu_recorded_render_pass_draw_indirect(
+      mPass.get(), aIndirectBuffer.GetId(), aIndirectOffset);
 }
 
 void RenderPassEncoder::DrawIndexedIndirect(const Buffer& aIndirectBuffer,
@@ -258,8 +386,9 @@ void RenderPassEncoder::DrawIndexedIndirect(const Buffer& aIndirectBuffer,
   if (!mValid) {
     return;
   }
+  mUsedBuffers.AppendElement(&aIndirectBuffer);
   ffi::wgpu_recorded_render_pass_draw_indexed_indirect(
-      mPass.get(), aIndirectBuffer.mId, aIndirectOffset);
+      mPass.get(), aIndirectBuffer.GetId(), aIndirectOffset);
 }
 
 void RenderPassEncoder::SetViewport(float x, float y, float width, float height,
@@ -296,6 +425,21 @@ void RenderPassEncoder::SetStencilReference(uint32_t reference) {
   ffi::wgpu_recorded_render_pass_set_stencil_reference(mPass.get(), reference);
 }
 
+void RenderPassEncoder::BeginOcclusionQuery(uint32_t aQueryIndex) {
+  if (!mValid) {
+    return;
+  }
+  ffi::wgpu_recorded_render_pass_begin_occlusion_query(mPass.get(),
+                                                       aQueryIndex);
+}
+
+void RenderPassEncoder::EndOcclusionQuery() {
+  if (!mValid) {
+    return;
+  }
+  ffi::wgpu_recorded_render_pass_end_occlusion_query(mPass.get());
+}
+
 void RenderPassEncoder::ExecuteBundles(
     const dom::Sequence<OwningNonNull<RenderBundle>>& aBundles) {
   if (!mValid) {
@@ -304,10 +448,11 @@ void RenderPassEncoder::ExecuteBundles(
   nsTArray<ffi::WGPURenderBundleId> renderBundles(aBundles.Length());
   for (const auto& bundle : aBundles) {
     mUsedRenderBundles.AppendElement(bundle);
-    renderBundles.AppendElement(bundle->mId);
+    mUsedCanvasContexts.AppendElements(bundle->GetCanvasContexts());
+    renderBundles.AppendElement(bundle->GetId());
   }
   ffi::wgpu_recorded_render_pass_execute_bundles(
-      mPass.get(), renderBundles.Elements(), renderBundles.Length());
+      mPass.get(), {renderBundles.Elements(), renderBundles.Length()});
 }
 
 void RenderPassEncoder::PushDebugGroup(const nsAString& aString) {
@@ -333,12 +478,28 @@ void RenderPassEncoder::InsertDebugMarker(const nsAString& aString) {
 }
 
 void RenderPassEncoder::End() {
-  if (mValid) {
-    mValid = false;
-    auto* pass = mPass.release();
-    MOZ_ASSERT(pass);
-    mParent->EndRenderPass(*pass);
+  if (mParent->GetState() != CommandEncoderState::Locked) {
+    const auto* message = "Encoding must not have ended";
+    ffi::wgpu_report_validation_error(GetClient(),
+                                      mParent->GetDevice()->GetId(), message);
   }
+  if (!mValid) {
+    return;
+  }
+  nsTArray<RefPtr<ExternalTexture>> externalTextures;
+  for (const auto& bindGroup : mUsedBindGroups) {
+    externalTextures.AppendElements(bindGroup->GetExternalTextures());
+  }
+  MOZ_ASSERT(!!mPass);
+  mParent->EndRenderPass(*mPass, mUsedCanvasContexts, externalTextures);
+
+  mValid = false;
+  mPass.release();
+  mUsedBindGroups.Clear();
+  mUsedBuffers.Clear();
+  mUsedPipelines.Clear();
+  mUsedTextureViews.Clear();
+  mUsedRenderBundles.Clear();
 }
 
 }  // namespace mozilla::webgpu

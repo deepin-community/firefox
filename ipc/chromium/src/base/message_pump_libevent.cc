@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 // Copyright (c) 2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -260,76 +258,6 @@ void MessagePumpLibevent::OnLibeventNotification(int fd, short flags,
   if (flags & EV_READ) {
     watcher->OnFileCanReadWithoutBlocking(fd);
   }
-}
-
-MessagePumpLibevent::SignalEvent::SignalEvent() : event_(NULL) {}
-
-MessagePumpLibevent::SignalEvent::~SignalEvent() {
-  if (event_) {
-    StopCatching();
-  }
-}
-
-void MessagePumpLibevent::SignalEvent::Init(event* e) {
-  DCHECK(e);
-  DCHECK(event_ == NULL);
-  event_ = e;
-}
-
-bool MessagePumpLibevent::SignalEvent::StopCatching() {
-  // XXX/cjones: this code could be shared with
-  // FileDescriptorWatcher. ironic that libevent is "more"
-  // object-oriented than this C++
-  event* e = ReleaseEvent();
-  if (e == NULL) return true;
-
-  // event_del() is a no-op if the event isn't active.
-  int rv = event_del(e);
-  delete e;
-  return (rv == 0);
-}
-
-event* MessagePumpLibevent::SignalEvent::ReleaseEvent() {
-  event* e = event_;
-  event_ = NULL;
-  return e;
-}
-
-bool MessagePumpLibevent::CatchSignal(int sig, SignalEvent* sigevent,
-                                      SignalWatcher* delegate) {
-  DCHECK(sig > 0);
-  DCHECK(sigevent);
-  DCHECK(delegate);
-  // TODO if we want to support re-using SignalEvents, this code needs
-  // to jump through the same hoops as WatchFileDescriptor().  Not
-  // needed at present
-  DCHECK(NULL == sigevent->event_);
-
-  mozilla::UniquePtr<event> evt = mozilla::MakeUnique<event>();
-  signal_set(evt.get(), sig, OnLibeventSignalNotification, delegate);
-
-  if (event_base_set(event_base_, evt.get())) return false;
-
-  if (signal_add(evt.get(), NULL)) return false;
-
-  // Transfer ownership of evt to controller.
-  sigevent->Init(evt.release());
-  return true;
-}
-
-void MessagePumpLibevent::OnLibeventSignalNotification(int sig, short flags,
-                                                       void* context) {
-  if (!awake_) {
-    profiler_thread_wake();
-    awake_ = true;
-  }
-  AUTO_PROFILER_LABEL("MessagePumpLibevent::OnLibeventSignalNotification",
-                      OTHER);
-
-  DCHECK(sig > 0);
-  DCHECK(EV_SIGNAL == flags);
-  DCHECK(context);
-  reinterpret_cast<SignalWatcher*>(context)->OnSignal(sig);
 }
 
 // Reentrant!

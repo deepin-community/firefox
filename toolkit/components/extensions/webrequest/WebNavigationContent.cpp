@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,7 +15,6 @@
 #include "mozilla/extensions/ExtensionsChild.h"
 #include "mozilla/EventListenerManager.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/Services.h"
 #include "mozilla/Try.h"
 #include "nsCRT.h"
@@ -134,7 +132,7 @@ FrameTransitionData WebNavigationContent::GetFrameTransitionData(
   FrameTransitionData result;
 
   uint32_t loadType = 0;
-  Unused << aWebProgress->GetLoadType(&loadType);
+  (void)aWebProgress->GetLoadType(&loadType);
 
   if (loadType & nsIDocShell::LOAD_CMD_HISTORY) {
     result.forwardBack() = true;
@@ -178,7 +176,7 @@ nsresult WebNavigationContent::OnCreatedNavigationTargetFromJS(
   dom::BrowsingContext* sourceBC = sourceDocShell->GetBrowsingContext();
   if (createdBC->IsContent() && sourceBC->IsContent()) {
     nsCString url;
-    Unused << aProps->GetPropertyAsACString(u"url"_ns, url);
+    (void)aProps->GetPropertyAsACString(u"url"_ns, url);
 
     ExtensionsChild::Get().SendCreatedNavigationTarget(createdBC, sourceBC,
                                                        url);
@@ -197,14 +195,14 @@ WebNavigationContent::OnStateChange(nsIWebProgress* aWebProgress,
   nsCOMPtr<nsIURI> uri;
   MOZ_TRY(channel->GetURI(getter_AddRefs(uri)));
 
-  // Prevents "about", "chrome", "resource" and "moz-extension" URI schemes to
-  // be reported with the resolved "file" or "jar" URIs (see bug 1246125)
+  // Prevent "about", "chrome", "resource", "moz-src", and "moz-extension" URIs
+  // being reported with the resolved "file" or "jar" URIs (see bug 1246125).
   if (uri->SchemeIs("file") || uri->SchemeIs("jar")) {
     nsCOMPtr<nsIURI> originalURI;
     MOZ_TRY(channel->GetOriginalURI(getter_AddRefs(originalURI)));
     // FIXME: We probably actually want NS_GetFinalChannelURI here.
     if (originalURI->SchemeIs("about") || originalURI->SchemeIs("chrome") ||
-        originalURI->SchemeIs("resource") ||
+        originalURI->SchemeIs("resource") || originalURI->SchemeIs("moz-src") ||
         originalURI->SchemeIs("moz-extension")) {
       uri = originalURI.forget();
     }

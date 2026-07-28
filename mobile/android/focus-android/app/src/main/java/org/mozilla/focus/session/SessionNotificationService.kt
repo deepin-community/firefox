@@ -4,6 +4,7 @@
 
 package org.mozilla.focus.session
 
+import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -16,6 +17,7 @@ import android.os.IBinder
 import android.os.RemoteException
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.utils.ThreadUtils
 import mozilla.components.support.utils.ext.stopForegroundCompat
@@ -25,7 +27,21 @@ import org.mozilla.focus.GleanMetrics.RecentApps
 import org.mozilla.focus.R
 import org.mozilla.focus.activity.MainActivity
 import org.mozilla.focus.ext.components
-import org.mozilla.focus.utils.IntentUtils
+import java.lang.ref.WeakReference
+import mozilla.components.ui.icons.R as iconsR
+
+/**
+ * Custom exception class for handling errors related to the SessionNotificationService.
+ *
+ * @param message The detail message string.
+ * @param cause The cause of the exception.
+ * @param extraInfo Additional information about the context or error.
+ */
+class SessionNotificationServiceException(
+    message: String,
+    cause: Throwable,
+    extraInfo: String,
+) : Exception("$message; importance:$extraInfo", cause)
 
 /**
  * As long as a session is active this service will keep the notification (and our process) alive.
@@ -35,7 +51,7 @@ class SessionNotificationService : Service() {
     private var shouldSendTaskRemovedTelemetry = true
 
     private val notificationManager: NotificationManager by lazy {
-        applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        applicationContext.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -57,10 +73,10 @@ class SessionNotificationService : Service() {
                     }
 
                 if (areNotificationsEnabled) {
-                    createNotificationChannelIfNeeded()
+                    createNotificationChannel()
                     startForeground(NOTIFICATION_ID, buildNotification())
                 } else {
-                    permissionHandler?.invoke()
+                    permissionHandler.get()?.invoke()
                 }
             }
 
@@ -102,15 +118,15 @@ class SessionNotificationService : Service() {
     private fun buildNotification(): Notification {
         val eraseIntent = createEraseIntent()
         val contentTitle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            getString(R.string.notification_erase_title_android_14)
+            applicationContext.getString(R.string.notification_erase_title_android_14)
         } else {
             getString(R.string.app_name)
         }
 
         val contentText = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            getString(R.string.notification_erase_text_android_14_1)
+            applicationContext.getString(R.string.notification_erase_text_android_14_1)
         } else {
-            getString(R.string.notification_erase_text)
+            applicationContext.getString(R.string.notification_erase_text)
         }
 
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
@@ -126,14 +142,14 @@ class SessionNotificationService : Service() {
             .addAction(
                 NotificationCompat.Action(
                     R.drawable.ic_notification,
-                    getString(R.string.notification_action_open),
+                    applicationContext.getString(R.string.notification_action_open),
                     createOpenActionIntent(),
                 ),
             )
             .addAction(
                 NotificationCompat.Action(
-                    R.drawable.mozac_ic_delete_24,
-                    getString(R.string.notification_action_erase_and_open),
+                    iconsR.drawable.mozac_ic_delete_24,
+                    applicationContext.getString(R.string.notification_action_erase_and_open),
                     createOpenAndEraseActionIntent(),
                 ),
             )
@@ -147,7 +163,7 @@ class SessionNotificationService : Service() {
 
     private fun createEraseIntent(): PendingIntent {
         val notificationIntentFlags =
-            IntentUtils.defaultIntentPendingFlags() or PendingIntent.FLAG_ONE_SHOT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
         val intent = Intent(this, SessionNotificationService::class.java)
         intent.action = ACTION_ERASE
 
@@ -156,7 +172,7 @@ class SessionNotificationService : Service() {
 
     private fun createOpenActionIntent(): PendingIntent {
         val openActionIntentFlags =
-            IntentUtils.defaultIntentPendingFlags() or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         val intent = Intent(this, MainActivity::class.java)
         intent.action = MainActivity.ACTION_OPEN
 
@@ -165,7 +181,7 @@ class SessionNotificationService : Service() {
 
     private fun createOpenAndEraseActionIntent(): PendingIntent {
         val openAndEraseActionIntentFlags =
-            IntentUtils.defaultIntentPendingFlags() or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         val intent = Intent(this, MainActivity::class.java)
 
         intent.action = MainActivity.ACTION_ERASE
@@ -175,14 +191,9 @@ class SessionNotificationService : Service() {
         return PendingIntent.getActivity(this, 2, intent, openAndEraseActionIntentFlags)
     }
 
-    private fun createNotificationChannelIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            // Notification channels are only available on Android O or higher.
-            return
-        }
-
-        val notificationChannelName = getString(R.string.notification_browsing_session_channel_name)
-        val notificationChannelDescription = getString(
+    private fun createNotificationChannel() {
+        val notificationChannelName = applicationContext.getString(R.string.notification_browsing_session_channel_name)
+        val notificationChannelDescription = applicationContext.getString(
             R.string.notification_browsing_session_channel_description,
             getString(R.string.app_name),
         )
@@ -206,24 +217,42 @@ class SessionNotificationService : Service() {
     }
 
     companion object {
-        private var permissionHandler: (() -> Unit)? = null
+        private var permissionHandler: WeakReference<(() -> Unit)?> = WeakReference(null)
         private const val NOTIFICATION_ID = 83
         private const val NOTIFICATION_CHANNEL_ID = "browsing-session"
 
         private const val ACTION_START = "start"
         private const val ACTION_ERASE = "erase"
 
-        internal fun start(context: Context, permissionHandler: (() -> Unit)) {
+        internal fun start(
+            context: Context,
+            permissionHandler: (() -> Unit),
+            crashReporter: CrashReporting,
+        ) {
             val intent = Intent(context, SessionNotificationService::class.java)
             intent.action = ACTION_START
-            this.permissionHandler = permissionHandler
+            this.permissionHandler = WeakReference(permissionHandler)
 
             // For #2901: The application is crashing due to the service not calling `startForeground`
             // before it times out. so this is a speculative fix to decrease the time between these two
             // calls by running this after potentially expensive calls in FocusApplication.onCreate and
             // BrowserFragment.inflateView by posting it to the end of the main thread.
             ThreadUtils.postToMainThread {
-                context.startService(intent)
+                @Suppress("TooGenericExceptionCaught")
+                try {
+                    ThreadUtils.postToMainThread {
+                        context.startService(intent)
+                    }
+                } catch (e: Exception) {
+                    val extraInfo = getImportanceInfo()
+                    val sessionNotificationServiceException =
+                        SessionNotificationServiceException(
+                            "Failed to start SessionNotificationService",
+                            e,
+                            extraInfo,
+                        )
+                    crashReporter.submitCaughtException(sessionNotificationServiceException)
+                }
             }
         }
 
@@ -234,6 +263,21 @@ class SessionNotificationService : Service() {
             // putting these actions on the same sequential run queue.
             ThreadUtils.postToMainThread {
                 context.stopService(intent)
+            }
+        }
+
+        internal fun getImportanceInfo(): String {
+            val appProcessInfo = ActivityManager.RunningAppProcessInfo()
+            ActivityManager.getMyMemoryState(appProcessInfo)
+
+            return when (appProcessInfo.importance) {
+                ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND -> "Foreground"
+                ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE -> "Foreground Service"
+                ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE -> "Visible"
+                ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE -> "Service"
+                ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED -> "Cached"
+                ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE -> "Gone"
+                else -> "Unknown"
             }
         }
     }

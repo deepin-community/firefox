@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +9,7 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "EXIF.h"
 #include "gfxColor.h"
 #include "gfxPlatform.h"
 #include "imgFrame.h"
@@ -22,7 +22,6 @@
 #include "SurfaceCache.h"
 #include "SurfacePipeFactory.h"
 #include "mozilla/DebugOnly.h"
-#include "mozilla/Telemetry.h"
 
 using namespace mozilla::gfx;
 
@@ -130,12 +129,17 @@ nsPNGDecoder::~nsPNGDecoder() {
 }
 
 nsPNGDecoder::TransparencyType nsPNGDecoder::GetTransparencyType(
-    const OrientedIntRect& aFrameRect) {
+    const UnorientedIntRect& aFrameRect) {
+  MOZ_ASSERT(GetOrientation().IsIdentity() || !HasAnimation(),
+             "can't be oriented and have animation");
+
   // Check if the image has a transparent color in its palette.
   if (HasAlphaChannel()) {
     return TransparencyType::eAlpha;
   }
-  if (!aFrameRect.IsEqualEdges(FullFrame())) {
+  if (!aFrameRect.IsEqualEdges(
+          UnorientedIntRect(IntPointTyped<mozilla::UnorientedPixel>(0, 0),
+                            GetOrientation().ToUnoriented(Size())))) {
     MOZ_ASSERT(HasAnimation());
     return TransparencyType::eFrameRect;
   }
@@ -184,7 +188,8 @@ nsresult nsPNGDecoder::CreateFrame(const FrameInfo& aFrameInfo) {
 
   Maybe<AnimationParams> animParams;
 #ifdef PNG_APNG_SUPPORTED
-  if (!IsFirstFrameDecode() && png_get_valid(mPNG, mInfo, PNG_INFO_acTL)) {
+  const bool isAnimated = png_get_valid(mPNG, mInfo, PNG_INFO_acTL);
+  if (!IsFirstFrameDecode() && isAnimated) {
     mAnimInfo = AnimFrameInfo(mPNG, mInfo);
 
     if (mAnimInfo.mDispose == DisposalMethod::CLEAR) {
@@ -200,15 +205,44 @@ nsresult nsPNGDecoder::CreateFrame(const FrameInfo& aFrameInfo) {
   }
 #endif
 
-  // If this image is interlaced, we can display better quality intermediate
-  // results to the user by post processing them with ADAM7InterpolatingFilter.
-  SurfacePipeFlags pipeFlags = aFrameInfo.mIsInterlaced
-                                   ? SurfacePipeFlags::ADAM7_INTERPOLATE
-                                   : SurfacePipeFlags();
+  MOZ_ASSERT(GetOrientation().IsIdentity() || !animParams.isSome(),
+             "can't be oriented and have animation");
+  MOZ_ASSERT(GetOrientation().IsIdentity() || !aFrameInfo.mIsInterlaced,
+             "can't be oriented and be doing interlacing");
 
-  if (mNumFrames == 0) {
-    // The first frame may be displayed progressively.
-    pipeFlags |= SurfacePipeFlags::PROGRESSIVE_DISPLAY;
+  const bool wantToReorient = !GetOrientation().IsIdentity();
+
+#ifdef DEBUG
+  const bool isFullFrame = aFrameInfo.mFrameRect.IsEqualEdges(
+      UnorientedIntRect(IntPointTyped<mozilla::UnorientedPixel>(0, 0),
+                        GetOrientation().ToUnoriented(Size())));
+#  ifdef PNG_APNG_SUPPORTED
+  MOZ_ASSERT(isAnimated || isFullFrame,
+             "can only have partial frames if animated");
+#  endif
+  MOZ_ASSERT(!wantToReorient || isFullFrame,
+             "can only have partial frames if not re-orienting");
+#endif
+
+  SurfacePipeFlags pipeFlags = SurfacePipeFlags();
+
+  // We disable progressive display if we are reoriented because we don't
+  // support that yet in the reorienting pipeline. And the Adam7 flag doesn't do
+  // anything unless the progressive display flag is passed, so we've already
+  // disabled interlacing by the time we get here if we are reorienting (but we
+  // check again for symmetry).
+  if (!wantToReorient) {
+    if (mNumFrames == 0) {
+      // The first frame may be displayed progressively.
+      pipeFlags |= SurfacePipeFlags::PROGRESSIVE_DISPLAY;
+    }
+
+    if (aFrameInfo.mIsInterlaced) {
+      // If this image is interlaced, we can display better quality intermediate
+      // results to the user by post processing them with
+      // ADAM7InterpolatingFilter.
+      pipeFlags |= SurfacePipeFlags::ADAM7_INTERPOLATE;
+    }
   }
 
   SurfaceFormat inFormat;
@@ -231,9 +265,19 @@ nsresult nsPNGDecoder::CreateFrame(const FrameInfo& aFrameInfo) {
   }
 
   qcms_transform* pipeTransform = mUsePipeTransform ? mTransform : nullptr;
-  Maybe<SurfacePipe> pipe = SurfacePipeFactory::CreateSurfacePipe(
-      this, Size(), OutputSize(), aFrameInfo.mFrameRect, inFormat, mFormat,
-      animParams, pipeTransform, pipeFlags);
+  Maybe<SurfacePipe> pipe;
+  if (!wantToReorient) {
+    // If we get here then the orientation is the identity, so it is valid to
+    // convert mFrameRect directly from Unoriented to Oriented.
+    pipe = SurfacePipeFactory::CreateSurfacePipe(
+        this, Size(), OutputSize(),
+        OrientedIntRect::FromUnknownRect(aFrameInfo.mFrameRect.ToUnknownRect()),
+        inFormat, mFormat, animParams, pipeTransform, pipeFlags);
+  } else {
+    pipe = SurfacePipeFactory::CreateReorientSurfacePipe(
+        this, Size(), OutputSize(), inFormat, mFormat, pipeTransform,
+        GetOrientation(), pipeFlags);
+  }
 
   if (!pipe) {
     mPipe = SurfacePipe();
@@ -276,7 +320,6 @@ nsresult nsPNGDecoder::InitInternal() {
   static png_byte color_chunks[] = {99,  72, 82, 77, '\0',     // cHRM
                                     105, 67, 67, 80, '\0'};    // iCCP
   static png_byte unused_chunks[] = {98,  75, 71, 68,  '\0',   // bKGD
-                                     101, 88, 73, 102, '\0',   // eXIf
                                      104, 73, 83, 84,  '\0',   // hIST
                                      105, 84, 88, 116, '\0',   // iTXt
                                      111, 70, 70, 115, '\0',   // oFFs
@@ -357,7 +400,7 @@ LexerResult nsPNGDecoder::DoDecode(SourceBufferIterator& aIterator,
   MOZ_ASSERT(!HasError(), "Shouldn't call DoDecode after error!");
 
   return mLexer.Lex(aIterator, aOnResume,
-                    [=](State aState, const char* aData, size_t aLength) {
+                    [this](State aState, const char* aData, size_t aLength) {
                       switch (aState) {
                         case State::PNG_DATA:
                           return ReadPNGData(aData, aLength);
@@ -431,7 +474,31 @@ static void PNGDoGammaCorrection(png_structp png_ptr, png_infop info_ptr) {
 // Adapted from http://www.littlecms.com/pngchrm.c example code
 uint32_t nsPNGDecoder::ReadColorProfile(png_structp png_ptr, png_infop info_ptr,
                                         int color_type, bool* sRGBTag) {
-  // First try to see if iCCP chunk is present
+  // Check if cICP chunk is present
+  if (png_get_valid(png_ptr, info_ptr, PNG_INFO_cICP)) {
+    png_byte primaries;
+    png_byte tc;
+    png_byte matrix_coefficients;
+    png_byte range;
+    if (png_get_cICP(png_ptr, info_ptr, &primaries, &tc, &matrix_coefficients,
+                     &range)) {
+      if (matrix_coefficients == 0 && range <= 1) {
+        if (range == 0) {
+          MOZ_LOG(sPNGLog, LogLevel::Warning,
+                  ("limited range specified in cicp chunk not properly "
+                   "supported\n"));
+        }
+
+        mInProfile = qcms_profile_create_cicp(
+            primaries, ChooseTransferCharacteristics(tc));
+        if (mInProfile) {
+          return qcms_profile_get_rendering_intent(mInProfile);
+        }
+      }
+    }
+  }
+
+  // Check if iCCP chunk is present
   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_iCCP)) {
     png_uint_32 profileLen;
     png_bytep profileData;
@@ -451,9 +518,7 @@ uint32_t nsPNGDecoder::ReadColorProfile(png_structp png_ptr, png_infop info_ptr,
           mismatch = true;
         }
       } else {
-        if (profileSpace == icSigRgbData) {
-          png_set_gray_to_rgb(png_ptr);
-        } else if (profileSpace != icSigGrayData) {
+        if (profileSpace != icSigRgbData && profileSpace != icSigGrayData) {
           mismatch = true;
         }
       }
@@ -472,7 +537,6 @@ uint32_t nsPNGDecoder::ReadColorProfile(png_structp png_ptr, png_infop info_ptr,
     *sRGBTag = true;
 
     int fileIntent;
-    png_set_gray_to_rgb(png_ptr);
     png_get_sRGB(png_ptr, info_ptr, &fileIntent);
     uint32_t map[] = {QCMS_INTENT_PERCEPTUAL, QCMS_INTENT_RELATIVE_COLORIMETRIC,
                       QCMS_INTENT_SATURATION,
@@ -497,10 +561,6 @@ uint32_t nsPNGDecoder::ReadColorProfile(png_structp png_ptr, png_infop info_ptr,
 
     mInProfile = qcms_profile_create_rgb_with_gamma(whitePoint, primaries,
                                                     1.0 / gammaOfFile);
-
-    if (mInProfile) {
-      png_set_gray_to_rgb(png_ptr);
-    }
   }
 
   return QCMS_INTENT_PERCEPTUAL;  // Our default
@@ -529,14 +589,38 @@ void nsPNGDecoder::info_callback(png_structp png_ptr, png_infop info_ptr) {
   png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
                &interlace_type, &compression_type, &filter_type);
 
-  const OrientedIntRect frameRect(0, 0, width, height);
+#ifdef PNG_APNG_SUPPORTED
+  const bool isAnimated = png_get_valid(png_ptr, info_ptr, PNG_INFO_acTL);
+#endif
 
-  // Post our size to the superclass
-  decoder->PostSize(frameRect.Width(), frameRect.Height());
+  // We only support exif orientation for non-animated images.
+  png_uint_32 num_exif_bytes = 0;
+  png_bytep exifdata = nullptr;
+  if (
+#ifdef PNG_APNG_SUPPORTED
+      !isAnimated &&
+#endif
+      png_get_eXIf_1(png_ptr, info_ptr, &num_exif_bytes, &exifdata) &&
+      num_exif_bytes > 0 && exifdata) {
+
+    EXIFData exif = EXIFParser::Parse(/* aExpectExifIdCode = */ false, exifdata,
+                                      static_cast<uint32_t>(num_exif_bytes),
+                                      gfx::IntSize(width, height));
+    decoder->PostSize(width, height, exif.orientation, exif.resolution);
+  } else {
+    decoder->PostSize(width, height);
+  }
+
+  const UnorientedIntRect frameRect(0, 0, width, height);
 
   if (width > SurfaceCache::MaximumCapacity() / (bit_depth > 8 ? 16 : 8)) {
     // libpng needs space to allocate two row buffers
     png_error(decoder->mPNG, "Image is too wide");
+  }
+
+  auto imageSize = CheckedInt<int32_t>(width) * height * 4;
+  if (!imageSize.isValid()) {
+    png_error(decoder->mPNG, "Image is too big");
   }
 
   if (decoder->HasError()) {
@@ -555,22 +639,6 @@ void nsPNGDecoder::info_callback(png_structp png_ptr, png_infop info_ptr) {
   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
     png_color_16p trans_values;
     png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, &trans_values);
-    // libpng doesn't reject a tRNS chunk with out-of-range samples
-    // so we check it here to avoid setting up a useless opacity
-    // channel or producing unexpected transparent pixels (bug #428045)
-    if (bit_depth < 16) {
-      png_uint_16 sample_max = (1 << bit_depth) - 1;
-      if ((color_type == PNG_COLOR_TYPE_GRAY &&
-           trans_values->gray > sample_max) ||
-          (color_type == PNG_COLOR_TYPE_RGB &&
-           (trans_values->red > sample_max ||
-            trans_values->green > sample_max ||
-            trans_values->blue > sample_max))) {
-        // clear the tRNS valid flag and release tRNS memory
-        png_free_data(png_ptr, info_ptr, PNG_FREE_TRNS, 0);
-        num_trans = 0;
-      }
-    }
     if (num_trans != 0) {
       png_set_expand(png_ptr);
     }
@@ -583,9 +651,9 @@ void nsPNGDecoder::info_callback(png_structp png_ptr, png_infop info_ptr) {
   // We only need to extract the color profile for non-metadata decodes. It is
   // fairly expensive to read the profile and create the transform so we should
   // avoid it if not necessary.
-  uint32_t intent = -1;
-  bool sRGBTag = false;
   if (!decoder->IsMetadataDecode()) {
+    uint32_t intent = -1;
+    bool sRGBTag = false;
     if (decoder->mCMSMode != CMSMode::Off) {
       intent = gfxPlatform::GetRenderingIntent();
       uint32_t pIntent =
@@ -594,19 +662,81 @@ void nsPNGDecoder::info_callback(png_structp png_ptr, png_infop info_ptr) {
       if (intent == uint32_t(-1)) {
         intent = pIntent;
       }
-    }
-    if (!decoder->mInProfile || !decoder->GetCMSOutputProfile()) {
-      png_set_gray_to_rgb(png_ptr);
 
-      // only do gamma correction if CMS isn't entirely disabled
-      if (decoder->mCMSMode != CMSMode::Off) {
-        PNGDoGammaCorrection(png_ptr, info_ptr);
+      // png_get_channels won't return accurate info for determining the alpha
+      // status until after we call png_read_update_info below so we use this
+      // method of determining if we will have alpha so that we can select the
+      // correct qcms input type here.
+      const bool willHaveAlpha =
+          (color_type & PNG_COLOR_MASK_ALPHA) || num_trans != 0;
+
+      // Determine the qcms transform here, before png_read_update_info commits
+      // libpng to a specific output format. For gray images the presence or
+      // absence of a qcms transform determines if we want libpng to output
+      // gray data (we call qcms to transform it to rgb before passing it to
+      // the surface pipe), or rgb data (no qcms transform so we need rgb data
+      // to pass directly into the surface pipe).
+      if (decoder->mInProfile && decoder->GetCMSOutputProfile()) {
+        uint32_t profileSpace =
+            qcms_profile_get_color_space(decoder->mInProfile);
+        decoder->mUsePipeTransform = profileSpace != icSigGrayData;
+
+        qcms_data_type inType, outType;
+        if (decoder->mUsePipeTransform) {
+          // libpng outputs data in RGBA order and we want our final output to
+          // be BGRA order. SurfacePipe takes care of this for us but
+          // unfortunately the swizzle to change the order can happen before or
+          // after color management depending on if we have alpha. If we have
+          // alpha then the order will be color management then swizzle. If we
+          // do not have alpha then the order will be swizzle then color
+          // management. See CreateSurfacePipe
+          // https://searchfox.org/mozilla-central/rev/7d6651d29c5c1620bc059f879a3e9bbfb53f271f/image/SurfacePipeFactory.h#133-145
+          if (willHaveAlpha) {
+            inType = QCMS_DATA_RGBA_8;
+            outType = QCMS_DATA_RGBA_8;
+          } else {
+            inType = gfxPlatform::GetCMSOSRGBAType();
+            outType = inType;
+          }
+        } else {
+          // qcms operates on the data before we hand it to SurfacePipe.
+          inType = willHaveAlpha ? QCMS_DATA_GRAYA_8 : QCMS_DATA_GRAY_8;
+          outType = gfxPlatform::GetCMSOSRGBAType();
+        }
+        decoder->mTransform = qcms_transform_create(
+            decoder->mInProfile, inType, decoder->GetCMSOutputProfile(),
+            outType, (qcms_intent)intent);
+      } else if ((sRGBTag && decoder->mCMSMode == CMSMode::TaggedOnly) ||
+                 decoder->mCMSMode == CMSMode::All) {
+        // See comment above about SurfacePipe, color management and ordering.
+        decoder->mUsePipeTransform = true;
+        if (willHaveAlpha) {
+          decoder->mTransform =
+              decoder->GetCMSsRGBTransform(SurfaceFormat::R8G8B8A8);
+        } else {
+          decoder->mTransform =
+              decoder->GetCMSsRGBTransform(SurfaceFormat::OS_RGBA);
+        }
       }
+    }
+
+    // Expand gray to RGB unless we will pass the data to qcms to handle it via
+    // a non-pipe transform.
+    if (!decoder->mTransform || decoder->mUsePipeTransform) {
+      png_set_gray_to_rgb(png_ptr);
+    }
+
+    // Only apply libpng gamma correction when there is no qcms transform to
+    // handle it, and CMS is not entirely disabled.
+    if (!decoder->mTransform && decoder->mCMSMode != CMSMode::Off) {
+      PNGDoGammaCorrection(png_ptr, info_ptr);
     }
   }
 
   // Let libpng expand interlaced images.
-  const bool isInterlaced = interlace_type == PNG_INTERLACE_ADAM7;
+  // We only support interlacing for images that aren't rotated with exif data.
+  const bool isInterlaced = (interlace_type == PNG_INTERLACE_ADAM7) &&
+                            decoder->GetOrientation().IsIdentity();
   if (isInterlaced) {
     png_set_interlace_handling(png_ptr);
   }
@@ -625,7 +755,6 @@ void nsPNGDecoder::info_callback(png_structp png_ptr, png_infop info_ptr) {
   }
 
 #ifdef PNG_APNG_SUPPORTED
-  bool isAnimated = png_get_valid(png_ptr, info_ptr, PNG_INFO_acTL);
   if (isAnimated) {
     int32_t rawTimeout = GetNextFrameDelay(png_ptr, info_ptr);
     decoder->PostIsAnimated(FrameTimeout::FromRawMilliseconds(rawTimeout));
@@ -640,7 +769,6 @@ void nsPNGDecoder::info_callback(png_structp png_ptr, png_infop info_ptr) {
   }
 #endif
 
-  auto transparency = decoder->GetTransparencyType(frameRect);
   if (decoder->IsMetadataDecode()) {
     // If we are animated then the first frame rect is either:
     // 1) the whole image if the IDAT chunk is part of the animation
@@ -649,58 +777,12 @@ void nsPNGDecoder::info_callback(png_structp png_ptr, png_infop info_ptr) {
     // PostHasTransparency in the metadata decode if we need to. So it's
     // okay to pass IntRect(0, 0, width, height) here for animated images;
     // they will call with the proper first frame rect in the full decode.
-    decoder->PostHasTransparencyIfNeeded(transparency);
+    decoder->PostHasTransparencyIfNeeded(
+        decoder->GetTransparencyType(frameRect));
 
     // We have the metadata we're looking for, so stop here, before we allocate
     // buffers below.
     return decoder->DoTerminate(png_ptr, TerminalState::SUCCESS);
-  }
-
-  if (decoder->mInProfile && decoder->GetCMSOutputProfile()) {
-    qcms_data_type inType;
-    qcms_data_type outType;
-
-    uint32_t profileSpace = qcms_profile_get_color_space(decoder->mInProfile);
-    decoder->mUsePipeTransform = profileSpace != icSigGrayData;
-    if (decoder->mUsePipeTransform) {
-      // If the transform happens with SurfacePipe, it will be in RGBA if we
-      // have an alpha channel, because the swizzle and premultiplication
-      // happens after color management. Otherwise it will be in BGRA because
-      // the swizzle happens at the start.
-      if (transparency == TransparencyType::eAlpha) {
-        inType = QCMS_DATA_RGBA_8;
-        outType = QCMS_DATA_RGBA_8;
-      } else {
-        inType = gfxPlatform::GetCMSOSRGBAType();
-        outType = inType;
-      }
-    } else {
-      if (color_type & PNG_COLOR_MASK_ALPHA) {
-        inType = QCMS_DATA_GRAYA_8;
-        outType = gfxPlatform::GetCMSOSRGBAType();
-      } else {
-        inType = QCMS_DATA_GRAY_8;
-        outType = gfxPlatform::GetCMSOSRGBAType();
-      }
-    }
-
-    decoder->mTransform = qcms_transform_create(decoder->mInProfile, inType,
-                                                decoder->GetCMSOutputProfile(),
-                                                outType, (qcms_intent)intent);
-  } else if ((sRGBTag && decoder->mCMSMode == CMSMode::TaggedOnly) ||
-             decoder->mCMSMode == CMSMode::All) {
-    // If the transform happens with SurfacePipe, it will be in RGBA if we
-    // have an alpha channel, because the swizzle and premultiplication
-    // happens after color management. Otherwise it will be in OS_RGBA because
-    // the swizzle happens at the start.
-    if (transparency == TransparencyType::eAlpha) {
-      decoder->mTransform =
-          decoder->GetCMSsRGBTransform(SurfaceFormat::R8G8B8A8);
-    } else {
-      decoder->mTransform =
-          decoder->GetCMSsRGBTransform(SurfaceFormat::OS_RGBA);
-    }
-    decoder->mUsePipeTransform = true;
   }
 
 #ifdef PNG_APNG_SUPPORTED
@@ -730,17 +812,13 @@ void nsPNGDecoder::info_callback(png_structp png_ptr, png_infop info_ptr) {
     }
   }
 
-  if (interlace_type == PNG_INTERLACE_ADAM7) {
-    if (frameRect.Height() <
-        INT32_MAX / (frameRect.Width() * int32_t(channels))) {
-      const size_t bufferSize =
-          channels * frameRect.Width() * frameRect.Height();
-
-      if (bufferSize > SurfaceCache::MaximumCapacity()) {
-        png_error(decoder->mPNG, "Insufficient memory to deinterlace image");
-      }
-
-      decoder->interlacebuf = static_cast<uint8_t*>(malloc(bufferSize));
+  if (isInterlaced) {
+    auto bufferSize =
+        CheckedInt<int32_t>(frameRect.Width()) * frameRect.Height() * channels;
+    if (bufferSize.isValid() && bufferSize.value() > 0 &&
+        static_cast<size_t>(bufferSize.value()) <=
+            SurfaceCache::MaximumCapacity()) {
+      decoder->interlacebuf = static_cast<uint8_t*>(malloc(bufferSize.value()));
     }
     if (!decoder->interlacebuf) {
       png_error(decoder->mPNG, "malloc of interlacebuf failed");
@@ -941,7 +1019,7 @@ void nsPNGDecoder::frame_info_callback(png_structp png_ptr,
 
   // Save the information necessary to create the frame; we'll actually create
   // it when we return from the yield.
-  const OrientedIntRect frameRect(
+  const UnorientedIntRect frameRect(
       png_get_next_frame_x_offset(png_ptr, decoder->mInfo),
       png_get_next_frame_y_offset(png_ptr, decoder->mInfo),
       png_get_next_frame_width(png_ptr, decoder->mInfo),
@@ -1007,7 +1085,8 @@ void nsPNGDecoder::error_callback(png_structp png_ptr,
   nsPNGDecoder* decoder =
       static_cast<nsPNGDecoder*>(png_get_progressive_ptr(png_ptr));
 
-  if (strstr(error_msg, "invalid chunk type")) {
+  if (strstr(error_msg, "invalid chunk type") ||
+      strstr(error_msg, "bad header (invalid type)")) {
     decoder->mErrorIsRecoverable = true;
   } else {
     decoder->mErrorIsRecoverable = false;
@@ -1021,8 +1100,8 @@ void nsPNGDecoder::warning_callback(png_structp png_ptr,
   MOZ_LOG(sPNGLog, LogLevel::Warning, ("libpng warning: %s\n", warning_msg));
 }
 
-Maybe<Telemetry::HistogramID> nsPNGDecoder::SpeedHistogram() const {
-  return Some(Telemetry::IMAGE_DECODE_SPEED_PNG);
+Maybe<glean::impl::MemoryDistributionMetric> nsPNGDecoder::SpeedMetric() const {
+  return Some(glean::image_decode::speed_png);
 }
 
 bool nsPNGDecoder::IsValidICOResource() const {

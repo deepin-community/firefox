@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = En sona taşı
     .accesskey = s
 fxviewtabrow-move-tab-window = Yeni pencereye taşı
     .accesskey = Y
+fxviewtabrow-send-to-device = Cihaza gönder
+    .accesskey = C
+fxviewtabrow-send-to-mobile = Mobil cihaza gönder
+    .accesskey = c
 fxviewtabrow-send-tab = Sekmeyi cihaza gönder
     .accesskey = c
 fxviewtabrow-pin-tab = Sekmeyi sabitle
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Sekmenin sesini aç
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = { $tabTitle } seçenekleri
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = { $tabTitle } sesini kapat
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = { $tabTitle } sesini aç
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Sekmenin sesini kapat
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Sekmenin sesini aç
+fxviewtabrow-send-to-mobile-connect-device = Sekme göndermek için bir cihaz bağlayın
+fxviewtabrow-send-to-mobile-device-missing2 = Cihazınızı göremiyor musunuz?
+fxviewtabrow-send-to-mobile-not-verified = Hesap doğrulanmamış
+fxviewtabrow-send-to-mobile-verify-account = Hesabınızı doğrulayın
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Sekme göndermek için giriş yapın
+fxviewtabrow-send-to-mobile-turn-on-sync = Sekme göndermek için eşitlemeyi açın

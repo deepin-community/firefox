@@ -3,22 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Parapëlqime
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Rregullime…
 menu-application-services =
     .label = Shërbime
 menu-application-hide-this =
@@ -97,6 +88,9 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Ndajeni me të tjerët
     .accesskey = N
+menu-file-share-qrcode =
+    .label = Prodhoni Kod QR…
+    .accesskey = Q
 menu-file-print-setup =
     .label = Rregullim Faqeje…
     .accesskey = u
@@ -145,8 +139,6 @@ menu-view-history-button =
     .label = Historik
 menu-view-synced-tabs-sidebar =
     .label = Skeda të Njëkohësuara
-menu-view-megalist-sidebar =
-    .label = Fjalëkalime
 menu-view-full-zoom =
     .label = Zmadhim/Zvogëlim
     .accesskey = Z
@@ -254,6 +246,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Faqerojtës Celulari
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profile
+menu-profiles-manage-profiles =
+    .label = Administroni profile
+menu-profiles-new-profile =
+    .label = Profil i ri
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (i tanishmi)
+menu-profiles-menu =
+    .label = Profile
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +270,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Shkarkime
     .accesskey = a
+menu-tools-extensions-and-themes =
+    .label = Zgjerime dhe Tema
+    .accesskey = Z
 menu-tools-addons-and-themes =
     .label = Shtesa dhe Tema
     .accesskey = S
@@ -325,7 +336,7 @@ menu-get-help =
     .label = Merrni Ndihmë
     .accesskey = M
 menu-help-more-troubleshooting-info =
-    .label = Më Tepër të Dhëna Diagnostikimi
+    .label = Më Tepër Hollësi Diagnostikimi
     .accesskey = M
 menu-help-report-site-issue =
     .label = Njoftoni Problem Sajti…

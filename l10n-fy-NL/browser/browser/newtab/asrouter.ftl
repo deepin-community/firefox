@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } brûkers
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Syngronisearje jo blêdwizers oeral.
 cfr-doorhanger-bookmark-fxa-body = Goed fûn! Soargje der no foar dat jo net sûnder blêdwizers sitte op jo mobile apparaten. Start no mei { -fxaccount-brand-name }.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Blêdwizers no syngronisearje…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Knop Slute
     .title = Slute
+fxa-adoption-addresses-backup-title = Litte wy in reservekopy fan jo bewarre adressen meitsje
+fxa-adoption-addresses-backup-subtitle = Beskermje jo bewarre wachtwurden troch se fersifere mei jo apparaten mei te syngronisearjen.
+fxa-adoption-credit-cards-backup-title = Litte wy in reservekopy fan jo betelmetoaden meitsje
+fxa-adoption-credit-cards-backup-subtitle = Beskermje jo betellingsmetoaden troch se fersifere mei jo apparaten mei te syngronisearjen.
+fxa-adoption-bookmarks-treatment-backup-title = Litte wy in reservekopy fan jo blêdwizers meitsje
+fxa-adoption-bookmarks-treatment-backup-subtitle = Beskermje jo blêdwizers troch se fersifere mei jo apparaten mei te syngronisearjen.
+fxa-adoption-primary-button-label = Registrearje
 
 ## Protections panel
 
@@ -226,6 +233,20 @@ fox-doodle-pin-secondary = No net
 set-default-pdf-handler-headline = <strong>Jo PDF’s wurde no iepene yn { -brand-short-name }.</strong> Bewurkje of ûndertekenje formulieren streekrjocht yn jo browser. Sykje nei ‘PDF’ yn ynstellingen om te wizigjen.
 set-default-pdf-handler-primary = Begrepen
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Undertekenje op de stippelline – of wêr dan ek!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Tekenje, typ of laad jo hantekening op, en pleats it dan presys wêr’t jo it wolle. Bewarje jo favorite hantekeningen foar de folgjende kear.
+annotations-make-default-pdf-handler-title = { -brand-short-name } jo standert PDF-bewurker meitsje?
+annotations-make-default-pdf-handler-subtitle = Hieltyd as jo in PDF iepenje, hawwe jo tagong ta ús helpmiddelen.
+annotations-make-default-pdf-primary-cta-label = Ynstelle as standert
+annotations-make-default-pdf-next-label = Folgjende
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Nij apparaat yn de takomst?
@@ -246,6 +267,9 @@ device-migration-fxa-spotlight-older-device-primary-button = In account oanmeits
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nij apparaat yn de takomst?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Folgje in pear ienfâldige stappen om jo blêdwizers, skiednis en wachtwurden mei te nimmen as jo begjinne mei in nij apparaat.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hoe meitsje in reservekopy fan myn gegevens
+device-migration-fxa-spotlight-sync-header = Sneup sûnder ek mar wat te missen
+device-migration-fxa-spotlight-sync-body = Syngronisearje al jo wichtige gegevens mei fersifering – lykas blêdwizers en wachtwurden. Jo kinne alles wêr’t jo { -brand-product-name } brûke ophelje.
+device-migration-fxa-spotlight-sync-primary-button = Begjinne
 
 ## Set as Default PDF Reader Infobar
 
@@ -272,6 +296,20 @@ launch-on-login-infobar-final-message = <strong>{ -brand-short-name } iepenje el
 launch-on-login-infobar-final-reject-button = Nee tankewol
     .accesskey = N
 
+## Launch on login spotlight
+##
+## Shown as a spotlight message when the user closes the browser, offering to set
+## { -brand-short-name } to launch when the computer starts up.
+
+launch-on-login-spotlight-title = { -brand-short-name } iepenje de folgjende kear dat jo computer opstart?
+launch-on-login-spotlight-startup-checkbox = { -brand-short-name } starte by opstarten
+launch-on-login-spotlight-pin-taskbar-checkbox = Oan taakbalke fêstsette
+# This checkbox label intentionally matches “startup-restore-windows-and-tabs”
+# in the Settings (preferences.ftl). Localizers can reuse the existing
+# translation suggested by translation memory.
+launch-on-login-spotlight-restore-checkbox = Foarige finsters en ljepblêden iepenje
+launch-on-login-spotlight-primary-button = Bewarje en { -brand-short-name } slute
+
 ## Tail Fox Set Default Spotlight
 
 # This title is displayed together with the picture of a running fox with a long tail.
@@ -282,3 +320,177 @@ tail-fox-spotlight-title = Lit ferfelende trackers jo net folgje
 tail-fox-spotlight-subtitle = Sis farwol tsjin ferfelende advertinsjetrackers en genietsje fan in feiligere, rappe ynternetûnderfining.
 tail-fox-spotlight-primary-button = Myn keppelingen iepenje mei { -brand-short-name }
 tail-fox-spotlight-secondary-button = No net
+
+## Welcome Back Spotlight and Import
+
+welcome-back-spotlight-title = Meitsje in sprong tebek nei ynboude privacy
+welcome-back-spotlight-subtitle = Wolkom werom by de iennige grutte browser dy’t stipe wurdt troch in non-profitorganisaasje. Wy nimme ekstra stappen om jo gegevens te beskermjen, wêr’t jo ek mar binne.
+welcome-back-embedded-import-title = Ymportearje jo gegevens en lit { -brand-short-name } as thús fiele
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Aldere ferzjes fan { -brand-short-name } kinne mooglik op 14 jannewaris 2025 problemen begjinne te hawwen.</strong>
+root-certificate-succession-infobar-march-message = <strong>Wurkje by om { -brand-short-name } ek te brûken nei 14 maart 2025.</strong>
+root-certificate-succession-infobar-link = Wêrom moat ik bywurkje?
+root-certificate-succession-infobar-primary-button =
+    .label = No bywurkje
+    .accesskey = w
+root-certificate-succession-infobar-secondary-button =
+    .label = Letter
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Jo hawwe in wichtige fernijing fan { -brand-short-name } mist
+root-certificate-windows-background-notification-subtitle = Dielen fan de browser sille gau stopje mei wurkjen as jo net bywurkje. No is in geweldige tiid om ús lêste beskermingen en funksjes te krijen.
+root-certificate-windows-background-notification-learn-more-button = Mear ynfo
+root-certificate-windows-background-notification-update-button = { -brand-short-name } bywurkje
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Slute
+    .aria-label = Slute
+fxa-menu-message-sign-up-button = Registrearje
+fxa-menu-message-sign-in-button = Oanmelde
+fxa-menu-message-sync-button = Begjin mei syngronisearjen
+fxa-menu-message-sync-devices-primary-text = Al jo apparaten syngronisearje
+fxa-menu-message-sync-devices-secondary-text = Untfang daliks jo gegevens – lykas blêdwizers en wachtwurden – oeral wêr’t jo { -brand-short-name } brûke.
+fxa-menu-message-sync-devices-secondary-text2 = Nim daliks jo blêdwizers, wachtwurden en mear mei — nei oeral wêr't jo oanmeld binne by { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Al jo apparaten syngronisearje
+fxa-menu-message-backup-data-primary-text = In reservekopy fan jo browsergegevens meitsje
+fxa-menu-message-backup-data-secondary-text = Beskermje automatysk blêdwizers, wachtwurden en oare gegevens op al jo apparaten.
+fxa-menu-message-backup-data-collapsed-text = Reservekopy fan jo browsergegevens meitsje
+fxa-menu-message-backup-sync-primary-text = Hâld jo gegevens feilich en syngronisearre
+fxa-menu-message-backup-sync-secondary-text = Syngronisaasje makket in reservekopy fan de measte fan jo gegevens, sadat jo oeral tagong krije kinne wêr’t jo { -brand-short-name } brûke.
+fxa-menu-message-backup-sync-collapsed-text = Gegevens syngronisearje en der in reservekopy fan meitsje
+fxa-menu-message-mobile-primary-text = Ljepblêden nei jo telefoan ferstjoere
+fxa-menu-message-mobile-secondary-text = Gean daliks fierder wêr’t jo bleaun wiene wannear’t jo jo ljepblêden syngronisearje mei in mobyl apparaat.
+fxa-menu-message-mobile-collapsed-text = Syngronisearje mei jo telefoan
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Wolkom werom
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } ynstelle as standert
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name } oan it menu Start fêstmeitsje
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } yn de Dock hâlde
+       *[other] { -brand-short-name } oan de taakbalke fêstmeitsje
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Start mei browsen
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } myn haadbrowser meitsje
+multi-cta-fox-doodle-quick-reminder-subtitle = Dit is in koart omtinken dat jo jo favorite op privacy fokuste browser op mar ien klik ôfstân hâlde kinne.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Hâld jo favorite op privacy rjochte browser op mar ien klik ôfstân. Stel { -brand-short-name } yn as jo standertbrowser foar it iepenjen fan keppelingen en hâld it programma yn jo Dock.
+       *[other] Hâld jo favorite op privacy rjochte browser op mar ien klik ôfstân. Stel { -brand-short-name } yn as jo standertbrowser foar it iepenjen fan keppelingen en hâld it programma fêst op jo taakbalke.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Hâld jo favorite op privacy rjochte browser op mar ien klik ôfstân. Stel { -brand-short-name } yn as jo standertbrowser foar it iepenjen fan keppelingen en hâld it programma fêst op jo taakbalke en startmenu.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Ynkoarten opwurdearje fan Windows 10 ôf?
+windows-10-eos-sync-spotlight-subtitle = Meitsje in reservekopy fan jo wachtwurden en blêdwizers, sadat jo klear binne om de sprong nei elk apparaat te meitsjen.
+windows-10-eos-sync-spotlight-primary-label = In reservekopy fan jo { -brand-short-name } meitsje
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Opwurdearje nei Windows 11? Ferlies gjin blêdwizers en wachtwurden.
+windows-10-eos-sync-toast-subtitle = Meitsje in reservekopy fan jo gegevens, sadat { -brand-short-name } altyd klear is foar gebrûk op elk momint, op dizze pc of de folgjende.
+windows-10-eos-sync-toast-primary-label = Begjinne
+windows-10-eos-sync-toast-secondary-label = Letter werinnerje
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } is net yn it foar ynstallearre lykas oare browsers fan Big Tech. Dat is it punt.
+windows-10-eos-challenger-sync-callout-subtitle = As jo in reservekopy meitsje fan jo { -brand-product-name }-blêdwizers en -wachtwurden, is it makliker om de browser dy’t jo keazen hawwe nei jo folgjende apparaat te bringen.
+windows-10-eos-challenger-pin-callout-subtitle = Set { -brand-shorter-name } oan jo taakbalke fêst, sadat de browser dy’t jo keazen hawwe der altyd is as jo it nedich binne.
+windows-10-eos-challenger-sync-primary-button = In reservekopy fan { -brand-shorter-name } meitsje
+windows-10-eos-challenger-pin-primary-button = { -brand-shorter-name } fêstsette
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } blokkearret cryptominers, sosjale-mediatrackers en fingerprinters.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Trackers kinne jo apparaat net identifisearje of jo oer it web folgje — omdat wy se dat net tastean.
+windows-10-eos-sync-callout-privacy-screen-2-title = Beskermje jo wachtwurden en blêdwizers foar jo folgjende apparaat.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Troch in reservekopy fan { -brand-shorter-name } te meitsjen, is it maklik om jo gegevens en privacyynstellingen mei te nimmen.
+windows-10-eos-sync-callout-privacy-info-button = Besjoch wat der blokkearre wurdt
+windows-10-eos-callout-addons-title = Probearje add-ons: ienfâldige upgrades, grutte ynfloeden
+windows-10-eos-callout-addons-subtitle = Dizze útwreidingen binne keazen om jo te helpen produktyf, beskerme en ôfliedingsfrij te bliuwen.
+windows-10-eos-callout-addons-primary-button = Sjoch ús karren
+windows-10-eos-sync-callout-addons-title = Ferlies jo add-ons net as jo in upgrade fan Windows 10 útfiere.
+windows-10-eos-sync-callout-addons-subtitle = Syngronisearje no sadat jo { -brand-product-name } add-ons altyd beskikber binne, sels nei in apparaatwikseling.
+windows-10-eos-sync-callout-next-button = Folgjende
+windows-10-eos-sync-callout-get-started-button = Begjinne
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Fertikale ljepblêden en ljepblêdgroepen binne hjir!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Op populêr fersyk hat { -brand-product-name } krekt nije funksjes frijjûn om jo blêdzjen streamline en fokust te hâlden.
+windows-10-eos-feature-toast-whats-new-button = Besjoch wat nij is
+windows-10-eos-feature-toast-dismiss-button = Slute
+
+## Windows 10 EoS Global Infobar
+
+windows-10-eos-global-infobar-title = <strong>Microsoft stipet Windows 10 net mear.</strong> Meitsje in reservekopy fan jo gegevens om { -brand-product-name } klear te meitsjen foar Windows 11.
+windows-10-eos-global-infobar-primary-button = Reservekopyen ynskeakelje
+    .accesskey = k
+windows-10-eos-global-infobar-learn-more-link = Mear ynfo
+    .accessKey = M
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Strange beskerming tsjin folgjen kin derfoar soargje dat websites net goed wurkje.</strong> Los faak foarkommende problemen op troch essinsjele eleminten dy’t trackers befetsje kinne te deblokkearjen.
+etp-strict-exceptions-infobar-learn-more = Mear ynfo
+etp-strict-exceptions-infobar-button = Oplossingen tapasse
+    .accesskey = t
+etp-strict-exceptions-infobar-not-now = No net
+    .accesskey = N
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } is net jo standertbrowser
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } is net jo primêre browser
+set-default-menu-message-row-layout-title = { -brand-short-name } jo primêre browser meitsje
+set-default-menu-message-row-layout-title-variant = { -brand-short-name } jo standertbrowser meitsje
+set-default-menu-message-row-layout-subtitle = Untfang snelheid, feilichheid en privacy, hieltyd as jo sneupe.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Hâld { -brand-short-name } binnen hantberik – meitsje it jo standertbrowser en foegje it oan jo Dock ta.
+       *[other] Hâld { -brand-short-name } binnen hantberik – meitsje it jo standertbrowser en set it fêst oan jo taakbalke.
+    }
+set-default-menu-message-split-layout-title =
+    { PLATFORM() ->
+        [macos] Hâld { -brand-short-name } by de hân
+       *[other] Alle keppelingen iepenje mei { -brand-short-name }
+    }
+set-default-menu-message-split-layout-subtitle =
+    { PLATFORM() ->
+        [macos] Meitsje it jo standertbrowser en foegje it ta oan jo Dock.
+       *[other] Untfang flugger sneupe en automatyske privacybeskerming.
+    }
+set-default-menu-message-primary-button = Ynstelle as standert
+set-default-menu-message-primary-button-variant = Ynstelle as primêre browser
+set-default-menu-message-primary-button-short-variant = { -brand-short-name } jo standertbrowser meitsje
+
+## Firefox Relay 50 Masks Announcement
+
+# "on us" in this context means "for free" or "at no cost"
+relay-50-masks-announcement-title = 50 e-mailmaskers, op ús kosten
+relay-50-masks-announcement-subtitle = Jo ûntfange no 50 fergeze maskers (dat wiene der 5). Brûk der ien foar elke account om jo echte e-mailadres privee te hâlden.
+relay-50-masks-announcement-primary-button = Nei { -relay-brand-name }
+    .accesskey = N
+relay-50-masks-announcement-secondary-button = Slute
+    .accesskey = S
+
+## Nova Early Access Infobar
+
+nova-early-access-infobar-title = <strong>{ -brand-product-name } krijt in nij úterlik.</strong> Jo besjogge in betide, net-polyste ferzje foarôfgeand oan de lansearring letter dit jier.
+nova-early-access-share-feedback-link = Kommentaar diele
+    .accesskey = K
+nova-early-access-infobar-primary-button = Begrepen
+    .accesskey = g

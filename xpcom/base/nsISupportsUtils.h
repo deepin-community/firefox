@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsISupportsUtils_h__
-#define nsISupportsUtils_h__
+#ifndef nsISupportsUtils_h_
+#define nsISupportsUtils_h_
 
 #include <type_traits>
 
@@ -129,7 +127,7 @@ inline nsresult CallQueryInterface(T* aSource, DestinationType** aDestination) {
   MOZ_ASSERT(aSource, "null parameter");
   MOZ_ASSERT(aDestination, "null parameter");
 
-  return aSource->QueryInterface(NS_GET_TEMPLATE_IID(DestinationType),
+  return aSource->QueryInterface(NS_GET_IID(DestinationType),
                                  reinterpret_cast<void**>(aDestination));
 }
 

@@ -8,10 +8,3 @@ about-logging-set-log-file = Iestatīt reģistrēšanas failu
 about-logging-set-log-modules = Iestatīt reģistrēšanas moduli
 about-logging-start-logging = Sākt reģistrēšanu
 about-logging-stop-logging = Pārtraukt reģistrēšanu
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

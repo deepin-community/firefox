@@ -9,6 +9,38 @@ newtab-page-title = Tabbere hesere
 newtab-settings-button =
     .title = Neɗɗin tabbere maa hello hesere ndee
 
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = Tabbe kese
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] { $num } gorol
+           *[other] { $num } gorol
+        }
+home-restore-defaults-srd =
+    .label = Artir Goowaaɗe
+    .accesskey = R
+home-mode-choice-custom-srd =
+    .label = Heertin URLs...
+home-mode-choice-blank-srd =
+    .label = Hello Meho
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Daari joɓanaaɗi
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Kelle jiyaaɗe
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Maantore
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Cakkitiiɗe awteede
+
 ## Search box component.
 
 # "Search" is a verb/action
@@ -16,19 +48,17 @@ newtab-search-box-search-button =
     .title = Yiylo
     .aria-label = Yiylo
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Ɓeydu yiylorde
 newtab-topsites-edit-topsites-header = Taƴto Lowre Dowrowre
 newtab-topsites-title-label = Tiitoonde
 newtab-topsites-title-input =
     .placeholder = Naatnu tiitoonde
-
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = Tappu walla ɗakku URL
 newtab-topsites-url-validation = URL Moƴƴo ina naamnaa
-
 newtab-topsites-image-url-label = Neɗɗin ngal natal URL
 newtab-topsites-use-image-link = Huutoro natal neɗɗinangal…
 newtab-topsites-image-validation = loowgol natal gallii. Enndir URL goɗɗo.
@@ -47,24 +77,19 @@ newtab-confirm-delete-history-p1 = Aɗa yananaa yiɗde momtude kala cilol ngoo h
 # "This action" refers to deleting a page from history.
 newtab-confirm-delete-history-p2 = Ngal baɗal waawaa firteede.
 
-## Top Sites - Sponsored label
-
-
 ## Context Menu - Action Tooltips.
 
 # General tooltip for context menus.
 newtab-menu-section-tooltip =
     .title = Uddit cuɓirgol
     .aria-label = Uddit cuɓirgol
-
 # Tooltip for dismiss button
 newtab-dismiss-button-tooltip =
     .title = Momtu
     .aria-label = Momtu
-
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Uddit cuɓirgol
     .aria-label = Uddit dosol ngonka wonande { $title }
@@ -128,21 +153,18 @@ newtab-label-removed-bookmark = Maantorol motaama
 newtab-label-recommended = Jolɗum
 newtab-label-saved = Danndaama e { -pocket-brand-name }
 newtab-label-download = Awtaama
-
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · Tammbaama
-
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = E ballal { $sponsor }
-
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } hoj
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -170,16 +192,15 @@ newtab-section-expand-section-label =
 
 newtab-section-header-topsites = Lowe dowrowe
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Waggini ɗum ko { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = Fuɗɗo wanngaade, min kolloymaa huunde e binndanɗe mawɗe ɗee, widewooji kañum e kelle goɗɗe ɗe njilliɗaa ko ɓooyaani walla maantoraaɗe ɗoo.
-
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Rutto ɗoo goɗngol ngam daari goɗɗi { $provider }. A waawaa fadde ? Suvo tiitoonde lollunde ngam yiytude e geese hee daari goɗɗi.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -200,17 +221,8 @@ newtab-pocket-learn-more = Ɓeydu humpito
 newtab-pocket-cta-button = Heɓ { -pocket-brand-name }
 newtab-pocket-cta-text = Hisnu daari njiɗ-ɗaa nder { -pocket-brand-name }, ñikliraa hakkille maa taro welngo.
 
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
-
-
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
 newtab-error-fallback-info = Uf, saɗeende kewii e loowgol ngoo loowdi.
 newtab-error-fallback-refresh-link = Wultin hello ngoo ngam ennditde.
-
-## Customization Menu
-

@@ -10,13 +10,11 @@
 
 psmerr-ssl-disabled = 無法安全連線，因為 SSL 通訊協定已停用。
 psmerr-ssl2-disabled = 無法安全連線，因為該網站使用舊版、不安全的 SSL 通訊協定。
-
 # This is a multi-line message.
 psmerr-hostreusedissuerandserial =
     您收到無效的憑證，請與伺服器管理員或郵件聯絡人聯絡，並提供下列資訊:
     
     您的憑證內含與其他憑證機構所簽發憑證相同的序號，請用不同的序號產生新的憑證。
-
 ssl-error-export-only-server = 無法安全通訊，節點不支援高等級加密。
 ssl-error-us-only-server = 無法安全通訊，不支援節點所要求的高等級加密。
 ssl-error-no-cypher-overlap = 無法安全地與對方通訊: 無雙方接受的加密演算法。
@@ -53,7 +51,7 @@ ssl-error-rx-malformed-cert-verify = SSL 收到不正常的 Certificate Verify �
 ssl-error-rx-malformed-client-key-exch = SSL 收到不正常的 Client Key Exchange 交握訊息。
 ssl-error-rx-malformed-finished = SSL 收到不正常的 Finished 交握訊息。
 ssl-error-rx-malformed-change-cipher = SSL 收到不正常的 Change Cipher Spec 記錄。
-ssl-error-rx-malformed-alert = SSL 收到不正常的 Alert 記錄。
+ssl-error-rx-malformed-alert = SSL 收到不正常的警告記錄。
 ssl-error-rx-malformed-handshake = SSL 收到不正常的交握記錄。
 ssl-error-rx-malformed-application-data = SSL 收到不正常的程式資料記錄。
 ssl-error-rx-unexpected-hello-request = SSL 收到未預期的 Hello 請求交握訊息。
@@ -153,7 +151,6 @@ ssl-error-no-supported-signature-algorithm = 未設定使用支援的 TLS 簽章
 ssl-error-unsupported-signature-algorithm = 對方使用了不支援的簽章與雜湊演算法組合。
 ssl-error-missing-extended-master-secret = 對方嘗試以不正確的 extended_master_secret 延伸內容恢復。
 ssl-error-unexpected-extended-master-secret = 對方嘗試以未預期的 extended_master_secret 延伸內容恢復。
-
 sec-error-io = 在安全鑑別時發生 I/O 錯誤。
 sec-error-library-failure = 安全函式庫失效。
 sec-error-bad-data = 安全函式庫: 已收到損壞資料。
@@ -198,7 +195,7 @@ sec-error-invalid-key = 金鑰不支援所請求的操作。
 sec-error-unknown-critical-extension = 憑證含未知的 Critical 擴充欄位。
 sec-error-old-crl = 新憑證廢止清冊不能比目前的清冊還晚。
 sec-error-no-email-cert = 未加密或簽署: 您尚未擁有 Email 憑證。
-sec-error-no-recipient-certs-query = 未加密: 您尚未擁有每個收件人的憑證。
+sec-error-no-recipient-certs-query = 未加密：您尚未擁有每位收件者的憑證。
 sec-error-not-a-recipient = 無法解密: 您不是收件人或是找不到相符的憑證或私密金鑰。
 sec-error-pkcs7-keyalg-mismatch = 無法解密: 金鑰加密演算法和您的憑證不符。
 sec-error-pkcs7-bad-signature = 簽章鑑別失敗: 找不到簽署者、找到太多簽署者或收到不正確、損毀的資料。
@@ -320,7 +317,6 @@ sec-error-locked-password = 密碼已鎖定。
 sec-error-unknown-pkcs11-error = 未知的 PKCS #11 錯誤。
 sec-error-bad-crl-dp-url = 廢止清冊發佈點當中有無效或未支援的網址。
 sec-error-cert-signature-algorithm-disabled = 此憑證使用了已被停用的演算法所簽署，因為該演算法不安全。
-
 mozilla-pkix-error-key-pinning-failure = 此伺服器使用 key pinning (HPKP) 機制，但無法建構符合 pinset 的信任的金鑰鍊。無法忽略違規的 key pinning。
 mozilla-pkix-error-ca-cert-used-as-end-entity = 伺服器使用了包含「基本限制」擴充欄位的憑證，表示其為憑證機構。對於正確發行的憑證來說不應該這麼做。
 mozilla-pkix-error-inadequate-key-size = 伺服器提供的憑證金鑰太小，無法建立安全連線。
@@ -335,11 +331,10 @@ mozilla-pkix-error-invalid-integer-encoding = 伺服器提供了一張包含無�
 mozilla-pkix-error-empty-issuer-name = 伺服器提供了發行者識別名稱空白的憑證。
 mozilla-pkix-error-additional-policy-constraint-failed = 驗證此憑證時，發生附加政策限制驗證失敗。
 mozilla-pkix-error-self-signed-cert = 該憑證未受信任，因為憑證是自己簽署的憑證。
-
+mozilla-pkix-error-issuer-no-longer-trusted = 簽發憑證的憑證機構，在憑證簽發前就已經被取消信任。
 xp-java-remove-principal-error = 無法移除 Principal
 xp-java-delete-privilege-error = 無法刪除 Privilege
 xp-java-cert-not-exists-error = 此 Principal 沒有憑證
-
 xp-sec-fortezza-bad-card = Fortezza 卡未正確初始化，請取出並還給您的簽發者。
 xp-sec-fortezza-no-card = 找不到 Fortezza 卡
 xp-sec-fortezza-none-selected = 未選擇 Fortezza 卡

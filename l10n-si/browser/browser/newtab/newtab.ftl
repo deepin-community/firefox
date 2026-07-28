@@ -8,11 +8,67 @@
 newtab-page-title = නව පටිත්ත
 newtab-settings-button =
     .title = නව පටිත්ත පිටුව අභිරුචිකරණය
+newtab-personalize-settings-icon-label =
+    .title = නව පටිත්ත පුද්ගලීකරණය
+    .aria-label = සැකසුම්
 newtab-personalize-icon-label =
     .title = නව පටිත්ත පුද්ගලීකරණය
     .aria-label = නව පටිත්ත පුද්ගලීකරණය
 newtab-personalize-dialog-label =
     .aria-label = පුද්ගලීකරණය
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = නව පටිති
+
+## Firefox Home content
+
+# Variables:
+#   $num (number) - Number of rows displayed
+home-prefs-sections-rows-option-srd =
+    .label =
+        { $num ->
+            [one] පේළි { $num }
+           *[other] පේළි { $num }
+        }
+# Dropdown option shown when an extension replaces the contents of new windows or tabs.
+# Variables:
+#   $extension (string) - Name of the extension
+home-prefs-homepage-extension-option =
+    .label = ({ $extension }) දිගුව
+home-restore-defaults-srd =
+    .label = පෙරනිමියට ප්‍රත්‍යර්පණය
+    .accesskey = R
+home-mode-choice-default-fx-srd =
+    .label = { -firefox-home-brand-name } (පෙරනිමි)
+home-mode-choice-custom-srd =
+    .label = අභිරුචි ඒ.ස.නි...
+home-mode-choice-blank-srd =
+    .label = හිස් පිටුව
+home-prefs-shortcuts-header-srd =
+    .label = කෙටිමං
+home-prefs-shortcuts-select =
+    .aria-label = කෙටිමං
+home-prefs-shortcuts-by-option-sponsored-srd =
+    .label = අනුග්‍රහය ලද කෙටිමං
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = අනුග්‍රහය ලද කතා
+home-prefs-highlights-option-visited-pages-srd =
+    .label = දුටු පිටු
+home-prefs-highlights-options-bookmarks-srd =
+    .label = පොත්යොමු
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = වඩාත්ම මෑත බාගැනීම්
+home-prefs-recent-activity-header-srd =
+    .label = මෑත ක්‍රියාකාරකම
+home-prefs-recent-activity-select =
+    .aria-label = මෑත ක්‍රියාකාරකම
+home-prefs-weather-header-srd =
+    .label = කාලගුණය
 
 ## Search box component.
 
@@ -39,12 +95,16 @@ newtab-search-box-input =
     .placeholder = සොයන්න
     .aria-label = සොයන්න
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = සෙවුම් යන්ත්‍රයක් යොදන්න
 newtab-topsites-add-shortcut-header = නව කෙටිමඟ
 newtab-topsites-edit-topsites-header = ප්‍රචලිත අඩවිය සංස්කරණය
 newtab-topsites-edit-shortcut-header = කෙටිමඟ සංස්කරණය
+newtab-topsites-add-shortcut-label = කෙටිමඟක් යොදන්න
+newtab-topsites-add-shortcut-title =
+    .title = කෙටිමඟක් යොදන්න
+    .aria-label = කෙටිමඟක් යොදන්න
 newtab-topsites-title-label = සිරැසිය
 newtab-topsites-title-input =
     .placeholder = සිරැසියක් යොදන්න
@@ -107,6 +167,8 @@ newtab-menu-save-to-pocket = { -pocket-brand-name } හි සුරකින්
 newtab-menu-delete-pocket = { -pocket-brand-name } වෙතින් මකන්න
 newtab-menu-archive-pocket = { -pocket-brand-name } හි සංරක්‍ෂණය
 newtab-menu-show-privacy-info = අපගේ අනුග්‍රහකයින් හා ඔබගේ පෞද්ගලිකත්‍වය
+# Context menu option to open a support page explaining the New Tab personalization features and privacy controls.
+newtab-menu-section-learn-more = තව දැනගන්න
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,7 +232,7 @@ newtab-section-menu-manage-webext = දිගුව කළමනාකරණය
 newtab-section-menu-add-search-engine = සෙවුම් යන්ත්‍රයක් යොදන්න
 newtab-section-menu-move-up = ඉහළට ගෙනයන්න
 newtab-section-menu-move-down = පහළට ගෙනයන්න
-newtab-section-menu-privacy-notice = පෞද්ගලිකත්‍ව දැන්වීම
+newtab-section-menu-privacy-notice = රහස්‍යතා දැන්වීම
 
 ## Section aria-labels
 
@@ -207,12 +269,14 @@ newtab-pocket-more-recommendations = තවත් නිර්දේශ
 newtab-pocket-learn-more = තව දැනගන්න
 newtab-pocket-cta-button = { -pocket-brand-name } ගන්න
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } යනු { -brand-product-name } පවුලේ කොටසකි
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = සුරකින්න
 newtab-pocket-saved = සුරැකිණි
 
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
 
+newtab-toast-dismiss-button =
+    .title = ඉවතලන්න
+    .aria-label = ඉවතලන්න
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -224,9 +288,21 @@ newtab-error-fallback-refresh-link = පිටුව නැවුම් කර �
 
 newtab-custom-shortcuts-title = කෙටිමං
 newtab-custom-shortcuts-subtitle = ඔබ සුරකින හෝ ගොඩවදින අඩවි
+#  (developer note): @nova-cleanup(remove-string): Remove old string once Nova lands. The newtab-custom-shortcuts-nova string will take over
 newtab-custom-shortcuts-toggle =
     .label = කෙටිමං
     .description = ඔබ සුරකින හෝ ගොඩවදින අඩවි
+newtab-custom-shortcuts-nova =
+    .label = කෙටිමං
+# Variables
+#   $num (number) - Number of rows to display
+#  (developer note): @nova-cleanup(remove-string): Remove string once Nova lands. We won't be using "row"/"rows" anymore for the dropdown
+newtab-custom-row-selector2 =
+    .label =
+        { $num ->
+            [one] පේළි { $num }
+           *[other] පේළි { $num }
+        }
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -240,8 +316,68 @@ newtab-custom-pocket-sponsored = අනුග්‍රහය ලද කතා
 newtab-custom-pocket-show-recent-saves = මෑත සුරැකීම් පෙන්වන්න
 newtab-custom-recent-title = මෑත ක්‍රියාකාරකම
 newtab-custom-recent-subtitle = මෑත අඩවි සහ අන්තර්ගතවල තේරීමකි
-newtab-custom-recent-toggle =
-    .label = මෑත ක්‍රියාකාරකම
-    .description = මෑත අඩවි සහ අන්තර්ගතවල තේරීමකි
 newtab-custom-close-button = වසන්න
 newtab-custom-settings = වෙනත් සැකසුම් කළමනාකරණය
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = බිතුපත්
+newtab-wallpaper-toggle-title =
+    .label = බිතුපත්
+
+## Solid Colors
+
+newtab-wallpaper-blue = නිල්
+newtab-wallpaper-light-blue = ලා නිල්
+newtab-wallpaper-light-purple = ලා දම්
+newtab-wallpaper-light-green = ලා කොළ
+newtab-wallpaper-green = කොළ
+newtab-wallpaper-yellow = කහ
+newtab-wallpaper-orange = තැඹිලි
+newtab-wallpaper-pink = රෝස
+newtab-wallpaper-light-pink = ලා රෝස
+newtab-wallpaper-red = රතු
+
+## Firefox
+
+newtab-wallpaper-feature-highlight-button = තේරුණා
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = ඉවතලන්න
+    .aria-label = උත්පතනය වසන්න
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ අනුග්‍රහය
+newtab-weather-menu-change-location = ස්ථානය වෙනස් කරන්න
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = ස්ථානයක් සොයන්න
+    .aria-label = ස්ථානයක් සොයන්න
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = සරල
+newtab-weather-menu-change-weather-display-simple = සරල දැක්මට මාරු වන්න
+newtab-weather-menu-temperature-option-fahrenheit = ෆැරන්හයිට්
+newtab-weather-menu-temperature-option-celsius = සෙල්සියස්
+newtab-weather-menu-change-temperature-units-fahrenheit = ෆැරන්හයිට් වෙත මාරු වන්න
+newtab-weather-menu-change-temperature-units-celsius = සෙල්සියස් වෙත මාරු වන්න
+newtab-weather-menu-hide-weather = නව පටිති වල කාලගුණය සඟවන්න
+newtab-weather-menu-learn-more = තව දැනගන්න
+# This message is shown if user is working offline
+newtab-weather-error-not-available = කාලගුණ දත්ත දැනට නොතිබේ.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-blocked-button = අවහිරයි
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-blocked-topics = අවහිරයි

@@ -16,7 +16,7 @@ default-browser-prompt-title-pin = Asetetaanko { -brand-short-name } pääselaim
 default-browser-prompt-message-pin = Pidä { -brand-short-name } käden ulottuvilla — aseta se oletusselaimeksi ja kiinnitä se tehtäväpalkkiin.
 default-browser-prompt-message-pin-msix = Pidä { -brand-short-name } käden ulottuvilla — aseta se oletusselaimeksi ja kiinnitä se tehtäväpalkkiin sekä Käynnistä-valikkoon.
 default-browser-prompt-message-pin-mac = Pidä { -brand-short-name } käden ulottuvilla — aseta se oletusselaimeksi ja kiinnitä se telakkaan.
-default-browser-prompt-button-primary-set = Aseta ensisijaiseksi selaimeksi
+default-browser-prompt-button-primary-set = Aseta oletusselaimeksi
 default-browser-prompt-button-primary-pin = Aseta pääselaimeksi
 default-browser-prompt-title-alt = Asetetaanko { -brand-short-name } oletusselaimeksi?
 default-browser-prompt-message-alt = Nopeutta, turvallisuutta ja yksityisyyttä joka kerta kun selaat.
@@ -34,5 +34,12 @@ default-browser-guidance-notification-body-instruction-win10 =
     Vaihe 1: Siirry kohtaan Asetukset > Oletussovellukset
     Vaihe 2: Vieritä alas kohtaan "Selain"
     Vaihe 3: Valitse { -brand-short-name }
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win11 =
+    Vaihe 1: Siirry kohtaan Asetukset > Oletussovellukset
+    Vaihe 2: Valitse "Aseta oletus" selaimelle { -brand-short-name }
 default-browser-guidance-notification-info-page = Näytä minulle
 default-browser-guidance-notification-dismiss = Valmis
+default-browser-guidance-notification-v2-title = Viimeistele { -brand-short-name }in asettaminen oletusselaimeksi
+default-browser-guidance-notification-v2-body = Valitse asetuksista { -brand-short-name }in kohdalla ”Aseta oletukseksi”.
+default-browser-guidance-notification-v2-title-only = Viimeistele { -brand-short-name }in asettaminen oletusselaimeksi asetuksissa

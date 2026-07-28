@@ -2,10 +2,26 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import os
 import sys
+
+from mozlog import handlers
+from mozlog.structuredlog import log_levels
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+
+def setup_environment(tests_root=None):
+    if tests_root is None:
+        tests_root = os.path.join(here, "tests")
+    if tests_root not in sys.path:
+        sys.path.insert(0, tests_root)
+        from tools import localpaths  # noqa: F401
 
 
 def create_parser_wpt():
+    setup_environment()
+
     from wptrunner import wptcommandline
 
     result = wptcommandline.create_parser()
@@ -19,7 +35,23 @@ def create_parser_wpt():
     return result
 
 
-class WebPlatformTestsRunner(object):
+class CriticalLogBuffer(handlers.BaseHandler):
+    """
+    Buffer critical log entries
+    """
+
+    def __init__(self):
+        self.log_entries = []
+
+    def __call__(self, data):
+        if (
+            data["action"] == "log"
+            and log_levels[data["level"]] <= log_levels["CRITICAL"]
+        ):
+            self.log_entries.append(data)
+
+
+class WebPlatformTestsRunner:
     """Run web platform tests."""
 
     def __init__(self, setup):
@@ -54,8 +86,28 @@ class WebPlatformTestsRunner(object):
         else:
             kwargs = self.setup.kwargs_wptrun(kwargs)
 
-        result = wptrunner.start(**kwargs)
+        log_buffer = CriticalLogBuffer()
+        logger.add_handler(log_buffer)
+
+        result = 1
+        try:
+            result = wptrunner.start(**kwargs)
+        finally:
+            if int(result) != 0:
+                self._process_log_errors(logger, log_buffer, kwargs)
+            logger.remove_handler(log_buffer)
         return int(result)
+
+    def _process_log_errors(self, logger, log_buffer, kwargs):
+        for item in log_buffer.log_entries:
+            if (
+                kwargs["webdriver_binary"] is None
+                and "webdriver" in item["message"]
+                and self.setup.topobjdir
+            ):
+                print(
+                    "ERROR: Couldn't find geckodriver binary required to run wdspec tests, consider `ac_add_options --enable-geckodriver` in your build configuration"
+                )
 
     def update_manifest(self, logger, **kwargs):
         import manifestupdate
@@ -64,5 +116,5 @@ class WebPlatformTestsRunner(object):
             logger=logger,
             src_root=self.setup.topsrcdir,
             obj_root=self.setup.topobjdir,
-            **kwargs
+            **kwargs,
         )

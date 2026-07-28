@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsAppDirectoryServiceDefs_h___
-#define nsAppDirectoryServiceDefs_h___
+#ifndef nsAppDirectoryServiceDefs_h_
+#define nsAppDirectoryServiceDefs_h_
 
 //========================================================================================
 //
@@ -74,29 +72,4 @@
 
 #define NS_APP_PERMISSION_PARENT_DIR "permissionDBPDir"
 
-#if defined(MOZ_CONTENT_TEMP_DIR)
-//
-// NS_APP_CONTENT_PROCESS_TEMP_DIR refers to a directory that is read and
-// write accessible from a sandboxed content process. The key may be used in
-// either process, but the directory is intended to be used for short-lived
-// files that need to be saved to the filesystem by the content process and
-// don't need to survive browser restarts. The directory is reset on startup.
-//
-// When MOZ_CONTENT_TEMP_DIR is defined and sandboxing is enabled (versus
-// manually disabled via prefs), the content process replaces NS_OS_TEMP_DIR
-// with NS_APP_CONTENT_PROCESS_TEMP_DIR so that legacy code in content
-// attempting to write to NS_OS_TEMP_DIR will write to
-// NS_APP_CONTENT_PROCESS_TEMP_DIR instead. When MOZ_SANDBOX is
-// defined but sandboxing is disabled, NS_APP_CONTENT_PROCESS_TEMP_DIR
-// falls back to NS_OS_TEMP_DIR in both content and chrome processes.
-//
-// New code should avoid writing to the filesystem from the content process
-// and should instead proxy through the parent process whenever possible.
-//
-// At present, all sandboxed content processes use the same directory for
-// NS_APP_CONTENT_PROCESS_TEMP_DIR, but that should not be relied upon.
-//
-#  define NS_APP_CONTENT_PROCESS_TEMP_DIR "ContentTmpD"
-#endif  // defined(MOZ_SANDBOX)
-
-#endif  // nsAppDirectoryServiceDefs_h___
+#endif  // nsAppDirectoryServiceDefs_h_

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -29,8 +28,8 @@ includes: [testTypedArray.js]
 features: [Symbol.species, TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA(2);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg(2));
   var calls = 0;
 
   sample.constructor = {};
@@ -44,6 +43,6 @@ testWithTypedArrayConstructors(function(TA) {
   sample.slice();
 
   assert.sameValue(calls, 1);
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

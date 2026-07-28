@@ -17,7 +17,6 @@ the graph.
 # `{'relative-datestamp': '..'}` is handled at the last possible moment during
 # task creation.
 
-
 import copy
 import logging
 import os
@@ -33,7 +32,7 @@ from .util.workertypes import get_worker_type
 
 here = os.path.abspath(os.path.dirname(__file__))
 logger = logging.getLogger(__name__)
-MAX_ROUTES = 10
+MAX_ROUTES = 64
 
 
 def amend_taskgraph(taskgraph, label_to_taskid, to_add):
@@ -93,6 +92,14 @@ def derive_misc_task(
             "source": target_task.task["metadata"]["source"],
         },
         "scopes": [],
+        "tags": {
+            "createdForUser": parameters["owner"],
+            "kind": "misc",
+            "label": label,
+            "project": parameters["project"],
+            "trust-domain": graph_config["trust-domain"],
+            "worker-implementation": "docker-worker",
+        },
         "payload": {
             "image": {
                 "path": "public/image.tar.zst",
@@ -125,6 +132,7 @@ def derive_misc_task(
 # in each Gecko `assume:repo:hg.mozilla.org/...` role.
 SCOPE_SUMMARY_REGEXPS = [
     re.compile(r"(index:insert-task:docker\.images\.v1\.[^.]*\.).*"),
+    re.compile(r"(index:insert-task:gecko\.v2\.trunk\.revision\.).*"),
     re.compile(r"(index:insert-task:gecko\.v2\.[^.]*\.).*"),
     re.compile(r"(index:insert-task:comm\.v2\.[^.]*\.).*"),
 ]
@@ -169,18 +177,30 @@ def make_index_task(
     task.task["payload"]["command"] = ["insert-indexes.js"] + index_paths
     task.task["payload"]["env"] = {
         "TARGET_TASKID": parent_task.task_id,
-        "INDEX_RANK": index_rank,
+        "INDEX_RANK": f"{index_rank}",
     }
     return task
 
 
 @register_morph
+def skip_dontbuild(taskgraph, label_to_taskid, parameters, graph_config):
+    """
+    Remove all tasks from the graph when DONTBUILD was set in the commit
+    message. target-tasks.json is written before morphing, so run-missing-tests
+    can still schedule tasks.
+    """
+    if not parameters.get("dontbuild"):
+        return taskgraph, label_to_taskid
+    logger.info("DONTBUILD set; removing all tasks from the task graph")
+    return TaskGraph({}, Graph(set(), set())), {}
+
+
+@register_morph
 def add_index_tasks(taskgraph, label_to_taskid, parameters, graph_config):
     """
-    The TaskCluster queue only allows 10 routes on a task, but we have tasks
-    with many more routes, for purposes of indexing. This graph morph adds
-    "index tasks" that depend on such tasks and do the index insertions
-    directly, avoiding the limits on task.routes.
+    The TaskCluster queue only allows 64 routes on a task. In the event a task
+    exceeds this limit, this graph morph adds "index tasks" that depend on it
+    and do the index insertions directly, avoiding the limit on task.routes.
     """
     logger.debug("Morphing: adding index tasks")
 
@@ -253,16 +273,55 @@ def add_eager_cache_index_tasks(taskgraph, label_to_taskid, parameters, graph_co
 
 
 @register_morph
-def add_try_task_duplicates(taskgraph, label_to_taskid, parameters, graph_config):
-    return _add_try_task_duplicates(
-        taskgraph, label_to_taskid, parameters, graph_config
+def add_code_coverage_task(taskgraph, label_to_taskid, parameters, graph_config):
+    """
+    Add a code-coverage-artifacts task that depends on all ccov test tasks, if
+    and only if any such tasks are present in the graph.  This ensures the task
+    is not added (and does not pull in extra dependencies) when only a subset of
+    ccov tasks is targeted.
+    """
+    ccov_tasks = {
+        label: task.task_id
+        for label, task in taskgraph.tasks.items()
+        if task.attributes.get("ccov")
+    }
+    if not ccov_tasks:
+        return taskgraph, label_to_taskid
+
+    task_def = {
+        "provisionerId": "built-in",
+        "workerType": "succeed",
+        "dependencies": sorted(ccov_tasks.values()),
+        "requires": "all-resolved",
+        "created": {"relative-datestamp": "0 seconds"},
+        "deadline": {"relative-datestamp": "1 day"},
+        "expires": {"relative-datestamp": "1 day"},
+        "metadata": {
+            "name": "code-coverage-artifacts",
+            "description": "Notify when all code-coverage tasks in this task group are complete",
+            "owner": parameters["owner"],
+            "source": parameters["head_repository"],
+        },
+        "scopes": [],
+        "payload": {},
+        "routes": ["project.codecoverage.v1.tasks_done"],
+        "tags": {},
+    }
+    task = Task(
+        kind="code-coverage",
+        label="code-coverage-artifacts",
+        attributes={},
+        task=task_def,
+        dependencies=ccov_tasks,
     )
+    task.task_id = slugid()
+    taskgraph, label_to_taskid = amend_taskgraph(taskgraph, label_to_taskid, [task])
+    logger.info("Added code-coverage-artifacts task.")
+    return taskgraph, label_to_taskid
 
 
-# this shim function exists so we can call it from the unittests.
-# this works around an issue with
-# third_party/python/taskcluster_taskgraph/taskgraph/morph.py#40
-def _add_try_task_duplicates(taskgraph, label_to_taskid, parameters, graph_config):
+@register_morph
+def add_try_task_duplicates(taskgraph, label_to_taskid, parameters, graph_config):
     try_config = parameters.get("try_task_config", {})
     tasks = try_config.get("tasks", [])
     glob_tasks = {x.strip("-*") for x in tasks if x.endswith("-*")}

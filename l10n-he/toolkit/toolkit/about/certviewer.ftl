@@ -30,8 +30,16 @@ certificate-viewer-key-id = מזהה מפתח
 certificate-viewer-key-size = גודל מפתח
 certificate-viewer-locality = מקום
 certificate-viewer-location = מיקום
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = שם הרישום
+# Log is a noun meaning a record of events.
+certificate-viewer-logid = מזהה רישום
 certificate-viewer-method = שיטה
 certificate-viewer-name = שם
+certificate-viewer-surname = שם משפחה
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = שם פרטי
 certificate-viewer-not-after = לא אחרי
 certificate-viewer-not-before = לא לפני
 certificate-viewer-organization = ארגון
@@ -60,7 +68,6 @@ certificate-viewer-miscellaneous = שונות
 certificate-viewer-fingerprints = טביעות אצבע
 certificate-viewer-certificate-policies = מדיניות של אישור
 certificate-viewer-crl-endpoints = נקודות קצה של CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = הורדה
@@ -80,7 +87,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = ‎{ $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (chain)
     .download = ‎{ $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = הרחבה זו סומנה כקריטית, כלומר לקוחות חייבים לדחות את האישור אם הם לא מבינים אותו.
@@ -91,6 +97,8 @@ certificate-viewer-export = ייצוא
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (לא ידוע)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = אישור אבטחה
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

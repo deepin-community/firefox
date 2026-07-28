@@ -4,9 +4,6 @@
 #include "jit/riscv64/constant/Base-constant-riscv.h"
 
 #include "mozilla/Assertions.h"
-#include "mozilla/Types.h"
-
-#include <stdio.h>
 
 #include "jit/riscv64/constant/Constant-riscv-c.h"
 #include "jit/riscv64/constant/Constant-riscv-d.h"
@@ -150,21 +147,15 @@ InstructionBase::Type InstructionBase::InstructionType() const {
         return kCIWType;
       case RO_C_FLD:
       case RO_C_LW:
-#ifdef JS_CODEGEN_RISCV64
       case RO_C_LD:
-#endif
         return kCLType;
       case RO_C_FSD:
       case RO_C_SW:
-#ifdef JS_CODEGEN_RISCV64
       case RO_C_SD:
-#endif
         return kCSType;
       case RO_C_NOP_ADDI:
       case RO_C_LI:
-#ifdef JS_CODEGEN_RISCV64
       case RO_C_ADDIW:
-#endif
       case RO_C_LUI_ADD:
         return kCIType;
       case RO_C_MISC_ALU:
@@ -180,17 +171,13 @@ InstructionBase::Type InstructionBase::InstructionType() const {
       case RO_C_SLLI:
       case RO_C_FLDSP:
       case RO_C_LWSP:
-#ifdef JS_CODEGEN_RISCV64
       case RO_C_LDSP:
-#endif
         return kCIType;
       case RO_C_JR_MV_ADD:
         return kCRType;
       case RO_C_FSDSP:
       case RO_C_SWSP:
-#ifdef JS_CODEGEN_RISCV64
       case RO_C_SDSP:
-#endif
         return kCSSType;
       default:
         break;

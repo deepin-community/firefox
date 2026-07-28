@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Mboty
     .aria-label = Mboty
-firefoxview-empty-state-icon =
-    .alt = Ema’ẽke:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Ko’ag̃aite
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% henyhẽma
 firefoxview-tabpickup-step-signin-header = Emoambue mba’e’oka pa’ũme ñekytĩ’ỹre
 firefoxview-tabpickup-step-signin-description = Ehecha hag̃ua ne pumbyry rendayke, emoñepyrũraẽ tembiapo térã emoheñói mba’ete.
 firefoxview-tabpickup-step-signin-primarybutton = Ku’ejey
-firefoxview-syncedtabs-signin-header = Ejapyhy tendayke oimeha guive
-firefoxview-syncedtabs-signin-description = Ehecha hag̃ua ne rendayke oimeraẽva mba’e’oka guive eiporuhápe { -brand-product-name }, eike ne mba’etépe. Ndereguerekóiramo, rombohapéta emoheñoikuaa hag̃ua.
-firefoxview-syncedtabs-signin-primarybutton = Eike térã eñemboheraguapy
+firefoxview-syncedtabs-signin-header-2 = { -brand-product-name } opaite ne mba’e’okápe
+firefoxview-syncedtabs-signin-description-2 = Ehecha hag̃ua tendayke ijurujáva ne pumbyrýpe ha ambue mba’e’okápe, eñepyrũ tembiapo térã eñemboheraguapy ereko hag̃ua mba’ete. Pe mba’ete ndive, embojuehekuaa ñe’ẽñemi, tembiasakue ha hetave.
+firefoxview-syncedtabs-signin-primarybutton-2 = Eñemboheraguapy
 firefoxview-tabpickup-adddevice-header = Embojuehe { -brand-product-name } ne pumbyry ha tablétape
 firefoxview-tabpickup-adddevice-description = Emboguejy { -brand-product-name } pumbyrýpe ha eñepyrũ tembiapo upépe.
 firefoxview-tabpickup-adddevice-learn-how = Mba’éicha eikuaáta
 firefoxview-tabpickup-adddevice-primarybutton = Ereko { -brand-product-name } ne pumbyrýpe g̃uarã
-firefoxview-syncedtabs-adddevice-header = Eike { -brand-product-name } ndive ambue imba’e’okápe
-firefoxview-syncedtabs-adddevice-description = Ehecha ne rendayke oimeraẽva mba’e’oka guive eiporúvo { -brand-product-name }, eike mba’e’okakuérape. Eikuaa mba’éicha <a data-l10n-name="url">eikéta mba’e’okápe</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Ejapyhy tendayke oimeha guive
+firefoxview-syncedtabs-adddevice-description-2 = Eñepyrũ tembiapo { -brand-product-name } ne pumbyry térã ambue mohendahápe ehecha hag̃ua tendayke ápe. Ehecha mba’éichapa <a data-l10n-name="url">embojuajúta ambue mba’e’oka</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Ereko { -brand-product-name } ne pumbyrýpe
 firefoxview-tabpickup-synctabs-header = Emyandy tendayke ñembojuehe
 firefoxview-tabpickup-synctabs-description = Emoneĩ { -brand-short-name } omoherakuãvo tendayke mba’e’oka pa’ũme.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Mba’éicha eikuaáta
 firefoxview-tabpickup-synctabs-primarybutton = Embojuehe tendayke ijurujáva
 firefoxview-syncedtabs-synctabs-header = Embohekopyahu mbojueheha ñemboheko
 firefoxview-syncedtabs-synctabs-description = Ehecha hag̃ua tendayke ambue mba’e’okagua, embojuehe tendayke ijurujáva.
-firefoxview-syncedtabs-synctabs-checkbox = Emoneĩ tendayke ijurujáva tojuehekuaa
 firefoxview-syncedtabs-loading-header = Ñemboheko oku’éma
 firefoxview-syncedtabs-loading-description = Emoĩmbávo, ehecháta umi tendayke ijurujáva ambue mba’e’okápe. Eporandujey ag̃amieve.
 firefoxview-tabpickup-fxa-admin-disabled-header = Nde atyguasu omboyke pe ñembojuehe
@@ -56,10 +53,10 @@ firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } nom
 firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } nombojuehekuaái tendayke mba’e’okakuéra pa’ũme nde atyguasu ombogue rupi ñembojuehe.
 firefoxview-tabpickup-network-offline-header = Ehecha oiko porãpa ñanduti
 firefoxview-tabpickup-network-offline-description = Eiporúramo firewall térã proxy, ehechajey { -brand-short-name } oñemoneĩpa eikekuaa hag̃ua ñandutípe.
-firefoxview-tabpickup-network-offline-primarybutton = Eha’ãjey
+firefoxview-tabpickup-network-offline-primarybutton = Eha’ã jey
 firefoxview-tabpickup-sync-error-header = Oreapañuái rombojuehe hag̃ua
-firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } noñe’ẽkuaái ñembojuehe me’ẽhára ndive ko’ag̃aite. Eha’ãjey ag̃amieve.
-firefoxview-tabpickup-sync-error-primarybutton = Eha’ãjey
+firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } noñe’ẽkuaái ñembojuehe me’ẽhára ndive ko’ag̃aite. Eha’ã jey ag̃amieve.
+firefoxview-tabpickup-sync-error-primarybutton = Eha’ã jey
 firefoxview-tabpickup-sync-disconnected-header = Emyandy ñembojuehe eku’ejey hag̃ua
 firefoxview-tabpickup-sync-disconnected-description = Eru hag̃ua tendayke, oñemoneĩva’erã ñembojuehe { -brand-short-name }-pe.
 firefoxview-tabpickup-sync-disconnected-primarybutton = Emyandy ñembojuehe mbohekohápe
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Oñembotyramovéva
 firefoxview-closed-tabs-description2 = Embojurujajey kuatiarogue embotýva ko ovetãme.
 firefoxview-closed-tabs-placeholder-header = Ndaipóri tendayke oñembotyramóva
 firefoxview-closed-tabs-placeholder-body = Embotývo peteĩ tendayke ko ovetãme, ehekakuaa ko’a guive.
-firefoxview-closed-tabs-placeholder-body2 = Embotývo peteĩ tendayke ehekakuaa ko’a guive.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -117,6 +113,8 @@ firefoxview-history-nav = Tembiasakue
 firefoxview-history-header = Tembiasakue
 firefoxview-history-context-delete = Emboguete tembiasakuégui
     .accesskey = D
+firefoxview-history-context-forget-site = Ehejarei ko Tenda…
+    .accesskey = F
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
@@ -148,8 +146,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Ovetã { $winID } (Ag̃agua)
-firefoxview-opentabs-focus-tab =
-    .title = Emoambue tendayképe
 firefoxview-show-more = Ehechaukave
 firefoxview-show-less = Ehechauka’ive
 firefoxview-show-all = Ehechaukapaite
@@ -161,12 +157,15 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Eheka tembiasakuépe
+# Placeholder for the input field to search in bookmarks ("search" is a verb).
+firefoxview-search-text-box-bookmarks =
+    .placeholder = Eheka techaukahápe
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Ndaipóri tendayke oñembotyramóva
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Eheka tendayke mbojuehepyrépe
+firefoxview-search-text-box-tabs =
+    .placeholder = Eheka tendayke
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Eheka tendayke ijurujávape
@@ -189,10 +188,6 @@ firefoxview-sort-history-by-date-label = Arange rupive
 firefoxview-sort-history-by-site-label = Tenda rupive
 firefoxview-sort-open-tabs-by-recency-label = Emoĩporã tembiapokue ipyahúvare
 firefoxview-sort-open-tabs-by-order-label = Emoĩporã tabulación rupive
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Emoambue { $url }-pe
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -209,7 +204,6 @@ firefoxview-history-site-localhost = (marandurenda pypegua)
 ##
 
 firefoxview-show-all-history = Tembiasakue jehechaukapa
-firefoxview-view-more-browsing-history = Ehecha kundahára rembiasakue
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -225,9 +219,8 @@ firefoxview-choose-browser-button = Eiporavo kundahára
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Ndaipóri jehechaukarã
-firefoxview-dont-remember-history-empty-description = Ne rekoñemi ñemo’ã tuicha mba’e oréve g̃uarã. Upévare ikatu ehechameme tembiapo omomandu’áva { -brand-short-name }.
-firefoxview-dont-remember-history-empty-description-two = Pe ñemboheko ko’ag̃agua oĩháicha, { -brand-short-name } naimandu’ái tembiapóre oikundahakuévo. Emoambuekuaa hag̃ua, <a data-l10n-name="history-settings-url-two">emoambue ñemboheko tembiasakuégui</a>.
+firefoxview-dont-remember-history-empty-header-2 = Reikuaa mba’etérehepa nemandu’a { -brand-short-name }
+firefoxview-dont-remember-history-empty-description-one = Ko’ág̃a rupi, { -brand-short-name } hesarái ñeikundahágui. Emoambue hag̃ua, <a data-l10n-name="history-settings-url-two">embohekopyahu tembiasakue ñemboheko</a>.
 
 ##
 

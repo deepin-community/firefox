@@ -15,6 +15,8 @@ about-logging-set-log-file = Lochbestân ynstelle
 about-logging-set-log-modules = Lochmodules ynstelle
 about-logging-start-logging = Loggen starte
 about-logging-stop-logging = Loggen stopje
+about-logging-copy-as-url = Aktuele ynstellingen as URL kopiearje
+about-logging-url-copied = Lochboekynstellingen as in yn it foar ynstelde URL nei it klamboerd kopiearre
 about-logging-buttons-disabled = Logging konfigurearre fia omjouwingsfariabelen, dynamyske konfiguraasje net beskikber.
 about-logging-some-elements-disabled = Logging konfigurearre fia URL, guon konfiguraasje-opsjes binne net beskikber
 about-logging-info = Ynfo:
@@ -27,6 +29,9 @@ about-logging-no-log-modules = Gjin
 about-logging-no-log-file = Gjin
 about-logging-logging-preset-selector-text = Foarynstelling logging:
 about-logging-with-profiler-stacks-checkbox = Stacktraces foar lochboekberjochten ynskeakelje
+about-logging-with-javascript-tracing-checkbox = JavaScript-trasearring ynskeakelje
+about-logging-menu =
+    .title = Avansearre opsjes
 
 ## Logging presets
 
@@ -44,6 +49,14 @@ about-logging-preset-media-playback-label = Media ôfspylje
 about-logging-preset-media-playback-description = Logboekmodulen om problemen mei it ôfspyljen fan media te diagnostisearjen (gjin problemen mei fideokonferinsjes)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Logboekmodulen om WebRTC-oanroppen te diagnostisearjen
+about-logging-preset-webcodecs-label = WebCodecs
+about-logging-preset-webcodecs-description = Logboekmodulen om problemen mei WebCodecs-audio-/fideodecoders en -encoders, en ôfbyldingsdecoders te diagnostisearjen
+about-logging-preset-ml-label = Masinaal leare
+about-logging-preset-ml-description = Logboekmodulen om masineoersettingsproblemen te diagnostisearjen
+about-logging-preset-web-compat-label = Webkompatibiliteit
+about-logging-preset-web-compat-description = Logboekmodulen om webkompatibiliteitsproblemen  te diagnostisearjen
+about-logging-preset-navigation = Navigaasje
+about-logging-preset-navigation-description = Logboekmodules om problemen mei navigaasje en sesjeskiednis te diagnostisearjen
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Logboekmodulen om WebGPU te diagnostisearjen
 about-logging-preset-gfx-label = Grafysk
@@ -56,9 +69,7 @@ about-logging-preset-custom-description = Logboekmodulen hânmjittich selektearr
 # Error handling
 about-logging-error = Flater:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Unjildige wearde ‘{ $v }’ foar kaai ‘{ $k }’
 about-logging-unknown-logging-preset = Unbekende foarynstelling logging ‘{ $v }’
@@ -66,4 +77,53 @@ about-logging-unknown-profiler-preset = Unbekende foarynstelling foar profiler �
 about-logging-unknown-option = Unbekende about:logging-opsje ‘{ $k }’
 about-logging-configuration-url-ignored = Konfiguraasje-URL negearre
 about-logging-file-and-profiler-override = Kin net tagelyk bestânsútfier forsearje en profileropsjes oerskriuwe
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-unknown-error = Der is in flater bard : { $errorText }
 about-logging-configured-via-url = Opsje konfigurearre fia URL
+
+## The upload interface is shown only with the preference toolkit.aboutLogging.uploadProfileToCloud
+## set to true. It is false by default, except on Android.
+
+about-logging-upload-question = De profylgegevens binne fêstlein. Wolle jo dizze bewarje of oplade?
+about-logging-save-button = Bewarje
+about-logging-upload-button = Oplade
+# Variables:
+#   $path (string) - The path where the profile can be found.
+about-logging-saved = Bewarre yn { $path }
+# Variables:
+#   $percent (number) - The upload completion progress, to be displayed as a percentage. This is a value between 0 and 1.
+about-logging-uploading-progress = Profylgegevens oplade: { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+# Variables:
+#   $url (string) - The URL where the profile can be found
+about-logging-uploaded = Oplaad nei <a data-l10n-name="uploaded-message-url">{ $url }</a>
+about-logging-share-uploaded-url = <img data-l10n-name="share-image"/> URL diele
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-upload-error = Der is in flater bard by it opladen fan it profyl: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-profile-storage-error = Der is in flater bard by it bewarjen fan it opladen profyl: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-save-error = Der is in flater bard by it bewarjen fan it bestân: { $errorText }
+
+## Uploaded Profiles section
+
+# This string is used as the default name for performance profiles when they are
+# uploaded from about:logging and saved to the local database. The generated
+# name will appear in the "Uploaded Profiles" section list, allowing users to
+# identify when each profile was captured.
+# Variables:
+#   $date (date) - The date and time when the profile was uploaded
+about-logging-uploaded-profile-name = Profyl { DATETIME($date, dateStyle: "short", timeStyle: "medium") }
+about-logging-uploaded-profiles-title = Opladen profilen
+about-logging-no-uploaded-profiles = Der binne noch gjin profilen oplaad.
+about-logging-delete-uploaded-profile = Fuortsmite
+about-logging-view-uploaded-profile = Profyl besjen
+about-logging-delete-profile-confirm-title = Profyl fuortsmite
+# Confirmation message shown when deleting an uploaded profile.
+# Variables:
+#   $profileName (string) - The name of the profile being deleted.
+about-logging-delete-profile-confirm = Binne jo wis dat jo it profyl ‘{ $profileName }’ fuortsmite wolle? Dit kin net ûngedien makke wurde.
+about-logging-deleting-profile = Fuortsmite…

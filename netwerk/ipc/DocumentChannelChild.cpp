@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +5,7 @@
 #include "DocumentChannelChild.h"
 
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/PolicyContainer.h"
 #include "mozilla/dom/RemoteType.h"
 #include "mozilla/extensions/StreamFilterParent.h"
 #include "mozilla/ipc/Endpoint.h"
@@ -119,6 +117,7 @@ DocumentChannelChild::AsyncOpen(nsIStreamListener* aListener) {
     case ExtContentPolicy::TYPE_DOCUMENT:
     case ExtContentPolicy::TYPE_SUBDOCUMENT: {
       DocumentCreationArgs docArgs;
+      docArgs.loadFlags() = mLoadFlags;
       docArgs.uriModified() = mUriModified;
       docArgs.isEmbeddingBlockedError() = mIsEmbeddingBlockedError;
 
@@ -164,7 +163,7 @@ DocumentChannelChild::AsyncOpen(nsIStreamListener* aListener) {
 
   mIsPending = true;
   mWasOpened = true;
-  mListener = listener;
+  mListener = std::move(listener);
 
   return NS_OK;
 }
@@ -212,8 +211,7 @@ IPCResult DocumentChannelChild::RecvDisconnectChildListeners(
           ExtContentPolicy::TYPE_DOCUMENT &&
       shell) {
     MOZ_ASSERT(shell->GetBrowsingContext()->IsTop());
-    if (mozilla::SessionHistoryInParent() &&
-        shell->GetBrowsingContext()->IsInBFCache()) {
+    if (shell->GetBrowsingContext()->IsInBFCache()) {
       DisconnectChildListeners(aStatus, aLoadGroupStatus);
     } else {
       // Tell the DocShell which channel to cancel if it enters the BFCache.
@@ -238,10 +236,10 @@ IPCResult DocumentChannelChild::RecvRedirectToRealChannel(
   // as will the loadingContext computed in LoadInfoArgsToLoadInfo.
   // Figure out if we need these for cross-origin subdocs.
   RefPtr<dom::Document> cspToInheritLoadingDocument;
-  nsCOMPtr<nsIContentSecurityPolicy> policy = mLoadState->Csp();
-  if (policy) {
-    nsWeakPtr ctx =
-        static_cast<nsCSPContext*>(policy.get())->GetLoadingContext();
+  nsCOMPtr<nsIContentSecurityPolicy> csp =
+      PolicyContainer::GetCSP(mLoadState->PolicyContainer());
+  if (csp) {
+    nsWeakPtr ctx = nsCSPContext::Cast(csp.get())->GetLoadingContext();
     cspToInheritLoadingDocument = do_QueryReferent(ctx);
   }
   nsCOMPtr<nsILoadInfo> loadInfo;
@@ -280,6 +278,9 @@ IPCResult DocumentChannelChild::RecvRedirectToRealChannel(
 
   if (nsCOMPtr<nsIHttpChannel> httpChannel = do_QueryInterface(newChannel)) {
     rv = httpChannel->SetChannelId(aArgs.channelId());
+    if (aArgs.referrerInfo()) {
+      rv = httpChannel->SetReferrerInfo(aArgs.referrerInfo());
+    }
   }
   if (NS_FAILED(rv)) {
     return IPC_OK();

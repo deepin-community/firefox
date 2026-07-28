@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,16 +5,12 @@
 #ifndef AudioEventTimeline_h_
 #define AudioEventTimeline_h_
 
-#include <algorithm>
-
 #include "MainThreadUtils.h"
 #include "WebAudioUtils.h"
 #include "math.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/DefineEnum.h"
 #include "mozilla/ErrorResult.h"
-#include "mozilla/FloatingPoint.h"
-#include "mozilla/PodOperations.h"
 #include "nsTArray.h"
 
 // XXX Avoid including this here by moving function bodies to the cpp file
@@ -31,8 +25,8 @@ namespace dom {
 struct AudioTimelineEvent {
   MOZ_DEFINE_ENUM_WITH_BASE_AND_TOSTRING_AT_CLASS_SCOPE(
       Type, uint32_t,
-      (SetValue, SetValueAtTime, LinearRamp, ExponentialRamp, SetTarget,
-       SetValueCurve, Track, Cancel));
+      (SetValueAtTime, LinearRamp, ExponentialRamp, SetTarget, SetValueCurve,
+       Track, Cancel));
 
   class TimeUnion {
    public:
@@ -311,17 +305,6 @@ class AudioEventTimeline {
     // This method should only be called if HasSimpleValue() returns true
     MOZ_ASSERT(HasSimpleValue());
     return mSimpleValue.value();
-  }
-
-  void SetValue(float aValue) {
-    // FIXME: bug 1308435
-    // A spec change means this should instead behave like setValueAtTime().
-
-    // Silently don't change anything if there are any events
-    if (mEvents.IsEmpty()) {
-      mSetTargetStartValue = mDefaultValue = aValue;
-      mSimpleValue = Some(aValue);
-    }
   }
 
   template <typename TimeType>

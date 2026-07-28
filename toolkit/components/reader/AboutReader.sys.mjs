@@ -2,33 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { ReaderMode } from "resource://gre/modules/ReaderMode.sys.mjs";
+import { ReaderMode } from "moz-src:///toolkit/components/reader/ReaderMode.sys.mjs";
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 const lazy = {};
 let gScrollPositions = new Map();
 let lastSelectedTheme = "auto";
-let improvedTextMenuEnabled = Services.prefs.getBoolPref(
-  "reader.improved_text_menu.enabled",
-  false
-);
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AsyncPrefs: "resource://gre/modules/AsyncPrefs.sys.mjs",
   NarrateControls: "resource://gre/modules/narrate/NarrateControls.sys.mjs",
 });
 
-ChromeUtils.defineLazyGetter(
-  lazy,
-  "numberFormat",
-  () => new Services.intl.NumberFormat(undefined)
-);
-ChromeUtils.defineLazyGetter(
-  lazy,
-  "pluralRules",
-  () => new Services.intl.PluralRules(undefined)
-);
 ChromeUtils.defineLazyGetter(
   lazy,
   "l10n",
@@ -85,8 +71,6 @@ const DEFAULT_COLORS = {
   "selection-highlight": "#FFFFCC",
 };
 
-Services.telemetry.setEventRecordingEnabled("readermode", true);
-
 const zoomOnCtrl =
   Services.prefs.getIntPref("mousewheel.with_control.action", 3) == 3;
 const zoomOnMeta =
@@ -133,9 +117,7 @@ export var AboutReader = function (
   this._innerWindowId = win.windowGlobalChild.innerWindowId;
 
   this._article = null;
-  this._languagePromise = new Promise(resolve => {
-    this._foundLanguage = resolve;
-  });
+  this._languageDeferred = Promise.withResolvers();
 
   if (articlePromise) {
     this._articlePromise = articlePromise;
@@ -209,19 +191,9 @@ export var AboutReader = function (
   );
 
   // fetch color scheme values from prefs.
-  let colorsMenuColorSchemeValues = JSON.parse(
+  let colorSchemeValues = JSON.parse(
     Services.prefs.getCharPref("reader.color_scheme.values")
   );
-  // remove contrast and gray options from regular menu.
-  let colorSchemeValues = [...colorsMenuColorSchemeValues];
-  colorSchemeValues.splice(colorSchemeValues.length - 2, 2);
-
-  let colorsMenuColorSchemeOptions = colorsMenuColorSchemeValues.map(value => ({
-    l10nId: COLORSCHEME_L10N_IDS[value],
-    groupName: "color-scheme",
-    value,
-    itemClass: value + "-button",
-  }));
 
   let colorSchemeOptions = colorSchemeValues.map(value => ({
     l10nId: COLORSCHEME_L10N_IDS[value],
@@ -231,54 +203,27 @@ export var AboutReader = function (
   }));
   let colorScheme = Services.prefs.getCharPref("reader.color_scheme");
 
-  if (Services.prefs.getBoolPref("reader.colors_menu.enabled", false)) {
-    doc.getElementById("regular-color-scheme").hidden = true;
-    doc.getElementById("custom-colors-color-scheme").hidden = false;
+  this._setupSegmentedButton(
+    "color-scheme-buttons",
+    colorSchemeOptions,
+    colorScheme,
+    this._setColorSchemePref.bind(this)
+  );
 
-    this._setupSegmentedButton(
-      "colors-menu-color-scheme-buttons",
-      colorsMenuColorSchemeOptions,
-      colorScheme,
-      this._setColorSchemePref.bind(this)
-    );
-    this._setupCustomColors(
-      CUSTOM_THEME_COLOR_INPUTS,
-      "custom-colors-selection",
-      "about-reader-custom-colors"
-    );
-    this._setupButton(
-      "custom-colors-reset-button",
-      this._resetCustomColors.bind(this)
-    );
-    this._handleThemeFocus();
-  } else {
-    this._setupSegmentedButton(
-      "color-scheme-buttons",
-      colorSchemeOptions,
-      colorScheme,
-      this._setColorSchemePref.bind(this)
-    );
-  }
+  this._setupCustomColors(
+    CUSTOM_THEME_COLOR_INPUTS,
+    "custom-colors-selection",
+    "about-reader-custom-colors"
+  );
+
+  this._setupButton(
+    "custom-colors-reset-button",
+    this._resetCustomColors.bind(this)
+  );
+
+  this._handleThemeFocus();
 
   this._setColorSchemePref(colorScheme);
-
-  let fontTypeOptions = [
-    {
-      l10nId: "about-reader-font-type-sans-serif",
-      groupName: "font-type",
-      value: "sans-serif",
-      itemClass: "sans-serif-button",
-    },
-    {
-      l10nId: "about-reader-font-type-serif",
-      groupName: "font-type",
-      value: "serif",
-      itemClass: "serif-button",
-    },
-  ];
-
-  // TODO: Move font type pref getting alongside other prefs when old menu is retired.
-  let fontType = Services.prefs.getCharPref("reader.font_type", "sans-serif");
 
   // Differentiates between the tick mark labels for width vs spacing controls
   // for localization purposes.
@@ -348,137 +293,127 @@ export var AboutReader = function (
       value: "right",
       itemClass: "right-align-button",
     },
+    {
+      l10nId: "about-reader-text-alignment-justify",
+      groupName: "text-alignment",
+      value: "justify",
+      itemClass: "justify-align-button",
+    },
   ];
 
   // If the page is rtl, reverse order of text alignment options.
+  // The justify text option remains as the last.
   if (isAppLocaleRTL) {
-    textAlignmentOptions = textAlignmentOptions.reverse();
+    textAlignmentOptions = [
+      ...textAlignmentOptions.slice(0, 3).reverse(),
+      ...textAlignmentOptions.slice(3),
+    ];
   }
 
-  if (improvedTextMenuEnabled) {
-    doc.getElementById("regular-text-menu").hidden = true;
-    doc.getElementById("improved-text-menu").hidden = false;
-
-    let selectorFontTypeValues = ["sans-serif", "serif", "monospace"];
-    try {
-      selectorFontTypeValues = JSON.parse(
-        Services.prefs.getCharPref("reader.font_type.values")
-      );
-    } catch (e) {
-      console.error(
-        "There was an error fetching the font type values pref: ",
-        e.message
-      );
-    }
-    this._setupSelector(
-      "font-type",
-      selectorFontTypeValues,
-      fontType,
-      this._setFontTypeSelector.bind(this),
-      FONT_TYPE_L10N_IDS
+  let selectorFontTypeValues = ["sans-serif", "serif", "monospace"];
+  try {
+    selectorFontTypeValues = JSON.parse(
+      Services.prefs.getCharPref("reader.font_type.values")
     );
-    this._setFontTypeSelector(fontType);
-
-    let fontWeightValues = ["regular", "light", "bold"];
-    try {
-      fontWeightValues = JSON.parse(
-        Services.prefs.getCharPref("reader.font_weight.values")
-      );
-    } catch (e) {
-      console.error(
-        "There was an error fetching the font weight values pref: ",
-        e.message
-      );
-    }
-    let fontWeight = Services.prefs.getCharPref(
-      "reader.font_weight",
-      "regular"
+  } catch (e) {
+    console.error(
+      "There was an error fetching the font type values pref: ",
+      e.message
     );
-    this._setupSelector(
-      "font-weight",
-      fontWeightValues,
-      fontWeight,
-      this._setFontWeight.bind(this),
-      FONT_WEIGHT_L10N_IDS
-    );
-    this._setFontWeight(fontWeight);
-
-    let contentWidth = Services.prefs.getIntPref("reader.content_width", 3);
-    this._setupSlider(
-      "content-width",
-      contentWidthSliderOptions,
-      contentWidth,
-      this._setContentWidthSlider.bind(this)
-    );
-    this._setContentWidthSlider(contentWidth);
-
-    let lineSpacing = Services.prefs.getIntPref("reader.line_height", 4);
-    this._setupSlider(
-      "line-spacing",
-      lineSpacingSliderOptions,
-      lineSpacing,
-      this._setLineSpacing.bind(this)
-    );
-    this._setLineSpacing(lineSpacing);
-
-    let characterSpacing = Services.prefs.getIntPref(
-      "reader.character_spacing",
-      1
-    );
-    this._setupSlider(
-      "character-spacing",
-      characterSpacingSliderOptions,
-      characterSpacing,
-      this._setCharacterSpacing.bind(this)
-    );
-    this._setCharacterSpacing(characterSpacing);
-
-    let wordSpacing = Services.prefs.getIntPref("reader.word_spacing", 1);
-    this._setupSlider(
-      "word-spacing",
-      wordSpacingSliderOptions,
-      wordSpacing,
-      this._setWordSpacing.bind(this)
-    );
-    this._setWordSpacing(wordSpacing);
-
-    let textAlignment = Services.prefs.getCharPref(
-      "reader.text_alignment",
-      "start"
-    );
-    this._setupSegmentedButton(
-      "text-alignment-buttons",
-      textAlignmentOptions,
-      textAlignment,
-      this._setTextAlignment.bind(this)
-    );
-    this._setTextAlignment(textAlignment);
-
-    this._setupButton(
-      "text-layout-reset-button",
-      this._resetTextLayout.bind(this)
-    );
-
-    this._handleTextLayoutFocus();
-  } else {
-    this._setupSegmentedButton(
-      "font-type-buttons",
-      fontTypeOptions,
-      fontType,
-      this._setFontType.bind(this)
-    );
-
-    this._setupContentWidthButtons();
-
-    this._setupLineHeightButtons();
-
-    this._setFontType(fontType);
   }
+  let fontType = Services.prefs.getCharPref("reader.font_type", "sans-serif");
+  this._setupSelector(
+    "font-type",
+    selectorFontTypeValues,
+    fontType,
+    this._setFontTypeSelector.bind(this),
+    FONT_TYPE_L10N_IDS
+  );
+  this._setFontTypeSelector(fontType);
+
+  let fontWeightValues = ["regular", "light", "bold"];
+  try {
+    fontWeightValues = JSON.parse(
+      Services.prefs.getCharPref("reader.font_weight.values")
+    );
+  } catch (e) {
+    console.error(
+      "There was an error fetching the font weight values pref: ",
+      e.message
+    );
+  }
+  let fontWeight = Services.prefs.getCharPref("reader.font_weight", "regular");
+  this._setupSelector(
+    "font-weight",
+    fontWeightValues,
+    fontWeight,
+    this._setFontWeight.bind(this),
+    FONT_WEIGHT_L10N_IDS
+  );
+  this._setFontWeight(fontWeight);
+
+  let contentWidth = Services.prefs.getIntPref("reader.content_width", 3);
+  this._setupSlider(
+    "content-width",
+    contentWidthSliderOptions,
+    contentWidth,
+    this._setContentWidth.bind(this)
+  );
+  this._setContentWidth(contentWidth);
+
+  let lineSpacing = Services.prefs.getIntPref("reader.line_height", 4);
+  this._setupSlider(
+    "line-spacing",
+    lineSpacingSliderOptions,
+    lineSpacing,
+    this._setLineSpacing.bind(this)
+  );
+  this._setLineSpacing(lineSpacing);
+
+  let characterSpacing = Services.prefs.getIntPref(
+    "reader.character_spacing",
+    1
+  );
+  this._setupSlider(
+    "character-spacing",
+    characterSpacingSliderOptions,
+    characterSpacing,
+    this._setCharacterSpacing.bind(this)
+  );
+  this._setCharacterSpacing(characterSpacing);
+
+  let wordSpacing = Services.prefs.getIntPref("reader.word_spacing", 1);
+  this._setupSlider(
+    "word-spacing",
+    wordSpacingSliderOptions,
+    wordSpacing,
+    this._setWordSpacing.bind(this)
+  );
+  this._setWordSpacing(wordSpacing);
+
+  let textAlignment = Services.prefs.getCharPref(
+    "reader.text_alignment",
+    "start"
+  );
+  this._setupSegmentedButton(
+    "text-alignment-buttons",
+    textAlignmentOptions,
+    textAlignment,
+    this._setTextAlignment.bind(this)
+  );
+  this._setTextAlignment(textAlignment);
+
+  this._setupButton(
+    "text-layout-reset-button",
+    this._resetTextLayout.bind(this)
+  );
+
+  this._handleTextLayoutFocus();
 
   this._setupFontSizeButtons();
 
   if (win.speechSynthesis && Services.prefs.getBoolPref("narrate.enabled")) {
-    new lazy.NarrateControls(win, this._languagePromise);
+    new lazy.NarrateControls(win, this._languageDeferred.promise);
   }
 
   this._loadArticle(docContentType);
@@ -651,15 +586,9 @@ AboutReader.prototype = {
           target.attributes.getNamedItem(`data-telemetry-id`)?.value;
 
         if (clickTelemetryId && !blurTelemetryIds.has(clickTelemetryId)) {
-          Services.telemetry.recordEvent(
-            "readermode",
-            "button",
-            "click",
-            null,
-            {
-              label: clickTelemetryId,
-            }
-          );
+          Glean.readermode.buttonClick.record({
+            label: clickTelemetryId,
+          });
         }
 
         if (target.classList.contains("dropdown-toggle")) {
@@ -673,15 +602,9 @@ AboutReader.prototype = {
             target.attributes.getNamedItem(`data-telemetry-id`)?.value;
 
           if (blurTelemetryId && blurTelemetryIds.has(blurTelemetryId)) {
-            Services.telemetry.recordEvent(
-              "readermode",
-              "button",
-              "click",
-              null,
-              {
-                label: blurTelemetryId,
-              }
-            );
+            Glean.readermode.buttonClick.record({
+              label: blurTelemetryId,
+            });
           }
         }
         break;
@@ -808,15 +731,8 @@ AboutReader.prototype = {
   },
 
   _setupFontSizeButtons() {
-    let plusButton, minusButton;
-
-    if (improvedTextMenuEnabled) {
-      plusButton = this._doc.querySelector(".text-size-plus-button");
-      minusButton = this._doc.querySelector(".text-size-minus-button");
-    } else {
-      plusButton = this._doc.querySelector(".plus-button");
-      minusButton = this._doc.querySelector(".minus-button");
-    }
+    let plusButton = this._doc.querySelector(".text-size-plus-button");
+    let minusButton = this._doc.querySelector(".text-size-minus-button");
 
     let currentSize = Services.prefs.getIntPref("reader.font_size");
     this._setFontSize(currentSize);
@@ -846,18 +762,9 @@ AboutReader.prototype = {
   },
 
   _updateFontSizeButtonControls() {
-    let plusButton, minusButton;
     let currentSize = this._fontSize;
-
-    if (improvedTextMenuEnabled) {
-      plusButton = this._doc.querySelector(".text-size-plus-button");
-      minusButton = this._doc.querySelector(".text-size-minus-button");
-    } else {
-      plusButton = this._doc.querySelector(".plus-button");
-      minusButton = this._doc.querySelector(".minus-button");
-      let fontValue = this._doc.querySelector(".font-size-value");
-      fontValue.textContent = currentSize;
-    }
+    let plusButton = this._doc.querySelector(".text-size-plus-button");
+    let minusButton = this._doc.querySelector(".text-size-minus-button");
 
     if (currentSize === this.FONT_SIZE_MIN) {
       minusButton.setAttribute("disabled", true);
@@ -877,172 +784,6 @@ AboutReader.prototype = {
     this._setFontSize(currentSize);
     this._updateFontSizeButtonControls();
     this._scheduleToolbarOverlapHandler();
-  },
-
-  _setContentWidth(newContentWidth) {
-    this._contentWidth = newContentWidth;
-    this._displayContentWidth(newContentWidth);
-    let width = 20 + 5 * (this._contentWidth - 1) + "em";
-    this._doc.body.style.setProperty("--content-width", width);
-    this._scheduleToolbarOverlapHandler();
-    return lazy.AsyncPrefs.set("reader.content_width", this._contentWidth);
-  },
-
-  _displayContentWidth(currentContentWidth) {
-    let contentWidthValue = this._doc.querySelector(".content-width-value");
-    contentWidthValue.textContent = currentContentWidth;
-  },
-
-  _setupContentWidthButtons() {
-    const CONTENT_WIDTH_MIN = 1;
-    const CONTENT_WIDTH_MAX = 9;
-
-    let currentContentWidth = Services.prefs.getIntPref("reader.content_width");
-    currentContentWidth = Math.max(
-      CONTENT_WIDTH_MIN,
-      Math.min(CONTENT_WIDTH_MAX, currentContentWidth)
-    );
-
-    this._displayContentWidth(currentContentWidth);
-
-    let plusButton = this._doc.querySelector(".content-width-plus-button");
-    let minusButton = this._doc.querySelector(".content-width-minus-button");
-
-    function updateControls() {
-      if (currentContentWidth === CONTENT_WIDTH_MIN) {
-        minusButton.setAttribute("disabled", true);
-      } else {
-        minusButton.removeAttribute("disabled");
-      }
-      if (currentContentWidth === CONTENT_WIDTH_MAX) {
-        plusButton.setAttribute("disabled", true);
-      } else {
-        plusButton.removeAttribute("disabled");
-      }
-    }
-
-    updateControls();
-    this._setContentWidth(currentContentWidth);
-
-    plusButton.addEventListener(
-      "click",
-      event => {
-        if (!event.isTrusted) {
-          return;
-        }
-        event.stopPropagation();
-
-        if (currentContentWidth >= CONTENT_WIDTH_MAX) {
-          return;
-        }
-
-        currentContentWidth++;
-        updateControls();
-        this._setContentWidth(currentContentWidth);
-      },
-      true
-    );
-
-    minusButton.addEventListener(
-      "click",
-      event => {
-        if (!event.isTrusted) {
-          return;
-        }
-        event.stopPropagation();
-
-        if (currentContentWidth <= CONTENT_WIDTH_MIN) {
-          return;
-        }
-
-        currentContentWidth--;
-        updateControls();
-        this._setContentWidth(currentContentWidth);
-      },
-      true
-    );
-  },
-
-  _setLineHeight(newLineHeight) {
-    this._displayLineHeight(newLineHeight);
-    let height = 1 + 0.2 * (newLineHeight - 1) + "em";
-    this._containerElement.style.setProperty("--line-height", height);
-    return lazy.AsyncPrefs.set("reader.line_height", newLineHeight);
-  },
-
-  _displayLineHeight(currentLineHeight) {
-    let lineHeightValue = this._doc.querySelector(".line-height-value");
-    lineHeightValue.textContent = currentLineHeight;
-  },
-
-  _setupLineHeightButtons() {
-    const LINE_HEIGHT_MIN = 1;
-    const LINE_HEIGHT_MAX = 9;
-
-    let currentLineHeight = Services.prefs.getIntPref("reader.line_height");
-    currentLineHeight = Math.max(
-      LINE_HEIGHT_MIN,
-      Math.min(LINE_HEIGHT_MAX, currentLineHeight)
-    );
-
-    this._displayLineHeight(currentLineHeight);
-
-    let plusButton = this._doc.querySelector(".line-height-plus-button");
-    let minusButton = this._doc.querySelector(".line-height-minus-button");
-
-    function updateControls() {
-      if (currentLineHeight === LINE_HEIGHT_MIN) {
-        minusButton.setAttribute("disabled", true);
-      } else {
-        minusButton.removeAttribute("disabled");
-      }
-      if (currentLineHeight === LINE_HEIGHT_MAX) {
-        plusButton.setAttribute("disabled", true);
-      } else {
-        plusButton.removeAttribute("disabled");
-      }
-    }
-
-    updateControls();
-    this._setLineHeight(currentLineHeight);
-
-    plusButton.addEventListener(
-      "click",
-      event => {
-        if (!event.isTrusted) {
-          return;
-        }
-        event.stopPropagation();
-
-        if (currentLineHeight >= LINE_HEIGHT_MAX) {
-          return;
-        }
-
-        currentLineHeight++;
-        updateControls();
-        this._setLineHeight(currentLineHeight);
-      },
-      true
-    );
-
-    minusButton.addEventListener(
-      "click",
-      event => {
-        if (!event.isTrusted) {
-          return;
-        }
-        event.stopPropagation();
-
-        if (currentLineHeight <= LINE_HEIGHT_MIN) {
-          return;
-        }
-
-        currentLineHeight--;
-        updateControls();
-        this._setLineHeight(currentLineHeight);
-      },
-      true
-    );
   },
 
   _setupSelector(id, options, initialValue, callback, l10nIds) {
@@ -1070,27 +811,10 @@ AboutReader.prototype = {
   },
 
   _setFontTypeSelector(newFontType) {
-    if (newFontType === "sans-serif") {
-      this._doc.documentElement.style.setProperty(
-        "--font-family",
-        "Helvetica, Arial, sans-serif"
-      );
-    } else if (newFontType === "serif") {
-      this._doc.documentElement.style.setProperty(
-        "--font-family",
-        'Georgia, "Times New Roman", serif'
-      );
-    } else if (newFontType === "monospace") {
-      this._doc.documentElement.style.setProperty(
-        "--font-family",
-        '"Courier New", Courier, monospace'
-      );
-    } else {
-      this._doc.documentElement.style.setProperty(
-        "--font-family",
-        `"${newFontType}"`
-      );
-    }
+    this._doc.documentElement.style.setProperty(
+      "--font-family",
+      newFontType.includes(" ") ? `"${newFontType}"` : newFontType
+    );
 
     lazy.AsyncPrefs.set("reader.font_type", newFontType);
   },
@@ -1129,8 +853,7 @@ AboutReader.prototype = {
     sliderContainer.appendChild(slider);
   },
 
-  // Rename this function to setContentWidth when the old menu is retired.
-  _setContentWidthSlider(newContentWidth) {
+  _setContentWidth(newContentWidth) {
     // We map the slider range [1-9] to 20-60em.
     let width = 20 + 5 * (newContentWidth - 1) + "em";
     this._doc.body.style.setProperty("--content-width", width);
@@ -1237,7 +960,7 @@ AboutReader.prototype = {
 
     let contentWidth = doc.querySelector("#content-width-slider moz-slider");
     contentWidth.setAttribute("value", initial.contentWidth);
-    this._setContentWidthSlider(initial.contentWidth);
+    this._setContentWidth(initial.contentWidth);
 
     let lineSpacing = doc.querySelector("#line-spacing-slider moz-slider");
     lineSpacing.setAttribute("value", initial.lineSpacing);
@@ -1276,6 +999,16 @@ AboutReader.prototype = {
         textFirstFocusable.focus();
       }
     });
+    textFirstFocusable.addEventListener("keydown", e => {
+      if (e.key === "Tab" && e.shiftKey) {
+        e.preventDefault();
+        if (accordion.hasAttribute("open")) {
+          textResetButton.focus();
+        } else {
+          advancedHeader.focus();
+        }
+      }
+    });
   },
 
   _setColorScheme(newColorScheme) {
@@ -1303,10 +1036,10 @@ AboutReader.prototype = {
     }
 
     if (this._colorScheme == "custom") {
-      const colorInputs = this._doc.querySelectorAll("color-input");
+      const colorInputs = this._doc.querySelectorAll("moz-input-color");
       colorInputs.forEach(input => {
         // Set document body styles to pref values.
-        let property = input.getAttribute("prop-name");
+        let property = input.getAttribute("name");
         let pref = `reader.custom_colors.${property}`;
         let customColor = Services.prefs.getStringPref(pref, "");
         // If customColor is truthy, set the value from pref.
@@ -1323,14 +1056,10 @@ AboutReader.prototype = {
   // Pref values include "auto", "dark", "light", "sepia",
   // "gray", "contrast", and "custom"
   _setColorSchemePref(colorSchemePref, fromInputEvent = false) {
-    // The input event for the last selected segmented button is fired
-    // upon loading a reader article in the same session. To prevent it
-    // from overwriting custom colors, we return false.
-    const colorsMenuEnabled = Services.prefs.getBoolPref(
-      "reader.colors_menu.enabled",
-      false
-    );
-    if (colorsMenuEnabled && this._colorScheme == "custom" && fromInputEvent) {
+    if (this._colorScheme == "custom" && fromInputEvent) {
+      // The input event for the last selected radio button is fired
+      // upon loading a reader article in the same session. To prevent it
+      // from overwriting custom colors, we return false.
       lastSelectedTheme = colorSchemePref;
       return false;
     }
@@ -1340,23 +1069,181 @@ AboutReader.prototype = {
     return true;
   },
 
-  _setFontType(newFontType) {
-    if (this._fontType === newFontType) {
-      return false;
+  _handleColorsTabClick(option) {
+    let doc = this._doc;
+    let deck = doc.querySelector("named-deck");
+    if (option == deck.getAttribute("selected-view")) {
+      return;
     }
 
-    let bodyClasses = this._doc.body.classList;
+    if (option == "customtheme") {
+      this._setColorSchemePref("custom");
+      lazy.AsyncPrefs.set("reader.color_scheme", "custom");
 
-    if (this._fontType) {
-      bodyClasses.remove(this._fontType);
+      // Store the last selected preset theme button.
+      const colorSchemePresets = doc.querySelector(".color-scheme-buttons");
+      const labels = colorSchemePresets.querySelectorAll("label");
+      labels.forEach(label => {
+        if (label.hasAttribute("checked")) {
+          lastSelectedTheme = label.className.split("-")[0];
+        }
+      });
+    } else if (option == "fxtheme") {
+      this._setColorSchemePref(lastSelectedTheme);
+      lazy.AsyncPrefs.set("reader.color_scheme", lastSelectedTheme);
+      // set the last selected button to checked.
+      const colorSchemePresets = doc.querySelector(".color-scheme-buttons");
+      const labels = colorSchemePresets.querySelectorAll("label");
+      labels.forEach(label => {
+        if (label.className == `${lastSelectedTheme}-button`) {
+          label.setAttribute("checked", "true");
+          label.previousElementSibling.setAttribute("checked", "true");
+        }
+      });
     }
+  },
 
-    this._fontType = newFontType;
-    bodyClasses.add(this._fontType);
+  _setupColorsTabs(options, callback) {
+    let doc = this._doc;
+    let colorScheme = Services.prefs.getCharPref("reader.color_scheme");
+    for (let option of options) {
+      let tabButton = doc.getElementById(`tabs-deck-button-${option}`);
+      // Open custom theme tab if color scheme is set to custom.
+      if (option == "customtheme" && colorScheme == "custom") {
+        tabButton.click();
+      }
+      tabButton.addEventListener(
+        "click",
+        function (aEvent) {
+          if (!aEvent.isTrusted) {
+            return;
+          }
 
-    lazy.AsyncPrefs.set("reader.font_type", this._fontType);
+          callback(option);
+        },
+        true
+      );
+    }
+  },
 
-    return true;
+  _setupColorInput(prop) {
+    let doc = this._doc;
+    let input = doc.createElement("moz-input-color");
+    input.setAttribute("name", prop);
+    let labelL10nId = `about-reader-custom-colors-${prop}2`;
+    input.setAttribute("data-l10n-id", labelL10nId);
+
+    let pref = `reader.custom_colors.${prop}`;
+    let customColor = Services.prefs.getStringPref(pref, "");
+    // Set the swatch color from prefs if one has been set.
+    let defaultColor = customColor || DEFAULT_COLORS[prop];
+    input.setAttribute("value", defaultColor);
+
+    // Attach event listener to update the pref and page colors on input.
+    input.addEventListener("input", e => {
+      const cssPropToUpdate = `--custom-theme-${prop}`;
+      const { value: updatedValue } = e.originalTarget;
+      this._doc.body.style.setProperty(cssPropToUpdate, updatedValue);
+
+      const prefToUpdate = `reader.custom_colors.${prop}`;
+      lazy.AsyncPrefs.set(prefToUpdate, updatedValue);
+
+      if (updatedValue != DEFAULT_COLORS[prop].toLowerCase()) {
+        this._toggleColorsResetButton(true);
+      }
+    });
+
+    return input;
+  },
+
+  _setupCustomColors(options, id) {
+    let doc = this._doc;
+    const list = doc.getElementsByClassName(id)[0];
+    let isCustom = false;
+
+    for (let option of options) {
+      let listItem = doc.createElement("li");
+      let colorInput = this._setupColorInput(option);
+      listItem.appendChild(colorInput);
+      list.appendChild(listItem);
+
+      // Verify that user preferences exist and use custom colors.
+      let pref = `reader.custom_colors.${option}`;
+      let customColor = Services.prefs.getStringPref(pref, "");
+      if (
+        customColor &&
+        customColor.toLowerCase() !== DEFAULT_COLORS[option].toLowerCase()
+      ) {
+        isCustom = true;
+      }
+    }
+    this._toggleColorsResetButton(isCustom);
+  },
+
+  _resetCustomColors() {
+    // Need to reset prefs, page colors, and color inputs.
+    const colorInputs = this._doc.querySelectorAll("moz-input-color");
+    colorInputs.forEach(input => {
+      let property = input.getAttribute("name");
+      let pref = `reader.custom_colors.${property}`;
+      lazy.AsyncPrefs.set(pref, "");
+
+      // Set css props to empty strings so they use fallback value.
+      let cssProp = `--custom-theme-${property}`;
+      this._doc.body.style.setProperty(cssProp, "");
+
+      let defaultColor = DEFAULT_COLORS[property];
+      input.setAttribute("value", defaultColor);
+    });
+    this._toggleColorsResetButton(false);
+  },
+
+  _toggleColorsResetButton(visible) {
+    let button = this._doc.querySelector(".custom-colors-reset-button");
+    button.hidden = !visible;
+  },
+
+  _handleThemeFocus() {
+    // Retain focus inside the menu panel.
+    let doc = this._doc;
+    let themeButtons = doc.querySelector(".color-scheme-buttons");
+    let defaultThemeFirstFocusable = doc.querySelector(
+      "#tabs-deck-button-fxtheme"
+    );
+    let themeResetButton = doc.querySelector(".custom-colors-reset-button");
+    let customThemeFirstFocusable = doc.querySelector(
+      "#tabs-deck-button-customtheme"
+    );
+
+    themeButtons.addEventListener("keydown", e => {
+      if (e.key === "Tab" && !e.shiftKey) {
+        e.preventDefault();
+        defaultThemeFirstFocusable.focus();
+      }
+    });
+    themeResetButton.addEventListener("keydown", e => {
+      if (e.key === "Tab" && !e.shiftKey) {
+        e.preventDefault();
+        customThemeFirstFocusable.focus();
+      }
+    });
+    defaultThemeFirstFocusable.addEventListener("keydown", e => {
+      if (e.key === "Tab" && e.shiftKey) {
+        e.preventDefault();
+        let themeLabels = themeButtons.getElementsByTagName("label");
+        for (const label of themeLabels) {
+          if (label.hasAttribute("checked")) {
+            doc.querySelector(`.${label.className}`).focus();
+          }
+        }
+      }
+    });
+    customThemeFirstFocusable.addEventListener("keydown", e => {
+      if (e.key === "Tab" && e.shiftKey) {
+        e.preventDefault();
+        themeResetButton.focus();
+      }
+    });
   },
 
   async _loadArticle(docContentType = "document") {
@@ -1565,19 +1452,28 @@ AboutReader.prototype = {
 
     const slow = article.readingTimeMinsSlow;
     const fast = article.readingTimeMinsFast;
-    const fastStr = lazy.numberFormat.format(fast);
-    const readTimeRange = lazy.numberFormat.formatRange(fast, slow);
-    this._doc.l10n.setAttributes(
-      this._readTimeElement,
-      "about-reader-estimated-read-time",
-      {
-        range: fast === slow ? `~${fastStr}` : `${readTimeRange}`,
-        rangePlural:
-          fast === slow
-            ? lazy.pluralRules.select(fast)
-            : lazy.pluralRules.selectRange(fast, slow),
-      }
-    );
+
+    // Display times in hours if either is at least 120 minutes.
+    if (slow < 120) {
+      const readingTimeRange = new Intl.NumberFormat(undefined, {
+        style: "unit",
+        unit: "minute",
+        unitDisplay: "long",
+      }).formatRange(fast, slow);
+
+      this._readTimeElement.textContent = readingTimeRange;
+    } else {
+      const fastHours = Math.round(fast / 60);
+      const slowHours = Math.round(slow / 60);
+
+      const readingTimeRange = new Intl.NumberFormat(undefined, {
+        style: "unit",
+        unit: "hour",
+        unitDisplay: "long",
+      }).formatRange(fastHours, slowHours);
+
+      this._readTimeElement.textContent = readingTimeRange;
+    }
 
     // If a document title was not provided in the constructor, we'll fall back
     // to using the article title.
@@ -1585,7 +1481,10 @@ AboutReader.prototype = {
       this._doc.title = article.title;
     }
 
-    this._containerElement.setAttribute("lang", article.lang);
+    let lang = article.lang ?? article.detectedLanguage;
+    if (lang) {
+      this._containerElement.setAttribute("lang", lang);
+    }
 
     this._headerElement.classList.add("reader-show-element");
 
@@ -1603,8 +1502,11 @@ AboutReader.prototype = {
     this._contentElement.innerHTML = "";
     this._contentElement.appendChild(contentFragment);
     this._maybeSetTextDirection(article);
-    this._foundLanguage(article.language);
+    this._languageDeferred.resolve(article.detectedLanguage);
 
+    if (article.textPlainDoc) {
+      this._contentElement.classList.add("plain-text-doc");
+    }
     this._contentElement.classList.add("reader-show-element");
     this._updateImageMargins();
     this._updateWideTables();
@@ -1708,7 +1610,6 @@ AboutReader.prototype = {
 
   _setupButton(id, callback) {
     let button = this._doc.querySelector("." + id);
-    button.removeAttribute("hidden");
     button.addEventListener(
       "click",
       function (aEvent) {
@@ -1721,152 +1622,6 @@ AboutReader.prototype = {
       },
       true
     );
-  },
-
-  _handleColorsTabClick(option) {
-    let doc = this._doc;
-    let deck = doc.querySelector("named-deck");
-    if (option == deck.getAttribute("selected-view")) {
-      return;
-    }
-
-    if (option == "customtheme") {
-      this._setColorSchemePref("custom");
-      lazy.AsyncPrefs.set("reader.color_scheme", "custom");
-
-      // Store the last selected preset theme button.
-      const colorSchemePresets = doc.querySelector(
-        ".colors-menu-color-scheme-buttons"
-      );
-      const labels = colorSchemePresets.querySelectorAll("label");
-      labels.forEach(label => {
-        if (label.hasAttribute("checked")) {
-          lastSelectedTheme = label.className.split("-")[0];
-        }
-      });
-    } else if (option == "fxtheme") {
-      this._setColorSchemePref(lastSelectedTheme);
-      lazy.AsyncPrefs.set("reader.color_scheme", lastSelectedTheme);
-      // set the last selected button to checked.
-      const colorSchemePresets = doc.querySelector(
-        ".colors-menu-color-scheme-buttons"
-      );
-      const labels = colorSchemePresets.querySelectorAll("label");
-      labels.forEach(label => {
-        if (label.className == `${lastSelectedTheme}-button`) {
-          label.setAttribute("checked", "true");
-          label.previousElementSibling.setAttribute("checked", "true");
-        }
-      });
-    }
-  },
-
-  _setupColorsTabs(options, callback) {
-    let doc = this._doc;
-    let colorScheme = Services.prefs.getCharPref("reader.color_scheme");
-    for (let option of options) {
-      let tabButton = doc.getElementById(`tabs-deck-button-${option}`);
-      // Open custom theme tab if color scheme is set to custom.
-      if (option == "customtheme" && colorScheme == "custom") {
-        tabButton.click();
-      }
-      tabButton.addEventListener(
-        "click",
-        function (aEvent) {
-          if (!aEvent.isTrusted) {
-            return;
-          }
-
-          callback(option);
-        },
-        true
-      );
-    }
-  },
-
-  _setupColorInput(prop) {
-    let doc = this._doc;
-    let input = doc.createElement("color-input");
-    input.setAttribute("prop-name", prop);
-    let labelL10nId = `about-reader-custom-colors-${prop}`;
-    input.setAttribute("data-l10n-id", labelL10nId);
-    input.setAttribute("data-telemetry-id", `custom-color-picker-${prop}`);
-
-    let pref = `reader.custom_colors.${prop}`;
-    let customColor = Services.prefs.getStringPref(pref, "");
-    // Set the swatch color from prefs if one has been set.
-    if (customColor) {
-      input.setAttribute("color", customColor);
-    } else {
-      let defaultColor = DEFAULT_COLORS[prop];
-      input.setAttribute("color", defaultColor);
-    }
-
-    // Attach event listener to update the pref and page colors on input.
-    input.addEventListener("color-picked", e => {
-      const cssPropToUpdate = `--custom-theme-${prop}`;
-      this._doc.body.style.setProperty(cssPropToUpdate, e.detail);
-
-      const prefToUpdate = `reader.custom_colors.${prop}`;
-      lazy.AsyncPrefs.set(prefToUpdate, e.detail);
-    });
-
-    return input;
-  },
-
-  _setupCustomColors(options, id) {
-    let doc = this._doc;
-    const list = doc.getElementsByClassName(id)[0];
-
-    for (let option of options) {
-      let listItem = doc.createElement("li");
-      let colorInput = this._setupColorInput(option);
-      listItem.appendChild(colorInput);
-      list.appendChild(listItem);
-    }
-  },
-
-  _resetCustomColors() {
-    // Need to reset prefs, page colors, and color inputs.
-    const colorInputs = this._doc.querySelectorAll("color-input");
-    colorInputs.forEach(input => {
-      let property = input.getAttribute("prop-name");
-      let pref = `reader.custom_colors.${property}`;
-      lazy.AsyncPrefs.set(pref, "");
-
-      // Set css props to empty strings so they use fallback value.
-      let cssProp = `--custom-theme-${property}`;
-      this._doc.body.style.setProperty(cssProp, "");
-
-      let defaultColor = DEFAULT_COLORS[property];
-      input.setAttribute("color", defaultColor);
-    });
-  },
-
-  _handleThemeFocus() {
-    // Retain focus inside the menu panel.
-    let doc = this._doc;
-    let themeButtons = doc.querySelector(".colors-menu-color-scheme-buttons");
-    let defaultThemeFirstFocusable = doc.querySelector(
-      "#tabs-deck-button-fxtheme"
-    );
-    let themeResetButton = doc.querySelector(".custom-colors-reset-button");
-    let customThemeFirstFocusable = doc.querySelector(
-      "#tabs-deck-button-customtheme"
-    );
-
-    themeButtons.addEventListener("keydown", e => {
-      if (e.key === "Tab" && !e.shiftKey) {
-        e.preventDefault();
-        defaultThemeFirstFocusable.focus();
-      }
-    });
-    themeResetButton.addEventListener("keydown", e => {
-      if (e.key === "Tab" && !e.shiftKey) {
-        e.preventDefault();
-        customThemeFirstFocusable.focus();
-      }
-    });
   },
 
   _toggleDropdownClicked(event) {

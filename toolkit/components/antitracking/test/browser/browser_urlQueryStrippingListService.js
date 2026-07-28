@@ -1,19 +1,14 @@
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
 
-const { RemoteSettings } = ChromeUtils.importESModule(
-  "resource://services-settings/remote-settings.sys.mjs"
-);
-
 XPCOMUtils.defineLazyServiceGetter(
   this,
   "urlQueryStrippingListService",
   "@mozilla.org/query-stripping-list-service;1",
-  "nsIURLQueryStrippingListService"
+  Ci.nsIURLQueryStrippingListService
 );
 
 const COLLECTION_NAME = "query-stripping";

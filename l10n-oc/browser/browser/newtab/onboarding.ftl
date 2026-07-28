@@ -53,7 +53,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importar de { $previous
 mr1-onboarding-theme-header = Adaptatz-lo a vòstre estil
 mr1-onboarding-theme-subtitle = Personalizatz { -brand-short-name } amb un tèma.
 mr1-onboarding-theme-secondary-button-label = Pas ara
-newtab-wallpaper-onboarding-primary-button-label = Definir rèireplan
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tèma sistèma
 mr1-onboarding-theme-label-light = Clar
@@ -187,6 +186,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Gardar { -brand-short-name } al Dock
        *[other] Penjar { -brand-short-name } a la barra de prètzfaches
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Penjar { -brand-short-name } a la barra de prètzfaches e al menú Aviar
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -222,7 +223,9 @@ mr2022-onboarding-set-default-subtitle = Utilizatz un navegador sostengut per un
 mr2022-onboarding-get-started-primary-subtitle = Nòstra darrièra version es concebuda per vos, per far venir mai simpla la navegacion pel Web. Aquesta darrièra version es fargada de foncionalitats que vos agradarà.
 mr2022-onboarding-get-started-primary-button-label = Configuracion dins un ai
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuracion dins un ai
 mr2022-onboarding-import-subtitle = Configuratz { -brand-short-name } coma volètz. Ajustatz vòstres marcapaginas, senhals e encara mai a partir de vòstre ancian navegador.
@@ -333,17 +336,66 @@ onboarding-device-migration-title = Urós de vos tornar veire !
 onboarding-device-migration-subtitle = Connectatz-vos a vòstre { -fxaccount-brand-name(capitalization: "sentence") } per emportar vòstres marcapaginas, senhals e istorics amb vos sus vòstre aparelh novèl.
 onboarding-device-migration-primary-button-label = Se connectar
 
+## Add-ons Picker screen
+
+amo-picker-title = Personalizatz { -brand-short-name }
+amo-picker-install-button-label = Apondre a { -brand-short-name }
+amo-picker-install-complete-label = Installat
+amo-picker-collection-link = Percórrer mai de moduls
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
 onboarding-easy-setup-security-and-privacy-title = Nos impòrta vòstra vida privada
+onboarding-easy-setup-security-and-privacy-subtitle = Nòstre navegador es sostengut per una organizacion sens tòca lucrativa ajuda a blocar automaticament las entrepresas de vos pistar secrètament pel web.
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = Demoratz en lòc segur amb lo chiframent quand basculatz d’aparelh
 onboarding-mobile-download-security-and-privacy-subtitle = Quand la sincronizacion es activada, { -brand-short-name } chifra vòstres senhals, vòstres marcapaginas e encara mai. Amai podètz recuperar vòstres onglets de vòstres autres aparelhs.
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } es totjorn aquí per vos
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronizar vòstras donadas entre los periferics
+onboarding-sign-up-description = Creatz un compte e totas vòstras informacions importantas — senhals, marcapaginas, e mai — seràn servadas en tota seguretat e disponiblas quand vos connectaretz a quin aparelh que siá.
+onboarding-sign-up-button = Crear un compte o se connectar
+onboarding-sign-up-secondary-button = Començar de navegar
 
 ## New user time and familiarity survey strings
 
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Seguent
+
+## UI strings for the sidebar and vertical tabs
+
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Onglets sul costat
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Onglets ennaut
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Los onglets verticals son ja aquí
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Ensajar los onglets verticals
+onboarding-flair-text = Novetat
+onboarding-genai-sidebar-primary-button = Causir un robòt de convèrsa
+
+## New user onboarding checklist
+
+onboarding-checklist-import = Importar d’un autre navegador
+onboarding-checklist-extension = Apondre una extension
+onboarding-checklist-sign-up = Crear un compte o vos connectar
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-callout-cta = Crear un perfil
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-with-checklist-secondary-button = Passar aquesta etapa
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Personalizatz vòstra experiéncia { -brand-short-name }
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-onboarding-addons-subtitle = Las extensions son de pichonas aplicacions que vos permeton de personalizar { -brand-short-name }. Pòdon reforzar vòstra confidencialitat, melhorar la productivitat, cambiar l'aparéncia de { -brand-short-name }, e fòrça mai.

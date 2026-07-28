@@ -24,8 +24,6 @@ contentanalysis-slow-agent-dialog-body-print = { $agent } er að yfirfara það 
 contentanalysis-operationtype-clipboard = klippispjald
 contentanalysis-operationtype-dropped-text = slepptur texti
 contentanalysis-operationtype-print = skrifa
-#   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = innsending á „{ $filename }“
 contentanalysis-warndialogtitle = Þetta efni gæti verið óöruggt
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +38,6 @@ contentanalysis-genericresponse-message = Greining efnis svaraði með { $respon
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Stofnunin þín notar hugbúnað til að koma í veg fyrir gagnatap sem hefur lokað á þetta efni: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Villa kom upp í samskiptum við hugbúnaðinn sem kemur í veg fyrir gagnatap. Flutningi er hafnað fyrir tilfang: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Villa kom upp í samskiptum við { $agent }. Flutningi er hafnað fyrir tilfang: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Ekki tókst að tengjast { $agent }. Flutningi hafnað fyrir tilfang: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Mistókst að staðfesta undirritun fyrir { $agent }. Flutningi hafnað fyrir tilfang: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,6 +56,10 @@ contentanalysis-error-message-upload-file = Innsendingu á „{ $filename }“ e
 contentanalysis-error-message-dropped-text = Draga og sleppa er hafnað.
 contentanalysis-error-message-clipboard = Límingu er hafnað.
 contentanalysis-error-message-print = Prentun er hafnað.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Tengingin við { $agent } rann út á tíma. { $contentName } hefur verið lokað.
 contentanalysis-block-dialog-title-upload-file = Þú hefur ekki leyfi til að senda inn þessa skrá
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"

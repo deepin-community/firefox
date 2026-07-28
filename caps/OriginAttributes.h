@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,8 @@
 #ifndef mozilla_OriginAttributes_h
 #define mozilla_OriginAttributes_h
 
-#include "mozilla/dom/ChromeUtilsBinding.h"
+#include "mozilla/HashFunctions.h"
+#include "mozilla/dom/OriginAttributesBinding.h"
 #include "mozilla/StaticPrefs_privacy.h"
 #include "nsIScriptSecurityManager.h"
 
@@ -86,6 +85,17 @@ class OriginAttributes : public dom::OriginAttributesDictionary {
            nsIScriptSecurityManager::DEFAULT_PRIVATE_BROWSING_ID;
   }
 
+  // Keep field order in sync with CreateSuffix.
+  [[nodiscard]] HashNumber Hash() const {
+    return AddToHash(
+        mUserContextId, mPrivateBrowsingId,
+        HashString(mFirstPartyDomain.BeginReading(),
+                   mFirstPartyDomain.Length()),
+        HashString(mGeckoViewSessionContextId.BeginReading(),
+                   mGeckoViewSessionContextId.Length()),
+        HashString(mPartitionKey.BeginReading(), mPartitionKey.Length()));
+  }
+
   // Serializes/Deserializes non-default values into the suffix format, i.e.
   // |^key1=value1&key2=value2|. If there are no non-default attributes, this
   // returns an empty string.
@@ -141,6 +151,11 @@ class OriginAttributes : public dom::OriginAttributesDictionary {
                                 nsAString& outScheme, nsAString& outBaseDomain,
                                 int32_t& outPort,
                                 bool& outForeignByAncestorContext);
+
+  // Parse a partitionKey and extract the site from it. Returns false if the
+  // partitionKey cannot be parsed because the format is invalid.
+  static bool ExtractSiteFromPartitionKey(const nsAString& aPartitionKey,
+                                          nsAString& aOutSite);
 };
 
 class OriginAttributesPattern : public dom::OriginAttributesPatternDictionary {

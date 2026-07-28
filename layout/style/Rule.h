@@ -1,18 +1,17 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* base class for all rule types in a CSS style sheet */
 
-#ifndef mozilla_css_Rule_h___
-#define mozilla_css_Rule_h___
+#ifndef mozilla_css_Rule_h_
+#define mozilla_css_Rule_h_
 
+#include "mozilla/MemoryReporting.h"
+#include "mozilla/StyleSheet.h"
+#include "mozilla/WeakPtr.h"
 #include "mozilla/dom/CSSRuleBinding.h"
 #include "mozilla/dom/DocumentOrShadowRoot.h"
-#include "mozilla/StyleSheet.h"
-#include "mozilla/MemoryReporting.h"
 #include "nsISupports.h"
 #include "nsWrapperCache.h"
 
@@ -26,7 +25,7 @@ enum class StyleCssRuleType : uint8_t;
 namespace css {
 class GroupRule;
 
-class Rule : public nsISupports, public nsWrapperCache {
+class Rule : public nsISupports, public nsWrapperCache, public SupportsWeakPtr {
  protected:
   Rule(StyleSheet* aSheet, Rule* aParentRule, uint32_t aLineNumber,
        uint32_t aColumnNumber)
@@ -113,6 +112,17 @@ class Rule : public nsISupports, public nsWrapperCache {
   }
   nsISupports* GetParentObject() const { return mSheet; }
 
+  struct ContainingRuleState {
+    uint32_t mContainingTypes = 0;
+    Maybe<StyleCssRuleType> mParseRelativeType;
+
+    static ContainingRuleState From(Rule* aRule) {
+      return aRule ? aRule->GetContainingRuleStateForParsing()
+                   : ContainingRuleState();
+    }
+  };
+  ContainingRuleState GetContainingRuleStateForParsing() const;
+
  protected:
   // True if we're known-live for cycle collection purposes.
   bool IsKnownLive() const;
@@ -138,4 +148,4 @@ class Rule : public nsISupports, public nsWrapperCache {
 }  // namespace css
 }  // namespace mozilla
 
-#endif /* mozilla_css_Rule_h___ */
+#endif /* mozilla_css_Rule_h_ */

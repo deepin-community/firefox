@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,8 +7,8 @@
 #ifndef mozilla_ColorPreferences_h
 #define mozilla_ColorPreferences_h
 
-#include "nsColor.h"
 #include "mozilla/ColorScheme.h"
+#include "nsColor.h"
 
 namespace mozilla {
 
@@ -45,26 +43,14 @@ struct PreferenceSheet {
 
     ColorScheme mColorScheme = ColorScheme::Light;
 
-    // Whether the non-native theme should use real system colors for widgets.
-    bool NonNativeThemeShouldBeHighContrast() const;
-
     void Load(bool aIsChrome);
     void LoadColors(bool aIsLight);
   };
-
-  static void EnsureInitialized() {
-    if (sInitialized) {
-      return;
-    }
-    Initialize();
-  }
 
   static void Refresh() {
     sInitialized = false;
     Initialize();
   }
-
-  static bool AffectedByPref(const nsACString&);
 
   enum class ChromeColorSchemeSetting { Light, Dark, System };
   static ChromeColorSchemeSetting ColorSchemeSettingForChrome();

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +6,8 @@
 #include "HttpLog.h"
 
 #include "HTTPSRecordResolver.h"
+#include "mozilla/Components.h"
+#include "mozilla/StaticPrefs_network.h"
 #include "nsIDNSByTypeRecord.h"
 #include "nsIDNSAdditionalInfo.h"
 #include "nsIDNSService.h"
@@ -21,9 +22,7 @@ namespace net {
 NS_IMPL_ISUPPORTS(HTTPSRecordResolver, nsIDNSListener)
 
 HTTPSRecordResolver::HTTPSRecordResolver(nsAHttpTransaction* aTransaction)
-    : mTransaction(aTransaction),
-      mConnInfo(aTransaction->ConnectionInfo()),
-      mCaps(aTransaction->Caps()) {}
+    : mTransaction(aTransaction), mConnInfo(aTransaction->ConnectionInfo()) {}
 
 HTTPSRecordResolver::~HTTPSRecordResolver() = default;
 
@@ -31,19 +30,21 @@ nsresult HTTPSRecordResolver::FetchHTTPSRRInternal(
     nsIEventTarget* aTarget, nsICancelable** aDNSRequest) {
   NS_ENSURE_ARG_POINTER(aTarget);
 
+  MutexAutoLock lock(mMutex);
+
   // Only fetch HTTPS RR for https.
   if (!mConnInfo->FirstHopSSL()) {
     return NS_ERROR_FAILURE;
   }
 
-  nsCOMPtr<nsIDNSService> dns = do_GetService(NS_DNSSERVICE_CONTRACTID);
+  nsCOMPtr<nsIDNSService> dns = mozilla::components::DNS::Service();
   if (!dns) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 
   nsIDNSService::DNSFlags flags =
       nsIDNSService::GetFlagsFromTRRMode(mConnInfo->GetTRRMode());
-  if (mCaps & NS_HTTP_REFRESH_DNS) {
+  if (mTransaction->Caps() & NS_HTTP_REFRESH_DNS) {
     flags |= nsIDNSService::RESOLVE_BYPASS_CACHE;
   }
 
@@ -52,66 +53,164 @@ nsresult HTTPSRecordResolver::FetchHTTPSRRInternal(
     dns->NewAdditionalInfo(""_ns, mConnInfo->OriginPort(),
                            getter_AddRefs(info));
   }
-  return dns->AsyncResolveNative(
+
+  nsresult rv = dns->AsyncResolveNative(
       mConnInfo->GetOrigin(), nsIDNSService::RESOLVE_TYPE_HTTPSSVC, flags, info,
-      this, aTarget, mConnInfo->GetOriginAttributes(), aDNSRequest);
+      this, aTarget, mConnInfo->GetOriginAttributes(),
+      getter_AddRefs(mHTTPSRecordRequest));
+
+  if (NS_FAILED(rv)) {
+    return rv;
+  }
+
+  nsCOMPtr<nsICancelable> request = mHTTPSRecordRequest;
+  request.forget(aDNSRequest);
+
+  if (!StaticPrefs::network_dns_https_rr_check_record_with_cname()) {
+    return rv;
+  }
+
+  rv = dns->AsyncResolveNative(
+      mConnInfo->GetOrigin(), nsIDNSService::RESOLVE_TYPE_DEFAULT,
+      flags | nsIDNSService::RESOLVE_CANONICAL_NAME, nullptr, this, aTarget,
+      mConnInfo->GetOriginAttributes(), getter_AddRefs(mCnameRequest));
+  return rv;
 }
 
 NS_IMETHODIMP HTTPSRecordResolver::OnLookupComplete(nsICancelable* aRequest,
                                                     nsIDNSRecord* aRecord,
                                                     nsresult aStatus) {
-  nsCOMPtr<nsIDNSAddrRecord> addrRecord = do_QueryInterface(aRecord);
-  // This will be called again when receving the result of speculatively loading
-  // the addr records of the target name. In this case, just return NS_OK.
+  MutexAutoLock lock(mMutex);
+  if (!mTransaction || mDone) {
+    // The transaction is not interesed in a response anymore.
+    mCnameRequest = nullptr;
+    mHTTPSRecordRequest = nullptr;
+    return NS_OK;
+  }
+
+  if (aRequest == mHTTPSRecordRequest) {
+    nsCOMPtr<nsIDNSHTTPSSVCRecord> record = do_QueryInterface(aRecord);
+    mHTTPSRecordRequest = nullptr;
+    if (!record || NS_FAILED(aStatus)) {
+      // When failed, we don't want to wait for the CNAME.
+      mCnameRequest = nullptr;
+      MutexAutoUnlock unlock(mMutex);
+      return InvokeCallback();
+    }
+
+    mHTTPSRecord = std::move(record);
+
+    // Waiting for the address record.
+    if (mCnameRequest) {
+      return NS_OK;
+    }
+
+    MutexAutoUnlock unlock(mMutex);
+    return InvokeCallback();
+  }
+
+  // Having mCnameRequest indicates that we are interested in the address
+  // record.
+  if (mCnameRequest && aRequest == mCnameRequest) {
+    nsCOMPtr<nsIDNSAddrRecord> addrRecord = do_QueryInterface(aRecord);
+    mCnameRequest = nullptr;
+    if (!addrRecord || NS_FAILED(aStatus)) {
+      // If we are still waiting for HTTPS RR, don't invoke the callback.
+      if (mHTTPSRecordRequest) {
+        return NS_OK;
+      }
+
+      MutexAutoUnlock unlock(mMutex);
+      return InvokeCallback();
+    }
+
+    mAddrRecord = std::move(addrRecord);
+    // Waiting for the HTTPS record.
+    if (mHTTPSRecordRequest) {
+      return NS_OK;
+    }
+
+    MutexAutoUnlock unlock(mMutex);
+    return InvokeCallback();
+  }
+
+  return NS_OK;
+}
+
+nsresult HTTPSRecordResolver::InvokeCallback() {
+  RefPtr<nsAHttpTransaction> transaction;
+  nsCOMPtr<nsIDNSHTTPSSVCRecord> httpsRecord;
+  nsCOMPtr<nsIDNSAddrRecord> addrRecord;
+  {
+    MutexAutoLock lock(mMutex);
+    MOZ_ASSERT(!mDone);
+    mDone = true;
+    transaction = mTransaction;
+    httpsRecord = mHTTPSRecord;
+    addrRecord = mAddrRecord;
+  }
+
+  if (!httpsRecord) {
+    return transaction->OnHTTPSRRAvailable(nullptr, nullptr, ""_ns);
+  }
+
+  nsCString cname;
   if (addrRecord) {
-    return NS_OK;
+    (void)addrRecord->GetCanonicalName(cname);
   }
 
-  if (!mTransaction) {
-    // The connecttion is not interesed in a response anymore.
-    return NS_OK;
-  }
-
-  nsCOMPtr<nsIDNSHTTPSSVCRecord> record = do_QueryInterface(aRecord);
-  if (!record || NS_FAILED(aStatus)) {
-    return mTransaction->OnHTTPSRRAvailable(nullptr, nullptr);
-  }
-
+  uint32_t caps = transaction->Caps();
   nsCOMPtr<nsISVCBRecord> svcbRecord;
-  if (NS_FAILED(record->GetServiceModeRecord(mCaps & NS_HTTP_DISALLOW_SPDY,
-                                             mCaps & NS_HTTP_DISALLOW_HTTP3,
-                                             getter_AddRefs(svcbRecord)))) {
-    return mTransaction->OnHTTPSRRAvailable(record, nullptr);
+  if (NS_FAILED(httpsRecord->GetServiceModeRecordWithCname(
+          caps & NS_HTTP_DISALLOW_SPDY, caps & NS_HTTP_DISALLOW_HTTP3, cname,
+          getter_AddRefs(svcbRecord)))) {
+    return transaction->OnHTTPSRRAvailable(httpsRecord, nullptr, cname);
   }
 
-  return mTransaction->OnHTTPSRRAvailable(record, svcbRecord);
+  return transaction->OnHTTPSRRAvailable(httpsRecord, svcbRecord, cname);
 }
 
 void HTTPSRecordResolver::PrefetchAddrRecord(const nsACString& aTargetName,
                                              bool aRefreshDNS) {
-  MOZ_ASSERT(mTransaction);
-  nsCOMPtr<nsIDNSService> dns = do_GetService(NS_DNSSERVICE_CONTRACTID);
+  RefPtr<nsHttpConnectionInfo> connInfo;
+  {
+    MutexAutoLock lock(mMutex);
+    MOZ_ASSERT(mTransaction);
+    connInfo = mTransaction->ConnectionInfo();
+  }
+
+  nsCOMPtr<nsIDNSService> dns = mozilla::components::DNS::Service();
   if (!dns) {
     return;
   }
 
-  nsIDNSService::DNSFlags flags = nsIDNSService::GetFlagsFromTRRMode(
-      mTransaction->ConnectionInfo()->GetTRRMode());
+  nsIDNSService::DNSFlags flags =
+      nsIDNSService::GetFlagsFromTRRMode(connInfo->GetTRRMode());
   if (aRefreshDNS) {
     flags |= nsIDNSService::RESOLVE_BYPASS_CACHE;
   }
 
   nsCOMPtr<nsICancelable> tmpOutstanding;
 
-  Unused << dns->AsyncResolveNative(
+  (void)dns->AsyncResolveNative(
       aTargetName, nsIDNSService::RESOLVE_TYPE_DEFAULT,
       flags | nsIDNSService::RESOLVE_SPECULATE, nullptr, this,
-      GetCurrentSerialEventTarget(),
-      mTransaction->ConnectionInfo()->GetOriginAttributes(),
+      GetCurrentSerialEventTarget(), connInfo->GetOriginAttributes(),
       getter_AddRefs(tmpOutstanding));
 }
 
-void HTTPSRecordResolver::Close() { mTransaction = nullptr; }
+void HTTPSRecordResolver::Close() {
+  MutexAutoLock lock(mMutex);
+  mTransaction = nullptr;
+  if (mCnameRequest) {
+    mCnameRequest->Cancel(NS_ERROR_ABORT);
+    mCnameRequest = nullptr;
+  }
+  if (mHTTPSRecordRequest) {
+    mHTTPSRecordRequest->Cancel(NS_ERROR_ABORT);
+    mHTTPSRecordRequest = nullptr;
+  }
+}
 
 }  // namespace net
 }  // namespace mozilla

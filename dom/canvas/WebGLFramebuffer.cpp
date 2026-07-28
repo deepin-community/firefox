@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,21 +6,20 @@
 
 // You know it's going to be fun when these two show up:
 #include <algorithm>
-#include <iterator>
 
 #include "GLBlitHelper.h"
 #include "GLContext.h"
 #include "GLScreenBuffer.h"
 #include "MozFramebuffer.h"
-#include "mozilla/dom/WebGLRenderingContextBinding.h"
-#include "mozilla/IntegerRange.h"
-#include "nsPrintfCString.h"
 #include "WebGLContext.h"
 #include "WebGLContextUtils.h"
 #include "WebGLExtensions.h"
 #include "WebGLFormats.h"
 #include "WebGLRenderbuffer.h"
 #include "WebGLTexture.h"
+#include "mozilla/IntegerRange.h"
+#include "mozilla/dom/WebGLRenderingContextBinding.h"
+#include "nsPrintfCString.h"
 
 namespace mozilla {
 
@@ -149,7 +147,7 @@ bool WebGLFBAttachPoint::IsComplete(WebGLContext* webgl,
         "Attachment has an effective format of %s,"
         " which is not renderable.",
         formatUsage->format->name);
-    fnWriteErrorInfo(info.BeginReading());
+    fnWriteErrorInfo(info.get());
     return false;
   }
   if (!formatUsage->IsExplicitlyRenderable()) {
@@ -295,10 +293,9 @@ Maybe<double> WebGLFBAttachPoint::GetParameter(WebGLContext* webgl,
     WebGLContext::EnumName(attachment, &attachmentName);
     if (webgl->IsWebGL2()) {
       webgl->ErrorInvalidOperation("No attachment at %s.",
-                                   attachmentName.BeginReading());
+                                   attachmentName.get());
     } else {
-      webgl->ErrorInvalidEnum("No attachment at %s.",
-                              attachmentName.BeginReading());
+      webgl->ErrorInvalidEnum("No attachment at %s.", attachmentName.get());
     }
     return Nothing();
   }
@@ -522,7 +519,7 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLContext* webgl,
   info.zLayerCount = 1;
   info.isMultiview = false;
 
-  mCompletenessInfo = Some(std::move(info));
+  mCompletenessInfo = std::move(info);
 }
 
 WebGLFramebuffer::~WebGLFramebuffer() {
@@ -922,7 +919,7 @@ void WebGLFramebuffer::ResolveAttachmentData() const {
       } else {
         fnClearBuffer();
       }
-      imageInfo->mUninitializedSlices = Nothing();
+      imageInfo->mUninitializedSlices.reset();
     }
     return;
   }
@@ -936,7 +933,7 @@ void WebGLFramebuffer::ResolveAttachmentData() const {
     if (!imageInfo || !imageInfo->mUninitializedSlices) return false;
 
     clearBits |= attachClearBits;
-    imageInfo->mUninitializedSlices = Nothing();  // Just mark it now.
+    imageInfo->mUninitializedSlices.reset();  // Just mark it now.
     return true;
   };
 
@@ -986,7 +983,7 @@ WebGLFramebuffer::CompletenessInfo::~CompletenessInfo() {
 // Entrypoints
 
 FBStatus WebGLFramebuffer::CheckFramebufferStatus() const {
-  if (MOZ_UNLIKELY(mOpaque && !mInOpaqueRAF)) {
+  if (mOpaque && !mInOpaqueRAF) [[unlikely]] {
     // Opaque Framebuffers are considered incomplete outside of a RAF.
     return LOCAL_GL_FRAMEBUFFER_UNSUPPORTED;
   }
@@ -1062,14 +1059,13 @@ FBStatus WebGLFramebuffer::CheckFramebufferStatus() const {
       info.isMultiview = cur->IsMultiview();
     }
     MOZ_ASSERT(info.width && info.height);
-    mCompletenessInfo = Some(std::move(info));
-    info.fb = nullptr;  // Don't trigger the invalidation warning.
+    mCompletenessInfo = std::move(info);
     return LOCAL_GL_FRAMEBUFFER_COMPLETE;
   } while (false);
 
   MOZ_ASSERT(ret != LOCAL_GL_FRAMEBUFFER_COMPLETE);
   mContext->GenerateWarning("Framebuffer not complete. (status: 0x%04x) %s",
-                            ret.get(), statusInfo.BeginReading());
+                            ret.get(), statusInfo.get());
   return ret;
 }
 
@@ -1196,7 +1192,7 @@ bool WebGLFramebuffer::FramebufferAttach(const GLenum attachEnum,
   MOZ_ASSERT(mContext->mBoundDrawFramebuffer == this ||
              mContext->mBoundReadFramebuffer == this);
 
-  if (MOZ_UNLIKELY(mOpaque)) {
+  if (mOpaque) [[unlikely]] {
     // An opaque framebuffer's attachments cannot be inspected or changed.
     return false;
   }
@@ -1228,7 +1224,7 @@ Maybe<double> WebGLFramebuffer::GetAttachmentParameter(GLenum attachEnum,
         " STENCIL_ATTACHMENT for a framebuffer.");
     return Nothing();
   }
-  if (MOZ_UNLIKELY(mOpaque)) {
+  if (mOpaque) [[unlikely]] {
     mContext->ErrorInvalidOperation(
         "An opaque framebuffer's attachments cannot be inspected or changed.");
     return Nothing();
@@ -1555,8 +1551,8 @@ void WebGLFramebuffer::BlitFramebuffer(WebGLContext* webgl, GLint _srcX0,
     }
 
     // Clamp the rect points
-    const auto srcQ0 = srcP0f.ClampMinMax(zero2f, srcSizef);
-    const auto srcQ1 = srcP1f.ClampMinMax(zero2f, srcSizef);
+    const auto srcQ0 = srcP0f.Clamp(zero2f, srcSizef);
+    const auto srcQ1 = srcP1f.Clamp(zero2f, srcSizef);
 
     // Normalized to the [0,1] abstact copy rect
     const auto srcQ0Norm = (srcQ0 - srcP0f) / srcRectDiff;
@@ -1567,8 +1563,8 @@ void WebGLFramebuffer::BlitFramebuffer(WebGLContext* webgl, GLint _srcX0,
     const auto srcQ1InDst = dstP0f + srcQ1Norm * dstRectDiff;
 
     // Clamp the rect points
-    const auto dstQ0 = srcQ0InDst.ClampMinMax(zero2f, dstSizef);
-    const auto dstQ1 = srcQ1InDst.ClampMinMax(zero2f, dstSizef);
+    const auto dstQ0 = srcQ0InDst.Clamp(zero2f, dstSizef);
+    const auto dstQ1 = srcQ1InDst.Clamp(zero2f, dstSizef);
 
     // Alright, time to go back to src!
     // Normalized to the [0,1] abstact copy rect
@@ -1579,8 +1575,8 @@ void WebGLFramebuffer::BlitFramebuffer(WebGLContext* webgl, GLint _srcX0,
     const auto dstQ0InSrc = srcP0f + dstQ0Norm * srcRectDiff;
     const auto dstQ1InSrc = srcP0f + dstQ1Norm * srcRectDiff;
 
-    const auto srcQ0Constrained = dstQ0InSrc.ClampMinMax(zero2f, srcSizef);
-    const auto srcQ1Constrained = dstQ1InSrc.ClampMinMax(zero2f, srcSizef);
+    const auto srcQ0Constrained = dstQ0InSrc.Clamp(zero2f, srcSizef);
+    const auto srcQ1Constrained = dstQ1InSrc.Clamp(zero2f, srcSizef);
 
     // Round, don't floor:
     srcP0 = (srcQ0Constrained + 0.5).StaticCast<ivec2>();

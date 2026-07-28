@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,7 +21,6 @@
 #include "nsIIPCSerializableInputStream.h"
 #include "nsISeekableStream.h"
 #include "mozilla/Logging.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/Likely.h"
 #include "mozilla/MathAlgorithms.h"
 #include "mozilla/ipc/InputStreamUtils.h"
@@ -283,9 +280,19 @@ nsresult nsStorageStream::SetLengthLocked(uint32_t aLength) {
     newLastSegmentNum--;
   }
 
+  AutoTArray<mozilla::UniqueFreePtr<char>, 16> toFree;
+
   while (newLastSegmentNum < mLastSegmentNum) {
-    mSegmentedBuffer->DeleteLastSegment();
+    toFree.AppendElement(mSegmentedBuffer->PopLastSegment());
     mLastSegmentNum--;
+  }
+
+  // If we removed a substantial number of segments, dispatch the `free(...)`
+  // calls to a background thread to avoid potential calling thread jank.
+  if (toFree.Length() > 128) {
+    NS_DispatchBackgroundTask(NS_NewRunnableFunction(
+        "nsStorageStream::SetLengthLocked",
+        [toFree = std::move(toFree)]() mutable { toFree.Clear(); }));
   }
 
   mLogicalLength = aLength;
@@ -642,8 +649,8 @@ void nsStorageInputStream::Serialize(InputStreamParams& aParams,
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
   StringInputStreamParams params;
-  params.data() = combined;
-  aParams = params;
+  params.data() = std::move(combined);
+  aParams = std::move(params);
 }
 
 bool nsStorageInputStream::Deserialize(const InputStreamParams& aParams) {

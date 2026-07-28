@@ -14,7 +14,7 @@ styleeditor-visibility-toggle =
     .tooltiptext = Фаъол/ғайрифаъол кардани намоёнии варақаи услубҳо
     .accesskey = Ф
 styleeditor-visibility-toggle-system =
-    .tooltiptext = Варақаҳои услубҳои низомӣ ғайрифаъол карда намешаванд
+    .tooltiptext = Варақаҳои услубҳои низоми компютерӣ ғайрифаъол карда намешаванд
 styleeditor-save-button = Нигоҳ доштан
     .tooltiptext = Нигоҳ доштани ин варақаи услубҳо ба файл
     .accesskey = Н
@@ -54,3 +54,7 @@ styleeditor-pretty-print-button =
 # Title for the pretty print button in the editor footer, when it's disabled
 styleeditor-pretty-print-button-disabled =
     .title = Чопи зебо танҳо барои файлҳои CSS имконпазир аст
+# Title for the pretty print button in the editor footer, when it's disabled because
+# the stylesheet is read-only
+styleeditor-pretty-print-button-disabled-read-only =
+    .title = Варақаи услубҳоро, ки танҳо барои хониш дастрас аст, ба таври дуруст чоп карда наметавонам.

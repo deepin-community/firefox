@@ -64,10 +64,10 @@ export const BookmarksPolicies = {
   BOOKMARK_GUID_PREFIX: "PolB-",
   FOLDER_GUID_PREFIX: "PolF-",
 
-  /*
+  /**
    * Process the bookmarks specified by the policy engine.
    *
-   * @param param
+   * @param {object[]} param
    *        This will be an array of bookmarks objects, as
    *        described on the top of this file.
    */
@@ -88,13 +88,13 @@ export const BookmarksPolicies = {
   },
 };
 
-/*
+/**
  * This function calculates the differences between the existing bookmarks
  * that are managed by the policy engine (which are known through a guid
  * prefix) and the specified bookmarks in the policy file.
  * They can differ if the policy file has changed.
  *
- * @param specifiedBookmarks
+ * @param {object[]} specifiedBookmarks
  *        This will be an array of bookmarks objects, as
  *        described on the top of this file.
  */
@@ -190,7 +190,7 @@ async function insertBookmark(bookmark) {
   let parentGuid = await getParentGuid(bookmark.Placement, bookmark.Folder);
 
   await lazy.PlacesUtils.bookmarks.insert({
-    url: Services.io.newURI(bookmark.URL.href),
+    url: bookmark.URL.URI,
     title: bookmark.Title,
     guid: lazy.PlacesUtils.generateGuidWithPrefix(
       BookmarksPolicies.BOOKMARK_GUID_PREFIX
@@ -199,39 +199,25 @@ async function insertBookmark(bookmark) {
   });
 
   if (bookmark.Favicon) {
-    try {
-      setFaviconForBookmark(bookmark);
-    } catch (e) {
-      lazy.log.warn(e);
-    }
+    setFaviconForBookmark(bookmark);
   }
 }
 
 function setFaviconForBookmark(bookmark) {
-  switch (bookmark.Favicon.protocol) {
-    case "data:": {
-      lazy.PlacesUtils.favicons.setFaviconForPage(
-        bookmark.URL.URI,
-        Services.io.newURI("fake-favicon-uri:" + bookmark.URL.href),
-        bookmark.Favicon.URI
-      );
-      return;
-    }
-    case "http:":
-    case "https:": {
-      lazy.PlacesUtils.favicons.setAndFetchFaviconForPage(
-        bookmark.URL.URI,
-        bookmark.Favicon.URI,
-        false /* forceReload */,
-        lazy.PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE,
-        null,
-        Services.scriptSecurityManager.createNullPrincipal({})
-      );
-      return;
-    }
+  if (bookmark.Favicon.protocol != "data:") {
+    lazy.log.error(
+      `Pass a valid data: URI for favicon on bookmark "${bookmark.Title}", instead of "${bookmark.Favicon.URI.spec}"`
+    );
+    return;
   }
 
-  lazy.log.error(`Bad URL given for favicon on bookmark "${bookmark.Title}"`);
+  lazy.PlacesUtils.favicons
+    .setFaviconForPage(
+      bookmark.URL.URI,
+      Services.io.newURI("fake-favicon-uri:" + bookmark.URL.href),
+      bookmark.Favicon.URI
+    )
+    .catch(lazy.log.error);
 }
 
 // Cache of folder names to guids to be used by the getParentGuid

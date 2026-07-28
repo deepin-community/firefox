@@ -6,10 +6,12 @@ package mozilla.components.feature.app.links
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.annotation.VisibleForTesting
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.mapNotNull
@@ -27,6 +29,42 @@ import mozilla.components.lib.state.ext.flowScoped
 import mozilla.components.support.base.feature.LifecycleAwareFeature
 import mozilla.components.support.ktx.android.content.appName
 
+// Minimum time for dialog to settle before accepting user interactions.
+internal const val MAX_SUCCESSIVE_DIALOG_MILLIS_LIMIT: Int = 500 // 0.5 seconds
+
+internal val WALLET_SCHEMES: Array<String> = arrayOf(
+    "openid4vp",
+    "mdoc",
+    "mdoc-openid4vp",
+    "haip",
+    "eudi-wallet",
+    "eudi-openid4vp",
+    "openid-credential-offer",
+)
+
+/**
+ * Data class containing all information needed to display a redirect dialog.
+ *
+ * @property title The title of the dialog.
+ * @property message The message body of the dialog.
+ * @property showCheckbox Whether to show the "always open" checkbox.
+ * @property sourceUrl The original URL that triggered the redirect.
+ * @property destinationUrl The URL that will be opened in the external app.
+ * @property firefoxUrl The URL that would be opened if staying in Firefox.
+ * @property uniqueIdentifier The unique identifier for the app/intent.
+ * @property packageName The package name of the target app.
+ */
+data class RedirectDialogData(
+    val title: String,
+    val message: String,
+    val showCheckbox: Boolean,
+    val sourceUrl: String = "",
+    val destinationUrl: String = "",
+    val firefoxUrl: String? = null,
+    val uniqueIdentifier: String = "",
+    val packageName: String = "",
+)
+
 /**
  * This feature implements observer for handling redirects to external apps. The users are asked to
  * confirm their intention before leaving the app if in private session.  These include the Android
@@ -36,28 +74,35 @@ import mozilla.components.support.ktx.android.content.appName
  *
  * @param context Context the feature is associated with.
  * @param store Reference to the application's [BrowserStore].
- * @param sessionId The session ID to observe.
  * @param fragmentManager FragmentManager for interacting with fragments.
- * @param dialog The dialog for redirect.
+ * @param sessionId The session ID to observe.
+ * @param dialog Function to create custom redirect dialogs. Receives [RedirectDialogData]. If this
+ * is null, then [SimpleRedirectDialogFragment] is used.
  * @param launchInApp If {true} then launch app links in third party app(s). Default to false because
  * of security concerns.
  * @param useCases These use cases allow for the detection of, and opening of links that other apps
  * have registered to open.
  * @param failedToLaunchAction Action to perform when failing to launch in third party app.
  * @param loadUrlUseCase Used to load URL if user decides not to launch in third party app.
+ * @param engineSupportedSchemes Set of URI schemes the engine supports.
+ * @param mainDispatcher [CoroutineDispatcher] used for store observation
+ * @param shouldPrompt If {true} then user should be prompted before launching app links.
+ * @param alwaysOpenCheckboxAction Action to perform when user checked the always open checkbox in the prompt.
  **/
 class AppLinksFeature(
     private val context: Context,
     private val store: BrowserStore,
+    private val fragmentManager: FragmentManager,
     private val sessionId: String? = null,
-    private val fragmentManager: FragmentManager? = null,
-    private val dialog: RedirectDialogFragment? = null,
+    private val dialog: ((data: RedirectDialogData) -> RedirectDialogFragment)? = null,
     private val launchInApp: () -> Boolean = { false },
     private val useCases: AppLinksUseCases = AppLinksUseCases(context, launchInApp),
     private val failedToLaunchAction: (fallbackUrl: String?) -> Unit = {},
     private val loadUrlUseCase: SessionUseCases.DefaultLoadUrlUseCase? = null,
     private val engineSupportedSchemes: Set<String> = ENGINE_SUPPORTED_SCHEMES,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
     private val shouldPrompt: () -> Boolean = { true },
+    private val alwaysOpenCheckboxAction: (() -> Unit)? = null,
 ) : LifecycleAwareFeature {
 
     private var scope: CoroutineScope? = null
@@ -66,21 +111,27 @@ class AppLinksFeature(
      * Starts observing app links on the selected session.
      */
     override fun start() {
-        scope = store.flowScoped { flow ->
+        scope = store.flowScoped(dispatcher = mainDispatcher) { flow ->
             flow.mapNotNull { state -> state.findTabOrCustomTabOrSelectedTab(sessionId) }
                 .distinctUntilChangedBy {
                     it.content.appIntent
                 }
-                .collect { tab ->
-                    tab.content.appIntent?.let {
-                        handleAppIntent(tab, it.url, it.appIntent)
-                        store.dispatch(ContentAction.ConsumeAppIntentAction(tab.id))
+                .collect { sessionState ->
+                    sessionState.content.appIntent?.let {
+                        handleAppIntent(
+                            sessionState = sessionState,
+                            url = it.url,
+                            appIntent = it.appIntent,
+                            fallbackUrl = it.fallbackUrl,
+                            appName = it.appName,
+                        )
+                        store.dispatch(ContentAction.ConsumeAppIntentAction(sessionState.id))
                     }
                 }
         }
 
         findPreviousDialogFragment()?.let {
-            fragmentManager?.beginTransaction()?.remove(it)?.commit()
+            fragmentManager.beginTransaction().remove(it).commit()
         }
     }
 
@@ -89,96 +140,200 @@ class AppLinksFeature(
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun handleAppIntent(tab: SessionState, url: String, appIntent: Intent?) {
-        if (appIntent == null) {
+    internal fun handleAppIntent(
+        sessionState: SessionState,
+        url: String,
+        appIntent: Intent?,
+        fallbackUrl: String?,
+        appName: String?,
+    ) {
+        if (appIntent == null) return
+
+        val isPrivate = sessionState.content.private
+        val isWallet = isWalletLink(url, appIntent)
+
+        if (shouldBypassPrompt(isPrivate, isWallet)) {
+            openApp(appIntent)
             return
         }
 
-        val doNotOpenApp = {
-            AppLinksInterceptor.addUserDoNotIntercept(url, appIntent)
-
-            loadUrlIfSchemeSupported(tab, url)
-        }
-
-        val doOpenApp = {
-            useCases.openAppLink(
-                appIntent,
-                failedToLaunchAction = failedToLaunchAction,
-            )
-        }
-
-        @Suppress("ComplexCondition")
-        if (isSameCallerAndApp(tab, appIntent) || (!tab.content.private && !shouldPrompt()) ||
-            fragmentManager == null
-        ) {
-            doOpenApp()
+        if (isADialogAlreadyCreated() || fragmentManager.isStateSaved) {
             return
         }
 
-        val dialog = getOrCreateDialog(tab.content.private, url)
-        dialog.onConfirmRedirect = doOpenApp
-        dialog.onCancelRedirect = doNotOpenApp
-
-        if (!isAlreadyADialogCreated()) {
-            dialog.showNow(fragmentManager, FRAGMENT_TAG)
-        }
+        showRedirectDialog(
+            sessionState = sessionState,
+            url = url,
+            fallbackUrl = fallbackUrl,
+            appIntent = appIntent,
+            appName = appName,
+            isPrivate = isPrivate,
+            isWallet = isWallet,
+            fragmentManager = fragmentManager,
+        )
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun getOrCreateDialog(isPrivate: Boolean, url: String): RedirectDialogFragment {
+    internal fun shouldBypassPrompt(
+        isPrivate: Boolean,
+        isWallet: Boolean,
+    ): Boolean {
+        val shouldShowPrompt = isPrivate || isWallet || shouldPrompt()
+        return !shouldShowPrompt
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun openApp(appIntent: Intent) {
+        useCases.openAppLink(
+            appIntent,
+            failedToLaunchAction = failedToLaunchAction,
+        )
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun dismissRedirect(
+        sessionState: SessionState,
+        url: String,
+        fallbackUrl: String?,
+    ) {
+        val urlToLoad = when {
+            isSchemeSupported(url) -> url
+            fallbackUrl != null && isSchemeSupported(fallbackUrl) -> fallbackUrl
+            else -> return // No supported URL to load.
+        }
+
+        loadUrlUseCase?.invoke(
+            url = urlToLoad,
+            sessionId = sessionState.id,
+            flags = EngineSession.LoadUrlFlags.select(EXTERNAL, LOAD_FLAGS_BYPASS_LOAD_URI_DELEGATE),
+        )
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun cancelRedirect(
+        sessionState: SessionState,
+        url: String,
+        fallbackUrl: String?,
+        appIntent: Intent,
+    ) {
+        AppLinksInterceptor.addUserDoNotIntercept(url, appIntent, sessionState.id)
+
+        val urlToLoad = when {
+            isSchemeSupported(url) -> url
+            fallbackUrl != null && isSchemeSupported(fallbackUrl) -> fallbackUrl
+            else -> return // No supported URL to load.
+        }
+
+        loadUrlUseCase?.invoke(
+            url = urlToLoad,
+            sessionId = sessionState.id,
+            flags = EngineSession.LoadUrlFlags.select(EXTERNAL, LOAD_FLAGS_BYPASS_LOAD_URI_DELEGATE),
+        )
+    }
+
+    @Suppress("LongParameterList")
+    private fun showRedirectDialog(
+        sessionState: SessionState,
+        url: String,
+        fallbackUrl: String?,
+        appIntent: Intent,
+        appName: String?,
+        isPrivate: Boolean,
+        isWallet: Boolean,
+        fragmentManager: FragmentManager?,
+    ) {
+        if (fragmentManager == null) {
+            return
+        }
+
+        val packageName = appIntent.component?.packageName ?: appIntent.getPackage() ?: ""
+        val sourceUrl = sessionState.content.url
+        getOrCreateDialog(isPrivate, isWallet, url, appName, packageName, sourceUrl, fallbackUrl).apply {
+            onConfirmRedirect = { isCheckboxTicked ->
+                if (isCheckboxTicked) {
+                    alwaysOpenCheckboxAction?.invoke()
+                }
+                openApp(appIntent)
+            }
+            onCancelRedirect = {
+                cancelRedirect(sessionState, url, fallbackUrl, appIntent)
+            }
+            onDismissRedirect = {
+                dismissRedirect(sessionState, url, fallbackUrl)
+            }
+        }.showNow(fragmentManager, FRAGMENT_TAG)
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun getOrCreateDialog(
+        isPrivate: Boolean,
+        isWallet: Boolean,
+        url: String,
+        targetAppName: String?,
+        packageName: String = "",
+        sourceUrl: String = "",
+        fallbackUrl: String? = null,
+    ): RedirectDialogFragment {
+        val dialogTitle = buildDialogTitle(targetAppName)
+        val dialogMessage = buildDialogMessage()
+        val showCheckbox = if (isPrivate || isWallet) false else alwaysOpenCheckboxAction != null
+
         if (dialog != null) {
-            return dialog
-        }
-
-        val message = context.getString(
-            R.string.mozac_feature_applinks_normal_confirm_dialog_message,
-            context.appName,
-        )
-
-        return SimpleRedirectDialogFragment.newInstance(
-            dialogTitleText = if (isPrivate) {
-                R.string.mozac_feature_applinks_confirm_dialog_title
-            } else {
-                R.string.mozac_feature_applinks_normal_confirm_dialog_title
-            },
-            dialogMessageString = if (isPrivate) {
-                url
-            } else {
-                message
-            },
-            positiveButtonText = R.string.mozac_feature_applinks_confirm_dialog_confirm,
-            negativeButtonText = R.string.mozac_feature_applinks_confirm_dialog_deny,
-        )
-    }
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun loadUrlIfSchemeSupported(tab: SessionState, url: String) {
-        val schemeSupported = engineSupportedSchemes.contains(Uri.parse(url).scheme)
-        if (schemeSupported) {
-            loadUrlUseCase?.invoke(
-                url = url,
-                sessionId = tab.id,
-                flags = EngineSession.LoadUrlFlags.select(EXTERNAL, LOAD_FLAGS_BYPASS_LOAD_URI_DELEGATE),
+            val dialogData = RedirectDialogData(
+                title = dialogTitle,
+                message = dialogMessage,
+                showCheckbox = showCheckbox,
+                sourceUrl = sourceUrl,
+                destinationUrl = url,
+                firefoxUrl = buildFirefoxUrl(url, fallbackUrl),
+                uniqueIdentifier = targetAppName.orEmpty(),
+                packageName = packageName,
+            )
+            return dialog.invoke(dialogData)
+        } else {
+            return SimpleRedirectDialogFragment.newInstance(
+                dialogTitleString = dialogTitle,
+                dialogMessageString = dialogMessage,
+                showCheckbox = showCheckbox,
+                maxSuccessiveDialogMillisLimit = MAX_SUCCESSIVE_DIALOG_MILLIS_LIMIT,
             )
         }
     }
 
-    private fun isAlreadyADialogCreated(): Boolean {
+    private fun buildDialogTitle(targetAppName: String?): String = when {
+        !targetAppName.isNullOrBlank() ->
+            context.getString(R.string.mozac_feature_applinks_normal_confirm_dialog_title_with_app_name, targetAppName)
+        else ->
+            context.getString(R.string.mozac_feature_applinks_normal_confirm_dialog_title)
+    }
+
+    private fun buildDialogMessage(): String =
+        context.getString(R.string.mozac_feature_applinks_normal_confirm_dialog_message, context.appName)
+
+    private fun buildFirefoxUrl(url: String, fallbackUrl: String?): String? = when {
+        isSchemeSupported(url) -> url
+        fallbackUrl != null -> fallbackUrl
+        else -> null
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun isSchemeSupported(url: String): Boolean {
+        return engineSupportedSchemes.contains(url.toUri().scheme)
+    }
+
+    private fun isADialogAlreadyCreated(): Boolean {
         return findPreviousDialogFragment() != null
     }
 
     private fun findPreviousDialogFragment(): RedirectDialogFragment? {
-        return fragmentManager?.findFragmentByTag(FRAGMENT_TAG) as? RedirectDialogFragment
+        return fragmentManager.findFragmentByTag(FRAGMENT_TAG) as? RedirectDialogFragment
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun isSameCallerAndApp(tab: SessionState, appIntent: Intent): Boolean {
-        return (tab.source as? SessionState.Source.External.CustomTab)?.let { externalSource ->
-            when (externalSource.caller?.packageId) {
-                null -> false
-                appIntent.component?.packageName -> true
-                else -> false
-            }
-        } ?: false
+    @VisibleForTesting
+    internal fun isWalletLink(url: String, appIntent: Intent?): Boolean {
+        val urlScheme = url.toUri().scheme?.lowercase()
+        val intentScheme = appIntent?.data?.scheme?.lowercase()
+        return (urlScheme != null && WALLET_SCHEMES.contains(urlScheme)) ||
+            (intentScheme != null && WALLET_SCHEMES.contains(intentScheme))
     }
 }

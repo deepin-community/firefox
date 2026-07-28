@@ -8,6 +8,19 @@ tabbrowser-menuitem-close-tab =
     .label = Mdel Iccer
 tabbrowser-menuitem-close =
     .label = Mdel
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs in a container.
+# Variables:
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-container = { $containerName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } — { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -72,6 +85,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Urar imesli n { $tabCount } waccaren
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Kkes tasusmi n yiccer
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Susem iccer
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Bdu taɣuri
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +103,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = Mdel { $tabCount } accaren?
 tabbrowser-confirm-close-tabs-button = Mdel iccaren
+tabbrowser-ask-close-tabs-checkbox = Ssuter send amdal n waṭas n waccaren
 tabbrowser-confirm-close-tabs-checkbox = Sentem send amdal n waṭas n waccaren
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +126,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Mdel asfaylu syen eǧǧ { -brand-
 tabbrowser-confirm-close-tabs-with-key-button = Eǧǧ { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Ssuter send ad teffɣeḍ s { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Sentem send tuffɣa s { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Ffeɣ seg { -brand-short-name } neɣ mdel iccer amiran?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Ffeɣ { -brand-short-name }
+       *[other] Ffeɣ { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = Mdel iccer amiran
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -124,7 +162,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = Ur iy-id-skan ara akka d asawen tana
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = Ḥader
 tabbrowser-confirm-close-all-duplicate-tabs-title = Mdel accaren i d-yettεawden?
 tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Mdel accaren
 
@@ -163,6 +200,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Bder { $tabCount } n waccaren
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Sgugem iccer
@@ -170,3 +210,108 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Kkes tasusmi n yiccer
 tabbrowser-manager-close-tab =
     .tooltiptext = Mdel Iccer
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Yettwamdel
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Asfaylu amiran
+
+##
+
+tab-group-editor-title-create = Rnu agraw n waccaren
+tab-group-editor-title-edit = Sefrek agraw n waccaren
+tab-group-editor-name-label = Isem
+tab-group-editor-cancel =
+    .label = Sefsex
+    .accesskey = S
+tab-group-editor-color-selector2-blue = Amidadi
+    .title = Amidadi
+tab-group-editor-color-selector2-purple = Avyuli
+    .title = Avyuli
+tab-group-editor-color-selector2-orange = Aččini
+    .title = Aččini
+tab-group-editor-color-selector2-yellow = Awraɣ
+    .title = Awraɣ
+tab-group-editor-color-selector2-pink = Axuxi
+    .title = Axuxi
+tab-group-editor-color-selector2-green = Azegzaw
+    .title = Azegzaw
+tab-group-editor-color-selector2-gray = Aɣiɣdi
+    .title = Aɣiɣdi
+tab-group-editor-color-selector2-red = Azggaɣ
+    .title = Azggaɣ
+tab-group-description = { $tabGroupName } — Agraw n waccaren
+tab-context-unnamed-group =
+    .label = Agraw s war isem
+tab-group-name-default = Agraw s war isem
+
+##
+
+tab-group-editor-action-new-tab =
+    .label = Iccer amaynut deg ugraw
+tab-group-editor-action-new-window =
+    .label = Senkez agraw ɣer usfaylu amaynut
+tab-group-editor-action-save =
+    .label = Sekles syen ffeɣ seg ugraw
+tab-group-editor-action-ungroup =
+    .label = Sefruri accaren
+tab-group-editor-action-delete =
+    .label = Kkes agraw
+tab-group-editor-done =
+    .label = Yemmed
+    .accessKey = D
+tab-context-reopen-tab-group =
+    .label = Ales alday n ugraw n waccaren
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Kkes seg ugraw
+            [one] Kkes seg ugraw
+           *[other] Kkes seg yigrawen
+        }
+    .accesskey = K
+# When a tab group containing the active tab is collapsed, the active tab
+# remains visible. An indicator appears at the end of the group showing the
+# number of remaining tabs that are hidden by the collapsed group,
+# e.g. "+2" for a group with 3 total tabs.
+tab-group-overflow-count = +{ $tabCount }
+tab-group-overflow-count-tooltip =
+    { $tabCount ->
+        [one] { $tabCount } n yiccer nniḍen
+       *[other] { $tabCount } n waccaren nniḍen
+    }
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Senkez agraw ɣer usfaylu amaynut
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Senkez agraw ɣer usfaylu-a
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Kkes agraw
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Ldi agraw ɣer usfaylu-a
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Ldi agraw ɣer usfaylu amaynut
+
+## Tab Notes
+
+tab-note-panel-add-note-new-badge =
+    .label = Amaynut

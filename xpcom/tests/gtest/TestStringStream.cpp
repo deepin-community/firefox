@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -57,10 +55,14 @@ static void TestStringStreamClone(uint32_t aNumBytes) {
 }  // namespace
 
 TEST(StringStream, Simple_4k)
-{ TestStringStream(1024 * 4); }
+{
+  TestStringStream(1024 * 4);
+}
 
 TEST(StringStream, Clone_4k)
-{ TestStringStreamClone(1024 * 4); }
+{
+  TestStringStreamClone(1024 * 4);
+}
 
 static nsresult CloseStreamThenRead(nsIInputStream* aInStr, void* aClosure,
                                     const char* aBuffer, uint32_t aOffset,

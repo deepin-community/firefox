@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -89,8 +87,8 @@ class GeckoViewSupport final
 
   auto OnLoadRequest(mozilla::jni::String::Param aUri, int32_t aWindowType,
                      int32_t aFlags, mozilla::jni::String::Param aTriggeringUri,
-                     bool aHasUserGesture,
-                     bool aIsTopLevel) const -> java::GeckoResult::LocalRef;
+                     bool aHasUserGesture, bool aIsTopLevel) const
+      -> java::GeckoResult::LocalRef;
 
   void OnShowDynamicToolbar() const;
   void OnHideDynamicToolbar() const;
@@ -117,6 +115,9 @@ class GeckoViewSupport final
   MOZ_CAN_RUN_SCRIPT void PrintToPdf(
       const java::GeckoSession::Window::LocalRef& inst,
       jni::Object::Param aStream);
+
+  // See nsIHapticFeedback::HapticFeedbackType for available effects.
+  void PerformHapticFeedback(int32_t aEffect);
 };
 
 }  // namespace widget

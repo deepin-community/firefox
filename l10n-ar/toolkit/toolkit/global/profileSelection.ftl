@@ -4,35 +4,29 @@
 
 profile-selection-window =
     .title = { -brand-short-name } - اختر ملفّ المستخدم الشّخصي
-
 profile-selection-button-accept =
     .label = ابدأ { -brand-short-name }
-
 profile-selection-button-cancel =
     .label = اخرج
-
 profile-selection-new-button =
     .label = أنشئ ملفا شخصيا…
     .accesskey = ش
-
 profile-selection-rename-button =
     .label = غيّر اسم الملف الشخصي…
     .accesskey = غ
-
 profile-selection-delete-button =
     .label = احذف الملف الشخصي…
     .accesskey = ح
-
 profile-selection-conflict-message = أجرت نسخة أخرى من { -brand-product-name } التغييرات على الملفات الشخصية. عليك إعادة تشغيل { -brand-short-name } قبل إجراء تغييرات أخرى.
 
 ## Messages used in the profile manager
 
 profile-manager-description = يخزّن { -brand-short-name } معلومات عن إعداداتك، وتفضيلاتك، وعناصر أخرى في ملفّك الشّخصي.
-
 profile-manager-work-offline =
     .label = اعمل دون اتّصال
     .accesskey = ع
-
 profile-manager-use-selected =
     .label = استخدم الملف الشخصي المحدد دون سؤال عند بدء التشغيل
     .accesskey = س
+profile-has-selectable-profiles-title = لا يمكن حذف ملف شخصي مرتبط بملفات شخصية أخرى
+profile-has-selectable-profiles-message = لحذف هذا الملف الشخصي، افتحه واختر "أدِر الملفات الشخصية" من قسم الملفات الشخصية في قائمة { -brand-short-name }. بعد حذف أي ملفات شخصية إضافية أنشأتها هنا، يمكنك العودة إلى صفحة about:profiles وحذف هذا الملف الشخصي.

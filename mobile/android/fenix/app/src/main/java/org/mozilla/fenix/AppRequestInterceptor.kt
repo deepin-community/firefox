@@ -6,12 +6,15 @@ package org.mozilla.fenix
 
 import android.content.Context
 import android.net.ConnectivityManager
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.getSystemService
 import androidx.navigation.NavController
 import mozilla.components.browser.errorpages.ErrorPages
 import mozilla.components.browser.errorpages.ErrorType
 import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.request.RequestInterceptor
+import mozilla.components.concept.engine.utils.ABOUT_HOME_URL
+import mozilla.components.support.ktx.kotlin.isContentUrl
 import org.mozilla.fenix.GleanMetrics.ErrorPage
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.isOnline
@@ -19,6 +22,7 @@ import java.lang.ref.WeakReference
 
 class AppRequestInterceptor(
     private val context: Context,
+    private val isPrivateForSession: (EngineSession) -> Boolean = { false },
 ) : RequestInterceptor {
 
     private var navController: WeakReference<NavController>? = null
@@ -39,18 +43,27 @@ class AppRequestInterceptor(
         isDirectNavigation: Boolean,
         isSubframeRequest: Boolean,
     ): RequestInterceptor.InterceptionResponse? {
-        val services = context.components.services
+        if (interceptAboutHomeRequest(uri)) {
+            // Let the original request proceed.
+            return null
+        }
 
-        return services.appLinksInterceptor.onLoadRequest(
-            engineSession,
-            uri,
-            lastUri,
-            hasUserGesture,
-            isSameDomain,
-            isRedirect,
-            isDirectNavigation,
-            isSubframeRequest,
-        )
+        val services = context.components.services
+        return listOf(
+            services.appLinksInterceptor,
+            services.storyUTMRequestInterceptor,
+        ).firstNotNullOfOrNull {
+            it.onLoadRequest(
+                engineSession,
+                uri,
+                lastUri,
+                hasUserGesture,
+                isSameDomain,
+                isRedirect,
+                isDirectNavigation,
+                isSubframeRequest,
+            )
+        }
     }
 
     override fun onErrorRequest(
@@ -64,9 +77,11 @@ class AppRequestInterceptor(
         ErrorPage.visitedError.record(ErrorPage.VisitedErrorExtra(improvedErrorType.name))
 
         // Record additional telemetry for content URI not found
-        if (uri?.startsWith("content://") == true && improvedErrorType == ErrorType.ERROR_FILE_NOT_FOUND) {
+        if (uri?.isContentUrl() == true && improvedErrorType == ErrorType.ERROR_FILE_NOT_FOUND) {
             ErrorPage.visitedError.record(ErrorPage.VisitedErrorExtra(errorType = "ERROR_CONTENT_URI_NOT_FOUND"))
         }
+
+        val isPrivate = isPrivateForSession(session)
 
         val errorPageUri = ErrorPages.createUrlEncodedErrorPage(
             context = context,
@@ -75,9 +90,29 @@ class AppRequestInterceptor(
             htmlResource = riskLevel.htmlRes,
             titleOverride = { type -> getErrorPageTitle(context, type) },
             descriptionOverride = { type -> getErrorPageDescription(context, type) },
+            isPrivate = isPrivate,
         )
 
         return RequestInterceptor.ErrorResponse(errorPageUri)
+    }
+
+    /**
+     * Intercepts [uri] request to [ABOUT_HOME_URL] and navigates to the homepage.
+     *
+     * @param uri The URI of the request.
+     * @return True if the [uri] request was intercepted and false otherwise.
+     */
+    private fun interceptAboutHomeRequest(uri: String): Boolean {
+        if (uri != ABOUT_HOME_URL) {
+            return false
+        }
+
+        val currentDestination = navController?.get()?.currentDestination?.id
+        if (!listOf(R.id.homeFragment, R.id.onboardingFragment).contains(currentDestination)) {
+            navController?.get()?.navigate(NavGraphDirections.actionGlobalHome())
+        }
+
+        return true
     }
 
     /**
@@ -88,14 +123,20 @@ class AppRequestInterceptor(
         // This is not an ideal solution. For context, see:
         // https://github.com/mozilla-mobile/android-components/pull/5068#issuecomment-558415367
 
-        val isConnected: Boolean = context.getSystemService<ConnectivityManager>()!!.isOnline()
-
         return when {
-            errorType == ErrorType.ERROR_UNKNOWN_HOST && !isConnected -> ErrorType.ERROR_NO_INTERNET
+            errorType == ErrorType.ERROR_UNKNOWN_HOST && !isConnected() -> ErrorType.ERROR_NO_INTERNET
             errorType == ErrorType.ERROR_HTTPS_ONLY -> ErrorType.ERROR_HTTPS_ONLY
             else -> errorType
         }
     }
+
+    /**
+     * Checks for network availability.
+     *
+     * */
+    @VisibleForTesting
+    internal fun isConnected(): Boolean =
+        context.getSystemService<ConnectivityManager>()!!.isOnline()
 
     private fun getRiskLevel(errorType: ErrorType): RiskLevel = when (errorType) {
         ErrorType.UNKNOWN,
@@ -131,6 +172,7 @@ class AppRequestInterceptor(
         ErrorType.ERROR_SAFEBROWSING_MALWARE_URI,
         ErrorType.ERROR_SAFEBROWSING_PHISHING_URI,
         ErrorType.ERROR_SAFEBROWSING_UNWANTED_URI,
+        ErrorType.ERROR_HARMFULADDON_URI,
         -> RiskLevel.High
     }
 

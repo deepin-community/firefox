@@ -268,3 +268,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = { -brand-short-name } uygulamasına ait dosyalardan biri başka bir uygulama tarafından kullanılmakta olduğundan, yer imi ve geçmiş sistemi çalışmayacak. Bazı güvenlik yazılımları bu soruna sebep olabilir.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Klasörü paylaş
+    .badge = Yeni

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,14 +6,14 @@
 #define mozilla_dom_workers_WorkerLoadInfo_h
 
 #include "mozilla/OriginAttributes.h"
-#include "mozilla/StorageAccess.h"
 #include "mozilla/OriginTrials.h"
+#include "mozilla/StorageAccess.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/ChannelInfo.h"
-#include "mozilla/net/NeckoChannelParams.h"
+#include "mozilla/dom/OffThreadCSPContext.h"
 #include "mozilla/dom/ServiceWorkerRegistrationDescriptor.h"
 #include "mozilla/dom/WorkerCommon.h"
-
+#include "mozilla/net/NeckoChannelParams.h"
 #include "nsIInterfaceRequestor.h"
 #include "nsILoadContext.h"
 #include "nsIRequest.h"
@@ -40,7 +38,6 @@ namespace mozilla {
 
 namespace ipc {
 class PrincipalInfo;
-class CSPInfo;
 }  // namespace ipc
 
 namespace dom {
@@ -71,12 +68,7 @@ struct WorkerLoadInfoData {
   nsCOMPtr<nsIScriptContext> mScriptContext;
   nsCOMPtr<nsPIDOMWindowInner> mWindow;
   nsCOMPtr<nsIContentSecurityPolicy> mCSP;
-  // Thread boundaries require us to not only store a CSP object, but also a
-  // serialized version of the CSP. Reason being: Serializing a CSP to a CSPInfo
-  // needs to happen on the main thread, but storing the CSPInfo needs to happen
-  // on the worker thread. We move the CSPInfo into the Client within
-  // ScriptLoader::PreRun().
-  UniquePtr<mozilla::ipc::CSPInfo> mCSPInfo;
+  UniquePtr<OffThreadCSPContext> mCSPContext;
 
   nsCOMPtr<nsIChannel> mChannel;
   nsCOMPtr<nsILoadGroup> mLoadGroup;
@@ -120,6 +112,7 @@ struct WorkerLoadInfoData {
   Maybe<ServiceWorkerDescriptor> mServiceWorkerDescriptor;
   Maybe<ServiceWorkerRegistrationDescriptor>
       mServiceWorkerRegistrationDescriptor;
+  Maybe<ClientInfo> mSourceInfo;
 
   Maybe<ServiceWorkerDescriptor> mParentController;
 
@@ -134,20 +127,21 @@ struct WorkerLoadInfoData {
   nsCOMPtr<nsIReferrerInfo> mReferrerInfo;
   OriginTrials mTrials;
   bool mFromWindow;
-  bool mEvalAllowed;
-  bool mReportEvalCSPViolations;
-  bool mWasmEvalAllowed;
-  bool mReportWasmEvalCSPViolations;
   bool mXHRParamsAllowed;
   bool mWatchedByDevTools;
   StorageAccess mStorageAccess;
   bool mUseRegularPrincipal;
   bool mUsingStorageAccess;
+  bool mSerialAllowed;
   bool mServiceWorkersTestingInWindow;
   bool mShouldResistFingerprinting;
-  Maybe<RFPTarget> mOverriddenFingerprintingSettings;
+  Maybe<RFPTargetSet> mOverriddenFingerprintingSettings;
   OriginAttributes mOriginAttributes;
   bool mIsThirdPartyContext;
+  bool mIsOn3PCBExceptionList;
+
+  // The header the main script was served with.
+  nsCString mReportingEndpointsHeader;
 
   enum {
     eNotSet,

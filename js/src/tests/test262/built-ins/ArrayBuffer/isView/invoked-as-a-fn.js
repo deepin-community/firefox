@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 The V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -21,7 +20,7 @@ var isView = ArrayBuffer.isView;
 testWithTypedArrayConstructors(function(ctor) {
   var sample = new ctor();
   assert.sameValue(isView(sample), true, "instance of TypedArray");
-});
+}, null, ["passthrough"]);
 
 var dv = new DataView(new ArrayBuffer(1), 0, 0);
 assert.sameValue(isView(dv), true, "instance of DataView");

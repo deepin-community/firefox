@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.view.View
+import androidx.annotation.LayoutRes
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -19,7 +20,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import mozilla.components.concept.storage.CreditCardEntry
 import mozilla.components.feature.prompts.R
+import mozilla.components.feature.prompts.concept.AutocompletePrompt
+import mozilla.components.feature.prompts.concept.ExpandablePrompt
 import mozilla.components.feature.prompts.concept.SelectablePromptView
+import mozilla.components.feature.prompts.concept.ToggleablePrompt
 import mozilla.components.feature.prompts.facts.emitCreditCardAutofillExpandedFact
 import mozilla.components.feature.prompts.facts.emitSuccessfulCreditCardAutofillSuccessFact
 import mozilla.components.support.ktx.android.view.hideKeyboard
@@ -31,7 +35,9 @@ class CreditCardSelectBar @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : ConstraintLayout(context, attrs, defStyleAttr), SelectablePromptView<CreditCardEntry> {
+) : ConstraintLayout(context, attrs, defStyleAttr),
+    AutocompletePrompt<CreditCardEntry>,
+    ExpandablePrompt {
 
     private var view: View? = null
     private var recyclerView: RecyclerView? = null
@@ -39,15 +45,20 @@ class CreditCardSelectBar @JvmOverloads constructor(
     private var expanderView: AppCompatImageView? = null
     private var manageCreditCardsButtonView: AppCompatTextView? = null
     private var headerTextStyle: Int? = null
+    override var isPromptDisplayed: Boolean = false
+        private set
+    private var isExpanded: Boolean = false
 
     private val listAdapter = CreditCardsAdapter { creditCard ->
-        listener?.apply {
+        selectablePromptListener?.apply {
             onOptionSelect(creditCard)
             emitSuccessfulCreditCardAutofillSuccessFact()
         }
     }
 
-    override var listener: SelectablePromptView.Listener<CreditCardEntry>? = null
+    override var toggleablePromptListener: ToggleablePrompt.Listener? = null
+    override var selectablePromptListener: SelectablePromptView.Listener<CreditCardEntry>? = null
+    override var expandablePromptListener: ExpandablePrompt.Listener? = null
 
     init {
         context.withStyledAttributes(
@@ -76,16 +87,45 @@ class CreditCardSelectBar @JvmOverloads constructor(
         listAdapter.submitList(null)
 
         toggleSelectCreditCardHeader(shouldExpand = false)
+        isPromptDisplayed = false
+        toggleablePromptListener?.onHidden()
     }
 
-    override fun showPrompt(options: List<CreditCardEntry>) {
+    override fun showPrompt() {
         if (view == null) {
             view = View.inflate(context, LAYOUT_ID, this)
             bindViews()
         }
 
-        listAdapter.submitList(options)
         view?.isVisible = true
+        isPromptDisplayed = true
+        toggleablePromptListener?.onShown()
+    }
+
+    override fun expand() {
+        view?.hideKeyboard()
+        recyclerView?.isVisible = true
+        manageCreditCardsButtonView?.isVisible = true
+        expanderView?.rotation = ROTATE_180
+        headerView?.contentDescription =
+            context.getString(R.string.mozac_feature_prompts_collapse_credit_cards_content_description_2)
+        emitCreditCardAutofillExpandedFact()
+        expandablePromptListener?.onExpanded()
+        isExpanded = true
+    }
+
+    override fun collapse() {
+        recyclerView?.isVisible = false
+        manageCreditCardsButtonView?.isVisible = false
+        expanderView?.rotation = 0F
+        headerView?.contentDescription =
+            context.getString(R.string.mozac_feature_prompts_expand_credit_cards_content_description_2)
+        expandablePromptListener?.onCollapsed()
+        isExpanded = false
+    }
+
+    override fun populate(options: List<CreditCardEntry>) {
+        listAdapter.submitList(options)
     }
 
     private fun bindViews() {
@@ -109,6 +149,10 @@ class CreditCardSelectBar @JvmOverloads constructor(
 
         expanderView =
             findViewById<AppCompatImageView>(R.id.mozac_feature_credit_cards_expander).apply {
+                setOnClickListener {
+                    toggleSelectCreditCardHeader(!isExpanded)
+                }
+
                 headerView?.currentTextColor?.let {
                     ImageViewCompat.setImageTintList(this, ColorStateList.valueOf(it))
                 }
@@ -117,7 +161,7 @@ class CreditCardSelectBar @JvmOverloads constructor(
         manageCreditCardsButtonView =
             findViewById<AppCompatTextView>(R.id.manage_credit_cards).apply {
                 setOnClickListener {
-                    listener?.onManageOptions()
+                    selectablePromptListener?.onManageOptions()
                 }
             }
     }
@@ -128,23 +172,11 @@ class CreditCardSelectBar @JvmOverloads constructor(
      * @param shouldExpand True if the list of credit cards should be displayed, false otherwise.
      */
     private fun toggleSelectCreditCardHeader(shouldExpand: Boolean) {
-        recyclerView?.isVisible = shouldExpand
-        manageCreditCardsButtonView?.isVisible = shouldExpand
-
-        if (shouldExpand) {
-            view?.hideKeyboard()
-            expanderView?.rotation = ROTATE_180
-            headerView?.contentDescription =
-                context.getString(R.string.mozac_feature_prompts_collapse_credit_cards_content_description_2)
-            emitCreditCardAutofillExpandedFact()
-        } else {
-            expanderView?.rotation = 0F
-            headerView?.contentDescription =
-                context.getString(R.string.mozac_feature_prompts_expand_credit_cards_content_description_2)
-        }
+        if (shouldExpand) expand() else collapse()
     }
 
     companion object {
+        @LayoutRes
         val LAYOUT_ID = R.layout.mozac_feature_prompts_credit_card_select_prompt
 
         private const val ROTATE_180 = 180F

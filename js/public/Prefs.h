@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -105,26 +104,6 @@ class Prefs {
   FOR_EACH_JS_PREF(DEF_GETSET)
 #undef DEF_GETSET
 };
-
-/**
- * Specification for whether weak refs should be enabled and if so whether the
- * FinalizationRegistry.cleanupSome method should be present.
- */
-enum class WeakRefSpecifier {
-  Disabled,
-  EnabledWithCleanupSome,
-  EnabledWithoutCleanupSome
-};
-
-inline WeakRefSpecifier GetWeakRefsEnabled() {
-  if (!Prefs::weakrefs()) {
-    return WeakRefSpecifier::Disabled;
-  }
-  if (Prefs::experimental_weakrefs_expose_cleanupSome()) {
-    return WeakRefSpecifier::EnabledWithCleanupSome;
-  }
-  return WeakRefSpecifier::EnabledWithoutCleanupSome;
-}
 
 };  // namespace JS
 

@@ -144,7 +144,7 @@ document.getElementById('form').submit();
     var stream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
       Ci.nsIStringInputStream
     );
-    stream.setData(data, data.length);
+    stream.setByteStringData(data);
 
     var runnable = {
       run: () => {
@@ -181,7 +181,6 @@ document.getElementById('form').submit();
 };
 
 function frameScript() {
-  /* eslint-env mozilla/frame-script */
   /* eslint-disable mozilla/no-arbitrary-setTimeout */
   addMessageListener("Test:WaitForIFrame", function () {
     var check = function () {

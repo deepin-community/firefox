@@ -17,7 +17,9 @@ autofill-manage-remove-button = Өшіру
 autofill-manage-add-button = Қосу…
 autofill-manage-edit-button = Түзету…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = Адресті сақтау керек пе?
 address-capture-save-doorhanger-description = Формаларды жылдам толтыру үшін, ақпаратты { -brand-short-name } ішіне сақтау.
@@ -39,78 +41,88 @@ address-capture-manage-address-button =
     .label = Адрес баптаулары
 address-capture-learn-more-button =
     .label = Көбірек білу
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Жаңа адресті қосу
 address-capture-open-menu-button =
     .aria-label = Мәзірді ашу
+address-capture-edit-address-link = Адресті түзету
+    .aria-label = Адресті түзету
 address-capture-edit-address-button =
     .aria-label = Адресті түзету
 # The dialog title for creating addresses in browser preferences.
 autofill-add-address-title = Адресті қосу
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Адресті түзету
-autofill-address-name = Аты
 autofill-address-given-name = Аты
 autofill-address-additional-name = Әкесінің аты
 autofill-address-family-name = Тегi
+autofill-address-name = Аты
 autofill-address-organization = Ұйым
 autofill-address-street-address = Көше адресі
 autofill-address-street = Адрес
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Маңай
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Ауыл
 autofill-address-island = Арал
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Қала
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Қала
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Аудан
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Пошта қаласы
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Қала маңы
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Облыс
 autofill-address-state = Штат
 autofill-address-county = Графство
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Уезд
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Префектура
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Аймақ
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = До/Си
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Департамент
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Әмірлік
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Облыс
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
-autofill-address-pin = Пошта индексі
+# Postal code field used in India (IN).
+autofill-address-pin = Pin
 autofill-address-postal-code = Пошта индексі
+# Postal code field.
 autofill-address-zip = Пошта индексі
-# Used in IE
-autofill-address-eircode = Пошта индексі
+# Postal code field used in Ireland (IE).
+autofill-address-eircode = Eircode
 
 ##
 
-
-##
-
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Жаңа адресті қосу
 autofill-address-country = Ел немесе аймақ
 autofill-address-country-only = Ел
 autofill-address-tel = Телефон
@@ -122,11 +134,6 @@ autofill-country-warning-message = Формаларды автотолтыру �
 autofill-add-new-card-title = Жаңа несиелік картаны қосу
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Несиелік картаны түзету
-autofill-message-tooltip = Автоматты толтыру туралы хабарламаны қарау
-# The dialog title for creating credit cards in browser preferences.
-autofill-add-card-title = Картаны қосу
-# The dialog title for editing credit cards in browser preferences.
-autofill-edit-card-title2 = Картаны түзету
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -135,13 +142,34 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } сақталған несие карта ақпаратын қолданғысы келеді. Бұл Windows тіркелгісіне қатынау рұқсатын төменде растаңыз.
        *[other] { -brand-short-name } несие карта ақпаратын көрсеткісі келеді.
     }
+autofill-message-tooltip = Автоматты толтыру туралы хабарламаны қарау
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Картаны қосу
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Картаны түзету
+autofill-card-number-2 =
+    .label = Карта нөмірі
 autofill-card-number = Карта нөмірі
 autofill-card-invalid-number = Жарамды карта нөмірін енгізіңіз
+autofill-card-name-on-card-2 =
+    .label = Картадағы аты
+autofill-card-expires-month-2 =
+    .label = Мерзімі бітетін ай
+autofill-card-expires-year-2 =
+    .label = Мерзімі бітетін жыл
+autofill-card-billing-address-2 =
+    .label = Шотты шығару адресі
 autofill-card-name-on-card = Картадағы аты
 autofill-card-expires-month = Мерз. аяқт. айы
 autofill-card-expires-year = Мерз. аяқт. жылы
 autofill-card-billing-address = Шотты шығару адресі
 autofill-card-network = Карточка түрі
+# This string is never actually displayed, but is used to make it easier to
+# find the payment methods section of about:settings via the search input. It's
+# simply a comma separated list of additional search keywords for the payment
+# methods section. Localizers should choose terms that make sense for payment
+# methods in their region.
+autofill-card-search-term-credit-cards = несие карталары, несие, карталар, дебеттік карталар, дебеттік, әмиян, төлем
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 

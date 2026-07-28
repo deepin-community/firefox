@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -86,6 +84,16 @@ void RenderRootStateManager::AddBlobImageKeyForDiscard(wr::BlobImageKey key) {
   mBlobImageKeysToDelete.AppendElement(key);
 }
 
+void RenderRootStateManager::AddUnusedSnapshotImageKeyForDiscard(
+    wr::SnapshotImageKey key) {
+  mUnusedSnapshotImageKeysToDelete.AppendElement(key);
+}
+
+void RenderRootStateManager::AddSnapshotImageKeyForDiscard(
+    wr::SnapshotImageKey key) {
+  mSnapshotImageKeysToDelete.AppendElement(key);
+}
+
 void RenderRootStateManager::DiscardImagesInTransaction(
     wr::IpcResourceUpdateQueue& aResources) {
   for (const auto& key : mImageKeysToDelete) {
@@ -94,8 +102,22 @@ void RenderRootStateManager::DiscardImagesInTransaction(
   for (const auto& key : mBlobImageKeysToDelete) {
     aResources.DeleteBlobImage(key);
   }
+  for (const auto& key : mSnapshotImageKeysToDelete) {
+    aResources.DeleteSnapshotImage(key);
+  }
   mImageKeysToDelete.Clear();
   mBlobImageKeysToDelete.Clear();
+  mSnapshotImageKeysToDelete.Clear();
+
+  DiscardUnusedImagesInTransaction(aResources);
+}
+
+void RenderRootStateManager::DiscardUnusedImagesInTransaction(
+    wr::IpcResourceUpdateQueue& aResources) {
+  for (const auto& key : mUnusedSnapshotImageKeysToDelete) {
+    aResources.DeleteSnapshotImage(key);
+  }
+  mUnusedSnapshotImageKeysToDelete.Clear();
 }
 
 void RenderRootStateManager::DiscardLocalImages() {
@@ -104,6 +126,7 @@ void RenderRootStateManager::DiscardLocalImages() {
   // image keys but didn't tell the parent about them yet.
   mImageKeysToDelete.Clear();
   mBlobImageKeysToDelete.Clear();
+  mSnapshotImageKeysToDelete.Clear();
 }
 
 void RenderRootStateManager::ClearCachedResources() {

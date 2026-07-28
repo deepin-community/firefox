@@ -43,9 +43,14 @@ export interface InterceptResolutionState {
 export interface ResponseForRequest {
   status: number;
   /**
-   * Optional response headers. All values are converted to strings.
+   * Optional response headers.
+   *
+   * The record values will be converted to string following:
+   * Arrays' values will be mapped to String
+   * (Used when you need multiple headers with the same name).
+   * Non-arrays will be converted to String.
    */
-  headers: Record<string, unknown>;
+  headers: Record<string, string | string[] | unknown>;
   contentType: string;
   body: string | Uint8Array;
 }
@@ -72,6 +77,7 @@ export const DEFAULT_INTERCEPT_RESOLUTION_PRIORITY = 0;
  * following events are emitted by Puppeteer's `page`:
  *
  * - `request`: emitted when the request is issued by the page.
+ *
  * - `requestfinished` - emitted when the response body is downloaded and the
  *   request is complete.
  *
@@ -168,7 +174,6 @@ export abstract class HTTPRequest {
    * `respond()` aren't called).
    */
   continueRequestOverrides(): ContinueRequestOverrides {
-    assert(this.interception.enabled, 'Request Interception is not enabled!');
     return this.interception.requestOverrides;
   }
 
@@ -177,7 +182,6 @@ export abstract class HTTPRequest {
    * interception is allowed to respond (ie, `abort()` is not called).
    */
   responseForRequest(): Partial<ResponseForRequest> | null {
-    assert(this.interception.enabled, 'Request Interception is not enabled!');
     return this.interception.response;
   }
 
@@ -185,7 +189,6 @@ export abstract class HTTPRequest {
    * The most recent reason for aborting the request
    */
   abortErrorReason(): Protocol.Network.ErrorReason | null {
-    assert(this.interception.enabled, 'Request Interception is not enabled!');
     return this.interception.abortReason;
   }
 
@@ -225,7 +228,7 @@ export abstract class HTTPRequest {
    * is finalized.
    */
   enqueueInterceptAction(
-    pendingHandler: () => void | PromiseLike<unknown>
+    pendingHandler: () => void | PromiseLike<unknown>,
   ): void {
     this.interception.handlers.push(pendingHandler);
   }
@@ -234,7 +237,7 @@ export abstract class HTTPRequest {
    * @internal
    */
   abstract _abort(
-    errorReason: Protocol.Network.ErrorReason | null
+    errorReason: Protocol.Network.ErrorReason | null,
   ): Promise<void>;
 
   /**
@@ -282,7 +285,7 @@ export abstract class HTTPRequest {
   abstract method(): string;
 
   /**
-   * The request's post body, if any.
+   * @deprecated Use {@link HTTPRequest.fetchPostData}.
    */
   abstract postData(): string | undefined;
 
@@ -379,6 +382,18 @@ export abstract class HTTPRequest {
   abstract failure(): {errorText: string} | null;
 
   /**
+   * @internal
+   */
+  protected verifyInterception(): void {
+    assert(this.interception.enabled, 'Request Interception is not enabled!');
+    assert(!this.interception.handled, 'Request is already handled!');
+  }
+  /**
+   * @internal
+   */
+  protected abstract canBeIntercepted(): boolean;
+
+  /**
    * Continues request with optional request overrides.
    *
    * @example
@@ -408,14 +423,13 @@ export abstract class HTTPRequest {
    */
   async continue(
     overrides: ContinueRequestOverrides = {},
-    priority?: number
+    priority?: number,
   ): Promise<void> {
-    // Request interception is not supported for data: urls.
-    if (this.url().startsWith('data:')) {
+    this.verifyInterception();
+    if (!this.canBeIntercepted()) {
       return;
     }
-    assert(this.interception.enabled, 'Request Interception is not enabled!');
-    assert(!this.interception.handled, 'Request is already handled!');
+
     if (priority === undefined) {
       return await this._continue(overrides);
     }
@@ -477,14 +491,12 @@ export abstract class HTTPRequest {
    */
   async respond(
     response: Partial<ResponseForRequest>,
-    priority?: number
+    priority?: number,
   ): Promise<void> {
-    // Mocking responses for dataURL requests is not currently supported.
-    if (this.url().startsWith('data:')) {
+    this.verifyInterception();
+    if (!this.canBeIntercepted()) {
       return;
     }
-    assert(this.interception.enabled, 'Request Interception is not enabled!');
-    assert(!this.interception.handled, 'Request is already handled!');
     if (priority === undefined) {
       return await this._respond(response);
     }
@@ -524,16 +536,14 @@ export abstract class HTTPRequest {
    */
   async abort(
     errorCode: ErrorCode = 'failed',
-    priority?: number
+    priority?: number,
   ): Promise<void> {
-    // Request interception is not supported for data: urls.
-    if (this.url().startsWith('data:')) {
+    this.verifyInterception();
+    if (!this.canBeIntercepted()) {
       return;
     }
     const errorReason = errorReasons[errorCode];
     assert(errorReason, 'Unknown error code: ' + errorCode);
-    assert(this.interception.enabled, 'Request Interception is not enabled!');
-    assert(!this.interception.handled, 'Request is already handled!');
     if (priority === undefined) {
       return await this._abort(errorReason);
     }
@@ -609,7 +619,7 @@ export type ActionResult = 'continue' | 'abort' | 'respond';
  * @internal
  */
 export function headersArray(
-  headers: Record<string, string | string[]>
+  headers: Record<string, string | string[]>,
 ): Array<{name: string; value: string}> {
   const result = [];
   for (const name in headers) {
@@ -621,7 +631,7 @@ export function headersArray(
       result.push(
         ...values.map(value => {
           return {name, value: value + ''};
-        })
+        }),
       );
     }
   }
@@ -726,6 +736,7 @@ export function handleError(error: ProtocolError): void {
   // 'Expected "header" [...]'.
   if (
     error.originalMessage.includes('Invalid header') ||
+    error.originalMessage.includes('Unsafe header') ||
     error.originalMessage.includes('Expected "header"') ||
     // WebDriver BiDi error for invalid values, for example, headers.
     error.originalMessage.includes('invalid argument')

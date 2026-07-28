@@ -9,7 +9,7 @@ import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import io.mockk.MockKAnnotations
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
 import io.mockk.spyk
 import mozilla.components.browser.state.state.createTab
@@ -20,14 +20,14 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.databinding.QuicksettingsProtectionsPanelBinding
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.settings.quicksettings.protections.ProtectionsInteractor
 import org.mozilla.fenix.settings.quicksettings.protections.ProtectionsView
 import org.mozilla.fenix.trackingprotection.CookieBannerUIMode
 import org.mozilla.fenix.trackingprotection.ProtectionsState
 import org.mozilla.fenix.utils.Settings
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class ProtectionsViewTest {
 
     private lateinit var view: ProtectionsView
@@ -35,7 +35,7 @@ class ProtectionsViewTest {
     private lateinit var interactor: ProtectionsInteractor
     private var trackingProtectionDivider: View = spyk(View(testContext))
 
-    @MockK(relaxed = true)
+    @RelaxedMockK
     private lateinit var settings: Settings
 
     @Before

@@ -26,7 +26,9 @@ confirmation-hint-screenshot-copied = Ekrānuzņēmums nokopēts!
 #   $tabCount (Number): The number of duplicate tabs closed, at least 1.
 confirmation-hint-duplicate-tabs-closed =
     { $tabCount ->
-        [zero] Aizvērta { $tabCount } cilne
-        [one] Aizvērtas { $tabCount } cilnes
-       *[other] Aizvērtas { $tabCount } ciļņu
+        [zero] Aizvērtas { $tabCount } ciļņu
+        [one] Aizvērta { $tabCount } cilne
+       *[other] Aizvērtas { $tabCount } cilnes
     }
+# Subtle notification shown when Extensions button moves into the application menu.
+confirmation-hint-extensions-button-hidden = Pārvietota uz izvēlni

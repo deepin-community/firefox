@@ -1,12 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsScriptSecurityManager.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/SourceLocation.h"
 #include "mozilla/StaticPrefs_extensions.h"
 #include "mozilla/StaticPrefs_security.h"
@@ -62,17 +59,20 @@
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/Exceptions.h"
 #include "mozilla/dom/nsCSPContext.h"
+#include "mozilla/dom/PolicyContainer.h"
 #include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/ExtensionPolicyService.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/StaticPtr.h"
+#include "mozilla/dom/TrustedTypeUtils.h"
 #include "mozilla/dom/WorkerCommon.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "nsContentUtils.h"
 #include "nsJSUtils.h"
 #include "nsILoadInfo.h"
 #include "js/ColumnNumber.h"  // JS::ColumnNumberOneOrigin
+#include "js/GCVector.h"
+#include "js/Value.h"
 
 // This should be probably defined on some other place... but I couldn't find it
 #define WEBAPPS_PERM_NAME "webapps-manage"
@@ -219,17 +219,10 @@ bool nsScriptSecurityManager::SecurityCompareURIs(nsIURI* aSourceURI,
                                 sStrictFileOriginPolicy);
 }
 
-// SecurityHashURI is consistent with SecurityCompareURIs because
-// NS_SecurityHashURI is consistent with NS_SecurityCompareURIs.  See
-// nsNetUtil.h.
-uint32_t nsScriptSecurityManager::SecurityHashURI(nsIURI* aURI) {
-  return NS_SecurityHashURI(aURI);
-}
-
 bool nsScriptSecurityManager::IsHttpOrHttpsAndCrossOrigin(nsIURI* aUriA,
                                                           nsIURI* aUriB) {
-  if (!aUriA || (!net::SchemeIsHTTP(aUriA) && !net::SchemeIsHTTPS(aUriA)) ||
-      !aUriB || (!net::SchemeIsHTTP(aUriB) && !net::SchemeIsHTTPS(aUriB))) {
+  if (!aUriA || !net::SchemeIsHttpOrHttps(aUriA) || !aUriB ||
+      !net::SchemeIsHttpOrHttps(aUriB)) {
     return false;
   }
   if (!SecurityCompareURIs(aUriA, aUriB)) {
@@ -462,48 +455,65 @@ NS_IMPL_ISUPPORTS(nsScriptSecurityManager, nsIScriptSecurityManager)
 ///////////////// Security Checks /////////////////
 
 bool nsScriptSecurityManager::ContentSecurityPolicyPermitsJSAction(
-    JSContext* cx, JS::RuntimeCode aKind, JS::Handle<JSString*> aCode) {
+    JSContext* cx, JS::RuntimeCode aKind, JS::Handle<JSString*> aCodeString,
+    JS::CompilationType aCompilationType,
+    JS::Handle<JS::StackGCVector<JSString*>> aParameterStrings,
+    JS::Handle<JSString*> aBodyString,
+    JS::Handle<JS::StackGCVector<JS::Value>> aParameterArgs,
+    JS::Handle<JS::Value> aBodyArg, bool* aOutCanCompileStrings) {
   MOZ_ASSERT(cx == nsContentUtils::GetCurrentJSContext());
 
   nsCOMPtr<nsIPrincipal> subjectPrincipal = nsContentUtils::SubjectPrincipal();
 
+  if (aKind == JS::RuntimeCode::JS) {
+    ErrorResult error;
+    bool areArgumentsTrusted = TrustedTypeUtils::
+        AreArgumentsTrustedForEnsureCSPDoesNotBlockStringCompilation(
+            cx, aCodeString, aCompilationType, aParameterStrings, aBodyString,
+            aParameterArgs, aBodyArg, subjectPrincipal, error);
+    if (error.MaybeSetPendingException(cx)) {
+      return false;
+    }
+    if (!areArgumentsTrusted) {
+      *aOutCanCompileStrings = false;
+      return true;
+    }
+  }
+
   // Check if Eval is allowed per firefox hardening policy
   bool contextForbidsEval =
       (subjectPrincipal->IsSystemPrincipal() || XRE_IsE10sParentProcess());
-#if defined(ANDROID)
-  contextForbidsEval = false;
-#endif
-
   if (contextForbidsEval) {
     nsAutoJSString scriptSample;
     if (aKind == JS::RuntimeCode::JS &&
-        NS_WARN_IF(!scriptSample.init(cx, aCode))) {
+        NS_WARN_IF(!scriptSample.init(cx, aCodeString))) {
       return false;
     }
 
     if (!nsContentSecurityUtils::IsEvalAllowed(
             cx, subjectPrincipal->IsSystemPrincipal(), scriptSample)) {
-      return false;
+      *aOutCanCompileStrings = false;
+      return true;
     }
   }
 
   // Get the window, if any, corresponding to the current global
   nsCOMPtr<nsIContentSecurityPolicy> csp;
   if (nsGlobalWindowInner* win = xpc::CurrentWindowOrNull(cx)) {
-    csp = win->GetCsp();
+    csp = PolicyContainer::GetCSP(win->GetPolicyContainer());
   }
 
   if (!csp) {
     // Get the CSP for addon sandboxes.  If the principal is expanded and has a
     // csp, we're probably in luck.
     auto* basePrin = BasePrincipal::Cast(subjectPrincipal);
-    // ContentScriptAddonPolicy means it is also an expanded principal, thus
-    // this is in a sandbox used as a content script.
-    if (basePrin->ContentScriptAddonPolicy()) {
+    // TODO bug 1548468: Move CSP off ExpandedPrincipal.
+    if (basePrin->Is<ExpandedPrincipal>()) {
       basePrin->As<ExpandedPrincipal>()->GetCsp(getter_AddRefs(csp));
     }
     // don't do anything unless there's a CSP
     if (!csp) {
+      *aOutCanCompileStrings = true;
       return true;
     }
   }
@@ -523,7 +533,8 @@ bool nsScriptSecurityManager::ContentSecurityPolicyPermitsJSAction(
     nsresult rv = csp->GetAllowsEval(&reportViolation, &evalOK);
     if (NS_FAILED(rv)) {
       NS_WARNING("CSP: failed to get allowsEval");
-      return true;  // fail open to not break sites.
+      *aOutCanCompileStrings = true;  // fail open to not break sites.
+      return true;
     }
   } else {
     if (NS_FAILED(csp->GetAllowsWasmEval(&reportViolation, &evalOK))) {
@@ -546,8 +557,7 @@ bool nsScriptSecurityManager::ContentSecurityPolicyPermitsJSAction(
     auto caller = JSCallingLocation::Get(cx);
     nsAutoJSString scriptSample;
     if (aKind == JS::RuntimeCode::JS &&
-        NS_WARN_IF(!scriptSample.init(cx, aCode))) {
-      JS_ClearPendingException(cx);
+        NS_WARN_IF(!scriptSample.init(cx, aCodeString))) {
       return false;
     }
     uint16_t violationType =
@@ -560,7 +570,8 @@ bool nsScriptSecurityManager::ContentSecurityPolicyPermitsJSAction(
                              caller.mLine, caller.mColumn, u""_ns, u""_ns);
   }
 
-  return evalOK;
+  *aOutCanCompileStrings = evalOK;
+  return true;
 }
 
 // static
@@ -1053,7 +1064,9 @@ nsresult nsScriptSecurityManager::CheckLoadURIFlags(
           }
         }
       } else if (targetScheme.EqualsLiteral("moz-page-thumb") ||
-                 targetScheme.EqualsLiteral("page-icon")) {
+                 targetScheme.EqualsLiteral("page-icon") ||
+                 targetScheme.EqualsLiteral("moz-newtab-wallpaper") ||
+                 targetScheme.EqualsLiteral("moz-newtab-remote-renderer")) {
         if (XRE_IsParentProcess()) {
           return NS_OK;
         }
@@ -1213,8 +1226,7 @@ nsScriptSecurityManager::CheckLoadURIStrWithPrincipal(
   // available.
   uint32_t flags[] = {nsIURIFixup::FIXUP_FLAG_NONE,
                       nsIURIFixup::FIXUP_FLAG_FIX_SCHEME_TYPOS};
-  for (uint32_t i = 0; i < ArrayLength(flags); ++i) {
-    uint32_t fixupFlags = flags[i];
+  for (unsigned int fixupFlags : flags) {
     if (aPrincipal->OriginAttributesRef().IsPrivateBrowsing()) {
       fixupFlags |= nsIURIFixup::FIXUP_FLAG_PRIVATE_CONTEXT;
     }
@@ -1250,13 +1262,13 @@ nsScriptSecurityManager::CheckLoadURIWithPrincipalFromJS(
       CheckLoadURIWithPrincipal(aPrincipal, aTargetURI, aFlags, aInnerWindowID);
   if (NS_FAILED(rv)) {
     nsAutoCString uriStr;
-    Unused << aTargetURI->GetSpec(uriStr);
+    (void)aTargetURI->GetSpec(uriStr);
 
     nsAutoCString message("Load of ");
     message.Append(uriStr);
 
     nsAutoCString principalStr;
-    Unused << aPrincipal->GetSpec(principalStr);
+    (void)aPrincipal->GetSpec(principalStr);
     if (!principalStr.IsEmpty()) {
       message.AppendPrintf(" from %s", principalStr.get());
     }
@@ -1471,11 +1483,12 @@ nsScriptSecurityManager::CanCreateWrapper(JSContext* cx, const nsIID& aIID,
   nsresult rv;
   nsAutoString errorMsg;
   if (originUTF16.IsEmpty()) {
-    AutoTArray<nsString, 1> formatStrings = {classInfoUTF16};
+    AutoTArray<nsString, 1> formatStrings = {std::move(classInfoUTF16)};
     rv = bundle->FormatStringFromName("CreateWrapperDenied", formatStrings,
                                       errorMsg);
   } else {
-    AutoTArray<nsString, 2> formatStrings = {classInfoUTF16, originUTF16};
+    AutoTArray<nsString, 2> formatStrings = {std::move(classInfoUTF16),
+                                             std::move(originUTF16)};
     rv = bundle->FormatStringFromName("CreateWrapperDeniedForOrigin",
                                       formatStrings, errorMsg);
   }
@@ -1555,6 +1568,7 @@ void nsScriptSecurityManager::InitJSCallbacks(JSContext* aCx) {
 
   static const JSSecurityCallbacks securityCallbacks = {
       ContentSecurityPolicyPermitsJSAction,
+      TrustedTypeUtils::HostGetCodeForEval,
       JSPrincipalsSubsume,
   };
 
@@ -1836,4 +1850,12 @@ nsScriptSecurityManager::EnsureFileURIAllowlist() {
   }
 
   return mFileURIAllowlist.ref();
+}
+
+NS_IMETHODIMP
+nsScriptSecurityManager::GetFirstUnexpectedJavaScriptLoad(
+    nsACString& aScriptFilename) {
+  aScriptFilename.Truncate();
+  return nsContentSecurityUtils::GetVeryFirstUnexpectedScriptFilename(
+      aScriptFilename);
 }

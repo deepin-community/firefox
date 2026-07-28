@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = No s'ha pogut actualitzar — sistema incompatible
 appmenuitem-banner-update-restart =
     .label = Hi ha una actualització — reinicia ara
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Obteniu un { -brand-short-name } nou. Conserveu totes les teves pestanyes.
+appmenu-nova-update-link = Reinicieu per actualitzar
+appmenu-nova-fxa-sign-in = Inicia la sessió
+appmenu-nova-switch-device-promo =
+    .message = Aviat tindreu un dispositiu nou? Instal·leu-hi el { -brand-short-name }!
+appmenu-nova-switch-device-link = Com es migren les dades
 appmenuitem-new-tab =
     .label = Pestanya nova
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Finestra privada nova
 appmenuitem-history =
     .label = Historial
+appmenuitem-tab-groups =
+    .label = Grups de pestanyes
 appmenuitem-downloads =
     .label = Baixades
 appmenuitem-passwords =
     .label = Contrasenyes
+appmenuitem-extensions-and-themes =
+    .label = Extensions i temes
+appmenuitem-extensions =
+    .label = Extensions
 appmenuitem-addons-and-themes =
     .label = Complements i temes
 appmenuitem-print =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronitza i desa les dades
 appmenu-fxa-signed-in-label = Inicia la sessió
 appmenu-fxa-setup-sync =
     .label = Activa la sincronització…
+appmenu-fxa-setup-sync-new = Activa
 appmenuitem-save-page =
     .label = Anomena i desa la pàgina…
+appmenuitem-fxa-sync-off-title = La sincronització està desactivada
+appmenuitem-fxa-sync-off-description = Protegiu i accediu a les vostres adreces d'interès, contrasenyes i més des de qualsevol dispositiu.
 
 ## What's New panel in App menu.
 
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Maj+2
     }
+profiler-button-dropmarker =
+    .label = Obre la subfinestra de l'analitzador de rendiment
+    .tooltiptext = Obre la subfinestra de l'analitzador de rendiment
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +209,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Preconfiguració recomanada per a investigar errors d'àudio i vídeo del { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Elements multimèdia
+profiler-popup-presets-ml-description = Preconfiguració recomanada per a investigar errors d'aprenentatge automàtic del { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Aprenentatge automàtic
 profiler-popup-presets-networking-description = Preconfiguració recomanada per a investigar errors de xarxa del { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Xarxa
@@ -196,8 +219,12 @@ profiler-popup-presets-power-description = Preconfiguració recomanada per a inv
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
+profiler-popup-presets-debug-description = Preconfiguració recomanada per a la depuració del { -brand-shorter-name }. Té una gran sobrecàrrega; per tant, no l'utilitzeu per a fer feines que requereixin un alt rendiment, sinó per a centrar-vos en comprendre el comportament del navegador.
 profiler-popup-presets-debug-label =
     .label = Depuració
+profiler-popup-presets-web-compat-description = Configuració predeterminada recomanada per a depurar problemes de compatibilitat web en llocs web, en lloc de fer un seguiment del rendiment.
+profiler-popup-presets-web-compat-label =
+    .label = Compatibilitat web
 profiler-popup-presets-custom-label =
     .label = Personalitzat
 
@@ -263,6 +290,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Personalitza la barra d'eines…
+appmenu-abouttranslations =
+    .label = Tradueix…
+appmenu-edit-pdf =
+    .label = Edita el PDF…
 appmenu-developer-tools-subheader = Eines del navegador
 appmenu-developer-tools-extensions =
     .label = Extensions per a desenvolupadors
@@ -272,7 +303,50 @@ appmenuitem-report-broken-site =
 ## Panel for privacy and security products
 
 appmenuitem-sign-in-account = Inicieu la sessió al vostre compte
+appmenuitem-monitor-title2 = Anticipeu-vos al robatori d'identitat
+appmenuitem-monitor-description2 = Rebeu alertes sobre filtracions de dades
 appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Obteniu alertes sobre filtracions de dades
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = Protegiu la privadesa del correu electrònic
+appmenuitem-relay-description2 = Ajuda a evitar el correu brossa a la safata d'entrada
+appmenuitem-relay-description = Emmascareu el vostre correu electrònic i telèfon reals
+appmenuitem-services-relay-description = Obre el tauler de màscares d’adreça electrònica
+appmenuitem-vpn-title2 = Amagueu la vostra ubicació amb { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description3 = Feu que la vostra navegació sigui més difícil de rastrejar
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Obtén una protecció integral de tot el dispositiu
 appmenuitem-vpn-description = Protegiu la vostra activitat a la xarxa
+appmenu-services-header = Els meus serveis
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = Eines de privadesa
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Prova altres eines de protecció del Mozilla:
+appmenu-other-protection-header = Proveu altres eines de protecció de { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Altres perfils
+appmenu-manage-profiles =
+    .label = Gestiona els perfils
+appmenu-copy-profile =
+    .label = Copia aquest perfil
+appmenu-create-profile2 =
+    .label = Crea un perfil nou
+appmenu-create-profile =
+    .label = Perfil nou
+appmenu-edit-profile =
+    .aria-label = Edita el perfil
+appmenu-edit-this-profile =
+    .label = Edita aquest perfil
+appmenu-profile-current-in-use = Perfil actual en ús
+appmenu-profiles-2 =
+    .label = Perfils
+appmenu-profiles-header = Perfils
+appmenu-all-profiles =
+    .label = Tots els perfils
+appmenu-secure-sync-header = Sincronització segura

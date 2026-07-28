@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsUnicharUtils_h__
-#define nsUnicharUtils_h__
+#ifndef nsUnicharUtils_h_
+#define nsUnicharUtils_h_
 
 #include "nsString.h"
 
@@ -153,7 +152,12 @@ namespace mozilla {
  */
 uint32_t HashUTF8AsUTF16(const char* aUTF8, size_t aLength, bool* aErr);
 
+/**
+ * Tests used in CSS Segment Break Transformation to determine whether a
+ * newline is discardable.
+ */
 bool IsSegmentBreakSkipChar(uint32_t u);
+bool IsEastAsianPunctuation(uint32_t u);
 
 /**
  * Return true for all Punctuation categories (Unicode general category P?),
@@ -164,4 +168,4 @@ bool IsPunctuationForWordSelect(char16_t aCh);
 
 }  // namespace mozilla
 
-#endif /* nsUnicharUtils_h__ */
+#endif /* nsUnicharUtils_h_ */

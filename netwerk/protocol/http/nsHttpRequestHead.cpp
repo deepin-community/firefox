@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +7,7 @@
 
 #include "nsHttpRequestHead.h"
 #include "nsIHttpHeaderVisitor.h"
+#include "mozilla/net/Dictionary.h"
 
 //-----------------------------------------------------------------------------
 // nsHttpRequestHead
@@ -96,6 +96,11 @@ void nsHttpRequestHead::SetRequestURI(const nsACString& s) {
 void nsHttpRequestHead::SetPath(const nsACString& s) {
   RecursiveMutexAutoLock mon(mRecursiveMutex);
   mPath = s;
+}
+
+void nsHttpRequestHead::SetDictionary(DictionaryCacheEntry* aDict) {
+  RecursiveMutexAutoLock mon(mRecursiveMutex);  // XXX necessary?
+  mDict = aDict;
 }
 
 uint32_t nsHttpRequestHead::HeaderCount() {
@@ -296,6 +301,8 @@ void nsHttpRequestHead::ParseMethod(const nsCString& aRawMethod,
     aParsedMethod = kMethod_Get;
   } else if (!strcmp(aRawMethod.get(), "POST")) {
     aParsedMethod = kMethod_Post;
+  } else if (!strcmp(aRawMethod.get(), "PATCH")) {
+    aParsedMethod = kMethod_Patch;
   } else if (!strcmp(aRawMethod.get(), "OPTIONS")) {
     aParsedMethod = kMethod_Options;
   } else if (!strcmp(aRawMethod.get(), "CONNECT")) {

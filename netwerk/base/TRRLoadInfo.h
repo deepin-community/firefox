@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -40,12 +38,12 @@ class TRRLoadInfo final : public nsILoadInfo {
   nsTArray<nsCOMPtr<nsIPrincipal>> mEmptyPrincipals;
   nsTArray<uint64_t> mEmptyBrowsingContextIDs;
   nsTArray<nsCString> mCorsUnsafeHeaders;
-  nsID mSandboxedNullPrincipalID;
+  nsID mSandboxedNullPrincipalID{};
   Maybe<mozilla::dom::ClientInfo> mClientInfo;
   Maybe<mozilla::dom::ClientInfo> mReservedClientInfo;
   Maybe<mozilla::dom::ClientInfo> mInitialClientInfo;
   Maybe<mozilla::dom::ServiceWorkerDescriptor> mController;
-  Maybe<RFPTarget> mOverriddenFingerprintingSettings;
+  Maybe<RFPTargetSet> mOverriddenFingerprintingSettings;
 };
 
 }  // namespace net

@@ -1,12 +1,13 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsHyphenator_h__
-#define nsHyphenator_h__
+#ifndef nsHyphenator_h_
+#define nsHyphenator_h_
 
-#include "base/shared_memory.h"
+#include "mozilla/ipc/SharedMemoryHandle.h"
+#include "mozilla/ipc/SharedMemoryMapping.h"
+#include "mozilla/Span.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Variant.h"
 #include "nsCOMPtr.h"
@@ -17,19 +18,17 @@ class nsIURI;
 struct HyphDic;
 struct CompiledData;
 
-namespace mozilla {
+namespace std {
 template <>
-class DefaultDelete<const HyphDic> {
- public:
+struct default_delete<const HyphDic> {
   void operator()(const HyphDic* ptr) const;
 };
 
 template <>
-class DefaultDelete<const CompiledData> {
- public:
+struct default_delete<const CompiledData> {
   void operator()(const CompiledData* ptr) const;
 };
-}  // namespace mozilla
+}  // namespace std
 
 class nsHyphenator {
  public:
@@ -41,7 +40,7 @@ class nsHyphenator {
 
   nsresult Hyphenate(const nsAString& aText, nsTArray<bool>& aHyphens);
 
-  void CloneHandle(base::SharedMemoryHandle* aOutHandle, uint32_t* aOutSize);
+  mozilla::ipc::ReadOnlySharedMemoryHandle CloneHandle();
 
  private:
   ~nsHyphenator() = default;
@@ -49,13 +48,14 @@ class nsHyphenator {
   void HyphenateWord(const nsAString& aString, uint32_t aStart, uint32_t aLimit,
                      nsTArray<bool>& aHyphens);
 
-  mozilla::Variant<const void*,  // raw pointer to uncompressed omnijar data
-                   mozilla::UniquePtr<base::SharedMemory>,  // shmem block
-                   mozilla::UniquePtr<const HyphDic>  // loaded by mapped_hyph
-                   >
+  mozilla::Variant<
+      mozilla::Span<const uint8_t>,  // raw pointer to uncompressed omnijar data
+      mozilla::ipc::ReadOnlySharedMemoryHandle,   // shmem handle, in the parent
+      mozilla::ipc::ReadOnlySharedMemoryMapping,  // mapped shmem, in the child
+      mozilla::UniquePtr<const HyphDic>           // loaded by mapped_hyph
+      >
       mDict;
-  uint32_t mDictSize;  // size of mDict data (not used if type is HyphDic)
   bool mHyphenateCapitalized;
 };
 
-#endif  // nsHyphenator_h__
+#endif  // nsHyphenator_h_

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -43,13 +41,7 @@ static float GetInflexion() {
   // approximation used to compute the spline curve does not converge.
   const float inflexion =
       StaticPrefs::apz_android_chrome_fling_physics_inflexion();
-  if (inflexion < 0.0f) {
-    return 0.0f;
-  }
-  if (inflexion > 1.0f) {
-    return 1.0f;
-  }
-  return inflexion;
+  return std::clamp(inflexion, 0.f, 1.f);
 }
 
 // Fling scroll is stopped when the scroll position is |kThresholdForFlingEnd|

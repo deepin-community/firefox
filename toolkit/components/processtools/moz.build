@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -39,14 +37,21 @@ BROWSER_CHROME_MANIFESTS += ["tests/browser/browser.toml"]
 # Platform-specific implementations of `ProcInfo`.
 toolkit = CONFIG["MOZ_WIDGET_TOOLKIT"]
 if toolkit == "gtk" or toolkit == "android":
-    if CONFIG["OS_TARGET"] == "OpenBSD":
+    if CONFIG["OS_TARGET"] in ("FreeBSD", "OpenBSD"):
         UNIFIED_SOURCES += ["ProcInfo_bsd.cpp"]
     elif CONFIG["OS_TARGET"] == "SunOS":
         UNIFIED_SOURCES += ["ProcInfo_solaris.cpp"]
     else:
         UNIFIED_SOURCES += ["ProcInfo_linux.cpp"]
 elif toolkit == "windows":
-    UNIFIED_SOURCES += ["ProcInfo_win.cpp"]
+    EXPORTS.mozilla += [
+        "CpuInfo.h",
+    ]
+
+    UNIFIED_SOURCES += [
+        "CpuInfo_win.cpp",
+        "ProcInfo_win.cpp",
+    ]
 elif toolkit in ("cocoa", "uikit"):
     UNIFIED_SOURCES += ["ProcInfo.mm"]
 

@@ -10,17 +10,27 @@ pane-general-title = பொது
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = முகப்பு
+pane-search-title2 = தேடு
+    .title = தேடு
+pane-privacy-title3 = தனியுரிமை & பாதுகாப்பு
+    .title = தனியுரிமை & பாதுகாப்பு
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = தேடு
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = தனியுரிமை & பாதுகாப்பு
 pane-privacy-title = தனியுரிமை & பாதுகாப்பு
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = { -brand-short-name } ஆதரவு
+    .title = { -brand-short-name } ஆதரவு
 help-button-label = { -brand-short-name } ஆதரவு
 focus-search =
     .key = f
@@ -71,6 +81,8 @@ set-as-my-default-browser =
     .accesskey = D
 disable-extension =
     .label = துணைநிரலை முடக்கவும்
+tabs-group-header2 =
+    .label = கீற்றுகள்
 tabs-group-header = கீற்றுகள்
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab விசைக் கொண்டு அண்மையில் பாவித்த கீற்றுகளின் ஊடாக வலம் வரலாம்
@@ -92,6 +104,8 @@ browser-containers-settings =
     .label = அமைவுகள்…
     .accesskey = i
 containers-disable-alert-title = அனைத்து கலன் கீற்றுகளையும் மூடவா?
+startup-group =
+    .label = துவக்கம்
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -112,7 +126,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = செயலில் வைத்திரு
 containers-remove-alert-title = இந்தக் கலனை நீக்கவா?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] நீங்கள் இப்போது இந்தக் கொள்கலனை நீக்கினால், { $count } கொள்கலன் கீற்று மூடப்படும். இந்தக் கொள்கலனை நீக்க வேண்டுமா?
@@ -156,6 +170,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = கோப்புகள் மற்றும் செயலிகள்
+download-save-files-header =
+    .label = கோப்புகளை இங்கு சேமி
+download-save-where-3 =
+    .aria-label = கோப்புகளை இங்கு சேமி
 download-header = பதிவிறக்கங்கள்
 download-save-where = கோப்புகளை இங்கு சேமி
     .accesskey = v
@@ -180,9 +198,11 @@ applications-filter =
 applications-type-column =
     .label = உள்ளடக்க வகை
     .accesskey = T
+applications-type-heading = உள்ளடக்க வகை
 applications-action-column =
     .label = செயல்
     .accesskey = A
+applications-action-heading = செயல்
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = { $extension } கோப்பு
@@ -204,11 +224,11 @@ applications-manage-app =
 applications-always-ask =
     .label = எப்போதும் கேள
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name }ஐ பயன்படுத்து ({ -brand-short-name }இல்)
 
@@ -229,8 +249,10 @@ applications-use-app-default-label =
 applications-use-other-label =
     .value = { applications-use-other.label }
 
-##
+## Firefox updates
 
+drm-group =
+    .label = எண்முறை உரிமைகள் மேலாண்மை (DRM) உள்ளடக்கம்
 drm-content-header = எண்முறை உரிமைகள் மேலாண்மை (DRM) உள்ளடக்கம்
 play-drm-content =
     .label = DRM உள்ளடக்கங்கத்தை இயக்கு
@@ -238,7 +260,12 @@ play-drm-content =
 play-drm-content-learn-more = மேலும் அறிய
 update-application-title = { -brand-short-name } மேம்படுத்தல்கள்
 update-application-description = சிறந்த செயல்திறன், நிலைப்புத்தன்மை மற்றும் பாதுகாப்பிற்காக { -brand-short-name } என்பதை இற்றைப்படுத்தி வைக்கவும்.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = பதிப்பு { $version } <a data-l10n-name="learn-more">புதியவைகள்</a>
+update-history-2 =
+    .label = புதுப்பித்தல் வரலாறு
+    .accesskey = p
 update-history =
     .label = புதுப்பித்தல் வரலாறு…
     .accesskey = p
@@ -277,11 +304,13 @@ performance-limit-content-process-option = உள்ளடக்க செயல
 performance-limit-content-process-enabled-desc = பல கீற்றுகளைப் பயன்படுத்தும் போது கூடுதல் உள்ளடக்க செயலாக்கங்கள் செயல்திறனை மேம்படுத்தும், ஆனால் அது அதிக நினைவகத்தைப் பயன்படுத்தும்.
 performance-limit-content-process-blocked-desc = உள்ளடக்க செயல்முறைகளின் எண்ணிக்கையை மாற்றியமைத்தல் பல செயல்முறை கொண்ட { -brand-short-name } உலாவியுடன் மட்டுமே சாத்தியமாகும் . <a data-l10n-name="learn-more">பன்செயல்முறை உள்ளதா என்பதைச் சோதிக்க கற்றுக்கொள்ளுங்கள்</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (முன்னிருப்பு)
+performance-group =
+    .label = செயல்திறன்
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = உலாவல்
 browsing-use-autoscroll =
@@ -300,6 +329,8 @@ browsing-search-on-start-typing =
     .label = நீங்கள் தட்டச்சு செய்யத்தொடங்கும்போது உரையைத் தேடவும்
     .accesskey = x
 browsing-cfr-recommendations-learn-more = மேலும் அறிய
+browsing-group =
+    .label = உலாவல்
 
 ## General Section - Proxy
 
@@ -315,10 +346,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = புதிய சாளரங்களும் கீற்றுகளும்
 home-new-windows-tabs-description2 = முகப்புப்பக்கம், புதிய சாளங்கள், கீற்றுகளைத் திறக்கும்போது எவற்றைப் பார்க்கிறீர்கள் என்று  தேர்ந்தெடுங்கள்.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = முன்னிருப்பாக்கு
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = முகப்புப்பக்கம் மற்றும் புதிய சாளரங்கள்
 home-newtabs-mode-label = புதிய கீற்றுகள்
+home-homepage-new-tabs =
+    .label = புதிய கீற்றுகள்
 home-restore-defaults =
     .label = முன்னிருப்புக்கு மீட்டமை
     .accesskey = R
@@ -348,8 +387,7 @@ choose-bookmark =
 home-prefs-search-header =
     .label = வலை தேடல்
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } என்பவரால் பரிந்துரைக்கப்பட்டது
@@ -371,6 +409,8 @@ home-prefs-highlights-option-most-recent-download =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = துணுக்குகள்
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -392,6 +432,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = தேடல் பரிந்துரைகளை இடப்பட்டை முடிவுகளில் காண்பி
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = தேடல் பரிந்துரைகள் இடப்பட்டையில் காட்டப்படாது ஏனெனில் நீங்கள் { -brand-short-name } என்பதை வரலாற்றில் நினைவு கொள்ளாமல் இருக்கும்படி கட்டமைத்துள்ளீர்கள்.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -416,13 +458,19 @@ search-find-more-link = மேலும் பல தேடு பொறிக�
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = இரட்டை முக்கிய சொல்
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = நீங்கள் தேர்ந்தெடுத்த ஒரு முக்கியச்சொல் தற்போது "{ $name }"ஆல் பயன்படுத்தப்படுகிறது. வேறொன்றை தேர்ந்தெடுக்கவும்.
 search-keyword-warning-bookmark = நீங்கள் தேர்ந்தெடுத்த ஒரு முக்கியச்சொல் தற்போது ஒரு புத்தகக்குறியால் பயன்படுத்தப்படுகிறது. வேறொன்றை தேர்ந்தெடுக்கவும்.
+search-engine-group =
+    .label = முன்னிருப்பு தேடுப்பொறி
+search-default-engine =
+    .aria-label = முன்னிருப்பு தேடுப்பொறி
 
 ## Containers Section
 
 containers-header = கலன் கீற்றுகள்
+containers-section-header =
+    .heading = கலன் கீற்றுகள்
 containers-add-button =
     .label = புதிய கலன்களைச் சேர்
     .accesskey = A
@@ -452,9 +500,13 @@ sync-profile-picture-with-alt =
     .alt = சுயவிவரப் படத்தை மாற்று
 sync-manage-account = கணக்கை நிர்வகி
     .accesskey = o
+sync-manage-account2 =
+    .label = கணக்கை நிர்வகி
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } இது உறுதிப்படுத்தவில்லை.
 sync-signedin-login-failure = தயவுச்செய்து மீண்டும் இணைய உள்நுழையவும் { $email }
@@ -470,12 +522,6 @@ sync-remove-account =
 sync-sign-in =
     .label = புகுபதிகை
     .accesskey = g
-
-## Sync section - enabling or disabling sync.
-
-
-## The list of things currently syncing.
-
 
 ## The "Choose what to sync" dialog.
 
@@ -505,6 +551,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = கருவியின் பெயர்
+sync-device-name-header-2 =
+    .label = கருவியின் பெயர்
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = கருவியின் பெயர்
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = கருவியின் பெயரை மாற்றவும்
+    .accesskey = h
 sync-device-name-change =
     .label = கருவியின் பெயரை மாற்றவும்…
     .accesskey = h
@@ -536,7 +592,7 @@ forms-ask-to-save-logins =
     .label = இணைய தளங்களுக்கான புகுபதிகைகள் கடவுச்சொற்களை சேமிக்க கேள்
     .accesskey = r
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = விதிவிலக்குகள்…
@@ -551,12 +607,6 @@ forms-master-pw-change =
     .label = முதன்மை கடவுச்சொல்லை மாற்றவும்...
     .accesskey = M
 forms-master-pw-fips-desc = கடவுச்சொல்லை மாற்ற முடியவில்லை
-
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
 
 ## Privacy Section - History
 
@@ -578,6 +628,12 @@ history-remember-option-never =
     .label = வரலாற்றை நினைவில் வைக்காது
 history-remember-option-custom =
     .label = வரலாறுக்கான விருப்பமை அமைவுகளைப் பாவிக்கும்
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } உங்கள் உலாவல், பதிவிறக்கம், படிவம் மற்றும் தேடல் வரலாற்றை நினைவிற்கொள்ளும்.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } தனி உலாவல் அமைப்புகளையே பயன்படுத்தும் , மற்றும் நீங்கள் இணையத்தை உலாவும் போது எந்த வரலாற்றையும் நினைவில் கொள்ளாது.
 history-remember-description = { -brand-short-name } உங்கள் உலாவல், பதிவிறக்கம், படிவம் மற்றும் தேடல் வரலாற்றை நினைவிற்கொள்ளும்.
 history-dontremember-description = { -brand-short-name } தனி உலாவல் அமைப்புகளையே பயன்படுத்தும் , மற்றும் நீங்கள் இணையத்தை உலாவும் போது எந்த வரலாற்றையும் நினைவில் கொள்ளாது.
 history-private-browsing-permanent =
@@ -598,14 +654,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = வரலாற்றைத் துடை
     .accesskey = s
+history-group =
+    .label = வரலாறு
 
 ## Privacy Section - Site Data
 
 sitedata-header = நினைவிகள் மற்றும் தள தரவு
 sitedata-total-size-calculating = தள தரவு மற்றும் இடையக அளவைக் கணக்கிடுகிறது...
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = நீங்கள் சேமித்த நினைவிகள், தள தரவு மற்றும் இடையகத்தின் தற்போதைய பயனளவு வன்தட்டில் { $value }{ $unit } அளவு பயன்படுத்தியுள்ளது.
 sitedata-learn-more = மேலும் அறிய
 # This label means 'type of content that is blocked', and is followed by a drop-down list with content types below.
@@ -618,14 +676,10 @@ sitedata-clear =
 sitedata-settings =
     .label = தரவை நிர்வகி
     .accesskey = M
+cookies-site-data-group =
+    .label = நினைவிகள் மற்றும் தள தரவு
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = முகவரி பட்டை
 addressbar-suggest = இடப்பட்டையைப் பயன்படுத்தும் போது, பரிந்துரைக்கவும்
@@ -657,15 +711,6 @@ enhanced-tracking-protection-setting-strict =
 enhanced-tracking-protection-setting-custom =
     .label = தனிப்பயன்
     .accesskey = C
-
-##
-
-
-# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
-
-
-## Privacy Section - Tracking
-
 
 ## Privacy Section - Permissions
 
@@ -699,6 +744,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = விதிவிலக்குகள்…
     .accesskey = E
+permissions-location2 =
+    .label = இடம்
+permissions-camera2 =
+    .label = படக்கருவி
+permissions-microphone2 =
+    .label = ஒலிவாங்கி
+permissions-notification2 =
+    .label = அறிவிப்புகள்
 
 ## Privacy Section - Data Collection
 
@@ -716,9 +769,8 @@ addon-recommendations-link = மேலும் அறிக
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = இந்தக் கட்டமைப்பிற்கு தரவு அறிக்கை முடக்கப்பட்டுள்ளது
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-studies-link =
+    .label = { -brand-short-name } பாடத்திட்டங்களைக் காண்க
 
 ## Privacy Section - Security
 ##
@@ -750,12 +802,7 @@ certs-view =
 certs-devices =
     .label = பாதுகாப்பு சாதனங்கள்…
     .accesskey = D
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = FIPSஐ செயல்படுத்து
 
 ## The following strings are used in the Download section of settings
 

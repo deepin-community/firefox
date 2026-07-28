@@ -18,6 +18,7 @@ pdfjs:
       - ink
       - freetext
       - stamp
+      - signature
       - save
       - print
     description: >
@@ -140,6 +141,17 @@ pdfjs:
     notification_emails:
       - cdenizet@mozilla.com
       - mcastelluccio@mozilla.com
+  tagged:
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1997134
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1997134
+    description: >
+      How many times PDF Viewer was used for tagged pdf.
+    expires: never
+    type: counter
+    notification_emails:
+      - pdfjs-team@mozilla.com
 pdfjs.editing.highlight:
     kind:
       type: labeled_counter
@@ -764,3 +776,221 @@ pdfjs.image:
         - pdfjs-team@mozilla.com
         - asafko@mozilla.com
       expires: never
+pdfjs.signature:
+    clear:
+      type: labeled_counter
+      description: >
+        Counts the number of times the user clears the signature while editing it.
+      labels:
+        - type
+        - draw
+        - text
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+
+    delete_saved:
+      type: event
+      description: >
+        Recorded when a saved signature is deleted.
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+      extra_keys:
+        saved_count:
+          type: quantity
+          description: >
+            Number of saved signatures.
+
+    created:
+      type: event
+      description: >
+        Recorded when the user creates a new signature.
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+      extra_keys:
+        type:
+          type: string
+          description: type, draw, text.
+        saved:
+          type: boolean
+          description: >
+            Indicates if the signature was saved.
+        saved_count:
+          type: quantity
+          description: >
+            Number of saved signatures.
+        description_changed:
+          type: boolean
+          description: >
+            Indicates if the default description was changed.
+
+    added:
+      type: event
+      description: >
+        Recorded when the user print/save a pdf containing some added signatures.
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+      extra_keys:
+        has_alt_text:
+          type: quantity
+          description: >
+            Counts how many used signatures have an alt-text.
+        has_no_alt_text:
+          type: quantity
+          description: >
+            Counts how many used signatures haven't an alt-text.
+
+    inserted:
+      type: event
+      description: >
+        Recorded when the user inserts a signature in a pdf (can be from the UI, copy & paste, ...).
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+      extra_keys:
+        has_been_saved:
+          type: boolean
+          description: >
+            Indicates if the signature was saved.
+        has_description:
+          type: boolean
+          description: >
+            Indicates if the signature has a description.
+
+    edit_description:
+      type: labeled_counter
+      description: >
+        Counts the number of times the user edit the description of a signature instance.
+      labels:
+        - saved
+        - unsaved
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1945827#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+
+pdfjs.comment:
+    edit:
+      type: labeled_counter
+      description: >
+        Counts the number of times the user edits or deletes comments.
+      labels:
+        - deleted
+        - edited
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1991172
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1991172#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+
+    sidebar:
+      type: event
+      description: >
+        Recorded when the comment sidebar is opened.
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1991172
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1991172#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+      extra_keys:
+        comments_count:
+          type: quantity
+          description: >
+            Number of comments in the sidebar.
+
+    save:
+      type: event
+      description: >
+        Recorded when the user saves a PDF with some deleted/edited comments.
+      bugs:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1991172
+      data_reviews:
+        - https://bugzilla.mozilla.org/show_bug.cgi?id=1991172#c1
+      data_sensitivity:
+        - interaction
+      notification_emails:
+        - pdfjs-team@mozilla.com
+      expires: never
+      extra_keys:
+        edited:
+          type: quantity
+          description: >
+            Number of edited comments.
+        deleted:
+          type: quantity
+          description: >
+            Number of deleted comments.
+
+pdfjs.organize:
+  action:
+    type: labeled_counter
+    labels:
+      - copy
+      - cut
+      - delete
+      - move
+      - paste
+      - export_selected
+      - save
+      - merge
+    description: >
+      Counts the number of times the user performs a page organization action
+      (copy, cut, delete, merge, move, paste), exports selected pages, or saves a PDF
+      modified through page organization.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2022481
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2030085
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2022481
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=2030085
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - pdfjs-team@mozilla.com
+    expires: never

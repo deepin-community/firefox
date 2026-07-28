@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 add_task(async function test_openPopup_requires_user_interaction() {
@@ -106,6 +104,10 @@ add_task(async function test_openPopup_requires_user_interaction() {
       },
       "panel.js": function () {
         browser.runtime.sendMessage("from-panel");
+        browser.test.onMessage.addListener(async msg => {
+          browser.test.assertEq("window_close", msg, "Expected msg");
+          window.close();
+        });
       },
     },
   };
@@ -145,6 +147,12 @@ add_task(async function test_openPopup_requires_user_interaction() {
     {},
     gBrowser.selectedBrowser
   );
+  await TestUtils.waitForCondition(() => !SidebarController.isOpen);
+
+  await click("#toggleSidebarAction");
+  await TestUtils.waitForCondition(() => SidebarController.isOpen);
+
+  extension.sendMessage("window_close");
   await TestUtils.waitForCondition(() => !SidebarController.isOpen);
 
   BrowserTestUtils.removeTab(gBrowser.selectedTab);

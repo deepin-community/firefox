@@ -8,21 +8,23 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.concurrent.futures.await
 import androidx.core.content.getSystemService
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.work.Configuration
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import androidx.work.await
 import androidx.work.testing.WorkManagerTestInitHelper
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
+import mozilla.components.browser.engine.gecko.webextension.GeckoWebExtension
 import mozilla.components.concept.engine.webextension.DisabledFlags
 import mozilla.components.concept.engine.webextension.Metadata
 import mozilla.components.concept.engine.webextension.WebExtension
+import mozilla.components.feature.addons.R
 import mozilla.components.feature.addons.update.AddonUpdaterWorker.Companion.KEY_DATA_EXTENSIONS_ID
 import mozilla.components.feature.addons.update.DefaultAddonUpdater.Companion.WORK_TAG_IMMEDIATE
 import mozilla.components.feature.addons.update.DefaultAddonUpdater.Companion.WORK_TAG_PERIODIC
@@ -31,11 +33,8 @@ import mozilla.components.support.base.android.NotificationsDelegate
 import mozilla.components.support.base.worker.Frequency
 import mozilla.components.support.test.mock
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.components.support.test.rule.MainCoroutineRule
-import mozilla.components.support.test.rule.runTestOnMain
 import mozilla.components.support.test.whenever
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
@@ -47,8 +46,7 @@ import java.util.concurrent.TimeUnit
 @RunWith(AndroidJUnit4::class)
 class DefaultAddonUpdaterTest {
 
-    @get:Rule
-    val coroutinesTestRule = MainCoroutineRule()
+    private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setUp() {
@@ -59,31 +57,31 @@ class DefaultAddonUpdaterTest {
     }
 
     @Test
-    fun `registerForFutureUpdates - schedule work for future update`() = runTestOnMain {
+    fun `registerForFutureUpdates - schedule work for future update`() = runTest(testDispatcher) {
         val frequency = Frequency(1, TimeUnit.DAYS)
         val updater = DefaultAddonUpdater(testContext, frequency, mock())
         val addonId = "addonId"
 
         val workId = updater.getUniquePeriodicWorkName(addonId)
 
-        val workManger = WorkManager.getInstance(testContext)
-        var workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        val workManager = WorkManager.getInstance(testContext)
+        var workData = workManager.getWorkInfosForUniqueWork(workId).await()
 
         assertTrue(workData.isEmpty())
 
         updater.registerForFutureUpdates(addonId)
-        workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        workData = workManager.getWorkInfosForUniqueWork(workId).await()
 
         assertFalse(workData.isEmpty())
 
         assertExtensionIsRegisteredFoUpdates(updater, addonId)
 
         // Cleaning work manager
-        workManger.cancelUniqueWork(workId)
+        workManager.cancelUniqueWork(workId)
     }
 
     @Test
-    fun `update - schedule work for immediate update`() = runTestOnMain {
+    fun `update - schedule work for immediate update`() = runTest(testDispatcher) {
         val updater = DefaultAddonUpdater(
             testContext,
             notificationsDelegate = mock(),
@@ -92,13 +90,13 @@ class DefaultAddonUpdaterTest {
 
         val workId = updater.getUniqueImmediateWorkName(addonId)
 
-        val workManger = WorkManager.getInstance(testContext)
-        var workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        val workManager = WorkManager.getInstance(testContext)
+        var workData = workManager.getWorkInfosForUniqueWork(workId).await()
 
         assertTrue(workData.isEmpty())
 
         updater.update(addonId)
-        workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        workData = workManager.getWorkInfosForUniqueWork(workId).await()
 
         assertFalse(workData.isEmpty())
 
@@ -109,7 +107,7 @@ class DefaultAddonUpdaterTest {
         assertTrue(work.tags.contains(WORK_TAG_IMMEDIATE))
 
         // Cleaning work manager
-        workManger.cancelUniqueWork(workId)
+        workManager.cancelUniqueWork(workId)
     }
 
     @Test
@@ -132,20 +130,24 @@ class DefaultAddonUpdaterTest {
             ),
         )
 
-        val currentExt: WebExtension = mock()
-        val updatedExt: WebExtension = mock()
-        whenever(currentExt.id).thenReturn("addonId")
-        whenever(updatedExt.id).thenReturn("addonId")
-        val notificationId = NotificationHandlerService.getNotificationId(context, updatedExt.id)
+        val ext: WebExtension = mock()
+        whenever(ext.id).thenReturn("addonId")
+        val notificationId = NotificationHandlerService.getNotificationId(context, ext.id)
 
         val notification: Notification = mock()
         val newPermissions = listOf("privacy")
+        val newDataCollectionPermissions = listOf("healthInfo")
 
-        doReturn(notification).`when`(updater).createNotification(updatedExt, newPermissions, notificationId)
+        doReturn(notification).`when`(updater).createNotification(
+            ext,
+            newPermissions,
+            newDataCollectionPermissions,
+            notificationId,
+        )
 
         updater.updateStatusStorage.clear(context)
 
-        updater.onUpdatePermissionRequest(currentExt, updatedExt, newPermissions) {
+        updater.onUpdatePermissionRequest(ext, newPermissions, emptyList(), newDataCollectionPermissions) {
             allowedPreviously = it
         }
 
@@ -175,23 +177,21 @@ class DefaultAddonUpdaterTest {
             context,
             notificationsDelegate = mock(),
         )
-        val currentExt: WebExtension = mock()
-        val updatedExt: WebExtension = mock()
-        whenever(currentExt.id).thenReturn("addonId")
-        whenever(updatedExt.id).thenReturn("addonId")
+        val ext: WebExtension = mock()
+        whenever(ext.id).thenReturn("addonId")
 
         updater.updateStatusStorage.clear(context)
 
-        updater.onUpdatePermissionRequest(currentExt, updatedExt, listOf("normandyAddonStudy")) {
+        updater.onUpdatePermissionRequest(ext, listOf("normandyAddonStudy"), emptyList(), emptyList()) {
             allowedPreviously = it
         }
 
         assertTrue(allowedPreviously)
 
-        val notificationId = NotificationHandlerService.getNotificationId(context, currentExt.id)
+        val notificationId = NotificationHandlerService.getNotificationId(context, ext.id)
 
         assertFalse(isNotificationVisible(notificationId))
-        assertFalse(updater.updateStatusStorage.isPreviouslyAllowed(testContext, currentExt.id))
+        assertFalse(updater.updateStatusStorage.isPreviouslyAllowed(testContext, ext.id))
 
         updater.updateStatusStorage.clear(context)
     }
@@ -202,18 +202,121 @@ class DefaultAddonUpdaterTest {
             testContext,
             notificationsDelegate = mock(),
         )
-        val validPermissions = listOf("privacy", "management")
+        val newPermissions = listOf("privacy", "management")
+        val newDataCollectionPermissions = emptyList<String>()
 
-        var content = updater.createContentText(validPermissions).split("\n")
-        assertEquals("2 new permissions are required:", content[0].trim())
-        assertEquals("1-Read and modify privacy settings", content[1].trim())
-        assertEquals("2-Monitor extension usage and manage themes", content[2].trim())
+        var content = updater.createContentText(newPermissions, newDataCollectionPermissions).split("\n")
+        assertEquals(
+            testContext.getString(R.string.mozac_feature_addons_updater_notification_short_intro),
+            content[0],
+        )
+        assertEquals(
+            "New required permissions: Read and modify privacy settings. Monitor extension usage and manage themes.",
+            content[1],
+        )
 
-        val validAndInvalidPermissions = listOf("privacy", "invalid")
-        content = updater.createContentText(validAndInvalidPermissions).split("\n")
+        val newPermissionsWithInvalidPerm = listOf("privacy", "invalid")
+        content = updater.createContentText(newPermissionsWithInvalidPerm, newDataCollectionPermissions).split("\n")
+        assertEquals(
+            testContext.getString(R.string.mozac_feature_addons_updater_notification_short_intro),
+            content[0],
+        )
+        assertEquals("New required permissions: Read and modify privacy settings.", content[1])
+    }
 
-        assertEquals("A new permission is required:", content[0].trim())
-        assertEquals("1-Read and modify privacy settings", content[1].trim())
+    @Test
+    fun `createContentText - notification content supports data collection permissions`() {
+        val updater = DefaultAddonUpdater(
+            testContext,
+            notificationsDelegate = mock(),
+        )
+        val newPermissions = emptyList<String>()
+        val newDataCollectionPermissions = listOf("healthInfo", "technicalAndInteraction")
+
+        val content = updater.createContentText(newPermissions, newDataCollectionPermissions).split("\n")
+        assertEquals(
+            testContext.getString(R.string.mozac_feature_addons_updater_notification_short_intro),
+            content[0],
+        )
+        assertEquals(
+            "New required data collection: The developer says the extension will collect " +
+            "health information, technical and interaction data.",
+            content[1],
+        )
+    }
+
+    @Test
+    fun `createContentText - abbreviates long permission paragraphs in the notification content`() {
+        val updater = DefaultAddonUpdater(
+            testContext,
+            notificationsDelegate = mock(),
+        )
+        val newPermissions = listOf(
+            "bookmarks",
+            "browsingData",
+            "tabs",
+            "userScripts",
+        )
+        val newDataCollectionPermissions = GeckoWebExtension.DATA_COLLECTION_PERMISSIONS.filter { it != "none" }
+
+        val content = updater.createContentText(newPermissions, newDataCollectionPermissions).split("\n")
+        assertEquals(
+            testContext.getString(R.string.mozac_feature_addons_updater_notification_short_intro),
+            content[0],
+        )
+
+        assertEquals(DefaultAddonUpdater.NARROW_MAX_LENGTH, content[1].length)
+        assertTrue(content[1].startsWith("New required permissions:"))
+
+        assertEquals(DefaultAddonUpdater.NARROW_MAX_LENGTH, content[2].length)
+        assertTrue(content[2].startsWith("New required data collection:"))
+    }
+
+    @Test
+    fun `createContentText - abbreviates the new permissions paragraph in the notification content`() {
+        val updater = DefaultAddonUpdater(
+            testContext,
+            notificationsDelegate = mock(),
+        )
+        val newPermissions = listOf(
+            "bookmarks",
+            "browsingData",
+            "devtools",
+            "downloads",
+            "history",
+            "privacy",
+            "tabs",
+            "userScripts",
+        )
+        val newDataCollectionPermissions = emptyList<String>()
+
+        val content = updater.createContentText(newPermissions, newDataCollectionPermissions).split("\n")
+        assertEquals(
+            testContext.getString(R.string.mozac_feature_addons_updater_notification_short_intro),
+            content[0],
+        )
+
+        assertEquals(DefaultAddonUpdater.WIDE_MAX_LENGTH, content[1].length)
+        assertTrue(content[1].startsWith("New required permissions:"))
+    }
+
+    @Test
+    fun `createContentText - abbreviates the new data collection permissions paragraph in the notification content`() {
+        val updater = DefaultAddonUpdater(
+            testContext,
+            notificationsDelegate = mock(),
+        )
+        val newPermissions = emptyList<String>()
+        val newDataCollectionPermissions = GeckoWebExtension.DATA_COLLECTION_PERMISSIONS.filter { it != "none" }
+
+        val content = updater.createContentText(newPermissions, newDataCollectionPermissions).split("\n")
+        assertEquals(
+            testContext.getString(R.string.mozac_feature_addons_updater_notification_short_intro),
+            content[0],
+        )
+
+        assertEquals(DefaultAddonUpdater.WIDE_MAX_LENGTH, content[1].length)
+        assertTrue(content[1].startsWith("New required data collection:"))
     }
 
     @Test
@@ -230,26 +333,24 @@ class DefaultAddonUpdaterTest {
             context,
             notificationsDelegate = mock(),
         )
-        val currentExt: WebExtension = mock()
-        val updatedExt: WebExtension = mock()
-        whenever(currentExt.id).thenReturn("addonId")
-        whenever(updatedExt.id).thenReturn("addonId")
+        val ext: WebExtension = mock()
+        whenever(ext.id).thenReturn("addonId")
 
         updater.updateStatusStorage.clear(context)
 
         var allowedPreviously = false
 
-        updater.updateStatusStorage.markAsAllowed(context, currentExt.id)
-        updater.onUpdatePermissionRequest(currentExt, updatedExt, emptyList()) {
+        updater.updateStatusStorage.markAsAllowed(context, ext.id)
+        updater.onUpdatePermissionRequest(ext, emptyList(), emptyList(), emptyList()) {
             allowedPreviously = it
         }
 
         assertTrue(allowedPreviously)
 
-        val notificationId = NotificationHandlerService.getNotificationId(context, currentExt.id)
+        val notificationId = NotificationHandlerService.getNotificationId(context, ext.id)
 
         assertFalse(isNotificationVisible(notificationId))
-        assertFalse(updater.updateStatusStorage.isPreviouslyAllowed(testContext, currentExt.id))
+        assertFalse(updater.updateStatusStorage.isPreviouslyAllowed(testContext, ext.id))
         updater.updateStatusStorage.clear(context)
     }
 
@@ -301,34 +402,34 @@ class DefaultAddonUpdaterTest {
     }
 
     @Test
-    fun `unregisterForFutureUpdates - will remove scheduled work for future update`() = runTestOnMain {
+    fun `unregisterForFutureUpdates - will remove scheduled work for future update`() = runTest(testDispatcher) {
         val frequency = Frequency(1, TimeUnit.DAYS)
-        val updater = DefaultAddonUpdater(testContext, frequency, mock())
-        updater.scope = CoroutineScope(Dispatchers.Main)
+        val updater = DefaultAddonUpdater(testContext, frequency, mock(), testDispatcher)
 
         val addonId = "addonId"
 
-        updater.updateAttempStorage = mock()
+        updater.updateAttemptStorage = mock()
 
         val workId = updater.getUniquePeriodicWorkName(addonId)
 
-        val workManger = WorkManager.getInstance(testContext)
-        var workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        val workManager = WorkManager.getInstance(testContext)
+        var workData = workManager.getWorkInfosForUniqueWork(workId).await()
 
         assertTrue(workData.isEmpty())
 
         updater.registerForFutureUpdates(addonId)
-        workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        workData = workManager.getWorkInfosForUniqueWork(workId).await()
 
         assertFalse(workData.isEmpty())
 
         assertExtensionIsRegisteredFoUpdates(updater, addonId)
 
         updater.unregisterForFutureUpdates(addonId)
+        testDispatcher.scheduler.advanceUntilIdle()
 
-        workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        workData = workManager.getWorkInfosForUniqueWork(workId).await()
         assertEquals(WorkInfo.State.CANCELLED, workData.first().state)
-        verify(updater.updateAttempStorage).remove(addonId)
+        verify(updater.updateAttemptStorage).remove(addonId)
     }
 
     @Test
@@ -344,13 +445,13 @@ class DefaultAddonUpdaterTest {
         assertTrue(workRequest.tags.contains(workId))
         assertTrue(workRequest.tags.contains(WORK_TAG_PERIODIC))
 
-        assertEquals(updater.getWorkerConstrains(), workRequest.workSpec.constraints)
+        assertEquals(updater.getWorkerConstraints(), workRequest.workSpec.constraints)
 
         assertEquals(addonId, workRequest.workSpec.input.getString(KEY_DATA_EXTENSIONS_ID))
     }
 
     @Test
-    fun `registerForFutureUpdates - will register only unregistered extensions`() = runTestOnMain {
+    fun `registerForFutureUpdates - will register only unregistered extensions`() = runTest(testDispatcher) {
         val updater = DefaultAddonUpdater(
             testContext,
             notificationsDelegate = mock(),
@@ -374,7 +475,7 @@ class DefaultAddonUpdaterTest {
     }
 
     @Test
-    fun `registerForFutureUpdates - will not register built-in and unsupported extensions`() = runTestOnMain {
+    fun `registerForFutureUpdates - will not register built-in and unsupported extensions`() = runTest(testDispatcher) {
         val updater = DefaultAddonUpdater(
             testContext,
             notificationsDelegate = mock(),
@@ -404,8 +505,8 @@ class DefaultAddonUpdaterTest {
 
     private suspend fun assertExtensionIsRegisteredFoUpdates(updater: DefaultAddonUpdater, extId: String) {
         val workId = updater.getUniquePeriodicWorkName(extId)
-        val workManger = WorkManager.getInstance(testContext)
-        val workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        val workManager = WorkManager.getInstance(testContext)
+        val workData = workManager.getWorkInfosForUniqueWork(workId).await()
         val work = workData.first()
 
         assertEquals(WorkInfo.State.ENQUEUED, work.state)
@@ -415,8 +516,8 @@ class DefaultAddonUpdaterTest {
 
     private suspend fun assertExtensionIsNotRegisteredFoUpdates(updater: DefaultAddonUpdater, extId: String) {
         val workId = updater.getUniquePeriodicWorkName(extId)
-        val workManger = WorkManager.getInstance(testContext)
-        val workData = workManger.getWorkInfosForUniqueWork(workId).await()
+        val workManager = WorkManager.getInstance(testContext)
+        val workData = workManager.getWorkInfosForUniqueWork(workId).await()
         assertTrue("$extId should not have been registered for updates", workData.isEmpty())
     }
 

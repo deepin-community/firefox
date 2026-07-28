@@ -30,10 +30,18 @@ options-context-inspector = Inspektilo
 options-show-user-agent-styles-label = Montri stilojn de retumilo
 options-show-user-agent-styles-tooltip =
     .title = Se tio ĉi estas ŝaltita, la normaj stiloj ŝargitaj de la retumilo estos montritaj.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Montri la Shadow DOM de la retumilo
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Se vi ŝaltas tiun ĉi eblon, la elementoj Shadow DOM administritaj de la retumilo estos montritaj.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Trunki atributojn de DOM
 options-collapse-attrs-tooltip =
     .title = Trunki longajn atributojn en la inspektilo
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = Montri komentojn
+options-show-comments-tooltip =
+    .title = Montri komentajn nodojn en la inspektilo
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = Alklaku kaj trenu por modifi valorojn pri grando
 options-inspector-draggable-properties-tooltip =
@@ -107,14 +115,50 @@ options-sourceeditor-tabsize-label = Spacoj po tabo
 options-sourceeditor-keybinding-label = Klavkombinoj
 options-sourceeditor-keybinding-default-label = Normaj
 
+## Local Mode section
+
+# The heading
+options-local-mode-label = Loka reĝimo
+options-local-mode-only-work-locally = Loka reĝimo nur funkcias surloke kaj ĝi estos malaktivigita dum senerarigo en foraj kuntekstoj
+options-local-mode-behavior = La loka reĝimo permesas al vi ŝargi lokajn dosierojn per retadreso https sen iu ajn ekstera dependo. Nur eblas ŝargi tiujn retadresojn en langetoj kiu havas malfermitaj la ilojn por programistoj.
+options-local-mode-domain-label = Personecigita nomregno:
+options-local-mode-origin-input =
+    .placeholder = Origino de la loka mapigo
+# Errors shown when the origin input has an error
+options-local-mode-origin-conflict = Tiu ĉi origino konfliktas kun alia ekzistanta mapigo
+options-local-mode-origin-invalid = Tiu ĉi origino estas nevalida
+options-local-mode-folder-label = Loka dosierujo:
+options-local-mode-choose-folder = Esplori…
+    .title = Elektu lokan dosierujon por servi tiun ĉi mapigadon
+# Dialog's title when picking a folder for a mapping
+# Variables:
+#   $url (String): The url for the mapping being configured
+options-local-mode-choose-folder-picker-title = Elektu dosierujon por loka reĝimo por: { $url }
+# Error shown when the folder is invalid
+# (can easily be triggered when using about:config and changing underlying mappings prefs)
+options-local-mode-folder-invalid = Tiu ĉi dosierujo ne ekzistas, aŭ ĝi ne estas valida.
+options-local-mode-toggle =
+    .title = Aktivigi aŭ malaktivigi tiun ĉi lokan mapigon
+options-local-mode-toggle-enable = Aktivigi
+options-local-mode-toggle-disable = Malaktivigi
+options-local-mode-navigate-to =
+    .title = Navigi al la URL de tiu ĉi mapigo
+# Dialog message prompted when clicking on the Delete button
+# Variables:
+#   $mappingOrigin (String): The origin for the mapping
+options-local-mode-confirm-deletion = Ĉu vi volas forigi la mapigon “{ $mappingOrigin }”?
+options-local-mode-new-mapping = Aldoni novan lokan mapigon
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
 options-context-advanced-settings = Spertulaj agordoj
 # The label for the checkbox that toggles the HTTP cache on or off
-options-disable-http-cache-label = Malaktivigi la staplon de HTTP (kiam la ilujo estas malfermita)
+options-disable-http-cache-label = Malaktivigi la stokejo de HTTP (kiam la ilujo estas malfermita)
 options-disable-http-cache-tooltip =
-    .title = Ŝalto de tiu ĉi elekteblo malaktivigos la staplon de HTTP por ĉiuj langetoj, kiuj havas la ilujon malfermita. Tio ne koncernas la Service Workers.
+    .title = Ŝalto de tiu ĉi elekteblo malaktivigos la stokejon de HTTP por ĉiuj langetoj, kiuj havas la ilujon malfermita. Tio ne koncernas la Service Workers.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Malŝalti JavaScript
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Malŝalti JavaScript *
 options-disable-javascript-tooltip =
@@ -143,5 +187,21 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Aktivigi mapojn de fontoj
 options-source-maps-tooltip =
     .title = Se vi aktivigas tiun ĉi elekteblon, fontoj estos mapitaj en la iloj.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (por tiu ĉi seanco, tio ĉi reŝargas la paĝon)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Nur en la nuna seanco, tio reŝargas la paĝon
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (tio ĉi reŝargas la paĝon)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = Aŭtomate
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = Kaduka. Pli da informo…

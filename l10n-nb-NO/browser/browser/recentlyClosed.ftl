@@ -15,7 +15,7 @@ recently-closed-menu-reopen-all-windows = Åpne alle vinduer på nytt
 ## Check appmenu.ftl for reference.
 
 recently-closed-panel-reopen-all-tabs = Åpne alle faner på nytt
-recently-closed-panel-reopen-all-windows = Åpne alle vinduer på nytt
+recently-closed-panel-reopen-all-windows = Gjenåpne alle vinduer
 
 ##
 
@@ -27,4 +27,14 @@ recently-closed-undo-close-window-label =
         [0] { $winTitle }
         [one] { $winTitle } (og { $tabCount } annen fane)
        *[other] { $winTitle } (og { $tabCount } andre faner)
+    }
+# Variables:
+#   $tabCount (Number): Number of tabs that were open in the closed window
+#   $winTitle (String): Window title
+#   $closedAt (Number): Milliseconds since epoch when the window was closed
+recently-closed-window-panel-tooltip =
+    { $tabCount ->
+        [0] { $winTitle }
+        [one] { $winTitle } ({ $tabCount } fane, lukket { DATETIME($closedAt, dateStyle: "short", timeStyle: "short") })
+       *[other] { $winTitle } ({ $tabCount } faner, lukket { DATETIME($closedAt, dateStyle: "short", timeStyle: "short") })
     }

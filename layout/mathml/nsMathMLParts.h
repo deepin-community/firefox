@@ -1,14 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsMathMLParts_h___
-#define nsMathMLParts_h___
+#ifndef nsMathMLParts_h_
+#define nsMathMLParts_h_
 
-#include "nscore.h"
 #include "nsISupports.h"
+#include "nscore.h"
 
 class nsTableFrame;
 
@@ -52,8 +50,6 @@ nsContainerFrame* NS_NewMathMLmtdFrame(mozilla::PresShell* aPresShell,
                                        nsTableFrame* aTableFrame);
 nsContainerFrame* NS_NewMathMLmtdInnerFrame(mozilla::PresShell* aPresShell,
                                             mozilla::ComputedStyle* aStyle);
-nsIFrame* NS_NewMathMLmsqrtFrame(mozilla::PresShell* aPresShell,
-                                 mozilla::ComputedStyle* aStyle);
 nsIFrame* NS_NewMathMLmrootFrame(mozilla::PresShell* aPresShell,
                                  mozilla::ComputedStyle* aStyle);
 nsIFrame* NS_NewMathMLmencloseFrame(mozilla::PresShell* aPresShell,
@@ -63,4 +59,4 @@ nsContainerFrame* NS_NewMathMLmathBlockFrame(mozilla::PresShell* aPresShell,
                                              mozilla::ComputedStyle* aStyle);
 nsContainerFrame* NS_NewMathMLmathInlineFrame(mozilla::PresShell* aPresShell,
                                               mozilla::ComputedStyle* aStyle);
-#endif /* nsMathMLParts_h___ */
+#endif /* nsMathMLParts_h_ */

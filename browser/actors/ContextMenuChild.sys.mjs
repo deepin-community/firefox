@@ -1,5 +1,3 @@
-/* -*- mode: js; indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -67,6 +65,15 @@ export class ContextMenuChild extends JSWindowActorChild {
         });
       }
 
+      case "ContextMenu:Canvas:CopyImage": {
+        let target = lazy.ContentDOMReference.resolve(
+          message.data.targetIdentifier
+        );
+        return new Promise(resolve => {
+          target.toBlob(blob => resolve(blob.arrayBuffer()));
+        });
+      }
+
       case "ContextMenu:Hiding": {
         this.context = null;
         this.target = null;
@@ -112,17 +119,21 @@ export class ContextMenuChild extends JSWindowActorChild {
                   media.requestFullscreen();
                 }
                 break;
-              case "pictureinpicture":
+              case "pictureinpicture": {
                 let event = new this.contentWindow.CustomEvent(
                   "MozTogglePictureInPicture",
                   {
                     bubbles: true,
-                    detail: { reason: "contextMenu" },
+                    detail: { reason: "ContextMenu" },
                   },
                   this.contentWindow
                 );
-                media.dispatchEvent(event);
+                this.contentWindow.windowUtils.dispatchEventToChromeOnly(
+                  media,
+                  event
+                );
                 break;
+              }
             }
           }
         );
@@ -175,48 +186,35 @@ export class ContextMenuChild extends JSWindowActorChild {
         break;
       }
 
-      case "ContextMenu:SearchFieldBookmarkData": {
+      case "ContextMenu:SearchFieldEngineData": {
         let node = lazy.ContentDOMReference.resolve(
           message.data.targetIdentifier
         );
         let charset = node.ownerDocument.characterSet;
         let formBaseURI = Services.io.newURI(node.form.baseURI, charset);
-        let formURI = Services.io.newURI(
+        let method = node.form.method.toUpperCase();
+
+        let formData = new FormData(node.form);
+        formData.set(node.name, "{searchTerms}");
+
+        let url = Services.io.newURI(
           node.form.getAttribute("action"),
           charset,
           formBaseURI
-        );
-        let spec = formURI.spec;
-        let isURLEncoded =
-          node.form.method.toUpperCase() == "POST" &&
-          (node.form.enctype == "application/x-www-form-urlencoded" ||
-            node.form.enctype == "");
-        let title = node.ownerDocument.title;
+        ).spec;
 
-        function escapeNameValuePair([aName, aValue]) {
-          if (isURLEncoded) {
-            return escape(aName + "=" + aValue);
-          }
-
-          return encodeURIComponent(aName) + "=" + encodeURIComponent(aValue);
-        }
-        let formData = new this.contentWindow.FormData(node.form);
-        formData.delete(node.name);
-        formData = Array.from(formData).map(escapeNameValuePair);
-        formData.push(
-          escape(node.name) + (isURLEncoded ? escape("=%s") : "=%s")
-        );
-
-        let postData;
-
-        if (isURLEncoded) {
-          postData = formData.join("&");
-        } else {
-          let separator = spec.includes("?") ? "&" : "?";
-          spec += separator + formData.join("&");
+        if (
+          !node.name ||
+          (method != "POST" && method != "GET") ||
+          node.form.enctype != "application/x-www-form-urlencoded" ||
+          formData.values().some(v => typeof v != "string")
+        ) {
+          // This should never happen since these conditions are checked in
+          // `isTargetASearchEngineField`.
+          return Promise.reject("Cannot create search engine from this form.");
         }
 
-        return Promise.resolve({ spec, title, postData, charset });
+        return Promise.resolve({ url, formData, charset, method });
       }
 
       case "ContextMenu:SaveVideoFrameAsImage": {
@@ -259,8 +257,10 @@ export class ContextMenuChild extends JSWindowActorChild {
             let ctx = canvas.getContext("2d");
             ctx.drawImage(target, 0, 0);
             let dataURL = canvas.toDataURL();
-            let url = new URL(target.ownerDocument.location.href).pathname;
-            let imageName = url.substr(url.lastIndexOf("/") + 1);
+            let url = target.ownerDocument.location;
+            let imageName = url.pathname.substr(
+              url.pathname.lastIndexOf("/") + 1
+            );
             return Promise.resolve({ failed: false, dataURL, imageName });
           } catch (e) {
             console.error(e);
@@ -273,6 +273,33 @@ export class ContextMenuChild extends JSWindowActorChild {
           imageName: null,
         });
       }
+
+      case "ContextMenu:GetTextDirective": {
+        const sel = this.contentWindow.getSelection();
+        const ranges = !sel.isCollapsed
+          ? Array.from({ length: sel.rangeCount }, (_, i) => sel.getRangeAt(i))
+          : this.document.fragmentDirective.getTextDirectiveRanges();
+        return ranges
+          ? this.document.fragmentDirective
+              .createTextDirectiveForRanges(ranges)
+              .then(textFragment => {
+                if (textFragment) {
+                  let url = URL.fromURI(this.document?.documentURIObject);
+                  url.hash += `:~:${textFragment}`;
+                  return url.href;
+                }
+                return null;
+              })
+          : null;
+      }
+      case "ContextMenu:RemoveAllTextFragments": {
+        this.document.fragmentDirective.removeAllTextDirectives();
+        this.contentWindow.history.replaceState(
+          this.contentWindow.history.state,
+          "",
+          this.contentWindow.location.href
+        );
+      }
     }
 
     return undefined;
@@ -282,9 +309,10 @@ export class ContextMenuChild extends JSWindowActorChild {
    * Returns the event target of the context menu, using a locally stored
    * reference if possible. If not, and aMessage.objects is defined,
    * aMessage.objects[aKey] is returned. Otherwise null.
-   * @param  {Object} aMessage Message with a objects property
-   * @param  {String} aKey     Key for the target on aMessage.objects
-   * @return {Object}          Context menu target
+   *
+   * @param  {object} aMessage Message with a objects property
+   * @param  {string} aKey     Key for the target on aMessage.objects
+   * @return {object}          Context menu target
    */
   getTarget(aMessage, aKey = "target") {
     return this.target || (aMessage.objects && aMessage.objects[aKey]);
@@ -309,7 +337,7 @@ export class ContextMenuChild extends JSWindowActorChild {
     if (href) {
       // Handle SVG links:
       if (typeof href == "object" && href.animVal) {
-        return this._makeURLAbsolute(this.context.link.baseURI, href.animVal);
+        return new URL(href.animVal, this.context.link.baseURI).href;
       }
 
       return href;
@@ -325,7 +353,7 @@ export class ContextMenuChild extends JSWindowActorChild {
       throw new Error("Empty href");
     }
 
-    return this._makeURLAbsolute(this.context.link.baseURI, href);
+    return new URL(href, this.context.link.baseURI).href;
   }
 
   _getLinkURI() {
@@ -380,50 +408,20 @@ export class ContextMenuChild extends JSWindowActorChild {
   }
 
   // Gather all descendent text under given document node.
+  // NOTE: Keep this in sync with gatherTextUnder in
+  // browser/base/content/utilityOverlay.js
   _gatherTextUnder(root) {
-    let text = "";
-    let node = root.firstChild;
-    let depth = 1;
-    while (node && depth > 0) {
-      // See if this node is text.
-      if (node.nodeType == node.TEXT_NODE) {
-        // Add this text to our collection.
-        text += " " + node.data;
-      } else if (this.contentWindow.HTMLImageElement.isInstance(node)) {
-        // If it has an "alt" attribute, add that.
-        let altText = node.getAttribute("alt");
-        if (altText && altText != "") {
-          text += " " + altText;
-        }
-      }
-      // Find next node to test.
-      // First, see if this node has children.
-      if (node.hasChildNodes()) {
-        // Go to first child.
-        node = node.firstChild;
-        depth++;
-      } else {
-        // No children, try next sibling (or parent next sibling).
-        while (depth > 0 && !node.nextSibling) {
-          node = node.parentNode;
-          depth--;
-        }
-        if (node.nextSibling) {
-          node = node.nextSibling;
-        }
-      }
-    }
-
-    // Strip leading and tailing whitespace.
-    text = text.trim();
-    // Compress remaining whitespace.
-    text = text.replace(/\s+/g, " ");
-    return text;
+    const encoder = Cu.createDocumentEncoder("text/plain");
+    encoder.init(root.ownerDocument, "text/plain", 0);
+    encoder.setContainerNode(root);
+    return encoder.encodeToString().trim();
   }
 
   // Returns a "url"-type computed style attribute value, with the url() stripped.
   _getComputedURL(aElem, aProp) {
-    let urls = aElem.ownerGlobal.getComputedStyle(aElem).getCSSImageURLs(aProp);
+    let urls = aElem.documentGlobal
+      .getComputedStyle(aElem)
+      .getCSSImageURLs(aProp);
 
     if (!urls.length) {
       return null;
@@ -436,10 +434,6 @@ export class ContextMenuChild extends JSWindowActorChild {
     return urls[0];
   }
 
-  _makeURLAbsolute(aBase, aUrl) {
-    return Services.io.newURI(aUrl, null, Services.io.newURI(aBase)).spec;
-  }
-
   _isProprietaryDRM() {
     return (
       this.context.target.isEncrypted &&
@@ -450,10 +444,48 @@ export class ContextMenuChild extends JSWindowActorChild {
 
   _isMediaURLReusable(aURL) {
     if (aURL.startsWith("blob:")) {
-      return URL.isValidObjectURL(aURL);
+      return URL.isBoundToBlob(aURL);
     }
 
     return true;
+  }
+
+  /**
+   * Finds a video element at the given coordinates using nodesFromRect,
+   * which can detect videos beneath overlays (e.g. custom player controls).
+   *
+   * @param {number} clientX
+   * @param {number} clientY
+   * @returns {HTMLVideoElement|null}
+   */
+  _maybeGetVideoElementAtPoint(clientX, clientY) {
+    if (
+      !Services.prefs.getBoolPref(
+        "media.contextmenu.video-overlay-detection",
+        false
+      )
+    ) {
+      return null;
+    }
+
+    let elements = this.contentWindow.windowUtils.nodesFromRect(
+      clientX,
+      clientY,
+      1,
+      1,
+      1,
+      1,
+      true,
+      false,
+      true,
+      0
+    );
+    for (let el of elements) {
+      if (this.contentWindow.HTMLVideoElement.isInstance(el)) {
+        return el;
+      }
+    }
+    return null;
   }
 
   _isTargetATextBox(node) {
@@ -644,7 +676,7 @@ export class ContextMenuChild extends JSWindowActorChild {
     this.docShell.docViewer
       .QueryInterface(Ci.nsIDocumentViewerEdit)
       .setCommandNode(aEvent.composedTarget);
-    aEvent.composedTarget.ownerGlobal.updateCommands("contentcontextmenu");
+    aEvent.composedTarget.documentGlobal.updateCommands("contentcontextmenu");
 
     let data = {
       context,
@@ -764,6 +796,8 @@ export class ContextMenuChild extends JSWindowActorChild {
     context.screenXDevPx = aEvent.screenX * this.contentWindow.devicePixelRatio;
     context.screenYDevPx = aEvent.screenY * this.contentWindow.devicePixelRatio;
     context.inputSource = aEvent.inputSource;
+    context.clientX = aEvent.clientX;
+    context.clientY = aEvent.clientY;
 
     let node = aEvent.composedTarget;
 
@@ -844,7 +878,6 @@ export class ContextMenuChild extends JSWindowActorChild {
     context.onPiPVideo = false;
     context.onEditable = false;
     context.onImage = false;
-    context.onKeywordField = false;
     context.onLink = false;
     context.onLoadedImage = false;
     context.onMailtoLink = false;
@@ -857,22 +890,27 @@ export class ContextMenuChild extends JSWindowActorChild {
     context.onSpellcheckable = false;
     context.onTextInput = false;
     context.onVideo = false;
-    context.inPDFEditor = false;
+
+    const textDirectiveRanges =
+      this.document.fragmentDirective?.getTextDirectiveRanges?.() || [];
+    // .hasTextFragments indicates whether the page will show highlights.
+    context.hasTextFragments = !!textDirectiveRanges.length;
 
     // Remember the node and its owner document that was clicked
     // This may be modifed before sending to nsContextMenu
     context.target = node;
     context.targetIdentifier = lazy.ContentDOMReference.get(node);
 
-    context.csp = lazy.E10SUtils.serializeCSP(context.target.ownerDocument.csp);
+    context.policyContainer = lazy.E10SUtils.serializePolicyContainer(
+      context.target.ownerDocument.policyContainer
+    );
 
     // Check if we are in the PDF Viewer.
     context.inPDFViewer =
       context.target.ownerDocument.nodePrincipal.originNoSuffix ==
       "resource://pdf.js";
     if (context.inPDFViewer) {
-      context.pdfEditorStates = context.target.ownerDocument.editorStates;
-      context.inPDFEditor = !!context.pdfEditorStates?.isEditing;
+      context.pdfStates = context.target.ownerDocument.pdfStates;
     }
 
     // Check if we are in a synthetic document (stand alone image, video, etc.).
@@ -924,6 +962,8 @@ export class ContextMenuChild extends JSWindowActorChild {
       return;
     }
 
+    let videoElement;
+
     // See if the user clicked on an image. This check mirrors
     // nsDocumentViewer::GetInImage. Make sure to update both if this is
     // changed.
@@ -943,7 +983,6 @@ export class ContextMenuChild extends JSWindowActorChild {
           ? undefined
           : context.target.title || context.target.alt,
       };
-      const { SVGAnimatedLength } = context.target.ownerGlobal;
       if (SVGAnimatedLength.isInstance(context.imageInfo.height)) {
         context.imageInfo.height = context.imageInfo.height.animVal.value;
       }
@@ -999,16 +1038,27 @@ export class ContextMenuChild extends JSWindowActorChild {
       const descURL = context.target.getAttribute("longdesc");
 
       if (descURL) {
-        context.imageDescURL = this._makeURLAbsolute(
-          context.target.ownerDocument.body.baseURI,
-          descURL
-        );
+        context.imageDescURL = new URL(
+          descURL,
+          context.target.ownerDocument.body.baseURI
+        ).href;
       }
     } else if (
       this.contentWindow.HTMLCanvasElement.isInstance(context.target)
     ) {
       context.onCanvas = true;
-    } else if (this.contentWindow.HTMLVideoElement.isInstance(context.target)) {
+    } else if (
+      (videoElement = this.contentWindow.HTMLVideoElement.isInstance(
+        context.target
+      )
+        ? context.target
+        : this._maybeGetVideoElementAtPoint(context.clientX, context.clientY))
+    ) {
+      // If the target isn't already a video, it means we found one under an
+      // overlay via nodesFromRect. Update target and targetIdentifier so that
+      // context menu actions (play, pause, mute, etc.) operate on the video.
+      context.target = videoElement;
+      context.targetIdentifier = lazy.ContentDOMReference.get(videoElement);
       const mediaURL = context.target.currentSrc || context.target.src;
 
       if (this._isMediaURLReusable(mediaURL)) {
@@ -1073,7 +1123,7 @@ export class ContextMenuChild extends JSWindowActorChild {
         context.shouldInitInlineSpellCheckerUINoChildren = true;
       }
 
-      context.onKeywordField = editFlags & lazy.SpellCheckHelper.KEYWORD;
+      context.onSearchField = editFlags & lazy.SpellCheckHelper.SEARCHENGINE;
     } else if (this.contentWindow.HTMLHtmlElement.isInstance(context.target)) {
       const bodyElt = context.target.ownerDocument.body;
 
@@ -1089,10 +1139,7 @@ export class ContextMenuChild extends JSWindowActorChild {
 
         if (computedURL) {
           context.hasBGImage = true;
-          context.bgImageURL = this._makeURLAbsolute(
-            bodyElt.baseURI,
-            computedURL
-          );
+          context.bgImageURL = new URL(computedURL, bodyElt.baseURI).href;
         }
       }
     }
@@ -1121,16 +1168,22 @@ export class ContextMenuChild extends JSWindowActorChild {
         if (
           !context.onLink &&
           // Be consistent with what hrefAndLinkNodeForClickEvent
-          // does in browser.js
-          (this._isXULTextLinkLabel(elem) ||
-            (this.contentWindow.HTMLAnchorElement.isInstance(elem) &&
-              elem.href) ||
-            (this.contentWindow.SVGAElement.isInstance(elem) &&
-              (elem.href || elem.hasAttributeNS(XLINK_NS, "href"))) ||
+          // does in BrowserUtils.sys.msj
+          ((this.contentWindow.HTMLAnchorElement.isInstance(elem) &&
+            elem.href) ||
             (this.contentWindow.HTMLAreaElement.isInstance(elem) &&
               elem.href) ||
             this.contentWindow.HTMLLinkElement.isInstance(elem) ||
-            elem.getAttributeNS(XLINK_NS, "type") == "simple")
+            (this.contentWindow.SVGAElement.isInstance(elem) &&
+              (elem.href || elem.hasAttributeNS(XLINK_NS, "href"))) ||
+            (this.contentWindow.MathMLElement.isInstance(elem) &&
+              (elem.localName == "a" ||
+                !Services.prefs.getBoolPref(
+                  "mathml.href_link_on_non_anchor_element.disabled"
+                )) &&
+              elem.hasAttribute("href")) ||
+            elem.getAttributeNS(XLINK_NS, "type") == "simple" ||
+            this._isXULTextLinkLabel(elem))
         ) {
           // Target is a link or a descendant of a link.
           context.onLink = true;
@@ -1178,7 +1231,7 @@ export class ContextMenuChild extends JSWindowActorChild {
 
           if (bgImgUrl) {
             context.hasBGImage = true;
-            context.bgImageURL = this._makeURLAbsolute(elem.baseURI, bgImgUrl);
+            context.bgImageURL = new URL(bgImgUrl, elem.baseURI).href;
           }
         }
       }
@@ -1187,7 +1240,7 @@ export class ContextMenuChild extends JSWindowActorChild {
     }
 
     // See if the user clicked in a frame.
-    const docDefaultView = context.target.ownerGlobal;
+    const docDefaultView = context.target.documentGlobal;
 
     if (docDefaultView != docDefaultView.top) {
       context.inFrame = true;
@@ -1203,7 +1256,6 @@ export class ContextMenuChild extends JSWindowActorChild {
         // If this.onEditable is false but editFlags is CONTENTEDITABLE, then
         // the document itself must be editable.
         context.onTextInput = true;
-        context.onKeywordField = false;
         context.onImage = false;
         context.onLoadedImage = false;
         context.onCompletedImage = false;

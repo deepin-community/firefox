@@ -1,5 +1,4 @@
-/* -*- Mode: IDL; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -43,6 +42,13 @@ interface nsIWebNavigation : nsISupports
   readonly attribute boolean canGoBack;
 
   /**
+   * Indicates if the object can go back.  If true this indicates that
+   * there is back session history available for navigation, ignoring
+   * whether or not the history has been interacted with by the user.
+   */
+  readonly attribute boolean canGoBackIgnoringUserInteraction;
+
+  /**
    * Indicates if the object can go forward.  If true this indicates that
    * there is forward session history available for navigation
    */
@@ -70,6 +76,7 @@ interface nsIWebNavigation : nsISupports
    *        Indicates that the call was unexpected at this time, which implies
    *        that canGoBack is false.
    */
+  [can_run_script]
   void goBack([optional] in boolean aRequireUserInteraction, [optional] in boolean aUserActivation);
 
   /**
@@ -94,6 +101,7 @@ interface nsIWebNavigation : nsISupports
    *        Indicates that the call was unexpected at this time, which implies
    *        that canGoForward is false.
    */
+  [can_run_script]
   void goForward([optional] in boolean aRequireUserInteraction, [optional] in boolean aUserActivation);
 
   /**
@@ -107,6 +115,7 @@ interface nsIWebNavigation : nsISupports
    *        Indicates that the call was unexpected at this time, which implies
    *        that session history entry at the given index does not exist.
    */
+  [can_run_script]
   void gotoIndex(in long index, [optional] in boolean aUserActivation);
 
   /****************************************************************************
@@ -409,10 +418,6 @@ interface nsIWebNavigation : nsISupports
 
   /**
    * Resume a load which has been redirected from another process.
-   *
-   * A negative |aHistoryIndex| value corresponds to a non-history load being
-   * resumed.
    */
-  void resumeRedirectedLoad(in unsigned long long aLoadIdentifier,
-                            in long aHistoryIndex);
+  void resumeRedirectedLoad(in unsigned long long aLoadIdentifier);
 };

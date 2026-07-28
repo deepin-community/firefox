@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Könyvjelzők
+sidebar-menu-bookmarks-2 = Könyvjelzők
 sidebar-menu-history =
     .label = Előzmények
 sidebar-menu-synced-tabs =
     .label = Szinkronizált lapok
-sidebar-menu-megalist =
-    .label = Jelszavak
 sidebar-menu-close =
     .label = Oldalsáv bezárása
 sidebar-close-button =

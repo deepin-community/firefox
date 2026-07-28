@@ -31,15 +31,18 @@ function waitForState(dbg, predicate, msg) {
       return resolve();
     }
 
-    const unsubscribe = dbg.store.subscribe(() => {
-      if (predicate(dbg.store.getState())) {
-        if (msg) {
-          dump(`Finished waiting for state change: ${msg}\n`);
+    const unsubscribe = dbg.store.subscribe(
+      () => {
+        if (predicate(dbg.store.getState())) {
+          if (msg) {
+            dump(`Finished waiting for state change: ${msg}\n`);
+          }
+          unsubscribe();
+          resolve();
         }
-        unsubscribe();
-        resolve();
-      }
-    });
+      },
+      { ignoreVisibility: true }
+    );
     return false;
   });
 }
@@ -102,43 +105,23 @@ function findSource(dbg, url) {
 }
 exports.findSource = findSource;
 
-function getCM(dbg, isCm6Enabled) {
-  if (isCm6Enabled) {
-    return dbg.win.document.sourceEditor.cm;
-  }
-  const el = dbg.win.document.querySelector(".CodeMirror");
-  return el.CodeMirror;
+function getCMEditor(dbg) {
+  return dbg.win.codeMirrorSourceEditorTestInstance;
 }
-exports.getCM = getCM;
+exports.getCMEditor = getCMEditor;
 
-function waitForText(dbg, text, isCm6Enabled = false) {
+function waitForText(dbg, text) {
   return waitUntil(() => {
     // the welcome box is removed once text is displayed
     const welcomebox = dbg.win.document.querySelector(".welcomebox");
     if (welcomebox) {
       return false;
     }
-    const cm = getCM(dbg, isCm6Enabled);
-    let editorText = "";
-    if (isCm6Enabled) {
-      if (cm) {
-        editorText = cm.state.doc.toString();
-      }
-    } else {
-      editorText = cm.doc.getValue();
-    }
-    return editorText.includes(text);
+    const editor = getCMEditor(dbg);
+    return editor.getText().includes(text);
   }, "text is visible");
 }
 exports.waitForText = waitForText;
-
-function waitForSymbols(dbg) {
-  return waitUntil(() => {
-    const state = dbg.store.getState();
-    const location = dbg.selectors.getSelectedLocation(state);
-    return dbg.selectors.getSymbols(state, location);
-  }, "has file metadata");
-}
 
 function waitForSources(dbg, expectedSources) {
   const { selectors } = dbg;
@@ -146,6 +129,13 @@ function waitForSources(dbg, expectedSources) {
     return selectors.getSourceCount(state) >= expectedSources;
   }
   return waitForState(dbg, countSources, "count sources");
+}
+exports.waitForSources = waitForSources;
+
+function waitForInlinePreviews(dbg) {
+  return waitForState(dbg, () =>
+    dbg.selectors.getInlinePreviews(dbg.store.getState())
+  );
 }
 
 function waitForSource(dbg, sourceURL) {
@@ -171,7 +161,9 @@ async function waitForPaused(
   dbg,
   pauseOptions = { shouldWaitForLoadedScopes: true }
 ) {
-  const promises = [];
+  // When the inline previews are ready there is some gurantee that
+  // Codemirror has completed its work
+  const promises = [waitForInlinePreviews(dbg)];
 
   // If original variable mapping is disabled the scopes for
   // original sources are not loaded by default so lets not
@@ -184,10 +176,11 @@ async function waitForPaused(
   } = dbg;
   const onStateChange = waitForState(dbg, state => {
     const thread = getCurrentThread(state);
-    return getSelectedScope(state, thread) && getIsPaused(state, thread);
+    return getSelectedScope(state) && getIsPaused(state, thread);
   });
   promises.push(onStateChange);
-  return Promise.all(promises);
+
+  await Promise.all(promises);
 }
 exports.waitForPaused = waitForPaused;
 
@@ -212,6 +205,40 @@ async function waitForLoadedScopes(dbg) {
   const element = '.scopes-list .tree-node[aria-level="2"]';
   return waitForElement(dbg, element);
 }
+
+/**
+ * Waits for the currently triggered scroll to complete
+ *
+ * @param {*} dbg
+ * @param {object} options
+ * @param {boolean} options.useTimeoutFallback - defaults to true. When set to false
+ *                                               a scroll must happen for the wait for scrolling to complete
+ * @returns
+ */
+async function waitForScrolling(dbg, { useTimeoutFallback = true } = {}) {
+  return new Promise(resolve => {
+    const editor = getCMEditor(dbg);
+    editor.once("cm-editor-scrolled", resolve);
+    if (useTimeoutFallback) {
+      setTimeout(resolve, 500);
+    }
+  });
+}
+
+/**
+ * Scrolls a specific line and column into view in the editor
+ *
+ * @param {*} dbg
+ * @param {number} line
+ * @param {number} column
+ * @returns
+ */
+async function scrollEditorIntoView(dbg, line, column) {
+  const onScrolled = waitForScrolling(dbg);
+  getCMEditor(dbg).scrollTo(line, column);
+  return onScrolled;
+}
+exports.scrollEditorIntoView = scrollEditorIntoView;
 
 function clickElement(dbg, selector) {
   const clickEvent = new dbg.win.MouseEvent("click", {
@@ -267,9 +294,7 @@ async function selectSource(dbg, url) {
         return false;
       }
 
-      // wait for symbols -- a flat map of all named variables in a file -- to be calculated.
-      // this is a slow process and becomes slower the larger the file is
-      return dbg.selectors.getSymbols(state, location);
+      return true;
     },
     "selected source"
   );
@@ -296,14 +321,13 @@ function evalInFrame(tab, testFunction) {
 }
 exports.evalInFrame = evalInFrame;
 
-async function openDebuggerAndLog(label, expected, isCm6Enabled) {
+async function openDebuggerAndLog(label, expected) {
   const onLoad = async (toolbox, panel) => {
     const dbg = await createContext(panel);
     await waitForThreadCount(dbg, expected.threadsCount);
     await waitForSource(dbg, expected.sourceURL);
     await selectSource(dbg, expected.file);
-    await waitForText(dbg, expected.text, isCm6Enabled);
-    await waitForSymbols(dbg);
+    await waitForText(dbg, expected.text);
   };
 
   const toolbox = await openToolboxAndLog(
@@ -315,7 +339,7 @@ async function openDebuggerAndLog(label, expected, isCm6Enabled) {
 }
 exports.openDebuggerAndLog = openDebuggerAndLog;
 
-async function reloadDebuggerAndLog(label, toolbox, expected, isCm6Enabled) {
+async function reloadDebuggerAndLog(label, toolbox, expected) {
   const onReload = async () => {
     const panel = await toolbox.getPanelWhenReady("jsdebugger");
     const dbg = await createContext(panel);
@@ -328,8 +352,7 @@ async function reloadDebuggerAndLog(label, toolbox, expected, isCm6Enabled) {
 
     await waitForSources(dbg, expected.sources);
     await waitForSource(dbg, expected.sourceURL);
-    await waitForText(dbg, expected.text, isCm6Enabled);
-    await waitForSymbols(dbg);
+    await waitForText(dbg, expected.text);
   };
   await reloadPageAndLog(`${label}.jsdebugger`, toolbox, onReload);
 }
@@ -402,9 +425,9 @@ async function step(dbg, stepType) {
 }
 exports.step = step;
 
-async function hoverOnToken(dbg, textToWaitFor, textToHover, isCm6Enabled) {
-  await waitForText(dbg, textToWaitFor, isCm6Enabled);
-  const selector = isCm6Enabled ? ".cm-editor span" : ".CodeMirror span";
+async function hoverOnToken(dbg, textToWaitFor, textToHover) {
+  await waitForText(dbg, textToWaitFor);
+  const selector = ".cm-editor span";
   const tokenElement = [...dbg.win.document.querySelectorAll(selector)].find(
     el => el.textContent === textToHover
   );
@@ -458,3 +481,64 @@ async function hoverOnToken(dbg, textToWaitFor, textToHover, isCm6Enabled) {
   );
 }
 exports.hoverOnToken = hoverOnToken;
+
+async function openEditorContextMenu(dbg, toolbox) {
+  const waitForOpen = waitForContextMenu(dbg, toolbox);
+  dump(`Open the editor context menu \n`);
+  showContextMenuForElement(dbg, ".cm-content");
+  return waitForOpen;
+}
+exports.openEditorContextMenu = openEditorContextMenu;
+
+async function selectEditorContextMenuItem(dbg, toolbox, itemName) {
+  const dispatchEvents = { "editor-wrapping": "TOGGLE_EDITOR_WRAPPING" };
+  let wait = waitForDispatch(dbg, dispatchEvents[itemName]);
+  dump(`Select the ${itemName} context menu item\n`);
+  const item = findContextMenu(dbg, toolbox, `#node-menu-${itemName}`);
+  item.closest("menupopup").activateItem(item);
+  return wait;
+}
+exports.selectEditorContextMenuItem = selectEditorContextMenuItem;
+
+async function waitForContextMenu(dbg, toolbox) {
+  // the context menu is in the toolbox window
+  const doc = toolbox.topDoc;
+
+  // there are several context menus, we want the one with the menu-api
+  const popup = await waitUntil(() =>
+    doc.querySelector('menupopup[menu-api="true"]')
+  );
+
+  if (popup.state == "open") {
+    return popup;
+  }
+
+  await new Promise(resolve => {
+    popup.addEventListener("popupshown", () => resolve(), { once: true });
+  });
+
+  return popup;
+}
+
+function findContextMenu(dbg, toolbox, selector) {
+  // the context menu is in the toolbox window
+  const doc = toolbox.topDoc;
+
+  // there are several context menus, we want the one with the menu-api
+  const popup = doc.querySelector('menupopup[menu-api="true"]');
+
+  return popup.querySelector(selector);
+}
+
+function showContextMenuForElement(dbg, selector) {
+  const doc = dbg.win.document;
+  const el = doc.querySelector(selector);
+  el.scrollIntoView();
+  el.dispatchEvent(
+    new dbg.win.MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      view: dbg.win,
+    })
+  );
+}

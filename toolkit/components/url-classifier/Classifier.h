@@ -1,10 +1,9 @@
-//* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef Classifier_h__
-#define Classifier_h__
+#ifndef Classifier_h_
+#define Classifier_h_
 
 #include "Entries.h"
 #include "HashStore.h"
@@ -93,10 +92,6 @@ class Classifier {
   nsresult ReadNoiseEntries(const Prefix& aPrefix, const nsACString& aTableName,
                             uint32_t aCount, PrefixArray& aNoiseEntries);
 
-#ifdef MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
-  nsresult DumpRawTableUpdates(const nsACString& aRawUpdates);
-#endif
-
   static void SplitTables(const nsACString& str, nsTArray<nsCString>& tables);
 
   // Given a root store directory, return a private store directory
@@ -113,6 +108,8 @@ class Classifier {
                                            const nsACString& aTableName,
                                            const nsACString& aProvider,
                                            nsIFile** aPrivateStoreDirectory);
+
+  static bool IsRealTimeModeEnabled();
 
   // Swap in in-memory and on-disk database and remove all
   // update intermediaries.
@@ -148,11 +145,6 @@ class Classifier {
   // Remove any intermediary for update, including in-memory
   // and on-disk data.
   void RemoveUpdateIntermediaries();
-
-#ifdef MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
-  already_AddRefed<nsIFile> GetFailedUpdateDirectroy();
-  nsresult DumpFailedUpdate();
-#endif
 
   nsresult ScanStoreDir(nsIFile* aDirectory,
                         const nsTArray<nsCString>& aExtensions,
@@ -205,6 +197,10 @@ class Classifier {
   nsresult ApplyUpdatesForeground(nsresult aBackgroundRv,
                                   const nsTArray<nsCString>& aFailedTableNames);
 
+  // Notify the worker thread that the async update is finished to kick off the
+  // pending updates.
+  void AsyncUpdateFinished();
+
   // Used by worker thread and update thread to abort current operation.
   bool ShouldAbort() const;
 
@@ -236,6 +232,12 @@ class Classifier {
 
   // The copy of mLookupCaches for update only.
   LookupCacheArray mNewLookupCaches;
+
+  // Whether an async update is in progress.
+  bool mAsyncUpdateInProgress;
+
+  // Pending updates to be executed after the current async update is finished.
+  nsTArray<nsCOMPtr<nsIRunnable>> mPendingUpdates;
 
   // True when Reset() is called.
   bool mUpdateInterrupted;

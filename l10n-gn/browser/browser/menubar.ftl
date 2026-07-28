@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Jerohoryvéva
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Ñemboheko…
+menu-application-set-as-default =
+    .label = Ajapo { -brand-shorter-name }-gui kundahára ypygua
 menu-application-services =
     .label = Mba’epytyvõrã
 menu-application-hide-this =
@@ -98,6 +91,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Moherakuã
     .accesskey = t
+menu-file-share-qrcode =
+    .label = Emoheñói QR ayvu…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Emoheñói QR ayvu
+    .accesskey = Q
 menu-file-print-setup =
     .label = Kuatiarogue moambue…
     .accesskey = u
@@ -146,8 +145,6 @@ menu-view-history-button =
     .label = Tembiasakue
 menu-view-synced-tabs-sidebar =
     .label = Tendayke ñembojuehepyre
-menu-view-megalist-sidebar =
-    .label = Ñe’ẽñemi
 menu-view-full-zoom =
     .label = Tuichakue
     .accesskey = Z
@@ -255,6 +252,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Pumbyry Rechaukaha
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Mba’etekuéra
+menu-profiles-manage-profiles =
+    .label = Mba’etekuéra ñangareko
+menu-profiles-new-profile =
+    .label = Mba’ete pyahu
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (ag̃agua)
+menu-profiles-menu =
+    .label = Mba’etekuéra
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +276,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Ñemboguejy
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = Jepysokue ha Téma
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Moĩmbaha ha Téma
     .accesskey = A
@@ -290,6 +306,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Kuatiarogue rehegua marandu
     .accesskey = I
+menu-tools-edit-pdf =
+    .label = Embosako’i PDF…
+    .accesskey = P
 menu-settings =
     .label = Ñemboheko
     .accesskey =

@@ -11,6 +11,7 @@ import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.browser.state.state.createTab
 import mozilla.components.concept.engine.EngineSessionState
 import mozilla.components.concept.storage.HistoryMetadataKey
+import mozilla.components.support.ktx.kotlin.isContentUrl
 
 /**
  * A tab that is no longer open and in the list of tabs, but that can be restored (recovered) at
@@ -30,6 +31,7 @@ import mozilla.components.concept.storage.HistoryMetadataKey
  * @property readerState The last [ReaderState] of the tab.
  * @property lastAccess The last time this tab was selected.
  * @property createdAt Timestamp of the tab's creation.
+ * @property lastVisibleAt The last time this tab was visible to the user before the session ended.
  * @property lastMediaAccessState Details about the last time was playing in this tab.
  * @property private If tab was private.
  * @property historyMetadata The last [HistoryMetadataKey] of the tab.
@@ -46,12 +48,14 @@ data class TabState(
     val readerState: ReaderState = ReaderState(),
     val lastAccess: Long = 0,
     val createdAt: Long = 0,
+    val lastVisibleAt: Long = 0,
     val lastMediaAccessState: LastMediaAccessState = LastMediaAccessState(),
     val private: Boolean = false,
     val historyMetadata: HistoryMetadataKey? = null,
     val source: Source = Source.Internal.None,
     val index: Int = -1,
     val hasFormData: Boolean = false,
+    val desktopMode: Boolean = false,
 )
 
 /**
@@ -81,12 +85,14 @@ fun TabSessionState.toRecoverableTab(index: Int = -1): RecoverableTab {
             readerState = readerState,
             lastAccess = lastAccess,
             createdAt = createdAt,
+            lastVisibleAt = lastVisibleAt,
             lastMediaAccessState = lastMediaAccessState,
             private = content.private,
             historyMetadata = historyMetadata,
             source = source,
             index = index,
             hasFormData = content.hasFormData,
+            desktopMode = content.desktopMode,
         ),
     )
 }
@@ -105,12 +111,14 @@ fun RecoverableTab.toTabSessionState() = createTab(
     readerState = state.readerState,
     lastAccess = state.lastAccess,
     createdAt = state.createdAt,
+    lastVisibleAt = state.lastVisibleAt,
     lastMediaAccessState = state.lastMediaAccessState,
     private = state.private,
     historyMetadata = state.historyMetadata,
     source = state.source,
     restored = true,
     hasFormData = state.hasFormData,
+    desktopMode = state.desktopMode,
 )
 
 /**
@@ -121,4 +129,4 @@ fun List<RecoverableTab>.toTabSessionStates() = map { it.toTabSessionState() }
 /**
  * Check if this [RecoverableTab] is a content URI.
  */
-fun RecoverableTab.isContentUri(): Boolean = this.state.url.startsWith("content://")
+fun RecoverableTab.isContentUri(): Boolean = this.state.url.isContentUrl()

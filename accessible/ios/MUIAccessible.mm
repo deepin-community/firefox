@@ -1,5 +1,4 @@
 /* clang-format off */
-/* -*- Mode: Objective-C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* clang-format on */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -165,7 +164,7 @@ static bool isAccessibilityElementInternal(Accessible* aAccessible) {
     rule = iosIsElement;                                                     \
     break;
   switch (aAccessible->Role()) {
-#include "RoleMap.h"
+#include "RoleMap.inc"
   }
 
   switch (rule) {
@@ -374,6 +373,9 @@ static uint64_t GetAccessibilityTraits(Accessible* aAccessible) {
     case roles::PASSWORD_TEXT:
       traits |= Trait::SecureTextField;
       break;
+    case roles::SEARCHBOX:
+      traits |= Trait::SearchField;
+      break;
     default:
       break;
   }
@@ -403,10 +405,6 @@ static uint64_t GetAccessibilityTraits(Accessible* aAccessible) {
     if (state & states::FOCUSED) {
       // XXX: Also add "has text cursor" trait
       traits |= Trait::IsEditing | Trait::TextOperationsAvailable;
-    }
-
-    if (aAccessible->IsSearchbox()) {
-      traits |= Trait::SearchField;
     }
 
     if (state & states::MULTI_LINE) {

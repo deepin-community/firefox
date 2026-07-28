@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,10 +23,10 @@
  *      remains selected.
  */
 
-const TEST_URL = "http://dummy.mozilla.org/";
-const TEST_DOWNLOAD_URL = "http://dummy.mozilla.org/dummy.pdf";
+const TEST_URL = "https://dummy.mozilla.org/";
+const TEST_DOWNLOAD_URL = "https://dummy.mozilla.org/dummy.pdf";
 const TEST_PARENT_FOLDER = "testParentFolder";
-const TEST_SIF_URL = "http://testsif.example.com/";
+const TEST_SIF_URL = "https://testsif.example.com/";
 const TEST_SIF_TITLE = "TestSIF";
 
 var gLibrary;

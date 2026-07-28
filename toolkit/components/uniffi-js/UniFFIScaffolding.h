@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,22 +9,27 @@
 #include "mozilla/dom/RootedDictionary.h"
 #include "mozilla/dom/TypedArray.h"
 #include "mozilla/dom/UniFFIBinding.h"
+#include "mozilla/dom/UniFFIBindingFwd.h"
 
 namespace mozilla::dom {
-
-using UniFFIScaffoldingValue = OwningDoubleOrArrayBufferOrUniFFIPointer;
 
 // Handle functions defined in UniFFIScaffolding.webidl
 class UniFFIScaffolding {
  public:
-  static already_AddRefed<Promise> CallAsync(
-      const GlobalObject& aGlobal, uint64_t aId,
-      const Sequence<UniFFIScaffoldingValue>& aArgs, ErrorResult& aErrorResult);
-
   static void CallSync(
       const GlobalObject& aGlobal, uint64_t aId,
-      const Sequence<UniFFIScaffoldingValue>& aArgs,
+      const Sequence<OwningUniFFIScaffoldingValue>& aArgs,
       RootedDictionary<UniFFIScaffoldingCallResult>& aReturnValue,
+      ErrorResult& aErrorResult);
+
+  static already_AddRefed<Promise> CallAsync(
+      const GlobalObject& aGlobal, uint64_t aId,
+      const Sequence<OwningUniFFIScaffoldingValue>& aArgs,
+      ErrorResult& aErrorResult);
+
+  static already_AddRefed<Promise> CallAsyncWrapper(
+      const GlobalObject& aGlobal, uint64_t aId,
+      const Sequence<OwningUniFFIScaffoldingValue>& aArgs,
       ErrorResult& aErrorResult);
 
   static already_AddRefed<UniFFIPointer> ReadPointer(
@@ -45,6 +48,11 @@ class UniFFIScaffolding {
   static void DeregisterCallbackHandler(GlobalObject& aGlobal,
                                         uint64_t interfaceId,
                                         ErrorResult& aError);
+
+  static uint64_t CallbackHandleCreate(GlobalObject& aGlobal);
+  static uint32_t CallbackHandleRelease(GlobalObject& aGlobal,
+                                        uint64_t aHandle);
+  static void CallbackHandleFree(GlobalObject& aGlobal, uint64_t aHandle);
 };
 
 }  // namespace mozilla::dom

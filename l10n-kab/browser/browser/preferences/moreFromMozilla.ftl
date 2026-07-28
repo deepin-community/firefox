@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Senqed ifarisen-nniḍen n { -vendor-short-name } i iteddun i internet zeddigen.
 more-from-moz-firefox-mobile-title = { -brand-product-name } aziraz
 more-from-moz-firefox-mobile-description = Iminig aziraz yettarran tudert-ik tabaḍnit deg umḍiq amezwaru.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } i uziraz
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Snirem aswir-nniḍen n tunigin tudrigt akked ummesten.
 more-from-moz-qr-code-box-firefox-mobile-title = Sader-it-id s useqdec n yibenk-ik aziraz. Welleh takamiṛat-ik ɣer tengalt QR. Akken ara d-iban useɣwen, sit fell-as.
@@ -19,6 +20,8 @@ more-from-moz-qr-code-firefox-mobile-img =
     .alt = Tangalt QR i usader n { -brand-product-name } aziraz
 more-from-moz-button-mozilla-vpn-2 = Awi VPN
 more-from-moz-learn-more-link = Issin ugar
+more-from-moz-title2 = Ugar seg { -vendor-short-name }
+    .title = Ugar seg { -vendor-short-name }
 
 ## These strings are for the Firefox Relay card in about:preferences moreFromMozilla page
 
@@ -29,4 +32,10 @@ more-from-moz-firefox-relay-button = Awi { -relay-brand-short-name }
 ## These strings are for the Mozilla Monitor card in about:preferences moreFromMozilla page
 
 more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
+more-from-moz-mozilla-monitor-us-description = Err-d asenqed n telɣut-ik tudmawant yettbanen s wudem awurman.
+more-from-moz-mozilla-monitor-global-description = Nermes ilɣa mi ara d-banen isefka-k deg trewla n yisefka.
 more-from-moz-mozilla-monitor-button = Awi { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } AI

@@ -7,13 +7,16 @@
 
 #include "pk11_keygen.h"
 #include "pk11pub.h"
+#include "secmodi.h"
+#include "secmodti.h"
 
-#include "blapi.h"
 #include "secport.h"
 
 namespace nss_test {
 
-class Pkcs11KEMTest : public ::testing::Test {
+class Pkcs11KEMTest
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<CK_NSS_KEM_PARAMETER_SET_TYPE> {
  protected:
   PK11SymKey *Encapsulate(const ScopedSECKEYPublicKey &pub,
                           CK_MECHANISM_TYPE target, PK11AttrFlags attrFlags,
@@ -65,23 +68,55 @@ class Pkcs11KEMTest : public ::testing::Test {
 
     SECITEM_FreeItem(&attrValue, PR_FALSE);
   }
+
+  CK_MECHANISM_TYPE keyGenMech() {
+    switch (GetParam()) {
+      case CKP_NSS_KYBER_768_ROUND3:
+        return CKM_NSS_KYBER_KEY_PAIR_GEN;
+      case CKP_NSS_ML_KEM_768:
+        return CKM_NSS_ML_KEM_KEY_PAIR_GEN;
+      case CKP_ML_KEM_768:
+      case CKP_ML_KEM_1024:
+        return CKM_ML_KEM_KEY_PAIR_GEN;
+      default:
+        EXPECT_TRUE(false);
+        return 0;
+    }
+  }
+
+  CK_MECHANISM_TYPE encapsMech() {
+    switch (GetParam()) {
+      case CKP_NSS_KYBER_768_ROUND3:
+        return CKM_NSS_KYBER;
+      case CKP_NSS_ML_KEM_768:
+        return CKM_NSS_ML_KEM;
+      case CKP_ML_KEM_768:
+      case CKP_ML_KEM_1024:
+        return CKM_ML_KEM;
+      default:
+        EXPECT_TRUE(false);
+        return 0;
+    }
+  }
 };
 
-TEST_F(Pkcs11KEMTest, KemConsistencyTest) {
-  Pkcs11KeyPairGenerator generator(CKM_NSS_KYBER_KEY_PAIR_GEN);
+TEST_P(Pkcs11KEMTest, KemConsistencyTest) {
+  Pkcs11KeyPairGenerator generator(keyGenMech());
   ScopedSECKEYPrivateKey priv;
   ScopedSECKEYPublicKey pub;
   generator.GenerateKey(&priv, &pub, false);
 
-  ASSERT_EQ((unsigned int)KYBER768_PUBLIC_KEY_BYTES,
-            (unsigned int)pub->u.kyber.publicValue.len);
+  ASSERT_NE(nullptr, pub);
+  ASSERT_NE(nullptr, priv);
 
   // Copy the public key to simulate receiving the key as an octet string
   ScopedSECKEYPublicKey pubCopy(SECKEY_CopyPublicKey(pub.get()));
   ASSERT_NE(nullptr, pubCopy);
 
-  ScopedPK11SlotInfo slot(PK11_GetBestSlot(CKM_NSS_KYBER, nullptr));
+  ScopedPK11SlotInfo slot(PK11_GetBestSlot(encapsMech(), nullptr));
   ASSERT_NE(nullptr, slot);
+  std::string name = PK11_GetSlotName(slot.get());
+  ASSERT_EQ(name, "NSS Internal Cryptographic Services");
 
   ASSERT_NE((unsigned int)CK_INVALID_HANDLE,
             PK11_ImportPublicKey(slot.get(), pubCopy.get(), PR_FALSE));
@@ -90,9 +125,6 @@ TEST_F(Pkcs11KEMTest, KemConsistencyTest) {
   ScopedPK11SymKey sharedSecret(Encapsulate(
       pubCopy, CKM_SALSA20_POLY1305, PK11_ATTR_PRIVATE | PK11_ATTR_UNMODIFIABLE,
       CKF_ENCRYPT, &ciphertext));
-
-  ASSERT_EQ((unsigned int)KYBER768_CIPHERTEXT_BYTES,
-            (unsigned int)ciphertext->len);
 
   ASSERT_EQ(CKM_SALSA20_POLY1305, PK11_GetMechanism(sharedSecret.get()));
 
@@ -118,5 +150,50 @@ TEST_F(Pkcs11KEMTest, KemConsistencyTest) {
   NSS_DECLASSIFY(item2->data, item2->len);
   EXPECT_EQ(0, SECITEM_CompareItem(item1, item2));
 }
+
+// Verify that C_EncapsulateKey and C_DecapsulateKey reject handles whose
+// object class does not match what is expected (CKO_PUBLIC_KEY and
+// CKO_PRIVATE_KEY respectively) with CKR_KEY_TYPE_INCONSISTENT.
+TEST_P(Pkcs11KEMTest, KemWrongObjectTypeTest) {
+  Pkcs11KeyPairGenerator generator(keyGenMech());
+  ScopedSECKEYPrivateKey priv;
+  ScopedSECKEYPublicKey pub;
+  generator.GenerateKey(&priv, &pub, false);
+  ASSERT_NE(nullptr, priv);
+  ASSERT_NE(nullptr, pub);
+
+  // Both keys are on the same slot; use its default session for both checks.
+  PK11SlotInfo *slot = priv->pkcs11Slot;
+  ASSERT_NE(nullptr, slot);
+
+  CK_MECHANISM mech = {encapsMech(), nullptr, 0};
+  CK_OBJECT_HANDLE outKey = CK_INVALID_HANDLE;
+
+  // C_EncapsulateKey: pass a CKO_PRIVATE_KEY handle where CKO_PUBLIC_KEY is
+  // expected.
+  CK_ULONG ciphertextLen = 0;
+  CK_RV crv = PK11_GETTAB(slot)->C_EncapsulateKey(
+      slot->session, &mech, priv->pkcs11ID, nullptr, 0, nullptr, &ciphertextLen,
+      &outKey);
+  EXPECT_EQ(CKR_KEY_TYPE_INCONSISTENT, crv);
+
+  // C_DecapsulateKey: pass a CKO_PUBLIC_KEY handle where CKO_PRIVATE_KEY is
+  // expected.
+  CK_BYTE dummyCiphertext[1] = {0};
+  CK_ATTRIBUTE dummyTemplate[1] = {};
+  crv = PK11_GETTAB(slot)->C_DecapsulateKey(slot->session, &mech, pub->pkcs11ID,
+                                            dummyTemplate, 0, dummyCiphertext,
+                                            sizeof(dummyCiphertext), &outKey);
+  EXPECT_EQ(CKR_KEY_TYPE_INCONSISTENT, crv);
+}
+
+#ifndef NSS_DISABLE_KYBER
+INSTANTIATE_TEST_SUITE_P(Pkcs11KEMTest, Pkcs11KEMTest,
+                         ::testing::Values(CKP_NSS_KYBER_768_ROUND3,
+                                           CKP_NSS_ML_KEM_768, CKP_ML_KEM_768));
+#else
+INSTANTIATE_TEST_SUITE_P(Pkcs11KEMTest, Pkcs11KEMTest,
+                         ::testing::Values(CKP_NSS_ML_KEM_768, CKP_ML_KEM_768));
+#endif
 
 }  // namespace nss_test

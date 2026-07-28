@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 // Opens two tabs at the start of the tab strip and focuses the second tab.
@@ -15,8 +13,8 @@ async function openTwoTabsAndOpenTabMenu(onTabMenuClicked) {
   let tab1 = await BrowserTestUtils.openNewForegroundTab(gBrowser, PAGE_URL);
   let tab2 = await BrowserTestUtils.openNewForegroundTab(gBrowser, OTHER_URL);
   // Move the first tab to the start so that it can be found by the .tabbrowser-tab selector below.
-  gBrowser.moveTabTo(tab1, 0);
-  gBrowser.moveTabTo(tab2, 1);
+  gBrowser.moveTabTo(tab1, { tabIndex: 0 });
+  gBrowser.moveTabTo(tab2, { tabIndex: 1 });
 
   async function background(onTabMenuClicked) {
     browser.menus.onClicked.addListener(async (info, tab) => {

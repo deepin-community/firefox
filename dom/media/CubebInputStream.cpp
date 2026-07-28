@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -52,6 +50,7 @@ static cubeb_stream_params CreateStreamInitParams(uint32_t aChannels,
   params.channels = aChannels;
   params.layout = CUBEB_LAYOUT_UNDEFINED;
   params.prefs = CubebUtils::GetDefaultStreamPrefs(CUBEB_DEVICE_TYPE_INPUT);
+  params.input_params = CUBEB_INPUT_PROCESSING_PARAM_NONE;
 
   if (aIsVoice) {
     params.prefs |= static_cast<cubeb_stream_prefs>(CUBEB_STREAM_PREF_VOICE);
@@ -111,18 +110,17 @@ UniquePtr<CubebInputStream> CubebInputStream::Create(cubeb_devid aDeviceId,
 
   LOG("Create a cubeb stream %p successfully", inputStream.get());
 
-  UniquePtr<CubebInputStream> stream(
-      new CubebInputStream(listener.forget(), std::move(inputStream)));
+  UniquePtr<CubebInputStream> stream(new CubebInputStream(
+      listener.forget(), handle.forget(), std::move(inputStream)));
   stream->Init();
   return stream;
 }
 
 CubebInputStream::CubebInputStream(
     already_AddRefed<Listener>&& aListener,
+    already_AddRefed<CubebUtils::CubebHandle>&& aCubeb,
     UniquePtr<cubeb_stream, CubebDestroyPolicy>&& aStream)
-    : mListener(aListener),
-      mCubeb(CubebUtils::GetCubeb()),
-      mStream(std::move(aStream)) {
+    : mListener(aListener), mCubeb(aCubeb), mStream(std::move(aStream)) {
   MOZ_ASSERT(mListener);
   MOZ_ASSERT(mStream);
 }

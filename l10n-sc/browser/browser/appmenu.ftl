@@ -23,10 +23,16 @@ appmenuitem-new-private-window =
     .label = Ventana privada noa
 appmenuitem-history =
     .label = Cronologia
+appmenuitem-tab-groups =
+    .label = Grupos de ischedas
 appmenuitem-downloads =
     .label = Iscarrigamentos
 appmenuitem-passwords =
     .label = Craes
+appmenuitem-extensions-and-themes =
+    .label = Estensiones e temas
+appmenuitem-extensions =
+    .label = Estensiones
 appmenuitem-addons-and-themes =
     .label = Cumplementos e temas
 appmenuitem-print =
@@ -108,8 +114,11 @@ appmenu-fxa-sync-and-save-data2 = Sincroniza e sarva datos
 appmenu-fxa-signed-in-label = Identìfica·ti
 appmenu-fxa-setup-sync =
     .label = Ativa sa sincronizatzione...
+appmenu-fxa-setup-sync-new = Ativa
 appmenuitem-save-page =
     .label = Sarva sa pàgina comente...
+appmenuitem-fxa-sync-off-title = Sincronizatzione disativada
+appmenuitem-fxa-sync-off-description = Ampara e atzede a is sinnalibros, craes e àteru dae onni logu.
 
 ## What's New panel in App menu.
 
@@ -163,6 +172,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Majùsc+2
     }
+profiler-button-dropmarker =
+    .label = Aberi su pannellu de s’analizadore de rendimentu
+    .tooltiptext = Aberi su pannellu de s’analizadore de rendimentu
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +201,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Profilu pro compidare faddinas de àudio e vìdeu in { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Multimediale
+profiler-popup-presets-ml-description = Profilu pro compidare faddinas de aprendimentu automàticu in { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Aprendimentu automàticu
 profiler-popup-presets-networking-description = Profilu pro compidare faddinas de rete in { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Rete
@@ -196,8 +211,12 @@ profiler-popup-presets-power-description = Profilu pro compidare faddinas de imp
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
+profiler-popup-presets-debug-description = Precunfiguratzione pro currègere faddinas in { -brand-shorter-name }. Est subracarrigadu meda, no dd’imprees pro atividades chi rechedant unu rendimentu artu, ma pro cumprèndere su cumportamentu de su navigadore.
 profiler-popup-presets-debug-label =
     .label = Curregi faddinas
+profiler-popup-presets-web-compat-description = Cunfiguratzione cussigiada pro sa curretzione de faddinas de cumpatibilidade in is sitos web, prus chi non pro monitorare su rendimentu.
+profiler-popup-presets-web-compat-label =
+    .label = Compatibilidade web
 profiler-popup-presets-custom-label =
     .label = Personalizadu
 
@@ -237,7 +256,7 @@ appmenu-help-share-ideas =
     .label = Cumpartzi ideas e cummentos…
     .accesskey = C
 appmenu-help-switch-device =
-    .label = Passare a unu dispositivu nou
+    .label = Passa a unu dispositivu nou
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -263,6 +282,8 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Personaliza sa barra de ainas...
+appmenu-abouttranslations =
+    .label = Tradue…
 appmenu-developer-tools-subheader = Istrumentos de su navigadore
 appmenu-developer-tools-extensions =
     .label = Estensiones pro s'isvilupu
@@ -276,5 +297,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Retzi avisos a subra de violatziones de datos
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Cua s'indiritzu de posta eletrònica e su nùmeru de telèfonu tuos reales
+appmenuitem-services-relay-description = Avia su pannellu de is alias de posta eletrònica
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Otene amparu pro su dispositivu intreu
 appmenuitem-vpn-description = Ampara sa faina tua in lìnia
+appmenu-services-header = Is servìtzios mios
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Proa àteras ainas de protetzione dae Mozilla:
+appmenu-other-protection-header = Proa àteras ainas de amparu dae { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Àteros profilos
+appmenu-manage-profiles =
+    .label = Gesti is profilos
+appmenu-copy-profile =
+    .label = Còpia custu profilu
+appmenu-create-profile =
+    .label = Profilu nou
+appmenu-edit-profile =
+    .aria-label = Modifica su profilu
+appmenu-profiles-2 =
+    .label = Profilos

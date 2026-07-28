@@ -2,12 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "seccomon.h"
-#include "secoid.h"
-#include "secasn1.h"
-#include "pkcs11.h"
 #include "pk11func.h"
 #include "pk11sdr.h"
+#include "pkcs11.h"
+#include "secasn1.h"
+#include "seccomon.h"
+#include "secerr.h"
+#include "secoid.h"
 
 /*
  * Data structure and template for encoding the result of an SDR operation
@@ -56,8 +57,8 @@ padBlock(SECItem *data, int blockSize, SECItem *result)
     result->len = 0;
 
     /* This algorithm always adds to the block (to indicate the number
-   * of pad bytes).  So allocate a block large enough.
-   */
+     * of pad bytes).  So allocate a block large enough.
+     */
     padLength = blockSize - (data->len % blockSize);
     result->len = data->len + padLength;
     result->data = (unsigned char *)PORT_Alloc(result->len);
@@ -138,26 +139,43 @@ pk11sdr_Shutdown(void)
 
 /*
  * PK11SDR_Encrypt
- *  Encrypt a block of data using the symmetric key identified.  The result
- *  is an ASN.1 (DER) encoded block of keyid, params and data.
+ *  Deprecated version of PK11SDR_EncryptWithMechanism using DES3_CBC.
  */
 SECStatus
 PK11SDR_Encrypt(SECItem *keyid, SECItem *data, SECItem *result, void *cx)
 {
+    return PK11SDR_EncryptWithMechanism(NULL, keyid, CKM_DES3_CBC, data, result, cx);
+}
+
+/*
+ * PK11SDR_EncryptWithMechanism
+ *  Encrypt a block of data using the symmetric key identified and the
+ *  encryption mechanism specified (only AES_CBC and DES3_CBC are supported).
+ *  The result is an ASN.1 (DER) encoded block of keyid, params and data.
+ */
+SECStatus
+PK11SDR_EncryptWithMechanism(PK11SlotInfo *slot, SECItem *keyid, CK_MECHANISM_TYPE type, SECItem *data, SECItem *result, void *cx)
+{
     SECStatus rv = SECSuccess;
-    PK11SlotInfo *slot = 0;
     PK11SymKey *key = 0;
     SECItem *params = 0;
     PK11Context *ctx = 0;
-    CK_MECHANISM_TYPE type;
     SDRResult sdrResult;
     SECItem paddedData;
     SECItem *pKeyID;
     PLArenaPool *arena = 0;
+    SECOidTag algtag;
+    PK11SlotInfo *aSlot = slot;
 
     /* Initialize */
     paddedData.len = 0;
     paddedData.data = 0;
+
+    if (type != CKM_DES3_CBC && type != CKM_AES_CBC) {
+        PORT_SetError(SEC_ERROR_INVALID_ARGS);
+        rv = SECFailure;
+        goto loser;
+    }
 
     arena = PORT_NewArena(SEC_ASN1_DEFAULT_ARENA_SIZE);
     if (!arena) {
@@ -171,14 +189,13 @@ PK11SDR_Encrypt(SECItem *keyid, SECItem *data, SECItem *result, void *cx)
      * 4. Encode the results (using ASN.1)
      */
 
-    slot = PK11_GetInternalKeySlot();
     if (!slot) {
-        rv = SECFailure;
-        goto loser;
+        slot = PK11_GetInternalKeySlot();
+        if (!slot) {
+            rv = SECFailure;
+            goto loser;
+        }
     }
-
-    /* Use triple-DES */
-    type = CKM_DES3_CBC;
 
     /*
      * Login to the internal token before we look for the key, otherwise we
@@ -191,7 +208,8 @@ PK11SDR_Encrypt(SECItem *keyid, SECItem *data, SECItem *result, void *cx)
     /* Find the key to use */
     pKeyID = keyid;
     if (pKeyID->len == 0) {
-        pKeyID = &keyIDItem; /* Use default value */
+        int keySize = PK11_GetBestKeyLength(slot, type);
+        pKeyID = &keyIDItem;
 
         /* put in a course lock to prevent a race between not finding the
          * key and creating  one.
@@ -205,7 +223,7 @@ PK11SDR_Encrypt(SECItem *keyid, SECItem *data, SECItem *result, void *cx)
 
         /* If the default key doesn't exist yet, try to create it */
         if (!key)
-            key = PK11_GenDES3TokenKey(slot, pKeyID, cx);
+            key = PK11_TokenKeyGen(slot, type, 0, keySize, pKeyID, PR_TRUE, cx);
         if (pk11sdrLock)
             PR_Unlock(pk11sdrLock);
     } else {
@@ -245,7 +263,8 @@ PK11SDR_Encrypt(SECItem *keyid, SECItem *data, SECItem *result, void *cx)
 
     sdrResult.keyid = *pKeyID;
 
-    rv = PK11_ParamToAlgid(SEC_OID_DES_EDE3_CBC, params, arena, &sdrResult.alg);
+    algtag = SECOID_FindOIDByMechanism(type)->offset;
+    rv = PK11_ParamToAlgid(algtag, params, arena, &sdrResult.alg);
     if (rv != SECSuccess)
         goto loser;
 
@@ -264,7 +283,7 @@ loser:
         SECITEM_ZfreeItem(params, PR_TRUE);
     if (key)
         PK11_FreeSymKey(key);
-    if (slot)
+    if (slot && !aSlot)
         PK11_FreeSlot(slot);
 
     return rv;
@@ -313,8 +332,8 @@ loser:
 
 /*
  * PK11SDR_Decrypt
- *  Decrypt a block of data produced by PK11SDR_Encrypt.  The key used is identified
- *  by the keyid field within the input.
+ *  Decrypt a block of data produced by PK11SDR_EncryptWithMechanism. The key
+ *  used is identified by the keyid field within the input.
  */
 SECStatus
 PK11SDR_Decrypt(SECItem *data, SECItem *result, void *cx)
@@ -327,6 +346,7 @@ PK11SDR_Decrypt(SECItem *data, SECItem *result, void *cx)
     SECItem *params = 0;
     SECItem possibleResult = { 0, NULL, 0 };
     PLArenaPool *arena = 0;
+    SECOidTag algtag;
 
     arena = PORT_NewArena(SEC_ASN1_DEFAULT_ARENA_SIZE);
     if (!arena) {
@@ -337,8 +357,17 @@ PK11SDR_Decrypt(SECItem *data, SECItem *result, void *cx)
     /* Decode the incoming data */
     memset(&sdrResult, 0, sizeof sdrResult);
     rv = SEC_QuickDERDecodeItem(arena, &sdrResult, template, data);
-    if (rv != SECSuccess)
+    if (rv != SECSuccess) {
         goto loser; /* Invalid format */
+    }
+
+    algtag = SECOID_GetAlgorithmTag(&sdrResult.alg);
+    type = PK11_AlgtagToMechanism(algtag);
+    if (type != CKM_DES3_CBC && type != CKM_AES_CBC) {
+        PORT_SetError(SEC_ERROR_INVALID_ARGS);
+        rv = SECFailure;
+        goto loser;
+    }
 
     /* Find the slot and key for the given keyid */
     slot = PK11_GetInternalKeySlot();
@@ -348,8 +377,9 @@ PK11SDR_Decrypt(SECItem *data, SECItem *result, void *cx)
     }
 
     rv = PK11_Authenticate(slot, PR_TRUE, cx);
-    if (rv != SECSuccess)
+    if (rv != SECSuccess) {
         goto loser;
+    }
 
     /* Get the parameter values from the data */
     params = PK11_ParamFromAlgid(&sdrResult.alg);
@@ -358,8 +388,6 @@ PK11SDR_Decrypt(SECItem *data, SECItem *result, void *cx)
         goto loser;
     }
 
-    /* Use triple-DES (Should look up the algorithm) */
-    type = CKM_DES3_CBC;
     key = PK11_FindFixedKey(slot, type, &sdrResult.keyid, cx);
     if (!key) {
         rv = SECFailure;
@@ -388,6 +416,10 @@ PK11SDR_Decrypt(SECItem *data, SECItem *result, void *cx)
 
         for (testKey = keyList; testKey;
              testKey = PK11_GetNextSymKey(testKey)) {
+            if (PK11_GetSymKeyType(testKey) != PK11_GetKeyType(type, 0)) {
+                continue;
+            }
+
             rv = pk11Decrypt(slot, arena, type, testKey, params,
                              &sdrResult.data, result);
             if (rv == SECSuccess) {

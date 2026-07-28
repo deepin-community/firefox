@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,20 +5,21 @@
 #ifndef mozilla_dom_PerformanceTiming_h
 #define mozilla_dom_PerformanceTiming_h
 
-#include "mozilla/Attributes.h"
-#include "mozilla/BasePrincipal.h"
-#include "mozilla/StaticPrefs_dom.h"
-#include "nsContentUtils.h"
-#include "nsDOMNavigationTiming.h"
-#include "nsRFPService.h"
-#include "nsWrapperCache.h"
+#include "CacheablePerformanceTimingData.h"
 #include "Performance.h"
-#include "nsITimedChannel.h"
-#include "mozilla/dom/PerformanceTimingTypes.h"
-#include "mozilla/ipc/IPDLParamTraits.h"
+#include "ipc/EnumSerializer.h"
 #include "ipc/IPCMessageUtils.h"
 #include "ipc/IPCMessageUtilsSpecializations.h"
+#include "mozilla/BasePrincipal.h"
+#include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/dom/PerformanceResourceTimingBinding.h"
+#include "mozilla/dom/PerformanceTimingTypes.h"
 #include "mozilla/net/nsServerTiming.h"
+#include "nsContentUtils.h"
+#include "nsDOMNavigationTiming.h"
+#include "nsITimedChannel.h"
+#include "nsRFPService.h"
+#include "nsWrapperCache.h"
 
 class nsIHttpChannel;
 
@@ -29,10 +28,14 @@ namespace mozilla::dom {
 class PerformanceTiming;
 enum class RenderBlockingStatusType : uint8_t;
 
-class PerformanceTimingData final {
+class PerformanceTimingData final : public CacheablePerformanceTimingData {
   friend class PerformanceTiming;
-  friend struct mozilla::ipc::IPDLParamTraits<
-      mozilla::dom::PerformanceTimingData>;
+  friend struct IPC::ParamTraits<mozilla::dom::PerformanceTimingData>;
+
+  // https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-transfersize
+  // The transferSize getter steps are to perform the following steps:
+  //   1. If this's cache mode is "local", then return 0.
+  static constexpr uint64_t kLocalCacheTransferSize = 0;
 
  public:
   PerformanceTimingData() = default;  // For deserialization
@@ -46,6 +49,18 @@ class PerformanceTimingData final {
   PerformanceTimingData(nsITimedChannel* aChannel, nsIHttpChannel* aHttpChannel,
                         DOMHighResTimeStamp aZeroTime);
 
+  static PerformanceTimingData* Create(
+      const CacheablePerformanceTimingData& aCachedData,
+      DOMHighResTimeStamp aZeroTime, TimeStamp aStartTime, TimeStamp aEndTime,
+      RenderBlockingStatusType aRenderBlockingStatus);
+
+ private:
+  PerformanceTimingData(const CacheablePerformanceTimingData& aCachedData,
+                        DOMHighResTimeStamp aZeroTime, TimeStamp aStartTime,
+                        TimeStamp aEndTime,
+                        RenderBlockingStatusType aRenderBlockingStatus);
+
+ public:
   explicit PerformanceTimingData(const IPCPerformanceTimingData& aIPCData);
 
   IPCPerformanceTimingData ToIPC();
@@ -53,19 +68,11 @@ class PerformanceTimingData final {
   void SetPropertiesFromHttpChannel(nsIHttpChannel* aHttpChannel,
                                     nsITimedChannel* aChannel);
 
-  bool IsInitialized() const { return mInitialized; }
+ private:
+  void SetTransferSizeFromHttpChannel(nsIHttpChannel* aHttpChannel);
 
-  const nsString& NextHopProtocol() const { return mNextHopProtocol; }
-
+ public:
   uint64_t TransferSize() const { return mTransferSize; }
-
-  uint64_t EncodedBodySize() const { return mEncodedBodySize; }
-
-  uint64_t DecodedBodySize() const { return mDecodedBodySize; }
-
-  uint16_t ResponseStatus() const { return mResponseStatus; }
-
-  const nsString& ContentType() const { return mContentType; }
 
   /**
    * @param   aStamp
@@ -144,14 +151,13 @@ class PerformanceTimingData final {
   DOMHighResTimeStamp ConnectEndHighRes(Performance* aPerformance);
   DOMHighResTimeStamp RequestStartHighRes(Performance* aPerformance);
   DOMHighResTimeStamp ResponseStartHighRes(Performance* aPerformance);
+  DOMHighResTimeStamp FirstInterimResponseStartHighRes(
+      Performance* aPerformance);
+  DOMHighResTimeStamp FinalResponseHeadersStartHighRes(
+      Performance* aPerformance);
   DOMHighResTimeStamp ResponseEndHighRes(Performance* aPerformance);
 
   DOMHighResTimeStamp ZeroTime() const { return mZeroTime; }
-
-  uint8_t RedirectCountReal() const { return mRedirectCount; }
-  uint8_t GetRedirectCount() const;
-
-  bool AllRedirectsSameOrigin() const { return mAllRedirectsSameOrigin; }
 
   // If this is false the values of redirectStart/End will be 0 This is false if
   // no redirects occured, or if any of the responses failed the
@@ -163,36 +169,11 @@ class PerformanceTimingData final {
   bool ShouldReportCrossOriginRedirect(
       bool aEnsureSameOriginAndIgnoreTAO) const;
 
-  // Cached result of CheckBodyInfoAccessAllowedForOrigin.
-  nsITimedChannel::BodyInfoAccess BodyInfoAccessAllowed() const {
-    return mBodyInfoAccessAllowed;
-  }
-
-  // Cached result of CheckTimingAllowedForOrigin. If false, security sensitive
-  // attributes of the resourceTiming object will be set to 0
-  bool TimingAllowed() const { return mTimingAllowed; }
-
-  nsTArray<nsCOMPtr<nsIServerTiming>> GetServerTiming();
-
   RenderBlockingStatusType RenderBlockingStatus() const {
     return mRenderBlockingStatus;
   }
 
  private:
-  // Checks if the bodyInfo for Resource and Navigation Timing should be
-  // kept opaque or exposed, per Fetch spec.
-  nsITimedChannel::BodyInfoAccess CheckBodyInfoAccessAllowedForOrigin(
-      nsIHttpChannel* aResourceChannel, nsITimedChannel* aChannel);
-
-  // Checks if the resource is either same origin as the page that started
-  // the load, or if the response contains the Timing-Allow-Origin header
-  // with a value of * or matching the domain of the loading Principal
-  bool CheckTimingAllowedForOrigin(nsIHttpChannel* aResourceChannel,
-                                   nsITimedChannel* aChannel);
-
-  nsTArray<nsCOMPtr<nsIServerTiming>> mServerTiming;
-  nsString mNextHopProtocol;
-
   TimeStamp mAsyncOpen;
   TimeStamp mRedirectStart;
   TimeStamp mRedirectEnd;
@@ -203,6 +184,8 @@ class PerformanceTimingData final {
   TimeStamp mConnectEnd;
   TimeStamp mRequestStart;
   TimeStamp mResponseStart;
+  TimeStamp mFirstInterimResponseStart;
+  TimeStamp mFinalResponseHeadersStart;
   TimeStamp mCacheReadStart;
   TimeStamp mResponseEnd;
   TimeStamp mCacheReadEnd;
@@ -220,30 +203,10 @@ class PerformanceTimingData final {
 
   DOMHighResTimeStamp mFetchStart = 0;
 
-  uint64_t mEncodedBodySize = 0;
   uint64_t mTransferSize = 0;
-  uint64_t mDecodedBodySize = 0;
 
-  uint16_t mResponseStatus = 0;
-
-  uint8_t mRedirectCount = 0;
-
-  RenderBlockingStatusType mRenderBlockingStatus;
-
-  nsString mContentType;
-
-  bool mAllRedirectsSameOrigin = false;
-
-  bool mAllRedirectsPassTAO = false;
-
-  bool mSecureConnection = false;
-
-  nsITimedChannel::BodyInfoAccess mBodyInfoAccessAllowed =
-      nsITimedChannel::BodyInfoAccess::DISALLOWED;
-
-  bool mTimingAllowed = false;
-
-  bool mInitialized = false;
+  RenderBlockingStatusType mRenderBlockingStatus =
+      RenderBlockingStatusType::Non_blocking;
 };
 
 // Script "performance.timing" object
@@ -438,176 +401,116 @@ class PerformanceTiming final : public nsWrapperCache {
 
 }  // namespace mozilla::dom
 
-namespace mozilla::ipc {
+namespace IPC {
 
 template <>
-struct IPDLParamTraits<mozilla::dom::PerformanceTimingData> {
+struct ParamTraits<mozilla::dom::RenderBlockingStatusType>
+    : public ContiguousEnumSerializerInclusive<
+          mozilla::dom::RenderBlockingStatusType,
+          mozilla::dom::RenderBlockingStatusType::Blocking,
+          mozilla::dom::RenderBlockingStatusType::Non_blocking> {};
+
+template <>
+struct ParamTraits<mozilla::dom::PerformanceTimingData> {
   using paramType = mozilla::dom::PerformanceTimingData;
-  static void Write(IPC::MessageWriter* aWriter, IProtocol* aActor,
-                    const paramType& aParam) {
-    WriteIPDLParam(aWriter, aActor, aParam.mServerTiming);
-    WriteIPDLParam(aWriter, aActor, aParam.mNextHopProtocol);
-    WriteIPDLParam(aWriter, aActor, aParam.mAsyncOpen);
-    WriteIPDLParam(aWriter, aActor, aParam.mRedirectStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mRedirectEnd);
-    WriteIPDLParam(aWriter, aActor, aParam.mDomainLookupStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mDomainLookupEnd);
-    WriteIPDLParam(aWriter, aActor, aParam.mConnectStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mSecureConnectionStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mConnectEnd);
-    WriteIPDLParam(aWriter, aActor, aParam.mRequestStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mResponseStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mCacheReadStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mResponseEnd);
-    WriteIPDLParam(aWriter, aActor, aParam.mCacheReadEnd);
-    WriteIPDLParam(aWriter, aActor, aParam.mWorkerStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mWorkerRequestStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mWorkerResponseEnd);
-    WriteIPDLParam(aWriter, aActor, aParam.mZeroTime);
-    WriteIPDLParam(aWriter, aActor, aParam.mFetchStart);
-    WriteIPDLParam(aWriter, aActor, aParam.mEncodedBodySize);
-    WriteIPDLParam(aWriter, aActor, aParam.mTransferSize);
-    WriteIPDLParam(aWriter, aActor, aParam.mDecodedBodySize);
-    WriteIPDLParam(aWriter, aActor, aParam.mResponseStatus);
-    WriteIPDLParam(aWriter, aActor, aParam.mRedirectCount);
-    WriteIPDLParam(aWriter, aActor, aParam.mContentType);
-    WriteIPDLParam(aWriter, aActor, aParam.mAllRedirectsSameOrigin);
-    WriteIPDLParam(aWriter, aActor, aParam.mAllRedirectsPassTAO);
-    WriteIPDLParam(aWriter, aActor, aParam.mSecureConnection);
-    WriteIPDLParam(aWriter, aActor, aParam.mBodyInfoAccessAllowed);
-    WriteIPDLParam(aWriter, aActor, aParam.mTimingAllowed);
-    WriteIPDLParam(aWriter, aActor, aParam.mInitialized);
+  static void Write(IPC::MessageWriter* aWriter, const paramType& aParam) {
+    WriteParam(aWriter, aParam.mServerTiming);
+    WriteParam(aWriter, aParam.mNextHopProtocol);
+    WriteParam(aWriter, aParam.mAsyncOpen);
+    WriteParam(aWriter, aParam.mRedirectStart);
+    WriteParam(aWriter, aParam.mRedirectEnd);
+    WriteParam(aWriter, aParam.mDomainLookupStart);
+    WriteParam(aWriter, aParam.mDomainLookupEnd);
+    WriteParam(aWriter, aParam.mConnectStart);
+    WriteParam(aWriter, aParam.mSecureConnectionStart);
+    WriteParam(aWriter, aParam.mConnectEnd);
+    WriteParam(aWriter, aParam.mRequestStart);
+    WriteParam(aWriter, aParam.mResponseStart);
+    WriteParam(aWriter, aParam.mFirstInterimResponseStart);
+    WriteParam(aWriter, aParam.mFinalResponseHeadersStart);
+    WriteParam(aWriter, aParam.mCacheReadStart);
+    WriteParam(aWriter, aParam.mResponseEnd);
+    WriteParam(aWriter, aParam.mCacheReadEnd);
+    WriteParam(aWriter, aParam.mWorkerStart);
+    WriteParam(aWriter, aParam.mWorkerRequestStart);
+    WriteParam(aWriter, aParam.mWorkerResponseEnd);
+    WriteParam(aWriter, aParam.mZeroTime);
+    WriteParam(aWriter, aParam.mFetchStart);
+    WriteParam(aWriter, aParam.mEncodedBodySize);
+    WriteParam(aWriter, aParam.mTransferSize);
+    WriteParam(aWriter, aParam.mDecodedBodySize);
+    WriteParam(aWriter, aParam.mResponseStatus);
+    WriteParam(aWriter, aParam.mRedirectCount);
+    WriteParam(aWriter, aParam.mContentType);
+    WriteParam(aWriter, aParam.mAllRedirectsSameOrigin);
+    WriteParam(aWriter, aParam.mAllRedirectsPassTAO);
+    WriteParam(aWriter, aParam.mSecureConnection);
+    WriteParam(aWriter, aParam.mBodyInfoAccessAllowed);
+    WriteParam(aWriter, aParam.mTimingAllowed);
+    WriteParam(aWriter, aParam.mInitialized);
+    WriteParam(aWriter, aParam.mRenderBlockingStatus);
   }
 
-  static bool Read(IPC::MessageReader* aReader, IProtocol* aActor,
-                   paramType* aResult) {
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mServerTiming)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mNextHopProtocol)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mAsyncOpen)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mRedirectStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mRedirectEnd)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mDomainLookupStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mDomainLookupEnd)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mConnectStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mSecureConnectionStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mConnectEnd)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mRequestStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mResponseStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mCacheReadStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mResponseEnd)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mCacheReadEnd)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mWorkerStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mWorkerRequestStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mWorkerResponseEnd)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mZeroTime)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mFetchStart)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mEncodedBodySize)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mTransferSize)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mDecodedBodySize)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mResponseStatus)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mRedirectCount)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mContentType)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mAllRedirectsSameOrigin)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mAllRedirectsPassTAO)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mSecureConnection)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mBodyInfoAccessAllowed)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mTimingAllowed)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &aResult->mInitialized)) {
-      return false;
-    }
-    return true;
+  static bool Read(IPC::MessageReader* aReader, paramType* aResult) {
+    return ReadParam(aReader, &aResult->mServerTiming) &&
+           ReadParam(aReader, &aResult->mNextHopProtocol) &&
+           ReadParam(aReader, &aResult->mAsyncOpen) &&
+           ReadParam(aReader, &aResult->mRedirectStart) &&
+           ReadParam(aReader, &aResult->mRedirectEnd) &&
+           ReadParam(aReader, &aResult->mDomainLookupStart) &&
+           ReadParam(aReader, &aResult->mDomainLookupEnd) &&
+           ReadParam(aReader, &aResult->mConnectStart) &&
+           ReadParam(aReader, &aResult->mSecureConnectionStart) &&
+           ReadParam(aReader, &aResult->mConnectEnd) &&
+           ReadParam(aReader, &aResult->mRequestStart) &&
+           ReadParam(aReader, &aResult->mResponseStart) &&
+           ReadParam(aReader, &aResult->mFirstInterimResponseStart) &&
+           ReadParam(aReader, &aResult->mFinalResponseHeadersStart) &&
+           ReadParam(aReader, &aResult->mCacheReadStart) &&
+           ReadParam(aReader, &aResult->mResponseEnd) &&
+           ReadParam(aReader, &aResult->mCacheReadEnd) &&
+           ReadParam(aReader, &aResult->mWorkerStart) &&
+           ReadParam(aReader, &aResult->mWorkerRequestStart) &&
+           ReadParam(aReader, &aResult->mWorkerResponseEnd) &&
+           ReadParam(aReader, &aResult->mZeroTime) &&
+           ReadParam(aReader, &aResult->mFetchStart) &&
+           ReadParam(aReader, &aResult->mEncodedBodySize) &&
+           ReadParam(aReader, &aResult->mTransferSize) &&
+           ReadParam(aReader, &aResult->mDecodedBodySize) &&
+           ReadParam(aReader, &aResult->mResponseStatus) &&
+           ReadParam(aReader, &aResult->mRedirectCount) &&
+           ReadParam(aReader, &aResult->mContentType) &&
+           ReadParam(aReader, &aResult->mAllRedirectsSameOrigin) &&
+           ReadParam(aReader, &aResult->mAllRedirectsPassTAO) &&
+           ReadParam(aReader, &aResult->mSecureConnection) &&
+           ReadParam(aReader, &aResult->mBodyInfoAccessAllowed) &&
+           ReadParam(aReader, &aResult->mTimingAllowed) &&
+           ReadParam(aReader, &aResult->mInitialized) &&
+           ReadParam(aReader, &aResult->mRenderBlockingStatus);
   }
 };
 
 template <>
-struct IPDLParamTraits<nsIServerTiming*> {
-  static void Write(IPC::MessageWriter* aWriter, IProtocol* aActor,
-                    nsIServerTiming* aParam) {
+struct ParamTraits<nsIServerTiming*> {
+  static void Write(IPC::MessageWriter* aWriter, nsIServerTiming* aParam) {
     nsAutoCString name;
-    Unused << aParam->GetName(name);
+    (void)aParam->GetName(name);
     double duration = 0;
-    Unused << aParam->GetDuration(&duration);
+    (void)aParam->GetDuration(&duration);
     nsAutoCString description;
-    Unused << aParam->GetDescription(description);
-    WriteIPDLParam(aWriter, aActor, name);
-    WriteIPDLParam(aWriter, aActor, duration);
-    WriteIPDLParam(aWriter, aActor, description);
+    (void)aParam->GetDescription(description);
+    WriteParam(aWriter, name);
+    WriteParam(aWriter, duration);
+    WriteParam(aWriter, description);
   }
 
-  static bool Read(IPC::MessageReader* aReader, IProtocol* aActor,
+  static bool Read(IPC::MessageReader* aReader,
                    RefPtr<nsIServerTiming>* aResult) {
     nsAutoCString name;
     double duration;
     nsAutoCString description;
-    if (!ReadIPDLParam(aReader, aActor, &name)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &duration)) {
-      return false;
-    }
-    if (!ReadIPDLParam(aReader, aActor, &description)) {
+    if (!ReadParam(aReader, &name) || !ReadParam(aReader, &duration) ||
+        !ReadParam(aReader, &description)) {
       return false;
     }
 
@@ -620,6 +523,6 @@ struct IPDLParamTraits<nsIServerTiming*> {
   }
 };
 
-}  // namespace mozilla::ipc
+}  // namespace IPC
 
 #endif  // mozilla_dom_PerformanceTiming_h

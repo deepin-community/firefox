@@ -28,10 +28,10 @@ corresponding with "on" and "off" states.
 ## Code
 
 The source for `moz-toggle` can be found under
-[toolkit/content/widgets/moz-toggle](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/moz-toggle/moz-toggle.mjs).
+[toolkit/content/widgets/moz-toggle](https://searchfox.org/firefox-main/source/toolkit/content/widgets/moz-toggle/moz-toggle.mjs).
 You can find an examples of `moz-toggle` in use in the Firefox codebase in both
-[about:preferences](https://searchfox.org/mozilla-central/source/browser/components/preferences/privacy.inc.xhtml#696)
-and [about:addons](https://searchfox.org/mozilla-central/source/toolkit/mozapps/extensions/content/aboutaddons.html#182).
+[about:preferences](https://searchfox.org/firefox-main/source/browser/components/preferences/privacy.inc.xhtml#696)
+and [about:addons](https://searchfox.org/firefox-main/source/toolkit/mozapps/extensions/content/aboutaddons.html#182).
 
 `moz-toggle` can be imported into `.html`/`.xhtml` files:
 
@@ -77,4 +77,33 @@ You do not have to specify `data-l10n-attrs` if you're only using an `aria-label
 ```
 with-aria-label-only =
   .aria-label = aria-label text goes here
+```
+
+### Nested fields
+
+`moz-toggle` supports nested or dependent fields via a `nested` named slot.
+These fields will be rendered below the toggle element, and will be indented to
+visually indicate dependence. Any nested fields will mirror the `disabled` state
+of the toggle and will also become `disabled` whenever the toggle is not `pressed`.
+
+When nesting fields it's important to wrap the elements in a `moz-fieldset` to
+indicate to assistive technologies that the fields are related, and to provide a
+label for the group of controls:
+
+```html
+<moz-fieldset label="Label for the group">
+  <moz-toggle label="Parent toggle" pressed>
+    <moz-checkbox slot="nested" label="Nested checkbox one" value="one"></moz-checkbox>
+    <moz-checkbox slot="nested" label="Nested checkbox two" value="two" checked></moz-checkbox>
+  </moz-toggle>
+</moz-fieldset>
+```
+
+```html story
+<moz-fieldset label="Label for the group">
+  <moz-toggle label="Parent toggle" pressed>
+    <moz-checkbox slot="nested" label="Nested checkbox one" value="one"></moz-checkbox>
+    <moz-checkbox slot="nested" label="Nested checkbox two" value="two" checked></moz-checkbox>
+  </moz-toggle>
+</moz-fieldset>
 ```

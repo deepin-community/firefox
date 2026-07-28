@@ -19,6 +19,11 @@
 
 menu-application-preferences =
     .label = 設定
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = 設定...
+menu-application-set-as-default =
+    .label = { -brand-shorter-name } を既定のブラウザーに設定する
 menu-application-services =
     .label = サービス
 menu-application-hide-this =
@@ -80,7 +85,7 @@ menu-file-open-file =
 #  $tabCount (Number): the number of tabs that are affected by the action.
 menu-file-close-tab =
     .label =
-        { NUMBER($tabCount) ->
+        { $tabCount ->
             [1] タブを閉じる
            *[other] { $tabCount } 個のタブを閉じる
         }
@@ -97,6 +102,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = 共有
     .accesskey = h
+menu-file-share-qrcode =
+    .label = QR コードを生成...
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = QR コードを生成
+    .accesskey = Q
 menu-file-print-setup =
     .label = ページ設定...
     .accesskey = u
@@ -144,9 +155,7 @@ menu-view-bookmarks =
 menu-view-history-button =
     .label = 履歴
 menu-view-synced-tabs-sidebar =
-    .label = 同期タブ
-menu-view-megalist-sidebar =
-    .label = パスワード
+    .label = 同期したタブ
 menu-view-full-zoom =
     .label = ズーム
     .accesskey = Z
@@ -239,20 +248,36 @@ menu-bookmarks-menu =
 menu-bookmarks-manage =
     .label = ブックマークを管理
 menu-bookmark-tab =
-    .label = 現在のタブをブックマーク...
+    .label = 現在のタブをブックマークに追加...
 menu-edit-bookmark =
     .label = このブックマークを編集...
 # "Search" is a verb, as in "Search in bookmarks"
 menu-bookmarks-search =
     .label = ブックマークを検索
 menu-bookmarks-all-tabs =
-    .label = すべてのタブをブックマーク...
+    .label = すべてのタブをブックマークに追加...
 menu-bookmarks-toolbar =
     .label = ブックマークツールバー
 menu-bookmarks-other =
     .label = 他のブックマーク
 menu-bookmarks-mobile =
     .label = モバイルのブックマーク
+
+## Profiles Menu
+
+menu-profiles =
+    .label = プロファイル
+menu-profiles-manage-profiles =
+    .label = プロファイルを管理
+menu-profiles-new-profile =
+    .label = 新しいプロファイル
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (使用中)
+menu-profiles-menu =
+    .label = プロファイル
+    .accesskey = P
 
 ## Tools Menu
 
@@ -262,6 +287,9 @@ menu-tools =
 menu-tools-downloads =
     .label = ダウンロード
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = 拡張機能とテーマ
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = アドオンとテーマ
     .accesskey = A

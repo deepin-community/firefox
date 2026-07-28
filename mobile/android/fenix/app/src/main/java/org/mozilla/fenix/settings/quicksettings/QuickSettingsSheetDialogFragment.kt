@@ -16,6 +16,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.plus
@@ -84,6 +85,7 @@ class QuickSettingsSheetDialogFragment : FenixDialogFragment() {
             context = context,
             websiteUrl = args.url,
             websiteTitle = args.title,
+            isLocalPdf = args.isLocalPdf,
             isSecured = args.isSecured,
             permissions = args.sitePermissions,
             settings = components.settings,
@@ -137,7 +139,7 @@ class QuickSettingsSheetDialogFragment : FenixDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        observeTrackersChange(requireComponents.core.store)
+        observeTrackersChange(requireComponents.core.store, Dispatchers.Main)
         consumeFrom(quickSettingsStore) {
             websiteInfoView.update(it.webInfoState)
             websitePermissionsView.update(it.websitePermissionsState)
@@ -152,6 +154,7 @@ class QuickSettingsSheetDialogFragment : FenixDialogFragment() {
         _binding = null
     }
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -196,8 +199,8 @@ class QuickSettingsSheetDialogFragment : FenixDialogFragment() {
     internal fun provideTabId(): String = args.sessionId
 
     @VisibleForTesting
-    internal fun observeTrackersChange(store: BrowserStore) {
-        consumeFlow(store) { flow ->
+    internal fun observeTrackersChange(store: BrowserStore, mainDispatcher: CoroutineDispatcher) {
+        consumeFlow(store, mainDispatcher = mainDispatcher) { flow ->
             flow.mapNotNull { state ->
                 state.findTabOrCustomTab(provideTabId())
             }.ifAnyChanged { tab ->

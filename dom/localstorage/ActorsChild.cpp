@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,10 +10,11 @@
 #include "LSSnapshot.h"
 #include "LocalStorageCommon.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/Result.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/LSValue.h"
 #include "mozilla/dom/Storage.h"
 #include "mozilla/dom/quota/QuotaCommon.h"
+#include "mozilla/dom/quota/ThreadUtils.h"
 #include "mozilla/ipc/BackgroundUtils.h"
 #include "nsCOMPtr.h"
 
@@ -38,14 +37,14 @@ LSDatabaseChild::~LSDatabaseChild() {
   MOZ_COUNT_DTOR(LSDatabaseChild);
 }
 
-void LSDatabaseChild::SendDeleteMeInternal() {
+void LSDatabaseChild::Shutdown() {
   AssertIsOnOwningThread();
 
   if (mDatabase) {
     mDatabase->ClearActor();
     mDatabase = nullptr;
 
-    MOZ_ALWAYS_TRUE(PBackgroundLSDatabaseChild::SendDeleteMe());
+    Close();
   }
 }
 
@@ -197,11 +196,11 @@ void LSRequestChild::ActorDestroy(ActorDestroyReason aWhy) {
 }
 
 mozilla::ipc::IPCResult LSRequestChild::Recv__delete__(
-    const LSRequestResponse& aResponse) {
+    LSRequestResponse&& aResponse) {
   AssertIsOnOwningThread();
   MOZ_ASSERT(mCallback);
 
-  mCallback->OnResponse(aResponse);
+  mCallback->OnResponse(std::move(aResponse));
 
   mCallback = nullptr;
 
@@ -212,6 +211,9 @@ mozilla::ipc::IPCResult LSRequestChild::RecvReady() {
   AssertIsOnOwningThread();
 
   mFinishing = true;
+
+  quota::SleepIfEnabled(
+      StaticPrefs::dom_storage_requestFinalization_pauseOnDOMFileThreadMs());
 
   // We only expect this to return false if the channel has been closed, but
   // PBackground's channel never gets shutdown.

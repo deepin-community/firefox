@@ -7,14 +7,14 @@ const testState = {
     {
       tabs: [
         { entries: [{ url: "about:blank", triggeringPrincipal_base64 }] },
-        { entries: [{ url: "about:rights", triggeringPrincipal_base64 }] },
+        { entries: [{ url: "about:policies", triggeringPrincipal_base64 }] },
       ],
     },
   ],
 };
 
 function test() {
-  /** Test for Bug 615394 - Session Restore should notify when it is beginning and ending a restore **/
+  /** Test for Bug 615394 - Session Restore should notify when it is beginning and ending a restore */
   waitForExplicitFinish();
 
   waitForBrowserState(testState, test_setTabState);

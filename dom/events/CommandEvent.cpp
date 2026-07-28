@@ -1,14 +1,55 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/CommandEvent.h"
+
 #include "mozilla/MiscEvents.h"
+#include "mozilla/StaticPrefs_dom.h"
+#include "nsContentUtils.h"
 #include "prtime.h"
 
 namespace mozilla::dom {
+
+NS_IMPL_CYCLE_COLLECTION_CLASS(CommandEvent)
+
+NS_IMPL_ADDREF_INHERITED(CommandEvent, Event)
+NS_IMPL_RELEASE_INHERITED(CommandEvent, Event)
+
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(CommandEvent, Event)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mSource)
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
+
+NS_IMPL_CYCLE_COLLECTION_TRACE_BEGIN_INHERITED(CommandEvent, Event)
+NS_IMPL_CYCLE_COLLECTION_TRACE_END
+
+NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(CommandEvent, Event)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mSource)
+NS_IMPL_CYCLE_COLLECTION_UNLINK_END
+
+NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(CommandEvent)
+NS_INTERFACE_MAP_END_INHERITING(Event)
+
+already_AddRefed<CommandEvent> CommandEvent::Constructor(
+    const GlobalObject& aGlobal, const nsAString& aType,
+    const CommandEventInit& aEventInitDict) {
+  nsCOMPtr<mozilla::dom::EventTarget> owner =
+      do_QueryInterface(aGlobal.GetAsSupports());
+  return Constructor(owner, aType, aEventInitDict);
+}
+
+already_AddRefed<CommandEvent> CommandEvent::Constructor(
+    mozilla::dom::EventTarget* aOwner, const nsAString& aType,
+    const CommandEventInit& aEventInitDict) {
+  RefPtr<CommandEvent> e = new CommandEvent(aOwner, nullptr, nullptr);
+  bool trusted = e->Init(aOwner);
+  e->InitEvent(aType, aEventInitDict.mBubbles, aEventInitDict.mCancelable);
+  e->mEvent->AsCommandEvent()->mCommand = NS_Atomize(aEventInitDict.mCommand);
+  e->mSource = aEventInitDict.mSource;
+  e->SetTrusted(trusted);
+  e->SetComposed(aEventInitDict.mComposed);
+  return e.forget();
+}
 
 CommandEvent::CommandEvent(EventTarget* aOwner, nsPresContext* aPresContext,
                            WidgetCommandEvent* aEvent)
@@ -20,13 +61,20 @@ CommandEvent::CommandEvent(EventTarget* aOwner, nsPresContext* aPresContext,
   }
 }
 
-void CommandEvent::GetCommand(nsAString& aCommand) {
+void CommandEvent::GetCommand(nsAString& aCommand) const {
   nsAtom* command = mEvent->AsCommandEvent()->mCommand;
   if (command) {
     command->ToString(aCommand);
   } else {
     aCommand.Truncate();
   }
+}
+
+Element* CommandEvent::GetSource() {
+  EventTarget* currentTarget = GetCurrentTarget();
+  nsINode* retargeted = nsContentUtils::Retarget(
+      mSource, currentTarget ? currentTarget->GetAsNode() : nullptr);
+  return retargeted ? retargeted->AsElement() : nullptr;
 }
 
 }  // namespace mozilla::dom

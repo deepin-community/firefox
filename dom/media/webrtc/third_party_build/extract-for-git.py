@@ -7,11 +7,19 @@ import re
 import subprocess
 import sys
 
+from run_operations import (
+    RepoType,
+    detect_repo_type,
+    run_git,
+)
+
 # This script extracts commits that touch third party webrtc code so they can
 # be imported into Git. It filters out commits that are not part of upstream
 # code and rewrites the paths to match upstream. Finally, the commits are
 # combined into a mailbox file that can be applied with `git am`.
 LIBWEBRTC_DIR = "third_party/libwebrtc"
+
+repo_type = detect_repo_type()
 
 
 def build_commit_list(revset, env):
@@ -21,11 +29,22 @@ def build_commit_list(revset, env):
     e.g. 8c08a5bb8a99::52bb9bb94661, or any other valid revset
     (check hg help revset). Only commits that touch libwebrtc are included.
     """
+    if repo_type == RepoType.GIT:
+        if ".." not in revset and "^" not in revset:
+            # Single commit shas in git need to be converted to a range
+            # otherwise git log will return all the commits from the
+            # given sha back in history.
+            revset = f"{revset}^..{revset}"
+        cmd = f"git log --reverse --oneline --format=%h -r {revset} ."
+        commits = run_git(cmd, LIBWEBRTC_DIR)
+        return commits
+
     res = subprocess.run(
         ["hg", "log", "-r", revset, "-M", "--template", "{node}\n", LIBWEBRTC_DIR],
         capture_output=True,
         text=True,
         env=env,
+        check=False,
     )
     # return empty list instead of a list with one empty element if no
     # libwebrtc changing commits are found in the given range
@@ -34,32 +53,71 @@ def build_commit_list(revset, env):
     return [line.strip() for line in res.stdout.strip().split("\n")]
 
 
-def extract_author_date(sha1, env):
+def extract_git_author_date(sha1, env):
+    res = subprocess.run(
+        ["git", "show", "--no-patch", "--format=%aN <%aE>|%ai", sha1],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    # we don't want a line break at the end of date, rstrip() before split
+    return res.stdout.rstrip().split("|")
+
+
+def extract_hg_author_date(sha1, env):
     res = subprocess.run(
         ["hg", "log", "-r", sha1, "--template", "{author}|{date|isodate}"],
         capture_output=True,
         text=True,
         env=env,
+        check=False,
     )
     return res.stdout.split("|")
 
 
-def extract_description(sha1, env):
+def extract_git_description(sha1, env):
+    res = subprocess.run(
+        ["git", "show", "--no-patch", "--format=%B", sha1],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    return res.stdout.rstrip()
+
+
+def extract_hg_description(sha1, env):
     res = subprocess.run(
         ["hg", "log", "-r", sha1, "--template", "{desc}"],
         capture_output=True,
         text=True,
         env=env,
+        check=False,
     )
     return res.stdout
 
 
-def extract_commit(sha1, env):
+def extract_git_commit(sha1, env):
+    # an empty format string just gives us the raw diffs, cutting out all
+    # the header info like author, date, etc.
+    res = subprocess.run(
+        ["git", "show", "--format=", sha1],
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    return "\n" + res.stdout
+
+
+def extract_hg_commit(sha1, env):
     res = subprocess.run(
         ["hg", "log", "-r", sha1, "-pg", "--template", "\n"],
         capture_output=True,
         text=True,
         env=env,
+        check=False,
     )
     return res.stdout
 
@@ -73,7 +131,6 @@ def filter_nonwebrtc(commit):
         # moz.build files which are code generated.
         if (
             line.startswith("diff --git a/" + LIBWEBRTC_DIR)
-            and not line.startswith("diff --git a/" + LIBWEBRTC_DIR + "/build/")
             and not line.startswith("diff --git a/" + LIBWEBRTC_DIR + "/third_party/")
             and not line.startswith("diff --git a/" + LIBWEBRTC_DIR + "/README.moz")
             and not line.startswith(
@@ -90,26 +147,24 @@ def filter_nonwebrtc(commit):
     return "\n".join(filtered)
 
 
-def fixup_paths(commit):
+def fixup_paths(commit, search_path):
     # make sure we only rewrite paths in the diff-related or rename lines
     commit = re.sub(
-        f"^rename (from|to) {LIBWEBRTC_DIR}/", "rename \\1 ", commit, flags=re.MULTILINE
+        f"^rename (from|to) {search_path}/", "rename \\1 ", commit, flags=re.MULTILINE
     )
-    return re.sub(f"( [ab])/{LIBWEBRTC_DIR}/", "\\1/", commit)
+    return re.sub(f"( [ab])/{search_path}/", "\\1/", commit)
 
 
 def write_as_mbox(sha1, author, date, description, commit, ofile):
     # Use same magic date as git format-patch
-    ofile.write("From {} Mon Sep 17 00:00:00 2001\n".format(sha1))
-    ofile.write("From: {}\n".format(author))
-    ofile.write("Date: {}\n".format(date))
+    ofile.write(f"From {sha1} Mon Sep 17 00:00:00 2001\n")
+    ofile.write(f"From: {author}\n")
+    ofile.write(f"Date: {date}\n")
     description = description.split("\n")
-    ofile.write("Subject: {}\n".format(description[0]))
+    ofile.write(f"Subject: {description[0]}\n")
     ofile.write("\n".join(description[1:]))
     ofile.write(
-        "\nMercurial Revision: https://hg.mozilla.org/mozilla-central/rev/{}\n".format(
-            sha1
-        )
+        f"\nMercurial Revision: https://hg.mozilla.org/mozilla-central/rev/{sha1}\n"
     )
     ofile.write(commit)
     ofile.write("\n")
@@ -117,6 +172,11 @@ def write_as_mbox(sha1, author, date, description, commit, ofile):
 
 
 if __name__ == "__main__":
+    # first, check which repo we're in, git or hg
+    if repo_type is None or not isinstance(repo_type, RepoType):
+        print("Unable to detect repo (git or hg)")
+        sys.exit(1)
+
     commits = []
     parser = argparse.ArgumentParser(
         description="Format commits for upstream libwebrtc"
@@ -125,11 +185,17 @@ if __name__ == "__main__":
         "revsets", metavar="revset", type=str, nargs="+", help="A revset to process"
     )
     parser.add_argument(
-        "--target", choices=("libwebrtc", "build", "third_party"), default="libwebrtc"
+        "--target",
+        choices=("libwebrtc", "build", "third_party", "abseil-cpp"),
+        default="libwebrtc",
     )
     args = parser.parse_args()
 
-    if args.target != "libwebrtc":
+    if args.target == "build":
+        LIBWEBRTC_DIR = "third_party/chromium/build"
+    elif args.target == "abseil-cpp":
+        LIBWEBRTC_DIR = "third_party/abseil-cpp"
+    elif args.target == "third_party":
         LIBWEBRTC_DIR = os.path.join(LIBWEBRTC_DIR, args.target)
 
     # must run 'hg' with HGPLAIN=1 to ensure aliases don't interfere with
@@ -146,10 +212,20 @@ if __name__ == "__main__":
 
     with open("mailbox.patch", "w") as ofile:
         for sha1 in commits:
-            author, date = extract_author_date(sha1, env)
-            description = extract_description(sha1, env)
-            filtered_commit = filter_nonwebrtc(extract_commit(sha1, env))
+            if repo_type == RepoType.GIT:
+                author, date = extract_git_author_date(sha1, env)
+                description = extract_git_description(sha1, env)
+                commit = extract_git_commit(sha1, env)
+            else:
+                author, date = extract_hg_author_date(sha1, env)
+                description = extract_hg_description(sha1, env)
+                commit = extract_hg_commit(sha1, env)
+
+            filtered_commit = filter_nonwebrtc(commit)
             if len(filtered_commit) == 0:
                 continue
-            fixedup_commit = fixup_paths(filtered_commit)
+            if args.target == "abseil-cpp":
+                fixedup_commit = fixup_paths(filtered_commit, "third_party")
+            else:
+                fixedup_commit = fixup_paths(filtered_commit, LIBWEBRTC_DIR)
             write_as_mbox(sha1, author, date, description, fixedup_commit, ofile)

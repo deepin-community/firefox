@@ -1,13 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/SourceLocation.h"
+
+#include "jsapi.h"
 #include "mozilla/ThreadLocal.h"
 #include "nsContentUtils.h"
-#include "jsapi.h"
 
 namespace mozilla {
 
@@ -52,7 +51,7 @@ JSCallingLocation JSCallingLocation::Get(JSContext* aCx) {
   JS::AutoFilename filename;
   uint32_t line;
   JS::ColumnNumberOneOrigin column;
-  if (!JS::DescribeScriptedCaller(aCx, &filename, &line, &column)) {
+  if (!JS::DescribeScriptedCaller(&filename, aCx, &line, &column)) {
     return result;
   }
   nsCString file;

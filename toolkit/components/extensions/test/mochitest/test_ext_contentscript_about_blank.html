@@ -39,6 +39,17 @@ add_task(async function test_contentscript_about_blank() {
         css: ["mochi_with.css"],
         js: ["mochi_with.js"],
         all_frames: true,
+      }, {
+        matches: ["*://mochi.test/*"],
+        exclude_matches: ["*://mochi.test/tests*"], // all non-blob test resources have this path segment
+        js: ["mochi_wild_without.js"],
+        all_frames: true,
+      }, {
+        match_about_blank: true,
+        matches: ["*://mochi.test/*"],
+        exclude_matches: ["*://mochi.test/tests*"], // all non-blob test resources have this path segment
+        js: ["mochi_wild_with.js"],
+        all_frames: true,
       },
     ],
   };
@@ -62,6 +73,12 @@ add_task(async function test_contentscript_about_blank() {
     "mochi_with.css": `
       body { text-align: right; }
     `,
+    "mochi_wild_without.js": function() {
+      browser.runtime.sendMessage("mochi_wild_without");
+    },
+    "mochi_wild_with.js": function() {
+      browser.runtime.sendMessage("mochi_wild_with");
+    },
   };
 
   function background() {
@@ -154,15 +171,14 @@ add_task(async function test_contentscript_about_blank() {
   info(`Opening blob:-URL: ${blobUrl} from ${win.document.URL}`);
 
   let blobWin = window.open(blobUrl);
-  // blob:-URLs should not have content scripts because
-  // match_origin_as_fallback is not set.
+  // blob:-URLs should not have content scripts because match_origin_as_fallback
+  // is not set, but an about:{blank,srcdoc} iframe loaded within the blob URL
+  // will match the origin, with a wildcard path component (undocumented).
   await Promise.all([
-    extension.awaitMessage("all:about:blank"),
-    extension.awaitMessage("all:about:srcdoc"),
-    extension.awaitMessage("mochi_with:about:blank"),
-    extension.awaitMessage("mochi_with:about:srcdoc"),
+    extension.awaitMessage("mochi_wild_with:about:blank"),
+    extension.awaitMessage("mochi_wild_with:about:srcdoc"),
   ]);
-  is(count, 4, "exactly 4 more scripts ran for blob:-URL");
+  is(count, 2, "exactly 2 more scripts ran for blob:-URL");
   count = 0;
 
   // Test coverage for execution on blob:-URLs is at
@@ -175,7 +191,6 @@ add_task(async function test_contentscript_about_blank() {
 });
 
 async function top_level_about_blank({
-  legacyBehavior = false,
   run_at = "document_end",
 } = {}) {
   const content_scripts = [
@@ -230,7 +245,7 @@ async function top_level_about_blank({
 
     if (filename === "2.does_not_care_about_exclude_matches_globs.js") {
       files[filename] += `
-        // In an initial document, readyState = "uninitialized".
+        // In an initial document, readyState = "complete".
         dump("${filename} ran at readyState " + document.readyState + "\\n");
         browser.test.sendMessage("seen_content_script");
       `;
@@ -314,60 +329,6 @@ async function top_level_about_blank({
     await extension.awaitMessage("seenScripts_check_done");
   }
 
-  // TODO bug 1856071: Remove this pref setter when the pref is removed.
-  // This pref should be set to false by default, but we still explicitly
-  // set pref value to:
-  // (1) cover the legacy behavior
-  // (2) in case that is not the default anymore (e.g. if we had to uplift a
-  // patch to temporarily bring back the legacy behavior before have remove pref
-  // and support for the legacy behavior).
-  await SpecialPowers.pushPrefEnv({
-    set: [["extensions.script_about_blank_without_permission", legacyBehavior]],
-  });
-
-  // TODO bug 1856071: Remove this entire block when the pref is removed.
-  if (legacyBehavior) {
-    // Start of "Testing legacy behavior".
-    await extension.startup();
-    await openAboutBlankTab();
-
-    // Await explicitly for the last content script that we expect to be
-    // matching the top level about:blank page while running on legacy
-    // behavior, otherwise we hit an intermittent failure due to the
-    // get_seenScript.js being executed before any of the other
-    // content scripts.
-    await extension.awaitMessage("legacy-matching-script:executed");
-
-    // Legacy behavior: tabs.executeScript works in top-level about:blank
-    // without granted activeTab.
-    await checkSeenScripts(
-      [
-        "1.matches_any_url_and_blank.js",
-        "2.does_not_care_about_exclude_matches_globs.js",
-        // While the standard behavior is to only run scripts on top-level
-        // null-principal about:blank when matches[] matches "all urls", the
-        // legacy behavior was to do so for any script that declared
-        // match_about_blank:true, independent of matches[].
-        "3.should_not_run_because_include_globs_is_set.js",
-        "5.should_not_run_because_matches_does_not_match_all_urls.js",
-        "get_seenScripts.js",
-      ],
-      "Any content script with match_about_blank:true should (legacy behavior)"
-    );
-
-    // We should receive only one such message; if we get more, odds are that we
-    // unexpectedly executed in the initial about:blank that preceeds the final
-    // about:blank (which is not supported - bug 1415539), or that we executed
-    // in an unrelated about:blank document (as seen in bug 1901894).
-    await extension.awaitMessage("seen_content_script");
-
-    await closeAboutBlankTab();
-    await extension.unload();
-    await SpecialPowers.popPrefEnv();
-    return;
-    // End of "Testing legacy behavior".
-  }
-
   await extension.startup();
   await openAboutBlankTab();
 
@@ -399,8 +360,6 @@ async function top_level_about_blank({
 
   await closeAboutBlankTab();
   await extension.unload();
-  // TODO bug 1856071: Remove this popPrefEnv call when the pref is removed.
-  await SpecialPowers.popPrefEnv();
 }
 
 add_task(async function test_toplevel_aboutblank_at_document_start() {
@@ -408,11 +367,7 @@ add_task(async function test_toplevel_aboutblank_at_document_start() {
 });
 
 add_task(async function test_toplevel_aboutblank_match_with_permissions() {
-  await top_level_about_blank({ legacyBehavior: false });
-});
-
-add_task(async function test_toplevel_aboutblank_match_without_permissions() {
-  await top_level_about_blank({ legacyBehavior: true });
+  await top_level_about_blank();
 });
 
 </script>

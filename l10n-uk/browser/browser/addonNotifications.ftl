@@ -35,7 +35,9 @@ xpinstall-prompt-install =
 # These messages are shown when a website invokes navigator.requestMIDIAccess.
 
 site-permission-install-first-prompt-midi-header = Цей сайт запитує доступ до ваших пристроїв MIDI (цифровий інтерфейс музичних інструментів). Можна надати доступ до пристроїв, установивши додаток.
-site-permission-install-first-prompt-midi-message = Неможливо гарантувати безпеку цього доступу. Продовжуйте, лише якщо ви довіряєте цьому сайту.
+site-permission-install-first-prompt-midi-message = Неможливо гарантувати безпеку цього доступу. Продовжуйте лише якщо ви довіряєте цьому сайту.
+site-permission-install-first-prompt-serial-header = Цей сайт запитує доступ до ваших послідовних пристроїв. Доступ до пристрою можна ввімкнути, встановивши додаток.
+site-permission-install-first-prompt-serial-message = Неможливо гарантувати безпеку цього доступу. Продовжуйте лише якщо ви довіряєте цьому сайту.
 
 ##
 
@@ -81,6 +83,8 @@ addon-removal-title = Вилучити { $name }?
 addon-removal-message = Вилучити { $name } з { -brand-shorter-name }?
 addon-removal-button = Вилучити
 addon-removal-abuse-report-checkbox = Поскаржитись на це розширення до { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Якщо ви користуєтеся функціями або розширеннями, що використовують цю модель, її буде додано повторно.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -131,14 +135,19 @@ addon-install-error-corrupt-file = Неможливо встановити за�
 addon-install-error-file-access = { $addonName } не вдалося встановити, тому що { -brand-short-name } не може змінити необхідний файл.
 addon-install-error-not-signed = { -brand-short-name } заблокував встановлення неперевіреного додатка з цього сайту.
 addon-install-error-invalid-domain = Неможливо встановити додаток { $addonName } звідси.
+addon-install-error-no-addon-name-file-access = Не вдалося встановити додаток, оскільки { -brand-short-name } не може змінити потрібний файл.
 addon-local-install-error-network-failure = Цей додаток не вдалося встановити через помилку файлової системи.
 addon-local-install-error-incorrect-hash = Не вдалося встановити цей додаток, оскільки він не відповідає очікуваному додатку { -brand-short-name }.
 addon-local-install-error-corrupt-file = Неможливо встановити цей додаток, тому що він, ймовірно, пошкоджений.
 addon-local-install-error-file-access = { $addonName } не вдалося встановити, тому що { -brand-short-name } не може змінити необхідний файл.
 addon-local-install-error-not-signed = Не вдалося встановити цей додаток, оскільки його не було перевірено.
+addon-local-install-no-addon-name-error-file-access = Не вдалося встановити додаток, оскільки { -brand-short-name } не може змінити потрібний файл.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } не вдалося встановити через його несумісність з { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = Розширення { $addonName } порушує політики Mozilla, тому його не можна встановити в { -brand-short-name }.
+addon-install-error-soft-blocked2 = Розширення { $addonName } має обмеження, тому його не можна встановити в { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } неможливо встановити через високу ймовірність спричинення проблем безпеки та стабільності.
+addon-install-error-soft-blocked = Розширення { $addonName } порушує політики Mozilla, тому його не можна встановити в { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Ви не можете встановити { $addonName } як кінцевий користувач. Його може встановити лише організація, яка використовує корпоративні політики.

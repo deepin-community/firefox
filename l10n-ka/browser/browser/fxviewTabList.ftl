@@ -15,6 +15,10 @@ fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
 fxviewtabrow-tabs-list-tab =
     .title = გახსენით { $targetURI } ახალ ჩანართში
 # Variables:
+#   $tabTitle (string) - Title of tab being closed
+fxviewtabrow-close-tab-button =
+    .title = დაიხუროს { $tabTitle }
+# Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 fxviewtabrow-dismiss-tab-button =
     .title = მოცილდეს { $tabTitle }
@@ -49,9 +53,37 @@ fxviewtabrow-move-tab-end = ბოლოში გადატანა
     .accesskey = ო
 fxviewtabrow-move-tab-window = ახალ ფანჯარაში გადატანა
     .accesskey = ფ
+fxviewtabrow-send-to-device = მოწყობილობაზე გაგზავნა
+    .accesskey = ზ
+fxviewtabrow-send-to-mobile = გაგზავნა მობილურზე
+    .accesskey = ზ
 fxviewtabrow-send-tab = ჩანართის გაგზავნა მოწყობილობაზე
     .accesskey = წ
+fxviewtabrow-pin-tab = ჩანართის მიმაგრება
+    .accesskey = მ
+fxviewtabrow-unpin-tab = ჩანართის მოხსნა
+    .accesskey = ო
+fxviewtabrow-mute-tab = ჩანართის დადუმება
+    .accesskey = დ
+fxviewtabrow-unmute-tab = დადუმების ახმოვანება
+    .accesskey = ხ
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = { $tabTitle } – პარამეტრები
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-mute-tab-button-no-context =
+    .title = ჩანართის დადუმება
+fxviewtabrow-unmute-tab-button-no-context =
+    .title = ჩანართის ახმოვანება
+fxviewtabrow-send-to-mobile-connect-device = დააკავშირეთ მოწყობილობა ჩანართების გასაგზავნად
+fxviewtabrow-send-to-mobile-device-missing2 = არ ჩანს თქვენი მოწყობილობა?
+fxviewtabrow-send-to-mobile-not-verified = ანგარიში დაუმოწმებელია
+fxviewtabrow-send-to-mobile-verify-account = დაამოწმეთ ანგარიში
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = შედით ჩანართების გასაგზავნად
+fxviewtabrow-send-to-mobile-turn-on-sync = ჩართეთ სინქრონიზაცია ჩანართების გასაგზავნად

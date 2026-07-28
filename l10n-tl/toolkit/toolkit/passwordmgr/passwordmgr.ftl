@@ -17,10 +17,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = Wag I-update
     .accesskey = D
+primary-password-prompt-message = Pakilagay ang iyong Primary Password.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Walang username
-password-manager-toggle-password =
-    .label = Ipakita ang Password
-    .accesskey = h
 password-manager-confirm-password-change = Kumpirmahin ang Bagong Password
 password-manager-select-username = Pumili kung aling login ang i-update:

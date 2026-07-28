@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -7,18 +5,20 @@
 #ifndef MOZILLA_DOM_MEDIA_WEBRTC_JSAPI_RTCRTPSCRIPTTRANSFORMER_H_
 #define MOZILLA_DOM_MEDIA_WEBRTC_JSAPI_RTCRTPSCRIPTTRANSFORMER_H_
 
-#include "nsISupports.h"
-#include "nsWrapperCache.h"
+#include <memory>
+
+#include "js/RootingAPI.h"
+#include "jsapi/RTCStatsReport.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/dom/ReadableStream.h"
 #include "mozilla/dom/WritableStream.h"
-#include "mozilla/Maybe.h"
-#include "js/RootingAPI.h"
-#include "nsTArray.h"
 #include "nsCOMArray.h"
-#include <memory>
-#include "nsTHashSet.h"
 #include "nsCycleCollectionParticipant.h"
+#include "nsISupports.h"
+#include "nsTArray.h"
+#include "nsTHashSet.h"
+#include "nsWrapperCache.h"
 
 class nsPIDOMWindowInner;
 
@@ -53,7 +53,7 @@ class nsISupportsStreamSource final : public UnderlyingSourceAlgorithmsWrapper {
 
   // From UnderlyingSourceAlgorithmsWrapper
   already_AddRefed<Promise> PullCallbackImpl(
-      JSContext* aCx, ReadableStreamController& aController,
+      JSContext* aCx, ReadableStreamControllerBase& aController,
       ErrorResult& aRv) override;
 
   void EnqueueOneThingFromQueue(JSContext* aCx);
@@ -157,7 +157,7 @@ class RTCRtpScriptTransformer final : public nsISupports,
   void GenerateKeyFrameError(const Maybe<std::string>& aRid,
                              const CopyableErrorResult& aResult);
   already_AddRefed<Promise> SendKeyFrameRequest();
-  void KeyFrameRequestDone(bool aSuccess);
+  void KeyFrameRequestDone();
 
   // Public to ease implementation of cycle collection functions
   using GenerateKeyFramePromises =
@@ -188,6 +188,7 @@ class RTCRtpScriptTransformer final : public nsISupports,
   // ask the FrameTransformerProxy again, and just bulk resolve/reject.
   GenerateKeyFramePromises mGenerateKeyFramePromises;
   Maybe<bool> mVideo;
+  Maybe<RTCStatsTimestampMaker> mTimestampMaker;
   RefPtr<StrongWorkerRef> mWorkerRef;
 };
 

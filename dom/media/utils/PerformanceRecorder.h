@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et ft=cpp : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,10 +5,8 @@
 #ifndef mozilla_PerformanceRecorder_h
 #define mozilla_PerformanceRecorder_h
 
-#include <type_traits>
 #include <utility>
 
-#include "mozilla/Attributes.h"
 #include "mozilla/BaseProfilerMarkersPrerequisites.h"
 #include "mozilla/DefineEnum.h"
 #include "mozilla/Maybe.h"
@@ -206,7 +202,7 @@ class DecodeStage : public StageBase {
   MOZ_DEFINE_ENUM_WITH_BASE_AND_TOSTRING_AT_CLASS_SCOPE(
       ImageFormat, uint8_t,
       (YUV420P, YUV422P, YUV444P, NV12, YV12, NV21, P010, P016, RGBA32, RGB24,
-       GBRP, ANDROID_SURFACE, VAAPI_SURFACE));
+       GBRP, ANDROID_SURFACE, VAAPI_SURFACE, D3D11_SURFACE));
 
   DecodeStage(nsCString aSource, TrackingId aTrackingId, MediaInfoFlag aFlag)
       : mSource(std::move(aSource)),

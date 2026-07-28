@@ -23,12 +23,12 @@
 -mozmonitor-brand-name = Mozilla Monitor
 -pocket-brand-name =
     { $case ->
-       *[nom] Pocket
         [gen] Pocketu
         [dat] Pocketu
         [acc] Pocket
         [loc] Pockete
         [ins] Pocketom
+       *[nom] Pocket
     }
 -send-brand-name = Firefox Send
 -screenshots-brand-name = Firefox Screenshots
@@ -38,15 +38,23 @@
 -focus-brand-name = Firefox Focus
 -relay-brand-name =
     { $case ->
-       *[nom] Firefox Relay
         [gen] Firefoxu Relay
         [dat] Firefoxu Relay
         [acc] Firefox Relay
         [loc] Firefoxe Relay
         [ins] Firefoxom Relay
+       *[nom] Firefox Relay
     }
 -relay-brand-short-name = Relay
 -fakespot-brand-name = Fakespot
+-solo-ai-brand-name = Solo
+-thunderbird-brand-name = Mozilla Thunderbird
+-thunderbird-brand-short-name = Thunderbird
+-mdn-brand-name = Webová dokumentácia MDN
+-yelp-brand-name = Yelp
+
+##
+
 # Note the name of the website is capitalized.
 -fakespot-website-name = Fakespot.com
 # The particle "by" can be localized, "Fakespot" and "Mozilla" should not be localized or transliterated.
@@ -58,23 +66,23 @@
 # and kept in English.
 -firefox-home-brand-name =
     { $case ->
-       *[nom] Domovská stránka Firefoxu
         [gen] Domovskej stránky Firefoxu
         [dat] Domovskej stránke Firefoxu
         [acc] Domovskú stránku Firefoxu
         [loc] Domovskej stránke Firefoxu
         [ins] Domovskou stránkou Firefoxu
+       *[nom] Domovská stránka Firefoxu
     }
 # View" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefoxview-brand-name =
     { $case ->
-       *[nom] Prehľad Firefoxu
         [gen] Prehľadu Firefoxu
         [dat] Prehľadu Firefoxu
         [acc] Prehľad Firefoxu
         [loc] Prehľade Firefoxu
         [ins] Prehľadom Firefoxu
+       *[nom] Prehľad Firefoxu
     }
 # Firefox Labs is the name for a page in Settings to allow users to learn about
 # experimental and in-development features, and turn those features on and off.

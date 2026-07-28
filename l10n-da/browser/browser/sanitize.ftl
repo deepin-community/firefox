@@ -59,10 +59,7 @@ history-section-label = Historik
 item-history-and-downloads =
     .label = Browser- og filhentningshistorik
     .accesskey = B
-item-history-form-data-downloads =
-    .label = Historik
-    .accesskey = s
-item-history-form-data-downloads-description = Rydder websteds- og downloadhistorik, gemte formularoplysninger og søgehistorik
+item-history-and-downloads-description2 = Rydder historik for websteder og filhentninger
 item-cookies =
     .label = Cookies
     .accesskey = C
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Websteds-indstillinger
     .accesskey = W
+item-formdata-prefs =
+    .label = Gemte formularoplysninger
+    .accesskey = o
+item-formdata-description = Rydder data såsom navne, mailadresser og anden tekst, du indtaster i formularer
 item-site-prefs-description = Nulstiller dine tilladelser og websteds-indstillinger til de oprindelige indstillinger
 data-section-label = Data
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Al historik vil blive ryddet.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Alle valgte emner vil blive ryddet.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Beregner…

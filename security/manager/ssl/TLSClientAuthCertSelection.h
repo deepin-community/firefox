@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -21,6 +20,12 @@ SECStatus SSLGetClientAuthDataHook(void* arg, PRFileDesc* socket,
                                    CERTDistNames* caNames,
                                    CERTCertificate** pRetCert,
                                    SECKEYPrivateKey** pRetKey);
+
+// Does the actual work of selecting a client authentication certificate for a
+// particular NSSSocketControl.
+void DoSelectClientAuthCertificate(NSSSocketControl* info,
+                                   mozilla::UniqueCERTCertificate&& serverCert,
+                                   nsTArray<nsTArray<uint8_t>>&& caNames);
 
 // Base class for continuing the operation of selecting a client authentication
 // certificate. Should not be used directly.
@@ -91,6 +96,7 @@ class SelectClientAuthCertificate : public mozilla::Runnable {
       ClientAuthInfo&& info, mozilla::UniqueCERTCertificate&& serverCert,
       mozilla::UniqueCERTCertList&& potentialClientCertificates,
       nsTArray<nsTArray<nsTArray<uint8_t>>>&& potentialClientCertificateChains,
+      nsTArray<nsTArray<uint8_t>>&& caNames,
       ClientAuthCertificateSelectedBase* continuation, uint64_t browserId)
       : Runnable("SelectClientAuthCertificate"),
         mInfo(std::move(info)),
@@ -98,6 +104,7 @@ class SelectClientAuthCertificate : public mozilla::Runnable {
         mPotentialClientCertificates(std::move(potentialClientCertificates)),
         mPotentialClientCertificateChains(
             std::move(potentialClientCertificateChains)),
+        mCANames(std::move(caNames)),
         mContinuation(continuation),
         mBrowserId(browserId) {}
 
@@ -111,6 +118,7 @@ class SelectClientAuthCertificate : public mozilla::Runnable {
   mozilla::UniqueCERTCertificate mServerCert;
   mozilla::UniqueCERTCertList mPotentialClientCertificates;
   nsTArray<nsTArray<nsTArray<uint8_t>>> mPotentialClientCertificateChains;
+  nsTArray<nsTArray<uint8_t>> mCANames;
   RefPtr<ClientAuthCertificateSelectedBase> mContinuation;
 
   uint64_t mBrowserId;

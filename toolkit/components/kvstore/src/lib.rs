@@ -21,8 +21,13 @@ extern crate xpcom;
 mod error;
 mod fs;
 mod owned_value;
-mod skv;
+pub mod skv;
 mod task;
+
+pub use skv::database::{Database, DatabaseError, GetOptions};
+pub use skv::key::Key;
+pub use skv::store::{Store, StorePath, StoreError};
+pub use skv::value::Value;
 
 use atomic_refcell::AtomicRefCell;
 use error::KeyValueError;
@@ -46,8 +51,8 @@ use thin_vec::ThinVec;
 use xpcom::{
     getter_addrefs,
     interfaces::{
-        nsIKeyValueDatabaseCallback, nsIKeyValueEnumeratorCallback, nsIKeyValuePair,
-        nsIKeyValueService, nsIKeyValueVariantCallback, nsIKeyValueVoidCallback,
+        nsIKeyValueDatabaseCallback, nsIKeyValueEnumeratorCallback, nsIKeyValueImporter,
+        nsIKeyValuePair, nsIKeyValueService, nsIKeyValueVariantCallback, nsIKeyValueVoidCallback,
         nsISerialEventTarget, nsIVariant,
     },
     nsIID, xpcom, xpcom_method, RefPtr,
@@ -65,6 +70,17 @@ pub unsafe extern "C" fn nsKeyValueServiceConstructor(
     *result = ptr::null_mut();
 
     let service = KeyValueService::new();
+    service.QueryInterface(iid, result)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn nsSQLiteKeyValueServiceConstructor(
+    iid: &nsIID,
+    result: *mut *mut libc::c_void,
+) -> nsresult {
+    *result = ptr::null_mut();
+
+    let service = skv::interface::KeyValueService::new();
     service.QueryInterface(iid, result)
 }
 
@@ -155,6 +171,21 @@ impl KeyValueService {
 
         TaskRunnable::new("KVService::GetOrCreateWithOptions", task)?
             .dispatch_background_task_with_options(DispatchOptions::default().may_block(true))
+    }
+
+    xpcom_method!(
+        create_importer => CreateImporter(
+            type_: *const nsACString,
+            path: *const nsAString
+        ) -> *const nsIKeyValueImporter
+    );
+
+    fn create_importer(
+        &self,
+        _type: &nsACString,
+        _path: &nsAString,
+    ) -> Result<RefPtr<nsIKeyValueImporter>, nsresult> {
+        Err(nserror::NS_ERROR_NOT_IMPLEMENTED)
     }
 }
 
@@ -334,6 +365,23 @@ impl KeyValueDatabase {
     }
 
     xpcom_method!(
+        delete_range => DeleteRange(
+            callback: *const nsIKeyValueVoidCallback,
+            from_key: *const nsACString,
+            to_key: *const nsACString
+        )
+    );
+
+    fn delete_range(
+        &self,
+        _callback: &nsIKeyValueVoidCallback,
+        _from_key: &nsACString,
+        _to_key: &nsACString,
+    ) -> Result<(), nsresult> {
+        Err(NS_ERROR_NOT_IMPLEMENTED)
+    }
+
+    xpcom_method!(
         clear => Clear(callback: *const nsIKeyValueVoidCallback)
     );
 
@@ -440,6 +488,6 @@ impl KeyValuePair {
     }
 
     fn get_value(&self) -> Result<RefPtr<nsIVariant>, KeyValueError> {
-        Ok(owned_to_variant(self.value.clone())?)
+        owned_to_variant(self.value.clone())
     }
 }

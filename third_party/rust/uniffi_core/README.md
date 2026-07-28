@@ -43,18 +43,20 @@ FFI - [Abbreviation, Foreign Function Interface]
 
 Other tools we know of which try and solve a similarly shaped problem are:
 
-* [Diplomat](https://github.com/rust-diplomat/diplomat/) - see our [writeup of
-  the different approach taken by that tool](docs/diplomat-and-macros.md)
+* [Diplomat](https://github.com/rust-diplomat/diplomat/), which is focused more on C/C++ interop.
 * [Interoptopus](https://github.com/ralfbiedert/interoptopus/)
 
 (Please open a PR if you think other tools should be listed!)
 
 ## Third-party foreign language bindings
 
-* [Kotlin Multiplatform support](https://gitlab.com/trixnity/uniffi-kotlin-multiplatform-bindings). The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
+* [Javascript bindings](https://github.com/jhugman/uniffi-bindgen-react-native): running in a web page, targeting WASM; and React Native targeting Android, iOS. The repository contains tooling to generate bindings for [Hermes](https://github.com/facebook/hermes), [creating Turbo Modules](https://reactnative.dev/blog/2024/10/23/the-new-architecture-is-here#new-native-modules), and for creating a [`wasm-bindgen` bindings crate](https://rustwasm.github.io/wasm-bindgen).
+* [Kotlin Multiplatform support (Gobley)](https://github.com/gobley/gobley). The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
 * [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
 * [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
 * [Dart bindings](https://github.com/NiallBunting/uniffi-rs-dart)
+* [Java bindings](https://github.com/IronCoreLabs/uniffi-bindgen-java)
+* [Node bindings](https://github.com/livekit/uniffi-bindgen-node) (early development)
 
 ### External resources
 

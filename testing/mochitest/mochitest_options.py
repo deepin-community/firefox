@@ -10,13 +10,12 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from argparse import SUPPRESS, ArgumentParser
 from itertools import chain
 from shutil import which
+from urllib.parse import urlparse
 
 import mozinfo
 import mozlog
 import moznetwork
-import six
 from mozprofile import DEFAULT_PORTS
-from six.moves.urllib.parse import urlparse
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -35,7 +34,7 @@ ALL_FLAVORS = {
     "mochitest": {
         "suite": "plain",
         "aliases": ("plain", "mochitest"),
-        "enabled_apps": ("firefox", "android"),
+        "enabled_apps": ("firefox", "android", "ios"),
         "extra_args": {
             "flavor": "plain",
         },
@@ -85,7 +84,7 @@ def strtobool(value: str):
     if value in false_vals:
         return 0
 
-    raise ValueError(f'Expected one of: {", ".join(true_vals + false_vals)}')
+    raise ValueError(f"Expected one of: {', '.join(true_vals + false_vals)}")
 
 
 def get_default_valgrind_suppression_files():
@@ -121,8 +120,7 @@ def get_default_valgrind_suppression_files():
     return rv
 
 
-@six.add_metaclass(ABCMeta)
-class ArgumentContainer:
+class ArgumentContainer(metaclass=ABCMeta):
     @abstractproperty
     def args(self):
         pass
@@ -189,6 +187,14 @@ class MochitestArguments(ArgumentContainer):
             },
         ],
         [
+            ["--android"],
+            {
+                "action": "store_true",
+                "default": False,
+                "help": "Force an android test run.",
+            },
+        ],
+        [
             ["--utility-path"],
             {
                 "dest": "utilityPath",
@@ -249,25 +255,6 @@ class MochitestArguments(ArgumentContainer):
                 "dest": "thisChunk",
                 "help": "If running tests by chunks, the chunk number to run.",
                 "default": None,
-            },
-        ],
-        [
-            ["--chunk-by-runtime"],
-            {
-                "action": "store_true",
-                "dest": "chunkByRuntime",
-                "help": "Group tests such that each chunk has roughly the same runtime.",
-                "default": False,
-            },
-        ],
-        [
-            ["--chunk-by-dir"],
-            {
-                "type": int,
-                "dest": "chunkByDir",
-                "help": "Group tests together in the same chunk that are in the same top "
-                "chunkByDir directories.",
-                "default": 0,
             },
         ],
         [
@@ -955,9 +942,19 @@ class MochitestArguments(ArgumentContainer):
         [
             ["--restart-after-failure"],
             {
+                "action": "store_true",
                 "dest": "restartAfterFailure",
                 "default": False,
                 "help": "Terminate the session on first failure and restart where you left off.",
+            },
+        ],
+        [
+            ["--restart-between-tests"],
+            {
+                "action": "store_true",
+                "dest": "restartBetweenTests",
+                "default": False,
+                "help": "Restart the browser between each test to identify tests with undocumented dependencies.",
             },
         ],
         [
@@ -979,7 +976,8 @@ class MochitestArguments(ArgumentContainer):
         "webServer": "127.0.0.1",
         "httpPort": DEFAULT_PORTS["http"],
         "sslPort": DEFAULT_PORTS["https"],
-        "webSocketPort": "9988",
+        "webSocketPort": DEFAULT_PORTS["ws"],
+        "webSocketSSLPort": DEFAULT_PORTS["wss"],
         # The default websocket port is incorrect in mozprofile; it is
         # set to the SSL proxy setting. See:
         # see https://bugzilla.mozilla.org/show_bug.cgi?id=916517
@@ -989,8 +987,8 @@ class MochitestArguments(ArgumentContainer):
     def validate(self, parser, options, context):
         """Validate generic options."""
 
-        # and android doesn't use 'app' the same way, so skip validation
-        if parser.app != "android":
+        # and android/iOS doesn't use 'app' the same way, so skip validation
+        if parser.app not in ("android", "ios"):
             if options.app is None:
                 if build_obj:
                     from mozbuild.base import BinaryNotFoundException
@@ -998,7 +996,7 @@ class MochitestArguments(ArgumentContainer):
                     try:
                         options.app = build_obj.get_binary_path()
                     except BinaryNotFoundException as e:
-                        print("{}\n\n{}\n".format(e, e.help()))
+                        print(f"{e}\n\n{e.help()}\n")
                         sys.exit(1)
                 else:
                     parser.error(
@@ -1010,8 +1008,8 @@ class MochitestArguments(ArgumentContainer):
             options.app = self.get_full_path(options.app, parser.oldcwd)
             if not os.path.exists(options.app):
                 parser.error(
-                    "Error: Path {} doesn't exist. Are you executing "
-                    "$objdir/_tests/testing/mochitest/runtests.py?".format(options.app)
+                    f"Error: Path {options.app} doesn't exist. Are you executing "
+                    "$objdir/_tests/testing/mochitest/runtests.py?"
                 )
 
         if options.flavor is None:
@@ -1048,9 +1046,6 @@ class MochitestArguments(ArgumentContainer):
         if options.totalChunks:
             if not 1 <= options.thisChunk <= options.totalChunks:
                 parser.error("thisChunk must be between 1 and totalChunks")
-
-        if options.chunkByDir and options.chunkByRuntime:
-            parser.error("can only use one of --chunk-by-dir or --chunk-by-runtime")
 
         if options.xrePath is None:
             # default xrePath to the app path if not provided
@@ -1116,14 +1111,6 @@ class MochitestArguments(ArgumentContainer):
                 parser.error(
                     "directory for %s does not exist as a destination to copy a "
                     "chrome manifest." % options.store_chrome_manifest
-                )
-
-        if options.jscov_dir_prefix:
-            options.jscov_dir_prefix = os.path.abspath(options.jscov_dir_prefix)
-            if not os.path.isdir(options.jscov_dir_prefix):
-                parser.error(
-                    "directory %s does not exist as a destination for coverage "
-                    "data." % options.jscov_dir_prefix
                 )
 
         if options.testingModulesDir is None:
@@ -1209,14 +1196,14 @@ class MochitestArguments(ArgumentContainer):
 
             if not pactl:
                 parser.error(
-                    "Missing binary pactl required for " "--use-test-media-devices"
+                    "Missing binary pactl required for --use-test-media-devices"
                 )
 
         # The a11y and chrome flavors can't run with e10s.
         if options.flavor in ("a11y", "chrome") and options.e10s:
             parser.error(
-                "mochitest-{} does not support e10s, try again with "
-                "--disable-e10s.".format(options.flavor)
+                f"mochitest-{options.flavor} does not support e10s, try again with "
+                "--disable-e10s."
             )
 
         # If e10s explicitly disabled and no fission option specified, disable fission
@@ -1285,6 +1272,19 @@ class AndroidArguments(ArgumentContainer):
                 "default": None,
                 "help": "Path to adb binary.",
                 "suppress": True,
+            },
+        ],
+        [
+            ["--activity"],
+            {
+                "dest": "appActivity",
+                "default": "TestRunnerActivity",
+                "help": (
+                    "Specify the android app activity that should be used (e.g. "
+                    "GeckoViewActivity for org.mozilla.geckoview_example). Uses "
+                    "TestRunnerActivity by default for org.mozilla.geckoview.test_"
+                    "runner"
+                ),
             },
         ],
         [
@@ -1410,9 +1410,112 @@ class AndroidArguments(ArgumentContainer):
         return options
 
 
+class IosArguments(ArgumentContainer):
+    """Ios specific arguments."""
+
+    args = [
+        [
+            ["--no-install"],
+            {
+                "action": "store_true",
+                "default": False,
+                "help": "Skip the installation of the app.",
+            },
+        ],
+        # FIXME: Support something like --deviceSerial.
+        [
+            ["--remote-webserver"],
+            {
+                "dest": "remoteWebServer",
+                "default": None,
+                "help": "IP address of the remote web server.",
+            },
+        ],
+        [
+            ["--http-port"],
+            {
+                "dest": "httpPort",
+                "default": DEFAULT_PORTS["http"],
+                "help": "http port of the remote web server.",
+                "suppress": True,
+            },
+        ],
+        [
+            ["--ssl-port"],
+            {
+                "dest": "sslPort",
+                "default": DEFAULT_PORTS["https"],
+                "help": "ssl port of the remote web server.",
+                "suppress": True,
+            },
+        ],
+        [
+            ["--remoteTestRoot"],
+            {
+                "dest": "remoteTestRoot",
+                "default": None,
+                "help": "Remote directory to use as test root "
+                "(eg. /data/local/tmp/test_root).",
+                "suppress": True,
+            },
+        ],
+    ]
+
+    defaults = {
+        # we don't want to exclude specialpowers on iOS just yet
+        "extensionsToExclude": [],
+        # mochijar doesn't get installed via marionette on iOS
+        "extensionsToInstall": [os.path.join(here, "mochijar")],
+        "logFile": "mochitest.log",
+        "utilityPath": None,
+    }
+
+    def validate(self, parser, options, context):
+        """Validate iOS options."""
+
+        if build_obj:
+            options.log_mach = "-"
+
+            objdir_xpi_stage = os.path.join(build_obj.distdir, "xpi-stage")
+            if os.path.isdir(objdir_xpi_stage):
+                options.extensionsToInstall = [
+                    os.path.join(objdir_xpi_stage, "mochijar"),
+                    os.path.join(objdir_xpi_stage, "specialpowers"),
+                ]
+
+        if options.remoteWebServer is None:
+            options.remoteWebServer = moznetwork.get_ip()
+
+        options.webServer = options.remoteWebServer
+
+        if options.app is None:
+            options.app = "org.mozilla.ios.GeckoTestBrowser"
+
+        if build_obj and "MOZ_HOST_BIN" in os.environ:
+            options.xrePath = os.environ["MOZ_HOST_BIN"]
+
+        # Only reset the xrePath if it wasn't provided
+        if options.xrePath is None:
+            options.xrePath = options.utilityPath
+
+        if build_obj:
+            options.topsrcdir = build_obj.topsrcdir
+
+        if options.pidFile != "":
+            f = open(options.pidFile, "w")
+            f.write("%s" % os.getpid())
+            f.close()
+
+        # allow us to keep original application around for cleanup while
+        # running tests
+        options.remoteappname = options.app
+        return options
+
+
 container_map = {
     "generic": [MochitestArguments],
     "android": [MochitestArguments, AndroidArguments],
+    "ios": [MochitestArguments, IosArguments],
 }
 
 
@@ -1429,9 +1532,34 @@ class MochitestArgumentParser(ArgumentParser):
 
         self.oldcwd = os.getcwd()
         self.app = app
+
+        mozlog.commandline.add_logging_group(self)
+
+        self.build_args()
+
+    @property
+    def containers(self):
+        if self._containers:
+            return self._containers
+
+        containers = container_map[self.app]
+        self._containers = [c() for c in containers]
+        return self._containers
+
+    def validate(self, args):
+        for container in self.containers:
+            args = container.validate(self, args, self.context)
+        return args
+
+    def build_args(self, args=None):
+        if args and not self.app and any("--android" == arg for arg in args):
+            self.app = "android"
+
         if not self.app and build_obj:
             if conditions.is_android(build_obj):
                 self.app = "android"
+            if conditions.is_ios(build_obj):
+                self.app = "ios"
         if not self.app:
             # platform can't be determined and app wasn't specified explicitly,
             # so just use generic arguments and hope for the best
@@ -1465,18 +1593,6 @@ class MochitestArgumentParser(ArgumentParser):
                 group.add_argument(*cli, **kwargs)
 
         self.set_defaults(**defaults)
-        mozlog.commandline.add_logging_group(self)
 
-    @property
-    def containers(self):
-        if self._containers:
-            return self._containers
-
-        containers = container_map[self.app]
-        self._containers = [c() for c in containers]
-        return self._containers
-
-    def validate(self, args):
-        for container in self.containers:
-            args = container.validate(self, args, self.context)
-        return args
+    def parse_known_args(self, args=None, namespace=None):
+        return super().parse_known_args(args, namespace)

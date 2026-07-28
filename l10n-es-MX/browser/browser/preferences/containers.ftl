@@ -8,12 +8,17 @@ containers-window-new2 =
 # Variables
 #   $name (String) - Name of the container
 containers-window-update-settings2 =
-    .title = Preferencias del contenedor { $name }
+    .title = Configuración del contenedor { $name }
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = Nombre
+    .placeholder = Agregar un nombre
+containers-icon-label2 =
+    .label = Ícono
+containers-color-label2 =
+    .label = Color
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,26 +29,20 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 4rem
-
 containers-name-label = Nombre
     .accesskey = N
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = Ingresar un nombre de contenedor
-
 containers-icon-label = Ícono
     .accesskey = I
     .style = { -containers-labels-style }
-
 containers-color-label = Color
     .accesskey = o
     .style = { -containers-labels-style }
-
 containers-dialog =
     .buttonlabelaccept = Listo
     .buttonaccesskeyaccept = D
-
 containers-color-blue =
     .label = Azul
 containers-color-turquoise =
@@ -62,7 +61,6 @@ containers-color-purple =
     .label = Morado
 containers-color-toolbar =
     .label = Hacer coincidir con barra de herramientas
-
 containers-icon-fence =
     .label = Cerco
 containers-icon-fingerprint =
@@ -91,3 +89,18 @@ containers-icon-tree =
     .label = Árbol
 containers-icon-chill =
     .label = Enfriar
+containers-window-new3 =
+    .title = Agregar nuevo contenedor
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = Ajustes del contenedor { $name }
+    .style = min-width: 32em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-create-button =
+    .label = Hecho
+containers-panel-cancel-button =
+    .label = Cancelar

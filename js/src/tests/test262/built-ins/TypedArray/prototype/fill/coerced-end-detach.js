@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2020 Google. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -26,6 +25,6 @@ testWithTypedArrayConstructors(function(TA) {
   assert.throws(TypeError, function() {
     sample.fill(0x77, 0, {valueOf: detachAndReturnIndex});
   }, "Detachment when coercing end should throw TypeError");
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

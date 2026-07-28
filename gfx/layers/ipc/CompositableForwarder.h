@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,8 @@
 #define MOZILLA_LAYERS_COMPOSITABLEFORWARDER
 
 #include <stdint.h>  // for int32_t, uint32_t, uint64_t
+
+#include "ImageContainer.h"
 #include "mozilla/Assertions.h"  // for AssertionConditionType, MOZ_ASSERT, MOZ_ASSERT_HELPER1
 #include "mozilla/Atomics.h"
 #include "mozilla/RefPtr.h"             // for RefPtr
@@ -22,7 +22,6 @@ namespace mozilla {
 namespace layers {
 class CompositableClient;
 class CompositableHandle;
-class ImageContainer;
 class PTextureChild;
 class SurfaceDescriptorTiles;
 class TextureClient;
@@ -136,6 +135,13 @@ class CompositableForwarder : public KnowsCompositor {
    */
   virtual void RemoveTextureFromCompositable(CompositableClient* aCompositable,
                                              TextureClient* aTexture) = 0;
+
+  /**
+   * Tell the CompositableHost on the compositor side to clear Images
+   * from the CompositableHost.
+   */
+  virtual void ClearImagesFromCompositable(CompositableClient* aCompositable,
+                                           ClearImagesType aType) {}
 
   struct TimedTextureClient {
     TimedTextureClient()

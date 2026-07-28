@@ -1,13 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "PotentialCheckerboardDurationTracker.h"
 
-#include "mozilla/Telemetry.h"           // for Telemetry
-#include "mozilla/glean/GleanMetrics.h"  // for Glean telemetry
+#include "mozilla/glean/GfxMetrics.h"  // for Glean telemetry
 
 namespace mozilla {
 namespace layers {
@@ -30,7 +27,7 @@ void PotentialCheckerboardDurationTracker::CheckerboardDone(
   if (!Tracking()) {
     if (aRecordTelemetry) {
       mozilla::glean::gfx_checkerboard::potential_duration
-          .AccumulateRawDuration(mCurrentPeriodStart - TimeStamp::Now());
+          .AccumulateRawDuration(TimeStamp::Now() - mCurrentPeriodStart);
     }
   }
 }
@@ -59,9 +56,8 @@ void PotentialCheckerboardDurationTracker::InTransform(bool aInTransform,
     // it means we just stopped tracking, so we are ending a potential
     // checkerboard period.
     if (aRecordTelemetry) {
-      mozilla::Telemetry::AccumulateTimeDelta(
-          mozilla::Telemetry::CHECKERBOARD_POTENTIAL_DURATION,
-          mCurrentPeriodStart);
+      mozilla::glean::gfx_checkerboard::potential_duration
+          .AccumulateRawDuration(TimeStamp::Now() - mCurrentPeriodStart);
     }
   }
 }

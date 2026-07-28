@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,6 +17,7 @@
 
 class nsAtom;
 class nsINode;
+class nsIPrincipal;
 
 namespace mozilla {
 class ErrorResult;
@@ -147,7 +146,8 @@ class nsDOMAttributeMap final : public nsISupports, public nsWrapperCache {
 
   Attr* GetNamedItemNS(const nsAString& aNamespaceURI,
                        const nsAString& aLocalName);
-  already_AddRefed<Attr> SetNamedItemNS(Attr& aNode, ErrorResult& aError);
+  MOZ_CAN_RUN_SCRIPT already_AddRefed<Attr> SetNamedItemNS(
+      Attr& aNode, nsIPrincipal* aSubjectPrincipal, ErrorResult& aError);
   already_AddRefed<Attr> RemoveNamedItemNS(const nsAString& aNamespaceURI,
                                            const nsAString& aLocalName,
                                            ErrorResult& aError);

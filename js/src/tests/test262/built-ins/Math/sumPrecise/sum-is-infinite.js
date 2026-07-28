@@ -1,4 +1,3 @@
-// |reftest| skip -- Math.sumPrecise is not supported
 // Copyright (C) 2024 Kevin Gibbons. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 

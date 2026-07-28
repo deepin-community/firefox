@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Začinić
     .aria-label = Začinić
-firefoxview-empty-state-icon =
-    .alt = Kedźbu:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Runje
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue } % dokónčene
 firefoxview-tabpickup-step-signin-header = Přeńdźće bjezposrědnje mjez gratami
 firefoxview-tabpickup-step-signin-description = Zo byšće tu rajtarki swojeho šmóratka dóstał, přizjewće so najprjedy abo załožće konto.
 firefoxview-tabpickup-step-signin-primarybutton = Dale
-firefoxview-syncedtabs-signin-header = Wobstarajće sej rajtarki wot wšudźe
-firefoxview-syncedtabs-signin-description = Zo byšće swoje rajtarki wšudźe widźał, hdźež { -brand-product-name } wužiwaće, přizjewće so pola swojeho konta. Jeli konto nimaće, přewodźimy was přez kroki registracije.
-firefoxview-syncedtabs-signin-primarybutton = Přizjewić abo registrować
+firefoxview-syncedtabs-signin-header-2 = Waš { -brand-product-name } na wšěch wašich gratach
+firefoxview-syncedtabs-signin-description-2 = Zo byšće swoje wočinjene rajtarki na swojim telefonje a druhich gratach widźał, přizjewće so abo registrujće so za konto. Z kontom móžeće tež swoje hesła, swoju historiju a wjace synchronizować.
+firefoxview-syncedtabs-signin-primarybutton-2 = Přizjewić
 firefoxview-tabpickup-adddevice-header = Synchronizujće { -brand-product-name } na swojim telefonje abo tableće
 firefoxview-tabpickup-adddevice-description = Sćehńće { -brand-product-name } za mobilne graty a přizjewće so tam.
 firefoxview-tabpickup-adddevice-learn-how = Zhońće kak
 firefoxview-tabpickup-adddevice-primarybutton = { -brand-product-name } za mobilny grat wobstarać
-firefoxview-syncedtabs-adddevice-header = Přizjewće so pola { -brand-product-name } na swojich druhich gratach
-firefoxview-syncedtabs-adddevice-description = Zo byšće swoje rajtarki wšudźe widźał, hdźež { -brand-product-name } wužiwaće, přizjewće so na wšěch swojich gratach. Zhońće, kak móžeće z <a data-l10n-name="url">přidatnymi gratami zwjazać</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Wobstarajće sej rajtarki wot wšudźe
+firefoxview-syncedtabs-adddevice-description-2 = Přizjewće pola { -brand-product-name } na swojim telefonje abo druhim ličaku, zo byšće rajtarki tu widźał. Zhońće, kak móžeće <a data-l10n-name="url">přidatne graty zwjazać</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Wupruwujće { -brand-product-name } za mobilny grat
 firefoxview-tabpickup-synctabs-header = Synchronizaciju rajtarkow zmóžnić
 firefoxview-tabpickup-synctabs-description = { -brand-short-name } dowolić, rajtarki mjez gratami dźělić.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Zhońće kak
 firefoxview-tabpickup-synctabs-primarybutton = Wočinjene rajtarki synchronizować
 firefoxview-syncedtabs-synctabs-header = Aktualizujće swoje synchronizaciske nastajenja
 firefoxview-syncedtabs-synctabs-description = Zo byšće rajtarki z druhich gratow widźał, dyrbiće swoje wočinjene rajtarki synchronizować.
-firefoxview-syncedtabs-synctabs-checkbox = Synchronizaciju wočinjenych rajtarkow dowolić
 firefoxview-syncedtabs-loading-header = Synchronizuje so
 firefoxview-syncedtabs-loading-description = Hdyž to je dokónčene, budźeće rajtarki widźeć, kotrež su na druhich gratach wočinjene. Hladajće bórze za tym.
 firefoxview-tabpickup-fxa-admin-disabled-header = Waša organizacija je synchronizaciju znjemóžniła
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Njedawno začinjene
 firefoxview-closed-tabs-description2 = Wočińće strony znowa, kotrež sće w tutym woknje začinił.
 firefoxview-closed-tabs-placeholder-header = Žane runje začinjene rajtarki
 firefoxview-closed-tabs-placeholder-body = Hdyž w tutym woknje rajtark začinjeće, móžeće jón wottud wuwołać.
-firefoxview-closed-tabs-placeholder-body2 = Hdyž rajtark začinjeće, móžeće jón wottud wuwołać.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -117,6 +113,8 @@ firefoxview-history-nav = Historija
 firefoxview-history-header = Historija
 firefoxview-history-context-delete = Z historije zhašeć
     .accesskey = Z
+firefoxview-history-context-forget-site = Na tute sydło zabyć…
+    .accesskey = z
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
@@ -148,8 +146,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Wokno { $winID } (aktualne)
-firefoxview-opentabs-focus-tab =
-    .title = K tutomu rajtarkej přeńć
 firefoxview-show-more = Wjace pokazać
 firefoxview-show-less = Mjenje pokazać
 firefoxview-show-all = Wšě pokazać
@@ -161,12 +157,15 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Historiju přepytać
+# Placeholder for the input field to search in bookmarks ("search" is a verb).
+firefoxview-search-text-box-bookmarks =
+    .placeholder = Zapołožki přepytać
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Njedawno začinjene rajtarki pytać
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Synchronizowane rajtarki pytać
+firefoxview-search-text-box-tabs =
+    .placeholder = Rajtarki přepytać
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Wočinjene rajtarki pytać
@@ -191,10 +190,6 @@ firefoxview-sort-history-by-date-label = Po datumje sortěrować
 firefoxview-sort-history-by-site-label = Po sydle sortěrować
 firefoxview-sort-open-tabs-by-recency-label = Po najnowšej aktiwiće sortěrować
 firefoxview-sort-open-tabs-by-order-label = Po porjedźe rajtarkow sortěrować
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = K { $url } přeńć
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -211,7 +206,6 @@ firefoxview-history-site-localhost = (lokalne dataje)
 ##
 
 firefoxview-show-all-history = Wšu historiju pokazać
-firefoxview-view-more-browsing-history = Dalšu přehladowansku historiju pokazać
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -227,9 +221,8 @@ firefoxview-choose-browser-button = Wubjerće wobhladowak
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Njeje ničo, zo hodźi so pokazać
-firefoxview-dont-remember-history-empty-description = Škit wašeje priwatnosće je naša dušina naležnosć. Tohodla móžeće aktiwitu wodźić,  na kotruž so { -brand-short-name } dopomina.
-firefoxview-dont-remember-history-empty-description-two = Na zakładźe wašich aktualnych nastajenjow so { -brand-short-name } na wašu aktiwitu njedopomina, hdyž přehladujeće. Zo byšće to změnił, <a data-l10n-name="history-settings-url-two">změńće swoje nastajenja historije, zo by sej waša historija spomjatkowała</a>.
+firefoxview-dont-remember-history-empty-header-2 = Maće kontrolu wo tym, štož sej { -brand-short-name } spomjatkuje
+firefoxview-dont-remember-history-empty-description-one = Tuchwilu sej { -brand-short-name } wašu přehladowansku aktiwitu njespomjatkuje. Zo byšće to změnił, <a data-l10n-name="history-settings-url-two">aktualizujće nastajenja swojeje historije</a>.
 
 ##
 

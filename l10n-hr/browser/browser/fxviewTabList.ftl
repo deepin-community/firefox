@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Pomakni na kraj
     .accesskey = m
 fxviewtabrow-move-tab-window = Pomakni u novi prozor
     .accesskey = a
+fxviewtabrow-send-to-device = Pošalji na uređaj
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Pošalji na mobilni uređaj
+    .accesskey = n
 fxviewtabrow-send-tab = Pošalji karticu na uređaj
     .accesskey = n
 fxviewtabrow-pin-tab = Prikvači karticu
@@ -68,9 +72,10 @@ fxviewtabrow-unmute-tab = Uključi zvuk kartice
 fxviewtabrow-options-menu-button =
     .title = Mogućnosti za { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Isključi zvuk kartice
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Uključi zvuk kartice
+fxviewtabrow-send-to-mobile-device-missing2 = Ne vidiš svoj uređaj?

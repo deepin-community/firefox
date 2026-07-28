@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -331,7 +329,8 @@ DeviceInputTrack::UpdateRequestedProcessingParams() {
   if (auto p = params.valueOr(CUBEB_INPUT_PROCESSING_PARAM_NONE);
       p != mProcessingParamsRequest.mParams) {
     mProcessingParamsRequest.mParams = p;
-    mProcessingParamsRequest.mGeneration += 1;
+    mProcessingParamsRequest.mGeneration =
+        Graph()->ProcessingParamsGeneration();
 
     TRACK_GRAPH_LOG(
         "%sNativeInputTrack notifying of setting requested processing params "

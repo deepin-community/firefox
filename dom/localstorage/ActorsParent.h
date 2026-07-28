@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define mozilla_dom_localstorage_ActorsParent_h
 
 #include <cstdint>
+
 #include "mozilla/AlreadyAddRefed.h"
 
 namespace mozilla {
@@ -35,15 +34,6 @@ class Client;
 }  // namespace quota
 
 void InitializeLocalStorage();
-
-already_AddRefed<PBackgroundLSDatabaseParent> AllocPBackgroundLSDatabaseParent(
-    const mozilla::ipc::PrincipalInfo& aPrincipalInfo,
-    const uint32_t& aPrivateBrowsingId, const uint64_t& aDatastoreId);
-
-bool RecvPBackgroundLSDatabaseConstructor(
-    PBackgroundLSDatabaseParent* aActor,
-    const mozilla::ipc::PrincipalInfo& aPrincipalInfo,
-    const uint32_t& aPrivateBrowsingId, const uint64_t& aDatastoreId);
 
 PBackgroundLSObserverParent* AllocPBackgroundLSObserverParent(
     const uint64_t& aObserverId);

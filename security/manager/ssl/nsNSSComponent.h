@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +7,9 @@
 #define _nsNSSComponent_h_
 
 #include "nsINSSComponent.h"
+#ifdef ENABLE_TESTS
+#  include "nsISSLTokensCacheTest.h"
+#endif
 
 #include "EnterpriseRoots.h"
 #include "ScopedNSSTypes.h"
@@ -17,6 +19,7 @@
 #include "mozilla/RefPtr.h"
 #include "nsCOMPtr.h"
 #include "nsIObserver.h"
+#include "nsISerialEventTarget.h"
 #include "nsNSSCallbacks.h"
 #include "nsServiceManagerUtils.h"
 #include "prerror.h"
@@ -29,7 +32,6 @@
 
 class nsIDOMWindow;
 class nsIPrompt;
-class nsISerialEventTarget;
 class nsITimer;
 
 namespace mozilla {
@@ -43,20 +45,42 @@ CertVerifier::CertificateTransparencyMode GetCertificateTransparencyMode();
 }  // namespace psm
 }  // namespace mozilla
 
-#define NS_NSSCOMPONENT_CID                          \
-  {                                                  \
-    0x4cb64dfd, 0xca98, 0x4e24, {                    \
-      0xbe, 0xfd, 0x0d, 0x92, 0x85, 0xa3, 0x3b, 0xcb \
-    }                                                \
-  }
+#define NS_NSSCOMPONENT_CID \
+  {0x4cb64dfd, 0xca98, 0x4e24, {0xbe, 0xfd, 0x0d, 0x92, 0x85, 0xa3, 0x3b, 0xcb}}
 
 bool EnsureNSSInitializedChromeOrContent();
 bool HandleTLSPrefChange(const nsCString& aPref);
 void SetValidationOptionsCommon();
 void PrepareForShutdownInSocketProcess();
 
+// RAII helper class to indicate that gecko is searching for client auth
+// certificates. Will automatically stop indicating that a search is happening
+// when it goes out of scope.
+// osclientcerts (or ipcclientcerts, in the socket process) will call
+// IsGeckoSearchingForClientAuthCertificates() to determine if gecko is
+// searching for client auth certificates. If so, the module knows to refresh
+// its list of certificates and keys (which can be costly).
+// In theory, two separate threads could both create a
+// AutoSearchingForClientAuthCertificates at overlapping times. If one goes out
+// of scope sooner than the other, IsGeckoSearchingForClientAuthCertificates()
+// could potentially incorrectly return false for the slower thread. However,
+// as long as the faster thread has ensured that osclientcerts/ipcclientcerts
+// has updated its list of known certificates, a second search would be
+// redundant anyway, so it doesn't matter.
+class AutoSearchingForClientAuthCertificates {
+ public:
+  AutoSearchingForClientAuthCertificates();
+  ~AutoSearchingForClientAuthCertificates();
+};
+
 // Implementation of the PSM component interface.
-class nsNSSComponent final : public nsINSSComponent, public nsIObserver {
+class nsNSSComponent final : public nsINSSComponent,
+                             public nsIObserver
+#ifdef ENABLE_TESTS
+    ,
+                             public nsISSLTokensCacheTest
+#endif
+{
  public:
   // LoadLoadableCertsTask updates mLoadableCertsLoaded and
   // mLoadableCertsLoadedResult and then signals mLoadableCertsLoadedMonitor.
@@ -70,6 +94,9 @@ class nsNSSComponent final : public nsINSSComponent, public nsIObserver {
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSINSSCOMPONENT
   NS_DECL_NSIOBSERVER
+#ifdef ENABLE_TESTS
+  NS_DECL_NSISSLTOKENSCACHETEST
+#endif
 
   nsresult Init();
 
@@ -88,14 +115,13 @@ class nsNSSComponent final : public nsINSSComponent, public nsIObserver {
   static void DoClearSSLExternalAndInternalSessionCache();
 
  protected:
-  virtual ~nsNSSComponent();
+  ~nsNSSComponent();
 
  private:
   nsresult InitializeNSS();
   void PrepareForShutdown();
 
-  void setValidationOptions(bool isInitialSetting,
-                            const mozilla::MutexAutoLock& proofOfLock);
+  void setValidationOptions(const mozilla::MutexAutoLock& proofOfLock);
   void GetRevocationBehaviorFromPrefs(
       /*out*/ mozilla::psm::CertVerifier::OcspDownloadConfig* odc,
       /*out*/ mozilla::psm::CertVerifier::OcspStrictConfig* osc,
@@ -133,6 +159,10 @@ class nsNSSComponent final : public nsINSSComponent, public nsIObserver {
 
   // The following members are accessed only on the main thread:
   static int mInstanceCount;
+  // A serial event target used primarily for operations that modify the NSS
+  // module DB. Using this queue for all such tasks avoids threading issues in
+  // NSS.
+  nsCOMPtr<nsISerialEventTarget> mNSSTaskQueue;
 };
 
 inline nsresult BlockUntilLoadableCertsLoaded() {
@@ -143,16 +173,19 @@ inline nsresult BlockUntilLoadableCertsLoaded() {
   return component->BlockUntilLoadableCertsLoaded();
 }
 
-inline nsresult CheckForSmartCardChanges() {
-#ifndef MOZ_NO_SMART_CARDS
-  nsCOMPtr<nsINSSComponent> component(do_GetService(PSM_COMPONENT_CONTRACTID));
-  if (!component) {
-    return NS_ERROR_FAILURE;
-  }
-  return component->CheckForSmartCardChanges();
-#else
-  return NS_OK;
-#endif
-}
+// In theory a token on a PKCS#11 module can be inserted or removed at any
+// time. Operations that may depend on resources on external tokens should call
+// this to ensure they have a recent view of the token.
+nsresult CheckForSmartCardChanges();
+
+// Gets the path to the current profile as a string in a way that NSS can make
+// use of it. In particular, uses UTF-8 file paths on Windows (regardless of
+// the current system code page), because that's what SQLite (which provides
+// NSS' storage) requires.
+nsresult GetNSSProfilePath(nsAutoCString& aProfilePath);
+
+// Helper to determine if the platform is in safe mode or not. Conservatively
+// defaults to `true` if no nsIXULRuntime is available.
+bool GetInSafeMode();
 
 #endif  // _nsNSSComponent_h_

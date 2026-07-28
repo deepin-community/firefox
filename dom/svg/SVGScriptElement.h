@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,8 +7,8 @@
 
 #include "SVGAnimatedString.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/dom/ScriptElement.h"
 #include "mozilla/dom/SVGElement.h"
+#include "mozilla/dom/ScriptElement.h"
 
 nsresult NS_NewSVGScriptElement(
     nsIContent** aResult, already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo,
@@ -46,7 +44,7 @@ class SVGScriptElement final : public SVGScriptElementBase,
   FetchPriority GetFetchPriority() const override;
 
   // ScriptElement
-  bool HasScriptContent() override;
+  bool HasExternalScriptContent() override;
 
   // nsIContent specializations:
   nsresult BindToTree(BindContext&, nsINode& aParent) override;
@@ -70,20 +68,22 @@ class SVGScriptElement final : public SVGScriptElementBase,
   void GetCrossOrigin(nsAString& aCrossOrigin);
   void SetCrossOrigin(const nsAString& aCrossOrigin, ErrorResult& aError);
   already_AddRefed<DOMSVGAnimatedString> Href();
+  void GetFetchPriority(nsAString& aFetchPriority) const;
+  void SetFetchPriority(const nsAString& aFetchPriority) {
+    SetAttr(nsGkAtoms::fetchpriority, aFetchPriority, IgnoreErrors());
+  }
 
  protected:
   ~SVGScriptElement() = default;
 
   StringAttributesInfo GetStringInfo() override;
 
-  // SVG Script elements don't have the ability to set async properties on
-  // themselves, so this will always return false.
-  bool GetAsyncState() override { return false; }
+  bool GetAsyncState() override { return Async(); }
 
   nsIContent* GetAsContent() override { return this; }
 
   enum { HREF, XLINK_HREF };
-  SVGAnimatedString mStringAttributes[2];
+  SVGAnimatedScriptHrefString mStringAttributes[2];
   static StringInfo sStringInfo[2];
 };
 

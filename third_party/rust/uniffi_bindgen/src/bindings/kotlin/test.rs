@@ -2,9 +2,11 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::TargetLanguage;
-use crate::{bindings::RunScriptOptions, library_mode::generate_bindings, BindingGeneratorDefault};
-use anyhow::{bail, Context, Result};
+use crate::{
+    bail,
+    bindings::{generate, GenerateOptions, RunScriptOptions, TargetLanguage},
+    Context, Result,
+};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env;
 use std::process::Command;
@@ -35,17 +37,13 @@ pub fn run_script(
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, script_path)?;
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
-    generate_bindings(
-        &cdylib_path,
-        None,
-        &BindingGeneratorDefault {
-            target_languages: vec![TargetLanguage::Kotlin],
-            try_format_code: false,
-        },
-        None,
-        &out_dir,
-        false,
-    )?;
+
+    generate(GenerateOptions {
+        languages: vec![TargetLanguage::Kotlin],
+        source: cdylib_path.to_path_buf(),
+        out_dir: out_dir.to_path_buf(),
+        ..GenerateOptions::default()
+    })?;
     let jar_file = build_jar(crate_name, &out_dir, options)?;
 
     let mut command = kotlinc_command(options);
@@ -70,7 +68,7 @@ pub fn run_script(
         .wait()
         .context("Failed to wait for `kotlinc` when running Kotlin script")?;
     if !status.success() {
-        anyhow::bail!("running `kotlinc` failed")
+        bail!("running `kotlinc` failed")
     }
     Ok(())
 }

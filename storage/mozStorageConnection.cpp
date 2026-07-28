@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=2 et lcs=trail\:.,tab\:>~ :
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -13,12 +11,12 @@
 #include "nsIXPConnect.h"
 #include "mozilla/AppShutdown.h"
 #include "mozilla/CheckedInt.h"
+#include "mozilla/glean/StorageMetrics.h"
 #include "mozilla/Telemetry.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/CondVar.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/ErrorNames.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/quota/QuotaObject.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/SpinEventLoopUntil.h"
@@ -39,7 +37,7 @@
 #include "ObfuscatingVFS.h"
 #include "QuotaVFS.h"
 #include "StorageBaseStatementInternal.h"
-#include "SQLCollations.h"
+#include "mozilla/intl/AppCollator.h"
 #include "FileSystemModule.h"
 #include "mozStorageHelper.h"
 
@@ -80,9 +78,6 @@ mozilla::LazyLogModule gStorageLog("mozStorage");
 namespace mozilla::storage {
 
 using mozilla::dom::quota::QuotaObject;
-using mozilla::Telemetry::AccumulateCategoricalKeyed;
-using mozilla::Telemetry::LABELS_SQLITE_STORE_OPEN;
-using mozilla::Telemetry::LABELS_SQLITE_STORE_QUERY;
 
 namespace {
 
@@ -167,6 +162,12 @@ int sqlite3_T_null(sqlite3_context* aCtx) {
 int sqlite3_T_blob(sqlite3_context* aCtx, const void* aData, int aSize) {
   ::sqlite3_result_blob(aCtx, aData, aSize, free);
   return SQLITE_OK;
+}
+
+int sqlite3_T_array(sqlite3_context* aCtx, const void* aData, int aSize,
+                    int aType) {
+  // Not supported for now.
+  return SQLITE_MISUSE;
 }
 
 #include "variantToSQLiteT_impl.h"
@@ -390,8 +391,8 @@ class AsyncInitializeClone final : public Runnable {
 
  private:
   nsresult Dispatch(nsresult aResult, nsISupports* aValue) {
-    RefPtr<CallbackComplete> event =
-        new CallbackComplete(aResult, aValue, mCallback.forget());
+    auto event =
+        MakeRefPtr<CallbackComplete>(aResult, aValue, mCallback.forget());
     return mClone->eventTargetOpenedOn->Dispatch(event, NS_DISPATCH_NORMAL);
   }
 
@@ -457,7 +458,7 @@ class AsyncVacuumEvent final : public Runnable {
     if (IsOnCurrentSerialEventTarget(mConnection->eventTargetOpenedOn)) {
       // Send the completion event.
       if (mCallback) {
-        mozilla::Unused << mCallback->Complete(mStatus, nullptr);
+        (void)mCallback->Complete(mStatus, nullptr);
       }
       return NS_OK;
     }
@@ -465,8 +466,8 @@ class AsyncVacuumEvent final : public Runnable {
     // Ensure to invoke the callback regardless of errors.
     auto guard = MakeScopeExit([&]() {
       mConnection->mIsStatementOnHelperThreadInterruptible = false;
-      mozilla::Unused << mConnection->eventTargetOpenedOn->Dispatch(
-          this, NS_DISPATCH_NORMAL);
+      (void)mConnection->eventTargetOpenedOn->Dispatch(this,
+                                                       NS_DISPATCH_NORMAL);
     });
 
     // Get list of attached databases.
@@ -635,6 +636,8 @@ class AsyncBackupDatabaseFile final : public Runnable, public nsITimerCallback {
 
     int srv = ::sqlite3_open(NS_ConvertUTF16toUTF8(path).get(), &mBackupFile);
     if (srv != SQLITE_OK) {
+      ::sqlite3_close(mBackupFile);
+      mBackupFile = nullptr;
       return Dispatch(NS_ERROR_FAILURE, nullptr);
     }
 
@@ -677,11 +680,8 @@ class AsyncBackupDatabaseFile final : public Runnable, public nsITimerCallback {
     nsAutoString tempPath = originalPath;
     tempPath.AppendLiteral(".tmp");
 
-    nsCOMPtr<nsIFile> file =
-        do_CreateInstance("@mozilla.org/file/local;1", &rv);
-    DISPATCH_AND_RETURN_IF_FAILED(rv);
-
-    rv = file->InitWithPath(tempPath);
+    nsCOMPtr<nsIFile> file;
+    rv = NS_NewLocalFile(tempPath, getter_AddRefs(file));
     DISPATCH_AND_RETURN_IF_FAILED(rv);
 
     int srv = ::sqlite3_backup_step(mBackupHandle, mPagesPerStep);
@@ -739,8 +739,8 @@ class AsyncBackupDatabaseFile final : public Runnable, public nsITimerCallback {
   }
 
   nsresult Dispatch(nsresult aResult, nsISupports* aValue) {
-    RefPtr<CallbackComplete> event =
-        new CallbackComplete(aResult, aValue, mCallback.forget());
+    auto event =
+        MakeRefPtr<CallbackComplete>(aResult, aValue, mCallback.forget());
     return mConnection->eventTargetOpenedOn->Dispatch(event,
                                                       NS_DISPATCH_NORMAL);
   }
@@ -863,7 +863,7 @@ NS_IMETHODIMP_(MozExternalRefCountType) Connection::Release(void) {
         // This could cause SpinningSynchronousClose() to be invoked and AddRef
         // triggered for AsyncCloseConnection's strong ref if the conn was ever
         // use for async purposes.  (Main-thread only, though.)
-        Unused << synchronousClose();
+        (void)synchronousClose();
       } else {
         nsCOMPtr<nsIRunnable> event =
             NewRunnableMethod("storage::Connection::synchronousClose", this,
@@ -877,7 +877,7 @@ NS_IMETHODIMP_(MozExternalRefCountType) Connection::Release(void) {
           // automatic cleanup, but not a Connection.)
           MOZ_ASSERT(false,
                      "Leaked Connection::synchronousClose(), ownership fail.");
-          Unused << synchronousClose();
+          (void)synchronousClose();
         }
       }
 
@@ -943,32 +943,27 @@ void Connection::RecordOpenStatus(nsresult rv) {
   }
 
   if (NS_SUCCEEDED(rv)) {
-    AccumulateCategoricalKeyed(histogramKey, LABELS_SQLITE_STORE_OPEN::success);
     return;
   }
 
   switch (rv) {
     case NS_ERROR_FILE_CORRUPTED:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_OPEN::corrupt);
+      mozilla::glean::sqlite_store::open.Get(histogramKey, "corrupt"_ns).Add();
       break;
     case NS_ERROR_STORAGE_IOERR:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_OPEN::diskio);
+      mozilla::glean::sqlite_store::open.Get(histogramKey, "diskio"_ns).Add();
       break;
     case NS_ERROR_FILE_ACCESS_DENIED:
     case NS_ERROR_FILE_IS_LOCKED:
     case NS_ERROR_FILE_READ_ONLY:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_OPEN::access);
+      mozilla::glean::sqlite_store::open.Get(histogramKey, "access"_ns).Add();
       break;
     case NS_ERROR_FILE_NO_DEVICE_SPACE:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_OPEN::diskspace);
+      mozilla::glean::sqlite_store::open.Get(histogramKey, "diskspace"_ns)
+          .Add();
       break;
     default:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_OPEN::failure);
+      mozilla::glean::sqlite_store::open.Get(histogramKey, "failure"_ns).Add();
   }
 }
 
@@ -988,44 +983,37 @@ void Connection::RecordQueryStatus(int srv) {
     // they aren't indicating a failure.
     case SQLITE_ABORT:
     case SQLITE_INTERRUPT:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_QUERY::success);
       break;
     case SQLITE_CORRUPT:
     case SQLITE_NOTADB:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_QUERY::corrupt);
+      mozilla::glean::sqlite_store::query.Get(histogramKey, "corrupt"_ns).Add();
       break;
     case SQLITE_PERM:
     case SQLITE_CANTOPEN:
     case SQLITE_LOCKED:
     case SQLITE_READONLY:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_QUERY::access);
+      mozilla::glean::sqlite_store::query.Get(histogramKey, "access"_ns).Add();
       break;
     case SQLITE_IOERR:
     case SQLITE_NOLFS:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_QUERY::diskio);
+      mozilla::glean::sqlite_store::query.Get(histogramKey, "diskio"_ns).Add();
       break;
     case SQLITE_FULL:
     case SQLITE_TOOBIG:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_QUERY::diskspace);
+      mozilla::glean::sqlite_store::query.Get(histogramKey, "diskspace"_ns)
+          .Add();
       break;
     case SQLITE_CONSTRAINT:
     case SQLITE_RANGE:
     case SQLITE_MISMATCH:
     case SQLITE_MISUSE:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_QUERY::misuse);
+      mozilla::glean::sqlite_store::query.Get(histogramKey, "misuse"_ns).Add();
       break;
     case SQLITE_BUSY:
-      AccumulateCategoricalKeyed(histogramKey, LABELS_SQLITE_STORE_QUERY::busy);
+      mozilla::glean::sqlite_store::query.Get(histogramKey, "busy"_ns).Add();
       break;
     default:
-      AccumulateCategoricalKeyed(histogramKey,
-                                 LABELS_SQLITE_STORE_QUERY::failure);
+      mozilla::glean::sqlite_store::query.Get(histogramKey, "failure"_ns).Add();
   }
 }
 
@@ -1049,6 +1037,7 @@ nsresult Connection::initialize(const nsACString& aStorageKey,
   int srv = ::sqlite3_open_v2(path.get(), &mDBConn, mFlags,
                               basevfs::GetVFSName(true));
   if (srv != SQLITE_OK) {
+    ::sqlite3_close(mDBConn);
     mDBConn = nullptr;
     nsresult rv = convertResultCode(srv);
     RecordOpenStatus(rv);
@@ -1097,6 +1086,7 @@ nsresult Connection::initialize(nsIFile* aDatabaseFile) {
     srv = ::sqlite3_open_v2(NS_ConvertUTF16toUTF8(path).get(), &mDBConn, mFlags,
                             basevfs::GetVFSName(exclusive));
     if (exclusive && (srv == SQLITE_LOCKED || srv == SQLITE_BUSY)) {
+      ::sqlite3_close(mDBConn);
       // Retry without trying to get an exclusive lock.
       exclusive = false;
       srv = ::sqlite3_open_v2(NS_ConvertUTF16toUTF8(path).get(), &mDBConn,
@@ -1104,6 +1094,7 @@ nsresult Connection::initialize(nsIFile* aDatabaseFile) {
     }
   }
   if (srv != SQLITE_OK) {
+    ::sqlite3_close(mDBConn);
     mDBConn = nullptr;
     rv = convertResultCode(srv);
     RecordOpenStatus(rv);
@@ -1121,6 +1112,9 @@ nsresult Connection::initialize(nsIFile* aDatabaseFile) {
                             basevfs::GetVFSName(false));
     if (srv == SQLITE_OK) {
       rv = initializeInternal();
+    } else {
+      ::sqlite3_close(mDBConn);
+      mDBConn = nullptr;
     }
   }
 
@@ -1180,6 +1174,7 @@ nsresult Connection::initialize(nsIFileURL* aFileURL) {
 
   int srv = ::sqlite3_open_v2(spec.get(), &mDBConn, mFlags, vfs);
   if (srv != SQLITE_OK) {
+    ::sqlite3_close(mDBConn);
     mDBConn = nullptr;
     rv = convertResultCode(srv);
     RecordOpenStatus(rv);
@@ -1251,7 +1246,7 @@ nsresult Connection::initializeInternal() {
   }
 
   // Register our built-in SQL collating sequences.
-  srv = registerCollations(mDBConn, mStorageService);
+  srv = mozilla::intl::AppCollator::InstallCallbacks(mDBConn);
   if (srv != SQLITE_OK) {
     return convertResultCode(srv);
   }
@@ -1260,10 +1255,10 @@ nsresult Connection::initializeInternal() {
   // accordingly to their needs.
 #if defined(ANDROID)
   // Android prefers synchronous = OFF for performance reasons.
-  Unused << ExecuteSimpleSQL("PRAGMA synchronous = OFF;"_ns);
+  (void)ExecuteSimpleSQL("PRAGMA synchronous = OFF;"_ns);
 #else
   // Normal is the suggested value for WAL journals.
-  Unused << ExecuteSimpleSQL("PRAGMA synchronous = NORMAL;"_ns);
+  (void)ExecuteSimpleSQL("PRAGMA synchronous = NORMAL;"_ns);
 #endif
 
   // Initialization succeeded, we can stop guarding for failures.
@@ -1283,7 +1278,7 @@ nsresult Connection::initializeOnAsyncThread(nsIFile* aStorageFile) {
     nsCOMPtr<nsIRunnable> event =
         NewRunnableMethod("Connection::shutdownAsyncThread", this,
                           &Connection::shutdownAsyncThread);
-    Unused << NS_DispatchToMainThread(event);
+    (void)NS_DispatchToMainThread(event);
   }
   return rv;
 }
@@ -1424,7 +1419,7 @@ nsresult Connection::ensureOperationSupported(
 #ifdef DEBUG
     if (NS_IsMainThread()) {
       nsCOMPtr<nsIXPConnect> xpc = nsIXPConnect::XPConnect();
-      Unused << xpc->DebugDumpJSStack(false, false, false);
+      (void)xpc->DebugDumpJSStack(false, false, false);
     }
 #endif
     MOZ_ASSERT(false,
@@ -1507,8 +1502,8 @@ nsresult Connection::internalClose(sqlite3* aNativeConnection) {
       // are done here.
       SQLiteMutexAutoLock lockedScope(sharedDBMutex);
       // We still have non-finalized statements. Finalize them.
-      sqlite3_stmt* stmt = nullptr;
-      while ((stmt = ::sqlite3_next_stmt(aNativeConnection, stmt))) {
+      while (sqlite3_stmt* stmt =
+                 ::sqlite3_next_stmt(aNativeConnection, nullptr)) {
         MOZ_LOG(gStorageLog, LogLevel::Debug,
                 ("Auto-finalizing SQL statement '%s' (%p)", ::sqlite3_sql(stmt),
                  stmt));
@@ -1521,21 +1516,7 @@ nsresult Connection::internalClose(sqlite3* aNativeConnection) {
         NS_WARNING(msg.get());
 #endif  // DEBUG
 
-        srv = ::sqlite3_finalize(stmt);
-
-#ifdef DEBUG
-        if (srv != SQLITE_OK) {
-          SmprintfPointer msg = ::mozilla::Smprintf(
-              "Could not finalize SQL statement (%p)", stmt);
-          NS_WARNING(msg.get());
-        }
-#endif  // DEBUG
-
-        // Ensure that the loop continues properly, whether closing has
-        // succeeded or not.
-        if (srv == SQLITE_OK) {
-          stmt = nullptr;
-        }
+        (void)::sqlite3_finalize(stmt);
       }
       // Scope exiting will unlock the mutex before we invoke sqlite3_close()
       // again, since Sqlite will try to acquire it.
@@ -1739,7 +1720,7 @@ nsresult Connection::synchronousClose() {
 #ifdef DEBUG
     if (NS_IsMainThread()) {
       nsCOMPtr<nsIXPConnect> xpc = nsIXPConnect::XPConnect();
-      Unused << xpc->DebugDumpJSStack(false, false, false);
+      (void)xpc->DebugDumpJSStack(false, false, false);
     }
 #endif
     MOZ_ASSERT(false,
@@ -1747,7 +1728,7 @@ nsresult Connection::synchronousClose() {
                "statements. "
                "Should have used asyncClose().");
     // Try to close the database regardless, to free up resources.
-    Unused << SpinningSynchronousClose();
+    (void)SpinningSynchronousClose();
     return NS_ERROR_UNEXPECTED;
   }
 
@@ -1778,7 +1759,7 @@ Connection::SpinningSynchronousClose() {
     return NS_ERROR_UNEXPECTED;
   }
 
-  RefPtr<CloseListener> listener = new CloseListener();
+  auto listener = MakeRefPtr<CloseListener>();
   rv = AsyncClose(listener);
   NS_ENSURE_SUCCESS(rv, rv);
   MOZ_ALWAYS_TRUE(
@@ -1869,7 +1850,7 @@ Connection::AsyncClose(mozIStorageCompletionCallback* aCallback) {
       // Closing the database is more important than returning an error code
       // about a failure to dispatch, especially because all existing native
       // callers ignore our return value.
-      Unused << NS_DispatchToMainThread(completeEvent.forget());
+      (void)NS_DispatchToMainThread(completeEvent.forget());
     }
     MOZ_ALWAYS_SUCCEEDS(synchronousClose());
     // Return a success inconditionally here, since Close() is unlikely to fail
@@ -1928,12 +1909,12 @@ Connection::AsyncClone(bool aReadOnly,
 
   // The cloned connection will still implement the synchronous API, but throw
   // if any synchronous methods are called on the main thread.
-  RefPtr<Connection> clone =
-      new Connection(mStorageService, flags, ASYNCHRONOUS, mTelemetryFilename,
-                     mInterruptible, mIgnoreLockingMode, mOpenNotExclusive);
+  auto clone = MakeRefPtr<Connection>(mStorageService, flags, ASYNCHRONOUS,
+                                      mTelemetryFilename, mInterruptible,
+                                      mIgnoreLockingMode, mOpenNotExclusive);
 
-  RefPtr<AsyncInitializeClone> initEvent =
-      new AsyncInitializeClone(this, clone, aReadOnly, aCallback);
+  auto initEvent =
+      MakeRefPtr<AsyncInitializeClone>(this, clone, aReadOnly, aCallback);
   // Dispatch to our async thread, since the originating connection must remain
   // valid and open for the whole cloning process.  This also ensures we are
   // properly serialized with a `close` operation, rather than race with it.
@@ -2105,9 +2086,9 @@ Connection::Clone(bool aReadOnly, mozIStorageConnection** _connection) {
     flags = (~SQLITE_OPEN_CREATE & flags);
   }
 
-  RefPtr<Connection> clone =
-      new Connection(mStorageService, flags, mSupportedOperations,
-                     mTelemetryFilename, mInterruptible);
+  auto clone =
+      MakeRefPtr<Connection>(mStorageService, flags, mSupportedOperations,
+                             mTelemetryFilename, mInterruptible);
 
   rv = initializeClone(clone, aReadOnly);
   if (NS_FAILED(rv)) {
@@ -2502,7 +2483,7 @@ Connection::BeginTransaction() {
 nsresult Connection::beginTransactionInternal(
     const SQLiteMutexAutoLock& aProofOfLock, sqlite3* aNativeConnection,
     int32_t aTransactionType) {
-  if (transactionInProgress(aProofOfLock)) {
+  if (transactionInProgress(aProofOfLock, aNativeConnection)) {
     return NS_ERROR_FAILURE;
   }
   nsresult rv;
@@ -2538,7 +2519,7 @@ Connection::CommitTransaction() {
 
 nsresult Connection::commitTransactionInternal(
     const SQLiteMutexAutoLock& aProofOfLock, sqlite3* aNativeConnection) {
-  if (!transactionInProgress(aProofOfLock)) {
+  if (!transactionInProgress(aProofOfLock, aNativeConnection)) {
     return NS_ERROR_UNEXPECTED;
   }
   nsresult rv =
@@ -2562,7 +2543,7 @@ Connection::RollbackTransaction() {
 
 nsresult Connection::rollbackTransactionInternal(
     const SQLiteMutexAutoLock& aProofOfLock, sqlite3* aNativeConnection) {
-  if (!transactionInProgress(aProofOfLock)) {
+  if (!transactionInProgress(aProofOfLock, aNativeConnection)) {
     return NS_ERROR_UNEXPECTED;
   }
 
@@ -2629,14 +2610,18 @@ Connection::RemoveFunction(const nsACString& aFunctionName) {
   }
 
   SQLiteMutexAutoLock lockedScope(sharedDBMutex);
-  NS_ENSURE_TRUE(mFunctions.Get(aFunctionName, nullptr), NS_ERROR_FAILURE);
+  auto entry = mFunctions.Lookup(aFunctionName);
+  NS_ENSURE_TRUE(entry, NS_ERROR_FAILURE);
 
+  // SQLite allows to register the same function name with different number
+  // of arguments, thus to properly remove our function we must use the same
+  // nArg used at registration time.
   int srv = ::sqlite3_create_function(
-      mDBConn, nsPromiseFlatCString(aFunctionName).get(), 0, SQLITE_ANY,
-      nullptr, nullptr, nullptr, nullptr);
+      mDBConn, nsPromiseFlatCString(aFunctionName).get(), entry->numArgs,
+      SQLITE_ANY, nullptr, nullptr, nullptr, nullptr);
   if (srv != SQLITE_OK) return convertResultCode(srv);
 
-  mFunctions.Remove(aFunctionName);
+  entry.Remove();
 
   return NS_OK;
 }
@@ -2773,6 +2758,9 @@ Connection::LoadExtension(const nsACString& aExtensionName,
   static constexpr nsLiteralCString sSupportedExtensions[] = {
       // clang-format off
       "fts5"_ns,
+  #ifdef MOZ_SQLITE_VEC0_EXT
+      "vec"_ns,
+  #endif
       // clang-format on
   };
   if (std::find(std::begin(sSupportedExtensions),

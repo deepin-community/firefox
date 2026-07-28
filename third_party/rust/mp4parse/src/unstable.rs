@@ -239,8 +239,13 @@ pub fn create_sample_table(
 
         let start_decode = decode_time;
 
-        sample.start_composition = CheckedInteger(track_offset_time.0 + start_composition?.0);
-        sample.end_composition = CheckedInteger(track_offset_time.0 + end_composition?.0);
+        let start_composition_val: i64 = start_composition?.0;
+        let end_composition_val: i64 = end_composition?.0;
+
+        let track_offset: i64 = track_offset_time.0;
+
+        sample.start_composition = CheckedInteger(track_offset.checked_add(start_composition_val)?);
+        sample.end_composition = CheckedInteger(track_offset.checked_add(end_composition_val)?);
         sample.start_decode = CheckedInteger(start_decode.0);
     }
 
@@ -285,7 +290,7 @@ struct TimeOffsetIterator<'a> {
     track_id: usize,
 }
 
-impl<'a> Iterator for TimeOffsetIterator<'a> {
+impl Iterator for TimeOffsetIterator<'_> {
     type Item = i64;
 
     #[allow(clippy::reversed_empty_ranges)]
@@ -320,7 +325,7 @@ impl<'a> Iterator for TimeOffsetIterator<'a> {
     }
 }
 
-impl<'a> TimeOffsetIterator<'a> {
+impl TimeOffsetIterator<'_> {
     fn next_offset_time(&mut self) -> TrackScaledTime<i64> {
         match self.next() {
             Some(v) => TrackScaledTime::<i64>(v, self.track_id),
@@ -342,7 +347,7 @@ struct TimeToSampleIterator<'a> {
     track_id: usize,
 }
 
-impl<'a> Iterator for TimeToSampleIterator<'a> {
+impl Iterator for TimeToSampleIterator<'_> {
     type Item = u32;
 
     #[allow(clippy::reversed_empty_ranges)]
@@ -363,7 +368,7 @@ impl<'a> Iterator for TimeToSampleIterator<'a> {
     }
 }
 
-impl<'a> TimeToSampleIterator<'a> {
+impl TimeToSampleIterator<'_> {
     fn next_delta(&mut self) -> TrackScaledTime<i64> {
         match self.next() {
             Some(v) => TrackScaledTime::<i64>(i64::from(v), self.track_id),
@@ -405,7 +410,7 @@ struct SampleToChunkIterator<'a> {
     remain_chunk_count: u32, // total chunk number from 'stco'.
 }
 
-impl<'a> Iterator for SampleToChunkIterator<'a> {
+impl Iterator for SampleToChunkIterator<'_> {
     type Item = (u32, u32);
 
     fn next(&mut self) -> Option<(u32, u32)> {
@@ -428,7 +433,7 @@ impl<'a> Iterator for SampleToChunkIterator<'a> {
     }
 }
 
-impl<'a> SampleToChunkIterator<'a> {
+impl SampleToChunkIterator<'_> {
     #[allow(clippy::reversed_empty_ranges)]
     fn locate(&mut self) -> std::ops::Range<u32> {
         loop {

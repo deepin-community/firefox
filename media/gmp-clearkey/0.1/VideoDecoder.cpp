@@ -16,7 +16,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <limits>
+#include <thread>
 
 #include "BigEndian.h"
 #include "ClearKeyUtils.h"
@@ -27,35 +27,36 @@
 
 using namespace wmf;
 
-VideoDecoder::VideoDecoder(cdm::Host_10* aHost)
-    : mHost(aHost), mHasShutdown(false) {
+VideoDecoder::VideoDecoder(cdm::Host_11* aHost, wmf::WMFH264Decoder* aDecoder)
+    : mHost(aHost), mDecoder(aDecoder) {
   CK_LOGD("VideoDecoder created");
 
   // We drop the ref in DecodingComplete().
   AddRef();
-
-  mDecoder = new WMFH264Decoder();
-
-  uint32_t cores = std::max(1u, std::thread::hardware_concurrency());
-
-  HRESULT hr = mDecoder->Init(cores);
-  if (FAILED(hr)) {
-    CK_LOGE("Failed to initialize mDecoder!");
-  }
 }
 
 VideoDecoder::~VideoDecoder() { CK_LOGD("VideoDecoder destroyed"); }
 
-cdm::Status VideoDecoder::InitDecode(const cdm::VideoDecoderConfig_2& aConfig) {
-  CK_LOGD("VideoDecoder::InitDecode");
+/* static */ VideoDecoder* VideoDecoder::Create(
+    cdm::Host_11* aHost, const cdm::VideoDecoderConfig_2& aConfig) {
+  CK_LOGD("VideoDecoder::Create");
 
-  if (!mDecoder) {
-    CK_LOGD("VideoDecoder::InitDecode failed to init WMFH264Decoder");
-
-    return cdm::Status::kDecodeError;
+  if (aConfig.codec != cdm::VideoCodec::kCodecH264) {
+    CK_LOGE("Unsupported codec type!");
+    return nullptr;
   }
 
-  return cdm::Status::kSuccess;
+  uint32_t cores = std::max(1u, std::thread::hardware_concurrency());
+
+  auto* decoder = new WMFH264Decoder();
+  HRESULT hr = decoder->Init(cores);
+  if (FAILED(hr)) {
+    CK_LOGE("Failed to initialize mDecoder!");
+    delete decoder;
+    return nullptr;
+  }
+
+  return new VideoDecoder(aHost, decoder);
 }
 
 cdm::Status VideoDecoder::Decode(const cdm::InputBuffer_2& aInputBuffer,
@@ -131,7 +132,8 @@ cdm::Status VideoDecoder::OutputFrame(cdm::VideoFrame* aVideoFrame) {
 
     CK_LOGD("VideoDecoder::OutputFrame Decoder output ret=0x%x", hr);
 
-    mOutputQueue.push(output);
+    mOutputQueue.push({output, mDecoder->GetPictureRegion(),
+                       mDecoder->GetStride(), mDecoder->GetFrameHeight()});
     CK_LOGD("VideoDecoder::OutputFrame: Queue size: %u", mOutputQueue.size());
   }
 
@@ -148,20 +150,19 @@ cdm::Status VideoDecoder::OutputFrame(cdm::VideoFrame* aVideoFrame) {
     return cdm::Status::kDecodeError;
   }
 
-  CComPtr<IMFSample> result = mOutputQueue.front();
+  OutputData result = std::move(mOutputQueue.front());
   mOutputQueue.pop();
 
   // The Chromium CDM API doesn't have support for negative strides, though
   // they are theoretically possible in real world data.
-  if (mDecoder->GetStride() <= 0) {
+  if (result.mStride <= 0) {
     CK_LOGD("VideoDecoder::OutputFrame Failed! (negative stride)");
     return cdm::Status::kDecodeError;
   }
 
-  const IntRect& picture = mDecoder->GetPictureRegion();
-  hr = SampleToVideoFrame(result, picture.width, picture.height,
-                          mDecoder->GetStride(), mDecoder->GetFrameHeight(),
-                          aVideoFrame);
+  const IntRect& picture = result.mPictureRegion;
+  hr = SampleToVideoFrame(result.mSample, picture.width, picture.height,
+                          result.mStride, result.mFrameHeight, aVideoFrame);
   if (FAILED(hr)) {
     CK_LOGD("VideoDecoder::OutputFrame Failed!");
     return cdm::Status::kDecodeError;
@@ -219,9 +220,9 @@ VideoDecoder::SampleToVideoFrame(IMFSample* aSample, int32_t aPictureWidth,
   uint32_t srcUVSize = stride * (aFrameHeight + padding) / 4;
   uint32_t halfStride = (stride + 1) / 2;
 
-  aVideoFrame->SetStride(cdm::VideoPlane::kYPlane, stride);
-  aVideoFrame->SetStride(cdm::VideoPlane::kUPlane, halfStride);
-  aVideoFrame->SetStride(cdm::VideoPlane::kVPlane, halfStride);
+  aVideoFrame->SetStride(cdm::kYPlane, stride);
+  aVideoFrame->SetStride(cdm::kUPlane, halfStride);
+  aVideoFrame->SetStride(cdm::kVPlane, halfStride);
 
   aVideoFrame->SetSize(cdm::Size{aPictureWidth, aPictureHeight});
 
@@ -252,17 +253,17 @@ VideoDecoder::SampleToVideoFrame(IMFSample* aSample, int32_t aPictureWidth,
 
   uint8_t* outBuffer = buffer->Data();
 
-  aVideoFrame->SetPlaneOffset(cdm::VideoPlane::kYPlane, 0);
+  aVideoFrame->SetPlaneOffset(cdm::kYPlane, 0);
 
   // Offset of U plane is the size of the Y plane, excluding the padding that
   // WMF adds.
   uint32_t dstUOffset = stride * aPictureHeight;
-  aVideoFrame->SetPlaneOffset(cdm::VideoPlane::kUPlane, dstUOffset);
+  aVideoFrame->SetPlaneOffset(cdm::kUPlane, dstUOffset);
 
   // Offset of the V plane is the size of the Y plane + the size of the U plane,
   // excluding any padding WMF adds.
   uint32_t dstVOffset = stride * aPictureHeight + (stride * aPictureHeight) / 4;
-  aVideoFrame->SetPlaneOffset(cdm::VideoPlane::kVPlane, dstVOffset);
+  aVideoFrame->SetPlaneOffset(cdm::kVPlane, dstVOffset);
 
   // Copy the pixel data, excluding WMF's padding.
   memcpy(outBuffer, data, stride * aPictureHeight);

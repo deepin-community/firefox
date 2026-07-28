@@ -4,13 +4,11 @@
 
 "use strict";
 
+// Schedule reset to the initial sidebar state after the test.
+SidebarTestUtils.restoreStateAtCleanup(window);
+
 registerCleanupFunction(async function () {
   await resetCustomization();
-
-  // Ensure sidebar is hidden after each test:
-  if (!document.getElementById("sidebar-box").hidden) {
-    SidebarController.hide();
-  }
 });
 
 var showSidebar = async function (win = window) {
@@ -27,7 +25,14 @@ var showSidebar = async function (win = window) {
 
 var hideSidebar = async function (win = window) {
   let button = win.document.getElementById("sidebar-button");
+  let box = win.document.getElementById("sidebar-box");
+
   EventUtils.synthesizeMouseAtCenter(button, {}, win);
+  await BrowserTestUtils.waitForMutationCondition(
+    box,
+    { attributes: true, attributeFilter: ["hidden"] },
+    () => box.hidden
+  );
   ok(!win.SidebarController.isOpen, "Sidebar is closed");
   ok(!button.hasAttribute("checked"), "Toolbar button isn't checked");
 };
@@ -38,6 +43,7 @@ add_task(async function () {
     "sidebar.revamp",
     false
   );
+  info(`sidebarRevampEnabled: ${sidebarRevampEnabled}`);
   if (!sidebarRevampEnabled) {
     CustomizableUI.addWidgetToArea("sidebar-button", "nav-bar");
 
@@ -60,9 +66,9 @@ add_task(async function () {
     await hideSidebar();
   } else {
     const sidebar = document.querySelector("sidebar-main");
-    ok(sidebar, "Sidebar is shown.");
+    await SidebarTestUtils.ensureLauncherVisible(window);
     for (const [index, toolButton] of sidebar.toolButtons.entries()) {
-      await SidebarController.show(toolButton.getAttribute("view"));
+      await SidebarController.toggle(toolButton.getAttribute("view"));
       is(
         SidebarController.currentID,
         toolButton.getAttribute("view"),
@@ -74,7 +80,13 @@ add_task(async function () {
     }
   }
   let otherWin = await BrowserTestUtils.openNewBrowserWindow();
+  info("Waiting for the sidebar to initialize in the new browser window");
+  await SidebarTestUtils.waitForInitialized(otherWin);
   if (!sidebarRevampEnabled) {
+    ok(
+      !otherWin.SidebarController.isOpen,
+      "The sidebar panel isn't open in the new window"
+    );
     await showSidebar(otherWin);
     is(
       otherWin.SidebarController.currentID,

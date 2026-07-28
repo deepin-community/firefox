@@ -7,19 +7,35 @@
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
-const lazy = {};
+/**
+ * @import {SearchEngine} from "moz-src:///toolkit/components/search/SearchEngine.sys.mjs"
+ */
 
-ChromeUtils.defineLazyGetter(lazy, "logConsole", () => {
-  return console.createInstance({
-    prefix: "SearchUtils",
-    maxLogLevel: SearchUtils.loggingEnabled ? "Debug" : "Warn",
-  });
+const lazy = XPCOMUtils.declareLazy({
+  SearchService: "moz-src:///toolkit/components/search/SearchService.sys.mjs",
+  logConsole: () =>
+    console.createInstance({
+      prefix: "SearchUtils",
+      maxLogLevel: SearchUtils.loggingEnabled ? "Debug" : "Warn",
+    }),
 });
+
+const BinaryInputStream = Components.Constructor(
+  "@mozilla.org/binaryinputstream;1",
+  "nsIBinaryInputStream",
+  "setInputStream"
+);
 
 const BROWSER_SEARCH_PREF = "browser.search.";
 
 /**
  * Load listener
+ *
+ * @implements {nsIRequestObserver}
+ * @implements {nsIStreamListener}
+ * @implements {nsIChannelEventSink}
+ * @implements {nsIInterfaceRequestor}
+ * @implements {nsIProgressEventSink}
  */
 class LoadListener {
   _bytes = [];
@@ -71,7 +87,7 @@ class LoadListener {
     }
 
     if (requestFailed || this._countRead == 0) {
-      lazy.logConsole.warn("loadListener: request failed!");
+      lazy.logConsole.debug("loadListener: request failed!");
       // send null so the callback can deal with the failure
       this._bytes = null;
     } else if (!this._expectedContentType.test(this._channel.contentType)) {
@@ -100,7 +116,13 @@ class LoadListener {
     callback.onRedirectVerifyCallback(Cr.NS_OK);
   }
 
-  // nsIInterfaceRequestor
+  /**
+   * nsIInterfaceRequestor
+   *
+   * @template {nsIID} T
+   * @param {T} iid
+   * @returns {nsQIResult<T>}
+   */
   getInterface(iid) {
     return this.QueryInterface(iid);
   }
@@ -110,88 +132,116 @@ class LoadListener {
   onStatus() {}
 }
 
+/**
+ * Describes reasons why a search engine might have failed installation. Mainly
+ * used by OpenSearch engines, but may be raised for other engines as well.
+ */
+export class SearchEngineInstallError extends Error {
+  /**
+   * @param {"duplicate-title"|"corrupted"|"download-failure"} type
+   * @param {Parameters<ErrorConstructor>} params
+   */
+  constructor(type, ...params) {
+    super(...params);
+    this.type = type;
+  }
+}
+
 export var SearchUtils = {
   BROWSER_SEARCH_PREF,
 
   /**
    * This is the Remote Settings key that we use to get the ignore lists for
    * engines.
+   *
+   * @readonly
    */
   SETTINGS_IGNORELIST_KEY: "hijack-blocklists",
 
   /**
    * This is the Remote Settings key that we use to get the allow lists for
    * overriding the default engines.
+   *
+   * @readonly
    */
   SETTINGS_ALLOWLIST_KEY: "search-default-override-allowlist",
 
   /**
    * This is the Remote Settings key that we use to get the search engine
    * configurations.
+   *
+   * @readonly
    */
   SETTINGS_KEY: "search-config-v2",
 
   /**
    * This is the Remote Settings key that we use to get the search engine
    * configuration overrides.
+   *
+   * @readonly
    */
   SETTINGS_OVERRIDES_KEY: "search-config-overrides-v2",
 
   /**
-   * Topic used for events involving the service itself.
+   * Topic used for observer events involving the service itself.
+   *
+   * @readonly
    */
   TOPIC_SEARCH_SERVICE: "browser-search-service",
 
-  // See documentation in nsISearchService.idl.
+  /**
+   * Topic used for observer events involving search engines.
+   *
+   * @readonly
+   */
   TOPIC_ENGINE_MODIFIED: "browser-search-engine-modified",
-  MODIFIED_TYPE: {
+
+  /**
+   * The data sent with ``TOPIC_ENGINE_MODIFIED`` to identify the type of
+   * change to the search engine.
+   *
+   * @readonly
+   */
+  MODIFIED_TYPE: Object.freeze({
     CHANGED: "engine-changed",
     ICON_CHANGED: "engine-icon-changed",
     REMOVED: "engine-removed",
     ADDED: "engine-added",
     DEFAULT: "engine-default",
     DEFAULT_PRIVATE: "engine-default-private",
-  },
+  }),
 
-  URL_TYPE: {
+  /**
+   * The possible URL types that are used in the search service. Not all of
+   * these are available on ``getSubmission``.
+   *
+   * @readonly
+   */
+  URL_TYPE: Object.freeze({
     SUGGEST_JSON: "application/x-suggestions+json",
     SEARCH: "text/html",
     OPENSEARCH: "application/opensearchdescription+xml",
     TRENDING_JSON: "application/x-trending+json",
-  },
+    SEARCH_FORM: "searchform",
+    VISUAL_SEARCH: "application/x-visual-search+html",
+  }),
 
-  ENGINES_URLS: {
-    "prod-main":
-      "https://firefox.settings.services.mozilla.com/v1/buckets/main/collections/search-config/records",
-    "prod-preview":
-      "https://firefox.settings.services.mozilla.com/v1/buckets/main-preview/collections/search-config/records",
-    "stage-main":
-      "https://firefox.settings.services.allizom.org/v1/buckets/main/collections/search-config/records",
-    "stage-preview":
-      "https://firefox.settings.services.allizom.org/v1/buckets/main-preview/collections/search-config/records",
-  },
-
-  // The following constants are left undocumented in nsISearchService.idl
-  // For the moment, they are meant for testing/debugging purposes only.
-
-  // Set an arbitrary cap on the maximum icon size. Without this, large icons can
-  // cause big delays when loading them at startup.
+  /**
+   * An arbitrary cap on the maximum icon size. Without this, large icons can
+   * cause big delays when loading them at startup. The unit is the number of
+   * bytes.
+   *
+   * @readonly
+   */
   MAX_ICON_SIZE: 20000,
 
-  DEFAULT_QUERY_CHARSET: "UTF-8",
-
-  // A tag to denote when we are using the "default_locale" of an engine.
-  DEFAULT_TAG: "default",
-
-  // Query parameters can have the property "purpose", whose value
-  // indicates the context that initiated a search. This list contains
-  // defined search contexts.
-  PARAM_PURPOSES: {
-    CONTEXTMENU: "contextmenu",
-    HOMEPAGE: "homepage",
-    KEYWORD: "keyword",
-    NEWTAB: "newtab",
-    SEARCHBAR: "searchbar",
+  /**
+   * The default character set for search queries.
+   *
+   * @readonly
+   */
+  get DEFAULT_QUERY_CHARSET() {
+    return "UTF-8";
   },
 
   LoadListener,
@@ -200,16 +250,16 @@ export var SearchUtils = {
    * Notifies watchers of SEARCH_ENGINE_TOPIC about changes to an engine or to
    * the state of the search service.
    *
-   * @param {nsISearchEngine} engine
+   * @param {SearchEngine} engine
    *   The engine to which the change applies.
    * @param {string} verb
    *   A verb describing the change.
-   *
-   * @see nsISearchService.idl
    */
   notifyAction(engine, verb) {
-    if (Services.search.isInitialized) {
+    if (lazy.SearchService.isInitialized) {
       lazy.logConsole.debug("NOTIFY: Engine:", engine.name, "Verb:", verb);
+      // @ts-ignore XPConnect will automatically wrap the object, so it does
+      // not needs to support nsISupports.
       Services.obs.notifyObservers(engine, this.TOPIC_ENGINE_MODIFIED, verb);
     }
   },
@@ -219,7 +269,7 @@ export var SearchUtils = {
    *
    * @param {string} urlSpec
    *        The URL string from which to create an nsIURI.
-   * @returns {nsIURI} an nsIURI object, or null if the creation of the URI failed.
+   * @returns {?nsIURI} an nsIURI object, or null if the creation of the URI failed.
    */
   makeURI(urlSpec) {
     try {
@@ -234,21 +284,41 @@ export var SearchUtils = {
    *
    * @param {string|nsIURI} url
    *   The URL string from which to create an nsIChannel.
-   * @param {nsIContentPolicy} contentPolicyType
+   * @param {nsContentPolicyType} contentPolicyType
    *   The type of document being loaded.
+   * @param {object} [originAttributes]
+   *   The origin attributes to associate to this channel.
    * @returns {nsIChannel}
    *   an nsIChannel object, or null if the url is invalid.
    */
-  makeChannel(url, contentPolicyType) {
+  makeChannel(url, contentPolicyType, originAttributes = null) {
     if (!contentPolicyType) {
       throw new Error("makeChannel called with invalid content policy type");
     }
     try {
       let uri = typeof url == "string" ? Services.io.newURI(url) : url;
+      let principal;
+      if (uri.scheme == "moz-extension") {
+        principal = Services.scriptSecurityManager.createContentPrincipal(
+          uri,
+          {}
+        );
+      } else {
+        if (!originAttributes) {
+          originAttributes = {};
+          try {
+            originAttributes.firstPartyDomain =
+              Services.eTLD.getSchemelessSite(uri);
+          } catch {}
+        }
+        principal =
+          Services.scriptSecurityManager.createNullPrincipal(originAttributes);
+      }
+
       return Services.io.newChannelFromURI(
         uri,
         null /* loadingNode */,
-        Services.scriptSecurityManager.createNullPrincipal({}),
+        principal,
         null /* triggeringPrincipal */,
         Ci.nsILoadInfo.SEC_ALLOW_CROSS_ORIGIN_SEC_CONTEXT_IS_NULL,
         contentPolicyType
@@ -276,7 +346,7 @@ export var SearchUtils = {
    *   The current settings version.
    */
   get SETTINGS_VERSION() {
-    return 10;
+    return 13;
   },
 
   /**
@@ -316,7 +386,21 @@ export var SearchUtils = {
     return result.substring(0, maxLength);
   },
 
-  getVerificationHash(name, profileDir = PathUtils.profileDir) {
+  /**
+   * Computes a verification hash for a search engine or default engine ID,
+   * used to detect unauthorized modifications. The hash incorporates the
+   * profile directory name as a salt.
+   *
+   * @param {string} name
+   *   The engine load path or engine ID to hash.
+   * @param {string} [profileDirName]
+   *   Profile directory name used as salt. Defaults to the leaf name of
+   *   the current profile directory.
+   */
+  getVerificationHash(
+    name,
+    profileDirName = PathUtils.filename(PathUtils.profileDir)
+  ) {
     let disclaimer =
       "By modifying this file, I agree that I am doing so " +
       "only within $appName itself, using official, user-driven search " +
@@ -326,7 +410,7 @@ export var SearchUtils = {
       "to accordingly.";
 
     let salt =
-      PathUtils.filename(profileDir) +
+      profileDirName +
       name +
       disclaimer.replace(/\$appName/g, Services.appinfo.name);
 
@@ -375,18 +459,19 @@ export var SearchUtils = {
    * This is implemented here as it is used in searchengine-devtools as well as
    * the search service.
    *
+   * @template {SearchEngine} T
    * @param {object} options
    *   The options for this function.
-   * @param {object[]} options.engines
+   * @param {T[]} options.engines
    *   An array of engine objects to sort. These should have the `name` and
    *   `orderHint` fields as top-level properties.
-   * @param {object} options.appDefaultEngine
+   * @param {SearchEngine} options.appDefaultEngine
    *   The application default engine.
-   * @param {object} [options.appPrivateDefaultEngine]
+   * @param {SearchEngine} [options.appPrivateDefaultEngine]
    *   The application private default engine, if any.
    * @param {string} [options.locale]
    *   The current application locale, or the locale to use for the sorting.
-   * @returns {object[]}
+   * @returns {T[]}
    *   The sorted array of engine objects.
    */
   sortEnginesByDefaults({
@@ -395,7 +480,9 @@ export var SearchUtils = {
     appPrivateDefaultEngine,
     locale = Services.locale.appLocaleAsBCP47,
   }) {
+    /** @type {T[]} */
     const sortedEngines = [];
+    /** @type {Set<string>} */
     const addedEngines = new Set();
 
     function maybeAddEngineToSort(engine) {
@@ -419,15 +506,14 @@ export var SearchUtils = {
       maybeAddEngineToSort(appPrivateDefault);
     }
 
-    let remainingEngines;
     const collator = new Intl.Collator(locale);
 
-    remainingEngines = engines.filter(e => !addedEngines.has(e.name));
+    let remainingEngines = engines.filter(e => !addedEngines.has(e.name));
 
     // We sort by highest orderHint first, then alphabetically by name.
     remainingEngines.sort((a, b) => {
-      if (a._orderHint && b.orderHint) {
-        if (a._orderHint == b.orderHint) {
+      if (a.orderHint && b.orderHint) {
+        if (a.orderHint == b.orderHint) {
           return collator.compare(a.name, b.name);
         }
         return b.orderHint - a.orderHint;
@@ -442,6 +528,160 @@ export var SearchUtils = {
     });
 
     return [...sortedEngines, ...remainingEngines];
+  },
+
+  /**
+   * Chooses the best size out of an array of sizes. If there is no exact match,
+   * chooses the next smaller icon if the difference of the preferred size
+   * to the larger icon is more than 4 times the difference to the the smaller
+   * icon. Otherwise chooses the next larger one.
+   *
+   * @param {number} preferredSize
+   *   The preferred size. Must not be 0.
+   * @param {number[]} availableSizes
+   *   Array of available sizes. Must not be empty.
+   * @returns {number}
+   *   The element of availableSizes chosen by the algorithm.
+   */
+  chooseIconSize(preferredSize, availableSizes) {
+    availableSizes = availableSizes.toSorted((a, b) => b - a);
+    let bestSize = availableSizes.shift();
+    for (let currentSize of availableSizes) {
+      if (currentSize >= preferredSize) {
+        bestSize = currentSize;
+      } else {
+        if (
+          bestSize > preferredSize &&
+          preferredSize - currentSize < (bestSize - preferredSize) / 4
+        ) {
+          bestSize = currentSize;
+        }
+        break;
+      }
+    }
+
+    return bestSize;
+  },
+
+  /**
+   * Fetches an icon without sending cookies to the page and returns
+   * the data and the mime type.
+   *
+   * @param {string|nsIURI} uri
+   *  The URI to the icon.
+   * @param {object} [originAttributes]
+   *   The origin attributes to download the icon.
+   * @returns {Promise<[Uint8Array, string]>}
+   *   Resolves to an array containing the data and the mime type.
+   *   Rejects if the icon cannot be fetched.
+   */
+  async fetchIcon(uri, originAttributes = null) {
+    return new Promise((resolve, reject) => {
+      let chan = SearchUtils.makeChannel(
+        uri,
+        Ci.nsIContentPolicy.TYPE_IMAGE,
+        originAttributes
+      );
+      let listener = new SearchUtils.LoadListener(
+        chan,
+        /^image\//,
+        (byteArray, contentType) => {
+          if (!byteArray) {
+            reject(new Error("Unable to fetch icon."));
+            return;
+          }
+          resolve([Uint8Array.from(byteArray), contentType]);
+        }
+      );
+      chan.notificationCallbacks = listener;
+      chan.asyncOpen(listener);
+    });
+  },
+
+  /**
+   * Decodes the image to extract the size. Returns `fallbackSize`
+   * if the image is not square or there is a decoding error.
+   *
+   * @param {Uint8Array} byteArray the raw image data
+   * @param {string} contentType the contentType
+   * @param {?number} fallbackSize fallback if size cannot be determined
+   * @returns {?number} the size of the image
+   */
+  decodeSize(byteArray, contentType, fallbackSize = null) {
+    if (contentType == "image/svg+xml") {
+      let svgString;
+      try {
+        svgString = new TextDecoder("UTF-8", { fatal: true }).decode(byteArray);
+      } catch {
+        return fallbackSize;
+      }
+      let parser = new DOMParser();
+      let doc = parser.parseFromString(svgString, contentType);
+      if (doc.querySelector("parsererror")) {
+        return fallbackSize;
+      }
+      if (SVGSVGElement.isInstance(doc.documentElement)) {
+        let width = doc.documentElement.width.baseVal.value;
+        let height = doc.documentElement.height.baseVal.value;
+        if (width != height) {
+          return fallbackSize;
+        }
+        return width;
+      }
+      return fallbackSize;
+    }
+
+    let imageTools = Cc["@mozilla.org/image/tools;1"].getService(Ci.imgITools);
+    let imgDecoded;
+    try {
+      imgDecoded = imageTools.decodeImageFromArrayBuffer(
+        byteArray.buffer,
+        contentType
+      );
+    } catch {
+      return fallbackSize;
+    }
+    if (imgDecoded.width != imgDecoded.height) {
+      return fallbackSize;
+    }
+
+    return imgDecoded.width;
+  },
+
+  /**
+   * Tries to rescale an icon to a given size.
+   *
+   * @param {Uint8Array} byteArray
+   *   Byte array containing the icon payload.
+   * @param {string} contentType
+   *   Mime type of the payload.
+   * @param {number} [size]
+   *   Desired icon size.
+   * @returns {[Uint8Array<ArrayBuffer>, string]}
+   *   An array of two elements - an array containing the rescaled icon
+   *   and a string for the content type.
+   * @throws if the icon cannot be rescaled or the rescaled icon is too big.
+   */
+  rescaleIcon(byteArray, contentType, size = 32) {
+    if (contentType == "image/svg+xml") {
+      throw new Error("Cannot rescale SVG image");
+    }
+
+    let imgTools = Cc["@mozilla.org/image/tools;1"].getService(Ci.imgITools);
+    let container = imgTools.decodeImageFromArrayBuffer(
+      byteArray.buffer,
+      contentType
+    );
+    let stream = imgTools.encodeScaledImage(container, "image/png", size, size);
+    let streamSize = stream.available();
+    if (streamSize > SearchUtils.MAX_ICON_SIZE) {
+      throw new Error("Rescaled icon still is too big");
+    }
+
+    let bis = new BinaryInputStream(stream);
+    let newByteArray = new Uint8Array(streamSize);
+    bis.readArrayBuffer(streamSize, newByteArray.buffer);
+    return [newByteArray, "image/png"];
   },
 };
 

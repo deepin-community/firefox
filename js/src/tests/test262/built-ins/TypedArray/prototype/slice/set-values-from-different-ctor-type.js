@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -45,6 +44,6 @@ testWithTypedArrayConstructors(function(TA) {
   assert(compareArray(result, arr), "values are set");
   assert.notSameValue(result.buffer, sample.buffer, "creates a new buffer");
   assert.sameValue(result.constructor, other, "used the custom ctor");
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2017 André Bargull. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -48,6 +47,6 @@ testWithTypedArrayConstructors(function(TA) {
     Infinity;
     assert.sameValue(counter, 1, 'The value of `counter` is 1');
   }
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

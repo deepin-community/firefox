@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Ин сомона ба дастгоҳҳои MIDI (Интерфейси рақамӣ барои асбобҳои мусиқӣ)-и шумо дастрасӣ дархост мекунад. Дастрасӣ ба дастгоҳ метавонад тавассути насби ҷузъи иловагӣ фаъол карда шавад.
 site-permission-install-first-prompt-midi-message = Ягон бехатарӣ барои ин дастрасӣ кафолат дода намешавад. Идома диҳед, танҳо агар шумо ба ин сомона эътимод кунед.
+site-permission-install-first-prompt-serial-header = Ин сомона ба дастгоҳҳои силсилавии шумо дастрасиро дархост мекунад. Дастрасӣ ба дастгоҳ метавонад ба воситаи насб кардани ҷузъи иловагӣ фаъол карда шавад.
+site-permission-install-first-prompt-serial-message = Ягон бехатарӣ барои ин дастрасӣ кафолат дода намешавад. Идома диҳед, танҳо агар шумо ба ин сомона эътимод кунед.
 
 ##
 
@@ -81,6 +83,8 @@ addon-removal-title = «{ $name }»-ро тоза мекунед?
 addon-removal-message = { $name }-ро аз { -brand-shorter-name } тоза мекунед?
 addon-removal-button = Тоза кардан
 addon-removal-abuse-report-checkbox = Фиристодани гузориш дар бораи ин васеъшавӣ ба { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Агар шумо хусусиятҳо ё васеъшавиҳои ин моделро истифода баред, он аз нав илова карда мешавад.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +127,19 @@ addon-install-error-corrupt-file = Ҷузъи иловагии боргириш�
 addon-install-error-file-access = { $addonName } насб карда намешавад, зеро ки { -brand-short-name } файли лозимиро тағйир дода наметавонад.
 addon-install-error-not-signed = { -brand-short-name } ин сомонаро аз насбкунии ҷузъи иловагии тасдиқнашуда манъ кард.
 addon-install-error-invalid-domain = Ҷузъи иловагии { $addonName } аз ин ҷойгиршавӣ насб карда намешавад.
+addon-install-error-no-addon-name-file-access = Ҷузъи иловагӣ насб карда намешавад, зеро ки «{ -brand-short-name }» файли лозимиро тағйир дода наметавонад.
 addon-local-install-error-network-failure = Ин ҷузъи иловагӣ ба сабаби хатои низоми файлӣ насб карда намешавад.
 addon-local-install-error-incorrect-hash = Ин ҷузъи иловагӣ насб карда нашуд, зеро ки он ба ҷузъи иловагие, ки { -brand-short-name } дархост кард, мувофиқ наомад.
 addon-local-install-error-corrupt-file = Ин ҷузъи иловагӣ насб карда намешавад, зеро ки он вайрон мебошад.
 addon-local-install-error-file-access = { $addonName } насб карда намешавад, зеро ки { -brand-short-name } файли лозимиро тағйир дода наметавонад.
 addon-local-install-error-not-signed = Ин ҷузъи иловагӣ насб карда намешавад, зеро ки он тасдиқнашуда мебошад.
+addon-local-install-no-addon-name-error-file-access = Ҷузъи иловагӣ насб карда намешавад, зеро ки «{ -brand-short-name }» файли лозимиро тағйир дода наметавонад.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } насб карда намешавад, зеро ки он ба { -brand-short-name } { $appVersion } мувофиқат намекунад.
+addon-install-error-hard-blocked = «{ $addonName }» сиёсатҳои «Mozilla»-ро вайрон мекунад ва дар «{ -brand-short-name }» насб карда намешавад.
+addon-install-error-soft-blocked2 = «{ $addonName }» маҳдуд шудааст ва дар «{ -brand-short-name }» насб карда намешавад.
 addon-install-error-blocklisted = { $addonName } насб карда намешавад, зеро ки он барои ба вуҷуд овардани мушкилиҳои устуворӣ ва амниятӣ хатари баланд дорад.
+addon-install-error-soft-blocked = «{ $addonName }» сиёсатҳои «Mozilla»-ро вайрон мекунад ва дар «{ -brand-short-name }» насб карда намешавад.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Шумо наметавонед, ки «{ $addonName }»-ро ҳамчун корбари ниҳоӣ насб намоед, зеро ки он метавонад танҳо аз ҷониби ташкилоте, ки аз сиёсатҳои корхона истифода мебарад, насб карда шавад.

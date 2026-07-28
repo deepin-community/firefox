@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,14 +7,17 @@
 #include "GMPService.h"
 #include "GMPUtils.h"
 #include "GMPVideoEncoder.h"
-#include "MediaDataEncoderProxy.h"
 #include "MP4Decoder.h"
+#include "MediaDataEncoderProxy.h"
+
+using mozilla::media::EncodeSupport;
+using mozilla::media::EncodeSupportSet;
 
 namespace mozilla {
 
 already_AddRefed<MediaDataEncoder> GMPEncoderModule::CreateVideoEncoder(
     const EncoderConfig& aConfig, const RefPtr<TaskQueue>& aTaskQueue) const {
-  if (!Supports(aConfig)) {
+  if (Supports(aConfig).isEmpty()) {
     return nullptr;
   }
 
@@ -31,34 +32,49 @@ already_AddRefed<MediaDataEncoder> GMPEncoderModule::CreateVideoEncoder(
     return nullptr;
   }
 
-  RefPtr<MediaDataEncoder> encoder(new GMPVideoEncoder(aConfig));
-  return do_AddRef(
-      new MediaDataEncoderProxy(encoder.forget(), thread.forget()));
+  auto encoder = MakeRefPtr<GMPVideoEncoder>(aConfig);
+  return MakeAndAddRef<MediaDataEncoderProxy>(std::move(encoder),
+                                              std::move(thread));
 }
 
-bool GMPEncoderModule::Supports(const EncoderConfig& aConfig) const {
+media::EncodeSupportSet GMPEncoderModule::Supports(
+    const EncoderConfig& aConfig) const {
   if (!CanLikelyEncode(aConfig)) {
-    return false;
+    return EncodeSupportSet{};
   }
-  if (aConfig.mScalabilityMode != ScalabilityMode::None) {
-    return false;
+  if (aConfig.mCodec != CodecType::H264) {
+    return EncodeSupportSet{};
   }
   if (aConfig.mHardwarePreference == HardwarePreference::RequireHardware) {
-    return false;
+    return EncodeSupportSet{};
   }
-  if (aConfig.mCodecSpecific && aConfig.mCodecSpecific->is<H264Specific>() &&
-      aConfig.mCodecSpecific->as<H264Specific>().mFormat !=
-          H264BitStreamFormat::ANNEXB) {
-    return false;
+  if (aConfig.mCodecSpecific.is<H264Specific>()) {
+    const auto& codecSpecific = aConfig.mCodecSpecific.as<H264Specific>();
+    if (codecSpecific.mProfile != H264_PROFILE_UNKNOWN &&
+        codecSpecific.mProfile != H264_PROFILE_BASE &&
+        !HaveGMPFor("encode-video"_ns, {"moz-h264-advanced"_ns})) {
+      return EncodeSupportSet{};
+    }
   }
-  return SupportsCodec(aConfig.mCodec);
+  if (aConfig.mScalabilityMode != ScalabilityMode::None &&
+      !HaveGMPFor("encode-video"_ns, {"moz-h264-temporal-svc"_ns})) {
+    return EncodeSupportSet{};
+  }
+  if (!HaveGMPFor("encode-video"_ns, {"h264"_ns})) {
+    return EncodeSupportSet{};
+  }
+  return EncodeSupportSet{EncodeSupport::SoftwareEncode};
 }
 
-bool GMPEncoderModule::SupportsCodec(CodecType aCodecType) const {
+media::EncodeSupportSet GMPEncoderModule::SupportsCodec(
+    CodecType aCodecType) const {
   if (aCodecType != CodecType::H264) {
-    return false;
+    return EncodeSupportSet{};
   }
-  return HaveGMPFor("encode-video"_ns, {"h264"_ns});
+  if (!HaveGMPFor("encode-video"_ns, {"h264"_ns})) {
+    return EncodeSupportSet{};
+  }
+  return EncodeSupportSet{EncodeSupport::SoftwareEncode};
 }
 
 }  // namespace mozilla

@@ -12,22 +12,25 @@ const SCALAR_NAME = "browser.ui.customized_widgets";
 const bookmarksInfo = [
   {
     title: "firefox",
-    url: "http://example.com",
+    url: "https://example.com",
   },
   {
     title: "rules",
-    url: "http://example.com/2",
+    url: "https://example.com/2",
   },
   {
     title: "yo",
-    url: "http://example.com/2",
+    url: "https://example.com/2",
   },
 ];
 
 // Setup.
 add_task(async function test_bookmarks_toolbar_telemetry() {
   await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.bookmarks.visibility", "newtab"]],
+    set: [
+      ["test.wait300msAfterTabSwitch", true],
+      ["browser.toolbars.bookmarks.visibility", "newtab"],
+    ],
   });
 
   // This is added during startup
@@ -102,6 +105,8 @@ add_task(async function test_bookmarks_toolbar_telemetry() {
   await EventUtils.synthesizePlainDragAndDrop({
     srcElement,
     destElement,
+    srcX: 5,
+    srcY: 5,
   });
 
   TelemetryTestUtils.assertScalar(

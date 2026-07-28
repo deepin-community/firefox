@@ -9,6 +9,7 @@ use api::units::*;
 use api::channel::unbounded_channel;
 pub use api::DebugFlags;
 
+use crate::bump_allocator::ChunkPool;
 use crate::render_api::{RenderApiSender, FrameMsg};
 use crate::composite::{CompositorKind, CompositorConfig};
 use crate::device::{
@@ -18,8 +19,7 @@ use crate::frame_builder::FrameBuilderConfig;
 use crate::glyph_cache::GlyphCache;
 use glyph_rasterizer::{GlyphRasterThread, GlyphRasterizer, SharedFontResources};
 use crate::gpu_types::PrimitiveInstanceData;
-use crate::internal_types::{FastHashMap, FastHashSet, FrameId};
-use crate::picture;
+use crate::internal_types::{FastHashMap, FastHashSet};
 use crate::profiler::{self, Profiler, TransactionProfile};
 use crate::device::query::{GpuProfiler, GpuDebugMethod};
 use crate::render_backend::RenderBackend;
@@ -28,12 +28,14 @@ use crate::scene_builder_thread::{SceneBuilderThread, SceneBuilderThreadChannels
 use crate::texture_cache::{TextureCache, TextureCacheConfig};
 use crate::picture_textures::PictureTextures;
 use crate::renderer::{
-    debug, gpu_cache, vertex, gl,
+    debug, vertex, gl,
     Renderer, DebugOverlayState, BufferDamageTracker, PipelineInfo, TextureResolver,
     RendererError, ShaderPrecacheFlags, VERTEX_DATA_TEXTURE_COUNT,
     upload::UploadTexturePool,
     shade::{Shaders, SharedShaders},
 };
+#[cfg(feature = "debugger")]
+use crate::debugger::Debugger;
 
 use std::{
     mem,
@@ -75,7 +77,7 @@ pub trait SceneBuilderHooks {
     /// This is called after each scene swap occurs. The PipelineInfo contains
     /// the updated epochs and pipelines removed in the new scene compared to
     /// the old scene.
-    fn post_scene_swap(&self, document_id: &Vec<DocumentId>, info: PipelineInfo);
+    fn post_scene_swap(&self, document_id: &Vec<DocumentId>, info: PipelineInfo, schedule_frame: bool);
     /// This is called after a resource update operation on the scene builder
     /// thread, in the case where resource updates were applied without a scene
     /// build.
@@ -134,6 +136,10 @@ pub struct WebRenderOptions {
     pub upload_pbo_default_size: usize,
     pub batched_upload_threshold: i32,
     pub workers: Option<Arc<ThreadPool>>,
+    /// A pool of large memory chunks used by the per-frame allocators.
+    /// Providing the pool here makes it possible to share a single pool for
+    /// all WebRender instances.
+    pub chunk_pool: Option<Arc<ChunkPool>>,
     pub dedicated_glyph_raster_thread: Option<GlyphRasterThread>,
     pub enable_multithreading: bool,
     pub blob_image_handler: Option<Box<dyn BlobImageHandler>>,
@@ -197,6 +203,9 @@ pub struct WebRenderOptions {
     /// make the result look quite close to the high-quality zoom, except for glyphs.
     pub low_quality_pinch_zoom: bool,
     pub max_shared_surface_size: i32,
+    /// If true, open a debug socket to listen for remote debugger.
+    /// Relies on `debugger` cargo feature being enabled.
+    pub enable_debugger: bool,
 }
 
 impl WebRenderOptions {
@@ -234,6 +243,7 @@ impl Default for WebRenderOptions {
             upload_pbo_default_size: 512 * 512 * 4,
             batched_upload_threshold: 512 * 512,
             workers: None,
+            chunk_pool: None,
             dedicated_glyph_raster_thread: None,
             enable_multithreading: true,
             blob_image_handler: None,
@@ -268,6 +278,7 @@ impl Default for WebRenderOptions {
             reject_software_rasterizer: false,
             low_quality_pinch_zoom: false,
             max_shared_surface_size: 2048,
+            enable_debugger: true,
         }
     }
 }
@@ -310,6 +321,15 @@ pub fn create_webrender_instance(
     }
 
     HAS_BEEN_INITIALIZED.store(true, Ordering::SeqCst);
+
+    // For now, we assume that native OS compositors are top-left origin. If that doesn't
+    // turn out to be the case, we can add a query method on `LayerCompositor`.
+    match options.compositor_config {
+        CompositorConfig::Draw { .. } | CompositorConfig::Native { .. } => {}
+        CompositorConfig::Layer { .. } => {
+            options.surface_origin_is_top_left = true;
+        }
+    }
 
     let (api_tx, api_rx) = unbounded_channel();
     let (result_tx, result_rx) = unbounded_channel();
@@ -376,7 +396,14 @@ pub fn create_webrender_instance(
 
     let shaders = match shaders {
         Some(shaders) => Rc::clone(shaders),
-        None => Rc::new(RefCell::new(Shaders::new(&mut device, gl_type, &options)?)),
+        None => {
+            let mut shaders = Shaders::new(&mut device, gl_type, &options)?;
+            if options.precache_flags.intersects(ShaderPrecacheFlags::ASYNC_COMPILE | ShaderPrecacheFlags::FULL_COMPILE) {
+                let mut pending_shaders = shaders.precache_all(options.precache_flags);
+                while shaders.resume_precache(&mut device, &mut pending_shaders)? {}
+            }
+            Rc::new(RefCell::new(shaders))
+        }
     };
 
     let dither_matrix_texture = if options.enable_dithering {
@@ -478,24 +505,7 @@ pub fn create_webrender_instance(
         vertex_data_textures.push(vertex::VertexDataTextures::new());
     }
 
-    // On some (mostly older, integrated) GPUs, the normal GPU texture cache update path
-    // doesn't work well when running on ANGLE, causing CPU stalls inside D3D and/or the
-    // GPU driver. See https://bugzilla.mozilla.org/show_bug.cgi?id=1576637 for much
-    // more detail. To reduce the number of code paths we have active that require testing,
-    // we will enable the GPU cache scatter update path on all devices running with ANGLE.
-    // We want a better solution long-term, but for now this is a significant performance
-    // improvement on HD4600 era GPUs, and shouldn't hurt performance in a noticeable
-    // way on other systems running under ANGLE.
     let is_software = device.get_capabilities().renderer_name.starts_with("Software");
-
-    // On other GL platforms, like macOS or Android, creating many PBOs is very inefficient.
-    // This is what happens in GPU cache updates in PBO path. Instead, we switch everything
-    // except software GL to use the GPU scattered updates.
-    let supports_scatter = device.get_capabilities().supports_color_buffer_float;
-    let gpu_cache_texture = gpu_cache::GpuCacheTexture::new(
-        &mut device,
-        supports_scatter && !is_software,
-    )?;
 
     device.end_frame();
 
@@ -521,6 +531,10 @@ pub fn create_webrender_instance(
                 capabilities,
             }
         }
+        CompositorConfig::Layer { .. } => {
+            CompositorKind::Layer {
+            }
+        }
     };
 
     let config = FrameBuilderConfig {
@@ -543,6 +557,7 @@ pub fn create_webrender_instance(
         is_software,
         low_quality_pinch_zoom: options.low_quality_pinch_zoom,
         max_shared_surface_size: options.max_shared_surface_size,
+        enable_dithering: options.enable_dithering,
     };
     info!("WR {:?}", config);
 
@@ -640,7 +655,7 @@ pub fn create_webrender_instance(
         .map(|handler| handler.create_similar());
 
     let texture_cache_config = options.texture_cache_config.clone();
-    let mut picture_tile_size = options.picture_tile_size.unwrap_or(picture::TILE_SIZE_DEFAULT);
+    let mut picture_tile_size = options.picture_tile_size.unwrap_or(crate::tile_cache::TILE_SIZE_DEFAULT);
     // Clamp the picture tile size to reasonable values.
     picture_tile_size.width = picture_tile_size.width.max(128).min(4096);
     picture_tile_size.height = picture_tile_size.height.max(128).min(4096);
@@ -652,6 +667,10 @@ pub fn create_webrender_instance(
     };
 
     let render_backend_hooks = options.render_backend_hooks.take();
+
+    let chunk_pool = options.chunk_pool.take().unwrap_or_else(|| {
+        Arc::new(ChunkPool::new())
+    });
 
     let rb_scene_tx = scene_tx.clone();
     let rb_fonts = fonts.clone();
@@ -694,6 +713,7 @@ pub fn create_webrender_instance(
             result_tx,
             rb_scene_tx,
             resource_cache,
+            chunk_pool,
             backend_notifier,
             config,
             sampler,
@@ -731,8 +751,6 @@ pub fn create_webrender_instance(
         pending_texture_updates: Vec::new(),
         pending_texture_cache_updates: false,
         pending_native_surface_updates: Vec::new(),
-        pending_gpu_cache_updates: Vec::new(),
-        pending_gpu_cache_clear: false,
         pending_shader_updates: Vec::new(),
         shaders,
         debug: debug::LazyInitializedDebugRenderer::new(),
@@ -740,7 +758,6 @@ pub fn create_webrender_instance(
         profile: TransactionProfile::new(),
         frame_counter: 0,
         resource_upload_time: 0.0,
-        gpu_cache_upload_time: 0.0,
         profiler: Profiler::new(),
         max_recorded_profiles: options.max_recorded_profiles,
         clear_color: options.clear_color,
@@ -751,6 +768,10 @@ pub fn create_webrender_instance(
         last_time: 0,
         gpu_profiler,
         vaos,
+        gpu_buffer_texture_f: None,
+        gpu_buffer_texture_f_too_large: 0,
+        gpu_buffer_texture_i: None,
+        gpu_buffer_texture_i_too_large: 0,
         vertex_data_textures,
         current_vertex_data_textures: 0,
         pipeline_info: PipelineInfo::default(),
@@ -759,10 +780,6 @@ pub fn create_webrender_instance(
         size_of_ops: make_size_of_ops(),
         cpu_profiles: VecDeque::new(),
         gpu_profiles: VecDeque::new(),
-        gpu_cache_texture,
-        gpu_cache_debug_chunks: Vec::new(),
-        gpu_cache_frame_id: FrameId::INVALID,
-        gpu_cache_overflow: false,
         texture_upload_pbo_pool,
         staging_texture_pool,
         texture_resolver,
@@ -790,11 +807,17 @@ pub fn create_webrender_instance(
         consecutive_oom_frames: 0,
         target_frame_publish_id: None,
         pending_result_msg: None,
+        layer_compositor_frame_state_in_prev_frame: None,
+        external_composite_debug_items: Vec::new(),
+        command_log: None,
+        #[cfg(feature = "debugger")]
+        debugger: Debugger::new(),
     };
 
     // We initially set the flags to default and then now call set_debug_flags
     // to ensure any potential transition when enabling a flag is run.
     renderer.set_debug_flags(debug_flags);
+    renderer.profiler.set_ui("Default");
 
     let sender = RenderApiSender::new(
         api_tx,
@@ -803,5 +826,16 @@ pub fn create_webrender_instance(
         blob_image_handler,
         fonts,
     );
+
+    #[cfg(feature = "debugger")]
+    if options.enable_debugger {
+        let api = if namespace_alloc_by_client {
+            sender.create_api_by_client(IdNamespace::DEBUGGER)
+        } else {
+            sender.create_api()
+        };
+        crate::debugger::start(api);
+    }
+
     Ok((renderer, sender))
 }

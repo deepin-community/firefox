@@ -4,34 +4,32 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use enum_map::Enum;
 use neqo_common::qdebug;
 
 use crate::{Error, Res};
 
-pub type WireVersion = u32;
+pub type Wire = u32;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Enum)]
+#[repr(u32)]
 pub enum Version {
-    Version2,
+    Version2 = 0x6b33_43cf,
     #[default]
-    Version1,
-    Draft29,
-    Draft30,
-    Draft31,
-    Draft32,
+    Version1 = 1,
+    #[cfg(feature = "draft-29")]
+    Draft29 = 0xff00_0000 + 29,
 }
 
 impl Version {
+    /// The first SCONE packet version.
+    pub const SCONE1: u32 = 0x6f7d_c0fd;
+    /// The second SCONE packet version.
+    pub const SCONE2: u32 = 0xef7d_c0fd;
+
     #[must_use]
-    pub const fn wire_version(self) -> WireVersion {
-        match self {
-            Self::Version2 => 0x6b33_43cf,
-            Self::Version1 => 1,
-            Self::Draft29 => 0xff00_0000 + 29,
-            Self::Draft30 => 0xff00_0000 + 30,
-            Self::Draft31 => 0xff00_0000 + 31,
-            Self::Draft32 => 0xff00_0000 + 32,
-        }
+    pub const fn wire_version(self) -> Wire {
+        self as u32
     }
 
     pub(crate) const fn initial_salt(self) -> &'static [u8] {
@@ -43,6 +41,7 @@ impl Version {
             0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8,
             0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a,
         ];
+        #[cfg(feature = "draft-29")]
         const INITIAL_SALT_29_32: &[u8] = &[
             0xaf, 0xbf, 0xec, 0x28, 0x99, 0x93, 0xd2, 0x4c, 0x9e, 0x97, 0x86, 0xf1, 0x9c, 0x61,
             0x11, 0xe0, 0x43, 0x90, 0xa8, 0x99,
@@ -50,16 +49,17 @@ impl Version {
         match self {
             Self::Version2 => INITIAL_SALT_V2,
             Self::Version1 => INITIAL_SALT_V1,
-            Self::Draft29 | Self::Draft30 | Self::Draft31 | Self::Draft32 => INITIAL_SALT_29_32,
+            #[cfg(feature = "draft-29")]
+            Self::Draft29 => INITIAL_SALT_29_32,
         }
     }
 
     pub(crate) const fn label_prefix(self) -> &'static str {
         match self {
             Self::Version2 => "quicv2 ",
-            Self::Version1 | Self::Draft29 | Self::Draft30 | Self::Draft31 | Self::Draft32 => {
-                "quic "
-            }
+            Self::Version1 => "quic ",
+            #[cfg(feature = "draft-29")]
+            Self::Draft29 => "quic ",
         }
     }
 
@@ -74,6 +74,7 @@ impl Version {
             0x81, 0x4c, 0x73, 0x03, 0x0f, 0x25, 0xc7, 0x9d, 0x71, 0xce, 0x87, 0x6e, 0xca, 0x87,
             0x6e, 0x6f, 0xca, 0x8e,
         ];
+        #[cfg(feature = "draft-29")]
         const RETRY_SECRET_29: &[u8] = &[
             0x8b, 0x0d, 0x37, 0xeb, 0x85, 0x35, 0x02, 0x2e, 0xbc, 0x8d, 0x76, 0xa2, 0x07, 0xd8,
             0x0d, 0xf2, 0x26, 0x46, 0xec, 0x06, 0xdc, 0x80, 0x96, 0x42, 0xc3, 0x0a, 0x8b, 0xaa,
@@ -82,15 +83,20 @@ impl Version {
         match self {
             Self::Version2 => RETRY_SECRET_V2,
             Self::Version1 => RETRY_SECRET_V1,
-            Self::Draft29 | Self::Draft30 | Self::Draft31 | Self::Draft32 => RETRY_SECRET_29,
+            #[cfg(feature = "draft-29")]
+            Self::Draft29 => RETRY_SECRET_29,
         }
     }
 
+    #[cfg_attr(
+        not(feature = "draft-29"),
+        expect(clippy::unused_self, reason = "Only used with draft-29 feature.")
+    )]
     pub(crate) const fn is_draft(self) -> bool {
-        matches!(
-            self,
-            Self::Draft29 | Self::Draft30 | Self::Draft31 | Self::Draft32,
-        )
+        #[cfg(feature = "draft-29")]
+        return matches!(self, Self::Draft29);
+        #[cfg(not(feature = "draft-29"))]
+        false
     }
 
     /// Determine if `self` can be upgraded to `other` compatibly.
@@ -103,50 +109,45 @@ impl Version {
             )
     }
 
+    /// All supported real versions.
     #[must_use]
     pub fn all() -> Vec<Self> {
         vec![
             Self::Version2,
             Self::Version1,
-            Self::Draft32,
-            Self::Draft31,
-            Self::Draft30,
+            #[cfg(feature = "draft-29")]
             Self::Draft29,
         ]
     }
 
-    pub fn compatible<'a>(
+    pub fn compatible<'a, I: IntoIterator<Item = &'a Self>>(
         self,
-        all: impl IntoIterator<Item = &'a Self>,
+        all: I,
     ) -> impl Iterator<Item = &'a Self> {
         all.into_iter().filter(move |&v| self.is_compatible(*v))
     }
 }
 
-impl TryFrom<WireVersion> for Version {
+impl TryFrom<Wire> for Version {
     type Error = Error;
 
-    fn try_from(wire: WireVersion) -> Res<Self> {
+    fn try_from(wire: Wire) -> Res<Self> {
         if wire == 1 {
             Ok(Self::Version1)
         } else if wire == 0x6b33_43cf {
             Ok(Self::Version2)
-        } else if wire == 0xff00_0000 + 29 {
-            Ok(Self::Draft29)
-        } else if wire == 0xff00_0000 + 30 {
-            Ok(Self::Draft30)
-        } else if wire == 0xff00_0000 + 31 {
-            Ok(Self::Draft31)
-        } else if wire == 0xff00_0000 + 32 {
-            Ok(Self::Draft32)
         } else {
+            #[cfg(feature = "draft-29")]
+            if wire == 0xff00_0000 + 29 {
+                return Ok(Self::Draft29);
+            }
             Err(Error::VersionNegotiation)
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct VersionConfig {
+pub struct Config {
     /// The version that a client uses to establish a connection.
     ///
     /// For a client, this is the version that is sent out in an Initial packet.
@@ -171,7 +172,7 @@ pub struct VersionConfig {
     all: Vec<Version>,
 }
 
-impl VersionConfig {
+impl Config {
     /// # Panics
     /// When `all` does not include `initial`.
     #[must_use]
@@ -194,9 +195,8 @@ impl VersionConfig {
     /// and by the client on resumption.
     pub(crate) fn set_initial(&mut self, initial: Version) {
         qdebug!(
-            "Overwrite initial version {:?} ==> {:?}",
-            self.initial,
-            initial
+            "Overwrite initial version {:?} ==> {initial:?}",
+            self.initial
         );
         assert!(self.all.contains(&initial));
         self.initial = initial;
@@ -208,7 +208,7 @@ impl VersionConfig {
 
     fn find_preferred<'a>(
         preferences: impl IntoIterator<Item = &'a Version>,
-        vn: &[WireVersion],
+        vn: &[Wire],
     ) -> Option<Version> {
         for v in preferences {
             if vn.contains(&v.wire_version()) {
@@ -219,18 +219,36 @@ impl VersionConfig {
     }
 
     /// Determine the preferred version based on a version negotiation packet.
-    pub(crate) fn preferred(&self, vn: &[WireVersion]) -> Option<Version> {
+    pub(crate) fn preferred(&self, vn: &[Wire]) -> Option<Version> {
         Self::find_preferred(&self.all, vn)
     }
 
     /// Determine the preferred version based on a set of compatible versions.
-    pub(crate) fn preferred_compatible(&self, vn: &[WireVersion]) -> Option<Version> {
+    pub(crate) fn preferred_compatible(&self, vn: &[Wire]) -> Option<Version> {
         Self::find_preferred(self.compatible(), vn)
     }
 }
 
-impl Default for VersionConfig {
+impl Default for Config {
     fn default() -> Self {
         Self::new(Version::default(), Version::all())
+    }
+}
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use super::Version;
+
+    #[test]
+    fn version1_is_not_draft() {
+        assert!(!Version::Version1.is_draft());
+    }
+
+    #[cfg(feature = "draft-29")]
+    #[test]
+    fn draft29_is_draft() {
+        assert!(Version::Draft29.is_draft());
+        assert!(!Version::Version1.is_draft());
     }
 }

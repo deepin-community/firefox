@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,7 +24,7 @@ already_AddRefed<nsIFile> GetFileFromEnv(const char* name) {
                                _MAX_PATH))
     return nullptr;
 
-  rv = NS_NewLocalFile(nsDependentString(path), true, getter_AddRefs(file));
+  rv = NS_NewLocalFile(nsDependentString(path), getter_AddRefs(file));
   if (NS_FAILED(rv)) return nullptr;
 
   return file.forget();
@@ -35,8 +34,7 @@ already_AddRefed<nsIFile> GetFileFromEnv(const char* name) {
     return nullptr;
   }
 
-  rv = NS_NewNativeLocalFile(nsDependentCString(arg), true,
-                             getter_AddRefs(file));
+  rv = NS_NewNativeLocalFile(nsDependentCString(arg), getter_AddRefs(file));
   if (NS_FAILED(rv)) {
     return nullptr;
   }

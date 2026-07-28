@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,11 +17,11 @@
 #include "jsapi.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/ScopeExit.h"
-#include "mozilla/UniquePtr.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/DOMException.h"
 #include "mozilla/dom/DOMExceptionBinding.h"
+#include "mozilla/dom/FileSystemHandle.h"
 #include "mozilla/dom/FileSystemManagerChild.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/PromiseNativeHandler.h"
@@ -33,6 +31,8 @@
 #include "nsISupports.h"
 #include "nsISupportsImpl.h"
 #include "nsITimer.h"
+
+class MockGlobalObject;
 
 namespace mozilla::dom::fs {
 
@@ -44,6 +44,8 @@ inline std::ostream& operator<<(std::ostream& aOut,
 namespace test {
 
 nsIGlobalObject* GetGlobal();
+
+MockGlobalObject* GetMockGlobal();
 
 nsresult GetAsString(const RefPtr<Promise>& aPromise, nsAString& aString);
 
@@ -88,14 +90,16 @@ class MockFileSystemRequestHandler : public FileSystemRequestHandler {
               (override));
 
   MOCK_METHOD(void, MoveEntry,
-              (RefPtr<FileSystemManager> & aManager, FileSystemHandle* aHandle,
+              (RefPtr<FileSystemManager> & aManager,
+               RefPtr<FileSystemHandle> aHandle,
                FileSystemEntryMetadata* const aEntry,
                const FileSystemChildMetadata& aNewEntry,
                RefPtr<Promise> aPromise, ErrorResult& aError),
               (override));
 
   MOCK_METHOD(void, RenameEntry,
-              (RefPtr<FileSystemManager> & aManager, FileSystemHandle* aHandle,
+              (RefPtr<FileSystemManager> & aManager,
+               RefPtr<FileSystemHandle> aHandle,
                FileSystemEntryMetadata* const aEntry, const Name& aName,
                RefPtr<Promise> aPromise, ErrorResult& aError),
               (override));
@@ -188,9 +192,9 @@ class TestPromiseListener : public PromiseNativeHandler,
       *isDone = true;
       FAIL() << "Timed out!";
     };
-    const char* timerName = "fs::TestPromiseListener::ClearDone";
     auto res = NS_NewTimerWithCallback(timerCallback, MilliSeconds,
-                                       nsITimer::TYPE_ONE_SHOT, timerName);
+                                       nsITimer::TYPE_ONE_SHOT,
+                                       "fs::TestPromiseListener::ClearDone"_ns);
     if (res.isOk()) {
       mTimer = res.unwrap();
     }
@@ -336,5 +340,63 @@ MOCK_PROMISE_LISTENER(
 
 MOCK_PROMISE_LISTENER(ExpectResolveCalled, mozilla::dom::fs::test::MockExpectMe,
                       mozilla::dom::fs::test::FailOnCall);
+
+#define MOCKGLOBALOBJECT_IID                  \
+  {/* c0a93d91-9c15-49e1-abed-890b3679ac6e */ \
+   0xc0a93d91,                                \
+   0x9c15,                                    \
+   0x49e1,                                    \
+   {0xab, 0xed, 0x89, 0x0b, 0x36, 0x79, 0xac, 0x6e}}
+
+class MockGlobalObject : public nsIGlobalObject, public nsWrapperCache {
+ public:
+  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(MockGlobalObject)
+
+  NS_INLINE_DECL_STATIC_IID(MOCKGLOBALOBJECT_IID)
+
+  explicit MockGlobalObject(nsCOMPtr<nsIGlobalObject>&& aGlobal)
+      : mGlobal(std::move(aGlobal)) {}
+
+  JSObject* GetGlobalJSObject() override {
+    return mGlobal->GetGlobalJSObject();
+  }
+
+  JSObject* GetGlobalJSObjectPreserveColor() const override {
+    return mGlobal->GetGlobalJSObjectPreserveColor();
+  }
+
+  MOCK_METHOD(JSObject*, WrapObject,
+              (JSContext * aCx, JS::Handle<JSObject*> aGivenProto), (override));
+
+  MOCK_METHOD(nsICookieJarSettings*, GetCookieJarSettings, (), (override));
+
+  MOCK_METHOD(nsIPrincipal*, PrincipalOrNull, (), (const));
+
+  MOCK_METHOD(mozilla::StorageAccess, GetStorageAccess, (), (override));
+
+  JS::loader::ModuleLoaderBase* GetModuleLoader(JSContext* aCx) override {
+    return mGlobal->GetModuleLoader(aCx);
+  }
+
+  bool ShouldResistFingerprinting(RFPTarget aTarget) const override {
+    return mGlobal->ShouldResistFingerprinting(std::move(aTarget));
+  }
+
+  nsISerialEventTarget* SerialEventTarget() const override {
+    return mGlobal->SerialEventTarget();
+  }
+
+  nsresult Dispatch(already_AddRefed<nsIRunnable>&& aRunnable) const override {
+    return mGlobal->Dispatch(std::move(aRunnable));
+  }
+
+  mozilla::OriginTrials Trials() const override { return mGlobal->Trials(); }
+
+ protected:
+  ~MockGlobalObject() = default;
+
+  nsCOMPtr<nsIGlobalObject> mGlobal;
+};
 
 #endif  // DOM_FS_TEST_GTEST_FILESYSTEMMOCKS_H_

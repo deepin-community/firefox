@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,10 +22,9 @@ TEST(ProfileLock, RetryLock)
   nsProfileLock myLock;
   nsProfileLock myLock2;
   nsresult rv;
-  nsCOMPtr<nsIFile> dir(do_CreateInstance(NS_LOCAL_FILE_CONTRACTID, &rv));
-  ASSERT_EQ(NS_SUCCEEDED(rv), true);
 
-  rv = dir->InitWithNativePath(nsCString(tmpdir));
+  nsCOMPtr<nsIFile> dir;
+  rv = NS_NewNativeLocalFile(nsCString(tmpdir), getter_AddRefs(dir));
   ASSERT_EQ(NS_SUCCEEDED(rv), true);
 
   int eventfd_fd = eventfd(0, 0);

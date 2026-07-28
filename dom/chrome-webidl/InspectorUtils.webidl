@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,7 +13,7 @@
 namespace InspectorUtils {
   // documentOnly tells whether user and UA sheets should get included.
   sequence<StyleSheet> getAllStyleSheets(Document document, optional boolean documentOnly = false);
-  sequence<CSSStyleRule> getCSSStyleRules(
+  sequence<(CSSRule or InspectorDeclaration)> getMatchingCSSRules(
     Element element,
     optional [LegacyNullToEmptyString] DOMString pseudo = "",
     optional boolean relevantLinkVisited = false,
@@ -32,8 +31,13 @@ namespace InspectorUtils {
   sequence<DOMString> getCSSPropertyNames(optional PropertyNamesOptions options = {});
   sequence<PropertyPref> getCSSPropertyPrefs();
   [Throws] sequence<DOMString> getCSSValuesForProperty(UTF8String property);
+  sequence<DOMString> getCSSWideKeywords();
   UTF8String rgbToColorName(octet r, octet g, octet b);
-  InspectorRGBATuple? colorToRGBA(UTF8String colorString, optional Document? doc = null);
+  InspectorNearestColor rgbToNearestColorName(float r, float g, float b);
+  sequence<float> rgbToHsv(float r, float g, float b);
+  sequence<float> hsvToRgb(float h, float s, float v);
+  float relativeLuminance(float r, float g, float b);
+  InspectorRGBATuple? colorToRGBA(UTF8String colorString);
   InspectorColorToResult? colorTo(UTF8String fromColor, UTF8String toColorSpace);
   boolean isValidCSSColor(UTF8String colorString);
   [Throws] sequence<DOMString> getSubpropertiesForCSSProperty(UTF8String property);
@@ -83,6 +87,8 @@ namespace InspectorUtils {
 
   Element? containingBlockOf(Element element);
 
+  boolean isBlockContainer(Element element);
+
   // If the element is styled as display:block, returns an array of numbers giving
   // the number of lines in each fragment.
   // Returns null if the element is not a block.
@@ -112,6 +118,68 @@ namespace InspectorUtils {
     unsigned long line,
     unsigned long column,
     UTF8String newBodyText);
+
+  // Update the amount of vertical space that is clipped or visibly obscured in
+  // the bottom portion of the view. Tells gecko where to put bottom fixed
+  // elements so they are fully visible. aOffset must be offset from the bottom
+  // edge of the ICB and it's negative.
+  // Examples for aOffset:
+  // 0: Toolbar fully visible
+  // -dynamicToolbarMaxHeight: Toolbar fully hidden (e.g. -40 for a 40px toolbar)
+  //
+  // Note: These functions must be called from the parent process.
+  //
+  // This interface may not be the clearest, but we want to match
+  // what has been established by the GeckoView API
+  [ChromeOnly] undefined setVerticalClipping(BrowsingContext? aContext,
+                                             float aOffset);
+  [ChromeOnly] undefined setDynamicToolbarMaxHeight(BrowsingContext? aContext,
+                                             float aHeight);
+
+  // This element is not a grid container.
+  const unsigned short GRID_NONE = 0;
+  // This element is a grid container, and might additionally be a subgrid.
+  const unsigned short GRID_CONTAINER = 1;
+  // This element is a subgrid in the row direction.
+  const unsigned short GRID_SUBGRID_ROW = 2;
+  // This element is a subgrid in the col direction.
+  const unsigned short GRID_SUBGRID_COL = 4;
+  // Returns a set of GRID_* flags based on whether the element is a grid
+  // container or not.
+  unsigned short getGridContainerType(Element aElement);
+
+  // Given a DOM element, return the anchor named `anchorName`, or the default
+  // anchor otherwise.
+  InspectorAnchorElement? getAnchorFor(Element element, optional DOMString? anchorName = null);
+  // Given a DOM element, return a list of valid anchor anchor names.
+  sequence<DOMString> getAnchorNamesFor(Element element);
+};
+
+enum InspectorAnchorType {
+  "explicit",
+  "popover",
+  "pseudo-element",
+};
+
+dictionary InspectorAnchorElement {
+  required Element element;
+  required InspectorAnchorType type;
+};
+
+enum DeclarationOrigin {
+  "user",
+  "user-agent",
+  "pres-hints",
+  "style-attribute",
+  "position-fallback",
+  "animations",
+  "transitions",
+  "smil",
+};
+
+dictionary InspectorDeclaration {
+  required CSSStyleDeclaration style;
+  required DeclarationOrigin declarationOrigin;
 };
 
 dictionary SupportsOptions {
@@ -142,6 +210,11 @@ dictionary InspectorRGBATuple {
   double g = 0;
   double b = 0;
   double a = 1;
+};
+
+dictionary InspectorNearestColor {
+  required UTF8String colorName;
+  required boolean exact;
 };
 
 dictionary InspectorColorToResult {
@@ -198,6 +271,29 @@ dictionary InspectorStyleSheetRuleCountAndAtRulesResult {
 [Func="nsContentUtils::IsCallerChromeOrFuzzingEnabled",
  Exposed=Window]
 interface InspectorFontFace {
+  // OpenType IDs for some common name strings; see OpenType spec for details.
+  // (These may not always be present; and fonts may also contain names with
+  // other arbitrary 16-bit IDs, e.g. for variation axes, feature names, etc.)
+  const unsigned short NAME_ID_COPYRIGHT = 0;
+  const unsigned short NAME_ID_FAMILY = 1;
+  const unsigned short NAME_ID_SUBFAMILY = 2;
+  const unsigned short NAME_ID_UNIQUE = 3;
+  const unsigned short NAME_ID_FULL = 4;
+  const unsigned short NAME_ID_VERSION = 5;
+  const unsigned short NAME_ID_POSTSCRIPT = 6;
+  const unsigned short NAME_ID_TRADEMARK = 7;
+  const unsigned short NAME_ID_MANUFACTURER = 8;
+  const unsigned short NAME_ID_DESIGNER = 9;
+  const unsigned short NAME_ID_DESCRIPTION = 10;
+  const unsigned short NAME_ID_VENDOR_URL = 11;
+  const unsigned short NAME_ID_DESIGNER_URL = 12;
+  const unsigned short NAME_ID_LICENSE = 13;
+  const unsigned short NAME_ID_LICENSE_URL = 14;
+  const unsigned short NAME_ID_TYPOGRAPHIC_FAMILY = 16;
+  const unsigned short NAME_ID_TYPOGRAPHIC_SUBFAMILY = 17;
+  const unsigned short NAME_ID_COMPATIBLE_FULL = 18;
+  const unsigned short NAME_ID_SAMPLE_TEXT = 19;
+
   // An indication of how we found this font during font-matching.
   // Note that the same physical font may have been found in multiple ways within a range.
   readonly attribute boolean fromFontGroup;
@@ -211,6 +307,8 @@ interface InspectorFontFace {
                                               // due to aliases, generics, localized names, etc)
   readonly attribute DOMString CSSGeneric; // CSS generic (serif, sans-serif, etc) that was mapped
                                            // to this font, if any (frequently empty!)
+
+  DOMString getNameString(unsigned short id);  // Specified string from OpenType 'name' table.
 
   [NewObject,Throws] sequence<InspectorVariationAxis> getVariationAxes();
   [NewObject,Throws] sequence<InspectorVariationInstance> getVariationInstances();

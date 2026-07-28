@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,20 +6,20 @@
 
 #include <algorithm>
 
+#include "SMILCSSProperty.h"
+#include "SMILCompositor.h"
 #include "mozilla/AutoRestore.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/PresShellInlines.h"
 #include "mozilla/RestyleManager.h"
 #include "mozilla/SMILTimedElement.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/DocumentInlines.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/SVGAnimationElement.h"
-#include "nsContentUtils.h"
 #include "nsCSSProps.h"
+#include "nsContentUtils.h"
 #include "nsRefreshDriver.h"
-#include "mozilla/dom/Document.h"
-#include "SMILCompositor.h"
-#include "SMILCSSProperty.h"
 
 using namespace mozilla::dom;
 
@@ -51,39 +49,34 @@ SMILAnimationController::~SMILAnimationController() {
   NS_ASSERTION(mAnimationElementTable.IsEmpty(),
                "Animation controller shouldn't be tracking any animation"
                " elements when it dies");
-  MOZ_RELEASE_ASSERT(!mRegisteredWithRefreshDriver,
-                     "Leaving stale entry in refresh driver's observer list");
 }
 
 void SMILAnimationController::Disconnect() {
   MOZ_ASSERT(mDocument, "disconnecting when we weren't connected...?");
   MOZ_ASSERT(mRefCnt.get() == 1,
              "Expecting to disconnect when doc is sole remaining owner");
-  NS_ASSERTION(mPauseState & SMILTimeContainer::PAUSE_PAGEHIDE,
+  NS_ASSERTION(IsPausedByType(PauseType::PageHide),
                "Expecting to be paused for pagehide before disconnect");
-
-  StopSampling(GetRefreshDriver());
-
   mDocument = nullptr;  // (raw pointer)
 }
 
 //----------------------------------------------------------------------
 // SMILTimeContainer methods:
 
-void SMILAnimationController::Pause(uint32_t aType) {
+void SMILAnimationController::Pause(PauseType aType) {
   SMILTimeContainer::Pause(aType);
   UpdateSampling();
 }
 
-void SMILAnimationController::Resume(uint32_t aType) {
-  bool wasPaused = !!mPauseState;
+void SMILAnimationController::Resume(PauseType aType) {
+  bool wasPaused = IsPaused();
   // Update mCurrentSampleTime so that calls to GetParentTime--used for
   // calculating parent offsets--are accurate
   mCurrentSampleTime = mozilla::TimeStamp::Now();
 
   SMILTimeContainer::Resume(aType);
 
-  if (wasPaused && !mPauseState) {
+  if (wasPaused && !IsPaused()) {
     UpdateSampling();
   }
 }
@@ -92,13 +85,11 @@ SMILTime SMILAnimationController::GetParentTime() const {
   return (SMILTime)(mCurrentSampleTime - mStartTime).ToMilliseconds();
 }
 
-//----------------------------------------------------------------------
-// nsARefreshObserver methods:
-NS_IMPL_ADDREF(SMILAnimationController)
-NS_IMPL_RELEASE(SMILAnimationController)
-
 // nsRefreshDriver Callback function
 void SMILAnimationController::WillRefresh(mozilla::TimeStamp aTime) {
+  if (!mIsSampling) {
+    return;
+  }
   // Although we never expect aTime to go backwards, when we initialise the
   // animation controller, if we can't get hold of a refresh driver we
   // initialise mCurrentSampleTime to Now(). It may be possible that after
@@ -143,6 +134,7 @@ void SMILAnimationController::WillRefresh(mozilla::TimeStamp aTime) {
   mCurrentSampleTime = aTime;
 
   Sample();
+  UpdateSampling();
 }
 
 //----------------------------------------------------------------------
@@ -168,13 +160,9 @@ void SMILAnimationController::UnregisterAnimationElement(
 //----------------------------------------------------------------------
 // Page show/hide
 
-void SMILAnimationController::OnPageShow() {
-  Resume(SMILTimeContainer::PAUSE_PAGEHIDE);
-}
+void SMILAnimationController::OnPageShow() { Resume(PauseType::PageHide); }
 
-void SMILAnimationController::OnPageHide() {
-  Pause(SMILTimeContainer::PAUSE_PAGEHIDE);
-}
+void SMILAnimationController::OnPageHide() { Pause(PauseType::PageHide); }
 
 //----------------------------------------------------------------------
 // Cycle-collection support
@@ -192,58 +180,30 @@ void SMILAnimationController::Traverse(
 void SMILAnimationController::Unlink() { mLastCompositorTable = nullptr; }
 
 //----------------------------------------------------------------------
-// Refresh driver lifecycle related methods
-
-void SMILAnimationController::NotifyRefreshDriverCreated(
-    nsRefreshDriver* aRefreshDriver) {
-  UpdateSampling();
-}
-
-void SMILAnimationController::NotifyRefreshDriverDestroying(
-    nsRefreshDriver* aRefreshDriver) {
-  StopSampling(aRefreshDriver);
-}
-
-//----------------------------------------------------------------------
 // Timer-related implementation helpers
 
 bool SMILAnimationController::ShouldSample() const {
-  return !mPauseState && !mAnimationElementTable.IsEmpty() &&
+  return !IsPaused() && !mAnimationElementTable.IsEmpty() &&
          !mChildContainerTable.IsEmpty();
 }
 
 void SMILAnimationController::UpdateSampling() {
   const bool shouldSample = ShouldSample();
-  const bool isSampling = mRegisteredWithRefreshDriver;
-  if (shouldSample == isSampling) {
+  if (!shouldSample) {
+    mIsSampling = false;
     return;
   }
-
-  nsRefreshDriver* driver = GetRefreshDriver();
-  if (!driver) {
-    return;
-  }
-
-  if (shouldSample) {
+  mDocument->MaybeScheduleRenderingPhases(
+      {RenderingPhase::UpdateAnimationsAndSendEvents});
+  if (!mIsSampling) {
+    mIsSampling = true;
     // We're effectively resuming from a pause so update our current sample time
     // or else it will confuse our "average time between samples" calculations.
     mCurrentSampleTime = mozilla::TimeStamp::Now();
-    driver->AddRefreshObserver(this, FlushType::Style, "SMIL animations");
-    mRegisteredWithRefreshDriver = true;
+    // TODO(emilio): Not doing the sync first sample breaks
+    // test_smilDynamicDelayedBeginElement.xhtml which tests for this
+    // explicitly. Maybe we can avoid this?
     Sample();  // Run the first sample manually.
-  } else {
-    StopSampling(driver);
-  }
-}
-
-void SMILAnimationController::StopSampling(nsRefreshDriver* aRefreshDriver) {
-  if (aRefreshDriver && mRegisteredWithRefreshDriver) {
-    // NOTE: The document might already have been detached from its PresContext
-    // (and RefreshDriver), which would make GetRefreshDriver() return null.
-    MOZ_ASSERT(!GetRefreshDriver() || aRefreshDriver == GetRefreshDriver(),
-               "Stopping sampling with wrong refresh driver");
-    aRefreshDriver->RemoveRefreshObserver(this, FlushType::Style);
-    mRegisteredWithRefreshDriver = false;
   }
 }
 
@@ -287,7 +247,7 @@ void SMILAnimationController::DoSample(bool aSkipUnchangedContainers) {
       continue;
     }
 
-    if (!container->IsPausedByType(SMILTimeContainer::PAUSE_BEGIN) &&
+    if (!container->IsPausedByType(PauseType::Begin) &&
         (container->NeedsSample() || !aSkipUnchangedContainers)) {
       container->ClearMilestones();
       container->Sample();
@@ -317,7 +277,7 @@ void SMILAnimationController::DoSample(bool aSkipUnchangedContainers) {
   // save iterating over the animation elements twice.
 
   // Create the compositor table
-  UniquePtr<SMILCompositorTable> currentCompositorTable(
+  std::unique_ptr<SMILCompositorTable> currentCompositorTable(
       new SMILCompositorTable(0));
   nsTArray<RefPtr<SVGAnimationElement>> animElems(
       mAnimationElementTable.Count());
@@ -435,7 +395,7 @@ void SMILAnimationController::DoMilestoneSamples() {
     // sample.
     SMILMilestone nextMilestone(GetCurrentTimeAsSMILTime() + 1, true);
     for (SMILTimeContainer* container : mChildContainerTable.Keys()) {
-      if (container->IsPausedByType(SMILTimeContainer::PAUSE_BEGIN)) {
+      if (container->IsPausedByType(PauseType::Begin)) {
         continue;
       }
       SMILMilestone thisMilestone;
@@ -452,7 +412,7 @@ void SMILAnimationController::DoMilestoneSamples() {
 
     nsTArray<RefPtr<dom::SVGAnimationElement>> elements;
     for (SMILTimeContainer* container : mChildContainerTable.Keys()) {
-      if (container->IsPausedByType(SMILTimeContainer::PAUSE_BEGIN)) {
+      if (container->IsPausedByType(PauseType::Begin)) {
         continue;
       }
       container->PopMilestoneElementsAtMilestone(nextMilestone, elements);
@@ -554,12 +514,16 @@ void SMILAnimationController::AddAnimationToCompositorTable(
   }
 }
 
-static inline bool IsTransformAttribute(int32_t aNamespaceID,
-                                        nsAtom* aAttributeName) {
-  return aNamespaceID == kNameSpaceID_None &&
-         (aAttributeName == nsGkAtoms::transform ||
-          aAttributeName == nsGkAtoms::patternTransform ||
-          aAttributeName == nsGkAtoms::gradientTransform);
+static inline bool IsTransformAttribute(const Element* aElement,
+                                        int32_t aNamespaceID,
+                                        const nsAtom* aAttributeName) {
+  if (aNamespaceID != kNameSpaceID_None) {
+    return false;
+  }
+  if (auto* svgElement = SVGElement::FromNode(aElement)) {
+    return svgElement->GetTransformListAttrName() == aAttributeName;
+  }
+  return false;
 }
 
 // Helper function that, given a SVGAnimationElement, looks up its target
@@ -586,8 +550,8 @@ bool SMILAnimationController::GetTargetIdentifierForAnimation(
 
   // animateTransform can only animate transforms, conversely transforms
   // can only be animated by animateTransform
-  if (IsTransformAttribute(attributeNamespaceID, attributeName) !=
-      (aAnimElem->IsSVGElement(nsGkAtoms::animateTransform)))
+  if (IsTransformAttribute(targetElem, attributeNamespaceID, attributeName) !=
+      aAnimElem->IsSVGElement(nsGkAtoms::animateTransform))
     return false;
 
   // Construct the key
@@ -627,7 +591,8 @@ void SMILAnimationController::PreTraverseInSubtree(Element* aRoot) {
     }
 
     context->RestyleManager()->PostRestyleEventForAnimations(
-        key.mElement, PseudoStyleType::NotPseudo, RestyleHint::RESTYLE_SMIL);
+        key.mElement, PseudoStyleRequest::NotPseudo(),
+        RestyleHint::RESTYLE_SMIL);
   }
 
   // Only clear the mMightHavePendingStyleUpdates flag if we definitely posted

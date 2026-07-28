@@ -1,11 +1,5 @@
 "use strict";
 
-// This test tends to trigger a race in the fullscreen time telemetry,
-// where the fullscreen enter and fullscreen exit events (which use the
-// same histogram ID) overlap. That causes TelemetryStopwatch to log an
-// error.
-SimpleTest.ignoreAllUncaughtExceptions(true);
-
 function captureUnexpectedFullscreenChange() {
   ok(false, "Caught an unexpected fullscreen change");
 }
@@ -86,13 +80,7 @@ add_task(async function () {
 
   let popupHidePromise = promiseWaitForEvent(window, "popuphidden");
 
-  if (
-    !AppConstants.platform == "macosx" ||
-    !Services.prefs.getBoolPref("widget.macos.native-context-menus", false)
-  ) {
-    info("Send the first escape");
-    EventUtils.synthesizeKey("KEY_Escape");
-  } else {
+  if (contextMenu.isNativeMenu) {
     // We cannot synthesize key events at native macOS menus.
     // We also do not see key events that are processed by native macOS menus,
     // so we cannot accidentally exit fullscreen when the user closes a native
@@ -100,6 +88,9 @@ add_task(async function () {
     // Close the menu normally.
     info("Close the context menu");
     contextMenu.hidePopup();
+  } else {
+    info("Send the first escape");
+    EventUtils.synthesizeKey("KEY_Escape");
   }
   await popupHidePromise;
   is(contextMenu.state, "closed", "Should have closed context menu");

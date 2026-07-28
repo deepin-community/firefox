@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,11 +10,11 @@
 
 // Global includes
 #include <utility>
+
 #include "MainThreadUtils.h"
 #include "jsapi.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/ErrorResult.h"
-#include "mozilla/MacroForEach.h"
 #include "mozilla/OriginAttributes.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/RemoteLazyInputStreamThread.h"
@@ -25,8 +23,8 @@
 #include "mozilla/dom/PBackgroundLSSharedTypes.h"
 #include "mozilla/dom/PBackgroundLSSimpleRequest.h"
 #include "mozilla/dom/Promise.h"
+#include "mozilla/dom/quota/PrincipalUtils.h"
 #include "mozilla/dom/quota/PromiseUtils.h"
-#include "mozilla/dom/quota/QuotaManager.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/BackgroundUtils.h"
 #include "mozilla/ipc/PBackgroundChild.h"
@@ -131,7 +129,7 @@ class AsyncRequestHelper final : public Runnable,
   NS_DECL_NSIRUNNABLE
 
   // LSRequestChildCallback
-  void OnResponse(const LSRequestResponse& aResponse) override;
+  void OnResponse(LSRequestResponse&& aResponse) override;
 };
 
 class SimpleRequestResolver final : public LSSimpleRequestChildCallback {
@@ -165,7 +163,7 @@ nsresult CheckedPrincipalToPrincipalInfo(
     return rv;
   }
 
-  if (NS_WARN_IF(!quota::QuotaManager::IsPrincipalInfoValid(aPrincipalInfo))) {
+  if (NS_WARN_IF(!quota::IsPrincipalInfoValid(aPrincipalInfo))) {
     return NS_ERROR_FAILURE;
   }
 
@@ -204,7 +202,7 @@ LocalStorageManager2::PrecacheStorage(nsIPrincipal* aPrincipal,
   // implementation to perform a preload in the content/current process.  That's
   // not how things work in LSNG.  Instead everything happens in the parent
   // process, triggered by the official preloading spot,
-  // ContentParent::AboutToLoadHttpDocumentForChild.
+  // ContentParent::AboutToLoadDocumentForChild.
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -309,8 +307,8 @@ LocalStorageManager2::Preload(nsIPrincipal* aPrincipal, JSContext* aContext,
 
   LSRequestCommonParams commonParams;
   commonParams.principalInfo() = principalInfo;
-  commonParams.storagePrincipalInfo() = principalInfo;
-  commonParams.originKey() = originKey;
+  commonParams.storagePrincipalInfo() = std::move(principalInfo);
+  commonParams.originKey() = std::move(originKey);
 
   LSRequestPreloadDatastoreParams params(commonParams);
 
@@ -502,7 +500,16 @@ void AsyncRequestHelper::Finish() {
 
       case LSRequestResponse::TLSRequestPreloadDatastoreResponse:
         if (mPromise) {
-          mPromise->MaybeResolveWithUndefined();
+          const LSRequestPreloadDatastoreResponse& preloadDatastoreResponse =
+              mResponse.get_LSRequestPreloadDatastoreResponse();
+
+          const bool invalidated = preloadDatastoreResponse.invalidated();
+
+          if (invalidated) {
+            mPromise->MaybeReject(NS_ERROR_ABORT);
+          } else {
+            mPromise->MaybeResolveWithUndefined();
+          }
         }
         break;
       default:
@@ -511,6 +518,7 @@ void AsyncRequestHelper::Finish() {
   }
 
   mManager = nullptr;
+  mPromise = nullptr;
 
   mState = State::Complete;
 }
@@ -552,13 +560,13 @@ AsyncRequestHelper::Run() {
   return NS_OK;
 }
 
-void AsyncRequestHelper::OnResponse(const LSRequestResponse& aResponse) {
+void AsyncRequestHelper::OnResponse(LSRequestResponse&& aResponse) {
   AssertIsOnDOMFileThread();
   MOZ_ASSERT(mState == State::ResponsePending);
 
   mActor = nullptr;
 
-  mResponse = aResponse;
+  mResponse = std::move(aResponse);
 
   mState = State::Finishing;
 

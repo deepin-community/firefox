@@ -17,6 +17,8 @@ policy-AppAutoUpdate = Active ou desactive a actualización automática do aplic
 policy-AppUpdatePin = Impedir a { -brand-short-name } actualizarse alén dunha versión indicada.
 policy-AppUpdateURL = Permítelle estabelecer un URL de actualización personalizado para o aplicativo.
 policy-Authentication = Configura a autenticación integrada para os sitios web que a admiten.
+policy-AutofillAddressEnabled = Activa o autocompletado dos enderezos.
+policy-AutofillCreditCardEnabled = Activa o autocompletado dos métodos de pago.
 policy-AutoLaunchProtocolsFromOrigins = Definir unha lista de protocolos externos que poidan ser empregados  das orixes listadas sen lle preguntar ao usuario.
 policy-BackgroundAppUpdate2 = Activar ou desactivar o actualizador de segundo plano.
 policy-BlockAboutAddons = Bloquea o acceso ao xestor de complementos (about:addons).
@@ -26,6 +28,7 @@ policy-BlockAboutSupport = Bloquea o acceso á páxina about:support.
 policy-Bookmarks = Permítelle crear marcadores na barra de ferramentas de marcadores, no menú de marcadores ou nun cartafol específico dentro dos mesmos.
 policy-CaptivePortal = Activar ou desactivar o soporte de portal en catividade.
 policy-CertificatesDescription = Engada certificados ou use os certificados integrados.
+policy-ContentAnalysis = Activa ou desactiva a conexión co axente de prevención da perda de datos.
 policy-Cookies = Permite ou denega aos sitios web estabelecer cookies.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Establece políticas relacionadas cos contedores.
@@ -36,8 +39,11 @@ policy-DisableAppUpdate = Evita que o navegador se actualice.
 policy-DisableBuiltinPDFViewer = Desactiva PDF.js, o visor de PDF integrado en { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Evitar que o axente do navegador predeterminado realice accións. Só se aplica a Windows; outras plataformas non teñen o axente.
 policy-DisableDeveloperTools = Bloquea o acceso ás ferramentas de desenvolvemento.
+policy-DisableEncryptedClientHello = Desactiva o uso da función TLS Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Desactiva as ordes para enviar opinións dende o menú Axuda (Enviar opinión e Informar de sitio enganoso).
 policy-DisableFirefoxAccounts = Desactiva os servizos baseados en { -fxaccount-brand-name }, incluído Sync.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Desactiva os servizos baseados na conta, incluída a sincronización.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Desactiva a funcionalidade Firefox Screenshots.
 policy-DisableFirefoxStudies = Evita que { -brand-short-name } execute os estudios.
@@ -73,11 +79,14 @@ policy-ExtensionSettings = Xestionar todos os aspectos da instalación de extens
 policy-ExtensionUpdate = Activar ou desactivar as actualizacións automáticas de extensións.
 policy-FirefoxHome2 = Configurar { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Configurar { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Configurar as funcións de IA xerativa.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Forzar a navegación directa no sitio da intranet en lugar de buscar ao escribir entradas dunha soa palabra na barra de enderezos.
 policy-Handlers = Configurar os manipuladores de aplicativos predeterminados.
 policy-HardwareAcceleration = Se é falso, desactiva a aceleración por hardware.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Estabelece e opcionalmente bloquea a páxina de inicio.
+policy-HttpAllowlist = Orixes que non se actualizarán a HTTPS.
+policy-HttpsOnlyMode = Permitir que se active o modo só HTTPS.
 policy-InstallAddonsPermission = Permite que certos sitios web instalen complementos.
 policy-LegacyProfiles = Desactivar a función que obriga a ter un perfil separado para cada instalación.
 
@@ -102,12 +111,16 @@ policy-OverrideFirstRunPage = Anular a páxina de primeira execución. Deixe est
 policy-OverridePostUpdatePage = Anula a páxina de «Novidades» posterior á actualización. Deixe esta política en branco se quere desactivar a páxina posterior á actualización.
 policy-PasswordManagerEnabled = Habilitar gardar contrasinais no xestor de contrasinais.
 policy-PasswordManagerExceptions = Impedir a { -brand-short-name } gardar contrasinais para sitios concretos.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Habilitar o acordo de chave poscuántica para TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Desactivar ou configurar PDF.js, o visor de PDF incorporado en { -brand-short-name }.
 policy-Permissions2 = Configurar os permisos para cámara, micrófono, localización, notificacións e reprodución automática.
 policy-PictureInPicture = Activar ou desactivar imaxe en imaxe.
 policy-PopupBlocking = Permitir que certos sitios web amosen xanelas emerxentes de forma predeterminada.
 policy-Preferences = Establecer e bloquear o valor dun subconxunto de preferencias.
+policy-PrivateBrowsingModeAvailability = Establece a dispoñibilidade do modo de navegación privada.
 policy-PromptForDownloadLocation = Preguntar onde gardar ficheiros ao descargar.
 policy-Proxy = Configura os axustes do proxy.
 policy-RequestedLocales = Estabelece a lista de idiomas (locales) solicitados polo aplicativo na orde de preferencia.
@@ -118,12 +131,17 @@ policy-SearchSuggestEnabled = Activar ou desactivar as suxestións de busca.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Engadir ou eliminar módulos PKCS #11.
 policy-ShowHomeButton = Mostrar o botón de inicio na barra de ferramentas.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Non mostrar as condicións de uso e o aviso de privacidade ao iniciar. Declaras que aceptas e tes a autoridade para aceptar as condicións de uso en nome de todas as persoas ás que proporcionas acceso a este navegador.
 policy-SSLVersionMax = Estabelecer a versión máxima de SSL.
 policy-SSLVersionMin = Establecer a versión mínima de SSL.
 policy-StartDownloadsInTempDirectory = Forzar que as descargas se inicien nun lugar temporal e local en lugar de no directorio de descargas predeterminado.
 policy-SupportMenu = Engadir un elemento de menú de asistencia personalizada ao menú de axuda.
+policy-TranslateEnabled = Activar ou desactivar a tradución de páxinas web.
 policy-UserMessaging = Non mostrar ao usuario certas mensaxes.
 policy-UseSystemPrintDialog = Imprimir co diálogo de impresión do sistema.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bloquea sitios web para que non sexan visitados. Vexa a documentación para obter máis información sobre o formato.
 policy-Windows10SSO = Permitir o inicio de sesión único de Windows para contas de Microsoft, do traballo e da escola.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Permitir o inicio de sesión único para as contas de Microsoft Entra.

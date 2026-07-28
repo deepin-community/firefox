@@ -24,7 +24,7 @@ const TIMEOUT_SEC = 20;
 
 const MEDIA_ENGINE_PREF = "media.wmf.media-engine.enabled";
 
-// GRAPHICS_SANITY_TEST histogram enumeration values
+// Glean.gfx.sanityTest values
 const TEST_PASSED = 0;
 const TEST_FAILED_RENDER = 1;
 const TEST_FAILED_VIDEO = 2;
@@ -46,10 +46,7 @@ function testPixel(ctx, x, y, r, g, b, a, fuzz) {
 }
 
 function reportResult(val) {
-  try {
-    let histogram = Services.telemetry.getHistogramById("GRAPHICS_SANITY_TEST");
-    histogram.add(val);
-  } catch (e) {}
+  Glean.gfx.sanityTest.accumulateSingleSample(val);
 
   Services.prefs.setBoolPref(RUNNING_PREF, false);
   Services.prefs.savePrefFile(null);
@@ -80,15 +77,7 @@ function takeWindowSnapshot(win, ctx) {
     ctx.DRAWWINDOW_DRAW_CARET |
     ctx.DRAWWINDOW_DRAW_VIEW |
     ctx.DRAWWINDOW_USE_WIDGET_LAYERS;
-  ctx.drawWindow(
-    win.ownerGlobal,
-    0,
-    0,
-    PAGE_WIDTH,
-    PAGE_HEIGHT,
-    "rgb(255,255,255)",
-    flags
-  );
+  ctx.drawWindow(win, 0, 0, PAGE_WIDTH, PAGE_HEIGHT, "rgb(255,255,255)", flags);
 }
 
 // Verify that all the 4 coloured squares of the video
@@ -258,7 +247,7 @@ var listener = {
     browser.setAttribute("disableglobalhistory", "true");
 
     let remoteBrowser = Services.appinfo.browserTabsRemoteAutostart;
-    browser.setAttribute("remote", remoteBrowser);
+    browser.toggleAttribute("remote", remoteBrowser);
 
     browser.style.width = PAGE_WIDTH + "px";
     browser.style.height = PAGE_HEIGHT + "px";
@@ -279,7 +268,7 @@ var listener = {
       return;
     }
 
-    this.win.ownerGlobal.close();
+    this.win.close();
     this.win = null;
     this.utils = null;
     this.canvas = null;

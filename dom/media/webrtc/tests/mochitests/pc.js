@@ -49,7 +49,7 @@ var makeDefaultCommands = () => {
 /**
  * This class handles tests for peer connections.
  *
- * @constructor
+ * @class
  * @param {object} [options={}]
  *        Optional options for the peer connection test
  * @param {object} [options.commands=commandsPeerConnection]
@@ -72,6 +72,7 @@ function PeerConnectionTest(options) {
   options.is_remote = "is_remote" in options ? options.is_remote : true;
 
   options.h264 = "h264" in options ? options.h264 : false;
+  options.av1 = "av1" in options ? options.av1 : false;
   options.bundle = "bundle" in options ? options.bundle : true;
   options.rtcpmux = "rtcpmux" in options ? options.rtcpmux : true;
   options.opus = "opus" in options ? options.opus : true;
@@ -84,6 +85,13 @@ function PeerConnectionTest(options) {
     // Make sure neither end tries to use bundle-only!
     options.config_local.bundlePolicy = "max-compat";
     options.config_remote.bundlePolicy = "max-compat";
+  }
+
+  if (!options.rtcpmux) {
+    // For tests that don't use rtcp-mux, we need to configure
+    // RTCPeerConnection to allow non-muxed.
+    options.config_local.rtcpMuxPolicy = "negotiate";
+    options.config_remote.rtcpMuxPolicy = "negotiate";
   }
 
   if (iceServersArray.length) {
@@ -207,7 +215,7 @@ PeerConnectionTest.prototype.close = function () {
 /**
  * Close the specified data channels
  *
- * @param {Number} index
+ * @param {number} index
  *        Index of the data channels to close on both sides
  */
 PeerConnectionTest.prototype.closeDataChannels = function (index) {
@@ -262,9 +270,9 @@ PeerConnectionTest.prototype.closeDataChannels = function (index) {
 /**
  * Send data (message or blob) to the other peer
  *
- * @param {String|Blob} data
+ * @param {string | Blob} data
  *        Data to send to the other peer. For Blobs the MIME type will be lost.
- * @param {Object} [options={ }]
+ * @param {object} [options={ }]
  *        Options to specify the data channels to be used
  * @param {DataChannelWrapper} [options.sourceChannel=pcLocal.dataChannels[length - 1]]
  *        Data channel to use for sending the message
@@ -304,9 +312,7 @@ PeerConnectionTest.prototype.send = async function (data, options) {
     `Buffered amount should be ${expectedSizeInBytes}`
   );
 
-  await new Promise(resolve => (source.onbufferedamountlow = resolve));
-
-  return new Promise(resolve => {
+  const resultReceived = new Promise(resolve => {
     // Register event handler for the target channel
     target.onmessage = e => {
       is(
@@ -317,6 +323,10 @@ PeerConnectionTest.prototype.send = async function (data, options) {
       resolve({ channel: target, data: e.data });
     };
   });
+
+  await new Promise(resolve => (source.onbufferedamountlow = resolve));
+
+  return resultReceived;
 };
 
 /**
@@ -516,14 +526,19 @@ PeerConnectionTest.prototype.updateChainSteps = function () {
       PC_LOCAL_REMOVE_ALL_BUT_H264_FROM_OFFER,
     ]);
   }
+  if (this.testOptions.av1) {
+    this.chain.insertAfterEach("PC_LOCAL_CREATE_OFFER", [
+      PC_LOCAL_REMOVE_ALL_BUT_AV1_FROM_OFFER,
+    ]);
+  }
   if (!this.testOptions.bundle) {
     this.chain.insertAfterEach("PC_LOCAL_CREATE_OFFER", [
       PC_LOCAL_REMOVE_BUNDLE_FROM_OFFER,
     ]);
   }
   if (!this.testOptions.rtcpmux) {
-    this.chain.insertAfterEach("PC_LOCAL_CREATE_OFFER", [
-      PC_LOCAL_REMOVE_RTCPMUX_FROM_OFFER,
+    this.chain.insertAfterEach("PC_REMOTE_GET_OFFER", [
+      PC_REMOTE_REMOVE_RTCPMUX_FROM_OFFER,
     ]);
   }
   if (!this.testOptions.ssrc) {
@@ -680,7 +695,7 @@ PeerConnectionTest.prototype.getSignalingMessage = function (messageType) {
  *
  * @param dataChannel
  * @param peerConnectionWrapper
- * @constructor
+ * @class
  */
 function DataChannelWrapper(dataChannel, peerConnectionWrapper) {
   this._channel = dataChannel;
@@ -713,7 +728,7 @@ DataChannelWrapper.prototype = {
   /**
    * Returns the binary type of the channel
    *
-   * @returns {String} The binary type
+   * @returns {string} The binary type
    */
   get binaryType() {
     return this._channel.binaryType;
@@ -722,7 +737,7 @@ DataChannelWrapper.prototype = {
   /**
    * Sets the binary type of the channel
    *
-   * @param {String} type
+   * @param {string} type
    *        The new binary type of the channel
    */
   set binaryType(type) {
@@ -732,7 +747,7 @@ DataChannelWrapper.prototype = {
   /**
    * Returns the label of the underlying data channel
    *
-   * @returns {String} The label
+   * @returns {string} The label
    */
   get label() {
     return this._channel.label;
@@ -741,7 +756,7 @@ DataChannelWrapper.prototype = {
   /**
    * Returns the protocol of the underlying data channel
    *
-   * @returns {String} The protocol
+   * @returns {string} The protocol
    */
   get protocol() {
     return this._channel.protocol;
@@ -754,15 +769,6 @@ DataChannelWrapper.prototype = {
    */
   get id() {
     return this._channel.id;
-  },
-
-  /**
-   * Returns the reliable state of the underlying data channel
-   *
-   * @returns {bool} The stream's reliable state
-   */
-  get reliable() {
-    return this._channel.reliable;
   },
 
   /**
@@ -795,7 +801,7 @@ DataChannelWrapper.prototype = {
   /**
    * Returns the readyState bit of the data channel
    *
-   * @returns {String} The state of the channel
+   * @returns {string} The state of the channel
    */
   get readyState() {
     return this._channel.readyState;
@@ -826,7 +832,7 @@ DataChannelWrapper.prototype = {
   /**
    * Send data through the data channel
    *
-   * @param {String|Object} data
+   * @param {string | object} data
    *        Data which has to be sent through the data channel
    */
   send(data) {
@@ -837,7 +843,7 @@ DataChannelWrapper.prototype = {
   /**
    * Returns the string representation of the class
    *
-   * @returns {String} The string representation
+   * @returns {string} The string representation
    */
   toString() {
     return (
@@ -849,7 +855,7 @@ DataChannelWrapper.prototype = {
 /**
  * This class acts as a wrapper around a PeerConnection instance.
  *
- * @constructor
+ * @class
  * @param {string} label
  *        Description for the peer connection instance
  * @param {object} configuration
@@ -1191,7 +1197,7 @@ PeerConnectionWrapper.prototype = {
   /**
    * Requests all the media streams as specified in the constrains property.
    *
-   * @param {array} constraintsList
+   * @param {Array} constraintsList
    *        Array of constraints for GUM calls
    */
   getAllUserMedia(constraintsList) {
@@ -1245,7 +1251,7 @@ PeerConnectionWrapper.prototype = {
   /**
    * Create a new data channel instance
    *
-   * @param {Object} options
+   * @param {object} options
    *        Options which get forwarded to nsIPeerConnection.createDataChannel
    * @returns {DataChannelWrapper} The created data channel
    */
@@ -1605,6 +1611,7 @@ PeerConnectionWrapper.prototype = {
     var resolveEndOfTrickle;
     this.endOfTrickleIce = new Promise(r => (resolveEndOfTrickle = r));
     this.holdIceCandidates = new Promise(r => (this.releaseIceCandidates = r));
+    this._new_local_ice_candidates = [];
 
     this._pc.onicecandidate = anEvent => {
       if (!anEvent.candidate) {
@@ -1636,6 +1643,7 @@ PeerConnectionWrapper.prototype = {
         "SDP MLine Index needs to exist"
       );
       this._local_ice_candidates.push(anEvent.candidate);
+      this._new_local_ice_candidates.push(anEvent.candidate);
       candidateHandler(this.label, anEvent.candidate);
     };
   },
@@ -1759,6 +1767,7 @@ PeerConnectionWrapper.prototype = {
     ).then(_ => info("Element " + element.id + " has enough data."));
 
     const startTime = element.currentTime;
+    // eslint-disable-next-line promise/valid-params
     const timeProgressed = timeout(
       listenUntil(element, "timeupdate", _ => element.currentTime > startTime),
       60000,
@@ -2146,10 +2155,9 @@ PeerConnectionWrapper.prototype = {
       "Have at least " + nin + " inbound-rtp stat(s) *"
     );
 
-    is(
-      counters["outbound-rtp"] || 0,
-      nout,
-      "Have " + nout + " outbound-rtp stat(s)"
+    ok(
+      (counters["outbound-rtp"] || 0) >= nout,
+      "Have at least" + nout + " outbound-rtp stat(s)"
     );
 
     var numLocalCandidates = counters["local-candidate"] || 0;
@@ -2260,11 +2268,11 @@ PeerConnectionWrapper.prototype = {
       if (testOptions.rtcpmux) {
         is(numIceConnections, 1, "stats reports exactly 1 ICE connection");
       } else {
-        is(
-          numIceConnections,
-          2,
-          "stats report exactly 2 ICE connections for media and RTCP"
+        ok(
+          numIceConnections >= 1,
+          `stats ICE connections should be at least 1`
         );
+        ok(numIceConnections <= 2, `stats ICE connections should be at most 2`);
       }
     } else {
       var numAudioTransceivers = this._pc
@@ -2284,9 +2292,6 @@ PeerConnectionWrapper.prototype = {
         }).length;
 
       var numExpectedTransports = numAudioTransceivers + numVideoTransceivers;
-      if (!testOptions.rtcpmux) {
-        numExpectedTransports *= 2;
-      }
 
       if (this.dataChannels.length) {
         ++numExpectedTransports;
@@ -2295,11 +2300,25 @@ PeerConnectionWrapper.prototype = {
       info(
         "expected audio + video + data transports: " + numExpectedTransports
       );
-      is(
-        numIceConnections,
-        numExpectedTransports,
-        "stats ICE connections matches expected A/V transports"
-      );
+      if (!testOptions.rtcpmux) {
+        // Without rtcp mux, the expected number of transports doubles, but
+        // there's no good way to check whether the rtcp transports are ready,
+        // since there's no way to expose the state of those extra transports.
+        ok(
+          numIceConnections >= numExpectedTransports,
+          `stats ICE connections should be at least ${numExpectedTransports}`
+        );
+        ok(
+          numIceConnections <= numExpectedTransports * 2,
+          `stats ICE connections should be at most ${numExpectedTransports * 2}`
+        );
+      } else {
+        is(
+          numIceConnections,
+          numExpectedTransports,
+          "stats ICE connections matches expected A/V transports"
+        );
+      }
     }
   },
 
@@ -2348,7 +2367,7 @@ PeerConnectionWrapper.prototype = {
   /**
    * Returns the string representation of the class
    *
-   * @returns {String} The string representation
+   * @returns {string} The string representation
    */
   toString() {
     return "PeerConnectionWrapper (" + this.label + ")";

@@ -1,21 +1,19 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ServiceWorkerUpdateJob.h"
 
-#include "nsIScriptError.h"
-#include "nsIURL.h"
-#include "nsNetUtil.h"
-#include "nsProxyRelease.h"
 #include "ServiceWorkerManager.h"
 #include "ServiceWorkerPrivate.h"
 #include "ServiceWorkerRegistrationInfo.h"
 #include "ServiceWorkerScriptCache.h"
-#include "mozilla/dom/WorkerCommon.h"
 #include "mozilla/ProfilerMarkers.h"
+#include "mozilla/dom/WorkerCommon.h"
+#include "nsIScriptError.h"
+#include "nsIURL.h"
+#include "nsNetUtil.h"
+#include "nsProxyRelease.h"
 
 namespace mozilla::dom {
 
@@ -141,9 +139,11 @@ class ServiceWorkerUpdateJob::ContinueInstallRunnable final
 
 ServiceWorkerUpdateJob::ServiceWorkerUpdateJob(
     nsIPrincipal* aPrincipal, const nsACString& aScope, nsCString aScriptSpec,
-    ServiceWorkerUpdateViaCache aUpdateViaCache)
+    ServiceWorkerUpdateViaCache aUpdateViaCache,
+    const ServiceWorkerLifetimeExtension& aLifetimeExtension)
     : ServiceWorkerUpdateJob(Type::Update, aPrincipal, aScope,
-                             std::move(aScriptSpec), aUpdateViaCache) {}
+                             std::move(aScriptSpec), aUpdateViaCache,
+                             aLifetimeExtension) {}
 
 already_AddRefed<ServiceWorkerRegistrationInfo>
 ServiceWorkerUpdateJob::GetRegistration() const {
@@ -154,9 +154,11 @@ ServiceWorkerUpdateJob::GetRegistration() const {
 
 ServiceWorkerUpdateJob::ServiceWorkerUpdateJob(
     Type aType, nsIPrincipal* aPrincipal, const nsACString& aScope,
-    nsCString aScriptSpec, ServiceWorkerUpdateViaCache aUpdateViaCache)
+    nsCString aScriptSpec, ServiceWorkerUpdateViaCache aUpdateViaCache,
+    const ServiceWorkerLifetimeExtension& aLifetimeExtension)
     : ServiceWorkerJob(aType, aPrincipal, aScope, std::move(aScriptSpec)),
       mUpdateViaCache(aUpdateViaCache),
+      mLifetimeExtension(aLifetimeExtension),
       mOnFailure(serviceWorkerScriptCache::OnFailure::DoNothing) {}
 
 ServiceWorkerUpdateJob::~ServiceWorkerUpdateJob() = default;
@@ -209,11 +211,13 @@ void ServiceWorkerUpdateJob::FailUpdateJob(ErrorResult& aRv) {
 void ServiceWorkerUpdateJob::FailUpdateJob(nsresult aRv) {
   ErrorResult rv(aRv);
   FailUpdateJob(rv);
+  // This signature is intentionally about not using the result, so we do need
+  // to suppress the exception.
+  rv.SuppressException();
 }
 
 void ServiceWorkerUpdateJob::AsyncExecute() {
-  AUTO_PROFILER_MARKER_TEXT("ServiceWorkerUpdateJob::AsyncExecute", DOM, {},
-                            ""_ns);
+  AUTO_PROFILER_MARKER_UNTYPED("ServiceWorkerUpdateJob::AsyncExecute", DOM, {});
 
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(GetType() == Type::Update);
@@ -268,7 +272,7 @@ void ServiceWorkerUpdateJob::SetRegistration(
 }
 
 void ServiceWorkerUpdateJob::Update() {
-  AUTO_PROFILER_MARKER_TEXT("ServiceWorkerUpdateJob::Update", DOM, {}, ""_ns);
+  AUTO_PROFILER_MARKER_UNTYPED("ServiceWorkerUpdateJob::Update", DOM, {});
 
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(!Canceled());
@@ -389,7 +393,7 @@ void ServiceWorkerUpdateJob::ComparisonResult(nsresult aStatus,
     NS_ConvertUTF8toUTF16 reportMaxPrefix(maxPrefix);
 
     rv = nsContentUtils::FormatLocalizedString(
-        message, nsContentUtils::eDOM_PROPERTIES,
+        message, PropertiesFile::DOM_PROPERTIES,
         "ServiceWorkerScopePathMismatch", reportScope, reportMaxPrefix);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv), "Failed to format localized string");
     swm->ReportToAllClients(mScope, message, ""_ns, u""_ns, 0, 0,
@@ -412,8 +416,9 @@ void ServiceWorkerUpdateJob::ComparisonResult(nsresult aStatus,
   }
 
   RefPtr<ServiceWorkerInfo> sw = new ServiceWorkerInfo(
-      mRegistration->Principal(), mRegistration->Scope(), mRegistration->Id(),
-      mRegistration->Version(), mScriptSpec, aNewCacheName, flags);
+      mRegistration->Principal(), mRegistration->Scope(), mRegistration->Type(),
+      mRegistration->Id(), mRegistration->Version(), mScriptSpec, aNewCacheName,
+      flags);
 
   // If the registration is corrupt enough to force an uninstall if the
   // upgrade fails, then we want to make sure the upgrade takes effect
@@ -432,8 +437,15 @@ void ServiceWorkerUpdateJob::ComparisonResult(nsresult aStatus,
 
   ServiceWorkerPrivate* workerPrivate = sw->WorkerPrivate();
   MOZ_ASSERT(workerPrivate);
-  rv = workerPrivate->CheckScriptEvaluation(callback);
+  // Note that there are some synchronous failure cases that may immediately
+  // invoke the callback, meaning that FailUpdateJob may have already been
+  // called before this method returns.
+  rv = workerPrivate->CheckScriptEvaluation(mLifetimeExtension, callback);
 
+  // We call FailUpdateJob because it is idempotent and as defense-in-depth
+  // against early errors returns potentially being introduced above that return
+  // with ensuring that the passed-in callback will be invoked (such as those
+  // that are frequently added for shutdown phases).
   if (NS_WARN_IF(NS_FAILED(rv))) {
     FailUpdateJob(NS_ERROR_DOM_ABORT_ERR);
     return;
@@ -465,7 +477,7 @@ void ServiceWorkerUpdateJob::ContinueUpdateAfterScriptEval(
 }
 
 void ServiceWorkerUpdateJob::Install() {
-  AUTO_PROFILER_MARKER_TEXT("ServiceWorkerUpdateJob::Install", DOM, {}, ""_ns);
+  AUTO_PROFILER_MARKER_UNTYPED("ServiceWorkerUpdateJob::Install", DOM, {});
 
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_DIAGNOSTIC_ASSERT(!Canceled());
@@ -493,7 +505,8 @@ void ServiceWorkerUpdateJob::Install() {
   // Send the install event to the worker thread
   ServiceWorkerPrivate* workerPrivate =
       mRegistration->GetInstalling()->WorkerPrivate();
-  nsresult rv = workerPrivate->SendLifeCycleEvent(u"install"_ns, callback);
+  nsresult rv = workerPrivate->SendLifeCycleEvent(u"install"_ns,
+                                                  mLifetimeExtension, callback);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     ContinueAfterInstallEvent(false /* aSuccess */);
   }
@@ -539,7 +552,7 @@ void ServiceWorkerUpdateJob::ContinueAfterInstallEvent(
   // Step 22 of the Install algorithm.  Activate is executed after the
   // completion of this job.  The controlling client and skipWaiting checks are
   // performed in TryToActivate().
-  mRegistration->TryToActivateAsync();
+  mRegistration->TryToActivateAsync(mLifetimeExtension);
 }
 
 }  // namespace mozilla::dom

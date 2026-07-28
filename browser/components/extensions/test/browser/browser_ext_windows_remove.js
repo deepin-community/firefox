@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 add_task(async function testWindowRemove() {
@@ -8,22 +6,22 @@ add_task(async function testWindowRemove() {
       async function closeWindow(id) {
         let window = await browser.windows.get(id);
         return new Promise(function (resolve) {
-          browser.windows.onRemoved.addListener(async function listener(
-            windowId
-          ) {
-            browser.windows.onRemoved.removeListener(listener);
-            await browser.test.assertEq(
-              windowId,
-              window.id,
-              "The right window was closed"
-            );
-            await browser.test.assertRejects(
-              browser.windows.get(windowId),
-              new RegExp(`Invalid window ID: ${windowId}`),
-              "The window was really closed."
-            );
-            resolve();
-          });
+          browser.windows.onRemoved.addListener(
+            async function listener(windowId) {
+              browser.windows.onRemoved.removeListener(listener);
+              await browser.test.assertEq(
+                windowId,
+                window.id,
+                "The right window was closed"
+              );
+              await browser.test.assertRejects(
+                browser.windows.get(windowId),
+                new RegExp(`Invalid window ID: ${windowId}`),
+                "The window was really closed."
+              );
+              resolve();
+            }
+          );
           browser.windows.remove(id);
         });
       }

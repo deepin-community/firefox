@@ -5,10 +5,13 @@
 label-disable = Slå av
 label-enable = Slå på
 label-interventions = Endringar
+# Variables:
+#   $bug (string) - Bug number
 label-more-information = Meir informasjon: Bug { $bug }
 label-overrides = Overstyring av User Agent
 text-disabled-in-about-config = Denne funksjonen er slått av i about:config
 text-no-interventions = Ingen tiltak blir brukt
+text-page-title = Webkompatiblitet
 text-no-overrides = Ingen UA-overstyringar blir brukt
 text-title = about:compat
 

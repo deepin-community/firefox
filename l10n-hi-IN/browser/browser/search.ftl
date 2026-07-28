@@ -31,3 +31,7 @@ searchbar-icon =
 ## $newEngine (String) - the search engine to replace the removed search engine.
 
 remove-search-engine-button = ठीक है
+
+## The following strings are used as input labels.
+
+add-engine-name = खोज इंजन का नाम

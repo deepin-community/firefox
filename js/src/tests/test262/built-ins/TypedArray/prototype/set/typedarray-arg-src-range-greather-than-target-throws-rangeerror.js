@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -23,29 +22,29 @@ includes: [testTypedArray.js]
 features: [TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var sample, src;
 
-  sample = new TA(2);
-  src = new TA(2);
+  sample = new TA(makeCtorArg(2));
+  src = new TA(makeCtorArg(2));
   assert.throws(RangeError, function() {
     sample.set(src, 1);
   }, "2 + 1 > 2");
 
-  sample = new TA(1);
-  src = new TA(2);
+  sample = new TA(makeCtorArg(1));
+  src = new TA(makeCtorArg(2));
   assert.throws(RangeError, function() {
     sample.set(src, 0);
   }, "2 + 0 > 1");
 
-  sample = new TA(1);
-  src = new TA(0);
+  sample = new TA(makeCtorArg(1));
+  src = new TA(makeCtorArg(0));
   assert.throws(RangeError, function() {
     sample.set(src, 2);
   }, "0 + 2 > 1");
 
-  sample = new TA(2);
-  src = new TA(2);
+  sample = new TA(makeCtorArg(2));
+  src = new TA(makeCtorArg(2));
   assert.throws(RangeError, function() {
     sample.set(src, Infinity);
   }, "2 + Infinity > 2");

@@ -30,10 +30,18 @@ options-context-inspector = מפקח
 options-show-user-agent-styles-label = הצגת סגנונות דפדפן
 options-show-user-agent-styles-tooltip =
     .title = הפעלת אפשרות זו תציג את סגנונות בררת המחדל שנטענים על־ידי הדפדפן.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = הצגת ה־Shadow DOM של הדפדפן
+options-show-user-agent-shadow-dom-tooltip =
+    .title = הפעלת אפשרות זו תציג רכיבים של Shadow DOM המטופלים על־ידי הדפדפן.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = חיתוך רכיבי DOM
 options-collapse-attrs-tooltip =
     .title = קיצור תכונות ארוכות במפקח
+# The label for the checkbox option to enable the display of comments in the Inspector
+options-show-comments-label = הצגת הערות
+options-show-comments-tooltip =
+    .title = הצגת צמתי הערות במפקח
 # The label for the checkbox option to enable the "drag to update" feature
 options-inspector-draggable-properties-label = לחיצה וגרירה כדי לערוך ערכים של גדלים
 options-inspector-draggable-properties-tooltip =
@@ -67,6 +75,35 @@ options-webconsole-label = מסוף רשת
 options-webconsole-split-console-label = הפעלת מסוף מפוצל
 options-webconsole-split-console-tooltip =
     .title = פתיחת המסוף המפוצל באמצעות מקש ה־Escape
+
+## Network Monitor section
+
+# The heading
+options-netmonitor-label = מנטר הרשת
+# The label for the input defining the limit of stored request and response body size
+options-netmonitor-body-limit-label = גודל גוף בקשה ותגובה מירבי (יש להגדיר ל־0 ללא הגבלה):
+options-netmonitor-body-limit-tooltip =
+    .title = גופי בקשה או תגובה שחורגים מהגודל שהוגדר ייחתכו בתצוגה או בהורדה במנטר הרשת. יש להגדיר ל־0 כדי שיהיו ללא הגבלה.
+# Text shown in the input when there is no limitation (instead of showing "0")
+options-netmonitor-body-limit-unlimited-label = ללא הגבלה
+options-netmonitor-body-limit-button =
+    .title = עריכת גודל גוף הבקשה/תגובה המירבי.
+options-netmonitor-body-limit-restore-default =
+    .title = שחזור ערך ברירת המחדל עבור גודל גוף בקשה/תגובה מירבי.
+options-netmonitor-body-limit-set =
+    .title = הגדרת ערך הקלט הנוכחי כגודל גוף בקשה/תגובה מירבי.
+
+## Experimental section
+
+# The heading
+options-experimental-label = תכונות ניסיוניות
+# The label for the checkbox that toggles showing stylesheets in the debugger
+options-stylesheets-in-the-debugger-label = הצגת גיליונות סגנונות במנפה השגיאות
+options-stylesheets-in-the-debugger-tooltip =
+    .title = הצגת רשימה וצפייה בגיליונות סגנונות במנפה השגיאות
+# The message shown for settings that indicates that the attached setting requires the
+# toolbox to be reopened to take effect.
+options-reopen-toolbox-message = (דורש פתיחה מחדש של ארגז הכלים)
 
 ## Style Editor section
 
@@ -107,14 +144,50 @@ options-sourceeditor-tabsize-label = גודל Tab
 options-sourceeditor-keybinding-label = קיצורי מקשים
 options-sourceeditor-keybinding-default-label = בררת מחדל
 
+## Local Mode section
+
+# The heading
+options-local-mode-label = מצב מקומי
+options-local-mode-only-work-locally = מצב מקומי פועל באופן מקומי בלבד והוא מושבת בעת ניפוי שגיאות של הקשרים מרוחקים
+options-local-mode-behavior = מצב מקומי מאפשר לך לטעון קבצים מקומיים דרך כתובת https ללא כל תלות חיצונית. ניתן לטעון את הכתובות רק מלשוניות שבהן כלי הפיתוח פתוחים.
+options-local-mode-domain-label = מתחם מותאם אישית:
+options-local-mode-origin-input =
+    .placeholder = המקור עבור המיפוי המקומי
+# Errors shown when the origin input has an error
+options-local-mode-origin-conflict = מקור זה מתנגש עם מיפוי קיים אחר
+options-local-mode-origin-invalid = מקור זה אינו תקין
+options-local-mode-folder-label = תיקייה מקומית:
+options-local-mode-choose-folder = עיון…
+    .title = בחירת תיקייה מקומי שתשמש עבור מיפוי זה
+# Dialog's title when picking a folder for a mapping
+# Variables:
+#   $url (String): The url for the mapping being configured
+options-local-mode-choose-folder-picker-title = בחירת תיקיית מצב מקומי עבור: { $url }
+# Error shown when the folder is invalid
+# (can easily be triggered when using about:config and changing underlying mappings prefs)
+options-local-mode-folder-invalid = תיקייה זו אינה קיימת, או שהיא לא חוקית.
+options-local-mode-toggle =
+    .title = הפעלה/השבתה של המיפוי המקומי הזה
+options-local-mode-toggle-enable = הפעלה
+options-local-mode-toggle-disable = השבתה
+options-local-mode-navigate-to =
+    .title = ניווט לכתובת המיפוי הזו
+# Dialog message prompted when clicking on the Delete button
+# Variables:
+#   $mappingOrigin (String): The origin for the mapping
+options-local-mode-confirm-deletion = האם ברצונך להסיר את המיפוי ״{ $mappingOrigin }״?
+options-local-mode-new-mapping = הוספת מיפוי מקומי חדש
+
 ## Advanced section
 
 # The heading (this item is also used in perftools.ftl)
 options-context-advanced-settings = הגדרות מתקדמות
 # The label for the checkbox that toggles the HTTP cache on or off
-options-disable-http-cache-label = נטרול מטמון HTTP (כשארגז הכלים פתוח)
+options-disable-http-cache-label = השבתת מטמון HTTP (כשארגז הכלים פתוח)
 options-disable-http-cache-tooltip =
     .title = הפעלת אפשרות זו תשבית את מטמון ה־HTTP עבור כל הלשוניות בהן פתוח ארגז הכלים. Service Workers אינם מושפעים מאפשרות זו.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = השבתת JavaScript
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = השבתת JavaScript *
 options-disable-javascript-tooltip =
@@ -129,6 +202,10 @@ options-enable-remote-tooltip2 =
 options-enable-f12-label = שימוש במקש F12 כדי לפתוח או לסגור את כלי הפיתוח
 options-enable-f12-tooltip =
     .title = הפעלת אפשרות זו תקשר את מקש F12 לפתיחה או סגירת ארגז הכלים של כלי הפיתוח
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = לאפשר יוצרי תבניות מותאמים אישית
+options-enable-custom-formatters-tooltip =
+    .title = הפעלת אפשרות זו תאפשר לאתרים להגדיר יוצרי תבניות מותאמים אישית עבור אובייקטי DOM
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = הפעלת Service Workers על גבי HTTP (כשארגז הכלים פתוח)
 options-enable-service-workers-http-tooltip =
@@ -137,5 +214,21 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = הפעלת מפות מקור
 options-source-maps-tooltip =
     .title = אם אפשרות זו תופעל המקורות ימופו בכלים.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (הפעלה נוכחית בלבד, טוען מחדש את הדף)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * הפעלה נוכחית בלבד, יש לטעון מחדש את הדף
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (טוען מחדש את הדף)
+# This is used to add a * marker to the label for the Options Panel tool checkbox for the
+# tool which is not supported for the current toolbox target.
+# Variables:
+#   $toolLabel (String): The name of the tool not being supported
+options-tool-not-supported-marker = { $toolLabel } *
+# Used as a label for auto theme
+options-auto-theme-label = אוטומטי
+# This is the text that appears in the settings panel for panel that will be removed in future releases.
+# This entire text is treated as a link to an MDN page.
+options-deprecation-notice = יצא משימוש. מידע נוסף…

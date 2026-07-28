@@ -7,7 +7,7 @@
 ### the remote profiling panel. There are additional profiler strings in the appmenu.ftl
 ### file that are used for the profiler popup.
 
-perftools-intro-title = Налаштування Profiler
+perftools-intro-title = Налаштування профайлера
 perftools-intro-description =
     Записи запускають profiler.firefox.com у новій вкладці. Усі дані зберігаються
     локально, але ви можете вивантажити їх для оприлюднення.
@@ -33,6 +33,7 @@ perftools-description-local-build =
     Якщо ви профілюєте збірку, яку склали власноруч на цьому
     комп'ютері, додайте objdir своєї збірки до списку внизу,
     щоб можна було виявляти інформацію про символи.
+perftools-pick-local-build-directory = Вибрати каталог збірки
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -68,6 +69,14 @@ perftools-button-restart = Перезапустити
 perftools-button-add-directory = Додати директорію
 perftools-button-remove-directory = Видалити вибране
 perftools-button-edit-settings = Змінити налаштування…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Інші дії
+perftools-menu-more-actions-restart-with-profiling = Перезапустити { -brand-shorter-name } із увімкненим профілюванням запуску
+perftools-menu-more-actions-copy-for-startup = Копіювати змінні середовища для профілювання запуску
+perftools-menu-more-actions-copy-for-perf-tests = Копіювати параметри для тестів продуктивності
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -112,7 +121,7 @@ perftools-thread-jvm-pool =
 
 perftools-record-all-registered-threads = Обходити вибране вгорі й записувати всі зареєстровані потоки
 perftools-tools-threads-input-label =
-    .title = Назви потоків є розділеним комами списком, що використовується для увімкнення профілювання потоків у Profiler. Для включення, назва повинна мати лише частковий збіг з назвою потоку. Вони чутливі до пробілів.
+    .title = Назви потоків є розділеним комами списком, що використовується для увімкнення профілювання потоків у профайлері. Для включення, назва повинна мати лише частковий збіг з назвою потоку. Вони чутливі до пробілів.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
@@ -134,21 +143,22 @@ perftools-onboarding-close-button =
 # The same labels and descriptions are also defined in appmenu.ftl.
 
 perftools-presets-web-developer-label = Веброзробник
-perftools-presets-web-developer-description = Рекомендовані попередні налаштування для налагодження більшості вебзастосунків. З низьким споживанням ресурсів.
+perftools-presets-web-developer-description = Рекомендовані задані параметри з низьким споживанням ресурсів для налагодження більшості вебпрограм.
 perftools-presets-firefox-label = { -brand-shorter-name }
-perftools-presets-firefox-description = Рекомендовані налаштування для профілювання { -brand-shorter-name }.
+perftools-presets-firefox-description = Рекомендовані задані параметри для профілювання { -brand-shorter-name }.
 perftools-presets-graphics-label = Графіка
-perftools-presets-graphics-description = Налаштування для виявлення помилок графіки в { -brand-shorter-name }.
+perftools-presets-graphics-description = Задані параметри для виявлення помилок графіки в { -brand-shorter-name }.
 perftools-presets-media-label = Медіа
-perftools-presets-media-description2 = Налаштування для виявлення помилок аудіо та відео в { -brand-shorter-name }.
+perftools-presets-media-description2 = Задані параметри для виявлення помилок аудіо та відео в { -brand-shorter-name }.
+perftools-presets-ml-label = Машинне навчання
+perftools-presets-ml-description2 = Задані параметри для дослідження помилок машинного навчання у { -brand-shorter-name }.
 perftools-presets-networking-label = Мережа
-perftools-presets-networking-description = Налаштування для виявлення помилок мережі в { -brand-shorter-name }.
+perftools-presets-networking-description = Задані параметри для виявлення мережевих помилок у { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Потужність
-perftools-presets-power-description = Налаштування для виявлення помилок використання потужності { -brand-shorter-name } із низьким накладанням.
+perftools-presets-power-description = Задані параметри з низьким споживанням ресурсів для виявлення помилок використання потужності { -brand-shorter-name }.
 perftools-presets-debug-label = Налагодження
-perftools-presets-debug-description = Типові задані параметри для налагодження у { -brand-shorter-name }. Високе споживання ресурсів. Не використовуйте для високопродуктивних завдань, а щоб зрозуміти поведінку браузера.
+perftools-presets-debug-description = Задані параметри для налагодження у { -brand-shorter-name }. Високе споживання ресурсів. Не використовуйте для високопродуктивних завдань, а щоб зрозуміти поведінку браузера.
+perftools-presets-web-compat-label = Web Compat
+perftools-presets-web-compat-description = Рекомендований заданий параметр для налагодження проблем сумісності вебсайтів, а не для відстеження продуктивності.
 perftools-presets-custom-label = Власні
-
-##
-

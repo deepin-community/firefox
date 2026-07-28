@@ -10,14 +10,22 @@ autofill-manage-addresses-list-header = Адреси
 autofill-manage-credit-cards-title = Запазени банкови карти
 autofill-manage-credit-cards-list-header = Банкови карти
 autofill-manage-payment-methods-title = Запазени начини за плащане
+autofill-manage-cards-list-header = Карти
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Премахване
 autofill-manage-add-button = Добавяне…
 autofill-manage-edit-button = Промяна…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
+address-capture-not-now-button =
+    .label = Не сега
+    .accessKey = Н
+address-capture-learn-more-button =
+    .label = Научете повече
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Промяна на адрес
 autofill-address-given-name = Име
@@ -26,53 +34,64 @@ autofill-address-family-name = Фамилия
 autofill-address-organization = Организация
 autofill-address-street = Адрес
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Микрорайон
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Село или махала
 autofill-address-island = Остров
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Townland
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Град
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Район
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Пощенски град
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Предградие
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Провинция
 autofill-address-state = Щат
 autofill-address-county = Графство
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Енория
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Префектура
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Район
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Департамент
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Емират
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Област
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Пощенски код
 autofill-address-postal-code = Пощенски код
+# Postal code field.
 autofill-address-zip = Пощенски код
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
 
 ##
@@ -80,6 +99,7 @@ autofill-address-eircode = Eircode
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Нов адрес
 autofill-address-country = Държава или район
+autofill-address-country-only = Държава
 autofill-address-tel = Телефон
 autofill-address-email = Ел. адрес
 autofill-cancel-button = Отказ
@@ -89,10 +109,26 @@ autofill-country-warning-message = Автоматичното попълване
 autofill-add-new-card-title = Нова банкова карта
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Промяна
+# In macOS, this string is preceded by the operating system with "Firefox is trying to ",
+# and has a period added to its end. Make sure to test in your locale.
+autofill-edit-card-password-prompt =
+    { PLATFORM() ->
+        [macos] показва информация за банкова карта
+        [windows] { -brand-short-name } се опитва да покаже информация за банкова карта. Потвърдете достъпа до този акаунт на Windows по-долу.
+       *[other] { -brand-short-name } се опитва да покаже информация за банкова карта.
+    }
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-card-title = Добавяне на карта
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Редактиране на карта
+autofill-card-number-2 =
+    .label = Номер на карта
 autofill-card-number = Номер на карта
 autofill-card-invalid-number = Моля, въведете валиден номер на банкова карта
+autofill-card-name-on-card-2 =
+    .label = Име от картата
+autofill-card-billing-address-2 =
+    .label = Адрес за фактура
 autofill-card-name-on-card = Име от картата
 autofill-card-expires-month = Валидна до месец
 autofill-card-expires-year = година

@@ -31,23 +31,28 @@ add_setup(async function () {
     { identifier: "engine1" },
     { identifier: "engine2" },
   ]);
-  await Services.search.init();
+  await SearchTestUtils.initXPCShellAddonManager();
+  await SearchService.init();
+
+  // Force the settings redesign to false, so that we can get the actual result,
+  // whilst this migration is still supported.
+  Services.prefs.setBoolPref("browser.settings-redesign.enabled", false);
 });
 
 add_task(async function test_migration_from_pre_ids() {
-  await loadSettingsFile("data/search-legacy.json");
+  await loadSettingsFile("settings/v1-metadata-migration.json");
 
   Services.prefs.setStringPref("browser.search.hiddenOneOffs", "engine1");
 
   const settingsFileWritten = promiseAfterSettings();
 
-  await Services.search.wrappedJSObject.reset();
-  await Services.search.init();
+  await SearchService.reset();
+  await SearchService.init();
 
   await settingsFileWritten;
 
-  const engine1 = await Services.search.getEngineByName("engine1");
-  const engine2 = await Services.search.getEngineByName("engine2");
+  const engine1 = await SearchService.getEngineByName("engine1");
+  const engine2 = await SearchService.getEngineByName("engine2");
 
   Assert.ok(
     engine1.hideOneOffButton,

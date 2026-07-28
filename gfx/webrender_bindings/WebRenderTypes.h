@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 
 #include "ImageTypes.h"
 #include "mozilla/webrender/webrender_ffi.h"
-#include "mozilla/EnumSet.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/gfx/Matrix.h"
 #include "mozilla/gfx/Types.h"
@@ -127,6 +124,8 @@ enum class SpatialKeyKind : uint32_t {
   Sticky,
   ImagePipeline,
   APZ,
+  ViewTransition,
+  SCOrigin,
 };
 
 // Construct a unique, persistent spatial key based on the frame tree pointer,
@@ -505,42 +504,32 @@ static inline wr::BorderRadius ToBorderRadius(
 
 static inline wr::BorderRadius ToBorderRadius(
     const gfx::RectCornerRadii& aRadii) {
-  return ToBorderRadius(LayoutDeviceSize::FromUnknownSize(aRadii[0]),
-                        LayoutDeviceSize::FromUnknownSize(aRadii[1]),
-                        LayoutDeviceSize::FromUnknownSize(aRadii[3]),
-                        LayoutDeviceSize::FromUnknownSize(aRadii[2]));
+  return ToBorderRadius(
+      LayoutDeviceSize::FromUnknownSize(aRadii.TopLeft()),
+      LayoutDeviceSize::FromUnknownSize(aRadii.TopRight()),
+      LayoutDeviceSize::FromUnknownSize(aRadii.BottomLeft()),
+      LayoutDeviceSize::FromUnknownSize(aRadii.BottomRight()));
+}
+
+static inline wr::BorderRadius ToBorderRadius(const nsRectCornerRadii& aRadii,
+                                              int32_t aAppUnitsPerDevPixel) {
+  return ToBorderRadius(
+      LayoutDeviceSize::FromAppUnits(aRadii.TopLeft(), aAppUnitsPerDevPixel),
+      LayoutDeviceSize::FromAppUnits(aRadii.TopRight(), aAppUnitsPerDevPixel),
+      LayoutDeviceSize::FromAppUnits(aRadii.BottomLeft(), aAppUnitsPerDevPixel),
+      LayoutDeviceSize::FromAppUnits(aRadii.BottomRight(),
+                                     aAppUnitsPerDevPixel));
 }
 
 static inline wr::ComplexClipRegion ToComplexClipRegion(
-    const nsRect& aRect, const nscoord* aRadii, int32_t aAppUnitsPerDevPixel) {
+    const nsRect& aRect, const nsRectCornerRadii& aRadii,
+    int32_t aAppUnitsPerDevPixel) {
   wr::ComplexClipRegion ret;
   ret.rect =
       ToLayoutRect(LayoutDeviceRect::FromAppUnits(aRect, aAppUnitsPerDevPixel));
-  ret.radii = ToBorderRadius(
-      LayoutDeviceSize::FromAppUnits(
-          nsSize(aRadii[eCornerTopLeftX], aRadii[eCornerTopLeftY]),
-          aAppUnitsPerDevPixel),
-      LayoutDeviceSize::FromAppUnits(
-          nsSize(aRadii[eCornerTopRightX], aRadii[eCornerTopRightY]),
-          aAppUnitsPerDevPixel),
-      LayoutDeviceSize::FromAppUnits(
-          nsSize(aRadii[eCornerBottomLeftX], aRadii[eCornerBottomLeftY]),
-          aAppUnitsPerDevPixel),
-      LayoutDeviceSize::FromAppUnits(
-          nsSize(aRadii[eCornerBottomRightX], aRadii[eCornerBottomRightY]),
-          aAppUnitsPerDevPixel));
+  ret.radii = ToBorderRadius(aRadii, aAppUnitsPerDevPixel);
   ret.mode = ClipMode::Clip;
   return ret;
-}
-
-static inline wr::LayoutSideOffsets ToBorderWidths(float top, float right,
-                                                   float bottom, float left) {
-  wr::LayoutSideOffsets bw;
-  bw.top = top;
-  bw.right = right;
-  bw.bottom = bottom;
-  bw.left = left;
-  return bw;
 }
 
 static inline wr::DeviceIntSideOffsets ToDeviceIntSideOffsets(int32_t top,
@@ -564,6 +553,21 @@ static inline wr::LayoutSideOffsets ToLayoutSideOffsets(float top, float right,
   offset.bottom = bottom;
   offset.left = left;
   return offset;
+}
+
+static inline wr::LayoutSideOffsets ToLayoutSideOffsets(
+    const gfx::Margin& aMargin) {
+  return ToLayoutSideOffsets(aMargin.top, aMargin.right, aMargin.bottom,
+                             aMargin.left);
+}
+
+static inline wr::LayoutSideOffsets ToBorderWidths(float top, float right,
+                                                   float bottom, float left) {
+  return ToLayoutSideOffsets(top, right, bottom, left);
+}
+
+static inline wr::LayoutSideOffsets ToBorderWidths(const gfx::Margin& aMargin) {
+  return ToLayoutSideOffsets(aMargin);
 }
 
 wr::RepeatMode ToRepeatMode(StyleBorderImageRepeatKeyword);
@@ -774,7 +778,6 @@ struct ByteBuffer {
 
 struct BuiltDisplayList {
   wr::VecU8 dl_items;
-  wr::VecU8 dl_cache;
   wr::VecU8 dl_spatial_tree;
   wr::BuiltDisplayListDescriptor dl_desc;
 };
@@ -805,6 +808,7 @@ enum class WebRenderError : int8_t {
   VIDEO_OVERLAY,
   VIDEO_HW_OVERLAY,
   VIDEO_SW_OVERLAY,
+  DCOMP_TEXTURE_OVERLAY,
   EXCESSIVE_RESETS,
 
   Sentinel /* this must be last for serialization purposes. */
@@ -842,6 +846,14 @@ static inline wr::YuvRangedColorSpace ToWrYuvRangedColorSpace(
     case gfx::YUVRangedColorSpace::BT2020_Narrow:
       return wr::YuvRangedColorSpace::Rec2020Narrow;
     case gfx::YUVRangedColorSpace::BT2020_Full:
+      return wr::YuvRangedColorSpace::Rec2020Full;
+    case gfx::YUVRangedColorSpace::BT2100_HLG_Narrow:
+      return wr::YuvRangedColorSpace::Rec2020Narrow;
+    case gfx::YUVRangedColorSpace::BT2100_HLG_Full:
+      return wr::YuvRangedColorSpace::Rec2020Full;
+    case gfx::YUVRangedColorSpace::BT2100_PQ_Narrow:
+      return wr::YuvRangedColorSpace::Rec2020Narrow;
+    case gfx::YUVRangedColorSpace::BT2100_PQ_Full:
       return wr::YuvRangedColorSpace::Rec2020Full;
     case gfx::YUVRangedColorSpace::GbrIdentity:
       break;
@@ -883,24 +895,8 @@ static inline wr::WrColorRange ToWrColorRange(gfx::ColorRange aColorRange) {
 static inline wr::SyntheticItalics DegreesToSyntheticItalics(float aDegrees) {
   wr::SyntheticItalics synthetic_italics;
   synthetic_italics.angle =
-      int16_t(std::min(std::max(aDegrees, -89.0f), 89.0f) * 256.0f);
+      int16_t(std::clamp(aDegrees, -89.0f, 89.0f) * 256.0f);
   return synthetic_italics;
-}
-
-static inline wr::WindowSizeMode ToWrWindowSizeMode(nsSizeMode aSizeMode) {
-  switch (aSizeMode) {
-    case nsSizeMode_Normal:
-      return wr::WindowSizeMode::Normal;
-    case nsSizeMode_Minimized:
-      return wr::WindowSizeMode::Minimized;
-    case nsSizeMode_Maximized:
-      return wr::WindowSizeMode::Maximized;
-    case nsSizeMode_Fullscreen:
-      return wr::WindowSizeMode::Fullscreen;
-    default:
-      MOZ_ASSERT_UNREACHABLE("Tried to convert invalid size mode.");
-      return wr::WindowSizeMode::Invalid;
-  }
 }
 
 static inline wr::APZScrollGeneration ToWrAPZScrollGeneration(

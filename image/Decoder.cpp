@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,15 +11,16 @@
 #include "mozilla/gfx/2D.h"
 #include "mozilla/gfx/Point.h"
 #include "mozilla/ProfilerLabels.h"
-#include "mozilla/Telemetry.h"
 #include "nsComponentManagerUtils.h"
 #include "nsProxyRelease.h"
 #include "nsServiceManagerUtils.h"
+#include "mozilla/StaticPrefs_gfx.h"
 
 using mozilla::gfx::IntPoint;
 using mozilla::gfx::IntRect;
 using mozilla::gfx::IntSize;
 using mozilla::gfx::SurfaceFormat;
+using namespace mozilla::gfx::CICP;
 
 namespace mozilla {
 namespace image {
@@ -93,9 +93,19 @@ Decoder::~Decoder() {
 
 void Decoder::SetSurfaceFlags(SurfaceFlags aSurfaceFlags) {
   MOZ_ASSERT(!mInitialized);
+  MOZ_ASSERT(!(mSurfaceFlags & SurfaceFlags::NO_COLORSPACE_CONVERSION) ||
+             !(mSurfaceFlags & SurfaceFlags::TO_SRGB_COLORSPACE));
   mSurfaceFlags = aSurfaceFlags;
   if (mSurfaceFlags & SurfaceFlags::NO_COLORSPACE_CONVERSION) {
     mCMSMode = CMSMode::Off;
+  }
+  if (mSurfaceFlags & SurfaceFlags::TO_SRGB_COLORSPACE) {
+    // CMSMode::TaggedOnly and CMSMode::All are equivalent when the
+    // TO_SRGB_COLORSPACE flag is set (for untagged images CMSMode::All assumes
+    // they are in sRGB space so it does nothing, which is same as what
+    // CMSMode::TaggedOnly does for untagged images). We just want to avoid
+    // CMSMode::Off so that the sRGB conversion actually happens.
+    mCMSMode = CMSMode::All;
   }
 }
 
@@ -292,8 +302,7 @@ DecoderFinalStatus Decoder::FinalStatus() const {
 
 DecoderTelemetry Decoder::Telemetry() const {
   MOZ_ASSERT(mIterator);
-  return DecoderTelemetry(SpeedHistogram(),
-                          mIterator ? mIterator->ByteCount() : 0,
+  return DecoderTelemetry(SpeedMetric(), mIterator ? mIterator->ByteCount() : 0,
                           mIterator ? mIterator->ChunkCount() : 0, mDecodeTime);
 }
 
@@ -306,8 +315,7 @@ nsresult Decoder::AllocateFrame(const gfx::IntSize& aOutputSize,
   if (mCurrentFrame) {
     mHasFrameToTake = true;
 
-    // Gather the raw pointers the decoders will use.
-    mCurrentFrame->GetImageData(&mImageData, &mImageDataLength);
+    mImageData = mCurrentFrame.Data();
 
     // We should now be on |aFrameNum|. (Note that we're comparing the frame
     // number, which is zero-based, with the frame count, which is one-based.)
@@ -319,6 +327,9 @@ nsresult Decoder::AllocateFrame(const gfx::IntSize& aOutputSize,
     // Update our state to reflect the new frame.
     MOZ_ASSERT(!mInFrame, "Starting new frame but not done with old one!");
     mInFrame = true;
+  } else {
+    mImageData = nullptr;
+    mImageDataLength = 0;
   }
 
   return mCurrentFrame ? NS_OK : NS_ERROR_FAILURE;
@@ -379,7 +390,8 @@ RawAccessFrameRef Decoder::AllocateFrameInternal(
       // animation parameters elsewhere. For now we just drop it.
       bool blocked = ref.get() == mRestoreFrame.get();
       if (!blocked) {
-        blocked = NS_FAILED(ref->InitForDecoderRecycle(aAnimParams.ref()));
+        blocked = NS_FAILED(
+            ref->InitForDecoderRecycle(aAnimParams.ref(), &mImageDataLength));
       }
 
       if (blocked) {
@@ -398,12 +410,13 @@ RawAccessFrameRef Decoder::AllocateFrameInternal(
     bool nonPremult = bool(mSurfaceFlags & SurfaceFlags::NO_PREMULTIPLY_ALPHA);
     auto frame = MakeNotNull<RefPtr<imgFrame>>();
     if (NS_FAILED(frame->InitForDecoder(aOutputSize, aFormat, nonPremult,
-                                        aAnimParams, bool(mFrameRecycler)))) {
+                                        aAnimParams, bool(mFrameRecycler),
+                                        &mImageDataLength))) {
       NS_WARNING("imgFrame::Init should succeed");
       return RawAccessFrameRef();
     }
 
-    ref = frame->RawAccessRef();
+    ref = frame->RawAccessRef(gfx::DataSourceSurface::READ_WRITE);
     if (!ref) {
       frame->Abort();
       return RawAccessFrameRef();
@@ -573,6 +586,39 @@ void Decoder::PostError() {
     --mFrameCount;
     mHasFrameToTake = false;
   }
+}
+
+/* static */
+uint8_t Decoder::ChooseTransferCharacteristics(uint8_t aTC) {
+  // Most apps, including Chrome
+  // (https://source.chromium.org/chromium/chromium/src/+/main:ui/gfx/color_space.cc;l=906;drc=2e47178120fb82aced74f8dbccf358aa13073a83),
+  // use the sRGB TC for BT.709 TC. We have a pref to provide that behaviour.
+  // Since BT.2020 uses the same TC we can also optionally use this behaviour
+  // for BT.2020.
+  const bool rec709GammaAsSrgb =
+      StaticPrefs::gfx_color_management_rec709_gamma_as_srgb();
+  const bool rec2020GammaAsRec709 =
+      StaticPrefs::gfx_color_management_rec2020_gamma_as_rec709();
+  switch (aTC) {
+    case TransferCharacteristics::TC_BT709:
+    case TransferCharacteristics::TC_BT601:
+      if (rec709GammaAsSrgb) {
+        return TransferCharacteristics::TC_SRGB;
+      }
+      break;
+    case TransferCharacteristics::TC_BT2020_10BIT:
+    case TransferCharacteristics::TC_BT2020_12BIT:
+      if (rec2020GammaAsRec709) {
+        if (rec709GammaAsSrgb) {
+          return TransferCharacteristics::TC_SRGB;
+        }
+        return TransferCharacteristics::TC_BT709;
+      }
+      break;
+    default:
+      break;
+  }
+  return aTC;
 }
 
 }  // namespace image

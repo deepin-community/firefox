@@ -23,6 +23,11 @@ protections-panel-etp-more-info =
     .aria-label = ਵਧੇਰੇ ਟਰੈਕਿੰਗ ਸੁਰੱਖਿਆ ਬਾਰੇ ਹੋਰ ਜਾਣਕਾਰੀ
 protections-panel-etp-on-header = ਇਸ ਸਾਈਟ ਲਈ ਵਾਧਾ ਕੀਤਾ ਟਰੈਕਿੰਗ ਸੁਰੱਖਿਆ ਚਾਲੂ ਹੈ
 protections-panel-etp-off-header = ਇਸ ਸਾਈਟ ਲਈ ਵਾਧਾ ਕੀਤਾ ਟਰੈਕਿੰਗ ਸੁਰੱਖਿਆ ਬੰਦ ਹੈ
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = ਸਾਈਟ ਕੰਮ ਨਹੀਂ ਕਰ ਰਹੀ ਹੈ?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = ਸਾਈਟ ਕੰਮ ਨਹੀਂ ਕਰ ਰਹੀ ਹੈ?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = ਵਧਾਈ ਟਰੈਕਿੰਗ ਸੁਰੱਖਿਆ
     .description = ਇਸ ਸਾਈਟ ਲਈ ਬੰਦ ਹੈ
     .aria-label = ਵਧਾਈ ਟਰੈਕਿੰਗ ਸੁਰੱਖਿਆ: { $host } ਲਈ ਬੰਦ ਹੈ
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = ਸਾਈਟ ਕੰਮ ਨਹੀਂ ਕਰ ਰਹੀ ਹੈ?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = ਸਾਈਟ ਕੰਮ ਨਹੀਂ ਕਰ ਰਹੀ ਹੈ?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -71,6 +71,24 @@ protections-panel-content-blocking-fingerprinters-label = ਫਿੰਗਰਪਰ�
 protections-panel-blocking-label = ਪਾਬੰਦੀ ਲਾਈ
 protections-panel-not-blocking-label = ਇਜਾਜ਼ਤ ਦਿੱਤੇ
 protections-panel-not-found-label = ਕੋਈ ਨਹੀਂ ਖੋਜੇ
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = ਜਦੋਂ ਤੁਸੀਂ ਇਸ ਸਾਈਟ ਨੂੰ ਖੋਲ੍ਹਦੇ ਹੋ ਤਾਂ ਤੁਹਾਡੇ ਵਲੋਂ ਖਾਸ ਤੌਰ ਉੱਤੇ ਇਜਾਜ਼ਤ ਨਾ ਦਿੱਤੇ ਜਾਣ ਤੱਕ { -brand-short-name } ਨੇ ਸਮੱਗਰੀ ਟਰੈਕ ਕਰਨ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਉਂਦਾ ਹੈ।
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = { $trackername } ਨੂੰ ਮਨਜ਼ੂਰੀ ਦਿਓ
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = { $trackername } ਟਰੈਕਰਾਂ ਅਤੇ ਸਮੱਗਰੀ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਈ
+smartblock-placeholder-desc = ਤੁਹਾਡੀਆਂ { -brand-short-name } ਸੈਟਿੰਗਾਂ ਇਸ ਸਮੱਗਰੀ ਉੱਤੇ ਤੁਹਾਨੂੰ ਸਾਈਟਾਂ ਖੋਲ੍ਹਣ ਦੌਰਾਨ ਟੋਹ ਲੈਣ ਜਾਂ ਇਸ਼ਤਿਹਾਰਾਂ ਲਈ ਵਰਤੇ ਜਾਣ ਤੋਂ ਪਾਬੰਦੀ ਲਾਉਂਦੀਆਂ ਹਨ।
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = { $websitehost } ਉੱਤੇ ਮਨਜ਼ੂਰ ਕਰੋ
+# Caption shown above the original text and links extracted from a blocked
+# third-party embed (e.g. a Twitter/X or Instagram post) that SmartBlock has
+# replaced with a placeholder. The caption sits above a bordered content box
+# containing the extracted text.
+smartblock-placeholder-content-header = ਪਾਬੰਦੀ ਲਾਏ ਇੰਬੈੱਡ ਤੋਂ ਸਮੱਗਰੀ
 
 ##
 
@@ -108,7 +126,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = ਖ਼ਰਾਬ ਸਾਈਟ ਬਾਰੇ ਰਿਪੋਰਟ ਕਰੋ
 protections-panel-content-blocking-breakage-report-view-description = ਕੁਝ ਟਰੈਕਰਾਂ ਉੱਤੇ ਪਾਬੰਦੀ ਲਗਾਉਣ ਕਰਕੇ ਕੁਝ ਵੈੱਬਸਾਈਟਾਂ ਨਾਲ ਸਮੱਸਿਆਵਾਂ ਆ ਸਕਦੀਆਂ ਹਨ। ਇਹ ਸਮੱਸਿਆਵਾਂ ਬਾਰੇ ਰਿਪੋਰਟ ਕਰਨ ਨਾਲ ਹਰ ਕਿਸੇ ਲਈ { -brand-short-name } ਵਧੀਆ ਬਣਾਉਣ ਲਈ ਮਦਦ ਹੁੰਦੀ ਹੈ। ਇਹ ਰਿਪੋਰਟ URL ਦੇ ਨਾਲ ਨਾਲ ਤੁਹਾਡੀ ਬਰਾਊਜ਼ਰ ਸੈਟਿੰਗ ਬਾਰੇ ਕੁਝ ਜਾਣਕਾਰੀ ਮੋਜ਼ੀਲਾ ਨੂੰ ਭੇਜਦੀ ਹੈ। <label data-l10n-name="learn-more">ਹੋਰ ਜਾਣੋ</label>
-protections-panel-content-blocking-breakage-report-view-description2 = ਕੁਝ ਟਰੈਕਰਾਂ ਉੱਤੇ ਪਾਬੰਦੀ ਲਗਾਉਣ ਕਰਕੇ ਕੁਝ ਵੈੱਬਸਾਈਟਾਂ ਨਾਲ ਸਮੱਸਿਆਵਾਂ ਆ ਸਕਦੀਆਂ ਹਨ। ਇਹ ਸਮੱਸਿਆਵਾਂ ਬਾਰੇ ਰਿਪੋਰਟ ਕਰਨ ਨਾਲ ਹਰ ਕਿਸੇ ਲਈ { -brand-short-name } ਵਧੀਆ ਬਣਾਉਣ ਲਈ ਮਦਦ ਹੁੰਦੀ ਹੈ। ਇਹ ਰਿਪੋਰਟ URL ਦੇ ਨਾਲ ਨਾਲ ਤੁਹਾਡੀਆਂ ਬਰਾਊਜ਼ਰ ਸੈਟਿੰਗਾਂ ਬਾਰੇ ਕੁਝ ਜਾਣਕਾਰੀ { -vendor-short-name } ਨੂੰ ਭੇਜਦੀ ਹੈ।
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

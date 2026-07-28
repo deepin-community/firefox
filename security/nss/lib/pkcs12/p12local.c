@@ -102,7 +102,7 @@ sec_pkcs12_integrity_key(PK11SlotInfo *slot, sec_PKCS12MacData *macData,
         *hmacMech = PK11_AlgtagToMechanism(hmacAlg);
         /* pkcs12v2 hmac uses UTF8 rather than unicode */
         if (!sec_pkcs12_convert_item_to_unicode(NULL, &utf8Pw, pwitem,
-                                                PR_TRUE, PR_FALSE, PR_FALSE)) {
+                                                PR_FALSE, PR_FALSE, PR_FALSE)) {
             return NULL;
         }
         symKey = PK11_PBEKeyGen(slot, prfAlgid, &utf8Pw, PR_FALSE, pwarg);
@@ -122,7 +122,11 @@ sec_pkcs12_integrity_key(PK11SlotInfo *slot, sec_PKCS12MacData *macData,
         goto loser;
     }
     if (macData->iter.data) {
+        PORT_SetError(0);
         iteration = (int)DER_GetInteger(&macData->iter);
+        if (PORT_GetError() != 0) {
+            return NULL;
+        }
     } else {
         iteration = 1;
     }

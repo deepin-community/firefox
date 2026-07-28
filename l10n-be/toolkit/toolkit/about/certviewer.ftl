@@ -36,10 +36,17 @@ certificate-viewer-key-size = Памер ключа
 certificate-viewer-inc-locality = Месцазнаходжанне
 certificate-viewer-locality = Месцазнаходжанне
 certificate-viewer-location = Размяшчэнне
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Назва журнала
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Ідэнтыфікатар журнала
 certificate-viewer-method = Метад
 certificate-viewer-modulus = Модуль
 certificate-viewer-name = Назва
+certificate-viewer-surname = Прозвішча
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Імя
 certificate-viewer-not-after = Не пасля
 certificate-viewer-not-before = Не раней
 certificate-viewer-organization = Арганізацыя
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = Інфармацыя пра орган (
 certificate-viewer-certificate-policies = Палітыкі сертыфіката
 certificate-viewer-embedded-scts = Убудаваныя SCT
 certificate-viewer-crl-endpoints = Канцавыя пункты CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Сцягнуць
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (сертыфікат)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (ланцужок)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Гэта пашырэнне пазначана як крытычнае, гэта значыць, што кліенты павінны адхіліць сертыфікат, калі не разумеюць яго.
@@ -112,6 +117,8 @@ certificate-viewer-export = Экспарт
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (невядома)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = сертыфікат
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

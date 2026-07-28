@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 add_task(async function test_window_incognito() {
@@ -13,12 +11,12 @@ add_task(async function test_window_incognito() {
     background() {
       let lastFocusedWindowId = null;
       // Catch focus change events to power the test below.
-      browser.windows.onFocusChanged.addListener(function listener(
-        eventWindowId
-      ) {
-        lastFocusedWindowId = eventWindowId;
-        browser.windows.onFocusChanged.removeListener(listener);
-      });
+      browser.windows.onFocusChanged.addListener(
+        function listener(eventWindowId) {
+          lastFocusedWindowId = eventWindowId;
+          browser.windows.onFocusChanged.removeListener(listener);
+        }
+      );
 
       browser.test.onMessage.addListener(async pbw => {
         browser.test.assertEq(

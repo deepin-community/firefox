@@ -1,11 +1,8 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "OrientedImage.h"
-
-#include <algorithm>
 
 #include "gfx2DGlue.h"
 #include "gfxContext.h"
@@ -56,8 +53,8 @@ nsresult OrientedImage::GetNativeSizes(nsTArray<IntSize>& aNativeSizes) {
 }
 
 NS_IMETHODIMP
-OrientedImage::GetIntrinsicSize(nsSize* aSize) {
-  nsresult rv = InnerImage()->GetIntrinsicSize(aSize);
+OrientedImage::GetIntrinsicSizeInAppUnits(nsSize* aSize) {
+  nsresult rv = InnerImage()->GetIntrinsicSizeInAppUnits(aSize);
 
   if (mOrientation.SwapsWidthAndHeight()) {
     swap(aSize->width, aSize->height);
@@ -66,10 +63,10 @@ OrientedImage::GetIntrinsicSize(nsSize* aSize) {
   return rv;
 }
 
-Maybe<AspectRatio> OrientedImage::GetIntrinsicRatio() {
-  Maybe<AspectRatio> ratio = InnerImage()->GetIntrinsicRatio();
+AspectRatio OrientedImage::GetIntrinsicRatio() {
+  AspectRatio ratio = InnerImage()->GetIntrinsicRatio();
   if (ratio && mOrientation.SwapsWidthAndHeight()) {
-    ratio = Some(ratio->Inverted());
+    ratio = ratio.Inverted();
   }
   return ratio;
 }
@@ -91,7 +88,7 @@ already_AddRefed<SourceSurface> OrientedImage::OrientSurface(
   }
 
   // Create our drawable.
-  RefPtr<gfxDrawable> drawable = new gfxSurfaceDrawable(aSurface, originalSize);
+  auto drawable = MakeRefPtr<gfxSurfaceDrawable>(aSurface, originalSize);
 
   // Determine an appropriate format for the surface.
   gfx::SurfaceFormat surfaceFormat = IsOpaque(aSurface->GetFormat())

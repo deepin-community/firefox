@@ -7,28 +7,25 @@
 #ifdef FREEBL_NO_DEPEND
 #include "stubs.h"
 #endif
+
+#include "blapi.h"
 #include "blapii.h"
 #include "blapit.h"
-#include "blapi.h"
-#include "gcm.h"
 #include "ctr.h"
-#include "secerr.h"
-#include "prtypes.h"
+#include "gcm.h"
 #include "pkcs11t.h"
+#include "platform-gcm.h"
+#include "prtypes.h"
+#include "secerr.h"
 
 #include <limits.h>
 
-/* old gcc doesn't support some poly64x2_t intrinsic */
-#if defined(__aarch64__) && defined(IS_LITTLE_ENDIAN) && \
-    (defined(__clang__) || defined(__GNUC__) && __GNUC__ > 6)
-#define USE_ARM_GCM
-#elif defined(__arm__) && defined(IS_LITTLE_ENDIAN) && \
-    !defined(NSS_DISABLE_ARM32_NEON)
-/* We don't test on big endian platform, so disable this on big endian. */
-#define USE_ARM_GCM
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#include <arm_neon.h>
 #endif
 
-/* Forward declarations */
+/* Forward declarations for platform-specific implementation of GHASH. */
+PRBool platform_ghash_support();
 SECStatus gcm_HashInit_hw(gcmHashContext *ghash);
 SECStatus gcm_HashWrite_hw(gcmHashContext *ghash, unsigned char *outbuf);
 SECStatus gcm_HashMult_hw(gcmHashContext *ghash, const unsigned char *buf,
@@ -36,12 +33,15 @@ SECStatus gcm_HashMult_hw(gcmHashContext *ghash, const unsigned char *buf,
 SECStatus gcm_HashZeroX_hw(gcmHashContext *ghash);
 SECStatus gcm_HashMult_sftw(gcmHashContext *ghash, const unsigned char *buf,
                             unsigned int count);
-SECStatus gcm_HashMult_sftw32(gcmHashContext *ghash, const unsigned char *buf,
-                              unsigned int count);
 
-/* Stub definitions for the above *_hw functions, which shouldn't be
- * used unless NSS_X86_OR_X64 is defined */
-#if !defined(NSS_X86_OR_X64) && !defined(USE_ARM_GCM) && !defined(USE_PPC_CRYPTO)
+/* Stub definitions if we aren't linking a platform-specific ghash */
+#if !defined(HAVE_PLATFORM_GHASH)
+PRBool
+platform_ghash_support()
+{
+    return PR_FALSE;
+}
+
 SECStatus
 gcm_HashWrite_hw(gcmHashContext *ghash, unsigned char *outbuf)
 {
@@ -70,7 +70,103 @@ gcm_HashZeroX_hw(gcmHashContext *ghash)
     PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
     return SECFailure;
 }
-#endif /* !NSS_X86_OR_X64 && !USE_ARM_GCM && !USE_PPC_CRYPTO */
+#endif /* !HAVE_PLATFORM_GHASH */
+
+/* Stub definitions if we aren't linking a platform-specific GCM */
+#if !defined(HAVE_PLATFORM_GCM)
+PRBool
+platform_gcm_support()
+{
+    return PR_FALSE;
+}
+
+struct platform_AES_GCMContext;
+
+SECStatus platform_aes_gcmInitCounter(platform_AES_GCMContext *gcm,
+                                      const unsigned char *iv,
+                                      unsigned long ivLen, unsigned long tagBits,
+                                      const unsigned char *aad, unsigned long aadLen);
+
+platform_AES_GCMContext *
+platform_AES_GCM_CreateContext(void *context,
+                               freeblCipherFunc cipher,
+                               const unsigned char *params)
+{
+    PORT_Assert(0);
+    PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
+    return NULL;
+}
+
+SECStatus
+platform_aes_gcmInitCounter(platform_AES_GCMContext *gcm,
+                            const unsigned char *iv, unsigned long ivLen,
+                            unsigned long tagBits,
+                            const unsigned char *aad, unsigned long aadLen)
+{
+    PORT_Assert(0);
+    PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
+    return SECFailure;
+}
+
+void
+platform_AES_GCM_DestroyContext(platform_AES_GCMContext *gcm, PRBool freeit)
+{
+    PORT_Assert(0);
+    PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
+}
+
+SECStatus
+platform_AES_GCM_EncryptUpdate(platform_AES_GCMContext *gcm,
+                               unsigned char *outbuf,
+                               unsigned int *outlen, unsigned int maxout,
+                               const unsigned char *inbuf, unsigned int inlen,
+                               unsigned int blocksize)
+{
+    PORT_Assert(0);
+    PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
+    return SECFailure;
+}
+
+SECStatus
+platform_AES_GCM_DecryptUpdate(platform_AES_GCMContext *gcm,
+                               unsigned char *outbuf,
+                               unsigned int *outlen, unsigned int maxout,
+                               const unsigned char *inbuf, unsigned int inlen,
+                               unsigned int blocksize)
+{
+    PORT_Assert(0);
+    PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
+    return SECFailure;
+}
+
+SECStatus
+platform_AES_GCM_EncryptAEAD(platform_AES_GCMContext *gcm,
+                             unsigned char *outbuf,
+                             unsigned int *outlen, unsigned int maxout,
+                             const unsigned char *inbuf, unsigned int inlen,
+                             void *params, unsigned int paramLen,
+                             const unsigned char *aad, unsigned int aadLen,
+                             unsigned int blocksize)
+{
+    PORT_Assert(0);
+    PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
+    return SECFailure;
+}
+
+SECStatus
+platform_AES_GCM_DecryptAEAD(platform_AES_GCMContext *gcm,
+                             unsigned char *outbuf,
+                             unsigned int *outlen, unsigned int maxout,
+                             const unsigned char *inbuf, unsigned int inlen,
+                             void *params, unsigned int paramLen,
+                             const unsigned char *aad, unsigned int aadLen,
+                             unsigned int blocksize)
+{
+    PORT_Assert(0);
+    PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
+    return SECFailure;
+}
+#endif /* !HAVE_PLATFORM_GCM */
 
 uint64_t
 get64(const unsigned char *bytes)
@@ -97,26 +193,13 @@ gcmHash_InitContext(gcmHashContext *ghash, const unsigned char *H, PRBool sw)
 
     ghash->h_low = get64(H + 8);
     ghash->h_high = get64(H);
-#ifdef USE_ARM_GCM
-#if defined(__aarch64__)
-    if (arm_pmull_support() && !sw) {
-#else
-    if (arm_neon_support() && !sw) {
-#endif
-#elif defined(USE_PPC_CRYPTO)
-    if (ppc_crypto_support() && !sw) {
-#else
-    if (clmul_support() && !sw) {
-#endif
+
+    if (!sw && platform_ghash_support()) {
         rv = gcm_HashInit_hw(ghash);
     } else {
-/* We fall back to the software implementation if we can't use / don't
+        /* We fall back to the software implementation if we can't use / don't
          * want to use pclmul. */
-#ifdef HAVE_INT128_SUPPORT
         ghash->ghash_mul = gcm_HashMult_sftw;
-#else
-        ghash->ghash_mul = gcm_HashMult_sftw32;
-#endif
         ghash->x_high = ghash->x_low = 0;
         ghash->hw = PR_FALSE;
     }
@@ -242,8 +325,8 @@ bmul32(uint32_t x, uint32_t y, uint32_t *r_high, uint32_t *r_low)
 }
 
 SECStatus
-gcm_HashMult_sftw32(gcmHashContext *ghash, const unsigned char *buf,
-                    unsigned int count)
+gcm_HashMult_sftw(gcmHashContext *ghash, const unsigned char *buf,
+                  unsigned int count)
 {
     size_t i;
     uint64_t ci_low, ci_high;
@@ -353,7 +436,7 @@ gcmHash_Update(gcmHashContext *ghash, const unsigned char *buf,
     unsigned int blocks;
     SECStatus rv;
 
-    ghash->cLen += (len * PR_BITS_PER_BYTE);
+    ghash->cLen += ((uint64_t)len * PR_BITS_PER_BYTE);
 
     /* first deal with the current buffer of data. Try to fill it out so
      * we can hash it */
@@ -480,7 +563,7 @@ gcmHash_Final(gcmHashContext *ghash, unsigned char *outbuf,
     rv = SECSuccess;
 
 cleanup:
-    PORT_Memset(T, 0, sizeof(T));
+    PORT_SafeZero(T, sizeof(T));
     return rv;
 }
 
@@ -596,21 +679,135 @@ GCM_CreateContext(void *context, freeblCipherFunc cipher,
     if (rv != SECSuccess) {
         goto loser;
     }
-    PORT_Memset(H, 0, AES_BLOCK_SIZE);
+    PORT_SafeZero(H, AES_BLOCK_SIZE);
     gcm->ctr_context_init = PR_TRUE;
     return gcm;
 
 loser:
-    PORT_Memset(H, 0, AES_BLOCK_SIZE);
+    PORT_SafeZero(H, AES_BLOCK_SIZE);
     if (ghash && ghash->mem) {
         void *mem = ghash->mem;
-        PORT_Memset(ghash, 0, sizeof(gcmHashContext));
+        PORT_SafeZero(ghash, sizeof(gcmHashContext));
         PORT_Free(mem);
     }
     if (gcm) {
         PORT_ZFree(gcm, sizeof(GCMContext));
     }
     return NULL;
+}
+
+static inline unsigned int
+load32_be(const unsigned char *p)
+{
+    return ((unsigned int)p[0]) << 24 | p[1] << 16 | p[2] << 8 | p[3];
+}
+
+static inline void
+store32_be(unsigned char *p, const unsigned int c)
+{
+    p[0] = (unsigned char)(c >> 24);
+    p[1] = (unsigned char)(c >> 16);
+    p[2] = (unsigned char)(c >> 8);
+    p[3] = (unsigned char)c;
+}
+
+static inline void
+gcm_ctr_xor(unsigned char *target, const unsigned char *x,
+            const unsigned char *y, unsigned int count)
+{
+    for (unsigned int i = 0; i < count; i++) {
+        target[i] = x[i] ^ y[i];
+    }
+}
+
+static inline void
+gcm_ctr_xor_block(unsigned char *target, const unsigned char *x,
+                  const unsigned char *y)
+{
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+    vst1q_u8(target, veorq_u8(vld1q_u8(x), vld1q_u8(y)));
+#else
+    gcm_ctr_xor(target, x, y, AES_BLOCK_SIZE);
+#endif
+}
+
+static SECStatus
+gcm_CTR_Update(CTRContext *ctr, unsigned char *outbuf,
+               unsigned int *outlen, unsigned int maxout,
+               const unsigned char *inbuf, unsigned int inlen)
+{
+    PORT_Assert(ctr->counterBits == 32);
+    PORT_Assert(0 < ctr->bufPtr && ctr->bufPtr <= AES_BLOCK_SIZE);
+
+    // The AES-GCM message length limit is 2^32 - 2 blocks.
+    const unsigned int blockLimit = 0xFFFFFFFEUL;
+
+    unsigned char *const pCounter = ctr->counter + AES_BLOCK_SIZE - 4;
+    unsigned int counter = load32_be(pCounter);
+
+    // Calculate the number of times that the counter has already been incremented.
+    unsigned char *const pCounterFirst = ctr->counterFirst + AES_BLOCK_SIZE - 4;
+    unsigned int ticks = (counter - load32_be(pCounterFirst)) & 0xFFFFFFFFUL;
+
+    // Get the number of bytes of keystream that are available in the internal buffer.
+    const unsigned int bufBytes = AES_BLOCK_SIZE - ctr->bufPtr;
+
+    // Calculate the number of times that we will increment the counter while
+    // encrypting inbuf. We can encrypt bufBytes bytes of the input without
+    // incrementing the counter.
+    unsigned int newTicks;
+    if (inlen < bufBytes) {
+        newTicks = 0;
+    } else if ((inlen - bufBytes) % AES_BLOCK_SIZE) {
+        newTicks = ((inlen - bufBytes) / AES_BLOCK_SIZE) + 1;
+    } else {
+        newTicks = ((inlen - bufBytes) / AES_BLOCK_SIZE);
+    }
+
+    // Ensure that the counter will not exceed the limit.
+    if (ticks > blockLimit - newTicks) {
+        PORT_SetError(SEC_ERROR_INPUT_LEN);
+        return SECFailure;
+    }
+
+    *outlen = inlen;
+    if (maxout < inlen) {
+        PORT_SetError(SEC_ERROR_OUTPUT_LEN);
+        return SECFailure;
+    }
+
+    if (bufBytes) {
+        unsigned int needed = PR_MIN(bufBytes, inlen);
+        gcm_ctr_xor(outbuf, inbuf, ctr->buffer + ctr->bufPtr, needed);
+        ctr->bufPtr += needed;
+        outbuf += needed;
+        inbuf += needed;
+        inlen -= needed;
+        PORT_Assert(inlen == 0 || ctr->bufPtr == AES_BLOCK_SIZE);
+    }
+    while (inlen >= AES_BLOCK_SIZE) {
+        unsigned int tmp;
+        SECStatus rv = (*ctr->cipher)(ctr->context, ctr->buffer, &tmp, AES_BLOCK_SIZE,
+                                      ctr->counter, AES_BLOCK_SIZE, AES_BLOCK_SIZE);
+        PORT_Assert(rv == SECSuccess);
+        (void)rv;
+        store32_be(pCounter, ++counter);
+        gcm_ctr_xor_block(outbuf, inbuf, ctr->buffer);
+        outbuf += AES_BLOCK_SIZE;
+        inbuf += AES_BLOCK_SIZE;
+        inlen -= AES_BLOCK_SIZE;
+    }
+    if (inlen) {
+        unsigned int tmp;
+        SECStatus rv = (*ctr->cipher)(ctr->context, ctr->buffer, &tmp, AES_BLOCK_SIZE,
+                                      ctr->counter, AES_BLOCK_SIZE, AES_BLOCK_SIZE);
+        PORT_Assert(rv == SECSuccess);
+        (void)rv;
+        store32_be(pCounter, ++counter);
+        gcm_ctr_xor(outbuf, inbuf, ctr->buffer, inlen);
+        ctr->bufPtr = inlen;
+    }
+    return SECSuccess;
 }
 
 SECStatus
@@ -670,8 +867,8 @@ gcm_InitCounter(GCMContext *gcm, const unsigned char *iv, unsigned int ivLen,
     /* calculate the final tag key. NOTE: gcm->tagKey is zero to start with.
      * if this assumption changes, we would need to explicitly clear it here */
     PORT_Memset(gcm->tagKey, 0, sizeof(gcm->tagKey));
-    rv = CTR_Update(&gcm->ctr_context, gcm->tagKey, &tmp, AES_BLOCK_SIZE,
-                    gcm->tagKey, AES_BLOCK_SIZE, AES_BLOCK_SIZE);
+    rv = gcm_CTR_Update(&gcm->ctr_context, gcm->tagKey, &tmp, AES_BLOCK_SIZE,
+                        gcm->tagKey, AES_BLOCK_SIZE);
     if (rv != SECSuccess) {
         goto loser;
     }
@@ -682,11 +879,11 @@ gcm_InitCounter(GCMContext *gcm, const unsigned char *iv, unsigned int ivLen,
         goto loser;
     }
 
-    PORT_Memset(&ctrParams, 0, sizeof ctrParams);
+    PORT_SafeZero(&ctrParams, sizeof ctrParams);
     return SECSuccess;
 
 loser:
-    PORT_Memset(&ctrParams, 0, sizeof ctrParams);
+    PORT_SafeZero(&ctrParams, sizeof ctrParams);
     if (freeCtr) {
         CTR_DestroyContext(&gcm->ctr_context, PR_FALSE);
     }
@@ -788,8 +985,8 @@ GCM_EncryptUpdate(GCMContext *gcm, unsigned char *outbuf,
         return SECFailure;
     }
 
-    rv = CTR_Update(&gcm->ctr_context, outbuf, outlen, maxout,
-                    inbuf, inlen, AES_BLOCK_SIZE);
+    rv = gcm_CTR_Update(&gcm->ctr_context, outbuf, outlen, maxout,
+                        inbuf, inlen);
     if (rv != SECSuccess) {
         return SECFailure;
     }
@@ -866,13 +1063,13 @@ GCM_DecryptUpdate(GCMContext *gcm, unsigned char *outbuf,
     if (NSS_SecureMemcmp(tag, intag, tagBytes) != 0) {
         /* force a CKR_ENCRYPTED_DATA_INVALID error at in softoken */
         PORT_SetError(SEC_ERROR_BAD_DATA);
-        PORT_Memset(tag, 0, sizeof(tag));
+        PORT_SafeZero(tag, sizeof(tag));
         return SECFailure;
     }
-    PORT_Memset(tag, 0, sizeof(tag));
+    PORT_SafeZero(tag, sizeof(tag));
     /* finish the decryption */
-    return CTR_Update(&gcm->ctr_context, outbuf, outlen, maxout,
-                      inbuf, inlen, AES_BLOCK_SIZE);
+    return gcm_CTR_Update(&gcm->ctr_context, outbuf, outlen, maxout,
+                          inbuf, inlen);
 }
 
 void
@@ -1069,8 +1266,8 @@ GCM_EncryptAEAD(GCMContext *gcm, unsigned char *outbuf,
 
     tagBytes = (gcm->tagBits + (PR_BITS_PER_BYTE - 1)) / PR_BITS_PER_BYTE;
 
-    rv = CTR_Update(&gcm->ctr_context, outbuf, outlen, maxout,
-                    inbuf, inlen, AES_BLOCK_SIZE);
+    rv = gcm_CTR_Update(&gcm->ctr_context, outbuf, outlen, maxout,
+                        inbuf, inlen);
     CTR_DestroyContext(&gcm->ctr_context, PR_FALSE);
     if (rv != SECSuccess) {
         return SECFailure;
@@ -1159,13 +1356,13 @@ GCM_DecryptAEAD(GCMContext *gcm, unsigned char *outbuf,
         /* force a CKR_ENCRYPTED_DATA_INVALID error at in softoken */
         CTR_DestroyContext(&gcm->ctr_context, PR_FALSE);
         PORT_SetError(SEC_ERROR_BAD_DATA);
-        PORT_Memset(tag, 0, sizeof(tag));
+        PORT_SafeZero(tag, sizeof(tag));
         return SECFailure;
     }
-    PORT_Memset(tag, 0, sizeof(tag));
+    PORT_SafeZero(tag, sizeof(tag));
     /* finish the decryption */
-    rv = CTR_Update(&gcm->ctr_context, outbuf, outlen, maxout,
-                    inbuf, inlen, AES_BLOCK_SIZE);
+    rv = gcm_CTR_Update(&gcm->ctr_context, outbuf, outlen, maxout,
+                        inbuf, inlen);
     CTR_DestroyContext(&gcm->ctr_context, PR_FALSE);
     return rv;
 }

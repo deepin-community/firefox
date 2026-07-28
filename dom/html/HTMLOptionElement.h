@@ -1,15 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_HTMLOptionElement_h__
-#define mozilla_dom_HTMLOptionElement_h__
+#ifndef mozilla_dom_HTMLOptionElement_h_
+#define mozilla_dom_HTMLOptionElement_h_
 
-#include "mozilla/Attributes.h"
-#include "nsGenericHTMLElement.h"
 #include "mozilla/dom/HTMLFormElement.h"
+#include "nsGenericHTMLElement.h"
 
 namespace mozilla::dom {
 
@@ -30,7 +27,7 @@ class HTMLOptionElement final : public nsGenericHTMLElement {
   // nsISupports
   NS_INLINE_DECL_REFCOUNTING_INHERITED(HTMLOptionElement, nsGenericHTMLElement)
 
-  using mozilla::dom::Element::GetText;
+  using mozilla::dom::Element::GetCharacterDataBuffer;
 
   bool Selected() const { return State().HasState(ElementState::CHECKED); }
   void SetSelected(bool aValue);
@@ -38,7 +35,7 @@ class HTMLOptionElement final : public nsGenericHTMLElement {
   void SetSelectedChanged(bool aValue) { mSelectedChanged = aValue; }
 
   nsChangeHint GetAttributeChangeHint(const nsAtom* aAttribute,
-                                      int32_t aModType) const override;
+                                      AttrModType aModType) const override;
 
   void BeforeSetAttr(int32_t aNamespaceID, nsAtom* aName,
                      const nsAttrValue* aValue, bool aNotify) override;
@@ -74,7 +71,8 @@ class HTMLOptionElement final : public nsGenericHTMLElement {
     SetHTMLBoolAttr(nsGkAtoms::disabled, aValue, aRv);
   }
 
-  HTMLFormElement* GetForm();
+  Element* GetFormForBindings();
+  HTMLFormElement* GetFormInternal();
 
   void GetRenderedLabel(nsAString& aLabel) {
     if (!GetAttr(nsGkAtoms::label, aLabel) || aLabel.IsEmpty()) {
@@ -109,26 +107,21 @@ class HTMLOptionElement final : public nsGenericHTMLElement {
   void SetText(const nsAString& aText, ErrorResult& aRv);
 
   int32_t Index();
+  /**
+   * Get the select content element that contains this option, this
+   * intentionally does not return nsresult, all we care about is if
+   * there's a select associated with this option or not.
+   */
+  HTMLSelectElement* GetSelect() const;
 
  protected:
   virtual ~HTMLOptionElement();
 
   JSObject* WrapNode(JSContext*, JS::Handle<JSObject*> aGivenProto) override;
 
-  /**
-   * Get the select content element that contains this option, this
-   * intentionally does not return nsresult, all we care about is if
-   * there's a select associated with this option or not.
-   */
-  HTMLSelectElement* GetSelect();
-
   bool mSelectedChanged = false;
-
-  // True only while we're under the SetOptionsSelectedByIndex call when our
-  // "selected" attribute is changing and mSelectedChanged is false.
-  bool mIsInSetDefaultSelected = false;
 };
 
 }  // namespace mozilla::dom
 
-#endif  // mozilla_dom_HTMLOptionElement_h__
+#endif  // mozilla_dom_HTMLOptionElement_h_

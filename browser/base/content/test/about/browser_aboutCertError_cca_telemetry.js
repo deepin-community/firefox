@@ -6,11 +6,8 @@
 const ISSUED_BY_CCA_SITE = "https://issued-by-cca.example.com";
 const UNKNOWN_ISSUER_SITE = "https://untrusted.example.com";
 
-Services.telemetry.setEventRecordingEnabled("security.ui.certerror", true);
-
 registerCleanupFunction(async () => {
   await resetTelemetry();
-  Services.telemetry.setEventRecordingEnabled("security.ui.certerror", false);
 });
 
 async function resetTelemetry() {
@@ -43,11 +40,15 @@ async function checkTelemetry(expectedIssuedByCCA) {
       has_sts: "false",
       channel_status: "2153390067",
       issued_by_cca: expectedIssuedByCCA,
+      hyphen_compat: "false",
     },
   ]);
 }
 
-add_task(async function test_cca_site() {
+async function test_cca_site(useFeltPrivacyV1) {
+  await SpecialPowers.pushPrefEnv({
+    set: [["security.certerrors.felt-privacy-v1", useFeltPrivacyV1]],
+  });
   await resetTelemetry();
   let browser;
   let pageLoaded;
@@ -68,9 +69,12 @@ add_task(async function test_cca_site() {
   // Check that telemetry indicates this was issued by CCA.
   await checkTelemetry("true");
   BrowserTestUtils.removeTab(gBrowser.selectedTab);
-});
+}
 
-add_task(async function test_non_cca_site() {
+async function test_non_cca_site(useFeltPrivacyV1) {
+  await SpecialPowers.pushPrefEnv({
+    set: [["security.certerrors.felt-privacy-v1", useFeltPrivacyV1]],
+  });
   await resetTelemetry();
   let browser;
   let pageLoaded;
@@ -91,4 +95,16 @@ add_task(async function test_non_cca_site() {
   // Check that telemetry indicates this was not issued by CCA.
   await checkTelemetry("false");
   BrowserTestUtils.removeTab(gBrowser.selectedTab);
+}
+
+add_task(async function test_cca_sites() {
+  for (const useFeltPrivacyV1 of [true, false]) {
+    await test_cca_site(useFeltPrivacyV1);
+  }
+});
+
+add_task(async function test_non_cca_sites() {
+  for (const useFeltPrivacyV1 of [true, false]) {
+    await test_non_cca_site(useFeltPrivacyV1);
+  }
 });

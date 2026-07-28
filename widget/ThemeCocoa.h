@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,10 +15,9 @@ class ThemeCocoa : public Theme {
   explicit ThemeCocoa(UniquePtr<ScrollbarDrawing>&& aScrollbarDrawing)
       : Theme(std::move(aScrollbarDrawing)) {}
 
-  NS_IMETHOD DrawWidgetBackground(gfxContext* aContext, nsIFrame*,
-                                  StyleAppearance, const nsRect& aRect,
-                                  const nsRect& aDirtyRect,
-                                  DrawOverflow) override;
+  void DrawWidgetBackground(gfxContext* aContext, nsIFrame*, StyleAppearance,
+                            const nsRect& aRect, const nsRect& aDirtyRect,
+                            DrawOverflow) override;
 
   bool CreateWebRenderCommandsForWidget(
       wr::DisplayListBuilder& aBuilder, wr::IpcResourceUpdateQueue& aResources,

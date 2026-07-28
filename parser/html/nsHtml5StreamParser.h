@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -86,7 +85,13 @@ enum eParserMode {
   /**
    * Load as data (XHR)
    */
-  LOAD_AS_DATA
+  LOAD_AS_DATA,
+
+  /**
+   * Parse (non-initial) about:blank for normal viewing (not View Source or
+   * data).
+   */
+  ABOUT_BLANK,
 };
 
 enum eBomState {
@@ -767,18 +772,23 @@ class nsHtml5StreamParser final : public nsISupports {
   nsString mUUIDForDevtools;
 
   /**
+   * The browser element's Id for the currently parsed document communicated to
+   * devtools.
+   */
+  uint64_t mBrowserIdForDevtools;
+
+  /**
+   * The BrowsingContext ID for the currently parsed document communicated to
+   * devtools.
+   */
+  uint64_t mBrowsingContextIDForDevtools;
+
+  /**
    * prevent multiple calls to OnStopRequest
    * This field can be called from multiple threads and is protected by
    * nsHtml5StreamListener::mDelegateMonitor passed in the OnStopRequest
    */
   bool mOnStopCalled{false};
-
-  /*
-   * Used for telemetry about OnStopRequest vs OnDataFinished
-   */
-  // guarded by nsHtml5StreamListener::mDelegateMonitor
-  mozilla::TimeStamp mOnStopRequestTime;
-  mozilla::TimeStamp mOnDataFinishedTime;
 };
 
 #endif  // nsHtml5StreamParser_h

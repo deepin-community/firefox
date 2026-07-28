@@ -1,14 +1,12 @@
+use crate::libyaml::{emitter, error as libyaml};
 use crate::path::Path;
 use serde::{de, ser};
-use std::error;
+use std::error::Error as StdError;
 use std::fmt::{self, Debug, Display};
 use std::io;
 use std::result;
-use std::str;
 use std::string;
 use std::sync::Arc;
-use yaml_rust::emitter;
-use yaml_rust::scanner::{self, Marker, ScanError};
 
 /// An error that happened serializing or deserializing YAML data.
 pub struct Error(Box<ErrorImpl>);
@@ -17,25 +15,33 @@ pub struct Error(Box<ErrorImpl>);
 pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug)]
-pub enum ErrorImpl {
+pub(crate) enum ErrorImpl {
     Message(String, Option<Pos>),
 
-    Emit(emitter::EmitError),
-    Scan(scanner::ScanError),
+    Libyaml(libyaml::Error),
     Io(io::Error),
-    Utf8(str::Utf8Error),
     FromUtf8(string::FromUtf8Error),
 
     EndOfStream,
     MoreThanOneDocument,
-    RecursionLimitExceeded,
+    RecursionLimitExceeded(libyaml::Mark),
+    RepetitionLimitExceeded,
+    BytesUnsupported,
+    UnknownAnchor(libyaml::Mark),
+    SerializeNestedEnum,
+    ScalarInMerge,
+    TaggedInMerge,
+    ScalarInMergeElement,
+    SequenceInMergeElement,
+    EmptyTag,
+    FailedToParseNumber,
 
     Shared(Arc<ErrorImpl>),
 }
 
 #[derive(Debug)]
-pub struct Pos {
-    marker: Marker,
+pub(crate) struct Pos {
+    mark: libyaml::Mark,
     path: String,
 }
 
@@ -65,12 +71,12 @@ impl Location {
 
     // This is to keep decoupled with the yaml crate
     #[doc(hidden)]
-    fn from_marker(marker: &Marker) -> Self {
+    fn from_mark(mark: libyaml::Mark) -> Self {
         Location {
-            // `col` returned from the `yaml` crate is 0-indexed but all error messages add + 1 to this value
-            column: marker.col() + 1,
-            index: marker.index(),
-            line: marker.line(),
+            index: mark.index() as usize,
+            // `line` and `column` returned from libyaml are 0-indexed but all error messages add +1 to this value
+            line: mark.line() as usize + 1,
+            column: mark.column() as usize + 1,
         }
     }
 }
@@ -94,54 +100,22 @@ impl Error {
     /// assert_eq!(location.column(), 1);
     /// ```
     pub fn location(&self) -> Option<Location> {
-        match self.0.as_ref() {
-            ErrorImpl::Message(_, Some(pos)) => Some(Location::from_marker(&pos.marker)),
-            ErrorImpl::Scan(scan) => Some(Location::from_marker(scan.marker())),
-            _ => None,
-        }
+        self.0.location()
     }
 }
 
-pub(crate) fn end_of_stream() -> Error {
-    Error(Box::new(ErrorImpl::EndOfStream))
-}
-
-pub(crate) fn more_than_one_document() -> Error {
-    Error(Box::new(ErrorImpl::MoreThanOneDocument))
-}
-
-pub(crate) fn io(err: io::Error) -> Error {
-    Error(Box::new(ErrorImpl::Io(err)))
-}
-
-pub(crate) fn emitter(err: emitter::EmitError) -> Error {
-    Error(Box::new(ErrorImpl::Emit(err)))
-}
-
-pub(crate) fn scanner(err: scanner::ScanError) -> Error {
-    Error(Box::new(ErrorImpl::Scan(err)))
-}
-
-pub(crate) fn str_utf8(err: str::Utf8Error) -> Error {
-    Error(Box::new(ErrorImpl::Utf8(err)))
-}
-
-pub(crate) fn string_utf8(err: string::FromUtf8Error) -> Error {
-    Error(Box::new(ErrorImpl::FromUtf8(err)))
-}
-
-pub(crate) fn recursion_limit_exceeded() -> Error {
-    Error(Box::new(ErrorImpl::RecursionLimitExceeded))
+pub(crate) fn new(inner: ErrorImpl) -> Error {
+    Error(Box::new(inner))
 }
 
 pub(crate) fn shared(shared: Arc<ErrorImpl>) -> Error {
     Error(Box::new(ErrorImpl::Shared(shared)))
 }
 
-pub(crate) fn fix_marker(mut error: Error, marker: Marker, path: Path) -> Error {
+pub(crate) fn fix_mark(mut error: Error, mark: libyaml::Mark, path: Path) -> Error {
     if let ErrorImpl::Message(_, none @ None) = error.0.as_mut() {
         *none = Some(Pos {
-            marker,
+            mark,
             path: path.to_string(),
         });
     }
@@ -158,8 +132,23 @@ impl Error {
     }
 }
 
-impl error::Error for Error {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+impl From<libyaml::Error> for Error {
+    fn from(err: libyaml::Error) -> Self {
+        Error(Box::new(ErrorImpl::Libyaml(err)))
+    }
+}
+
+impl From<emitter::Error> for Error {
+    fn from(err: emitter::Error) -> Self {
+        match err {
+            emitter::Error::Libyaml(err) => Self::from(err),
+            emitter::Error::Io(err) => new(ErrorImpl::Io(err)),
+        }
+    }
+}
+
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
         self.0.source()
     }
 }
@@ -191,54 +180,111 @@ impl de::Error for Error {
 }
 
 impl ErrorImpl {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+    fn location(&self) -> Option<Location> {
+        self.mark().map(Location::from_mark)
+    }
+
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match self {
-            ErrorImpl::Scan(err) => Some(err),
-            ErrorImpl::Io(err) => Some(err),
-            ErrorImpl::Utf8(err) => Some(err),
-            ErrorImpl::FromUtf8(err) => Some(err),
+            ErrorImpl::Io(err) => err.source(),
+            ErrorImpl::FromUtf8(err) => err.source(),
             ErrorImpl::Shared(err) => err.source(),
             _ => None,
         }
     }
 
-    fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn mark(&self) -> Option<libyaml::Mark> {
         match self {
-            ErrorImpl::Message(msg, None) => Display::fmt(msg, f),
-            ErrorImpl::Message(msg, Some(Pos { marker, path })) => {
-                if path == "." {
-                    write!(f, "{}", ScanError::new(*marker, msg))
-                } else {
-                    write!(f, "{}: {}", path, ScanError::new(*marker, msg))
+            ErrorImpl::Message(_, Some(Pos { mark, path: _ }))
+            | ErrorImpl::RecursionLimitExceeded(mark)
+            | ErrorImpl::UnknownAnchor(mark) => Some(*mark),
+            ErrorImpl::Libyaml(err) => Some(err.mark()),
+            ErrorImpl::Shared(err) => err.mark(),
+            _ => None,
+        }
+    }
+
+    fn message_no_mark(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ErrorImpl::Message(msg, None) => f.write_str(msg),
+            ErrorImpl::Message(msg, Some(Pos { mark: _, path })) => {
+                if path != "." {
+                    write!(f, "{}: ", path)?;
                 }
+                f.write_str(msg)
             }
-            ErrorImpl::Emit(emitter::EmitError::FmtError(_)) => f.write_str("yaml-rust fmt error"),
-            ErrorImpl::Emit(emitter::EmitError::BadHashmapKey) => f.write_str("bad hash map key"),
-            ErrorImpl::Scan(err) => Display::fmt(err, f),
+            ErrorImpl::Libyaml(_) => unreachable!(),
             ErrorImpl::Io(err) => Display::fmt(err, f),
-            ErrorImpl::Utf8(err) => Display::fmt(err, f),
             ErrorImpl::FromUtf8(err) => Display::fmt(err, f),
             ErrorImpl::EndOfStream => f.write_str("EOF while parsing a value"),
             ErrorImpl::MoreThanOneDocument => f.write_str(
                 "deserializing from YAML containing more than one document is not supported",
             ),
-            ErrorImpl::RecursionLimitExceeded => f.write_str("recursion limit exceeded"),
+            ErrorImpl::RecursionLimitExceeded(_mark) => f.write_str("recursion limit exceeded"),
+            ErrorImpl::RepetitionLimitExceeded => f.write_str("repetition limit exceeded"),
+            ErrorImpl::BytesUnsupported => {
+                f.write_str("serialization and deserialization of bytes in YAML is not implemented")
+            }
+            ErrorImpl::UnknownAnchor(_mark) => f.write_str("unknown anchor"),
+            ErrorImpl::SerializeNestedEnum => {
+                f.write_str("serializing nested enums in YAML is not supported yet")
+            }
+            ErrorImpl::ScalarInMerge => {
+                f.write_str("expected a mapping or list of mappings for merging, but found scalar")
+            }
+            ErrorImpl::TaggedInMerge => f.write_str("unexpected tagged value in merge"),
+            ErrorImpl::ScalarInMergeElement => {
+                f.write_str("expected a mapping for merging, but found scalar")
+            }
+            ErrorImpl::SequenceInMergeElement => {
+                f.write_str("expected a mapping for merging, but found sequence")
+            }
+            ErrorImpl::EmptyTag => f.write_str("empty YAML tag is not allowed"),
+            ErrorImpl::FailedToParseNumber => f.write_str("failed to parse YAML number"),
+            ErrorImpl::Shared(_) => unreachable!(),
+        }
+    }
+
+    fn display(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ErrorImpl::Libyaml(err) => Display::fmt(err, f),
             ErrorImpl::Shared(err) => err.display(f),
+            _ => {
+                self.message_no_mark(f)?;
+                if let Some(mark) = self.mark() {
+                    if mark.line() != 0 || mark.column() != 0 {
+                        write!(f, " at {}", mark)?;
+                    }
+                }
+                Ok(())
+            }
         }
     }
 
     fn debug(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            ErrorImpl::Message(msg, pos) => f.debug_tuple("Message").field(msg).field(pos).finish(),
-            ErrorImpl::Emit(emit) => f.debug_tuple("Emit").field(emit).finish(),
-            ErrorImpl::Scan(scan) => f.debug_tuple("Scan").field(scan).finish(),
-            ErrorImpl::Io(io) => f.debug_tuple("Io").field(io).finish(),
-            ErrorImpl::Utf8(utf8) => f.debug_tuple("Utf8").field(utf8).finish(),
-            ErrorImpl::FromUtf8(from_utf8) => f.debug_tuple("FromUtf8").field(from_utf8).finish(),
-            ErrorImpl::EndOfStream => f.debug_tuple("EndOfStream").finish(),
-            ErrorImpl::MoreThanOneDocument => f.debug_tuple("MoreThanOneDocument").finish(),
-            ErrorImpl::RecursionLimitExceeded => f.debug_tuple("RecursionLimitExceeded").finish(),
+            ErrorImpl::Libyaml(err) => Debug::fmt(err, f),
             ErrorImpl::Shared(err) => err.debug(f),
+            _ => {
+                f.write_str("Error(")?;
+                struct MessageNoMark<'a>(&'a ErrorImpl);
+                impl<'a> Display for MessageNoMark<'a> {
+                    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                        self.0.message_no_mark(f)
+                    }
+                }
+                let msg = MessageNoMark(self).to_string();
+                Debug::fmt(&msg, f)?;
+                if let Some(mark) = self.mark() {
+                    write!(
+                        f,
+                        ", line: {}, column: {}",
+                        mark.line() + 1,
+                        mark.column() + 1,
+                    )?;
+                }
+                f.write_str(")")
+            }
         }
     }
 }

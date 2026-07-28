@@ -18,6 +18,9 @@ enum MediaControlKey {
   "skipad",
   "seekto",
   "stop",
+  "mute",
+  "unmute",
+  "setvolume",
 };
 
 /**
@@ -31,6 +34,7 @@ interface MediaController : EventTarget {
   readonly attribute boolean isActive;
   readonly attribute boolean isAudible;
   readonly attribute boolean isPlaying;
+  readonly attribute boolean isAnyMediaBeingControlled;
   readonly attribute MediaSessionPlaybackState playbackState;
 
   [Throws]
@@ -41,6 +45,7 @@ interface MediaController : EventTarget {
 
   attribute EventHandler onactivated;
   attribute EventHandler ondeactivated;
+  attribute EventHandler onaudiblechange;
 
   // Following events would only be dispatched after controller is active.
   attribute EventHandler onmetadatachange;
@@ -63,7 +68,7 @@ interface MediaController : EventTarget {
 [ChromeOnly,Exposed=Window,HeaderFile="mozilla/dom/MediaControlService.h"]
 namespace MediaControlService {
   // This is used to generate fake media control keys event in testing.
-  undefined generateMediaControlKey(MediaControlKey aKey);
+  undefined generateMediaControlKey(MediaControlKey aKey, optional double aSeekValue = 0.0);
 
   // This is used to get the media metadata from the current main controller in
   // testing.

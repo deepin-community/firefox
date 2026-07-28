@@ -5,25 +5,38 @@
 
 ## OS Prompt Dialog
 
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Ձևը ինքնալրացնելու ընտրանքներ
-autofill-options-link-osx = Ձևը ինքնալրացնելու կարգավորումներ
+autofill-options-link-osx = Ձևը ինքնալրացնելու նախապատվություններ
 
 ## The credit card capture doorhanger
 
+# If Sync is enabled and credit card sync is available,
+# this checkbox is displayed on the doorhanger shown when saving credit card.
+credit-card-doorhanger-credit-cards-sync-checkbox = Համաժամացնել բոլոր պահված քարտերը իմ սարքերում
+# Used on the doorhanger when users submit payment with credit card.
+credit-card-save-doorhanger-header = Ապահով պահե՞լ այս քարտը:
+credit-card-save-doorhanger-description = { -brand-short-name }-y գաղտնագրում է Ձեր քարտի համարը: , իսկ Ձեր անվտանգության կոդը չի պահվում:
 credit-card-capture-save-button =
-    .label = Պահպանել
+    .label = Պահել
     .accessKey = Պ
 credit-card-capture-cancel-button =
     .label = Ոչ հիմա
     .accessKey = Ա
 credit-card-capture-never-save-button =
-    .label = Երբեք չպահպանել քարտերը
+    .label = Երբեք չպահել քարտերը
     .accessKey = Ե
 
 # Used on the doorhanger when an credit card change is detected.
 
-credit-card-update-doorhanger-header = Արդիացնե՞լ քարտը
+credit-card-update-doorhanger-header = Թարմացնե՞լ քարտը
+credit-card-update-doorhanger-description = Թարմացվող քարտ՝
+credit-card-capture-save-new-button =
+    .label = Պահել որպես նոր քարտ
+    .accessKey = C
+credit-card-capture-update-button =
+    .label = Թարմացրեք առկա քարտը
+    .accessKey = U
 # Label for the button in the dropdown menu used to clear the populated form.
 autofill-clear-form-label = Մաքրել Ինքնալրացման ձևը
 # Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
@@ -58,3 +71,6 @@ autofill-category-name = անուն
 autofill-category-organization = կազմակերպություն
 autofill-category-tel = հեռախոս
 autofill-category-email = էլ. փոստ
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name }-ը հայտնաբերել է ոչ անվտանգ կայք: Ինքնալրացման ձևը ժամակավոր անջատվել է:

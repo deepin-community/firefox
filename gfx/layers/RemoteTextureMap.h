@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -24,7 +22,6 @@
 #include "mozilla/layers/TextureHost.h"
 #include "mozilla/Monitor.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/ThreadSafeWeakPtr.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/webrender/WebRenderTypes.h"
 
@@ -41,7 +38,7 @@ class SharedSurface;
 }
 
 namespace webgpu {
-class ExternalTexture;
+class SharedTexture;
 }
 
 namespace layers {
@@ -81,7 +78,7 @@ struct RemoteTextureInfoList {
 
 class SharedResourceWrapper {
  public:
-  enum class Tag { SharedSurface, ExternalTexture };
+  enum class Tag { SharedSurface, SharedTexture };
   const Tag mTag;
 
   static UniquePtr<SharedResourceWrapper> SharedSurface(
@@ -90,10 +87,10 @@ class SharedResourceWrapper {
                                              aSharedSurface);
   }
 
-  static UniquePtr<SharedResourceWrapper> ExternalTexture(
-      const std::shared_ptr<webgpu::ExternalTexture>& aExternalTexture) {
-    return MakeUnique<SharedResourceWrapper>(Tag::ExternalTexture,
-                                             aExternalTexture);
+  static UniquePtr<SharedResourceWrapper> SharedTexture(
+      const std::shared_ptr<webgpu::SharedTexture>& aSharedTexture) {
+    return MakeUnique<SharedResourceWrapper>(Tag::SharedTexture,
+                                             aSharedTexture);
   }
 
   SharedResourceWrapper(
@@ -103,13 +100,13 @@ class SharedResourceWrapper {
   }
   SharedResourceWrapper(
       const Tag aTag,
-      const std::shared_ptr<webgpu::ExternalTexture>& aExternalTexture)
-      : mTag(aTag), mExternalTexture(aExternalTexture) {
-    MOZ_ASSERT(mTag == Tag::ExternalTexture);
+      const std::shared_ptr<webgpu::SharedTexture>& aSharedTexture)
+      : mTag(aTag), mSharedTexture(aSharedTexture) {
+    MOZ_ASSERT(mTag == Tag::SharedTexture);
   }
 
   const std::shared_ptr<gl::SharedSurface> mSharedSurface;
-  const std::shared_ptr<webgpu::ExternalTexture> mExternalTexture;
+  const std::shared_ptr<webgpu::SharedTexture> mSharedTexture;
 
   std::shared_ptr<gl::SharedSurface> SharedSurface() {
     if (mTag == Tag::SharedSurface) {
@@ -119,9 +116,9 @@ class SharedResourceWrapper {
     return nullptr;
   }
 
-  std::shared_ptr<webgpu::ExternalTexture> ExternalTexture() {
-    if (mTag == Tag::ExternalTexture) {
-      return mExternalTexture;
+  std::shared_ptr<webgpu::SharedTexture> SharedTexture() {
+    if (mTag == Tag::SharedTexture) {
+      return mSharedTexture;
     }
     MOZ_ASSERT_UNREACHABLE("unexpected to be called");
     return nullptr;
@@ -231,16 +228,17 @@ class RemoteTextureOwnerClient final {
                    const std::shared_ptr<gl::SharedSurface>& aSharedSurface,
                    const gfx::IntSize& aSize, gfx::SurfaceFormat aFormat,
                    const SurfaceDescriptor& aDesc);
-  void PushTexture(
-      const RemoteTextureId aTextureId, const RemoteTextureOwnerId aOwnerId,
-      const std::shared_ptr<webgpu::ExternalTexture>& aExternalTexture,
-      const gfx::IntSize& aSize, gfx::SurfaceFormat aFormat,
-      const SurfaceDescriptor& aDesc);
+  void PushTexture(const RemoteTextureId aTextureId,
+                   const RemoteTextureOwnerId aOwnerId,
+                   const std::shared_ptr<webgpu::SharedTexture>& aSharedTexture,
+                   const gfx::IntSize& aSize, gfx::SurfaceFormat aFormat,
+                   const SurfaceDescriptor& aDesc);
   void PushDummyTexture(const RemoteTextureId aTextureId,
                         const RemoteTextureOwnerId aOwnerId);
   void GetLatestBufferSnapshot(const RemoteTextureOwnerId aOwnerId,
                                const mozilla::ipc::Shmem& aDestShmem,
-                               const gfx::IntSize& aSize);
+                               const gfx::IntSize& aDestSize,
+                               size_t aDestStride);
   UniquePtr<TextureData> GetRecycledTextureData(
       const gfx::IntSize& aSize, gfx::SurfaceFormat aFormat,
       TextureType aTextureType,
@@ -252,7 +250,7 @@ class RemoteTextureOwnerClient final {
       const gfx::IntSize& aSize, gfx::SurfaceFormat aFormat,
       SurfaceDescriptor::Type aType,
       RemoteTextureOwnerId aOwnerId = RemoteTextureOwnerId());
-  std::shared_ptr<webgpu::ExternalTexture> GetRecycledExternalTexture(
+  std::shared_ptr<webgpu::SharedTexture> GetRecycledSharedTexture(
       const gfx::IntSize& aSize, gfx::SurfaceFormat aFormat,
       SurfaceDescriptor::Type aType,
       RemoteTextureOwnerId aOwnerId = RemoteTextureOwnerId());
@@ -299,7 +297,8 @@ class RemoteTextureMap {
   void GetLatestBufferSnapshot(const RemoteTextureOwnerId aOwnerId,
                                const base::ProcessId aForPid,
                                const mozilla::ipc::Shmem& aDestShmem,
-                               const gfx::IntSize& aSize);
+                               const gfx::IntSize& aDestSize,
+                               size_t aDestStride);
 
   void RegisterTextureOwner(
       const RemoteTextureOwnerId aOwnerId, const base::ProcessId aForPid,

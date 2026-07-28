@@ -5,7 +5,7 @@
 
 ## OS Prompt Dialog
 
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Taq Cha'oj richin pa Ruyonil Ninojisäx
 autofill-options-link-osx = Taq Ajowab'äl richin pa Ruyonil Ninojisäx
 
@@ -47,3 +47,6 @@ autofill-category-name = b'i'aj
 autofill-category-organization = moloj
 autofill-category-tel = oyonib'äl
 autofill-category-email = taqoya'l
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } xril jun man jikïl ta chi ruxaq k'amaya'l. Wakami chupun ri pa ruyonil kinojisaxik taq nojwuj

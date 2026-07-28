@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,7 @@
 #include "GeckoProfiler.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/FileUtils.h"
+#include "mozilla/GeckoTrace.h"
 #include "mozilla/LateWriteChecks.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/StaticPtr.h"
@@ -25,6 +24,7 @@
 #include "NSPRLogModulesParser.h"
 #include "nsXULAppAPI.h"
 #include "LogCommandLineHandler.h"
+#include "fmt/format.h"
 
 #include "prenv.h"
 #ifdef XP_WIN
@@ -39,7 +39,7 @@
 // NB: Amount determined by performing a typical browsing session and finding
 //     the maximum number of modules instantiated, and padding up to the next
 //     power of 2.
-const uint32_t kInitialModuleCount = 256;
+const uint32_t kInitialModuleCount = 1024;
 // When rotate option is added to the modules list, this is the hardcoded
 // number of files we create and rotate.  When there is rotate:40,
 // we will keep four files per process, each limited to 10MB.  Sum is 40MB,
@@ -294,6 +294,30 @@ void empty_va(va_list* va, ...) {
   va_start(*va, va);
   va_end(*va);
 }
+
+struct LogMarker : public BaseMarkerType<LogMarker> {
+  static constexpr const char* Name = "Log";
+  static constexpr const char* TableLabel =
+      "[{marker.data.level}] {marker.name}: {marker.data.message}";
+  static constexpr const char* ColorField = "color";
+  using MS = MarkerSchema;
+  static constexpr MS::Location Locations[] = {MS::Location::MarkerChart,
+                                               MS::Location::MarkerTable};
+  static constexpr MS::PayloadField PayloadFields[] = {
+      {"level", MS::InputType::CString, "Level", MS::Format::UniqueString},
+      {"message", MS::InputType::CString, "Message", MS::Format::String},
+      {"color", MS::InputType::CString, nullptr, MS::Format::String,
+       MS::PayloadFlags::Hidden},
+  };
+  static void StreamJSONMarkerData(baseprofiler::SpliceableJSONWriter& aWriter,
+                                   const ProfilerString8View& aLevel,
+                                   const ProfilerString8View& aText,
+                                   const ProfilerString8View& aColor) {
+    aWriter.UniqueStringProperty("level", aLevel);
+    aWriter.StringProperty("message", aText);
+    aWriter.StringProperty("color", aColor);
+  }
+};
 }  // namespace
 
 class LogModuleManager {
@@ -313,6 +337,7 @@ class LogModuleManager {
         mSetFromEnv(false),
         mAddTimestamp(false),
         mCaptureProfilerStack(false),
+        mLogJSStack(false),
         mIsRaw(false),
         mIsSync(false),
         mRotate(0),
@@ -356,7 +381,8 @@ class LogModuleManager {
     bool addTimestamp = false;
     bool isSync = false;
     bool isRaw = false;
-    bool captureStacks = false;
+    bool captureProfilerStacks = false;
+    bool logJSStacks = false;
     int32_t rotate = 0;
     int32_t maxSize = 0;
     bool prependHeader = false;
@@ -383,8 +409,8 @@ class LogModuleManager {
     NSPRLogModulesParser(
         modules,
         [this, &shouldAppend, &addTimestamp, &isSync, &isRaw, &rotate, &maxSize,
-         &prependHeader, &captureStacks](const char* aName, LogLevel aLevel,
-                                         int32_t aValue) mutable {
+         &prependHeader, &captureProfilerStacks, &logJSStacks](
+            const char* aName, LogLevel aLevel, int32_t aValue) mutable {
           if (strcmp(aName, "append") == 0) {
             shouldAppend = true;
           } else if (strcmp(aName, "timestamp") == 0) {
@@ -400,7 +426,9 @@ class LogModuleManager {
           } else if (strcmp(aName, "prependheader") == 0) {
             prependHeader = true;
           } else if (strcmp(aName, "profilerstacks") == 0) {
-            captureStacks = true;
+            captureProfilerStacks = true;
+          } else if (strcmp(aName, "jsstacks") == 0) {
+            logJSStacks = true;
           } else {
             this->CreateOrGetModule(aName)->SetLevel(aLevel);
           }
@@ -411,7 +439,8 @@ class LogModuleManager {
     mIsSync = isSync;
     mIsRaw = isRaw;
     mRotate = rotate;
-    mCaptureProfilerStack = captureStacks;
+    mCaptureProfilerStack = captureProfilerStacks;
+    mLogJSStack = logJSStacks;
 
     if (rotate > 0 && shouldAppend) {
       NS_WARNING("MOZ_LOG: when you rotate the log, you cannot use append!");
@@ -518,6 +547,8 @@ class LogModuleManager {
 
   void SetIsSync(bool aIsSync) { mIsSync = aIsSync; }
 
+  bool GetLogJSStacks() { return mLogJSStack; }
+
   void SetCaptureStacks(bool aCaptureStacks) {
     mCaptureProfilerStack = aCaptureStacks;
   }
@@ -577,12 +608,43 @@ class LogModuleManager {
              va_list aArgs) MOZ_FORMAT_PRINTF(4, 0) {
     Print(aName, aLevel, nullptr, "", aFmt, aArgs);
   }
+  void PrintFmt(const char* aName, LogLevel aLevel, fmt::string_view aFmt,
+                fmt::format_args aArgs) {
+    PrintFmt(aName, aLevel, nullptr, "", aFmt, aArgs);
+  }
+
+  void PrintFmt(const char* aName, LogLevel aLevel, const TimeStamp* aStart,
+                const char* aPrepend, fmt::string_view aFmt,
+                fmt::format_args aArgs) {
+    AutoSuspendLateWriteChecks suspendLateWriteChecks;
+    const size_t kBuffSize = 1024;
+    char buff[kBuffSize];
+
+    char* buffToWrite = buff;
+    UniquePtr<char[]> allocatedBuff;
+    size_t charsWritten;
+
+    auto [out, size] = fmt::vformat_to_n(buff, kBuffSize - 1, aFmt, aArgs);
+    *out = '\0';
+    charsWritten = size;
+
+    // We may have maxed out, allocate a buffer and re-format
+    if (charsWritten >= kBuffSize) {
+      allocatedBuff = MakeUnique<char[]>(charsWritten + 1);  // + final \0
+      auto [out, size] =
+          fmt::vformat_to_n(allocatedBuff.get(), charsWritten, aFmt, aArgs);
+      MOZ_ASSERT(size == charsWritten);
+      *out = '\0';
+      buffToWrite = allocatedBuff.get();
+    }
+    ++charsWritten;  // + final \0
+    ActuallyLog(aName, aLevel, aStart, aPrepend, buffToWrite, charsWritten);
+  }
 
   void Print(const char* aName, LogLevel aLevel, const TimeStamp* aStart,
              const char* aPrepend, const char* aFmt, va_list aArgs)
       MOZ_FORMAT_PRINTF(6, 0) {
     AutoSuspendLateWriteChecks suspendLateWriteChecks;
-    long pid = static_cast<long>(base::GetCurrentProcId());
     const size_t kBuffSize = 1024;
     char buff[kBuffSize];
 
@@ -608,44 +670,63 @@ class LogModuleManager {
       buffToWrite = allocatedBuff.get();
       charsWritten = strlen(buffToWrite);
     }
+    ActuallyLog(aName, aLevel, aStart, aPrepend, buffToWrite, charsWritten);
+  }
 
+  void ActuallyLog(const char* aName, LogLevel aLevel, const TimeStamp* aStart,
+                   const char* aPrepend, const char* aLogMessage,
+                   size_t aLogMessageSize) {
+    long pid = static_cast<long>(base::GetCurrentProcId());
     if (profiler_thread_is_being_profiled_for_markers()) {
-      struct LogMarker {
-        static constexpr Span<const char> MarkerTypeName() {
-          return MakeStringSpan("Log");
+      const char* color = [aLevel]() -> const char* {
+        switch (aLevel) {
+          case LogLevel::Error:
+            return "red";
+          case LogLevel::Warning:
+            return "orange";
+          case LogLevel::Info:
+            return "green";
+          case LogLevel::Debug:
+            return "blue";
+          case LogLevel::Verbose:
+          case LogLevel::Disabled:
+            return "grey";
         }
-        static void StreamJSONMarkerData(
-            baseprofiler::SpliceableJSONWriter& aWriter,
-            const ProfilerString8View& aModule,
-            const ProfilerString8View& aText) {
-          aWriter.StringProperty("module", aModule);
-          aWriter.StringProperty("name", aText);
+        MOZ_CRASH("Unexpected log level");
+      }();
+
+      const char* levelStr = [aLevel]() -> const char* {
+        switch (aLevel) {
+          case LogLevel::Error:
+            return "Error";
+          case LogLevel::Warning:
+            return "Warning";
+          case LogLevel::Info:
+            return "Info";
+          case LogLevel::Debug:
+            return "Debug";
+          case LogLevel::Verbose:
+            return "Verbose";
+          case LogLevel::Disabled:
+            return "Disabled";
         }
-        static MarkerSchema MarkerTypeDisplay() {
-          using MS = MarkerSchema;
-          MS schema{MS::Location::MarkerChart, MS::Location::MarkerTable};
-          schema.SetTableLabel("({marker.data.module}) {marker.data.name}");
-          schema.AddKeyLabelFormatSearchable("module", "Module",
-                                             MS::Format::String,
-                                             MS::Searchable::Searchable);
-          schema.AddKeyLabelFormatSearchable("name", "Name", MS::Format::String,
-                                             MS::Searchable::Searchable);
-          return schema;
-        }
-      };
+        MOZ_CRASH("Unexpected log level");
+      }();
 
       profiler_add_marker(
-          "LogMessages", geckoprofiler::category::OTHER,
+          ProfilerString8View::WrapNullTerminatedString(aName),
+          geckoprofiler::category::LOGS,
           {aStart ? MarkerTiming::IntervalUntilNowFrom(*aStart)
                   : MarkerTiming::InstantNow(),
            MarkerStack::MaybeCapture(mCaptureProfilerStack)},
-          LogMarker{}, ProfilerString8View::WrapNullTerminatedString(aName),
-          ProfilerString8View::WrapNullTerminatedString(buffToWrite));
+          LogMarker{}, ProfilerString8View::WrapNullTerminatedString(levelStr),
+          ProfilerString8View::WrapNullTerminatedString(aLogMessage),
+          ProfilerString8View::WrapNullTerminatedString(color));
     }
 
     // Determine if a newline needs to be appended to the message.
     const char* newline = "";
-    if (charsWritten == 0 || buffToWrite[charsWritten - 1] != '\n') {
+    if (aLogMessageSize == 0 || aLogMessage[aLogMessageSize - 1] != '\n') {
       newline = "\n";
     }
 
@@ -682,10 +763,10 @@ class LogModuleManager {
       if (!mIsRaw) {
         fprintf_stderr(out, "%s[%s %ld: %s]: %s/%s %s%s", aPrepend,
                        nsDebugImpl::GetMultiprocessMode(), pid,
-                       currentThreadName, ToLogStr(aLevel), aName, buffToWrite,
+                       currentThreadName, ToLogStr(aLevel), aName, aLogMessage,
                        newline);
       } else {
-        fprintf_stderr(out, "%s%s%s", aPrepend, buffToWrite, newline);
+        fprintf_stderr(out, "%s%s%s", aPrepend, aLogMessage, newline);
       }
     } else {
       if (aStart) {
@@ -709,7 +790,7 @@ class LogModuleManager {
             start.tm_hour, start.tm_min, start.tm_sec, start.tm_usec,
             now.tm_hour, now.tm_min, now.tm_sec, now.tm_usec,
             duration.ToMilliseconds(), nsDebugImpl::GetMultiprocessMode(), pid,
-            currentThreadName, ToLogStr(aLevel), aName, buffToWrite, newline);
+            currentThreadName, ToLogStr(aLevel), aName, aLogMessage, newline);
       } else {
         PRExplodedTime now;
         PR_ExplodeTime(PR_Now(), PR_GMTParameters, &now);
@@ -719,7 +800,7 @@ class LogModuleManager {
                        aPrepend, now.tm_year, now.tm_month + 1, now.tm_mday,
                        now.tm_hour, now.tm_min, now.tm_sec, now.tm_usec,
                        nsDebugImpl::GetMultiprocessMode(), pid,
-                       currentThreadName, ToLogStr(aLevel), aName, buffToWrite,
+                       currentThreadName, ToLogStr(aLevel), aName, aLogMessage,
                        newline);
       }
     }
@@ -803,6 +884,7 @@ class LogModuleManager {
   bool mSetFromEnv;
   Atomic<bool, Relaxed> mAddTimestamp;
   Atomic<bool, Relaxed> mCaptureProfilerStack;
+  Atomic<bool, Relaxed> mLogJSStack;
   Atomic<bool, Relaxed> mIsRaw;
   Atomic<bool, Relaxed> mIsSync;
   int32_t mRotate;
@@ -840,7 +922,7 @@ void LogModule::SetCaptureStacks(bool aCaptureStacks) {
   sLogModuleManager->SetCaptureStacks(aCaptureStacks);
 }
 
-void LogModule::DisableModules() { sLogModuleManager->DisableModules(); }
+bool LogModule::GetLogJSStacks() { return sLogModuleManager->GetLogJSStacks(); }
 
 // This function is defined in gecko_logger/src/lib.rs
 // We mirror the level in rust code so we don't get forwarded all of the
@@ -855,6 +937,13 @@ void LogModule::SetLevel(LogLevel level) {
   // to Gecko.
   if (strstr(mName, "::")) {
     set_rust_log_level(mName, static_cast<uint8_t>(level));
+  }
+
+  // The following enables the propagation of runtime-set log levels (for
+  // example configured via `about:logging`) from the Mozilla logging system to
+  // OpenTelemetry's internal logging mechanism.
+  if (strcmp(mName, "opentelemetry") == 0) {
+    gecko_trace::SetOpenTelemetryInternalLogLevel(level);
   }
 }
 
@@ -892,6 +981,14 @@ void LogModule::Printv(LogLevel aLevel, const TimeStamp* aStart,
 
   // Forward to LogModule manager w/ level and name
   sLogModuleManager->Print(Name(), aLevel, aStart, "", aFmt, aArgs);
+}
+
+void LogModule::PrintvFmt(LogLevel aLevel, fmt::string_view aFmt,
+                          fmt::format_args aArgs) const {
+  MOZ_ASSERT(sLogModuleManager != nullptr);
+
+  // Forward to LogModule manager w/ level and name
+  sLogModuleManager->PrintFmt(Name(), aLevel, aFmt, aArgs);
 }
 
 }  // namespace mozilla

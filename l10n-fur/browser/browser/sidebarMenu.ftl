@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Segnelibris
+sidebar-menu-bookmarks-2 = Segnelibris
 sidebar-menu-history =
     .label = Cronologjie
 sidebar-menu-synced-tabs =
     .label = Schedis sincronizadis
-sidebar-menu-megalist =
-    .label = Passwords
 sidebar-menu-close =
     .label = Siere la sbare laterâl
 sidebar-close-button =

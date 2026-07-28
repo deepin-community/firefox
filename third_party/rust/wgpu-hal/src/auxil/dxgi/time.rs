@@ -1,4 +1,4 @@
-#![allow(dead_code)] // IPresentationManager is unused currently
+#![allow(dead_code, reason = "IPresentationManager is unused currently")]
 
 use windows::Win32::System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency};
 
@@ -18,8 +18,8 @@ pub enum PresentationTimer {
     },
 }
 
-impl std::fmt::Debug for PresentationTimer {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for PresentationTimer {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match *self {
             Self::Dxgi { frequency } => f
                 .debug_struct("DXGI")
@@ -62,7 +62,11 @@ impl PresentationTimer {
         let kernelbase =
             libloading::os::windows::Library::open_already_loaded("kernelbase.dll").unwrap();
         // No concerns about lifetimes here as kernelbase is always there.
-        let ptr = unsafe { kernelbase.get(b"QueryInterruptTimePrecise").unwrap() };
+        let ptr = unsafe {
+            kernelbase
+                .get(c"QueryInterruptTimePrecise".to_bytes())
+                .unwrap()
+        };
         Self::IPresentationManager {
             fnQueryInterruptTimePrecise: *ptr,
         }

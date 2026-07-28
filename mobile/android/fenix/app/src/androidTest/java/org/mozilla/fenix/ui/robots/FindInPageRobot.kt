@@ -7,21 +7,24 @@
 package org.mozilla.fenix.ui.robots
 
 import android.util.Log
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
 import org.mozilla.fenix.R
 import org.mozilla.fenix.helpers.Constants.TAG
+import org.mozilla.fenix.helpers.MatcherHelper.assertUIObjectExists
+import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.helpers.click
 import org.mozilla.fenix.helpers.ext.waitNotNull
+import mozilla.components.feature.findinpage.R as findinpageR
 
 /**
  * Implementation of Robot Pattern for the find in page UI.
@@ -68,26 +71,21 @@ class FindInPageRobot {
         mDevice.waitNotNull(Until.findObject(By.res("org.mozilla.fenix.debug:id/find_in_page_result_text")), waitingTime)
     }
 
-    fun verifyFindInPageResult(ratioCounter: String) {
-        mDevice.waitNotNull(Until.findObject(By.text(ratioCounter)), waitingTime)
-        Log.i(TAG, "verifyFindInPageResult: Trying to verify $ratioCounter results")
-        findInPageResult().check(matches(withText((ratioCounter))))
-        Log.i(TAG, "verifyFindInPageResult: Verified $ratioCounter results")
-    }
+    fun verifyFindInPageResult(ratioCounter: String) = assertUIObjectExists(itemContainingText(ratioCounter))
 
     class Transition {
-        fun closeFindInPageWithCloseButton(interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
+        fun closeFindInPageWithCloseButton(composeTestRule: ComposeTestRule, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
             Log.i(TAG, "closeFindInPageWithCloseButton: Waiting for device to be idle")
             mDevice.waitForIdle()
             Log.i(TAG, "closeFindInPageWithCloseButton: Device was idle")
             Log.i(TAG, "closeFindInPageWithCloseButton: Trying to close find in page button")
             findInPageCloseButton().click()
             Log.i(TAG, "closeFindInPageWithCloseButton: Clicked close find in page button")
-            BrowserRobot().interact()
-            return BrowserRobot.Transition()
+            BrowserRobot(composeTestRule).interact()
+            return BrowserRobot.Transition(composeTestRule)
         }
 
-        fun closeFindInPageWithBackButton(interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
+        fun closeFindInPageWithBackButton(composeTestRule: ComposeTestRule, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
             Log.i(TAG, "closeFindInPageWithBackButton: Waiting for device to be idle")
             mDevice.waitForIdle()
             Log.i(TAG, "closeFindInPageWithBackButton: Device was idle")
@@ -100,14 +98,14 @@ class FindInPageRobot {
             mDevice.pressBack()
             Log.i(TAG, "closeFindInPageWithBackButton: Pressed 2x the device back button")
 
-            BrowserRobot().interact()
-            return BrowserRobot.Transition()
+            BrowserRobot(composeTestRule).interact()
+            return BrowserRobot.Transition(composeTestRule)
         }
     }
 }
 
-private fun findInPageQuery() = onView(withId(R.id.find_in_page_query_text))
-private fun findInPageResult() = onView(withId(R.id.find_in_page_result_text))
-private fun findInPageNextButton() = onView(withId(R.id.find_in_page_next_btn))
-private fun findInPagePrevButton() = onView(withId(R.id.find_in_page_prev_btn))
-private fun findInPageCloseButton() = onView(withId(R.id.find_in_page_close_btn))
+private fun findInPageQuery() = onView(withId(findinpageR.id.find_in_page_query_text))
+private fun findInPageResult() = onView(withId(findinpageR.id.find_in_page_result_text))
+private fun findInPageNextButton() = onView(withId(findinpageR.id.find_in_page_next_btn))
+private fun findInPagePrevButton() = onView(withId(findinpageR.id.find_in_page_prev_btn))
+private fun findInPageCloseButton() = onView(withId(findinpageR.id.find_in_page_close_btn))

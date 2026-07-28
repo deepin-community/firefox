@@ -2,11 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-crashreporter-title = Доклад за срив
-crashreporter-crash-message = Възникна проблем и { -brand-short-name } се срина.
 crashreporter-plea = За да ни помогнете да диагностицираме и отстраним този проблем, може да ни изпратите доклад за срива.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Подробности: { $details }
 crashreporter-no-run-message = Това приложение се пуска след срив, за да докладва за проблема на създателя. То не бива да бъде пускано самостаятелно.
 crashreporter-button-details = Подробности…
 crashreporter-view-report-title = Съдържание на доклада

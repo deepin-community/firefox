@@ -9,19 +9,21 @@
 const {
   Component,
   createFactory,
-} = require("resource://devtools/client/shared/vendor/react.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const {
   connect,
 } = require("resource://devtools/client/shared/vendor/react-redux.js");
 
 const TreeView = createFactory(
-  require("resource://devtools/client/shared/components/tree/TreeView.js")
+  ChromeUtils.importESModule(
+    "resource://devtools/client/shared/components/tree/TreeView.mjs"
+  ).default
 );
 // Reps
-const {
-  MODE,
-} = require("resource://devtools/client/shared/components/reps/index.js");
+const { MODE } = ChromeUtils.importESModule(
+  "resource://devtools/client/shared/components/reps/index.mjs"
+);
 
 const {
   fetchChildren,
@@ -43,9 +45,9 @@ const {
   Provider,
 } = require("resource://devtools/client/accessibility/provider.js");
 
-const {
-  scrollIntoView,
-} = require("resource://devtools/client/shared/scroll.js");
+const { scrollIntoView } = ChromeUtils.importESModule(
+  "resource://devtools/client/shared/scroll.mjs"
+);
 
 /**
  * Renders Accessibility panel tree.
@@ -125,7 +127,8 @@ class AccessibilityTree extends Component {
    * Handle accessible reorder event. If the accessible is cached and rendered
    * within the accessibility tree, re-fetch its children and re-render the
    * corresponding subtree.
-   * @param {Object} accessibleFront
+   *
+   * @param {object} accessibleFront
    *        accessible front that had its subtree reordered.
    */
   onReorder(accessibleFront) {
@@ -157,9 +160,10 @@ class AccessibilityTree extends Component {
    * Handle accessible name change event. If the name of an accessible changes
    * and that accessible is cached and rendered within the accessibility tree,
    * re-fetch its parent's children and re-render the corresponding subtree.
-   * @param {Object} accessibleFront
+   *
+   * @param {object} accessibleFront
    *        accessible front that had its name changed.
-   * @param {Object} parentFront
+   * @param {object} parentFront
    *        optional parent accessible front. Note: if it parent is not
    *        present, we assume that the top level document's name has changed
    *        and use accessible walker as a parent.
@@ -182,7 +186,8 @@ class AccessibilityTree extends Component {
    * an accessible changes and that accessible is cached and rendered within the
    * accessibility tree, re-fetch its children and re-render the corresponding
    * subtree.
-   * @param  {Object} accessibleFront
+   *
+   * @param  {object} accessibleFront
    *         accessible front that had its child text changed.
    */
   onTextChange(accessibleFront) {

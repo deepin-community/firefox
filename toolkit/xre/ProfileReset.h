@@ -1,7 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#ifndef TOOLKIT_XRE_PROFILERESET_H_
+#define TOOLKIT_XRE_PROFILERESET_H_
 
 #include "nsToolkitProfileService.h"
 #include "nsIFile.h"
@@ -26,6 +28,7 @@ class ProfileResetCleanupResultTask : public mozilla::Runnable {
   NS_IMETHOD Run() override {
     MOZ_ASSERT(NS_IsMainThread());
     mWorkerThread->Shutdown();
+    gProfileResetCleanupCompleted = true;
     return NS_OK;
   }
 
@@ -69,7 +72,6 @@ class ProfileResetCleanupAsyncTask : public mozilla::Runnable {
         NS_WARNING("Could not remove the old local profile directory (cache)");
       }
     }
-    gProfileResetCleanupCompleted = true;
 
     nsCOMPtr<nsIRunnable> resultRunnable = new ProfileResetCleanupResultTask();
     NS_DispatchToMainThread(resultRunnable);
@@ -82,3 +84,5 @@ class ProfileResetCleanupAsyncTask : public mozilla::Runnable {
   nsCOMPtr<nsIFile> mTargetDir;
   nsString mLeafName;
 };
+
+#endif  // TOOLKIT_XRE_PROFILERESET_H_

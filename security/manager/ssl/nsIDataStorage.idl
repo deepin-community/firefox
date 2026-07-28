@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,6 +18,7 @@ interface nsIDataStorageManager : nsISupports {
     AlternateServices,
     ClientAuthRememberList,
     SiteSecurityServiceState,
+    SiteIntegrityServiceState,
   };
 
   nsIDataStorage get(in nsIDataStorageManager_DataStorage dataStorage);
@@ -72,10 +72,13 @@ interface nsIDataStorage : nsISupports {
    * Data that is Persistent is saved on disk. Data that is Private is not
    * saved. Private is meant to only be set and accessed from private contexts.
    * It will be cleared upon observing the event "last-pb-context-exited".
+   * Data that is temporary is also not saved, but may be accessed from
+   * non-private contexts. Temporary data is dropped at shutdown.
    */
   cenum DataType : 8 {
     Persistent,
     Private,
+    Temporary,
   };
 
   // Given a key and a type of data, returns a value. Returns

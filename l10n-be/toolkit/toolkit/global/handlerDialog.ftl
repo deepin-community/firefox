@@ -20,6 +20,17 @@ permission-dialog-description-file-app = Дазволіць гэтаму фай�
 permission-dialog-description-extension-app = Дазволіць пашырэнню { $extension } адкрыць спасылку { $scheme } з дапамогай { $appName }?
 permission-dialog-description-system-app = Адкрыць спасылку { $scheme } у { $appName }?
 permission-dialog-description-system-noapp = Адкрыць спасылку { $scheme }?
+# Header on a permission prompt, asking the user if they should allow the website to continue.
+wallet-custom-scheme-warning-heading =
+    .heading = Дазволіць гэтаму сайту адкрыць ваш лічбавы кашалёк?
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host-app = Адкрыццё спасылкі <strong>{ $scheme }</strong> дазваляе <strong>{ $host }</strong> запытаць вашу сапраўдную асобу з дапамогай <strong>{ $appName }</strong>. Працягвайце, толькі калі давяраеце гэтаму сайту.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-app = Адкрыццё спасылкі <strong>{ $scheme }</strong> дазваляе гэтаму сайту запытаць вашу сапраўдную асобу з дапамогай <strong>{ $appName }</strong>. Працягвайце, толькі калі давяраеце гэтаму сайту.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host = Адкрыццё спасылкі <strong>{ $scheme }</strong> дазваляе <strong>{ $host }</strong> запытаць вашу сапраўдную асобу з вашага лічбавага кашалька. Працягвайце, толькі калі давяраеце гэтаму сайту.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning = Адкрыццё спасылкі <strong>{ $scheme }</strong> дазваляе гэтаму сайту запытаць вашу сапраўдную асобу з вашага лічбавага кашалька. Працягвайце, толькі калі давяраеце гэтаму сайту.
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start

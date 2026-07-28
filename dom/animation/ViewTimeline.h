@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,6 +9,7 @@
 
 namespace mozilla {
 class ScrollContainerFrame;
+struct TimelineRangeOffset;
 }  // namespace mozilla
 
 namespace mozilla::dom {
@@ -34,7 +33,8 @@ class ViewTimeline final : public ScrollTimeline {
   // Note: |aSubject| is used as the subject which specifies view-timeline-name
   // property, and we use this subject to look up its nearest scroll container.
   static already_AddRefed<ViewTimeline> MakeNamed(
-      Document* aDocument, Element* aSubject, PseudoStyleType aPseudoType,
+      Document* aDocument, Element* aSubject,
+      const PseudoStyleRequest& aPseudoRequest,
       const StyleViewTimeline& aStyleTimeline);
 
   static already_AddRefed<ViewTimeline> MakeAnonymous(
@@ -42,39 +42,66 @@ class ViewTimeline final : public ScrollTimeline {
       StyleScrollAxis aAxis, const StyleViewTimelineInset& aInset);
 
   JSObject* WrapObject(JSContext* aCx,
-                       JS::Handle<JSObject*> aGivenProto) override {
-    return nullptr;
+                       JS::Handle<JSObject*> aGivenProto) override;
+
+  // ViewTimeline methods.
+  Element* Subject() const {
+    MOZ_ASSERT(mSubject);
+    return mSubject;
   }
+  Nullable<double> GetStartOffset() const;
+  Nullable<double> GetEndOffset() const;
 
   bool IsViewTimeline() const override { return true; }
+  const ViewTimeline* AsViewTimeline() const override { return this; }
 
   void ReplacePropertiesWith(Element* aSubjectElement,
-                             PseudoStyleType aPseudoType,
+                             const PseudoStyleRequest& aPseudoRequest,
                              const StyleViewTimeline& aNew);
+
+  bool UpdateCachedCurrentTime() override;
+
+  std::pair<double, double> IntervalForAttachmentRange(
+      const AnimationRange& aStyleRange) const override;
+
+  Maybe<double> MapKeyframeOffsetToOffset(const StyleTimelineRangeName aName,
+                                          const double aPercentage) const;
+
+  NonOwningAnimationTarget TimelineTarget() const override {
+    return NonOwningAnimationTarget{mSubject,
+                                    PseudoStyleRequest{mSubjectPseudoType}};
+  }
 
  private:
   ~ViewTimeline() = default;
-  ViewTimeline(Document* aDocument, const Scroller& aScroller,
+  ViewTimeline(Document* aDocument, const ScrollerInfo& aScrollerInfo,
                StyleScrollAxis aAxis, Element* aSubject,
                PseudoStyleType aSubjectPseudoType,
                const StyleViewTimelineInset& aInset)
-      : ScrollTimeline(aDocument, aScroller, aAxis),
+      : ScrollTimeline(aDocument, aScrollerInfo, aAxis),
         mSubject(aSubject),
         mSubjectPseudoType(aSubjectPseudoType),
         mInset(aInset) {}
 
-  Maybe<ScrollOffsets> ComputeOffsets(
-      const ScrollContainerFrame* aScrollContainerFrame,
-      layers::ScrollDirection aOrientation) const override;
+  Maybe<ComputedTimelineData> ComputeTimelineData() const override;
 
-  ScrollOffsets ComputeInsets(const ScrollContainerFrame* aScrollContainerFrame,
-                              layers::ScrollDirection aOrientation) const;
+  std::pair<nscoord, nscoord> IntervalForTimelineRangeName(
+      const StyleTimelineRangeName aName,
+      const ScrollTimeline::ComputedTimelineData& aData) const;
+
+  template <typename F>
+  double ComputeOffsetToTimelineRange(
+      const StyleTimelineRangeName& aName,
+      const ScrollTimeline::ComputedTimelineData& aData,
+      F&& aFuncToResolveValue) const;
 
   // The subject element.
   // 1. For view(), the subject element is the animation target.
   // 2. For view-timeline property, the subject element is the element who
   //    defines this property.
   RefPtr<Element> mSubject;
+  // FIXME: Bug 1928437. We have to update mSubjectPseudoType to use
+  // PseudoStyleRequest.
   PseudoStyleType mSubjectPseudoType;
 
   // FIXME: Bug 1817073. view-timeline-inset is an animatable property. However,
@@ -83,6 +110,35 @@ class ViewTimeline final : public ScrollTimeline {
   // value when using it. For now, in order to simplify the implementation, we
   // make |mInset| be fixed.
   StyleViewTimelineInset mInset;
+
+  struct CurrentTimeData {
+    // The basic scroll info.
+    ScrollTimeline::CurrentTimeData mScrollData;
+    // The size of the scrollport.
+    nscoord mScrollPortSize = 0;
+    // The position and size of the subject.
+    nscoord mSubjectPosition = 0;
+    nscoord mSubjectSize = 0;
+    // The used view-timeline-inset.
+    nscoord mInsetStart = 0;
+    nscoord mInsetEnd = 0;
+    // TODO: Bug 2018678. We may have to add more for sticky positioned element.
+
+    // Returns true if any of the metrics are changed, except for |mPosition|.
+    bool IsChanged(const CurrentTimeData& aOther) const {
+      return mScrollData.mMaxScrollOffset !=
+                 aOther.mScrollData.mMaxScrollOffset ||
+             mScrollPortSize != aOther.mScrollPortSize ||
+             mSubjectPosition != aOther.mSubjectPosition ||
+             mSubjectSize != aOther.mSubjectSize ||
+             mInsetStart != aOther.mInsetStart || mInsetEnd != aOther.mInsetEnd;
+    }
+    bool operator==(const CurrentTimeData& aOther) const {
+      return mScrollData.mPosition == aOther.mScrollData.mPosition &&
+             !IsChanged(aOther);
+    }
+  };
+  Maybe<CurrentTimeData> mCachedCurrentTime;
 };
 
 }  // namespace mozilla::dom

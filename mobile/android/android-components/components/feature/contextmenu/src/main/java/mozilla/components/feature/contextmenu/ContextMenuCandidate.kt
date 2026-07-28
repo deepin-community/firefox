@@ -9,13 +9,13 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.view.View
 import androidx.annotation.VisibleForTesting
+import androidx.core.net.toUri
 import com.google.android.material.snackbar.Snackbar
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.state.content.DownloadState
-import mozilla.components.browser.state.state.content.ShareInternetResourceState
+import mozilla.components.browser.state.state.content.ShareResourceState
 import mozilla.components.concept.engine.HitResult
 import mozilla.components.feature.app.links.AppLinksUseCases
 import mozilla.components.feature.contextmenu.ContextMenuCandidate.Companion.MAX_TITLE_LENGTH
@@ -28,6 +28,7 @@ import mozilla.components.support.ktx.kotlin.stripMailToProtocol
 import mozilla.components.support.ktx.kotlin.takeOrReplace
 import mozilla.components.ui.widgets.DefaultSnackbarDelegate
 import mozilla.components.ui.widgets.SnackbarDelegate
+import kotlin.String
 
 /**
  * A candidate for an item to be displayed in the context menu.
@@ -60,6 +61,7 @@ data class ContextMenuCandidate(
             contextMenuUseCases: ContextMenuUseCases,
             snackBarParentView: View,
             snackbarDelegate: SnackbarDelegate = DefaultSnackbarDelegate(),
+            downloadsLocation: () -> String,
         ): List<ContextMenuCandidate> = listOf(
             createOpenInNewTabCandidate(
                 context,
@@ -74,7 +76,8 @@ data class ContextMenuCandidate(
                 snackbarDelegate,
             ),
             createCopyLinkCandidate(context, snackBarParentView, snackbarDelegate),
-            createDownloadLinkCandidate(context, contextMenuUseCases),
+            createCopyLinkTextCandidate(context, snackBarParentView, snackbarDelegate),
+            createDownloadLinkCandidate(context, contextMenuUseCases, downloadsLocation),
             createShareLinkCandidate(context),
             createShareImageCandidate(context, contextMenuUseCases),
             createOpenImageInNewTabCandidate(
@@ -87,8 +90,8 @@ data class ContextMenuCandidate(
                 context,
                 contextMenuUseCases,
             ),
-            createSaveImageCandidate(context, contextMenuUseCases),
-            createSaveVideoAudioCandidate(context, contextMenuUseCases),
+            createSaveImageCandidate(context, contextMenuUseCases, downloadsLocation),
+            createSaveVideoAudioCandidate(context, contextMenuUseCases, downloadsLocation),
             createCopyImageLocationCandidate(context, snackBarParentView, snackbarDelegate),
             createAddContactCandidate(context),
             createShareEmailAddressCandidate(context),
@@ -125,6 +128,7 @@ data class ContextMenuCandidate(
                     hitResult.getLink(),
                     selectTab = false,
                     startLoading = true,
+                    textDirectiveUserActivation = true,
                     parentId = parent.id,
                     contextId = parent.contextId,
                 )
@@ -168,6 +172,7 @@ data class ContextMenuCandidate(
                     hitResult.getLink(),
                     selectTab = false,
                     startLoading = true,
+                    textDirectiveUserActivation = true,
                     parentId = parent.id,
                     private = true,
                 )
@@ -349,6 +354,7 @@ data class ContextMenuCandidate(
         fun createSaveImageCandidate(
             context: Context,
             contextMenuUseCases: ContextMenuUseCases,
+            downloadsLocation: () -> String,
             additionalValidation: (SessionState, HitResult) -> Boolean = { _, _ -> true },
         ) = ContextMenuCandidate(
             id = "mozac.feature.contextmenu.save_image",
@@ -365,6 +371,7 @@ data class ContextMenuCandidate(
                         hitResult.src,
                         skipConfirmation = true,
                         private = tab.content.private,
+                        directoryPath = downloadsLocation(),
                         referrerUrl = tab.content.url,
                     ),
                 )
@@ -394,7 +401,7 @@ data class ContextMenuCandidate(
             action = { tab, hitResult ->
                 contextMenuUseCases.injectCopyFromInternet(
                     tab.id,
-                    ShareInternetResourceState(
+                    ShareResourceState.InternetResource(
                         url = hitResult.src,
                         private = tab.content.private,
                         referrerUrl = tab.content.url,
@@ -408,12 +415,14 @@ data class ContextMenuCandidate(
          *
          * @param context [Context] used for various system interactions.
          * @param contextMenuUseCases [ContextMenuUseCases] used to integrate other features.
+         * @param downloadsLocation Callback providing the directory path where the file should be saved.
          * @param additionalValidation Callback for the final validation in deciding whether this menu option
          * will be shown. Will only be called if all the intrinsic validations passed.
          */
         fun createSaveVideoAudioCandidate(
             context: Context,
             contextMenuUseCases: ContextMenuUseCases,
+            downloadsLocation: () -> String,
             additionalValidation: (SessionState, HitResult) -> Boolean = { _, _ -> true },
         ) = ContextMenuCandidate(
             id = "mozac.feature.contextmenu.save_video",
@@ -430,6 +439,7 @@ data class ContextMenuCandidate(
                         hitResult.src,
                         skipConfirmation = true,
                         private = tab.content.private,
+                        directoryPath = downloadsLocation(),
                         referrerUrl = tab.content.url,
                     ),
                 )
@@ -441,12 +451,14 @@ data class ContextMenuCandidate(
          *
          * @param context [Context] used for various system interactions.
          * @param contextMenuUseCases [ContextMenuUseCases] used to integrate other features.
+         * @param downloadsLocation Callback providing the directory path where the file should be saved.
          * @param additionalValidation Callback for the final validation in deciding whether this menu option
          * will be shown. Will only be called if all the intrinsic validations passed.
          */
         fun createDownloadLinkCandidate(
             context: Context,
             contextMenuUseCases: ContextMenuUseCases,
+            downloadsLocation: () -> String,
             additionalValidation: (SessionState, HitResult) -> Boolean = { _, _ -> true },
         ) = ContextMenuCandidate(
             id = "mozac.feature.contextmenu.download_link",
@@ -463,6 +475,7 @@ data class ContextMenuCandidate(
                         hitResult.getLink(),
                         skipConfirmation = true,
                         private = tab.content.private,
+                        directoryPath = downloadsLocation(),
                         referrerUrl = tab.content.url,
                     ),
                 )
@@ -491,7 +504,7 @@ data class ContextMenuCandidate(
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    putExtra(Intent.EXTRA_TEXT, hitResult.getLink())
+                    putExtra(Intent.EXTRA_TEXT, hitResult.getUrl())
                 }
 
                 try {
@@ -535,7 +548,7 @@ data class ContextMenuCandidate(
             action = { tab, hitResult ->
                 contextMenuUseCases.injectShareFromInternet(
                     tab.id,
-                    ShareInternetResourceState(
+                    ShareResourceState.InternetResource(
                         url = hitResult.src,
                         private = tab.content.private,
                         referrerUrl = tab.content.url,
@@ -570,8 +583,43 @@ data class ContextMenuCandidate(
                 clipPlainText(
                     context,
                     hitResult.getLink(),
-                    hitResult.getLink(),
+                    hitResult.getUrl(),
                     R.string.mozac_feature_contextmenu_snackbar_link_copied,
+                    snackBarParentView,
+                    snackbarDelegate,
+                )
+            },
+        )
+
+        /**
+         * Context Menu item: "Copy link text".
+         *
+         * @param context [Context] used for various system interactions.
+         * @param snackBarParentView The view in which to find a suitable parent for displaying the `Snackbar`.
+         * @param snackbarDelegate [SnackbarDelegate] used to actually show a `Snackbar`.
+         * @param additionalValidation Callback for the final validation in deciding whether this menu option
+         * will be shown. Will only be called if all the intrinsic validations passed.
+         */
+        fun createCopyLinkTextCandidate(
+            context: Context,
+            snackBarParentView: View,
+            snackbarDelegate: SnackbarDelegate = DefaultSnackbarDelegate(),
+            additionalValidation: (SessionState, HitResult) -> Boolean = { _, _ -> true },
+        ) = ContextMenuCandidate(
+            id = "mozac.feature.contextmenu.copy_link_text",
+            label = context.getString(R.string.mozac_feature_contextmenu_copy_link_text),
+            showFor = { tab, hitResult ->
+                tab.isUrlSchemeAllowed(hitResult.getLink()) &&
+                    hitResult.isUri() && hitResult.hasLinkText() &&
+                    additionalValidation(tab, hitResult)
+            },
+            action = { _, hitResult ->
+                val innerText = (hitResult as? HitResult.UNKNOWN)?.linkText ?: return@ContextMenuCandidate
+                clipPlainText(
+                    context,
+                    label = hitResult.getLink(),
+                    plainText = innerText,
+                    displayTextId = R.string.mozac_feature_contextmenu_snackbar_link_text_copied,
                     snackBarParentView,
                     snackbarDelegate,
                 )
@@ -646,6 +694,9 @@ private fun HitResult.isVideoAudio(): Boolean =
 private fun HitResult.isUri(): Boolean =
     ((this is HitResult.UNKNOWN && src.isNotEmpty()) || this is HitResult.IMAGE_SRC)
 
+private fun HitResult.hasLinkText(): Boolean =
+    (!(this as? HitResult.UNKNOWN)?.linkText.isNullOrEmpty() && src.isNotEmpty())
+
 private fun HitResult.isHttpLink(): Boolean =
     isUri() && getLink().startsWith("http")
 
@@ -689,12 +740,21 @@ internal fun HitResult.getLink(): String = when (this) {
     else -> "about:blank"
 }
 
+internal fun HitResult.getUrl(): String = when (this) {
+    is HitResult.UNKNOWN -> src
+    is HitResult.IMAGE_SRC -> uri
+    is HitResult.IMAGE -> src
+    is HitResult.VIDEO -> src
+    is HitResult.AUDIO -> src
+    else -> "about:blank"
+}
+
 @VisibleForTesting
 internal fun SessionState.isUrlSchemeAllowed(url: String): Boolean {
     return when (val engineSession = engineState.engineSession) {
         null -> true
         else -> {
-            val urlScheme = Uri.parse(url).normalizeScheme().scheme
+            val urlScheme = url.toUri().normalizeScheme().scheme
             !engineSession.getBlockedSchemes().contains(urlScheme)
         }
     }

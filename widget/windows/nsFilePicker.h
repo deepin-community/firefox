@@ -1,21 +1,14 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsFilePicker_h__
-#define nsFilePicker_h__
+#ifndef nsFilePicker_h_
+#define nsFilePicker_h_
 
 #include <windows.h>
 
 #include "mozilla/MozPromise.h"
-#include "mozilla/dom/BlobImpl.h"
-#include "mozilla/dom/BrowsingContext.h"
-#include "mozilla/dom/GetFilesHelper.h"
-#include "nsIContentAnalysis.h"
-#include "nsIFile.h"
-#include "nsISimpleEnumerator.h"
 #include "nsCOMArray.h"
 #include "nsBaseFilePicker.h"
 #include "nsString.h"
@@ -24,14 +17,24 @@
 #include <shobjidl.h>
 #undef LogSeverity  // SetupAPI.h #defines this as DWORD
 
+class nsIFile;
 class nsILoadContext;
+class nsISimpleEnumerator;
 
-namespace mozilla::widget::filedialog {
+namespace mozilla {
+
+namespace dom {
+class BrowsingContext;
+}  // namespace dom
+
+namespace widget::filedialog {
 class Command;
 class Results;
 enum class FileDialogType : uint8_t;
 struct Error;
-}  // namespace mozilla::widget::filedialog
+}  // namespace widget::filedialog
+
+}  // namespace mozilla
 
 class nsBaseWinFilePicker : public nsBaseFilePicker {
  public:
@@ -67,7 +70,8 @@ class nsFilePicker final : public nsBaseWinFilePicker {
   nsFilePicker();
 
   NS_IMETHOD Init(mozilla::dom::BrowsingContext* aBrowsingContext,
-                  const nsAString& aTitle, nsIFilePicker::Mode aMode) override;
+                  const nsAString& aTitle, nsIFilePicker::Mode aMode,
+                  nsISupports* aGlobal) override;
 
   NS_DECL_ISUPPORTS
 
@@ -83,7 +87,6 @@ class nsFilePicker final : public nsBaseWinFilePicker {
  protected:
   /* method from nsBaseFilePicker */
   virtual void InitNative(nsIWidget* aParent, const nsAString& aTitle) override;
-  nsresult Show(nsIFilePicker::ResultCode* aReturnVal) override;
   void GetFilterListArray(nsString& aFilterList);
 
   NS_IMETHOD Open(nsIFilePickerShownCallback* aCallback) override;
@@ -96,7 +99,8 @@ class nsFilePicker final : public nsBaseWinFilePicker {
       const nsString& aInitialDir);
 
   void ClearFiles();
-  using ContentAnalysisResponse = mozilla::MozPromise<bool, nsresult, true>;
+  using ContentAnalysisResponse =
+      mozilla::MozPromise<nsCOMArray<nsIFile>, nsresult, true>;
   RefPtr<ContentAnalysisResponse> CheckContentAnalysisService();
 
  protected:
@@ -113,7 +117,7 @@ class nsFilePicker final : public nsBaseWinFilePicker {
   nsCOMPtr<nsIWidget> mParentWidget;
   nsString mTitle;
   nsCString mFile;
-  int32_t mSelectedType;
+  int32_t mSelectedType = 1;
   nsCOMArray<nsIFile> mFiles;
   nsString mUnicodeFile;
 
@@ -129,4 +133,4 @@ class nsFilePicker final : public nsBaseWinFilePicker {
   AutoTArray<Filter, 1> mFilterList;
 };
 
-#endif  // nsFilePicker_h__
+#endif  // nsFilePicker_h_

@@ -37,7 +37,7 @@ add_task(async function check_matchPatternFailureCase() {
 
 add_task(async function check_openArticleURL() {
   const TEST_URL =
-    "https://example.com/browser/browser/components/newtab/test/browser/red_page.html";
+    "https://example.com/browser/browser/extensions/newtab/test/browser/red_page.html";
   const articleTrigger = ASRouterTriggerListeners.get("openArticleURL");
 
   // Previously initialized by the Router
@@ -53,7 +53,7 @@ add_task(async function check_openArticleURL() {
   await openURLInWindow(win, TEST_URL);
   // Send a message from the content page (the TEST_URL) to the parent
   // This should trigger the `receiveMessage` cb in the articleTrigger
-  await ContentTask.spawn(win.gBrowser.selectedBrowser, null, async () => {
+  await SpecialPowers.spawn(win.gBrowser.selectedBrowser, [], async () => {
     let readerActor = content.windowGlobalChild.getActor("AboutReader");
     readerActor.sendAsyncMessage("Reader:UpdateReaderButton", {
       isArticle: true,
@@ -75,7 +75,7 @@ add_task(async function check_openArticleURL() {
 
 add_task(async function check_openURL_listener() {
   const TEST_URL =
-    "https://example.com/browser/browser/components/newtab/test/browser/red_page.html";
+    "https://example.com/browser/browser/extensions/newtab/test/browser/red_page.html";
 
   let urlVisitCount = 0;
   const triggerHandler = () => urlVisitCount++;
@@ -158,7 +158,7 @@ add_task(async function check_openURL_listener() {
 
 add_task(async function check_newSavedLogin_save_listener() {
   const TEST_URL =
-    "https://example.com/browser/browser/components/newtab/test/browser/red_page.html";
+    "https://example.com/browser/browser/extensions/newtab/test/browser/red_page.html";
 
   let triggerTypesHandled = {
     save: 0,
@@ -209,7 +209,7 @@ add_task(async function check_newSavedLogin_save_listener() {
 
 add_task(async function check_newSavedLogin_update_listener() {
   const TEST_URL =
-    "https://example.com/browser/browser/components/newtab/test/browser/red_page.html";
+    "https://example.com/browser/browser/extensions/newtab/test/browser/red_page.html";
 
   let triggerTypesHandled = {
     save: 0,
@@ -260,7 +260,7 @@ add_task(async function check_newSavedLogin_update_listener() {
 
 add_task(async function check_contentBlocking_listener() {
   const TEST_URL =
-    "https://example.com/browser/browser/components/newtab/test/browser/red_page.html";
+    "https://example.com/browser/browser/extensions/newtab/test/browser/red_page.html";
 
   const event1 = 0x0001;
   const event2 = 0x0010;
@@ -401,7 +401,7 @@ add_task(async function check_contentBlocking_listener() {
 
 add_task(async function check_contentBlockingMilestone_listener() {
   const TEST_URL =
-    "https://example.com/browser/browser/components/newtab/test/browser/red_page.html";
+    "https://example.com/browser/browser/extensions/newtab/test/browser/red_page.html";
 
   let observerEvent = 0;
   const triggerHandler = (target, trigger) => {

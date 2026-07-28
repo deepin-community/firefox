@@ -1,17 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/dom/TestFunctions.h"
+
+#include "mozITestInterfaceJS.h"
+#include "mozilla/StringBuffer.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/Document.h"
-#include "mozilla/dom/TestFunctions.h"
 #include "mozilla/dom/TestFunctionsBinding.h"
 #include "mozilla/dom/WindowBinding.h"
 #include "mozilla/dom/WrapperCachedNonISupportsTestInterface.h"
-#include "mozilla/StringBuffer.h"
-#include "mozITestInterfaceJS.h"
 #include "nsComponentManagerUtils.h"
 #include "nsGlobalWindowInner.h"
 
@@ -85,8 +84,8 @@ void TestFunctions::GetShortLiteralString(nsAString& aString) {
 
 void TestFunctions::GetMediumLiteralString(nsAString& aString) {
   // JS inline strings are at most 2 * sizeof(void*) chars, so at most 16 on
-  // 64-bit.  FakeString can hold 63 chars in its inline buffer (plus the null
-  // terminator).  Let's return 40 chars; that way if we ever move to 128-bit
+  // 64-bit. nsTAutoString can hold 63 chars in its inline buffer (plus the null
+  // terminator). Let's return 40 chars; that way if we ever move to 128-bit
   // void* or something this test will still be valid.
   aString.AssignLiteral(u"0123456789012345678901234567890123456789");
 }
@@ -272,11 +271,14 @@ void TestFunctions::TestAllowShared(const ArrayBuffer& aBuffer) {}
 void TestFunctions::TestDictWithAllowShared(
     const DictWithAllowSharedBufferSource& aDict) {}
 
-void TestFunctions::TestUnionOfBuffferSource(
+void TestFunctions::TestUnionOfBufferSource(
     const ArrayBufferOrArrayBufferViewOrString& aUnion) {}
 
-void TestFunctions::TestUnionOfAllowSharedBuffferSource(
-    const MaybeSharedArrayBufferOrMaybeSharedArrayBufferView& aUnion) {}
+void TestFunctions::TestUnionOfAllowSharedBufferSource(
+    const AllowSharedBufferSource& aUnion) {}
+
+void TestFunctions::TestUnionWithAllowShared(
+    const MaybeSharedInt8ArrayOrMaybeSharedInt16Array& aUnion) {}
 
 bool TestFunctions::ObjectFromAboutBlank(JSContext* aCx, JSObject* aObj) {
   // We purposefully don't use WindowOrNull here, because we want to
@@ -304,10 +306,23 @@ TestFunctions::WrapperCachedNonISupportsObject() {
   return mWrapperCachedNonISupportsTestInterface;
 }
 
+/* static */
+already_AddRefed<TestChromeOnlyInterface>
+TestFunctions::CreateTestChromeOnlyInterface(GlobalObject& aGlobal) {
+  return MakeRefPtr<TestChromeOnlyInterface>(aGlobal.GetAsSupports()).forget();
+}
+
 bool TestFunctions::WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto,
                                JS::MutableHandle<JSObject*> aWrapper) {
   return TestFunctions_Binding::Wrap(aCx, this, aGivenProto, aWrapper);
 }
+
+JSObject* TestChromeOnlyInterface::WrapObject(
+    JSContext* aCx, JS::Handle<JSObject*> aGivenProto) {
+  return TestChromeOnlyInterface_Binding::Wrap(aCx, this, aGivenProto);
+}
+
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(TestChromeOnlyInterface, mParent)
 
 }  // namespace mozilla::dom

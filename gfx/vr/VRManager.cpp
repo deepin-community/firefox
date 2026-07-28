@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,8 +17,6 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_dom.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
 #include "nsIObserverService.h"
 
 #include "gfxVR.h"
@@ -156,8 +152,8 @@ VRManager::VRManager()
 #if !defined(MOZ_WIDGET_ANDROID)
   // XRE_IsGPUProcess() is helping us to check some platforms like
   // Win 7 try which are not using GPU process but VR process is enabled.
-  mVRProcessEnabled =
-      StaticPrefs::dom_vr_process_enabled_AtStartup() && XRE_IsGPUProcess();
+  mVRProcessEnabled = StaticPrefs::dom_vr_process_enabled_AtStartup() &&
+                      StaticPrefs::dom_vr_enabled() && XRE_IsGPUProcess();
   VRServiceHost::Init(mVRProcessEnabled);
   mServiceHost = VRServiceHost::Get();
   // We must shutdown before VRServiceHost, which is cleared
@@ -321,7 +317,7 @@ void VRManager::StartTasks() {
     mTaskTimer->InitWithNamedFuncCallback(
         TaskTimerCallback, this, mTaskInterval,
         nsITimer::TYPE_REPEATING_PRECISE_CAN_SKIP,
-        "VRManager::TaskTimerCallback");
+        "VRManager::TaskTimerCallback"_ns);
   }
 }
 
@@ -494,7 +490,7 @@ void VRManager::CheckForPuppetCompletion() {
   // Notify content process about completion of puppet test resets
   if (mState != VRManagerState::Active) {
     for (const auto& key : mManagerParentsWaitingForPuppetReset) {
-      Unused << key->SendNotifyPuppetResetComplete();
+      (void)key->SendNotifyPuppetResetComplete();
     }
     mManagerParentsWaitingForPuppetReset.Clear();
   }
@@ -507,8 +503,8 @@ void VRManager::CheckForPuppetCompletion() {
 void VRManager::NotifyPuppetComplete() {
   // Notify content process about completion of puppet test scripts
   if (mManagerParentRunningPuppet) {
-    Unused << mManagerParentRunningPuppet
-                  ->SendNotifyPuppetCommandBufferCompleted(true);
+    (void)mManagerParentRunningPuppet->SendNotifyPuppetCommandBufferCompleted(
+        true);
     mManagerParentRunningPuppet = nullptr;
   }
 }
@@ -519,7 +515,7 @@ void VRManager::StartFrame() {
   if (mState != VRManagerState::Active) {
     return;
   }
-  AUTO_PROFILER_TRACING_MARKER("VR", "GetSensorState", OTHER);
+  AUTO_PROFILER_MARKER("GetSensorState", OTHER);
 
   /**
    * Do not start more VR frames until the last submitted frame is already
@@ -837,7 +833,7 @@ void VRManager::ProcessManagerState_Active() {
 
 void VRManager::DispatchVRDisplayInfoUpdate() {
   for (VRManagerParent* vmp : mVRManagerParents) {
-    Unused << vmp->SendUpdateDisplayInfo(mDisplayInfo);
+    (void)vmp->SendUpdateDisplayInfo(mDisplayInfo);
   }
   mLastUpdateDisplayInfo = mDisplayInfo;
 }
@@ -853,7 +849,7 @@ void VRManager::DispatchRuntimeCapabilitiesUpdate() {
   }
 
   for (VRManagerParent* vmp : mVRManagerParents) {
-    Unused << vmp->SendUpdateRuntimeCapabilities(flags);
+    (void)vmp->SendUpdateRuntimeCapabilities(flags);
   }
 }
 
@@ -861,7 +857,7 @@ void VRManager::StopAllHaptics() {
   if (mState != VRManagerState::Active) {
     return;
   }
-  for (size_t i = 0; i < mozilla::ArrayLength(mBrowserState.hapticState); i++) {
+  for (size_t i = 0; i < std::size(mBrowserState.hapticState); i++) {
     ClearHapticSlot(i);
   }
   PushState();
@@ -886,7 +882,7 @@ void VRManager::VibrateHaptic(GamepadHandle aGamepadHandle,
   TimeStamp now = TimeStamp::Now();
   size_t bestSlotIndex = 0;
   // Default to an empty slot, or the slot holding the oldest haptic pulse
-  for (size_t i = 0; i < mozilla::ArrayLength(mBrowserState.hapticState); i++) {
+  for (size_t i = 0; i < std::size(mBrowserState.hapticState); i++) {
     const VRHapticState& state = mBrowserState.hapticState[i];
     if (state.inputFrameID == 0) {
       // Unused slot, use it
@@ -900,7 +896,7 @@ void VRManager::VibrateHaptic(GamepadHandle aGamepadHandle,
     }
   }
   // Override the last pulse on the same actuator if present.
-  for (size_t i = 0; i < mozilla::ArrayLength(mBrowserState.hapticState); i++) {
+  for (size_t i = 0; i < std::size(mBrowserState.hapticState); i++) {
     const VRHapticState& state = mBrowserState.hapticState[i];
     if (state.inputFrameID == 0) {
       // This is an empty slot -- no match
@@ -949,7 +945,7 @@ void VRManager::StopVibrateHaptic(GamepadHandle aGamepadHandle) {
       kVRControllerMaxCount * mDisplayInfo.mDisplayID;
   uint32_t controllerIndex = aGamepadHandle.GetValue() - controllerBaseIndex;
 
-  for (size_t i = 0; i < mozilla::ArrayLength(mBrowserState.hapticState); i++) {
+  for (size_t i = 0; i < std::size(mBrowserState.hapticState); i++) {
     VRHapticState& state = mBrowserState.hapticState[i];
     if (state.controllerIndex == controllerIndex) {
       memset(&state, 0, sizeof(VRHapticState));
@@ -1024,8 +1020,8 @@ void VRManager::ResetPuppet(VRManagerParent* aManagerParent) {
 
   mManagerParentsWaitingForPuppetReset.Insert(aManagerParent);
   if (mManagerParentRunningPuppet != nullptr) {
-    Unused << mManagerParentRunningPuppet
-                  ->SendNotifyPuppetCommandBufferCompleted(false);
+    (void)mManagerParentRunningPuppet->SendNotifyPuppetCommandBufferCompleted(
+        false);
     mManagerParentRunningPuppet = nullptr;
   }
   mServiceHost->PuppetReset();
@@ -1198,7 +1194,7 @@ void VRManager::UpdateHaptics(double aDeltaTime) {
   }
   bool bNeedPush = false;
   // Check for any haptic pulses that have ended and clear them
-  for (size_t i = 0; i < mozilla::ArrayLength(mBrowserState.hapticState); i++) {
+  for (size_t i = 0; i < std::size(mBrowserState.hapticState); i++) {
     const VRHapticState& state = mBrowserState.hapticState[i];
     if (state.inputFrameID == 0) {
       // Nothing in this slot
@@ -1217,7 +1213,7 @@ void VRManager::UpdateHaptics(double aDeltaTime) {
 }
 
 void VRManager::ClearHapticSlot(size_t aSlot) {
-  MOZ_ASSERT(aSlot < mozilla::ArrayLength(mBrowserState.hapticState));
+  MOZ_ASSERT(aSlot < std::size(mBrowserState.hapticState));
   memset(&mBrowserState.hapticState[aSlot], 0, sizeof(VRHapticState));
   mHapticPulseRemaining[aSlot] = 0.0f;
   if (aSlot < mHapticPromises.Length() && mHapticPromises[aSlot]) {
@@ -1240,8 +1236,6 @@ void VRManager::StartPresentation() {
   if (mBrowserState.presentationActive) {
     return;
   }
-  mTelemetry.Clear();
-  mTelemetry.mPresentationStart = TimeStamp::Now();
 
   // Indicate that we are ready to start immersive mode
   mBrowserState.presentationActive = true;
@@ -1249,11 +1243,6 @@ void VRManager::StartPresentation() {
   PushState();
 
   mDisplayInfo.mDisplayState.lastSubmittedFrameId = 0;
-  if (mDisplayInfo.mDisplayState.reportsDroppedFrames) {
-    mTelemetry.mLastDroppedFrameCount =
-        mDisplayInfo.mDisplayState.droppedFrameCount;
-  }
-
   mLastSubmittedFrameId = 0;
   mLastStartedFrame = 0;
 }
@@ -1269,39 +1258,9 @@ void VRManager::StopPresentation() {
   // Indicate that we have stopped immersive mode
   mBrowserState.presentationActive = false;
   memset(mBrowserState.layerState, 0,
-         sizeof(VRLayerState) * mozilla::ArrayLength(mBrowserState.layerState));
+         sizeof(VRLayerState) * std::size(mBrowserState.layerState));
 
   PushState(true);
-
-  Telemetry::HistogramID timeSpentID = Telemetry::HistogramCount;
-  Telemetry::HistogramID droppedFramesID = Telemetry::HistogramCount;
-  int viewIn = 0;
-
-  if (mDisplayInfo.mDisplayState.eightCC ==
-      GFX_VR_EIGHTCC('O', 'c', 'u', 'l', 'u', 's', ' ', 'D')) {
-    // Oculus Desktop API
-    timeSpentID = Telemetry::WEBVR_TIME_SPENT_VIEWING_IN_OCULUS;
-    droppedFramesID = Telemetry::WEBVR_DROPPED_FRAMES_IN_OCULUS;
-    viewIn = 1;
-  } else if (mDisplayInfo.mDisplayState.eightCC ==
-             GFX_VR_EIGHTCC('O', 'p', 'e', 'n', 'V', 'R', ' ', ' ')) {
-    // OpenVR API
-    timeSpentID = Telemetry::WEBVR_TIME_SPENT_VIEWING_IN_OPENVR;
-    droppedFramesID = Telemetry::WEBVR_DROPPED_FRAMES_IN_OPENVR;
-    viewIn = 2;
-  }
-
-  if (viewIn) {
-    const TimeDuration duration =
-        TimeStamp::Now() - mTelemetry.mPresentationStart;
-    Telemetry::Accumulate(Telemetry::WEBVR_USERS_VIEW_IN, viewIn);
-    Telemetry::Accumulate(timeSpentID, duration.ToMilliseconds());
-    const uint32_t droppedFramesPerSec =
-        (uint32_t)((double)(mDisplayInfo.mDisplayState.droppedFrameCount -
-                            mTelemetry.mLastDroppedFrameCount) /
-                   duration.ToSeconds());
-    Telemetry::Accumulate(droppedFramesID, droppedFramesPerSec);
-  }
 }
 
 bool VRManager::IsPresenting() {
@@ -1405,7 +1364,8 @@ bool VRManager::SubmitFrame(const layers::SurfaceDescriptor& aTexture,
       layer.textureType = VRLayerTextureType::LayerTextureType_MacIOSurface;
       layer.textureHandle = desc.surfaceId();
       RefPtr<MacIOSurface> surf = MacIOSurface::LookupSurface(
-          desc.surfaceId(), !desc.isOpaque(), desc.yUVColorSpace());
+          desc.surfaceId(), !desc.isOpaque(), desc.yUVColorSpace(),
+          gfx::TransferFunction::SRGB);
       if (surf) {
         layer.textureSize.width = surf->GetDevicePixelWidth();
         layer.textureSize.height = surf->GetDevicePixelHeight();
@@ -1458,7 +1418,7 @@ bool VRManager::SubmitFrame(const layers::SurfaceDescriptor& aTexture,
 
   if (mDisplayInfo.mDisplayState.suppressFrames ||
       !mDisplayInfo.mDisplayState.isConnected) {
-    // External implementation wants to supress frames, service has shut
+    // External implementation wants to suppress frames, service has shut
     // down or hardware has been disconnected.
     return false;
   }
@@ -1477,7 +1437,7 @@ void VRManager::SubmitFrameInternal(const layers::SurfaceDescriptor& aTexture,
 #if !defined(MOZ_WIDGET_ANDROID)
   MOZ_ASSERT(mSubmitThread->GetThread() == NS_GetCurrentThread());
 #endif  // !defined(MOZ_WIDGET_ANDROID)
-  AUTO_PROFILER_TRACING_MARKER("VR", "SubmitFrameAtVRDisplayExternal", OTHER);
+  AUTO_PROFILER_MARKER("SubmitFrameAtVRDisplayExternal", OTHER);
 
   {  // scope lock
     MonitorAutoLock lock(mCurrentSubmitTaskMonitor);

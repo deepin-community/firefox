@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Depuración - Tiempo de ejecución / {
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Este { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Este { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Este { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Configuración
+about-debugging-sidebar-setup-title =
+    .title = Configuración
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Servicio Push
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Origen
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = La inspección de Service Worker en este momento está deshabilitada para multiproceso { -brand-shorter-name }
@@ -325,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Caja de herramientas de multiproceso
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Proceso principal y procesos de contenido para el navegador de destino
+about-debugging-message-error-icon =
+    .alt = Icono de error
+about-debugging-message-info-icon =
+    .alt = Icono de información
+about-debugging-message-warning-icon =
+    .alt = Icono de advertencia
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Cerrar el mensaje
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Cerrar el mensaje
@@ -334,3 +354,5 @@ about-debugging-message-details-label-error = Detalles del error
 about-debugging-message-details-label-warning = Detalles de la advertencia
 # Label text used for default state of details of message component.
 about-debugging-message-details-label = Detalles
+about-debugging-sidebar =
+    .heading = Depuración

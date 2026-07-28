@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,6 +18,11 @@ enum VideoFacingModeEnum {
     "environment",
     "left",
     "right"
+};
+
+enum VideoResizeModeEnum {
+  "none",
+  "crop-and-scale"
 };
 
 enum MediaSourceEnum {
@@ -70,6 +74,7 @@ dictionary MediaTrackConstraintSet {
     ConstrainLong height;
     ConstrainDouble frameRate;
     ConstrainDOMString facingMode;
+    ConstrainDOMString resizeMode;
     DOMString mediaSource;
     long long browserWindow;
     boolean scrollWithPage;
@@ -109,7 +114,8 @@ interface MediaStreamTrack : EventTarget {
                 attribute EventHandler          onended;
     MediaStreamTrack       clone ();
     undefined              stop ();
-//  MediaTrackCapabilities getCapabilities ();
+    [NeedsCallerType]
+    MediaTrackCapabilities getCapabilities ();
     MediaTrackConstraints  getConstraints ();
     [NeedsCallerType]
     MediaTrackSettings     getSettings ();

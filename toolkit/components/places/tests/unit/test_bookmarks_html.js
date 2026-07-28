@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -212,11 +210,11 @@ add_task(async function test_import_chromefavicon() {
   // 8. export to bookmarks.exported.html
   // 9. empty bookmarks db and continue
 
-  const PAGE_URI = NetUtil.newURI("http://example.com/chromefavicon_page");
-  const CHROME_FAVICON_URI = NetUtil.newURI(
+  const PAGE_URI = Services.io.newURI("http://example.com/chromefavicon_page");
+  const CHROME_FAVICON_URI = Services.io.newURI(
     "chrome://global/skin/icons/delete.svg"
   );
-  const CHROME_FAVICON_URI_2 = NetUtil.newURI(
+  const CHROME_FAVICON_URI_2 = Services.io.newURI(
     "chrome://global/skin/icons/error.svg"
   );
 
@@ -232,32 +230,21 @@ add_task(async function test_import_chromefavicon() {
   });
 
   info("Set favicon");
-  await new Promise(resolve => {
-    PlacesUtils.favicons.setAndFetchFaviconForPage(
-      PAGE_URI,
-      CHROME_FAVICON_URI,
-      true,
-      PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE,
-      resolve,
-      Services.scriptSecurityManager.getSystemPrincipal()
-    );
-  });
+  let dataURL =
+    await PlacesTestUtils.getFaviconDataURLFromNetwork(CHROME_FAVICON_URI);
+  await PlacesTestUtils.setFaviconForPage(
+    PAGE_URI,
+    CHROME_FAVICON_URI,
+    dataURL
+  );
 
-  let data = await new Promise(resolve => {
-    PlacesUtils.favicons.getFaviconDataForPage(
-      PAGE_URI,
-      (uri, dataLen, faviconData) => resolve(faviconData)
-    );
-  });
-
-  let base64Icon =
-    "data:image/png;base64," +
-    base64EncodeString(String.fromCharCode.apply(String, data));
+  let { dataURI: base64Icon } =
+    await PlacesTestUtils.getFaviconForPage(PAGE_URI);
 
   test_bookmarks.unfiled.push({
     title: "Test",
     url: PAGE_URI.spec,
-    icon: base64Icon,
+    icon: base64Icon.spec,
   });
 
   info("Export to html");
@@ -266,16 +253,13 @@ add_task(async function test_import_chromefavicon() {
 
   info("Set favicon");
   // Change the favicon to check it's really imported again later.
-  await new Promise(resolve => {
-    PlacesUtils.favicons.setAndFetchFaviconForPage(
-      PAGE_URI,
-      CHROME_FAVICON_URI_2,
-      true,
-      PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE,
-      resolve,
-      Services.scriptSecurityManager.getSystemPrincipal()
-    );
-  });
+  let dataURL_2 =
+    await PlacesTestUtils.getFaviconDataURLFromNetwork(CHROME_FAVICON_URI_2);
+  await PlacesTestUtils.setFaviconForPage(
+    PAGE_URI,
+    CHROME_FAVICON_URI_2,
+    dataURL_2
+  );
 
   info("import from html");
   await PlacesUtils.bookmarks.eraseEverything();
@@ -367,11 +351,10 @@ function checkItem(aExpected, aNode) {
           Assert.equal(aNode.uri, aExpected.url);
           break;
         case "icon": {
-          let { data } = await getFaviconDataForPage(aExpected.url);
-          let base64Icon =
-            "data:image/png;base64," +
-            base64EncodeString(String.fromCharCode.apply(String, data));
-          Assert.ok(base64Icon == aExpected.icon);
+          let { dataURI: base64Icon } = await PlacesTestUtils.getFaviconForPage(
+            aExpected.url
+          );
+          Assert.equal(base64Icon.spec, aExpected.icon);
           break;
         }
         case "keyword": {

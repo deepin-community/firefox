@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,6 +10,7 @@
 #endif
 
 #include "mozilla/RefPtr.h"
+#include "mozilla/dom/quota/DirectoryLockImpl.h"
 
 namespace mozilla::dom::quota {
 
@@ -53,6 +52,13 @@ constexpr void DropDirectoryLockIfNotDropped(RefPtr<T>& aDirectoryLock) {
     aDirectoryLock->Drop();
   }
   aDirectoryLock = nullptr;
+}
+
+inline auto MakeBlockedByChecker(
+    const EnumSet<DirectoryLockCategory>& aCategories) {
+  return [aCategories](const DirectoryLockImpl::PrepareInfo& aPrepareInfo) {
+    return aPrepareInfo.IsBlockedBy(aCategories);
+  };
 }
 
 }  // namespace mozilla::dom::quota

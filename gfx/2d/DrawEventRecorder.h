@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #define MOZILLA_GFX_DRAWEVENTRECORDER_H_
 
 #include "2D.h"
+#include "DrawEventRecorderTypes.h"
 #include "RecordedEvent.h"
 #include "RecordingTypes.h"
 
@@ -23,10 +22,15 @@
 #include "nsISupportsImpl.h"
 
 namespace mozilla {
+namespace layers {
+class CanvasChild;
+}  // namespace layers
+
 namespace gfx {
 
 class DrawTargetRecording;
 class PathRecording;
+class RecordedEvent;
 
 class DrawEventRecorderPrivate : public DrawEventRecorder {
  public:
@@ -210,7 +214,8 @@ class DrawEventRecorderPrivate : public DrawEventRecorder {
     int64_t mEventCount = -1;
   };
 
-  using ExternalSurfacesHolder = std::deque<ExternalSurfaceEntry>;
+  using ExternalSurfacesHolder =
+      DrawEventRecorderPrivate_ExternalSurfacesHolder;
 
   void TakeExternalSurfaces(ExternalSurfacesHolder& aSurfaces) {
     NS_ASSERT_OWNINGTHREAD(DrawEventRecorderPrivate);
@@ -223,6 +228,10 @@ class DrawEventRecorderPrivate : public DrawEventRecorder {
   };
 
   using ExternalImagesHolder = std::deque<ExternalImageEntry>;
+
+  virtual already_AddRefed<layers::CanvasChild> GetCanvasChild() const {
+    return nullptr;
+  }
 
  protected:
   NS_DECL_OWNINGTHREAD

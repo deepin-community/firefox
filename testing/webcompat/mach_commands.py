@@ -3,13 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import argparse
+import glob
 import io
+import json
 import os
 import platform
 import sys
 
 from mach.decorators import Command
-from mozbuild.base import MozbuildObject
+from mozbuild.base import BuildEnvironmentNotFoundException, MozbuildObject
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -38,6 +40,15 @@ def unzip(fileobj, dest):
         zip_data.extractall(path=dest)
 
 
+def writable_dir(path):
+    if not os.path.isdir(path):
+        raise argparse.ArgumentTypeError(f"{path} is not a valid dir")
+    if os.access(path, os.W_OK):
+        return path
+    else:
+        raise argparse.ArgumentTypeError(f"{path} is not a writable dir")
+
+
 def create_parser_interventions():
     from mozlog import commandline
 
@@ -55,7 +66,7 @@ def create_parser_interventions():
         default="9222",
         help="Port on which to run WebDriver BiDi websocket",
     )
-    parser.add_argument("--bug", help="Bug to run tests for")
+    parser.add_argument("-b", "--bugs", nargs="*", help="Bugs to run tests for")
     parser.add_argument(
         "--do2fa",
         action="store_true",
@@ -69,6 +80,7 @@ def create_parser_interventions():
         "--debug", action="store_true", default=False, help="Debug failing tests"
     )
     parser.add_argument(
+        "-H",
         "--headless",
         action="store_true",
         default=False,
@@ -93,6 +105,26 @@ def create_parser_interventions():
         action="store",
         choices=["android", "desktop"],
         help="Platform to target",
+    )
+    parser.add_argument(
+        "--failure-screenshots-dir",
+        action="store",
+        type=writable_dir,
+        help="Path to save failure screenshots",
+    )
+    parser.add_argument(
+        "-s",
+        "--no-failure-screenshots",
+        action="store_true",
+        default=False,
+        help="Do not save a screenshot for each test failure",
+    )
+    parser.add_argument(
+        "-P",
+        "--platform-override",
+        action="store",
+        choices=["android", "linux", "mac", "windows"],
+        help="Override key navigator properties to match the given platform and/or use responsive design mode to mimic the given platform",
     )
 
     desktop_group = parser.add_argument_group("Desktop-specific arguments")
@@ -120,7 +152,12 @@ class InterventionTest(MozbuildObject):
         platform = kwargs["platform"]
         binary = kwargs["binary"]
         device_serial = kwargs["device_serial"]
-        is_gve_build = command_context.substs.get("MOZ_APP_NAME") == "fennec"
+        try:
+            is_gve_build = command_context.substs.get("MOZ_APP_NAME") == "fennec"
+        except BuildEnvironmentNotFoundException:
+            # If we don't have a build, just use the logic below to choose between
+            # desktop and Android
+            is_gve_build = False
 
         if platform == "android" or (
             platform is None and binary is None and (device_serial or is_gve_build)
@@ -153,8 +190,11 @@ class InterventionTest(MozbuildObject):
             uname[0]
         )
 
-        if platform_name in ("linux", "win"):
-            bits = "64" if uname[4] == "x86_64" else "32"
+        arch = uname[4].lower()
+        if arch in {"aarch64", "arm64"}:
+            bits = "-aarch64"
+        elif platform_name in ("linux", "win"):
+            bits = "64" if arch == "x86_64" else "32"
         elif platform_name == "macos":
             bits = ""
         else:
@@ -207,10 +247,11 @@ class InterventionTest(MozbuildObject):
                 verify_android_device,
             )
 
+            # verify_android_device sets up device/emulator and records selected
+            # one to DEVICE_SERIAL environment.
             verify_android_device(
                 command_context, app=app, network=True, install=InstallIntent.YES
             )
-
             kwargs["device_serial"] = os.environ.get("DEVICE_SERIAL")
 
         # GVE does not have the webcompat addon by default. Add it.
@@ -276,13 +317,16 @@ class InterventionTest(MozbuildObject):
                     device_serial=kwargs.get("device_serial"),
                     package_name=kwargs.get("package_name"),
                     addon=kwargs.get("addon"),
-                    bug=kwargs["bug"],
+                    bugs=kwargs["bugs"],
                     debug=kwargs["debug"],
                     interventions=interventions_setting,
                     config=kwargs["config"],
                     headless=kwargs["headless"],
                     do2fa=kwargs["do2fa"],
                     log_level=log_level,
+                    failure_screenshots_dir=kwargs.get("failure_screenshots_dir"),
+                    no_failure_screenshots=kwargs.get("no_failure_screenshots"),
+                    platform_override=kwargs.get("platform_override"),
                 )
 
         if kwargs["shims"] != "none":
@@ -303,12 +347,15 @@ class InterventionTest(MozbuildObject):
                     device_serial=kwargs.get("device_serial"),
                     package_name=kwargs.get("package_name"),
                     addon=kwargs.get("addon"),
-                    bug=kwargs["bug"],
+                    bugs=kwargs["bugs"],
                     debug=kwargs["debug"],
                     shims=shims_setting,
                     config=kwargs["config"],
                     headless=kwargs["headless"],
                     do2fa=kwargs["do2fa"],
+                    failure_screenshots_dir=kwargs.get("failure_screenshots_dir"),
+                    no_failure_screenshots=kwargs.get("no_failure_screenshots"),
+                    platform_override=kwargs.get("platform_override"),
                 )
 
         summary = status_handler.summarize()
@@ -322,14 +369,48 @@ class InterventionTest(MozbuildObject):
 
 def webcompat_addon(command_context):
     import shutil
+    import tempfile
 
     src = os.path.join(command_context.topsrcdir, "browser", "extensions", "webcompat")
-    dst = os.path.join(
-        command_context.virtualenv_manager.virtualenv_root, "webcompat.xpi"
-    )
-    shutil.make_archive(dst, "zip", src)
-    shutil.move(f"{dst}.zip", dst)
-    return dst
+
+    # We use #include directives in the system addon's moz.build (to inject our JSON config
+    # into interventions.js), so we must do that here to make a working XPI.
+    tmpdir_kwargs = {}
+    if sys.version_info.major >= 3 and sys.version_info.minor >= 10:
+        tmpdir_kwargs["ignore_cleanup_errors"] = True
+    with tempfile.TemporaryDirectory(**tmpdir_kwargs) as src_copy:
+
+        def process_includes(path):
+            fullpath = os.path.join(src_copy, path)
+            in_lines = None
+            with open(fullpath) as f:
+                in_lines = f.readlines()
+            with open(fullpath, "w") as f:
+                addonpath = os.path.dirname(fullpath)
+                for line in in_lines:
+                    if not line.startswith("const AVAILABLE_INTERVENTIONS = {}"):
+                        f.write(line)
+                        continue
+                    jsons = f"{addonpath}/data/interventions/*.json"
+                    interventions = {}
+                    for ipath in glob.glob(jsons):
+                        bug_number = os.path.splitext(os.path.basename(ipath))[0].split(
+                            "-"
+                        )[0]
+                        with open(ipath) as fd:
+                            interventions[bug_number] = json.load(fd)
+                    str = json.dumps(dict(sorted(interventions.items())), indent=2)
+                    f.write(f"const AVAILABLE_INTERVENTIONS = {str};\n")
+
+        shutil.copytree(src, src_copy, dirs_exist_ok=True)
+        process_includes("run.js")
+
+        dst = os.path.join(
+            command_context.virtualenv_manager.virtualenv_root, "webcompat.xpi"
+        )
+        shutil.make_archive(dst, "zip", src_copy)
+        shutil.move(f"{dst}.zip", dst)
+        return dst
 
 
 def push_to_device(adb_path, device_serial, local_path, remote_path):

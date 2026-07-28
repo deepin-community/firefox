@@ -9,10 +9,27 @@ all-tabs-menu-new-user-context =
     .label = Nový kontejnerový panel
 all-tabs-menu-hidden-tabs =
     .label = Skryté panely
+all-tabs-menu-close-duplicate-tabs =
+    .label = Zavřít duplicitní panely
+all-tabs-menu-view-all-tabs =
+    .label = Zobrazit všechny panely
 all-tabs-menu-manage-user-context =
     .label = Správa kontejnerů
     .accesskey = k
-all-tabs-menu-close-duplicate-tabs =
-    .label = Zavřít duplicitní panely
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Zavřít všechny duplicitní panely
+all-tabs-menu-synced-tabs =
+    .label = Panely z jiných zařízení
+# "Recent" refers to tab groups being sorted in recently used order. We show up
+# to five of these in this section.
+all-tabs-menu-recent-tab-groups-header = Nedávné skupiny panelů
+all-tabs-menu-current-window-header = Aktuální okno
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Zobrazit vše
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Skupiny panelů
+# "Search" is a verb, as in "Search through all tabs".
+all-tabs-menu-search-all-tabs =
+    .label = Hledat ve všech panelech

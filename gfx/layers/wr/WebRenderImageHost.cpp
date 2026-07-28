@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -48,9 +46,11 @@ WebRenderImageHost::~WebRenderImageHost() {
 }
 
 void WebRenderImageHost::OnReleased() {
+  ImageComposite::ClearImages();
   if (!mPendingRemoteTextureWrappers.empty()) {
     mPendingRemoteTextureWrappers.clear();
   }
+  SetCurrentTextureHost(nullptr);
 }
 
 void WebRenderImageHost::UseTextureHost(
@@ -250,13 +250,32 @@ void WebRenderImageHost::UseRemoteTexture() {
 }
 
 void WebRenderImageHost::CleanupResources() {
-  ClearImages();
+  ImageComposite::ClearImages();
   SetCurrentTextureHost(nullptr);
 }
 
 void WebRenderImageHost::RemoveTextureHost(TextureHost* aTexture) {
-  CompositableHost::RemoveTextureHost(aTexture);
   RemoveImagesWithTextureHost(aTexture);
+}
+
+void WebRenderImageHost::ClearImages(ClearImagesType aType) {
+  ImageComposite::ClearImages();
+  if (aType == ClearImagesType::All) {
+    if (!mPendingRemoteTextureWrappers.empty()) {
+      mPendingRemoteTextureWrappers.clear();
+    }
+    SetCurrentTextureHost(nullptr);
+
+    if (GetAsyncRef()) {
+      for (const auto& it : mWrBridges) {
+        RefPtr<WebRenderBridgeParent> wrBridge = it.second->WrBridge();
+        if (wrBridge && wrBridge->CompositorScheduler()) {
+          wrBridge->CompositorScheduler()->ScheduleComposition(
+              wr::RenderReasons::ASYNC_IMAGE);
+        }
+      }
+    }
+  }
 }
 
 TimeStamp WebRenderImageHost::GetCompositionTime() const {
@@ -317,13 +336,12 @@ TextureHost* WebRenderImageHost::GetAsTextureHostForComposite(
   RefPtr<TextureHost> texture = img->mTextureHost.get();
 #if XP_WIN
   // Convert YUV BufferTextureHost to TextureHostWrapperD3D11 if possible
-  if (texture->AsBufferTextureHost()) {
+  if (const auto* bufferHost = texture->AsBufferTextureHost()) {
     auto identifier = aAsyncImageManager->GetTextureFactoryIdentifier();
     const bool tryConvertToNV12 =
         StaticPrefs::gfx_video_convert_yuv_to_nv12_image_host_win() &&
         identifier.mSupportsD3D11NV12 &&
-        KnowsCompositor::SupportsD3D11(identifier) &&
-        texture->GetFormat() == gfx::SurfaceFormat::YUV420;
+        KnowsCompositor::SupportsD3D11(identifier) && (bufferHost->IsYCbCr());
     if (tryConvertToNV12) {
       PROFILER_MARKER_TEXT("WebRenderImageHost", GRAPHICS, {},
                            "Try ConvertToNV12"_ns);

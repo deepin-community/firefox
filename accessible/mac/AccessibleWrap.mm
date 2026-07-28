@@ -1,9 +1,10 @@
 /* clang-format off */
-/* -*- Mode: Objective-C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* clang-format on */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#import <Cocoa/Cocoa.h>
 
 #include "DocAccessibleWrap.h"
 #include "nsObjCExceptions.h"
@@ -35,34 +36,11 @@ AccessibleWrap::AccessibleWrap(nsIContent* aContent, DocAccessible* aDoc)
     : LocalAccessible(aContent, aDoc),
       mNativeObject(nil),
       mNativeInited(false) {
-  if (aContent && aContent->IsElement() && aDoc) {
+  if (aContent && aDoc && IsLiveRegion(aContent)) {
     // Check if this accessible is a live region and queue it
     // it for dispatching an event after it has been inserted.
     DocAccessibleWrap* doc = static_cast<DocAccessibleWrap*>(aDoc);
-    static const dom::Element::AttrValuesArray sLiveRegionValues[] = {
-        nsGkAtoms::OFF, nsGkAtoms::polite, nsGkAtoms::assertive, nullptr};
-    int32_t attrValue = nsAccUtils::FindARIAAttrValueIn(
-        aContent->AsElement(), nsGkAtoms::aria_live, sLiveRegionValues,
-        eIgnoreCase);
-    if (attrValue == 0) {
-      // aria-live is "off", do nothing.
-    } else if (attrValue > 0) {
-      // aria-live attribute is polite or assertive. It's live!
-      doc->QueueNewLiveRegion(this);
-    } else if (const nsRoleMapEntry* roleMap =
-                   aria::GetRoleMap(aContent->AsElement())) {
-      // aria role defines it as a live region. It's live!
-      if (roleMap->liveAttRule == ePoliteLiveAttr ||
-          roleMap->liveAttRule == eAssertiveLiveAttr) {
-        doc->QueueNewLiveRegion(this);
-      }
-    } else if (nsStaticAtom* value = GetAccService()->MarkupAttribute(
-                   aContent, nsGkAtoms::aria_live)) {
-      // HTML element defines it as a live region. It's live!
-      if (value == nsGkAtoms::polite || value == nsGkAtoms::assertive) {
-        doc->QueueNewLiveRegion(this);
-      }
-    }
+    doc->QueueNewLiveRegion(this);
   }
 }
 
@@ -94,6 +72,20 @@ void AccessibleWrap::GetNativeInterface(void** aOutInterface) {
   *aOutInterface = static_cast<void*>(GetNativeObject());
 }
 
+NSView* AccessibleWrap::GetNativeWidget() {
+  if (nsIFrame* frame = GetFrame()) {
+    if (nsIWidget* widget = frame->GetOwnWidget()) {
+      NSView* nativeWidget = (NSView*)widget->GetNativeData(NS_NATIVE_WIDGET);
+      MOZ_ASSERT(nativeWidget || gfxPlatform::IsHeadless(),
+                 "Couldn't get the native NSView parent we need to connect the "
+                 "accessibility hierarchy!");
+      return nativeWidget;
+    }
+  }
+
+  return nil;
+}
+
 // overridden in subclasses to create the right kind of object. by default we
 // create a generic 'mozAccessible' node.
 Class AccessibleWrap::GetNativeType() {
@@ -115,7 +107,7 @@ Class AccessibleWrap::GetNativeType() {
     return [mozTableCellAccessible class];
   }
 
-  if (IsDoc()) {
+  if (IsDoc() && !IsRoot()) {
     return [MOXWebAreaAccessible class];
   }
 
@@ -161,11 +153,72 @@ nsresult AccessibleWrap::HandleAccEvent(AccEvent* aEvent) {
   if (eventType == nsIAccessibleEvent::EVENT_SHOW) {
     DocAccessibleWrap* doc = static_cast<DocAccessibleWrap*>(Document());
     doc->ProcessNewLiveRegions();
+
+    // Check if this shown-subtree has appeared within an existing live region.
+    // We do this by skipping the show root and checking its ancestor chain
+    // starting with its parent.
+    // We avoid the show root because if the entire live region has appeared
+    // at once, we should instead send AXLiveRegionCreated which is done
+    // in ProcessNewLiveRegions above.
+    for (LocalAccessible* container = aEvent->GetAccessible()->LocalParent();
+         container; container = container->LocalParent()) {
+      if (container->HasOwnContent() && IsLiveRegion(container->GetContent())) {
+        Document()->FireDelayedEvent(
+            nsIAccessibleEvent::EVENT_LIVE_REGION_CHANGED, container);
+      }
+    }
+  }
+
+  if (((eventType == nsIAccessibleEvent::EVENT_TEXT_INSERTED ||
+        eventType == nsIAccessibleEvent::EVENT_TEXT_REMOVED) &&
+       !aEvent->FromUserInput()) ||
+      eventType == nsIAccessibleEvent::EVENT_NAME_CHANGE) {
+    for (LocalAccessible* container = aEvent->GetAccessible(); container;
+         container = container->LocalParent()) {
+      if (container->HasOwnContent() && IsLiveRegion(container->GetContent())) {
+        // We rely on EventQueue::CoalesceEvents to remove duplicates
+        Document()->FireDelayedEvent(
+            nsIAccessibleEvent::EVENT_LIVE_REGION_CHANGED, container);
+      }
+    }
   }
 
   return NS_OK;
 
   NS_OBJC_END_TRY_BLOCK_RETURN(NS_ERROR_FAILURE);
+}
+
+bool AccessibleWrap::IsLiveRegion(nsIContent* aContent) {
+  if (!aContent || !aContent->IsElement()) {
+    return false;
+  }
+
+  static const dom::Element::AttrValuesArray sLiveRegionValues[] = {
+      nsGkAtoms::OFF, nsGkAtoms::polite, nsGkAtoms::assertive, nullptr};
+  int32_t attrValue = nsAccUtils::FindARIAAttrValueIn(
+      aContent->AsElement(), nsGkAtoms::aria_live, sLiveRegionValues,
+      eIgnoreCase);
+  if (attrValue == 0) {
+    // aria-live is "off", do nothing.
+  } else if (attrValue > 0) {
+    // aria-live attribute is polite or assertive. It's live!
+    return true;
+  } else if (const nsRoleMapEntry* roleMap =
+                 aria::GetRoleMap(aContent->AsElement())) {
+    // aria role defines it as a live region. It's live!
+    if (roleMap->liveAttRule == ePoliteLiveAttr ||
+        roleMap->liveAttRule == eAssertiveLiveAttr) {
+      return true;
+    }
+  } else if (nsStaticAtom* value = GetAccService()->MarkupAttribute(
+                 aContent, nsGkAtoms::aria_live)) {
+    // HTML element defines it as a live region. It's live!
+    if (value == nsGkAtoms::polite || value == nsGkAtoms::assertive) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,13 +265,6 @@ Class a11y::GetTypeFromRole(roles::Role aRole) {
 
     case roles::PAGETABLIST:
       return [mozTabGroupAccessible class];
-
-    case roles::ENTRY:
-    case roles::CAPTION:
-    case roles::EDITCOMBOBOX:
-    case roles::PASSWORD_TEXT:
-      // normal textfield (static or editable)
-      return [mozTextAccessible class];
 
     case roles::TEXT_LEAF:
     case roles::STATICTEXT:
@@ -281,6 +327,9 @@ Class a11y::GetTypeFromRole(roles::Role aRole) {
 
     case roles::OUTLINEITEM:
       return [mozOutlineRowAccessible class];
+
+    case roles::LABEL:
+      return [MOXLabelAccessible class];
 
     default:
       return [mozAccessible class];

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,7 @@
 #include "mozilla/AntiTrackingUtils.h"
 #include "mozilla/net/UrlClassifierCommon.h"
 #include "ChannelClassifierService.h"
-#include "mozilla/StaticPrefs_privacy.h"
+#include "mozilla/ScopedPrefs.h"
 #include "nsNetUtil.h"
 #include "mozilla/StaticPtr.h"
 #include "nsIWebProgressListener.h"
@@ -90,11 +88,14 @@ UrlClassifierFeatureSocialTrackingProtection::MaybeCreate(
       ("UrlClassifierFeatureSocialTrackingProtection::MaybeCreate - channel %p",
        aChannel));
 
-  if (!StaticPrefs::privacy_trackingprotection_socialtracking_enabled()) {
+  if (!ScopedPrefs::BoolPrefScoped(
+          ScopedPrefs::PRIVACY_TRACKINGPROTECTION_SOCIALTRACKING_ENABLED,
+          aChannel)) {
     return nullptr;
   }
 
-  bool isThirdParty = AntiTrackingUtils::IsThirdPartyChannel(aChannel);
+  RefPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
+  bool isThirdParty = loadInfo->GetIsThirdPartyContextToTopWindow();
   if (!isThirdParty) {
     UC_LOG(
         ("UrlClassifierFeatureSocialTrackingProtection::MaybeCreate - "
@@ -147,6 +148,15 @@ UrlClassifierFeatureSocialTrackingProtection::ProcessChannel(
     return NS_OK;
   }
 
+  bool ShouldProcessByProtectionFeature =
+      UrlClassifierCommon::ShouldProcessWithProtectionFeature(aChannel);
+
+  *aShouldContinue = !ShouldProcessByProtectionFeature;
+
+  if (!ShouldProcessByProtectionFeature) {
+    return NS_OK;
+  }
+
   nsAutoCString list;
   UrlClassifierCommon::TablesToString(aList, list);
 
@@ -182,9 +192,9 @@ UrlClassifierFeatureSocialTrackingProtection::ProcessChannel(
   nsCOMPtr<nsIHttpChannelInternal> httpChannel = do_QueryInterface(aChannel);
 
   if (httpChannel) {
-    Unused << httpChannel->CancelByURLClassifier(NS_ERROR_SOCIALTRACKING_URI);
+    (void)httpChannel->CancelByURLClassifier(NS_ERROR_SOCIALTRACKING_URI);
   } else {
-    Unused << aChannel->Cancel(NS_ERROR_SOCIALTRACKING_URI);
+    (void)aChannel->Cancel(NS_ERROR_SOCIALTRACKING_URI);
   }
 
   return NS_OK;

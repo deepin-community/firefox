@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,6 +11,7 @@
 #include "mozilla/UniquePtr.h"
 #include "nsAccUtils.h"
 #include "nsIAccessiblePivot.h"
+#include "nsThreadUtils.h"
 #include "Pivot.h"
 #include "RemoteAccessible.h"
 
@@ -59,7 +58,17 @@ CachedTableAccessible* CachedTableAccessible::GetFrom(Accessible* aAcc) {
   MOZ_ASSERT(aAcc->IsTable());
   if (!sCachedTables) {
     sCachedTables = new CachedTablesMap();
-    ClearOnShutdown(&sCachedTables);
+    if (NS_IsMainThread()) {
+      ClearOnShutdown(&sCachedTables);
+    } else {
+#ifdef ANDROID
+      NS_DispatchToMainThread(
+          NS_NewRunnableFunction("CachedTableAccessible::GetFrom",
+                                 [] { ClearOnShutdown(&sCachedTables); }));
+#else
+      MOZ_ASSERT_UNREACHABLE("Querying a table on the wrong thread!");
+#endif
+    }
   }
   return &sCachedTables->LookupOrInsertWith(
       aAcc, [&] { return CachedTableAccessible(aAcc); });
@@ -71,10 +80,14 @@ void CachedTableAccessible::Invalidate(Accessible* aAcc) {
     return;
   }
 
-  if (Accessible* table = nsAccUtils::TableFor(aAcc)) {
+  Accessible* table = nsAccUtils::TableFor(aAcc);
+  while (table && table->IsTable()) {
     // Destroy the instance (if any). We'll create a new one the next time it
-    // is requested.
+    // is requested. Climb up the heirarcy to invalidate parent tables as well.
     sCachedTables->Remove(table);
+    // The table may be a direct child of another table, invalidate that one as
+    // well.
+    table = table->Parent();
   }
 }
 
@@ -277,6 +290,9 @@ TableAccessible* CachedTableCellAccessible::Table() const {
 
 uint32_t CachedTableCellAccessible::ColExtent() const {
   if (RemoteAccessible* remoteAcc = mAcc->AsRemote()) {
+    if (RequestDomainsIfInactive(CacheDomain::Table)) {
+      return 1;
+    }
     if (remoteAcc->mCachedFields) {
       if (auto colSpan = remoteAcc->mCachedFields->GetAttribute<int32_t>(
               CacheKey::ColSpan)) {
@@ -300,6 +316,9 @@ uint32_t CachedTableCellAccessible::ColExtent() const {
 
 uint32_t CachedTableCellAccessible::RowExtent() const {
   if (RemoteAccessible* remoteAcc = mAcc->AsRemote()) {
+    if (RequestDomainsIfInactive(CacheDomain::Table)) {
+      return 1;
+    }
     if (remoteAcc->mCachedFields) {
       if (auto rowSpan = remoteAcc->mCachedFields->GetAttribute<int32_t>(
               CacheKey::RowSpan)) {
@@ -323,6 +342,9 @@ uint32_t CachedTableCellAccessible::RowExtent() const {
 
 UniquePtr<AccIterable> CachedTableCellAccessible::GetExplicitHeadersIterator() {
   if (RemoteAccessible* remoteAcc = mAcc->AsRemote()) {
+    if (RequestDomainsIfInactive(CacheDomain::Table)) {
+      return nullptr;
+    }
     if (remoteAcc->mCachedFields) {
       if (auto headers =
               remoteAcc->mCachedFields->GetAttribute<nsTArray<uint64_t>>(
@@ -331,7 +353,7 @@ UniquePtr<AccIterable> CachedTableCellAccessible::GetExplicitHeadersIterator() {
       }
     }
   } else if (LocalAccessible* localAcc = mAcc->AsLocal()) {
-    return MakeUnique<IDRefsIterator>(
+    return MakeUnique<AssociatedElementsIterator>(
         localAcc->Document(), localAcc->GetContent(), nsGkAtoms::headers);
   }
   return nullptr;
@@ -340,6 +362,9 @@ UniquePtr<AccIterable> CachedTableCellAccessible::GetExplicitHeadersIterator() {
 void CachedTableCellAccessible::ColHeaderCells(nsTArray<Accessible*>* aCells) {
   auto* table = static_cast<CachedTableAccessible*>(Table());
   if (!table) {
+    return;
+  }
+  if (mAcc->IsRemote() && RequestDomainsIfInactive(CacheDomain::Table)) {
     return;
   }
   if (auto iter = GetExplicitHeadersIterator()) {

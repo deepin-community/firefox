@@ -20,6 +20,29 @@ fxa-menu-connect-another-device =
     .label = Conectar outro dispositivo…
 # Variables:
 #   $tabCount (Number): The number of tabs sent to the device.
+# The following string intentionally omits the word "tab" from the singular and includes it in the plural.
+fxa-menu-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Enviar para dispositivo
+           *[other] Send { $tabCount } tabs to device
+        }
+# Variables:
+#   $tabCount (Number): The number of tabs sent to the device.
+# The following string intentionally omits the word "tab" from the singular and includes it in the plural.
+fxa-menu-send-to-mobile =
+    .label =
+        { $tabCount ->
+            [1] Enviar para celular
+           *[other] Send { $tabCount } tabs to mobile
+        }
+fxa-menu-send-to-mobile-device-missing2 = Seu dispositivo não aparece?
+fxviewtabrow-send-to-mobile-not-verified = Conta não verificada
+fxviewtabrow-send-to-mobile-verify-account = Verifique sua conta
+fxa-menu-send-to-mobile-turn-on-sync = Ative a sincronização para enviar abas
+fxa-menu-send-to-mobile-connect-device = Conecte um dispositivo para enviar abas
+# Variables:
+#   $tabCount (Number): The number of tabs sent to the device.
 fxa-menu-send-tab-to-device =
     .label =
         { $tabCount ->
@@ -33,5 +56,57 @@ fxa-menu-send-tab-to-device-syncnotready =
 fxa-menu-send-tab-to-device-description = Envia uma aba imediatamente para qualquer dispositivo que você conectou.
 fxa-menu-sign-out =
     .label = Desconectar…
-fxa-menu-sync-title = Sincronização
 fxa-menu-sync-description = Acesse sua web em qualquer lugar
+fxa-avatar-sign-in = Entrar
+fxa-avatar-sign-up = Criar uma conta
+fxa-avatar-tooltip =
+    .tooltiptext = Entre na sua conta
+sync-setup-verify-continue = Avançar
+sync-setup-verify-title = Aviso de mistura de dados
+sync-setup-verify-heading = Tem certeza que quer entrar na conta para sincronizar?
+# The user was previously signed into sync. This dialog confirms to the user
+# that they will be merging the data from the previously signed in into the newly signed in one
+# Variables:
+#   $email - Email address of a user previously signed into sync.
+sync-setup-verify-description = Outro usuário entrou na conta para sincronizar neste computador. Se você entrar na sua conta, irá misturar favoritos, senhas e outras configurações deste navegador com { $email }
+
+## The following strings are for displaying elements in the FxA send tab submenu to prompt users to sign in, enable sync, pair a device, troubleshoot device issues, or verify account.
+
+fxa-menu-send-to-mobile-sign-in = Entre na conta para enviar abas
+
+## Sync warning strings that support the browser profiles feature, these will be shown when the user might be merging data
+
+# Dialog 1 - different account signing in without option to merge
+sync-profile-different-account-title = Limite de contas atingido neste perfil
+sync-profile-different-account-header = Este perfil foi sincronizado anteriormente com outra conta
+# Variables:
+#   $acctEmail (String) - Email of the account signing into sync.
+sync-profile-different-account-description = Para manter seus dados organizados e seguros, cada perfil do { -brand-product-name } só pode ser sincronizado com uma conta. Para entrar usando { $acctEmail }, crie outro perfil.
+# Dialog 1 - different account signing in with merge option
+sync-profile-different-account-title-merge = Perfil sincronizado com outra conta
+# Variables:
+#   $acctEmail (String) - Email of the account signing into sync.
+#   $profileName (String) - Name of the current profile
+sync-profile-different-account-description-merge = Para manter seus dados organizados e seguros, recomendamos criar outro perfil para entrar usando { $acctEmail }. Se você continuar a sincronização neste perfil, os dados das duas contas serão mesclados permanentemente em “{ $profileName }”.
+# Dialog 2 - account signed in on another profile without option to merge
+sync-account-in-use-header = Conta já está em uso
+# Variables:
+#   $acctEmail (String) - Email of the account signing into sync.
+#   $otherProfile (String) - Name of the other profile that is associated with the account
+sync-account-in-use-header-merge = { $acctEmail } já está conectado no perfil “{ $otherProfile }”
+sync-account-in-use-description = Você só pode associar esta conta a um perfil neste computador.
+# Dialog 2 - account signed in on another profile with merge option
+sync-account-already-signed-in-header = Esta conta está conectada a outro perfil. Sincronizar ambos os perfis?
+# Variables:
+#   $acctEmail (String) - Email of the account signing into sync.
+#   $currentProfile (String): Name of the current profile signing in
+#   $otherProfile (String): Name of the profile that is already signed in
+sync-account-in-use-description-merge = { $acctEmail } está conectado no perfil “{ $otherProfile }” neste computador. A sincronização do perfil “{ $currentProfile }” combinará permanentemente dados dos dois perfis, como senhas e favoritos.
+# Variables:
+#   $profileName (String) - Name of the profile to switch to
+sync-button-switch-profile = Mudar para “{ $profileName }”
+sync-button-create-profile = Criar novo perfil
+sync-button-sync-and-merge = Sincronizar e mesclar dados
+# Variables:
+#   $profileName (String) - Name of the profile to switch to
+sync-button-sync-profile = Sincronizar “{ $profileName }”

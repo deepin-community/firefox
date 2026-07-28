@@ -5,7 +5,9 @@
 use inherent::inherent;
 use std::{collections::HashMap, marker::PhantomData};
 
-use glean_core::traits;
+use malloc_size_of::MallocSizeOf;
+
+use glean_core::{metrics::MetricIdentifier, traits, TestGetValue};
 
 use crate::{ErrorType, RecordedEvent};
 
@@ -23,6 +25,18 @@ use crate::{ErrorType, RecordedEvent};
 pub struct EventMetric<K> {
     pub(crate) inner: glean_core::metrics::EventMetric,
     extra_keys: PhantomData<K>,
+}
+
+impl<K> MallocSizeOf for EventMetric<K> {
+    fn size_of(&self, ops: &mut malloc_size_of::MallocSizeOfOps) -> usize {
+        self.inner.size_of(ops)
+    }
+}
+
+impl<'a, K> MetricIdentifier<'a> for EventMetric<K> {
+    fn get_identifiers(&'a self) -> (&'a str, &'a str, Option<&'a str>) {
+        self.inner.get_identifiers()
+    }
 }
 
 impl<K: traits::ExtraKeys> EventMetric<K> {
@@ -57,6 +71,33 @@ impl<K: traits::ExtraKeys> EventMetric<K> {
     }
 }
 
+// Separately implemented so it doesn't require `K: ExtraKeys`.
+impl<K> EventMetric<K> {
+    /// **Exported for test purposes.**
+    ///
+    /// Gets the number of recorded errors for the given metric and error type.
+    ///
+    /// # Arguments
+    ///
+    /// * `error` - The type of error
+    ///
+    /// # Returns
+    ///
+    /// The number of errors reported.
+    pub fn test_get_num_recorded_errors(&self, error: ErrorType) -> i32 {
+        self.inner.test_get_num_recorded_errors(error)
+    }
+}
+
+#[inherent]
+impl<K> TestGetValue for EventMetric<K> {
+    type Output = Vec<RecordedEvent>;
+
+    pub fn test_get_value(&self, ping_name: Option<String>) -> Option<Vec<RecordedEvent>> {
+        self.inner.test_get_value(ping_name)
+    }
+}
+
 #[inherent]
 impl<K: traits::ExtraKeys> traits::Event for EventMetric<K> {
     type Extra = K;
@@ -67,18 +108,6 @@ impl<K: traits::ExtraKeys> traits::Event for EventMetric<K> {
             .map(|e| e.into_ffi_extra())
             .unwrap_or_else(HashMap::new);
         self.inner.record(extra);
-    }
-
-    pub fn test_get_value<'a, S: Into<Option<&'a str>>>(
-        &self,
-        ping_name: S,
-    ) -> Option<Vec<RecordedEvent>> {
-        let ping_name = ping_name.into().map(|s| s.to_string());
-        self.inner.test_get_value(ping_name)
-    }
-
-    pub fn test_get_num_recorded_errors(&self, error: ErrorType) -> i32 {
-        self.inner.test_get_num_recorded_errors(error)
     }
 }
 
@@ -96,7 +125,7 @@ mod test {
         let metric: EventMetric<traits::NoExtraKeys> = EventMetric::new(CommonMetricData {
             name: "event".into(),
             category: "test".into(),
-            send_in_pings: vec!["test1".into()],
+            send_in_pings: vec!["store1".into()],
             ..Default::default()
         });
 
@@ -133,7 +162,7 @@ mod test {
         let metric: EventMetric<SomeExtra> = EventMetric::new(CommonMetricData {
             name: "event".into(),
             category: "test".into(),
-            send_in_pings: vec!["test1".into()],
+            send_in_pings: vec!["store1".into()],
             ..Default::default()
         });
 
@@ -188,7 +217,7 @@ mod test {
             CommonMetricData {
                 name: "event".into(),
                 category: "test".into(),
-                send_in_pings: vec!["test1".into()],
+                send_in_pings: vec!["store1".into()],
                 ..Default::default()
             },
             vec!["key1".into(), "key2".into()],

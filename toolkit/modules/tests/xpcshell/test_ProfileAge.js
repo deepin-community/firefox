@@ -18,8 +18,9 @@ function withDummyProfile(task) {
 add_task(
   withDummyProfile(async profile => {
     let times = await ProfileAge(profile);
-    Assert.ok(
-      (await times.created) > 0,
+    Assert.greater(
+      await times.created,
+      0,
       "We can't really say what this will be, just assume if it is a number it's ok."
     );
     Assert.equal(
@@ -27,8 +28,9 @@ add_task(
       undefined,
       "Reset time is undefined in a new profile"
     );
-    Assert.ok(
-      (await times.firstUse) <= Date.now(),
+    Assert.lessOrEqual(
+      await times.firstUse,
+      Date.now(),
       "Should have initialised a first use time."
     );
   })
@@ -42,6 +44,7 @@ add_task(
 
     await IOUtils.writeJSON(PathUtils.join(profile, "times.json"), {
       created: CREATED_TIME,
+      source: "profileage-tests",
     });
 
     let times = await ProfileAge(profile);
@@ -58,6 +61,7 @@ add_task(
 
     let times2 = await ProfileAge(profile);
     Assert.equal(times, times2, "Should have got the same instance.");
+    Assert.equal(times.source, "profileage-tests", "Should expose the source.");
 
     let promise = times.recordProfileReset(RESET_TIME);
     Assert.equal(
@@ -82,6 +86,7 @@ add_task(
         created: CREATED_TIME,
         reset: RESET_TIME,
         recoveredFromBackup: RECOVERY_TIME,
+        source: "backup",
       },
       "Should have seen the right results."
     );
@@ -105,6 +110,7 @@ add_task(
     Assert.deepEqual(
       results,
       {
+        source: "reset",
         reset: RESET_TIME2,
       },
       "Should have seen the right results."
@@ -122,8 +128,9 @@ add_task(
     });
 
     let times = await ProfileAge(profile);
-    Assert.ok(
-      (await times.firstUse) <= Date.now(),
+    Assert.lessOrEqual(
+      await times.firstUse,
+      Date.now(),
       "Should have initialised a first use time."
     );
   })

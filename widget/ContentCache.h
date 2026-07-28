@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=8 et :
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -424,6 +421,13 @@ class ContentCacheInParent final : public ContentCache {
   void OnSelectionEvent(const WidgetSelectionEvent& aSelectionEvent);
 
   /**
+   * OnContentCommandEvent() should called before sending a content command
+   * event.
+   */
+  void OnContentCommandEvent(
+      const WidgetContentCommandEvent& aContentCommandEvent);
+
+  /**
    * OnEventNeedingAckHandled() should be called after the child process
    * handles a sent event which needs acknowledging.
    *
@@ -489,7 +493,8 @@ class ContentCacheInParent final : public ContentCache {
   // sent to the remote process, but we've not verified that the remote process
   // finished handling it.
   [[nodiscard]] uint32_t PendingEventsNeedingAck() const {
-    uint32_t ret = mPendingSetSelectionEventNeedingAck;
+    uint32_t ret = mPendingSetSelectionEventNeedingAck +
+                   mPendingContentCommandEventNeedingAck;
     for (const HandlingCompositionData& data : mHandlingCompositions) {
       ret += data.mPendingEventsNeedingAck;
     }
@@ -599,6 +604,9 @@ class ContentCacheInParent final : public ContentCache {
   // process finished handling the events.  Note that eSetSelection may be
   // dispatched without composition.  Therefore, we need to count it with this.
   uint32_t mPendingSetSelectionEventNeedingAck = 0u;
+  // Increased when sending WidgetContentCommandEvent events and decreased when
+  // the remote process finished handling them.
+  uint32_t mPendingContentCommandEventNeedingAck = 0u;
   // mPendingCommitLength is commit string length of the first pending
   // composition.  This is used by relative offset query events when querying
   // new composition start offset.

@@ -5,62 +5,50 @@
 permissions-window2 =
     .title = अपवाद
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = वेब साइट पता
     .accesskey = d
-
 permissions-block =
     .label = रोकें
     .accesskey = B
-
 permissions-session =
     .label = सत्र के लिए अनुमति दें
     .accesskey = S
-
 permissions-allow =
     .label = अनुमति दें
     .accesskey = A
-
 permissions-site-name =
     .label = वेबसाइट
-
 permissions-status =
     .label = स्थिति
-
 permissions-remove =
     .label = वेबसाइट हटाएँ
     .accesskey = R
-
 permissions-remove-all =
     .label = सभी वेबसाइटों को हटाएँ
     .accesskey = e
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = परिवर्तन सहेजें
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = परिवर्तन सहेजें
     .buttonaccesskeyaccept = S
-
 permissions-autoplay-menu = सभी वेबसाइटों के लिए डिफ़ॉल्ट:
-
 permissions-searchbox =
     .placeholder = वेबसाइट खोजें
-
 permissions-capabilities-autoplay-allow =
     .label = ऑडियो और वीडियो की अनुमति दें
 permissions-capabilities-autoplay-block =
     .label = ऑडियो ब्लॉक करें
 permissions-capabilities-autoplay-blockall =
     .label = ऑडियो और वीडियो ब्लॉक करें
-
 permissions-capabilities-allow =
     .label = अनुमति दें
 permissions-capabilities-block =
     .label = रोकें
 permissions-capabilities-prompt =
     .label = हमेशा पूछें
-
 permissions-capabilities-listitem-allow =
     .value = अनुमति दें
 permissions-capabilities-listitem-block =
@@ -73,17 +61,12 @@ permissions-capabilities-listitem-allow-session =
 permissions-invalid-uri-title = अवैध मेजबाननाम दिया गया
 permissions-invalid-uri-label = एक वैध मेजबाननाम डालें
 
-## Exceptions - Tracking Protection
-
 ## Exceptions - Cookies
 
 permissions-exceptions-cookie-window2 =
     .title = अपवाद - कुकीज़ और साइट डेटा
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = आप विशेष रूप से चुन सकते हैं कि कूकीज तथा साइट डेटा किन वेबसाइटों को हमेशा या कभी नहीं उपयोग करने की अनुमति है.   जिस साइट को आप प्रबंधित करना चाहते हैं उसका सटीक पता टाइप करें और फिर ब्लॉक, सत्र के लिए अनुमति, या अनुमति दें पर क्लिक करें.
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -130,9 +113,6 @@ permissions-site-location-disable-label =
     .label = आपके लोकेशन का उपयोग करने के लिए आने वाले नए निवेदनों को रोकें
 permissions-site-location-disable-desc = इससे किसी भी वेबसाइट को आपकी लोकेशन का उपयोग करने की अनुमति के लिए अनुरोध करने से नहीं रोका जा सकेगा. आपकी लोकेशन का उपयोग अवरूद्ध करने से कुछ वेबसाइट की सुविधाएं टूट सकती हैं.
 
-## Site Permissions - Virtual Reality
-
-
 ## Site Permissions - Camera
 
 permissions-site-camera-window2 =
@@ -152,8 +132,3 @@ permissions-site-microphone-desc = निम्नलिखित वेबस�
 permissions-site-microphone-disable-label =
     .label = आपके माइक्रोफोन का उपयोग करने के लिए आने वाले नए अनुरोधों को रोकें
 permissions-site-microphone-disable-desc = इससे किसी भी वेबसाइट को आपके माइक्रोफोन का उपयोग करने की अनुमति के लिए अनुरोध करने से नहीं रोका जा सकेगा. आपके माइक्रोफोन का उपयोग अवरूद्ध करने से कुछ वेबसाइट की सुविधाएं टूट सकती हैं.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

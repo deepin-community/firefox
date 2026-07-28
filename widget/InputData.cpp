@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,6 +24,7 @@ using namespace dom;
 
 template WidgetMouseEvent MouseInput::ToWidgetEvent(nsIWidget* aWidget) const;
 template WidgetPointerEvent MouseInput::ToWidgetEvent(nsIWidget* aWidget) const;
+template WidgetDragEvent MouseInput::ToWidgetEvent(nsIWidget* aWidget) const;
 
 InputData::~InputData() = default;
 
@@ -40,6 +40,15 @@ InputData::InputData(InputType aInputType, TimeStamp aTimeStamp,
       mTimeStamp(aTimeStamp),
       mFocusSequenceNumber(0),
       mLayersId{0},
+      modifiers(aModifiers) {}
+
+InputData::InputData(InputType aInputType, TimeStamp aTimeStamp,
+                     const Maybe<uint64_t>& aCallback, Modifiers aModifiers)
+    : mInputType(aInputType),
+      mTimeStamp(aTimeStamp),
+      mFocusSequenceNumber(0),
+      mLayersId{0},
+      mCallbackId(aCallback),
       modifiers(aModifiers) {}
 
 SingleTouchData::SingleTouchData(int32_t aIdentifier,
@@ -73,8 +82,7 @@ already_AddRefed<Touch> SingleTouchData::ToNewDOMTouch() const {
                 LayoutDeviceIntPoint::Truncate(mScreenPoint.x, mScreenPoint.y),
                 LayoutDeviceIntPoint::Truncate(mRadius.width, mRadius.height),
                 mRotationAngle, mForce);
-  touch->tiltX = mTiltX;
-  touch->tiltY = mTiltY;
+  touch->mTilt.emplace(mTiltX, mTiltY);
   touch->twist = mTwist;
   return touch.forget();
 }
@@ -92,10 +100,11 @@ MultiTouchInput::MultiTouchInput()
 
 MultiTouchInput::MultiTouchInput(const WidgetTouchEvent& aTouchEvent)
     : InputData(MULTITOUCH_INPUT, aTouchEvent.mTimeStamp,
-                aTouchEvent.mModifiers),
+                aTouchEvent.mCallbackId, aTouchEvent.mModifiers),
       mHandledByAPZ(aTouchEvent.mFlags.mHandledByAPZ),
       mButton(aTouchEvent.mButton),
-      mButtons(aTouchEvent.mButtons) {
+      mButtons(aTouchEvent.mButtons),
+      mInputSource(aTouchEvent.mInputSource) {
   MOZ_ASSERT(NS_IsMainThread(),
              "Can only copy from WidgetTouchEvent on main thread");
 
@@ -153,13 +162,12 @@ void MultiTouchInput::Translate(const ScreenPoint& aTranslation) {
   }
 }
 
-WidgetTouchEvent MultiTouchInput::ToWidgetEvent(nsIWidget* aWidget,
-                                                uint16_t aInputSource) const {
+WidgetTouchEvent MultiTouchInput::ToWidgetEvent(nsIWidget* aWidget) const {
   MOZ_ASSERT(NS_IsMainThread(),
              "Can only convert To WidgetTouchEvent on main thread");
-  MOZ_ASSERT(aInputSource ==
+  MOZ_ASSERT(mInputSource ==
                  mozilla::dom::MouseEvent_Binding::MOZ_SOURCE_TOUCH ||
-             aInputSource == mozilla::dom::MouseEvent_Binding::MOZ_SOURCE_PEN);
+             mInputSource == mozilla::dom::MouseEvent_Binding::MOZ_SOURCE_PEN);
 
   EventMessage touchEventMessage = eVoidEvent;
   switch (mType) {
@@ -191,7 +199,7 @@ WidgetTouchEvent MultiTouchInput::ToWidgetEvent(nsIWidget* aWidget,
   event.mFlags.mHandledByAPZ = mHandledByAPZ;
   event.mFocusSequenceNumber = mFocusSequenceNumber;
   event.mLayersId = mLayersId;
-  event.mInputSource = aInputSource;
+  event.mInputSource = mInputSource;
   event.mButton = mButton;
   event.mButtons = mButtons;
 
@@ -258,10 +266,12 @@ MouseInput::MouseInput(MouseType aType, ButtonType aButtonType,
       mIgnoreCapturingContent(false),
       mSynthesizeMoveAfterDispatch(false) {}
 
-MouseInput::MouseInput(const WidgetMouseEventBase& aMouseEvent)
-    : InputData(MOUSE_INPUT, aMouseEvent.mTimeStamp, aMouseEvent.mModifiers),
+MouseInput::MouseInput(const WidgetMouseEvent& aMouseEvent)
+    : InputData(MOUSE_INPUT, aMouseEvent.mTimeStamp, aMouseEvent.mCallbackId,
+                aMouseEvent.mModifiers),
       mType(MOUSE_NONE),
       mButtonType(NONE),
+      mClickCount(aMouseEvent.mClickCount),
       mInputSource(aMouseEvent.mInputSource),
       mButtons(aMouseEvent.mButtons),
       mHandledByAPZ(aMouseEvent.mFlags.mHandledByAPZ),
@@ -309,6 +319,18 @@ MouseInput::MouseInput(const WidgetMouseEventBase& aMouseEvent)
       break;
     case eDragEnd:
       mType = MOUSE_DRAG_END;
+      break;
+    case eDragEnter:
+      mType = MOUSE_DRAG_ENTER;
+      break;
+    case eDragOver:
+      mType = MOUSE_DRAG_OVER;
+      break;
+    case eDragExit:
+      mType = MOUSE_DRAG_EXIT;
+      break;
+    case eDrop:
+      mType = MOUSE_DROP;
       break;
     case eMouseEnterIntoWidget:
       mType = MOUSE_WIDGET_ENTER;
@@ -361,13 +383,15 @@ WidgetMouseOrPointerEvent MouseInput::ToWidgetEvent(nsIWidget* aWidget) const {
       std::is_same<WidgetMouseOrPointerEvent, WidgetPointerEvent>::value;
   const DebugOnly<bool> isMouseEvent =
       std::is_same<WidgetMouseOrPointerEvent, WidgetMouseEvent>::value;
+  const DebugOnly<bool> isDragEvent =
+      std::is_same<WidgetMouseOrPointerEvent, WidgetDragEvent>::value;
   MOZ_ASSERT(!IsPointerEventType() || isPointerEvent,
              "Please use ToWidgetEvent<WidgetPointerEvent>() for the instance");
-  MOZ_ASSERT(IsPointerEventType() || isMouseEvent,
-             "Please use ToWidgetEvent<WidgetMouseEvent>() for the instance");
+  MOZ_ASSERT(IsPointerEventType() || isMouseEvent || isDragEvent,
+             "Please use ToWidgetEvent<WidgetMouseEvent>() or "
+             "ToWidgetEvent<WidgetDragEvent>() for the instance");
 
   EventMessage msg = eVoidEvent;
-  uint32_t clickCount = 0;
   Maybe<WidgetMouseEvent::ExitFrom> exitFrom;
   switch (mType) {
     case MOUSE_MOVE:
@@ -375,17 +399,27 @@ WidgetMouseOrPointerEvent MouseInput::ToWidgetEvent(nsIWidget* aWidget) const {
       break;
     case MOUSE_UP:
       msg = eMouseUp;
-      clickCount = 1;
       break;
     case MOUSE_DOWN:
       msg = eMouseDown;
-      clickCount = 1;
       break;
     case MOUSE_DRAG_START:
       msg = eDragStart;
       break;
     case MOUSE_DRAG_END:
       msg = eDragEnd;
+      break;
+    case MOUSE_DRAG_ENTER:
+      msg = eDragEnter;
+      break;
+    case MOUSE_DRAG_OVER:
+      msg = eDragOver;
+      break;
+    case MOUSE_DRAG_EXIT:
+      msg = eDragExit;
+      break;
+    case MOUSE_DROP:
+      msg = eDrop;
       break;
     case MOUSE_WIDGET_ENTER:
       msg = eMouseEnterIntoWidget;
@@ -439,13 +473,14 @@ WidgetMouseOrPointerEvent MouseInput::ToWidgetEvent(nsIWidget* aWidget) const {
   event.mRefPoint = RoundedToInt(ViewAs<LayoutDevicePixel>(
       mOrigin,
       PixelCastJustification::LayoutDeviceIsScreenForUntransformedEvent));
-  event.mClickCount = clickCount;
+  event.mClickCount = mClickCount;
   event.mInputSource = mInputSource;
   event.mFocusSequenceNumber = mFocusSequenceNumber;
-  event.mExitFrom = exitFrom;
+  event.mExitFrom = std::move(exitFrom);
   event.mClickEventPrevented = mPreventClickEvent;
   event.mIgnoreCapturingContent = mIgnoreCapturingContent;
   event.mSynthesizeMoveAfterDispatch = mSynthesizeMoveAfterDispatch;
+  event.mCallbackId = mCallbackId;
 
   return event;
 }
@@ -824,7 +859,7 @@ ScrollWheelInput::ScrollWheelInput(
 
 ScrollWheelInput::ScrollWheelInput(const WidgetWheelEvent& aWheelEvent)
     : InputData(SCROLLWHEEL_INPUT, aWheelEvent.mTimeStamp,
-                aWheelEvent.mModifiers),
+                aWheelEvent.mCallbackId, aWheelEvent.mModifiers),
       mDeltaType(DeltaTypeForDeltaMode(aWheelEvent.mDeltaMode)),
       mScrollMode(SCROLLMODE_INSTANT),
       mHandledByAPZ(aWheelEvent.mFlags.mHandledByAPZ),
@@ -912,6 +947,7 @@ WidgetWheelEvent ScrollWheelInput::ToWidgetEvent(nsIWidget* aWidget) const {
       mAllowToOverrideSystemScrollSpeed;
   wheelEvent.mFlags.mHandledByAPZ = mHandledByAPZ;
   wheelEvent.mFocusSequenceNumber = mFocusSequenceNumber;
+  wheelEvent.mCallbackId = mCallbackId;
   return wheelEvent;
 }
 

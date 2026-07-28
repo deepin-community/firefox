@@ -22,10 +22,11 @@ text-action-copy =
     .accesskey = C
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Copie cence spiis
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Copie colegament net
     .accesskey = n
 text-action-paste =
     .label = Tache
@@ -38,6 +39,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = Elimine
     .accesskey = E
+text-action-reveal-password =
+    .label = Palese la password
+    .accesskey = p
 text-action-select-all =
     .label = Selezione dut
     .accesskey = z
@@ -64,3 +68,23 @@ text-action-search-text-box-clear =
     .title = Nete
 text-action-highlight-selection =
     .label = Evidenzie selezion
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = Zonte coment ae selezion
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Copie colegament al test evidenziât
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Copie colegament net al test evidenziât
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = Gjave evidenziazion
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = Gjave dutis lis evidenziazions

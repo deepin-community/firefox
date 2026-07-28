@@ -1,13 +1,21 @@
-use super::token::TokenValue;
-use crate::SourceLocation;
-use crate::{proc::ConstantEvaluatorError, Span};
+use alloc::{
+    borrow::Cow,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
+
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use codespan_reporting::files::SimpleFile;
 use codespan_reporting::term;
 use pp_rs::token::PreprocessorError;
-use std::borrow::Cow;
-use termcolor::{NoColor, WriteColor};
 use thiserror::Error;
+
+use super::token::TokenValue;
+#[cfg(feature = "stderr")]
+use crate::error::ErrorWrite;
+use crate::{error::replace_control_chars, SourceLocation};
+use crate::{proc::ConstantEvaluatorError, Span};
 
 fn join_with_comma(list: &[ExpectedToken]) -> String {
     let mut string = "".to_string();
@@ -45,8 +53,8 @@ impl From<TokenValue> for ExpectedToken {
         ExpectedToken::Token(token)
     }
 }
-impl std::fmt::Display for ExpectedToken {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for ExpectedToken {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match *self {
             ExpectedToken::Token(ref token) => write!(f, "{token:?}"),
             ExpectedToken::TypeName => write!(f, "a type"),
@@ -75,7 +83,7 @@ pub enum ErrorKind {
     /// Whilst parsing an unexpected token was encountered.
     ///
     /// A list of expected tokens is also returned.
-    #[error("Expected {}, found {0:?}", join_with_comma(.1))]
+    #[error("Expected {expected_tokens}, found {found_token:?}", found_token = .0, expected_tokens = join_with_comma(.1))]
     InvalidToken(TokenValue, Vec<ExpectedToken>),
     /// A specific feature is not yet implemented.
     ///
@@ -102,9 +110,15 @@ pub enum ErrorKind {
     /// Unsupported matrix of the form matCx2
     ///
     /// Our IR expects matrices of the form matCx2 to have a stride of 8 however
-    /// matrices in the std140 layout have a stride of at least 16
-    #[error("unsupported matrix of the form matCx2 in std140 block layout")]
-    UnsupportedMatrixTypeInStd140,
+    /// matrices in the std140 layout have a stride of at least 16.
+    #[error("unsupported matrix of the form matCx2 (in this case mat{columns}x2) in std140 block layout. See https://github.com/gfx-rs/wgpu/issues/4375")]
+    UnsupportedMatrixWithTwoRowsInStd140 { columns: u8 },
+    /// Unsupported matrix of the form f16matCxR
+    ///
+    /// Our IR expects matrices of the form f16matCxR to have a stride of 4/8/8 depending on row-count,
+    /// however matrices in the std140 layout have a stride of at least 16.
+    #[error("unsupported matrix of the form f16matCxR (in this case f16mat{columns}x{rows}) in std140 block layout. See https://github.com/gfx-rs/wgpu/issues/4375")]
+    UnsupportedF16MatrixInStd140 { columns: u8, rows: u8 },
     /// A variable with the same name already exists in the current scope.
     #[error("Variable already declared: {0}")]
     VariableAlreadyDeclared(String),
@@ -153,44 +167,79 @@ pub struct ParseErrors {
 }
 
 impl ParseErrors {
-    pub fn emit_to_writer(&self, writer: &mut impl WriteColor, source: &str) {
+    #[cfg(feature = "stderr")]
+    pub fn emit_to_writer(&self, writer: &mut impl ErrorWrite, source: &str) {
         self.emit_to_writer_with_path(writer, source, "glsl");
     }
 
-    pub fn emit_to_writer_with_path(&self, writer: &mut impl WriteColor, source: &str, path: &str) {
+    #[cfg(feature = "stderr")]
+    pub fn emit_to_writer_with_path(&self, writer: &mut impl ErrorWrite, source: &str, path: &str) {
         let path = path.to_string();
-        let files = SimpleFile::new(path, source);
+        let files = SimpleFile::new(path, replace_control_chars(source));
         let config = term::Config::default();
 
         for err in &self.errors {
-            let mut diagnostic = Diagnostic::error().with_message(err.kind.to_string());
+            let diagnostic = Self::make_diagnostic(err);
+            crate::error::emit_to_writer(writer, &config, &files, &diagnostic)
+                .expect("cannot write error");
+        }
+    }
 
-            if let Some(range) = err.meta.to_range() {
-                diagnostic = diagnostic.with_labels(vec![Label::primary((), range)]);
+    /// Emits a summary of the errors to standard error stream.
+    #[cfg(feature = "stderr")]
+    pub fn emit_to_stderr(&self, source: &str) {
+        self.emit_to_stderr_with_path(source, "glsl")
+    }
+
+    /// Emits a summary of the errors to standard error stream.
+    #[cfg(feature = "stderr")]
+    pub fn emit_to_stderr_with_path(&self, source: &str, path: &str) {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "termcolor")] {
+                let writer = term::termcolor::StandardStream::stderr(term::termcolor::ColorChoice::Auto);
+                self.emit_to_writer_with_path(&mut writer.lock(), source, path);
+            } else {
+                let writer = std::io::stderr();
+                self.emit_to_writer_with_path(&mut writer.lock(), source, path);
             }
-
-            term::emit(writer, &config, &files, &diagnostic).expect("cannot write error");
         }
     }
 
     pub fn emit_to_string(&self, source: &str) -> String {
-        let mut writer = NoColor::new(Vec::new());
-        self.emit_to_writer(&mut writer, source);
-        String::from_utf8(writer.into_inner()).unwrap()
+        self.emit_to_string_with_path(source, "glsl")
+    }
+
+    pub fn emit_to_string_with_path(&self, source: &str, path: &str) -> String {
+        let path = path.to_string();
+        let files = SimpleFile::new(path, replace_control_chars(source));
+        let config = term::Config::default();
+
+        let mut writer = crate::error::DiagnosticBuffer::new();
+        for err in &self.errors {
+            let diagnostic = Self::make_diagnostic(err);
+            writer
+                .emit_to_self(&config, &files, &diagnostic)
+                .expect("cannot write error");
+        }
+        writer.into_string()
+    }
+
+    fn make_diagnostic(err: &Error) -> Diagnostic<()> {
+        let mut diagnostic = Diagnostic::error().with_message(err.kind.to_string());
+        if let Some(range) = err.meta.to_range() {
+            diagnostic = diagnostic.with_labels(vec![Label::primary((), range)]);
+        }
+        diagnostic
     }
 }
 
-impl std::fmt::Display for ParseErrors {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for ParseErrors {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         self.errors.iter().try_for_each(|e| write!(f, "{e:?}"))
     }
 }
 
-impl std::error::Error for ParseErrors {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
+impl core::error::Error for ParseErrors {}
 
 impl From<Vec<Error>> for ParseErrors {
     fn from(errors: Vec<Error>) -> Self {

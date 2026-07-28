@@ -9,8 +9,15 @@ support-files = [
   "download.bin",
   "download.sjs",
 ]
+skip-if = [
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11' && opt && socketprocess_networking" ,
+  "os == 'win' && os_version == '11.26200' && opt", # Bug 1776014
+]
 
 ["browser_auto_close_window_nodialog.js"]
+skip-if = [
+  "os == 'win' && os_version == '11.26200'", # Bug 2019745
+]
 support-files = [
   "download_page.html",
   "download.bin",
@@ -18,14 +25,17 @@ support-files = [
 ]
 
 ["browser_bad_download_dir.js"]
-run-if = ["os == 'linux'"]
+run-if = [
+  "os == 'linux' && os_version == '22.04' && arch == 'x86_64' && display == 'wayland'",
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11'",
+]
 support-files = ["download.bin"]
 
 ["browser_download_always_ask_preferred_app.js"]
 
 ["browser_download_idn_blocklist.js"]
 support-files = ["download.bin"]
-https_first_disabled = true
+https_first_disabled = true # Bug 1897075
 
 ["browser_download_open_with_internal_handler.js"]
 support-files = [
@@ -71,6 +81,12 @@ support-files = [
   "file_with[funny_name.webm^headers^",
 ]
 
+["browser_errorpage_attachment.js"]
+support-files = [
+  "blank.html",
+  "emptyErrorPage.sjs",
+]
+
 ["browser_extension_correction.js"]
 support-files = [
   "file_as.exe",
@@ -104,12 +120,18 @@ support-files = ["file_pdf_binary_octet_stream.pdf"]
 
 ["browser_open_internal_choice_persistence.js"]
 skip-if = [
-   "apple_silicon", #bug 1752482
-   "os == 'mac' && os_version == '10.15'", #Bug 1776017
+  "os == 'mac' && os_version == '10.15' && arch == 'x86_64'", # Bug 1776017
 ]
 support-files = [
   "file_pdf_application_pdf.pdf",
   "file_pdf_application_pdf.pdf^headers^",
+]
+
+["browser_pdf_sandboxed_iframe.js"]
+support-files = [
+  "file_pdf.pdf",
+  "file_pdf_content_disposition.pdf",
+  "file_pdf_content_disposition.pdf^headers^",
 ]
 
 ["browser_pdf_save_as.js"]
@@ -138,6 +160,12 @@ support-files = ["protocol_custom_sandbox_helper.sjs"]
 
 ["browser_save_filenames.js"]
 support-files = ["save_filenames.html"]
+skip-if = [
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11'", # Bug 1776018
+  "os == 'mac' && os_version == '10.15' && arch == 'x86_64' && opt", # Bug 1776018
+  "os == 'win' && os_version == '11.26100' && arch == 'x86_64' && opt", # Bug 1776018
+  "os == 'win' && os_version == '11.26200' && arch == 'x86_64' && opt", # Bug 1776018
+]
 
 ["browser_shows_where_to_save_dialog.js"]
 support-files = [
@@ -153,6 +181,9 @@ support-files = [
 support-files = [
   "FTPprotocolHandler.html",
   "blank.html",
+]
+skip-if = [
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11'", # Bug 1968569
 ]
 
 ["browser_txt_download_save_as.js"]

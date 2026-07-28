@@ -1,13 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "sdp/SdpAttribute.h"
-#include "sdp/SdpHelper.h"
-#include <iomanip>
+
 #include <bitset>
+#include <iomanip>
+
+#include "sdp/SdpHelper.h"
 
 #ifdef CRLF
 #  undef CRLF
@@ -39,7 +39,8 @@ static std::string ParseToken(std::istream& is, const std::string& delims,
   return token;
 }
 
-static bool SkipChar(std::istream& is, unsigned char c, std::string* error) {
+static bool SkipChar(std::istream& is, const unsigned char c,
+                     std::string* error) {
   if (PeekChar(is, error) != c) {
     *error = "Expected \'";
     error->push_back(c);
@@ -119,7 +120,7 @@ std::string SdpFingerprintAttributeList::FormatFingerprint(
   return os.str().substr(1);
 }
 
-static uint8_t FromUppercaseHex(char ch) {
+static uint8_t FromUppercaseHex(const char ch) {
   if ((ch >= '0') && (ch <= '9')) {
     return ch - '0';
   }
@@ -160,7 +161,7 @@ bool SdpFmtpAttributeList::operator==(const SdpFmtpAttributeList& other) const {
 
 void SdpFmtpAttributeList::Serialize(std::ostream& os) const {
   for (auto i = mFmtps.begin(); i != mFmtps.end(); ++i) {
-    if (i->parameters) {
+    if (i->parameters && i->parameters->ShouldSerialize()) {
       os << "a=" << mType << ":" << i->format << " ";
       i->parameters->Serialize(os);
       os << CRLF;
@@ -233,7 +234,8 @@ void SdpImageattrAttributeList::XYRange::Serialize(std::ostream& os) const {
 }
 
 template <typename T>
-bool GetUnsigned(std::istream& is, T min, T max, T* value, std::string* error) {
+bool GetUnsigned(std::istream& is, const T min, const T max, T* value,
+                 std::string* error) {
   if (PeekChar(is, error) == '-') {
     *error = "Value is less than 0";
     return false;
@@ -656,7 +658,7 @@ bool SdpImageattrAttributeList::Imageattr::ParseSets(std::istream& is,
       return false;
     }
 
-    sets->push_back(set);
+    sets->push_back(std::move(set));
     is >> std::ws;
   } while (PeekChar(is, error) == '[');
 
@@ -745,7 +747,7 @@ bool SdpImageattrAttributeList::PushEntry(const std::string& raw,
     return false;
   }
 
-  mImageattrs.push_back(imageattr);
+  mImageattrs.push_back(std::move(imageattr));
   return true;
 }
 
@@ -853,7 +855,7 @@ bool SdpRidAttributeList::Rid::ParseDepend(std::istream& is,
     if (id.empty()) {
       return false;
     }
-    dependIds.push_back(id);
+    dependIds.push_back(std::move(id));
   } while (SkipChar(is, ',', error));
 
   return true;
@@ -1040,13 +1042,14 @@ bool SdpRidAttributeList::PushEntry(const std::string& raw, std::string* error,
     return false;
   }
 
-  mRids.push_back(rid);
+  mRids.push_back(std::move(rid));
   return true;
 }
 
-void SdpRidAttributeList::PushEntry(const std::string& id, sdp::Direction dir,
+void SdpRidAttributeList::PushEntry(const std::string& id,
+                                    const sdp::Direction dir,
                                     const std::vector<uint16_t>& formats,
-                                    const EncodingConstraints& constraints,
+                                    const VideoEncodingConstraints& constraints,
                                     const std::vector<std::string>& dependIds) {
   SdpRidAttributeList::Rid rid;
 
@@ -1090,7 +1093,8 @@ void SdpRtcpFbAttributeList::Serialize(std::ostream& os) const {
   }
 }
 
-static bool ShouldSerializeChannels(SdpRtpmapAttributeList::CodecType type) {
+static bool ShouldSerializeChannels(
+    const SdpRtpmapAttributeList::CodecType type) {
   switch (type) {
     case SdpRtpmapAttributeList::kOpus:
     case SdpRtpmapAttributeList::kG722:
@@ -1102,6 +1106,7 @@ static bool ShouldSerializeChannels(SdpRtpmapAttributeList::CodecType type) {
     case SdpRtpmapAttributeList::kiLBC:
     case SdpRtpmapAttributeList::kiSAC:
     case SdpRtpmapAttributeList::kH264:
+    case SdpRtpmapAttributeList::kAV1:
     case SdpRtpmapAttributeList::kRed:
     case SdpRtpmapAttributeList::kUlpfec:
     case SdpRtpmapAttributeList::kTelephoneEvent:
@@ -1316,7 +1321,7 @@ void SdpNumberAttribute::Serialize(std::ostream& os) const {
   os << "a=" << mType << ":" << mValue << CRLF;
 }
 
-bool SdpAttribute::IsAllowedAtMediaLevel(AttributeType type) {
+bool SdpAttribute::IsAllowedAtMediaLevel(const AttributeType type) {
   switch (type) {
     case kBundleOnlyAttribute:
       return true;
@@ -1331,6 +1336,8 @@ bool SdpAttribute::IsAllowedAtMediaLevel(AttributeType type) {
     case kEndOfCandidatesAttribute:
       return true;
     case kExtmapAttribute:
+      return true;
+    case kExtmapAllowMixedAttribute:
       return true;
     case kFingerprintAttribute:
       return true;
@@ -1399,7 +1406,7 @@ bool SdpAttribute::IsAllowedAtMediaLevel(AttributeType type) {
   MOZ_CRASH("Unknown attribute type");
 }
 
-bool SdpAttribute::IsAllowedAtSessionLevel(AttributeType type) {
+bool SdpAttribute::IsAllowedAtSessionLevel(const AttributeType type) {
   switch (type) {
     case kBundleOnlyAttribute:
       return false;
@@ -1414,6 +1421,8 @@ bool SdpAttribute::IsAllowedAtSessionLevel(AttributeType type) {
     case kEndOfCandidatesAttribute:
       return true;
     case kExtmapAttribute:
+      return true;
+    case kExtmapAllowMixedAttribute:
       return true;
     case kFingerprintAttribute:
       return true;
@@ -1479,7 +1488,8 @@ bool SdpAttribute::IsAllowedAtSessionLevel(AttributeType type) {
   MOZ_CRASH("Unknown attribute type");
 }
 
-const std::string SdpAttribute::GetAttributeTypeString(AttributeType type) {
+const std::string SdpAttribute::GetAttributeTypeString(
+    const AttributeType type) {
   switch (type) {
     case kBundleOnlyAttribute:
       return "bundle-only";
@@ -1493,6 +1503,8 @@ const std::string SdpAttribute::GetAttributeTypeString(AttributeType type) {
       return "end-of-candidates";
     case kExtmapAttribute:
       return "extmap";
+    case kExtmapAllowMixedAttribute:
+      return "extmap-allow-mixed";
     case kFingerprintAttribute:
       return "fingerprint";
     case kFmtpAttribute:

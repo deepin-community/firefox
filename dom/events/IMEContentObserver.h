@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -47,8 +45,10 @@ class IMEContentObserver final : public nsStubMutationObserver,
   using SelectionChangeData = widget::IMENotification::SelectionChangeData;
   using TextChangeData = widget::IMENotification::TextChangeData;
   using TextChangeDataBase = widget::IMENotification::TextChangeDataBase;
+  using IMENotificationRequest = widget::IMENotificationRequest;
   using IMENotificationRequests = widget::IMENotificationRequests;
   using IMEMessage = widget::IMEMessage;
+  enum class ForRemoval : bool { No, Yes };
 
   IMEContentObserver();
 
@@ -103,8 +103,8 @@ class IMEContentObserver final : public nsStubMutationObserver,
    *                        design mode document.
    * @param aEditorBase     The editor which is associated with aContent.
    */
-  MOZ_CAN_RUN_SCRIPT void Init(nsIWidget& aWidget, nsPresContext& aPresContext,
-                               dom::Element* aElement, EditorBase& aEditorBase);
+  void Init(nsIWidget& aWidget, nsPresContext& aPresContext,
+            dom::Element* aElement, EditorBase& aEditorBase);
 
   /**
    * Destroy() finalizes the instance, i.e., stops observing contents and
@@ -137,10 +137,8 @@ class IMEContentObserver final : public nsStubMutationObserver,
    * @return            Returns true if the instance is managing the content.
    *                    Otherwise, false.
    */
-  MOZ_CAN_RUN_SCRIPT bool MaybeReinitialize(nsIWidget& aWidget,
-                                            nsPresContext& aPresContext,
-                                            dom::Element* aElement,
-                                            EditorBase& aEditorBase);
+  bool MaybeReinitialize(nsIWidget& aWidget, nsPresContext& aPresContext,
+                         dom::Element* aElement, EditorBase& aEditorBase);
 
   /**
    * Return true if this is observing editable content and aElement has focus.
@@ -162,7 +160,8 @@ class IMEContentObserver final : public nsStubMutationObserver,
   bool IsEditorHandlingEventForComposition() const;
   bool KeepAliveDuringDeactive() const {
     return mIMENotificationRequests &&
-           mIMENotificationRequests->WantDuringDeactive();
+           mIMENotificationRequests->contains(
+               IMENotificationRequest::NotifyDuringInactive);
   }
   [[nodiscard]] bool EditorIsTextEditor() const {
     return mEditorBase && mEditorBase->IsTextEditor();
@@ -173,6 +172,7 @@ class IMEContentObserver final : public nsStubMutationObserver,
   nsPresContext* GetPresContext() const;
   nsresult GetSelectionAndRoot(dom::Selection** aSelection,
                                dom::Element** aRootElement) const;
+  dom::Selection* GetSelection() const;
 
   /**
    * TryToFlushPendingNotifications() should be called when pending events
@@ -199,16 +199,37 @@ class IMEContentObserver final : public nsStubMutationObserver,
   void CancelEditAction();
 
   /**
-   * Called when text control value is changed while this is not observing
-   * mRootElement.  This is typically there is no frame for the editor (i.e.,
-   * no proper anonymous <div> element for the editor yet) or the TextEditor
-   * has not been created (i.e., IMEStateManager has not been reinitialized
-   * this instance with new anonymous <div> element yet).
+   * Return an Element if and only if this instance is observing the element.
+   * The element is the anonymous <div> of a text control element if this is
+   * initialized with a TextEditor.  Otherwise, the focused editing host.
+   * If you want the text control if this is initialized with a TextEditor, use
+   * GetObservingEditingHostOrTextControlElement() instead.
    */
-  void OnTextControlValueChangedWhileNotObservable(const nsAString& aNewValue);
-
   dom::Element* GetObservingElement() const {
     return mIsObserving ? mRootElement.get() : nullptr;
+  }
+
+  /**
+   * Return an Element if and only if this instance is observing the element.
+   * The element is a text control element if this is initalized with a
+   * TextEditor.  Otherwise, the focused editing host.
+   * If you want the anonymous <div> in the text control if this is initialized
+   * with TextEditor, use GetObservingElement() instead.
+   */
+  dom::Element* GetObservingEditingHostOrTextControlElement() const {
+    return mIsTextControl ? GetObservingTextControlElement()
+                          : GetObservingElement();
+  }
+
+  /**
+   * Return an element if and only if this instance is initialized with a
+   * TextEditor and observing its anonymous <div>.
+   */
+  dom::Element* GetObservingTextControlElement() const {
+    return mIsObserving && mIsTextControl
+               ? dom::Element::FromNodeOrNull(
+                     mRootEditableNodeOrTextControlElement)
+               : nullptr;
   }
 
  private:
@@ -221,13 +242,17 @@ class IMEContentObserver final : public nsStubMutationObserver,
     eState_Observing
   };
   State GetState() const;
-  MOZ_CAN_RUN_SCRIPT bool InitWithEditor(nsPresContext& aPresContext,
-                                         dom::Element* aElement,
-                                         EditorBase& aEditorBase);
+  bool InitWithEditor(nsPresContext& aPresContext, dom::Element* aElement,
+                      EditorBase& aEditorBase);
   void OnIMEReceivedFocus();
   void Clear();
-  [[nodiscard]] bool IsObservingContent(const nsPresContext& aPresContext,
+
+  /**
+   * Return true if aElement is observed by this instance.
+   */
+  [[nodiscard]] bool IsObservingElement(const nsPresContext& aPresContext,
                                         const dom::Element* aElement) const;
+
   [[nodiscard]] bool IsReflowLocked() const;
   [[nodiscard]] bool IsSafeToNotifyIME() const;
   [[nodiscard]] bool IsEditorComposing() const;
@@ -327,12 +352,13 @@ class IMEContentObserver final : public nsStubMutationObserver,
   void UnregisterObservers();
   void FlushMergeableNotifications();
   bool NeedsTextChangeNotification() const {
-    return mIMENotificationRequests &&
-           mIMENotificationRequests->WantTextChange();
+    return mIMENotificationRequests && mIMENotificationRequests->contains(
+                                           IMENotificationRequest::TextChange);
   }
   bool NeedsPositionChangeNotification() const {
     return mIMENotificationRequests &&
-           mIMENotificationRequests->WantPositionChanged();
+           mIMENotificationRequests->contains(
+               IMENotificationRequest::PositionChange);
   }
   void ClearPendingNotifications() {
     mNeedsToNotifyIMEOfFocusSet = false;
@@ -355,14 +381,25 @@ class IMEContentObserver final : public nsStubMutationObserver,
    */
   MOZ_CAN_RUN_SCRIPT bool UpdateSelectionCache(bool aRequireFlush = true);
 
+  /**
+   * Return the document node if aNode is in the design mode.  Return the
+   * editing host of aNode if and only if it's editable.  Otherwise, nullptr.
+   */
+  [[nodiscard]] static nsINode* GetMostDistantInclusiveEditableAncestorNode(
+      const nsPresContext& aPresContext, const dom::Element* aElement);
+
   nsCOMPtr<nsIWidget> mWidget;
   // mFocusedWidget has the editor observed by the instance.  E.g., if the
   // focused editor is in XUL panel, this should be the widget of the panel.
   // On the other hand, mWidget is its parent which handles IME.
   nsCOMPtr<nsIWidget> mFocusedWidget;
-  RefPtr<dom::Selection> mSelection;
+  // The anonymous <div> element if mEditorBase is a TextEditor or an editing
+  // host if mEditorBase is an HTMLEditor.
   RefPtr<dom::Element> mRootElement;
-  nsCOMPtr<nsINode> mEditableNode;
+  // If it's in the design mode, this is set to the document node.
+  // If it's initialized with a TextEditor, this is the text control element.
+  // Otherwise, this is an editing host element.
+  nsCOMPtr<nsINode> mRootEditableNodeOrTextControlElement;
   nsCOMPtr<nsIDocShell> mDocShell;
   RefPtr<EditorBase> mEditorBase;
 
@@ -562,9 +599,11 @@ class IMEContentObserver final : public nsStubMutationObserver,
      *                          For avoiding to generate a redundant line break
      *                          at open tag of this element, this is required
      *                          to call methods of ContentEventHandler.
+     * @param aForRemoval       Whether aContent is about to be removed.
      */
     [[nodiscard]] static Result<uint32_t, nsresult> ComputeTextLengthOfContent(
-        const nsIContent& aContent, const dom::Element* aRootElement);
+        const nsIContent& aContent, const dom::Element* aRootElement,
+        ForRemoval = ForRemoval::No);
 
     /**
      * Return flattened text length of starting from first content of
@@ -640,8 +679,8 @@ class IMEContentObserver final : public nsStubMutationObserver,
      * of aContent in such case.
      */
     [[nodiscard]] Maybe<uint32_t> GetFlatTextLengthBeforeContent(
-        const nsIContent& aContent, const nsIContent* aPreviousSibling,
-        const dom::Element* aRootElement) const;
+        const nsIContent& aContent, const dom::Element* aRootElement,
+        ForRemoval = ForRemoval::No) const;
 
     /**
      * Return text length before aFirstContent if it's exactly cached or can
@@ -674,13 +713,12 @@ class IMEContentObserver final : public nsStubMutationObserver,
                       const dom::Element* aRootElement);
 
     /**
-     * Called when aContent is removed. aFlatTextLengthOfContent is flattened
-     * text length of aContent.
+     * Called when aContent will be removed. aFlatTextLengthOfContent is
+     * flattened text length of aContent.
      */
-    void ContentRemoved(const nsIContent& aContent,
-                        const nsIContent* aPreviousSibling,
-                        uint32_t aFlatTextLengthOfContent,
-                        const dom::Element* aRootElement);
+    void ContentWillBeRemoved(const nsIContent& aContent,
+                              uint32_t aFlatTextLengthOfContent,
+                              const dom::Element* aRootElement);
 
    public:
     // mContainerNode is parent node of mContent when it's cached.
@@ -757,16 +795,6 @@ class IMEContentObserver final : public nsStubMutationObserver,
     bool TryToCache(const nsIContent& aFirstContent,
                     const nsIContent& aLastContent,
                     const dom::Element* aRootElement);
-
-    /**
-     * Called when aContent is removed from the DOM.  If aContent is the first
-     * node or the last node of the range, this updates the cached range.
-     *
-     * @return true if aContent was in the cached range.
-     */
-    [[nodiscard]] bool ContentRemoved(const nsIContent& aContent,
-                                      const nsIContent* aPreviousSibling,
-                                      const dom::Element* aRootElement);
 
     /**
      * Compute offset and length of the cached range before the nodes between

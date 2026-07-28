@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,6 @@
 
 #include <bitset>
 #include <stdint.h>
-#include <stdio.h>
 #include <stack>
 #include <vector>
 
@@ -83,6 +80,7 @@ enum class GLFeature {
   blend_minmax,
   clear_buffers,
   copy_buffer,
+  copy_image,
   depth_clamp,
   depth_texture,
   draw_buffers,
@@ -177,7 +175,6 @@ enum class GLRenderer {
   Tegra,
   AndroidEmulator,
   GalliumLlvmpipe,
-  IntelHD3000,
   MicrosoftBasicRenderDriver,
   SamsungXclipse,
   Other
@@ -288,6 +285,13 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
   GLRenderer Renderer() const { return mRenderer; }
   bool IsMesa() const { return mIsMesa; }
 
+  const nsCString& VendorString() const { return mVendorString; }
+  const nsCString& RendererString() const { return mRendererString; }
+  const nsCString& VersionString() const { return mVersionString; }
+  const nsTArray<nsCString>& ExtensionStrings() const {
+    return mExtensionStrings;
+  }
+
   bool IsContextLost() const { return mContextLost; }
 
   bool CheckContextLost() const {
@@ -296,6 +300,7 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
   }
 
   bool HasPBOState() const { return (!IsGLES() || Version() >= 300); }
+  bool HasTexParamMipmapLevel() const { return HasPBOState(); }
 
   /**
    * If this context is double-buffered, returns TRUE.
@@ -342,6 +347,11 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
   GLRenderer mRenderer = GLRenderer::Other;
   bool mIsMesa = false;
 
+  nsCString mVendorString;
+  nsCString mRendererString;
+  nsCString mVersionString;
+  nsTArray<nsCString> mExtensionStrings;
+
   // -----------------------------------------------------------------------------
   // Extensions management
   /**
@@ -381,6 +391,7 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
     ARB_color_buffer_float,
     ARB_compatibility,
     ARB_copy_buffer,
+    ARB_copy_image,
     ARB_depth_clamp,
     ARB_depth_texture,
     ARB_draw_buffers,
@@ -457,6 +468,10 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
     EXT_timer_query,
     EXT_transform_feedback,
     EXT_unpack_subimage,
+    EXT_semaphore,
+    EXT_semaphore_fd,
+    EXT_memory_object,
+    EXT_memory_object_fd,
     IMG_read_format,
     IMG_texture_compression_pvrtc,
     IMG_texture_npot,
@@ -807,8 +822,14 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
   }
 
   void InvalidateFramebuffer(GLenum target) {
+#ifdef XP_IOS
+    // LOCAL_GL_DEPTH_STENCIL_ATTACHMENT cannot be invalidated on iOS.
+    constexpr auto ATTACHMENTS = make_array(GLenum{LOCAL_GL_COLOR_ATTACHMENT0});
+#else
     constexpr auto ATTACHMENTS = make_array(GLenum{LOCAL_GL_COLOR_ATTACHMENT0},
                                             LOCAL_GL_DEPTH_STENCIL_ATTACHMENT);
+#endif
+
     fInvalidateFramebuffer(target, ATTACHMENTS.size(), ATTACHMENTS.data());
   }
 
@@ -895,7 +916,18 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
  public:
   void fBufferData(GLenum target, GLsizeiptr size, const GLvoid* data,
                    GLenum usage) {
-    raw_fBufferData(target, size, data, usage);
+    if (WorkAroundDriverBugs() && target == LOCAL_GL_ARRAY_BUFFER &&
+        mVertexBufferExtraPadding) {
+      // Some drivers require extra padding at the end of array buffers.
+      // See bug 1983036.
+      raw_fBufferData(target, size + *mVertexBufferExtraPadding, nullptr,
+                      usage);
+      if (data) {
+        fBufferSubData(target, 0, size, data);
+      }
+    } else {
+      raw_fBufferData(target, size, data, usage);
+    }
 
     // bug 744888
     if (WorkAroundDriverBugs() && !data && Vendor() == GLVendor::NVIDIA) {
@@ -1397,7 +1429,7 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
   }
 
   GLint fGetUniformLocation(GLuint programObj, const GLchar* name) {
-    GLint retval = 0;
+    GLint retval = -1;
     BEFORE_GL_CALL;
     retval = mSymbols.fGetUniformLocation(programObj, name);
     OnSyncCall();
@@ -2443,6 +2475,7 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
 
   GLenum fClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout) {
     GLenum ret = 0;
+    MOZ_ASSERT(sync);
     BEFORE_GL_CALL;
     ASSERT_SYMBOL_PRESENT(fClientWaitSync);
     ret = mSymbols.fClientWaitSync(sync, flags, timeout);
@@ -3077,6 +3110,20 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
     AFTER_GL_CALL;
   }
 
+  // Core GL & Extension ARB_copy_image
+ public:
+  void fCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLevel,
+                         GLint srcX, GLint srcY, GLint srcZ, GLuint dstName,
+                         GLenum dstTarget, GLint dstLevel, GLint dstX,
+                         GLint dstY, GLint dstZ, GLsizei srcWidth,
+                         GLsizei srcHeight, GLsizei srcDepth) {
+    BEFORE_GL_CALL;
+    mSymbols.fCopyImageSubData(srcName, srcTarget, srcLevel, srcX, srcY, srcZ,
+                               dstName, dstTarget, dstLevel, dstX, dstY, dstZ,
+                               srcWidth, srcHeight, srcDepth);
+    AFTER_GL_CALL;
+  }
+
   // -----------------------------------------------------------------------------
   // Core GL & Extension ARB_map_buffer_range
  public:
@@ -3432,6 +3479,223 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
     AFTER_GL_CALL;
   }
 
+  // -----------------------------------------------------------------------------
+  // GL_EXT_semaphore
+  void fDeleteSemaphoresEXT(GLsizei n, const GLuint* semaphores) {
+    BEFORE_GL_CALL;
+    mSymbols.fDeleteSemaphoresEXT(n, semaphores);
+    AFTER_GL_CALL;
+  }
+
+  void fGenSemaphoresEXT(GLsizei n, GLuint* semaphores) {
+    BEFORE_GL_CALL;
+    mSymbols.fGenSemaphoresEXT(n, semaphores);
+    AFTER_GL_CALL;
+  }
+
+  void fGetSemaphoreParameterui64vEXT(GLuint semaphore, GLenum pname,
+                                      GLuint64* params) {
+    BEFORE_GL_CALL;
+    mSymbols.fGetSemaphoreParameterui64vEXT(semaphore, pname, params);
+    AFTER_GL_CALL;
+  }
+
+  realGLboolean fIsSemaphoreEXT(GLuint semaphore) {
+    realGLboolean ret = false;
+    BEFORE_GL_CALL;
+    ret = mSymbols.fIsSemaphoreEXT(semaphore);
+    AFTER_GL_CALL;
+    return ret;
+  }
+
+  void fSemaphoreParameterui64vEXT(GLuint semaphore, GLenum pname,
+                                   const GLuint64* params) {
+    BEFORE_GL_CALL;
+    mSymbols.fSemaphoreParameterui64vEXT(semaphore, pname, params);
+    AFTER_GL_CALL;
+  }
+
+  void fSignalSemaphoreEXT(GLuint semaphore, GLuint numBufferBarriers,
+                           const GLuint* buffers, GLuint numTextureBarriers,
+                           const GLuint* textures, const GLenum* dstLayouts) {
+    BEFORE_GL_CALL;
+    mSymbols.fSignalSemaphoreEXT(semaphore, numBufferBarriers, buffers,
+                                 numTextureBarriers, textures, dstLayouts);
+    AFTER_GL_CALL;
+  }
+
+  void fWaitSemaphoreEXT(GLuint semaphore, GLuint numBufferBarriers,
+                         const GLuint* buffers, GLuint numTextureBarriers,
+                         const GLuint* textures, const GLenum* srcLayouts) {
+    BEFORE_GL_CALL;
+    mSymbols.fWaitSemaphoreEXT(semaphore, numBufferBarriers, buffers,
+                               numTextureBarriers, textures, srcLayouts);
+    AFTER_GL_CALL;
+  }
+
+  // -----------------------------------------------------------------------------
+  // GL_EXT_semaphore_fd
+  void fImportSemaphoreFdEXT(GLuint semaphore, GLenum handleType, GLint fd) {
+    BEFORE_GL_CALL;
+    mSymbols.fImportSemaphoreFdEXT(semaphore, handleType, fd);
+    AFTER_GL_CALL;
+  }
+
+  // -----------------------------------------------------------------------------
+  // Extension EXT_memory_object
+  void fGetUnsignedBytevEXT(GLenum pname, GLubyte* data) {
+    BEFORE_GL_CALL;
+    mSymbols.fGetUnsignedBytevEXT(pname, data);
+    AFTER_GL_CALL;
+  }
+
+  void fGetUnsignedBytei_vEXT(GLenum target, GLuint index, GLubyte* data) {
+    BEFORE_GL_CALL;
+    mSymbols.fGetUnsignedBytei_vEXT(target, index, data);
+    AFTER_GL_CALL;
+  }
+
+  void fDeleteMemoryObjectsEXT(GLsizei n, const GLuint* memoryObjects) {
+    BEFORE_GL_CALL;
+    mSymbols.fDeleteMemoryObjectsEXT(n, memoryObjects);
+    AFTER_GL_CALL;
+  }
+
+  void fIsMemoryObjectEXT(GLuint memoryObject) {
+    BEFORE_GL_CALL;
+    mSymbols.fIsMemoryObjectEXT(memoryObject);
+    AFTER_GL_CALL;
+  }
+
+  void fCreateMemoryObjectsEXT(GLsizei n, GLuint* memoryObjects) {
+    BEFORE_GL_CALL;
+    mSymbols.fCreateMemoryObjectsEXT(n, memoryObjects);
+    AFTER_GL_CALL;
+  }
+
+  void fMemoryObjectParameterivEXT(GLuint memoryObject, GLenum pname,
+                                   const GLint* params) {
+    BEFORE_GL_CALL;
+    mSymbols.fMemoryObjectParameterivEXT(memoryObject, pname, params);
+    AFTER_GL_CALL;
+  }
+
+  void fGetMemoryObjectParameterivEXT(GLuint memoryObject, GLenum pname,
+                                      GLint* params) {
+    BEFORE_GL_CALL;
+    mSymbols.fGetMemoryObjectParameterivEXT(memoryObject, pname, params);
+    AFTER_GL_CALL;
+  }
+
+  void fTexStorageMem2DEXT(GLenum target, GLsizei levels, GLenum internalFormat,
+                           GLsizei width, GLsizei height, GLuint memory,
+                           GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fTexStorageMem2DEXT(target, levels, internalFormat, width, height,
+                                 memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fTexStorageMem2DMultisampleEXT(GLenum target, GLsizei samples,
+                                      GLenum internalFormat, GLsizei width,
+                                      GLsizei height,
+                                      realGLboolean fixedSampleLocations,
+                                      GLuint memory, GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fTexStorageMem2DMultisampleEXT(target, samples, internalFormat,
+                                            width, height, fixedSampleLocations,
+                                            memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fTexStorageMem3DEXT(GLenum target, GLsizei levels, GLenum internalFormat,
+                           GLsizei width, GLsizei height, GLsizei depth,
+                           GLuint memory, GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fTexStorageMem3DEXT(target, levels, internalFormat, width, height,
+                                 depth, memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fTexStorageMem3DMultisampleEXT(GLenum target, GLsizei samples,
+                                      GLenum internalFormat, GLsizei width,
+                                      GLsizei height, GLsizei depth,
+                                      realGLboolean fixedSampleLocations,
+                                      GLuint memory, GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fTexStorageMem3DMultisampleEXT(
+        target, samples, internalFormat, width, height, depth,
+        fixedSampleLocations, memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fBufferStorageMemEXT(GLenum target, GLsizeiptr size, GLuint memory,
+                            GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fBufferStorageMemEXT(target, size, memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fTextureStorageMem2DEXT(GLuint texture, GLsizei levels,
+                               GLenum internalFormat, GLsizei width,
+                               GLsizei height, GLuint memory, GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fTextureStorageMem2DEXT(texture, levels, internalFormat, width,
+                                     height, memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fTextureStorageMem2DMultisampleEXT(GLuint texture, GLsizei samples,
+                                          GLenum internalFormat, GLsizei width,
+                                          GLsizei height,
+                                          realGLboolean fixedSampleLocations,
+                                          GLuint memory, GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fTextureStorageMem2DMultisampleEXT(
+        texture, samples, internalFormat, width, height, fixedSampleLocations,
+        memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fTextureStorageMem3DEXT(GLuint texture, GLsizei levels,
+                               GLenum internalFormat, GLsizei width,
+                               GLsizei height, GLsizei depth, GLuint memory,
+                               GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fTextureStorageMem3DEXT(texture, levels, internalFormat, width,
+                                     height, depth, memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fTextureStorageMem3DMultisampleEXT(GLuint texture, GLsizei samples,
+                                          GLenum internalFormat, GLsizei width,
+                                          GLsizei height, GLsizei depth,
+                                          realGLboolean fixedSampleLocations,
+                                          GLuint memory, GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fTextureStorageMem3DMultisampleEXT(
+        texture, samples, internalFormat, width, height, depth,
+        fixedSampleLocations, memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  void fNamedBufferStorageMemEXT(GLuint buffer, GLsizeiptr size, GLuint memory,
+                                 GLuint64 offset) {
+    BEFORE_GL_CALL;
+    mSymbols.fNamedBufferStorageMemEXT(buffer, size, memory, offset);
+    AFTER_GL_CALL;
+  }
+
+  // -----------------------------------------------------------------------------
+  // Extension EXT_memory_object_fd
+
+  void fImportMemoryFdEXT(GLuint memory, GLuint64 size, GLenum handleType,
+                          GLint fd) {
+    BEFORE_GL_CALL;
+    mSymbols.fImportMemoryFdEXT(memory, size, handleType, fd);
+    AFTER_GL_CALL;
+  }
+
   // -
 
 #undef BEFORE_GL_CALL
@@ -3691,6 +3955,9 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
   bool mNeedsTextureSizeChecks = false;
   bool mNeedsFlushBeforeDeleteFB = false;
   bool mTextureAllocCrashesOnMapFailure = false;
+  // Amount of additional padding bytes that must be allocated for
+  // GL_ARRAY_BUFFER buffers to work around driver bugs. See bug 1983036.
+  Maybe<GLint> mVertexBufferExtraPadding;
   const bool mWorkAroundDriverBugs;
   mutable uint64_t mSyncGLCallCount = 0;
 
@@ -3782,7 +4049,7 @@ class GLContext : public GenericAtomicRefCounted, public SupportsWeakPtr {
 
   // --
 
-  void TexParams_SetClampNoMips(GLenum target = LOCAL_GL_TEXTURE_2D) {
+  void TexParams_SetClampNoMips(GLenum target) {
     fTexParameteri(target, LOCAL_GL_TEXTURE_WRAP_S, LOCAL_GL_CLAMP_TO_EDGE);
     fTexParameteri(target, LOCAL_GL_TEXTURE_WRAP_T, LOCAL_GL_CLAMP_TO_EDGE);
     fTexParameteri(target, LOCAL_GL_TEXTURE_MAG_FILTER, LOCAL_GL_NEAREST);
@@ -3831,15 +4098,15 @@ bool MarkBitfieldByString(const nsACString& str,
 }
 
 template <size_t N>
-void MarkBitfieldByStrings(const std::vector<nsCString>& strList,
-                           bool dumpStrings,
+void MarkBitfieldByStrings(Span<const nsCString> strList, bool dumpStrings,
                            const char* const (&markStrList)[N],
                            std::bitset<N>* const out_markList) {
   for (auto itr = strList.begin(); itr != strList.end(); ++itr) {
     const nsACString& str = *itr;
     const bool wasMarked = MarkBitfieldByString(str, markStrList, out_markList);
     if (dumpStrings)
-      printf_stderr("  %s%s\n", str.BeginReading(), wasMarked ? "(*)" : "");
+      printf_stderr("  %s%s\n", PromiseFlatCString(str).get(),
+                    wasMarked ? "(*)" : "");
   }
 }
 

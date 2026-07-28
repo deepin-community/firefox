@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -165,8 +164,8 @@ class nsCoreUtils {
    * and when.
    */
   MOZ_CAN_RUN_SCRIPT_BOUNDARY static nsresult ScrollSubstringTo(
-      nsIFrame* aFrame, nsRange* aRange, mozilla::ScrollAxis aVertical,
-      mozilla::ScrollAxis aHorizontal);
+      nsIFrame* aFrame, nsRange* aRange, mozilla::AxisScrollParams aVertical,
+      mozilla::AxisScrollParams aHorizontal);
 
   /**
    * Scrolls the given frame to the point, used for implememntation of
@@ -184,9 +183,9 @@ class nsCoreUtils {
    * Converts scroll type constant defined in nsIAccessibleScrollType to
    * vertical and horizontal parameters.
    */
-  static void ConvertScrollTypeToPercents(uint32_t aScrollType,
-                                          mozilla::ScrollAxis* aVertical,
-                                          mozilla::ScrollAxis* aHorizontal);
+  static void ConvertScrollTypeToPercents(
+      uint32_t aScrollType, mozilla::AxisScrollParams* aVertical,
+      mozilla::AxisScrollParams* aHorizontal);
 
   /**
    * Return document shell for the given DOM node.
@@ -336,6 +335,42 @@ class nsCoreUtils {
                                                        nsINode* aStartAncestor);
 
   static Element* GetAriaActiveDescendantElement(Element* aElement);
+
+  /**
+   * Return true if the given text frame is 0 width whitespace before a hard
+   * line break.  This is not visible and is semantically irrelevant. This can
+   * happen if there is whitespace before an invisible element at the end of a
+   * block. For example:
+   * <div><span>a</span> <span hidden>b</span></div>
+   * This results in a text node for "a" and a text node for " ". This function
+   * will return true for the latter node.
+   */
+  static bool IsTrimmedWhitespaceBeforeHardLineBreak(nsIFrame* aFrame);
+
+  static bool IsPseudoElement(nsIContent* aContent) {
+    return aContent->IsGeneratedContentContainerForBefore() ||
+           aContent->IsGeneratedContentContainerForAfter() ||
+           aContent->IsGeneratedContentContainerForMarker();
+  }
+
+  /**
+   * Return the anchor frame for the given CSS positioned frame, or null if:
+   * 1. there is none,
+   * 2. there is more than one anchor,
+   * 3. or, there is one or more anchor used for sizing/margin only.
+   */
+  static const nsIFrame* GetAnchorForPositionedFrame(
+      const PresShell* aPresShell, const nsIFrame* aPositionedFrame);
+
+  /**
+   * Return the CSS positioned frame for the given anchor frame, or null if:
+   * 1. there is none,
+   * 2. the anchor has more than one positioned frame,
+   * 3. or, there is one or more positioned frame using this anchor for
+   * sizing/margin only.
+   */
+  static nsIFrame* GetPositionedFrameForAnchor(const PresShell* aPresShell,
+                                               const nsIFrame* aAnchorFrame);
 };
 
 #endif

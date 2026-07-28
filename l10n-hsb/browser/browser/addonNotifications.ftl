@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Tute sydła sej přistup k wašim gratam MIDi (Musical Instrument Digital Interface) žada. Gratowy přistup da so zmóžnić, hdyž přidatk instalujeće.
 site-permission-install-first-prompt-midi-message = Wěsty přistup so njegarantuje. Postupujće jenož, jeli tutomu sydłu dowěrjeće.
+site-permission-install-first-prompt-serial-header = Tute sydło wo přistup k wašim serijowym gratam prosy. Instalujće přidatk, zo byšće přistup ke gratam zmóžnił.
+site-permission-install-first-prompt-serial-message = Wěsty přistup so njegarantuje. Postupujće jenož, jeli tutomu sydłu dowěrjeće.
 
 ##
 
@@ -69,7 +71,7 @@ webext-perms-update-menu-item = { $addonName } sej nowe prawa wužaduje
 # This message is shown when one or more extensions have been imported from a
 # different browser into Firefox, and the user needs to complete the import to
 # start these extensions. This message is shown in the appmenu.
-webext-imported-addons = Instalaciju rozšěrjenjow dokónčić, kotrež su so do { -brand-short-name } zainstalowali
+webext-imported-addons = Instalaciju rozšěrjenjow dokónčić, kotrež su so do { -brand-short-name } importowali
 
 ## Add-on removal warning
 
@@ -81,6 +83,8 @@ addon-removal-title = { $name } wotstronić?
 addon-removal-message = { $name } z { -brand-shorter-name } wotstronić?
 addon-removal-button = Wotstronić
 addon-removal-abuse-report-checkbox = { -vendor-short-name } tute rozšěrjenje zdźělić
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Jeli funkcije abo rozšěrjenja wužiwaće, kotrež tutón model wužiwaja, so tón znowa přidawa.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -135,14 +139,19 @@ addon-install-error-corrupt-file = Přidatk, kotryž sće z tutoho sydła sćahn
 addon-install-error-file-access = { $addonName } njeda so instalować, dokelž { -brand-short-name } njemóže trěbnu dataju změnić.
 addon-install-error-not-signed = { -brand-short-name } je tute sydło při instalowanju njepřepruwowaneho přidatka haćił.
 addon-install-error-invalid-domain = Přidatk { $addonName } njeda so z tutoho městna instalować.
+addon-install-error-no-addon-name-file-access = Přidatk njeda so instalować, dokelž { -brand-short-name } njemóže trěbnu dataju změnić.
 addon-local-install-error-network-failure = Tutón přidatk njeda so systemoweho zmylka dla instalować.
 addon-local-install-error-incorrect-hash = Tutón přidatk njeda so instalować, dokelž njewotpowěduje přidatkej, kotryž { -brand-short-name } wočakowaše.
 addon-local-install-error-corrupt-file = Tutón přidatk njeda so instalować, dokelž zda so, zo je wobškodźeny.
 addon-local-install-error-file-access = { $addonName } njeda so instalować, dokelž { -brand-short-name } njemóže trěbnu dataju změnić.
 addon-local-install-error-not-signed = Tutón přidatk njeda so instalować, dokelž njeje wobkrućeny.
+addon-local-install-no-addon-name-error-file-access = Přidatk njeda so instalować, dokelž { -brand-short-name } njemóže trěbnu dataju změnić.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } njeda so instalować, dokelž z { -brand-short-name } { $appVersion } kompatibelny njeje.
+addon-install-error-hard-blocked = { $addonName } so přećiwo prawidłam Mozilla přeńdźe a njeda so na { -brand-short-name } instalować.
+addon-install-error-soft-blocked2 = { $addonName } je wobmjezowany a njeda so na { -brand-short-name } instalować.
 addon-install-error-blocklisted = { $addonName } njeda so instalować, dokelž je wulke riziko, zo wón stabilnostne abo wěstotne problemy zawinuje.
+addon-install-error-soft-blocked = { $addonName } so přećiwo prawidłam Mozilla přeńdźe a njeda so na { -brand-short-name } instalować.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Njemóžeće { $addonName } jako kónčny wužiwar instalować, da so jenož wot organizacije z pomocu předewzaćelskich prawidłow instalować.

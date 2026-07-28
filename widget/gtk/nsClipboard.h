@@ -1,16 +1,12 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=2:tabstop=2:
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef __nsClipboard_h_
-#define __nsClipboard_h_
+#ifndef _nsClipboard_h_
+#define _nsClipboard_h_
 
 #include "mozilla/Maybe.h"
 #include "mozilla/Span.h"
-#include "mozilla/UniquePtr.h"
 #include "nsBaseClipboard.h"
 #include "nsIClipboard.h"
 #include "nsIObserver.h"
@@ -94,7 +90,7 @@ class nsRetrievalContext {
   static ClipboardTargets sPrimaryTargets;
 };
 
-class nsClipboard : public nsBaseClipboard, public nsIObserver {
+class nsClipboard final : public nsBaseClipboard, public nsIObserver {
  public:
   nsClipboard();
 
@@ -114,18 +110,19 @@ class nsClipboard : public nsBaseClipboard, public nsIObserver {
   void OwnerChangedEvent(GtkClipboard* aGtkClipboard,
                          GdkEventOwnerChange* aEvent);
 
+  mozilla::Result<int32_t, nsresult> GetNativeClipboardSequenceNumber(
+      ClipboardType aWhichClipboard) override;
+
  protected:
   // Implement the native clipboard behavior.
   NS_IMETHOD SetNativeClipboardData(nsITransferable* aTransferable,
                                     ClipboardType aWhichClipboard) override;
-  NS_IMETHOD GetNativeClipboardData(nsITransferable* aTransferable,
-                                    ClipboardType aWhichClipboard) override;
-  void AsyncGetNativeClipboardData(nsITransferable* aTransferable,
+  mozilla::Result<nsCOMPtr<nsISupports>, nsresult> GetNativeClipboardData(
+      const nsACString& aFlavor, ClipboardType aWhichClipboard) override;
+  void AsyncGetNativeClipboardData(const nsACString& aFlavor,
                                    ClipboardType aWhichClipboard,
-                                   GetDataCallback&& aCallback) override;
+                                   GetNativeDataCallback&& aCallback) override;
   nsresult EmptyNativeClipboardData(ClipboardType aWhichClipboard) override;
-  mozilla::Result<int32_t, nsresult> GetNativeClipboardSequenceNumber(
-      ClipboardType aWhichClipboard) override;
   mozilla::Result<bool, nsresult> HasNativeClipboardDataMatchingFlavors(
       const nsTArray<nsCString>& aFlavorList,
       ClipboardType aWhichClipboard) override;
@@ -143,17 +140,43 @@ class nsClipboard : public nsBaseClipboard, public nsIObserver {
   void ClearTransferable(int32_t aWhichClipboard);
   void ClearCachedTargets(int32_t aWhichClipboard);
 
-  bool FilterImportedFlavors(int32_t aWhichClipboard,
-                             nsTArray<nsCString>& aFlavors);
+  bool HasSuitableData(int32_t aWhichClipboard, const nsACString& aFlavor);
 
   // Hang on to our transferables so we can transfer data when asked.
   nsCOMPtr<nsITransferable> mSelectionTransferable;
   nsCOMPtr<nsITransferable> mGlobalTransferable;
   RefPtr<nsRetrievalContext> mContext;
 
+  void IncrementSequenceNumber(int32_t aWhichClipboard) {
+    if (aWhichClipboard == kSelectionClipboard) {
+      mSelectionSequenceNumber++;
+    } else {
+      mGlobalSequenceNumber++;
+    }
+  }
+  int32_t GetSequenceNumber(int32_t aWhichClipboard) {
+    return (aWhichClipboard == kSelectionClipboard) ? mSelectionSequenceNumber
+                                                    : mGlobalSequenceNumber;
+  }
+
   // Sequence number of the system clipboard data.
   int32_t mSelectionSequenceNumber = 0;
   int32_t mGlobalSequenceNumber = 0;
+
+  void MarkNextOwnerClipboardChange(int32_t aWhichClipboard, bool aOurChange) {
+    if (aWhichClipboard == kSelectionClipboard) {
+      mWeSetSelectionData = aOurChange;
+    } else {
+      mWeSetGlobalData = aOurChange;
+    }
+  }
+  bool IsOurOwnerClipboardChange(int32_t aWhichClipboard) {
+    return (aWhichClipboard == kSelectionClipboard) ? mWeSetSelectionData
+                                                    : mWeSetGlobalData;
+  }
+
+  bool mWeSetSelectionData = false;
+  bool mWeSetGlobalData = false;
 };
 
 extern const int kClipboardTimeout;
@@ -163,4 +186,4 @@ GdkAtom GetSelectionAtom(int32_t aWhichClipboard);
 mozilla::Maybe<nsIClipboard::ClipboardType> GetGeckoClipboardType(
     GtkClipboard* aGtkClipboard);
 
-#endif /* __nsClipboard_h_ */
+#endif /* _nsClipboard_h_ */

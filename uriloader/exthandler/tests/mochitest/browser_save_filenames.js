@@ -27,6 +27,10 @@ let types = {
   zip: "application/zip",
   json: "application/json",
   tar: "application/x-tar",
+  mp2: "audio/mpeg",
+  wav: "audio/x-wav",
+  m4a: "audio/mp4",
+  mp4: "video/mp4",
 };
 
 const PNG_DATA = atob(
@@ -55,7 +59,7 @@ const DEFAULT_FILENAME =
 const PROMISE_FILENAME_TYPE = "application/x-moz-file-promise-dest-filename";
 
 let MockFilePicker = SpecialPowers.MockFilePicker;
-MockFilePicker.init(window.browsingContext);
+MockFilePicker.init();
 
 let expectedItems;
 let sendAsAttachment = false;
@@ -130,6 +134,21 @@ function checkShortenedFilename(actual, expected) {
       expected.startsWith(actual.substring(0, actualDot))
     ) {
       return true;
+    }
+
+    // validateFileNameForSaving may preserve a dangerous extension (e.g.
+    // ".lnk") when truncating a long filename. This places the extension at a
+    // position in the root where the expected name has different characters.
+    // Strip that inner extension from the actual root and re-check.
+    if (actualExtension == expectedExtension) {
+      let actualRoot = actual.substring(0, actualDot);
+      let innerDot = actualRoot.lastIndexOf(".");
+      if (
+        innerDot > 0 &&
+        expected.startsWith(actualRoot.substring(0, innerDot))
+      ) {
+        return true;
+      }
     }
   }
 
@@ -228,6 +247,12 @@ function getDirectoryEntries(dir) {
   return files;
 }
 
+// Strips the random seed (_XXXX, 4 base64url chars) that nsWebBrowserPersist
+// inserts before the file extension of saved subresources.
+function stripSeedFromFilename(filename) {
+  return filename.replace(/_[A-Za-z0-9_-]{4}(?=\.[^.]+$|$)/, "");
+}
+
 // This test saves the document as a complete web page and verifies
 // that the resources are saved with the correct filename.
 add_task(async function save_document() {
@@ -252,26 +277,19 @@ add_task(async function save_document() {
   saveBrowser(browser);
   await savePromise;
 
-  let filesSaved = getDirectoryEntries(tmpDir);
+  let filesSaved = getDirectoryEntries(tmpDir).map(stripSeedFromFilename);
 
   for (let idx = 0; idx < expectedItems.length; idx++) {
     let filename = expectedItems[idx].filename;
-    if (idx == 66 && AppConstants.platform == "win") {
-      // This is special-cased on Windows. The default filename will be used, since
-      // the filename is invalid, but since the previous test file has the same issue,
-      // this second file will be saved with a number suffix added to it.
-      filename = "Untitled_002";
-    }
-
-    let file = tmpDir.clone();
-    file.append(filename);
 
     let fileIdx = -1;
     // Use checkShortenedFilename to check long filenames.
     if (filename.length > 240) {
       for (let t = 0; t < filesSaved.length; t++) {
+        // After seed stripping a 64-char truncated filename is 59 chars;
+        // use 55 as the lower bound to also tolerate CreateUnique shortening.
         if (
-          filesSaved[t].length > 60 &&
+          filesSaved[t].length > 55 &&
           checkShortenedFilename(filesSaved[t], filename)
         ) {
           fileIdx = t;
@@ -387,30 +405,22 @@ if (AppConstants.platform == "win" && imageAsFileEnabled) {
         continue;
       }
 
-      let data = await SpecialPowers.spawn(
-        gBrowser.selectedBrowser,
-        [idx, PROMISE_FILENAME_TYPE],
-        (imagenum, type) => {
-          // No need to wait for the data to be really on the clipboard, we only
-          // need the promise data added when the command is performed.
-          SpecialPowers.setCommandNode(
-            content,
-            content.document.getElementById("i" + imagenum)
-          );
-          SpecialPowers.doCommand(content, "cmd_copyImageContents");
-
-          return SpecialPowers.getClipboardData(type);
-        }
-      );
-
-      is(
-        data,
+      await SimpleTest.promiseClipboardChange(
         expectedItems[idx].filename,
-        "i" +
-          idx +
-          " " +
-          expectedItems[idx].filename +
-          " was saved with the correct name when copying"
+        () => {
+          return SpecialPowers.spawn(
+            gBrowser.selectedBrowser,
+            [idx],
+            imagenum => {
+              SpecialPowers.setCommandNode(
+                content,
+                content.document.getElementById("i" + imagenum)
+              );
+              SpecialPowers.doCommand(content, "cmd_copyImageContents");
+            }
+          );
+        },
+        PROMISE_FILENAME_TYPE
       );
     }
   });

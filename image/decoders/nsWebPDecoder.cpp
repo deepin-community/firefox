@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -619,8 +618,9 @@ LexerResult nsWebPDecoder::ReadMultiple(WebPDemuxer* aDemuxer,
   return rv;
 }
 
-Maybe<Telemetry::HistogramID> nsWebPDecoder::SpeedHistogram() const {
-  return Some(Telemetry::IMAGE_DECODE_SPEED_WEBP);
+Maybe<glean::impl::MemoryDistributionMetric> nsWebPDecoder::SpeedMetric()
+    const {
+  return Some(glean::image_decode::speed_webp);
 }
 
 }  // namespace image

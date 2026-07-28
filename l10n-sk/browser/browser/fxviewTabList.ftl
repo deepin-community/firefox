@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Presunúť na koniec
     .accesskey = k
 fxviewtabrow-move-tab-window = Presunúť do nového okna
     .accesskey = r
+fxviewtabrow-send-to-device = Odoslať do zariadenia
+    .accesskey = z
+fxviewtabrow-send-to-mobile = Odoslať do mobilu
+    .accesskey = m
 fxviewtabrow-send-tab = Odoslať kartu do zariadenia
     .accesskey = O
 fxviewtabrow-pin-tab = Pripnúť kartu
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Zapnúť zvuk na karte
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Možnosti pre { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Stlmiť { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Zapnúť zvuk pre { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Stlmiť zvuk na tejto karte
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Zapnúť zvuk na tejto karte
+fxviewtabrow-send-to-mobile-connect-device = Pripojiť zariadenie a odoslať karty
+fxviewtabrow-send-to-mobile-device-missing2 = Nevidíte svoje zariadenie?
+fxviewtabrow-send-to-mobile-not-verified = Účet nie je overený
+fxviewtabrow-send-to-mobile-verify-account = Overte svoj účet
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Prihlásiť sa a odoslať karty
+fxviewtabrow-send-to-mobile-turn-on-sync = Zapnúť synchronizáciu a odoslať karty

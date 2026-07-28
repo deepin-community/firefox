@@ -6,7 +6,6 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { Sqlite } from "resource://gre/modules/Sqlite.sys.mjs";
 
 const SCHEMA_VERSION = 1;
-const TRACKERS_BLOCKED_COUNT = "contentblocking.trackers_blocked_count";
 
 const lazy = {};
 
@@ -19,6 +18,13 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "social_enabled",
   "privacy.socialtracking.block_cookies.enabled",
   false
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "flushOnQueryEnabled",
+  "browser.contentblocking.database.flushOnQuery.enabled",
+  true
 );
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -128,6 +134,7 @@ TrackingDBService.prototype = {
   _db: null,
   waitingTasks: new Set(),
   finishedShutdown: true,
+  _flushingLiveLogs: false,
 
   async ensureDB() {
     await this._initPromise;
@@ -135,6 +142,11 @@ TrackingDBService.prototype = {
   },
 
   async _initialize() {
+    if (Services.startup.shuttingDown) {
+      // Skip initialization once shutdown has begun
+      return;
+    }
+
     let db = await Sqlite.openConnection({ path: lazy.DB_PATH });
 
     try {
@@ -168,7 +180,12 @@ TrackingDBService.prototype = {
   async _shutdown() {
     let db = await this.ensureDB();
     this.finishedShutdown = true;
-    await Promise.all(Array.from(this.waitingTasks, task => task.finalize()));
+    // Ensure all waiting tasks are finalized before closing the DB
+    await Promise.all(
+      Array.from(this.waitingTasks, task =>
+        task.isFinalized ? null : task.finalize()
+      )
+    );
     await db.close();
   },
 
@@ -186,6 +203,30 @@ TrackingDBService.prototype = {
     }, 0);
     task.arm();
     this.waitingTasks.add(task);
+  },
+
+  /**
+   * Force every live top-level WindowGlobalParent to flush its in-memory
+   * ContentBlockingLog to the database, then wait for those writes to settle.
+   * Called before read paths so long-lived tabs contribute up-to-date data.
+   */
+  async _flushLiveLogs() {
+    if (
+      this.finishedShutdown ||
+      !lazy.flushOnQueryEnabled ||
+      this._flushingLiveLogs
+    ) {
+      return;
+    }
+    this._flushingLiveLogs = true;
+    try {
+      WindowGlobalParent.flushAllContentBlockingLogs();
+      if (this.waitingTasks.size) {
+        await Promise.all([...this.waitingTasks].map(task => task.finalize()));
+      }
+    } finally {
+      this._flushingLiveLogs = false;
+    }
   },
 
   identifyType(events) {
@@ -232,16 +273,24 @@ TrackingDBService.prototype = {
         ) {
           result = Ci.nsITrackingDBService.SOCIAL_ID;
         } else if (
-          // If there is a tracker blocked. If there is a social tracker blocked, but STP is not enabled.
+          // If there is a tracker blocked, attribute it to trackers. Social
+          // tracker blocks also fall through to here when STP is not enabled.
+          // We also attribute replaced tracking content and email tracker
+          // blocks to trackers.
           state & Ci.nsIWebProgressListener.STATE_BLOCKED_TRACKING_CONTENT ||
-          state & Ci.nsIWebProgressListener.STATE_BLOCKED_SOCIALTRACKING_CONTENT
+          state &
+            Ci.nsIWebProgressListener.STATE_BLOCKED_SOCIALTRACKING_CONTENT ||
+          state & Ci.nsIWebProgressListener.STATE_REPLACED_TRACKING_CONTENT ||
+          state & Ci.nsIWebProgressListener.STATE_BLOCKED_EMAILTRACKING_CONTENT
         ) {
           result = Ci.nsITrackingDBService.TRACKERS_ID;
         } else if (
           // If a tracking cookie was blocked attribute it to tracking cookies.
           // This includes social tracking cookies since STP is not enabled.
           state & Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_TRACKER ||
-          state & Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_SOCIALTRACKER
+          state &
+            Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_SOCIALTRACKER ||
+          state & Ci.nsIWebProgressListener.STATE_COOKIES_PARTITIONED_TRACKER
         ) {
           result = Ci.nsITrackingDBService.TRACKING_COOKIES_ID;
         } else if (
@@ -276,6 +325,7 @@ TrackingDBService.prototype = {
 
   /**
    * Saves data rows to the DB.
+   *
    * @param data
    *        An array of JS objects representing row items to save.
    */
@@ -290,7 +340,7 @@ TrackingDBService.prototype = {
           let type = this.identifyType(log[thirdParty]);
           if (type) {
             // Send the blocked event to Telemetry
-            Services.telemetry.scalarAdd(TRACKERS_BLOCKED_COUNT, 1);
+            Glean.contentblocking.trackersBlockedCount.add(1);
 
             // today is a date "YYY-MM-DD" which can compare with what is
             // already saved in the database.
@@ -357,17 +407,30 @@ TrackingDBService.prototype = {
 
   async clearAll() {
     let db = await this.ensureDB();
+    // Ensure all waiting tasks are finalized before clearing the DB.
+    await Promise.all(
+      Array.from(this.waitingTasks, task =>
+        task.isFinalized ? null : task.finalize()
+      )
+    );
     await removeAllRecords(db);
   },
 
   async clearSince(date) {
     let db = await this.ensureDB();
+    // Ensure all waiting tasks are finalized before clearing the DB.
+    await Promise.all(
+      Array.from(this.waitingTasks, task =>
+        task.isFinalized ? null : task.finalize()
+      )
+    );
     date = new Date(date).toISOString();
     await removeRecordsSince(db, date);
   },
 
   async getEventsByDateRange(dateFrom, dateTo) {
     let db = await this.ensureDB();
+    await this._flushLiveLogs();
     dateFrom = new Date(dateFrom).toISOString();
     dateTo = new Date(dateTo).toISOString();
     return db.execute(SQL.selectByDateRange, { dateFrom, dateTo });
@@ -375,6 +438,7 @@ TrackingDBService.prototype = {
 
   async sumAllEvents() {
     let db = await this.ensureDB();
+    await this._flushLiveLogs();
     let results = await db.execute(SQL.sumAllEvents);
     if (!results[0]) {
       return 0;
@@ -385,6 +449,7 @@ TrackingDBService.prototype = {
 
   async getEarliestRecordedDate() {
     let db = await this.ensureDB();
+    await this._flushLiveLogs();
     let date = await db.execute(SQL.getEarliestDate);
     if (!date[0]) {
       return null;

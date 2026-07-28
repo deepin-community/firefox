@@ -20,6 +20,8 @@ toolbar-context-menu-bookmark-selected-tabs =
 toolbar-context-menu-select-all-tabs =
     .label = Вибрати всі вкладки
     .accesskey = б
+# Variables
+#   $tabCount (number) - Number of tabs
 toolbar-context-menu-reopen-closed-tabs =
     .label =
         { $tabCount ->
@@ -28,21 +30,24 @@ toolbar-context-menu-reopen-closed-tabs =
            *[many] Відновити { $tabCount } закритих вкладок
         }
     .accesskey = В
-
+toolbar-context-turn-on-vertical-tabs =
+    .label = Увімкнути вертикальні вкладки
+toolbar-context-turn-off-vertical-tabs =
+    .label = Вимкнути вертикальні вкладки
+toolbar-context-customize-sidebar =
+    .label = Налаштувати бічну панель
 toolbar-context-menu-manage-extension =
     .label = Керувати розширенням
     .accesskey = К
 toolbar-context-menu-remove-extension =
     .label = Вилучити розширення
     .accesskey = л
-
 # This label is used in the extensions toolbar buttons context menus,
 # a user can use this command to submit to Mozilla an abuse report
 # related to that extension. "Report" is a verb.
 toolbar-context-menu-report-extension =
     .label = Поскаржитись на розширення
     .accesskey = с
-
 # Can appear on the same context menu as toolbar-context-menu-menu-bar-cmd
 # ("Menu Bar") and personalbarCmd ("Bookmarks Toolbar"), so they should
 # have different access keys.
@@ -55,6 +60,10 @@ toolbar-context-menu-auto-hide-downloads-button-2 =
 toolbar-context-menu-always-open-downloads-panel =
     .label = Показувати панель, коли починається завантаження
     .accesskey = П
+# Label of checkbox menu item to toggle visibility of Extensions Button.
+toolbar-context-menu-always-show-extensions-button =
+    .label = Завжди показувати на панелі інструментів
+    .accesskey = З
 toolbar-context-menu-remove-from-toolbar =
     .label = Вилучити з панелі
     .accesskey = В
@@ -69,7 +78,6 @@ toolbar-context-menu-view-customize-toolbar-2 =
 toolbar-context-menu-pin-to-toolbar =
     .label = Закріпити на панелі інструментів
     .accesskey = З
-
 toolbar-context-menu-bookmarks-toolbar-always-show-2 =
     .label = Завжди показувати
     .accesskey = ж
@@ -79,11 +87,9 @@ toolbar-context-menu-bookmarks-toolbar-never-show-2 =
 toolbar-context-menu-bookmarks-toolbar-on-new-tab-2 =
     .label = Показувати лише на новій вкладці
     .accesskey = л
-
 toolbar-context-menu-bookmarks-show-other-bookmarks =
     .label = Показати інші закладки
     .accesskey = о
-
 toolbar-context-menu-menu-bar-cmd =
     .toolbarname = Панель меню
     .accesskey = н

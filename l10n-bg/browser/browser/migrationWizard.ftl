@@ -53,12 +53,20 @@ migration-imported-edge-reading-list = Списък за четене (от Edge
 ## is installed as a Snap.
 
 migration-no-permissions-message = { -brand-short-name } няма достъп до профилите на другите браузъри, инсталирани на това устройство.
-migration-no-permissions-instructions-step1 = Изберете „Продължи“
+migration-no-permissions-instructions = За да продължите да внасяте данни от друг мрежов четец, разрешете на { -brand-short-name } достъп до папката на потребителския му профил.
+migration-no-permissions-instructions-step1 = Изберете „Продължаване“
+# The second step in getting permissions to read data for the selected
+# browser type.
+#
+# Variables:
+#  $permissionsPath (String): the file system path that the user will need to grant read permission to.
+migration-no-permissions-instructions-step2 = В инструмента за избор на файлове отворете <code>{ $permissionsPath }</code> и изберете „Избиране“.
 
 ## These strings will be displayed based on how many resources are selected to import
 
 migration-all-available-data-label = Внасяне на всички налични данни
 migration-no-selected-data-label = Няма избрани данни за внасяне
+migration-selected-data-label = Внасяне на избраните данни
 
 ##
 
@@ -71,15 +79,17 @@ migration-logins-and-passwords-option-label = Запазени регистра�
 migration-passwords-option-label = Запазени пароли
 migration-history-option-label = История на сърфирането
 migration-extensions-option-label = Разширения
+migration-form-autofill-option-label = Данни за автоматично попълване на формуляри
 migration-payment-methods-option-label = Начини на плащане
 migration-cookies-option-label = Бисквитки
 migration-session-option-label = Прозорци и раздели
 migration-otherdata-option-label = Други данни
 migration-passwords-from-file-progress-header = Внасяне на файл с пароли
 migration-passwords-from-file-success-header = Паролите бяха успешно внесени
+migration-passwords-from-file = Проверка на файла за пароли
 migration-passwords-new = Нови пароли
 migration-passwords-updated = Съществуващи пароли
-migration-passwords-from-file-no-valid-data = Файлът не съдържа пароли, които може да импортирате. Изберете друг файл.
+migration-passwords-from-file-no-valid-data = Файлът не съдържа пароли, които може да внесете. Изберете друг файл.
 migration-passwords-from-file-picker-title = Внасяне на файл с пароли
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -101,13 +111,25 @@ migration-passwords-from-file-tsv-filter-title =
 # Variables:
 #  $newEntries (Number): the number of new successfully imported passwords
 migration-wizard-progress-success-new-passwords =
-    { NUMBER($newEntries) ->
+    { $newEntries ->
         [one] { $newEntries } добавена
        *[other] { $newEntries } добавени
+    }
+# Shown in the migration wizard after importing passwords from a file
+# has completed, if existing passwords were updated.
+#
+# Variables:
+#  $updatedEntries (Number): the number of updated passwords
+migration-wizard-progress-success-updated-passwords =
+    { $updatedEntries ->
+        [one] { $updatedEntries } е обновена
+       *[other] { $updatedEntries } са обновени
     }
 migration-bookmarks-from-file-picker-title = Внасяне на файл с отметки
 migration-bookmarks-from-file-progress-header = Внасяне на отметки
 migration-bookmarks-from-file = Отметки
+migration-bookmarks-from-file-success-header = Отметките са успешно внесени
+migration-bookmarks-from-file-no-valid-data = Файлът не съдържа отметки, които може да внесете. Изберете друг файл.
 # A description for the .html file format that may be shown as the file type
 # filter by the operating system.
 migration-bookmarks-from-file-html-filter-title =
@@ -118,12 +140,24 @@ migration-bookmarks-from-file-html-filter-title =
 # A description for the .json file format that may be shown as the file type
 # filter by the operating system.
 migration-bookmarks-from-file-json-filter-title = Файл JSON
+# Shown in the migration wizard after importing bookmarks from a file
+# has completed.
+#
+# Variables:
+#  $newEntries (Number): the number of imported bookmarks.
+migration-wizard-progress-success-new-bookmarks =
+    { $newEntries ->
+        [one] { $newEntries } отметка
+       *[other] { $newEntries } отметки
+    }
 migration-import-button-label = Внасяне
 migration-choose-to-import-from-file-button-label = Внасяне от файл
-migration-import-from-file-button-label = Изберете Файл
+migration-import-from-file-button-label = Избиране на файл
 migration-cancel-button-label = Отказ
 migration-done-button-label = Готово
 migration-continue-button-label = Продължи
+migration-wizard-import-browser-no-browsers = { -brand-short-name } не можа да намери приложения, съдържащи отметки, история или информация за пароли.
+migration-wizard-import-browser-no-resources = Възникна грешка. В този потребителски профил на четеца { -brand-short-name } не може да намери данни, които да бъдат внесени.
 
 ## These strings will be used to create a dynamic list of items that can be
 ## imported. The list will be created using Intl.ListFormat(), so it will
@@ -138,6 +172,7 @@ migration-list-favorites-label = любими
 migration-list-password-label = пароли
 migration-list-history-label = история
 migration-list-extensions-label = разширения
+migration-list-autofill-label = данни за автоматично попълване
 migration-list-payment-methods-label = методи на плащане
 
 ##
@@ -157,14 +192,21 @@ migration-wizard-progress-icon-completed =
     .aria-label = Завършено
 migration-safari-password-import-header = Внасяне на пароли от Safari
 migration-safari-password-import-steps-header = За да внесете пароли от Safari:
-migration-safari-password-import-select-button = Изберете Файл
+migration-safari-password-import-step1 = В Safari отворете менюто „Safari“ и отидете на Настройки → Пароли
+migration-safari-password-import-step2 = Изберете бутона <img data-l10n-name="safari-icon-3dots"/> и изберете „Изнасяне на всички пароли“
+migration-safari-password-import-step3 = Запазете файла с паролите
+migration-safari-password-import-step4 = Използвайте „Избиране на файл“ по-долу, за да изберете файла с пароли, който сте запазили
+migration-manual-password-import-skip-button = Пропускане
+migration-manual-password-import-select-button = Избиране на файл
+migration-safari-password-import-skip-button = Пропускане
+migration-safari-password-import-select-button = Избиране на файл
 # Shown in the migration wizard after importing bookmarks from another
 # browser has completed.
 #
 # Variables:
 #  $quantity (Number): the number of successfully imported bookmarks
 migration-wizard-progress-success-bookmarks =
-    { NUMBER($quantity) ->
+    { $quantity ->
         [one] { $quantity } отметка
        *[other] { $quantity } отметки
     }
@@ -176,7 +218,7 @@ migration-wizard-progress-success-bookmarks =
 # Variables:
 #  $quantity (Number): the number of successfully imported bookmarks
 migration-wizard-progress-success-favorites =
-    { NUMBER($quantity) ->
+    { $quantity ->
         [one] { $quantity } любим
        *[other] { $quantity } любими
     }
@@ -191,7 +233,7 @@ migration-wizard-progress-success-favorites =
 # Variables:
 #   $quantity (Number): the number of successfully imported extensions
 migration-wizard-progress-success-extensions =
-    { NUMBER($quantity) ->
+    { $quantity ->
         [one] { $quantity } разширениe
        *[other] { $quantity } разширения
     }
@@ -202,6 +244,11 @@ migration-wizard-progress-success-extensions =
 #   $matched (Number): the number of matched imported extensions
 #   $quantity (Number): the number of total extensions found during import
 migration-wizard-progress-partial-success-extensions = { $matched } от { $quantity } разширения
+migration-wizard-progress-extensions-support-link = Научете как { -brand-product-name } съпоставя разширения
+# Shown in the migration wizard if there are no matched extensions
+# on import from supported browsers.
+migration-wizard-progress-no-matched-extensions = Няма съвпадащи разширения
+migration-wizard-progress-extensions-addons-link = Разглеждане на разширения за { -brand-short-name }
 
 ##
 
@@ -211,19 +258,31 @@ migration-wizard-progress-partial-success-extensions = { $matched } от { $quan
 # Variables:
 #  $quantity (Number): the number of successfully imported passwords
 migration-wizard-progress-success-passwords =
-    { NUMBER($quantity) ->
+    { $quantity ->
         [one] { $quantity } парола
        *[other] { $quantity } пароли
     }
+# Shown in the migration wizard after importing history from another
+# browser has completed.
+#
+# Variables:
+#  $maxAgeInDays (Number): the maximum number of days of history that might be imported.
+migration-wizard-progress-success-history =
+    { $maxAgeInDays ->
+        [one] От последния ден
+       *[other] От последните { $maxAgeInDays } дни
+    }
+migration-wizard-progress-success-formdata = История на формуляри
 # Shown in the migration wizard after importing payment methods from another
 # browser has completed.
 #
 # Variables:
 #  $quantity (Number): the number of successfully imported payment methods
 migration-wizard-progress-success-payment-methods =
-    { NUMBER($quantity) ->
+    { $quantity ->
         [one] { $quantity } начин за плащане
        *[other] { $quantity } начина за плащане
     }
+migration-wizard-safari-permissions-sub-header = За да внесете отметки и история на сърфиране от Safari:
 migration-wizard-safari-instructions-continue = Изберете „Продължи“
 migration-wizard-safari-instructions-folder = Изберете папка Safari от списъка и изберете „Отваряне“

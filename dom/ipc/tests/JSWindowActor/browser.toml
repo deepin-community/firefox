@@ -7,8 +7,7 @@ support-files = ["head.js"]
 
 ["browser_destroy_callbacks.js"]
 skip-if = [
-  "apple_catalina && !debug", #Bug 1604538
-  "apple_silicon && !debug", #Bug 1604538
+  "os == 'mac' && os_version == '10.15' && arch == 'x86_64' && opt", # Bug 1604538
 ]
 
 ["browser_event_listener.js"]
@@ -31,5 +30,3 @@ support-files = [
 ["browser_sendAsyncMessage.js"]
 
 ["browser_sendQuery.js"]
-
-["browser_uri_combination.js"]

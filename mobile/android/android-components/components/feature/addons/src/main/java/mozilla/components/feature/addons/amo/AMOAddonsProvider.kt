@@ -9,11 +9,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.AtomicFile
 import androidx.annotation.VisibleForTesting
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
 import mozilla.components.concept.fetch.Client
 import mozilla.components.concept.fetch.Request
 import mozilla.components.concept.fetch.isSuccess
@@ -34,6 +36,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import kotlin.collections.set
 
 internal const val API_VERSION = "api/v4"
 internal const val DEFAULT_SERVER_URL = "https://services.addons.mozilla.org"
@@ -62,6 +65,7 @@ internal const val PAGE_SIZE = 50
  * @property maxCacheAgeInMinutes maximum time (in minutes) the cached featured add-ons
  * should remain valid before a refresh is attempted. Defaults to -1, meaning no cache
  * is being used by default
+ * @property ioDispatcher Coroutine dispatcher for IO operations.
  */
 class AMOAddonsProvider(
     private val context: Context,
@@ -71,6 +75,7 @@ class AMOAddonsProvider(
     private val collectionName: String = DEFAULT_COLLECTION_NAME,
     private val sortOption: SortOption = SortOption.POPULARITY_DESC,
     private val maxCacheAgeInMinutes: Long = -1,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AddonsProvider {
 
     private val logger = Logger("AMOAddonsProvider")
@@ -104,12 +109,12 @@ class AMOAddonsProvider(
      * a connectivity problem or a timeout.
      */
     @Throws(IOException::class)
-    @Suppress("NestedBlockDepth")
+    @Suppress("NestedBlockDepth", "CognitiveComplexMethod")
     override suspend fun getFeaturedAddons(
         allowCache: Boolean,
         readTimeoutInSeconds: Long?,
         language: String?,
-    ): List<Addon> {
+    ): List<Addon> = withContext(ioDispatcher) {
         // We want to make sure we always use useFallbackFile = false here, as it warranties
         // that we are trying to fetch the latest localized add-ons when the user changes
         // language from the previous one.
@@ -120,10 +125,10 @@ class AMOAddonsProvider(
         }
 
         if (cachedFeaturedAddons != null) {
-            return cachedFeaturedAddons
+            return@withContext cachedFeaturedAddons
         }
 
-        return try {
+        return@withContext try {
             fetchFeaturedAddons(readTimeoutInSeconds, language)
         } catch (e: IOException) {
             logger.error("Failed to fetch available add-ons", e)
@@ -137,7 +142,7 @@ class AMOAddonsProvider(
                                 SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.US).format(cacheLastUpdated)
                             }",
                         )
-                        return it
+                        return@withContext it
                     }
                 }
             }
@@ -145,7 +150,44 @@ class AMOAddonsProvider(
         }
     }
 
-    private suspend fun fetchFeaturedAddons(readTimeoutInSeconds: Long?, language: String?): List<Addon> {
+    override suspend fun getAddonByID(
+        id: String,
+        readTimeoutInSeconds: Long?,
+        language: String?,
+    ): Addon? {
+        val langParam = when (!language.isNullOrEmpty()) {
+            true -> "&lang=$language"
+            else -> ""
+        }
+
+        return client.fetch(
+            Request(
+                url = "$serverURL/$API_VERSION/addons/search/?guid=$id$langParam",
+                readTimeout = Pair(readTimeoutInSeconds ?: DEFAULT_READ_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS),
+            ),
+        ).use { response ->
+            if (response.isSuccess) {
+                val responseBody = response.body.string(Charsets.UTF_8)
+                try {
+                    JSONObject(responseBody)
+                        .getAddonsFromSearchResults(language)
+                        .firstOrNull()
+                } catch (e: JSONException) {
+                    logger.error("Failed to get addon by uuid [$id]", e)
+                    null
+                }
+            } else {
+                logger.error("Failed to get addon by uuid [$id]. Status code: ${response.status}")
+                null
+            }
+        }
+    }
+
+    @Suppress("CognitiveComplexMethod")
+    private suspend fun fetchFeaturedAddons(
+        readTimeoutInSeconds: Long?,
+        language: String?,
+    ): List<Addon> = withContext(ioDispatcher) {
         val langParam = if (!language.isNullOrEmpty()) {
             "&lang=$language"
         } else {
@@ -165,7 +207,7 @@ class AMOAddonsProvider(
             .use { response ->
                 if (response.isSuccess) {
                     val responseBody = response.body.string(Charsets.UTF_8)
-                    return try {
+                    return@withContext try {
                         JSONObject(responseBody).getAddonsFromCollection(language)
                             .loadIcons()
                             .also {
@@ -244,9 +286,12 @@ class AMOAddonsProvider(
     }
 
     @VisibleForTesting
-    internal fun readFromDiskCache(language: String?, useFallbackFile: Boolean): List<Addon>? {
+    internal suspend fun readFromDiskCache(
+        language: String?,
+        useFallbackFile: Boolean,
+    ): List<Addon>? = withContext(ioDispatcher) {
         synchronized(diskCacheLock) {
-            return getCacheFile(context, language, useFallbackFile).readAndDeserialize {
+            return@withContext getCacheFile(context, language, useFallbackFile).readAndDeserialize {
                 JSONObject(it).getAddonsFromCollection(language)
             }
         }
@@ -260,8 +305,7 @@ class AMOAddonsProvider(
         val currentCacheFileName = getBaseCacheFile(context, language, useFallbackFile = true).name
 
         context.filesDir
-            .listFiles {
-                    _, s ->
+            .listFiles { _, s ->
                 s.startsWith(COLLECTION_FILE_NAME_PREFIX) && s != currentCacheFileName
             }
             ?.forEach {
@@ -346,6 +390,13 @@ enum class SortOption(val value: String) {
     NAME_DESC("-name"),
     DATE_ADDED("added"),
     DATE_ADDED_DESC("-added"),
+}
+
+internal fun JSONObject.getAddonsFromSearchResults(language: String? = null): List<Addon> {
+    val addonsJson = getJSONArray("results")
+    return (0 until addonsJson.length()).map { index ->
+        addonsJson.getJSONObject(index).toAddon(language)
+    }
 }
 
 internal fun JSONObject.getAddonsFromCollection(language: String? = null): List<Addon> {

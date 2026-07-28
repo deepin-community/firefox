@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,14 +5,16 @@
 #ifndef LAYOUT_SVG_SVGTEXTFRAME_H_
 #define LAYOUT_SVG_SVGTEXTFRAME_H_
 
+#include "gfxMatrix.h"
+#include "gfxRect.h"
+#include "gfxTextRun.h"
 #include "mozilla/Attributes.h"
+#include "mozilla/EnumeratedArray.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/PresShellForwards.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/SVGContainerFrame.h"
 #include "mozilla/gfx/2D.h"
-#include "gfxMatrix.h"
-#include "gfxRect.h"
-#include "gfxTextRun.h"
 #include "nsIContent.h"  // for GetContent
 #include "nsStubMutationObserver.h"
 #include "nsTextFrame.h"
@@ -25,6 +25,7 @@ namespace mozilla {
 
 class CharIterator;
 class DisplaySVGText;
+class SVGContextPaint;
 class SVGTextFrame;
 class TextFrameIterator;
 class TextNodeCorrespondenceRecorder;
@@ -43,6 +44,17 @@ nsIFrame* NS_NewSVGTextFrame(mozilla::PresShell* aPresShell,
                              mozilla::ComputedStyle* aStyle);
 
 namespace mozilla {
+
+enum class SVGTextFrameWhichCachedRange {
+  Before,
+  After,
+};
+
+// Glue to make EnumeratedArray work with SVGTextFrameWhichCachedRange.
+template <>
+struct MaxContiguousEnumValue<SVGTextFrameWhichCachedRange> {
+  static constexpr auto value = SVGTextFrameWhichCachedRange::After;
+};
 
 /**
  * Information about the positioning for a single character in an SVG <text>
@@ -183,11 +195,7 @@ class SVGTextFrame final : public SVGDisplayContainerFrame {
 
  protected:
   explicit SVGTextFrame(ComputedStyle* aStyle, nsPresContext* aPresContext)
-      : SVGDisplayContainerFrame(aStyle, aPresContext, kClassID),
-        mTrailingUndisplayedCharacters(0),
-        mFontSizeScaleFactor(1.0f),
-        mLastContextScale(1.0f),
-        mLengthAdjustScaleFactor(1.0f) {
+      : SVGDisplayContainerFrame(aStyle, aPresContext, kClassID) {
     AddStateBits(NS_FRAME_SVG_LAYOUT | NS_FRAME_IS_SVG_TEXT |
                  NS_STATE_SVG_TEXT_CORRESPONDENCE_DIRTY |
                  NS_STATE_SVG_POSITIONING_DIRTY);
@@ -203,8 +211,10 @@ class SVGTextFrame final : public SVGDisplayContainerFrame {
   void Init(nsIContent* aContent, nsContainerFrame* aParent,
             nsIFrame* aPrevInFlow) override;
 
+  void DidSetComputedStyle(ComputedStyle* aOldComputedStyle) override;
+
   nsresult AttributeChanged(int32_t aNamespaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+                            AttrModType aModType) override;
 
   nsContainerFrame* GetContentInsertionFrame() override {
     return PrincipalChildList().FirstChild()->GetContentInsertionFrame();
@@ -226,13 +236,13 @@ class SVGTextFrame final : public SVGDisplayContainerFrame {
       const nsPoint& aPoint, FrameWithDistance* aCurrentBestFrame) override;
 
   // ISVGDisplayableFrame interface:
-  void NotifySVGChanged(uint32_t aFlags) override;
+  void NotifySVGChanged(ChangeFlags aFlags) override;
   void PaintSVG(gfxContext& aContext, const gfxMatrix& aTransform,
                 imgDrawingParams& aImgParams) override;
   nsIFrame* GetFrameForPoint(const gfxPoint& aPoint) override;
   void ReflowSVG() override;
   SVGBBox GetBBoxContribution(const Matrix& aToBBoxUserspace,
-                              uint32_t aFlags) override;
+                              SVGBBoxFlags aFlags) override;
 
   // SVG DOM text methods:
   uint32_t GetNumberOfChars(nsIContent* aContent);
@@ -366,7 +376,7 @@ class SVGTextFrame final : public SVGDisplayContainerFrame {
       mFrame->GetContent()->AddMutationObserver(this);
       SetEnabledCallbacks(kCharacterDataChanged | kAttributeChanged |
                           kContentAppended | kContentInserted |
-                          kContentRemoved);
+                          kContentWillBeRemoved);
     }
 
     // nsISupports
@@ -519,10 +529,12 @@ class SVGTextFrame final : public SVGDisplayContainerFrame {
    * nsTextFrame::DrawPathCallbacks rather than directly painting
    * the text frames.
    *
+   * @param aContextPaint Used by context-fill and context-stroke.
    * @param aShouldPaintSVGGlyphs (out) Whether SVG glyphs in the text
    *   should be painted.
    */
-  bool ShouldRenderAsPath(nsTextFrame* aFrame, bool& aShouldPaintSVGGlyphs);
+  bool ShouldRenderAsPath(nsTextFrame* aFrame, SVGContextPaint* aContextPaint,
+                          bool& aShouldPaintSVGGlyphs);
 
   // Methods to get information for a <textPath> frame.
   already_AddRefed<Path> GetTextPath(nsIFrame* aTextPathFrame);
@@ -535,6 +547,11 @@ class SVGTextFrame final : public SVGDisplayContainerFrame {
   RefPtr<MutationObserver> mMutationObserver;
 
   /**
+   * Computed position information for each DOM character within the <text>.
+   */
+  nsTArray<CharPosition> mPositions;
+
+  /**
    * The number of characters in the DOM after the final nsTextFrame.  For
    * example, with
    *
@@ -542,12 +559,7 @@ class SVGTextFrame final : public SVGDisplayContainerFrame {
    *
    * mTrailingUndisplayedCharacters would be 2.
    */
-  uint32_t mTrailingUndisplayedCharacters;
-
-  /**
-   * Computed position information for each DOM character within the <text>.
-   */
-  nsTArray<CharPosition> mPositions;
+  uint32_t mTrailingUndisplayedCharacters = 0;
 
   /**
    * mFontSizeScaleFactor is used to cause the nsTextFrames to create text
@@ -571,20 +583,64 @@ class SVGTextFrame final : public SVGDisplayContainerFrame {
    * screen.  (The "reasonable" range as determined by some #defines in
    * SVGTextFrame.cpp is 8..200.)
    */
-  float mFontSizeScaleFactor;
+  float mFontSizeScaleFactor = 1.0f;
 
   /**
    * The scale of the context that we last used to compute mFontSizeScaleFactor.
    * We record this so that we can tell when our scale transform has changed
    * enough to warrant reflowing the text.
    */
-  float mLastContextScale;
+  float mLastContextScale = 1.0f;
 
   /**
    * The amount that we need to scale each rendered run to account for
    * lengthAdjust="spacingAndGlyphs".
    */
-  float mLengthAdjustScaleFactor;
+  float mLengthAdjustScaleFactor = 1.0f;
+
+ public:
+  struct CachedMeasuredRange {
+    CachedMeasuredRange() : mAdvance(0) {}
+    Range mRange;
+    nscoord mAdvance;
+  };
+
+  void SetCurrentFrameForCaching(const nsTextFrame* aFrame) {
+    if (mFrameForCachedRanges != aFrame) {
+      std::fill(mCachedRanges.begin(), mCachedRanges.end(),
+                CachedMeasuredRange());
+      mFrameForCachedRanges = aFrame;
+    }
+  }
+
+  using WhichRange = SVGTextFrameWhichCachedRange;
+
+  CachedMeasuredRange& CachedRange(WhichRange aWhichRange) {
+    return mCachedRanges[aWhichRange];
+  }
+
+  // Return a reference to a PropertyProvider for the given textframe;
+  // the provider is cached by SVGTextFrame to avoid creating it afresh
+  // for repeated operations involving the same textframe.
+  nsTextFrame::PropertyProvider& PropertyProviderFor(nsTextFrame* aFrame) {
+    if (!mCachedProvider || aFrame != mCachedProvider->GetFrame()) {
+      mCachedProvider.reset();
+      mCachedProvider.emplace(aFrame,
+                              aFrame->EnsureTextRun(nsTextFrame::eInflated));
+    }
+    return mCachedProvider.ref();
+  }
+
+  // Forget any cached PropertyProvider. This should be called at the end of
+  // any method that relied on PropertyProviderFor(), to avoid leaving a
+  // cached provider that may become invalid.
+  void ForgetCachedProvider() { mCachedProvider.reset(); }
+
+ private:
+  const nsTextFrame* mFrameForCachedRanges = nullptr;
+  EnumeratedArray<WhichRange, CachedMeasuredRange> mCachedRanges;
+
+  Maybe<nsTextFrame::PropertyProvider> mCachedProvider;
 };
 
 }  // namespace mozilla

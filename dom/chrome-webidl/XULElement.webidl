@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -6,8 +5,7 @@
 
 interface XULControllers;
 
-[ChromeOnly,
- Exposed=Window]
+[ChromeOnly, Exposed=Window]
 interface XULElement : Element {
   [HTMLConstructor] constructor();
 
@@ -35,12 +33,12 @@ interface XULElement : Element {
   [SetterThrows]
   attribute DOMString src;
 
-  [Throws, ChromeOnly]
-  readonly attribute XULControllers             controllers;
+  [BinaryName="ensureControllers"]
+  readonly attribute XULControllers controllers;
 
   [NeedsCallerType]
-  undefined                      click();
-  undefined                      doCommand();
+  undefined click();
+  undefined doCommand();
 
   // Returns true if this is a menu-type element that has a menu
   // frame associated with it.
@@ -51,8 +49,9 @@ interface XULElement : Element {
   undefined openMenu(boolean open);
 };
 
+XULElement includes ElementOffsetAttributes;
 XULElement includes GlobalEventHandlers;
-XULElement includes HTMLOrForeignElement;
+XULElement includes HTMLOrSVGOrMathMLElement;
 XULElement includes ElementCSSInlineStyle;
 XULElement includes TouchEventHandlers;
 XULElement includes OnErrorEventHandlerForNodes;

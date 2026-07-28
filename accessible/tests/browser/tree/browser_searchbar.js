@@ -8,6 +8,12 @@ const { CustomizableUITestUtils } = ChromeUtils.importESModule(
 );
 let gCUITestUtils = new CustomizableUITestUtils(window);
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.search.widget.new", false]],
+  });
+});
+
 // eslint-disable-next-line camelcase
 add_task(async function test_searchbar_a11y_tree() {
   let searchbar = await gCUITestUtils.addSearchBar();
@@ -33,7 +39,7 @@ add_task(async function test_searchbar_a11y_tree() {
 
       // input element
       {
-        role: ROLE_ENTRY,
+        role: ROLE_SEARCHBOX,
         children: [],
       },
 
@@ -72,7 +78,7 @@ add_task(async function test_searchbar_a11y_tree() {
 
       // input element
       {
-        role: ROLE_ENTRY,
+        role: ROLE_SEARCHBOX,
         children: [],
       },
 

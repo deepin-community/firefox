@@ -5,24 +5,34 @@ import argparse
 import atexit
 import os
 import re
+import sys
 
 from filter_git_changes import filter_git_changes
-from run_operations import get_last_line, run_hg, run_shell, update_resume_state
+from run_operations import (
+    ErrorHelp,
+    RepoType,
+    detect_repo_type,
+    get_last_line,
+    run_git,
+    run_hg,
+    run_shell,
+    update_resume_state,
+)
 
 # This script vendors moz-libwebrtc, handles add/deletes/renames and
 # commits the newly vendored code with the provided commit message.
 
-error_help = None
 script_name = os.path.basename(__file__)
+error_help = ErrorHelp()
+error_help.set_prefix(f"*** ERROR *** {script_name} did not complete successfully")
+error_help.set_postfix(
+    f"Please resolve the error and then continue running {script_name}"
+)
+repo_type = detect_repo_type()
 
 
 def early_exit_handler():
-    print("*** ERROR *** {} did not complete successfully".format(script_name))
-    if error_help is not None:
-        print(error_help)
-        print(
-            "Please resolve the error and then continue running {}".format(script_name)
-        )
+    error_help.print_help()
 
 
 def log_output_lines(lines, log_dir, filename):
@@ -37,12 +47,12 @@ def log_output_lines(lines, log_dir, filename):
 
 def vendor_current_stack(github_branch, github_path, script_dir):
     print("-------")
-    print("------- Vendor {} from {}".format(github_branch, github_path))
+    print(f"------- Vendor {github_branch} from {github_path}")
     print("-------")
     cmd = [
         "./mach",
         "python",
-        "{}/vendor-libwebrtc.py".format(script_dir),
+        f"{script_dir}/vendor-libwebrtc.py",
         "--from-local",
         github_path,
         "--commit",
@@ -57,8 +67,12 @@ def restore_mozbuild_files(target_dir, log_dir):
     print("-------")
     print("------- Restore moz.build files from repo")
     print("-------")
-    cmd = 'hg revert --include "{}/**moz.build" {}'.format(target_dir, target_dir)
-    stdout_lines = run_shell(cmd)  # run_shell to allow file wildcard
+    if repo_type == RepoType.GIT:
+        cmd = f"git restore '{target_dir}/**moz.build'"
+        stdout_lines = run_shell(cmd)
+    else:
+        cmd = f'hg revert --include "{target_dir}/**moz.build" {target_dir}'
+        stdout_lines = run_shell(cmd)  # run_shell to allow file wildcard
     log_output_lines(stdout_lines, log_dir, "log-regen-mozbuild-files.txt")
 
 
@@ -74,8 +88,12 @@ def remove_deleted_upstream_files(
         print("-------")
         print("------- Remove deleted upstream files")
         print("-------")
-        cmd = "hg rm {}".format(" ".join(deleted_paths))
-        stdout_lines = run_hg(cmd)
+        if repo_type == RepoType.GIT:
+            cmd = f"git rm {' '.join(deleted_paths)}"
+            stdout_lines = run_git(cmd, ".")
+        else:
+            cmd = f"hg rm {' '.join(deleted_paths)}"
+            stdout_lines = run_hg(cmd)
         log_output_lines(stdout_lines, log_dir, "log-deleted-upstream-files.txt")
 
 
@@ -91,8 +109,12 @@ def add_new_upstream_files(
         print("-------")
         print("------- Add new upstream files")
         print("-------")
-        cmd = "hg add {}".format(" ".join(added_paths))
-        stdout_lines = run_hg(cmd)
+        if repo_type == RepoType.GIT:
+            cmd = f"git add {' '.join(added_paths)}"
+            stdout_lines = run_git(cmd, ".")
+        else:
+            cmd = f"hg add {' '.join(added_paths)}"
+            stdout_lines = run_hg(cmd)
         log_output_lines(stdout_lines, log_dir, "log-new-upstream-files.txt")
 
 
@@ -113,17 +135,29 @@ def handle_renamed_upstream_files(
         print("------- Handle renamed upstream files")
         print("-------")
         for x in renamed_paths:
-            cmd = "hg rename --after {}".format(x)
-            stdout_lines = run_hg(cmd)
+            if repo_type == RepoType.GIT:
+                # git doesn't have an equivalent command to mercurial
+                # where a rename/mv can be indicated retroactively, so
+                # remove the old file and add the new file.
+                source, destination = x.split(" ")
+                cmd = f"git rm {source} ; git add {destination}"
+                stdout_lines = run_shell(cmd)
+            else:
+                cmd = f"hg rename --after {x}"
+                stdout_lines = run_hg(cmd)
             log_output_lines(stdout_lines, log_dir, "log-renamed-upstream-files.txt")
 
 
 def commit_all_changes(github_sha, commit_msg_filename, target_dir):
     print("-------")
-    print("------- Commit vendored changes from {}".format(github_sha))
+    print(f"------- Commit vendored changes from {github_sha}")
     print("-------")
-    cmd = "hg commit -l {} {}".format(commit_msg_filename, target_dir)
-    run_hg(cmd)
+    if repo_type == RepoType.GIT:
+        cmd = f"git commit --file={commit_msg_filename} {target_dir}"
+        run_git(cmd, ".")
+    else:
+        cmd = f"hg commit -l {commit_msg_filename} {target_dir}"
+        run_hg(cmd)
 
 
 def vendor_and_commit(
@@ -140,23 +174,21 @@ def vendor_and_commit(
     # an error.
     atexit.register(early_exit_handler)
 
-    print("script_dir: {}".format(script_dir))
-    print("github_path: {}".format(github_path))
-    print("github_branch: {}".format(github_branch))
-    print("github_sha: {}".format(github_sha))
-    print("target_dir: {}".format(target_dir))
-    print("state_dir: {}".format(state_dir))
-    print("log_dir: {}".format(log_dir))
-    print("commit_msg_filename: {}".format(commit_msg_filename))
+    print(f"script_dir: {script_dir}")
+    print(f"github_path: {github_path}")
+    print(f"github_branch: {github_branch}")
+    print(f"github_sha: {github_sha}")
+    print(f"target_dir: {target_dir}")
+    print(f"state_dir: {state_dir}")
+    print(f"log_dir: {log_dir}")
+    print(f"commit_msg_filename: {commit_msg_filename}")
 
     resume_state_filename = os.path.join(state_dir, "vendor_and_commit.resume")
 
-    noop_commit_path = os.path.join(state_dir, "{}.no-op-cherry-pick-msg").format(
-        github_sha
-    )
+    noop_commit_path = os.path.join(state_dir, f"{github_sha}.no-op-cherry-pick-msg")
     handle_noop_commit = os.path.exists(noop_commit_path)
-    print("noop_commit_path: {}".format(noop_commit_path))
-    print("handle_noop_commit: {}".format(handle_noop_commit))
+    print(f"noop_commit_path: {noop_commit_path}")
+    print(f"handle_noop_commit: {handle_noop_commit}")
     if handle_noop_commit:
         print("***")
         print("*** Detected special commit msg, setting handle_noop_commit.")
@@ -167,36 +199,35 @@ def vendor_and_commit(
         print("*** commit.")
         print("***")
 
-    global error_help
     resume_state = ""
     if os.path.exists(resume_state_filename):
         resume_state = get_last_line(resume_state_filename).strip()
-    print("resume_state: '{}'".format(resume_state))
+    print(f"resume_state: '{resume_state}'")
 
     if len(resume_state) == 0:
         update_resume_state("resume2", resume_state_filename)
-        error_help = (
-            "Running script '{}/vendor-libwebrtc.py' failed.\n"
-            "Please manually confirm that all changes from git ({})\n"
+        error_help.set_help(
+            f"Running script '{script_dir}/vendor-libwebrtc.py' failed.\n"
+            f"Please manually confirm that all changes from git ({github_path})\n"
             "are reflected in the output of 'hg diff'"
-        ).format(script_dir, github_path)
+        )
         vendor_current_stack(github_branch, github_path, script_dir)
-        error_help = None
+        error_help.set_help(None)
 
     if len(resume_state) == 0 or resume_state == "resume2":
         resume_state = ""
         update_resume_state("resume3", resume_state_filename)
-        error_help = (
+        error_help.set_help(
             "An error occurred while restoring moz.build files after vendoring.\n"
             "Verify no moz.build files are modified, missing, or changed."
         )
         restore_mozbuild_files(target_dir, log_dir)
-        error_help = None
+        error_help.set_help(None)
 
     if len(resume_state) == 0 or resume_state == "resume3":
         resume_state = ""
         update_resume_state("resume4", resume_state_filename)
-        error_help = (
+        error_help.set_help(
             "An error occurred while removing deleted upstream files.\n"
             "Verify files deleted in the newest upstream commit are also\n"
             "shown as deleted in the output of 'hg status'"
@@ -204,12 +235,12 @@ def vendor_and_commit(
         remove_deleted_upstream_files(
             github_path, github_sha, target_dir, log_dir, handle_noop_commit
         )
-        error_help = None
+        error_help.set_help(None)
 
     if len(resume_state) == 0 or resume_state == "resume4":
         resume_state = ""
         update_resume_state("resume5", resume_state_filename)
-        error_help = (
+        error_help.set_help(
             "An error occurred while adding new upstream files.\n"
             "Verify files added in the newest upstream commit are also\n"
             "shown as added in the output of 'hg status'"
@@ -217,12 +248,12 @@ def vendor_and_commit(
         add_new_upstream_files(
             github_path, github_sha, target_dir, log_dir, handle_noop_commit
         )
-        error_help = None
+        error_help.set_help(None)
 
     if len(resume_state) == 0 or resume_state == "resume5":
         resume_state = ""
         update_resume_state("resume6", resume_state_filename)
-        error_help = (
+        error_help.set_help(
             "An error occurred while adding handling renamed upstream files.\n"
             "Verify files renamed in the newest upstream commit are also\n"
             "shown as renamed/moved in the output of 'hg status'"
@@ -230,16 +261,21 @@ def vendor_and_commit(
         handle_renamed_upstream_files(
             github_path, github_sha, target_dir, log_dir, handle_noop_commit
         )
-        error_help = None
+        error_help.set_help(None)
 
     if len(resume_state) == 0 or resume_state == "resume6":
         resume_state = ""
         update_resume_state("", resume_state_filename)
-        error_help = (
+        error_help.set_help(
             "An error occurred while committing the vendored changes to Mercurial.\n"
         )
+        # write the base of latest commit sha for use next time
+        with open(os.path.join(target_dir, "README.mozilla.last-vendor"), "a") as f:
+            # write the the command line used
+            f.write("# base of lastest vendoring\n")
+            f.write(f"{github_sha}\n")
         commit_all_changes(github_sha, commit_msg_filename, target_dir)
-        error_help = None
+        error_help.set_help(None)
 
     # unregister the exit handler so the normal exit doesn't falsely
     # report as an error.
@@ -247,6 +283,11 @@ def vendor_and_commit(
 
 
 if __name__ == "__main__":
+    # first, check which repo we're in, git or hg
+    if repo_type is None or not isinstance(repo_type, RepoType):
+        error_help.set_help("Unable to detect repo (git or hg)")
+        sys.exit(1)
+
     default_target_dir = "third_party/libwebrtc"
     default_state_dir = ".moz-fast-forward"
     default_log_dir = ".moz-fast-forward/logs"
@@ -277,17 +318,17 @@ if __name__ == "__main__":
     parser.add_argument(
         "--target-path",
         default=default_target_dir,
-        help="target path for vendoring (defaults to {})".format(default_target_dir),
+        help=f"target path for vendoring (defaults to {default_target_dir})",
     )
     parser.add_argument(
         "--state-path",
         default=default_state_dir,
-        help="path to state directory (defaults to {})".format(default_state_dir),
+        help=f"path to state directory (defaults to {default_state_dir})",
     )
     parser.add_argument(
         "--log-path",
         default=default_log_dir,
-        help="path to log directory (defaults to {})".format(default_log_dir),
+        help=f"path to log directory (defaults to {default_log_dir})",
     )
     parser.add_argument(
         "--commit-msg-path",

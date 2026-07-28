@@ -13,17 +13,16 @@ body {
 }
 
 body {
-  background: url(chrome://browser/content/messagepreview/limelight.svg)
-    center/contain no-repeat;
+  background: url(chrome://browser/content/messagepreview/limelight.svg) center/contain no-repeat;
   -moz-context-properties: fill, fill-opacity;
-  fill: var(--in-content-icon-color);
+  fill: var(--icon-color);
   fill-opacity: 0.2;
 }
 
 #light-switch {
   background: url(chrome://browser/content/messagepreview/switch.svg) center/contain no-repeat;
-  fill: var(--in-content-icon-color);
-  stroke: var(--in-content-icon-color);
+  fill: var(--icon-color);
+  stroke: var(--icon-color);
   fill-opacity: 0.8;
   height: 80px;
   width: 80px;
@@ -34,16 +33,4 @@ body {
   #light-switch {
     transform: scaleY(-1);
   }
-}
-
-.hint-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hint {
-  max-width: 40em;
-  font-size: 1.2em;
-  text-align: center;
 }

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,10 +7,10 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/StaticPrefs_dom.h"
-#include "mozilla/dom/fs/TargetPtrHolder.h"
 #include "mozilla/dom/quota/OriginOperationCallbacks.h"
 #include "mozilla/dom/quota/QuotaManager.h"
 #include "mozilla/dom/quota/ResultExtensions.h"
+#include "mozilla/dom/quota/TargetPtrHolder.h"
 #include "nsError.h"
 #include "nsIThread.h"
 #include "nsThreadUtils.h"
@@ -88,7 +86,7 @@ void OriginOperationBase::RunImmediately() {
              })
 #endif
       ->Then(mQuotaManager->IOThread(), __func__,
-             [selfHolder = fs::TargetPtrHolder(this)](
+             [selfHolder = TargetPtrHolder(this)](
                  const BoolPromise::ResolveOrRejectValue& aValue) {
                if (aValue.IsReject()) {
                  return BoolPromise::CreateAndReject(aValue.RejectValue(),

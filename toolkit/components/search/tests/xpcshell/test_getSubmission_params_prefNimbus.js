@@ -1,7 +1,7 @@
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
-/* Test that MozParam condition="pref" values used in search URLs can be set
+/* Test that preference parameters used in search URLs can be set
    by Nimbus, and that their special characters are URL encoded. */
 
 "use strict";
@@ -40,13 +40,18 @@ const CONFIG = [
 ];
 
 add_setup(async function () {
-  updateStub = sinon.stub(NimbusFeatures.search, "onUpdate");
-  getVariableStub = sinon.stub(NimbusFeatures.search, "getVariable");
-  sinon.stub(NimbusFeatures.search, "ready").resolves();
+  updateStub = sinon.stub(NimbusFeatures.searchConfiguration, "onUpdate");
+  getVariableStub = sinon.stub(
+    NimbusFeatures.searchConfiguration,
+    "getVariable"
+  );
+  sinon.stub(NimbusFeatures.searchConfiguration, "ready").resolves();
 
-  // The test engines used in this test need to be recognized as application
-  // provided engines, or their MozParams will be ignored.
   SearchTestUtils.setRemoteSettingsConfig(CONFIG);
+
+  registerCleanupFunction(async () => {
+    sinon.restore();
+  });
 });
 
 add_task(async function test_pref_initial_value() {
@@ -61,14 +66,14 @@ add_task(async function test_pref_initial_value() {
     },
   ]);
 
-  await Services.search.init();
+  await SearchService.init();
 
   Assert.ok(
     updateStub.called,
     "Should have called onUpdate to listen for future updates"
   );
 
-  const engine = Services.search.getEngineById("preferenceEngine");
+  const engine = SearchService.getEngineById("preferenceEngine");
   Assert.equal(
     engine.getSubmission("foo").uri.spec,
     baseURL + "code=good%26id%3Dunique&q=foo",
@@ -88,7 +93,7 @@ add_task(async function test_pref_updated() {
   // Update the pref without re-init nor restart.
   updateStub.firstCall.args[0]();
 
-  const engine = Services.search.getEngineById("preferenceEngine");
+  const engine = SearchService.getEngineById("preferenceEngine");
   Assert.equal(
     engine.getSubmission("foo").uri.spec,
     baseURL + "code=supergood%26id%3Dunique123456&q=foo",
@@ -110,7 +115,7 @@ add_task(async function test_multiple_params() {
   // Update the pref without re-init nor restart.
   updateStub.firstCall.args[0]();
 
-  let engine = Services.search.getEngineById("preferenceEngine");
+  let engine = SearchService.getEngineById("preferenceEngine");
   Assert.equal(
     engine.getSubmission("foo").uri.spec,
     baseURL + "code=sng&test=sup&q=foo",
@@ -127,7 +132,7 @@ add_task(async function test_multiple_params() {
   // Update the pref without re-init nor restart.
   updateStub.firstCall.args[0]();
 
-  engine = Services.search.getEngineById("preferenceEngine");
+  engine = SearchService.getEngineById("preferenceEngine");
   Assert.equal(
     engine.getSubmission("foo").uri.spec,
     baseURL + "code=sng&q=foo",
@@ -141,7 +146,7 @@ add_task(async function test_pref_cleared() {
   getVariableStub.withArgs("extraParams").returns([]);
   updateStub.firstCall.args[0]();
 
-  let engine = Services.search.getEngineById("preferenceEngine");
+  let engine = SearchService.getEngineById("preferenceEngine");
   Assert.equal(
     engine.getSubmission("foo").uri.spec,
     baseURL + "q=foo",

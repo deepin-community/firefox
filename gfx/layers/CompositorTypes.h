@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,7 +12,6 @@
 #include "nsXULAppAPI.h"  // for GeckoProcessType, etc
 #include "mozilla/gfx/Types.h"
 #include "mozilla/layers/SyncObject.h"
-#include "mozilla/EnumSet.h"
 
 #include "mozilla/TypedEnumBits.h"
 
@@ -99,9 +96,11 @@ enum class TextureFlags : uint32_t {
   SOFTWARE_DECODED_VIDEO = 1 << 23,
   // Whether the remote texture must wait for its owner to be created.
   WAIT_FOR_REMOTE_TEXTURE_OWNER = 1 << 24,
+  // Buffer is allocated by buffer provider like Canvas2D
+  ALLOC_BY_BUFFER_PROVIDER = 1 << 25,
 
   // OR union of all valid bits
-  ALL_BITS = (1 << 25) - 1,
+  ALL_BITS = (1 << 26) - 1,
   // the default flags
   DEFAULT = NO_FLAGS
 };
@@ -133,6 +132,7 @@ MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(DiagnosticTypes)
  * See gfx/layers/Effects.h
  */
 enum class EffectTypes : uint8_t {
+  ROUNDED_CLIP,
   RGB,
   YCBCR,
   NV12,
@@ -175,6 +175,7 @@ struct TextureFactoryIdentifier {
   int32_t mMaxTextureSize;
   bool mCompositorUseANGLE;
   bool mCompositorUseDComp;
+  bool mUseLayerCompositor;
   bool mUseCompositorWnd;
   bool mSupportsTextureBlitting;
   bool mSupportsPartialUploads;
@@ -186,8 +187,8 @@ struct TextureFactoryIdentifier {
       LayersBackend aLayersBackend = LayersBackend::LAYERS_NONE,
       GeckoProcessType aParentProcessType = GeckoProcessType_Default,
       int32_t aMaxTextureSize = 4096, bool aCompositorUseANGLE = false,
-      bool aCompositorUseDComp = false, bool aUseCompositorWnd = false,
-      bool aSupportsTextureBlitting = false,
+      bool aCompositorUseDComp = false, bool aUseLayerCompositor = false,
+      bool aUseCompositorWnd = false, bool aSupportsTextureBlitting = false,
       bool aSupportsPartialUploads = false, bool aSupportsComponentAlpha = true,
       bool aSupportsD3D11NV12 = false, SyncHandle aSyncHandle = {})
       : mParentBackend(aLayersBackend),
@@ -197,6 +198,7 @@ struct TextureFactoryIdentifier {
         mMaxTextureSize(aMaxTextureSize),
         mCompositorUseANGLE(aCompositorUseANGLE),
         mCompositorUseDComp(aCompositorUseDComp),
+        mUseLayerCompositor(aUseLayerCompositor),
         mUseCompositorWnd(aUseCompositorWnd),
         mSupportsTextureBlitting(aSupportsTextureBlitting),
         mSupportsPartialUploads(aSupportsPartialUploads),
@@ -209,8 +211,8 @@ struct TextureFactoryIdentifier {
       WebRenderCompositor aWebRenderCompositor,
       GeckoProcessType aParentProcessType = GeckoProcessType_Default,
       int32_t aMaxTextureSize = 4096, bool aCompositorUseANGLE = false,
-      bool aCompositorUseDComp = false, bool aUseCompositorWnd = false,
-      bool aSupportsTextureBlitting = false,
+      bool aCompositorUseDComp = false, bool aUseLayerCompositor = false,
+      bool aUseCompositorWnd = false, bool aSupportsTextureBlitting = false,
       bool aSupportsPartialUploads = false, bool aSupportsComponentAlpha = true,
       bool aSupportsD3D11NV12 = false, SyncHandle aSyncHandle = {})
       : mParentBackend(LayersBackend::LAYERS_WR),
@@ -220,6 +222,7 @@ struct TextureFactoryIdentifier {
         mMaxTextureSize(aMaxTextureSize),
         mCompositorUseANGLE(aCompositorUseANGLE),
         mCompositorUseDComp(aCompositorUseDComp),
+        mUseLayerCompositor(aUseLayerCompositor),
         mUseCompositorWnd(aUseCompositorWnd),
         mSupportsTextureBlitting(aSupportsTextureBlitting),
         mSupportsPartialUploads(aSupportsPartialUploads),
@@ -266,25 +269,19 @@ enum class OpenMode : uint8_t {
   OPEN_NONE = 0,
   OPEN_READ = 0x1,
   OPEN_WRITE = 0x2,
-  // This is only used in conjunction with OMTP to indicate that the DrawTarget
-  // that is being borrowed will be painted asynchronously, and so will outlive
-  // the write lock.
-  OPEN_ASYNC = 0x04,
 
   OPEN_READ_WRITE = OPEN_READ | OPEN_WRITE,
-  OPEN_READ_WRITE_ASYNC = OPEN_READ | OPEN_WRITE | OPEN_ASYNC,
-  OPEN_READ_ASYNC = OPEN_READ | OPEN_ASYNC,
   OPEN_READ_ONLY = OPEN_READ,
   OPEN_WRITE_ONLY = OPEN_WRITE,
 };
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(OpenMode)
 
-// The kinds of mask texture a shader can support
+// The kinds of complex clip a shader can support
 // We rely on the items in this enum being sequential
-enum class MaskType : uint8_t {
-  MaskNone = 0,  // no mask layer
-  Mask,          // mask layer
-  NumMaskTypes
+enum class ClipType : uint8_t {
+  ClipNone = 0,  // no complex clip
+  RoundedRect,
+  NumClipTypes
 };
 
 }  // namespace layers

@@ -32,7 +32,7 @@ function Damp() {}
 Damp.prototype = {
   async garbageCollect() {
     dump("Garbage collect\n");
-    let startTime = Cu.now();
+    let startTime = ChromeUtils.now();
 
     // Minimize memory usage
     // mimic miminizeMemoryUsage, by only flushing JS objects via GC.
@@ -125,11 +125,11 @@ Damp.prototype = {
       this.allocationTracker.flushAllocations();
     }
 
-    let start = Cu.now();
+    let start = ChromeUtils.now();
 
     return {
       done: () => {
-        let end = Cu.now();
+        let end = ChromeUtils.now();
         let duration = end - start;
         ChromeUtils.addProfilerMarker(
           "DAMP",
@@ -172,7 +172,7 @@ Damp.prototype = {
 
   async waitForPendingPaints(window) {
     let utils = window.windowUtils;
-    let startTime = Cu.now();
+    let startTime = ChromeUtils.now();
     while (utils.isMozAfterPaintPending) {
       await new Promise(done => {
         window.addEventListener(
@@ -194,6 +194,15 @@ Damp.prototype = {
       { startTime, category: "Test" },
       "pending paints"
     );
+  },
+
+  async navigatePage(uri) {
+    const browser = gBrowser.selectedBrowser;
+    const onLoad = this._awaitBrowserLoaded(browser);
+    browser.fixupAndLoadURIString(uri, {
+      triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+    });
+    return onLoad;
   },
 
   reloadPage(onReload) {
@@ -224,7 +233,7 @@ Damp.prototype = {
     // Force freeing memory now so that it doesn't happen during the next test
     await this.garbageCollect();
 
-    let duration = Math.round(Cu.now() - this._startTime);
+    let duration = Math.round(ChromeUtils.now() - this._startTime);
     dump(`${this._currentTest} took ${duration}ms.\n`);
 
     this._runNextTest();
@@ -255,7 +264,7 @@ Damp.prototype = {
     }
 
     let test = this._tests[this._nextTestIndex++];
-    this._startTime = Cu.now();
+    this._startTime = ChromeUtils.now();
     this._currentTest = test;
 
     dump(`Loading test '${test}'\n`);

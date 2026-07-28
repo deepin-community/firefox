@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,8 @@
 #include "gtest/gtest.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/SpinEventLoopUntil.h"
+#include "mozilla/dom/quota/ClientDirectoryLock.h"
+#include "mozilla/dom/quota/ClientDirectoryLockHandle.h"
 #include "mozilla/dom/quota/DirectoryLock.h"
 #include "mozilla/dom/quota/DirectoryLockInlines.h"
 #include "mozilla/dom/quota/ForwardDecls.h"
@@ -45,14 +45,46 @@ class QuotaManagerDependencyFixture : public testing::Test {
   static void AssertTemporaryStorageNotInitialized();
   static void ShutdownTemporaryStorage();
 
-  static void InitializeTemporaryOrigin(const OriginMetadata& aOriginMetadata);
+  static void InitializeTemporaryOrigin(const OriginMetadata& aOriginMetadata,
+                                        bool aCreateIfNonExistent = true);
+  static void TemporaryOriginInitialized(const OriginMetadata& aOriginMetadata,
+                                         bool* aResult);
+  static void AssertTemporaryOriginInitialized(
+      const OriginMetadata& aOriginMetadata);
+  static void AssertTemporaryOriginNotInitialized(
+      const OriginMetadata& aOriginMetadata);
+
+  // For more complex testing, use of this helper is optional.
+  static void SaveOriginAccessTime(const OriginMetadata& aOriginMetadata);
+
   static void GetOriginUsage(const OriginMetadata& aOriginMetadata,
                              UsageInfo* aResult);
   static void GetCachedOriginUsage(const OriginMetadata& aOriginMetadata,
                                    UsageInfo* aResult);
   static void ClearStoragesForOrigin(const OriginMetadata& aOriginMetadata);
 
-  static void InitializeTemporaryClient(const ClientMetadata& aClientMetadata);
+  static void InitializePersistentClient(const ClientMetadata& aClientMetadata);
+  static void InitializeTemporaryClient(const ClientMetadata& aClientMetadata,
+                                        bool aCreateIfNonExistent = true);
+
+  static CStringArray ListOrigins();
+  static CStringArray ListCachedOrigins();
+
+  static void ClearStoragesForOriginAttributesPattern(
+      const nsAString& aPattern);
+
+  static void ProcessPendingNormalOriginOperations();
+
+  static Maybe<OriginStateMetadata> GetOriginStateMetadata(
+      const OriginMetadata& aOriginMetadata);
+
+  static Maybe<OriginStateMetadata> LoadDirectoryMetadataHeader(
+      const OriginMetadata& aOriginMetadata);
+
+  static uint64_t TotalDirectoryIterations();
+
+  static uint64_t SaveOriginAccessTimeCount();
+  static uint64_t SaveOriginAccessTimeCountInternal();
 
   /* Convenience method for tasks which must be called on PBackground thread */
   template <class Invokable, class... Args>
@@ -68,7 +100,7 @@ class QuotaManagerDependencyFixture : public testing::Test {
   static auto PerformOnIOThread(Invokable&& aInvokable, Args&&... aArgs)
       -> std::invoke_result_t<Invokable, Args...> {
     QuotaManager* quotaManager = QuotaManager::Get();
-    ASSERT_TRUE(quotaManager);
+    MOZ_RELEASE_ASSERT(quotaManager);
 
     return PerformOnThread(quotaManager->IOThread(),
                            std::forward<Invokable>(aInvokable),
@@ -115,12 +147,32 @@ class QuotaManagerDependencyFixture : public testing::Test {
     }
   }
 
+  // Acquire and await a client directory lock and pass it to the given task.
+  template <class Task>
+  static void PerformClientDirectoryLockTest(
+      const ClientMetadata& aClientMetadata, Task&& aTask) {
+    PerformOnBackgroundThread(
+        [clientMetadata = aClientMetadata, task = std::forward<Task>(aTask)]() {
+          QuotaManager* quotaManager = QuotaManager::Get();
+          ASSERT_TRUE(quotaManager);
+
+          RefPtr<ClientDirectoryLock> directoryLock =
+              quotaManager->CreateDirectoryLock(clientMetadata,
+                                                /* aExclusive */ false);
+
+          auto value = Await(directoryLock->Acquire());
+          ASSERT_TRUE(value.IsResolve());
+
+          task(std::move(directoryLock));
+        });
+  }
+
   template <class Task>
   static void PerformClientDirectoryTest(const ClientMetadata& aClientMetadata,
                                          Task&& aTask) {
     PerformOnBackgroundThread([clientMetadata = aClientMetadata,
                                task = std::forward<Task>(aTask)]() mutable {
-      RefPtr<ClientDirectoryLock> directoryLock;
+      ClientDirectoryLockHandle directoryLockHandle;
 
       QuotaManager* quotaManager = QuotaManager::Get();
       ASSERT_TRUE(quotaManager);
@@ -130,9 +182,9 @@ class QuotaManagerDependencyFixture : public testing::Test {
       quotaManager->OpenClientDirectory(clientMetadata)
           ->Then(
               GetCurrentSerialEventTarget(), __func__,
-              [&directoryLock,
-               &done](RefPtr<ClientDirectoryLock> aResolveValue) {
-                directoryLock = std::move(aResolveValue);
+              [&directoryLockHandle,
+               &done](ClientDirectoryLockHandle&& aResolveValue) {
+                directoryLockHandle = std::move(aResolveValue);
 
                 done = true;
               },
@@ -144,11 +196,13 @@ class QuotaManagerDependencyFixture : public testing::Test {
 
       SpinEventLoopUntil("Promise is fulfilled"_ns, [&done]() { return done; });
 
-      ASSERT_TRUE(directoryLock);
+      ASSERT_TRUE(directoryLockHandle);
 
-      PerformOnIOThread(std::move(task), directoryLock->Id());
+      PerformOnIOThread(std::move(task), directoryLockHandle->Id());
 
-      DropDirectoryLock(directoryLock);
+      {
+        auto destroyingDirectoryLockHandle = std::move(directoryLockHandle);
+      }
     });
   }
 
@@ -158,8 +212,7 @@ class QuotaManagerDependencyFixture : public testing::Test {
   static typename MozPromise<ResolveValueT, RejectValueT,
                              IsExclusive>::ResolveOrRejectValue
   Await(RefPtr<MozPromise<ResolveValueT, RejectValueT, IsExclusive>> aPromise) {
-    using PromiseType = MozPromise<ResolveValueT, RejectValueT,
-                                   /* IsExclusive */ false>;
+    using PromiseType = MozPromise<ResolveValueT, RejectValueT, IsExclusive>;
     using ResolveOrRejectValue = typename PromiseType::ResolveOrRejectValue;
 
     ResolveOrRejectValue value;
@@ -194,9 +247,15 @@ class QuotaManagerDependencyFixture : public testing::Test {
     return sBackgroundTarget;
   }
 
+  static PrincipalMetadata GetTestPrincipalMetadata();
+  static OriginMetadata GetTestPersistentOriginMetadata();
+  static ClientMetadata GetTestPersistentClientMetadata();
   static OriginMetadata GetTestOriginMetadata();
   static ClientMetadata GetTestClientMetadata();
+  static OriginMetadata GetTestPrivateOriginMetadata();
+  static ClientMetadata GetTestPrivateClientMetadata();
 
+  static PrincipalMetadata GetOtherTestPrincipalMetadata();
   static OriginMetadata GetOtherTestOriginMetadata();
   static ClientMetadata GetOtherTestClientMetadata();
 

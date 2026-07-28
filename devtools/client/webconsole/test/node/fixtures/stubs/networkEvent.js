@@ -21,13 +21,13 @@ const rawPackets = new Map();
 rawPackets.set(`GET request`, {
   "resourceType": "network-event",
   "timeStamp": 1572867483805,
-  "actor": "server0.conn0.netEvent4",
+  "actor": "server0.conn0.netEvent5",
   "startedDateTime": "2019-11-04T11:06:34.542Z",
   "method": "GET",
   "url": "https://example.com/inexistent.html",
   "isXHR": false,
   "cause": {
-    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
     "type": "img",
     "stacktraceAvailable": false
   },
@@ -45,21 +45,21 @@ rawPackets.set(`GET request`, {
   "isThirdPartyTrackingResource": false,
   "referrerPolicy": "strict-origin-when-cross-origin",
   "blockedReason": 0,
+  "extension": {},
   "totalTime": 2,
-  "securityState": "insecure",
-  "isRacing": false
+  "securityState": "secure"
 });
 
 rawPackets.set(`GET request update`, {
   "resourceType": "network-event",
   "timeStamp": 1572867483805,
-  "actor": "server0.conn0.netEvent4",
+  "actor": "server0.conn0.netEvent5",
   "startedDateTime": "2020-07-07T14:41:14.572Z",
   "method": "GET",
   "url": "https://example.com/inexistent.html",
   "isXHR": false,
   "cause": {
-    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
     "type": "img",
     "stacktraceAvailable": false
   },
@@ -77,25 +77,25 @@ rawPackets.set(`GET request update`, {
   "isThirdPartyTrackingResource": false,
   "referrerPolicy": "strict-origin-when-cross-origin",
   "blockedReason": 0,
+  "extension": {},
   "totalTime": 3,
-  "securityState": "insecure",
-  "isRacing": false
+  "securityState": "secure"
 });
 
 rawPackets.set(`XHR GET request`, {
   "resourceType": "network-event",
   "timeStamp": 1572867483805,
-  "actor": "server0.conn0.netEvent6",
+  "actor": "server0.conn0.netEvent7",
   "startedDateTime": "2020-07-07T14:41:14.612Z",
   "method": "GET",
   "url": "https://example.com/inexistent.html",
   "isXHR": true,
   "cause": {
-    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
     "type": "xhr",
     "stacktraceAvailable": true,
     "lastFrame": {
-      "filename": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+      "filename": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
       "lineNumber": 4,
       "columnNumber": 5,
       "functionName": "triggerPacket",
@@ -116,24 +116,24 @@ rawPackets.set(`XHR GET request`, {
   "isThirdPartyTrackingResource": false,
   "referrerPolicy": "strict-origin-when-cross-origin",
   "blockedReason": 0,
+  "extension": {},
   "totalTime": 1,
-  "securityState": "insecure",
-  "isRacing": false
+  "securityState": "insecure"
 });
 
 rawPackets.set(`XHR GET request update`, {
   "resourceType": "network-event",
   "timeStamp": 1572867483805,
-  "actor": "server0.conn0.netEvent6",
+  "actor": "server0.conn0.netEvent7",
   "method": "GET",
   "url": "https://example.com/inexistent.html",
   "isXHR": true,
   "cause": {
-    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
     "type": "xhr",
     "stacktraceAvailable": true,
     "lastFrame": {
-      "filename": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+      "filename": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
       "lineNumber": 4,
       "columnNumber": 5,
       "functionName": "triggerPacket",
@@ -154,25 +154,25 @@ rawPackets.set(`XHR GET request update`, {
   "isThirdPartyTrackingResource": false,
   "referrerPolicy": "strict-origin-when-cross-origin",
   "blockedReason": 0,
+  "extension": {},
   "totalTime": 1,
-  "securityState": "insecure",
-  "isRacing": false
+  "securityState": "insecure"
 });
 
 rawPackets.set(`XHR POST request`, {
   "resourceType": "network-event",
   "timeStamp": 1572867483805,
-  "actor": "server0.conn0.netEvent8",
+  "actor": "server0.conn0.netEvent9",
   "startedDateTime": "2019-11-04T11:06:35.007Z",
   "method": "POST",
   "url": "https://example.com/inexistent.html",
   "isXHR": true,
   "cause": {
-    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
     "type": "xhr",
     "stacktraceAvailable": true,
     "lastFrame": {
-      "filename": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+      "filename": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
       "lineNumber": 4,
       "columnNumber": 5,
       "functionName": "triggerPacket",
@@ -193,24 +193,24 @@ rawPackets.set(`XHR POST request`, {
   "isThirdPartyTrackingResource": false,
   "referrerPolicy": "strict-origin-when-cross-origin",
   "blockedReason": 0,
+  "extension": {},
   "totalTime": 1,
-  "securityState": "insecure",
-  "isRacing": false
+  "securityState": "insecure"
 });
 
 rawPackets.set(`XHR POST request update`, {
   "resourceType": "network-event",
   "timeStamp": 1572867483805,
-  "actor": "server0.conn0.netEvent8",
+  "actor": "server0.conn0.netEvent9",
   "method": "POST",
   "url": "https://example.com/inexistent.html",
   "isXHR": true,
   "cause": {
-    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+    "loadingDocumentUri": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
     "type": "xhr",
     "stacktraceAvailable": true,
     "lastFrame": {
-      "filename": "https://example.com/browser/devtools/client/webconsole/test/browser/stub-generators/test-network-event.html",
+      "filename": "https://example.com/browser/devtools/client/webconsole/test/browser/test-network-event.html",
       "lineNumber": 4,
       "columnNumber": 5,
       "functionName": "triggerPacket",
@@ -231,9 +231,9 @@ rawPackets.set(`XHR POST request update`, {
   "isThirdPartyTrackingResource": false,
   "referrerPolicy": "strict-origin-when-cross-origin",
   "blockedReason": 0,
+  "extension": {},
   "totalTime": 2,
-  "securityState": "insecure",
-  "isRacing": false
+  "securityState": "insecure"
 });
 
 

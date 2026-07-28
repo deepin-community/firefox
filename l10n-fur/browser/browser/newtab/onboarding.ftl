@@ -25,6 +25,8 @@ return-to-amo-subtitle = Maraveôs, tu âs instalât { -brand-short-name }
 return-to-amo-addon-title = Parcè cumò no provistu<img data-l10n-name="icon"/><b>{ $addon-name }</b>?
 return-to-amo-add-extension-label = Zonte la estension
 return-to-amo-add-theme-label = Zonte il teme
+return-to-amo-theme-install-complete-label = Teme instalât
+return-to-amo-extension-install-complete-label = Estension instalade
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Impuarte di { $previous
 mr1-onboarding-theme-header = Adatilu al tô stîl
 mr1-onboarding-theme-subtitle = Personalize { -brand-short-name } cuntun teme.
 mr1-onboarding-theme-secondary-button-label = No cumò
-newtab-wallpaper-onboarding-title = Prove une man di colôr
-newtab-wallpaper-onboarding-subtitle = Sielç un fondâl par dâ un aspiet diviers aes gnovis schedis.
-newtab-wallpaper-onboarding-primary-button-label = Stabilìs fonts
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Teme di sisteme
 mr1-onboarding-theme-label-light = Clâr
@@ -63,6 +62,15 @@ mr1-onboarding-theme-label-dark = Scûr
 # "Alpenglow" here is the name of the theme, and should be kept in English.
 mr1-onboarding-theme-label-alpenglow = Alpenglow
 onboarding-theme-primary-button-label = Fat
+
+## Accessible labels for the icon-only play/pause toggle that controls animated
+## illustrations on the onboarding screen. The button replaces the animation
+## with a static image when clicked.
+
+onboarding-animation-pause-button =
+    .aria-label = Sospint animazion
+onboarding-animation-play-button =
+    .aria-label = Riprodûs animazion
 
 ## Please make sure to split the content of the title attribute into lines whose
 ## width corresponds to about 40 Latin characters, to ensure that the tooltip
@@ -172,7 +180,7 @@ mr2022-onboarding-easy-setup-primary-button-label = Salve e continue
 # Set Default action checkbox label used on new user onboarding first screen
 mr2022-onboarding-easy-setup-set-default-checkbox-label = Met { -brand-short-name } come navigadôr predefinît
 # Import action checkbox label used on new user onboarding first screen
-mr2022-onboarding-easy-setup-import-checkbox-label = Impuarte dal navigadôr precedent
+mr2022-onboarding-easy-setup-import-checkbox-label = Impuarte dal navigadôr di prime
 
 ## MR2022 New User Pin Firefox screen strings
 
@@ -226,11 +234,13 @@ mr2022-onboarding-set-default-subtitle = Dopre un navigadôr sostignût di une o
 mr2022-onboarding-get-started-primary-subtitle = La nestre ultime version e je costruide su misure par te, rindint plui facil che mai lâ ator pal web. E inclût funzionalitâts che o crodìn che tu adorarâs.
 mr2022-onboarding-get-started-primary-button-label = Configure in pôcs seconts
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configurazion super-svelte
 mr2022-onboarding-import-subtitle = Configure { -brand-short-name } come che ti plâs. Zonte segnelibris, passwords e altri dal to vecjo navigadôr.
-mr2022-onboarding-import-primary-button-label-no-attribution = Impuarte dal navigadôr precedent
+mr2022-onboarding-import-primary-button-label-no-attribution = Impuarte dal navigadôr di prime
 
 ## If your language uses grammatical genders, in the description for the
 ## colorway feel free to switch from "You are a X. You…" (e.g. "You are a
@@ -357,6 +367,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Une volte completade 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } ti pare simpri
 onboarding-gratitude-security-and-privacy-subtitle = Graciis par vê sielt di doprâ { -brand-short-name }, il navigadôr supuartât de Mozilla Foundation. Cul to supuart, o lavorìn par rindi internet plui sigûr e acessibil par ducj.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronize i tiei dâts su ducj i dispositîfs
+onboarding-sign-up-description = Regjistre un account e dutis lis tôs informazions plui impuartantis — passwords, segnelibris e altri — a vignaran memorizâts in mût sigûr e a saran disponibii su cualsisei dispositîf tal moment che tu jentrarâs tal account cu lis credenziâls.
+onboarding-sign-up-button = Regjistriti o jentre
+onboarding-sign-up-secondary-button = Scomence a navigâ
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +391,209 @@ onboarding-new-user-survey-familiarity-based-option-1 = No lu cognòs
 onboarding-new-user-survey-familiarity-based-option-2 = Lu ai doprât ogni tant
 onboarding-new-user-survey-familiarity-based-option-3 = Lu cognòs une vore ben
 onboarding-new-user-survey-familiarity-based-option-4 = Une volte lu dopravi, ma al è passât un pôc di timp
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Continus dulà che tu preferissis tignî lis tôs schedis
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Tu puedis cambiâ idee cuant che tu vûs tes impostazions de sbare laterâl.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Lis tôs schedis, te tô maniere
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Tegnistu simpri viertis tantis schedis? Prove a spostâlis in bande par vê une visuâl plui snele. Opûr manten la version classiche cu lis schedis adalt. Tu puedis cambiâ idee cuant che tu vûs.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Sielç la disposizion des schedis
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Par vê une vision plui snele, che e pues judâti a restâ concentrât, prove a spostâ lis schedis in bande. Opûr manten la version classiche cu lis schedis adalt. Tu puedis cambiâ idee cuant che tu vûs.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Schedis in bande
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Schedis parsore
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = A son rivadis lis schedis verticâls
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Introduzion aes schedis verticâls
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Prove a meti lis tôs schedis in bande. Tu puedis cambiâ idee cuant che tu vûs tes impostazions de sbare laterâl.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Prove lis schedis verticâls
+onboarding-flair-text = Gnovis!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Manten lis schedis orizontâls
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Un barcon dal navigadôr che al mostre lis schedis dilunc il flanc dal schermi te sbare laterâl di { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Un barcon dal navigadôr che al mostre lis schedis dilunc il flanc dal schermi te sbare laterâl di { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Un barcon dal navigadôr cu lis schedis te part superiôr.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Un barcon dal navigadôr cu lis schedis te part superiôr.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Prove un chatbot IA te sbare laterâl
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Met in struc i contignûts dal web, gjenere ideis, bute jù stampons di messaç — dut intant che tu navighis. Sielç tra varis furnidôrs, cambilu cuant che tu vûs. <a data-l10n-name="learn-more">Plui informazions</a>
+onboarding-genai-sidebar-primary-button = Sielç un chatbot
+onboarding-genai-sidebar-secondary-button = Scomence a navigâ
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Finìs la configurazion di { -brand-short-name }
+onboarding-checklist-subtitle = Finìs chescj passaçs par otignî il massime de tô esperience di navigazion.
+onboarding-checklist-set-default = Met { -brand-short-name } come navigadôr predefinît
+onboarding-checklist-pin = Fisse { -brand-short-name } te sbare des aplicazions
+onboarding-checklist-import = Impuarte dal navigadôr di prime
+onboarding-checklist-extension = Zonte une estension
+onboarding-checklist-sign-up = Regjistriti o jentre tal to account
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Prove i grups di schedis par vê mancul disordin e aumentâ la concentrazion
+tab-groups-onboarding-feature-callout-subtitle = Organiziti strissinant une schede sore di chê altre par creâ il to prin grup.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Cjate i tiei grups di schedis in ogni moment tal menù “Liste di dutis lis schedis”.
+tab-groups-onboarding-create-group-title-2 = Cjate achì i tiei grups di schedis in ogni moment.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Cîr i tiei grups cu la sbare de direzion par cjatâju.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Cuant che tu sieris un grup di schedis, al è pussibil tornâ a vierzilu dal menù “Liste di dutis lis schedis” in ogni moment.
+tab-groups-onboarding-saved-groups-title-2 = Cuant che tu sieris un grup di schedis, tu puedis tornâ a vierzilu in ogni moment.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Cîr cu la sbare de direzion i tiei grups che tu âs sierât, par cjatâju.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Torne vierç i grups di schedis al menù “Liste di dutis lis schedis” in ogni moment.
+tab-groups-onboarding-session-restore-title = Torne vierzi achì i grups di schedis in ogni moment.
+tab-groups-onboarding-dismiss = Va ben
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Salude i profîi di { -brand-product-name }
+multi-profile-spotlight-body = Passe cun facilitât de navigazion par vore a chê par divertiment. I profîi a tegnin separadis lis tôs informazions relativis ae navigazion, includudis la cronologjie des ricercjis e lis passwords, cussì di judâti a mantignî organizade la tô vite in rêt.
+multi-profile-spotlight-cta = Cree un profîl
+multi-profile-callout-title = Cree profîi diviers pal lavôr e pal divertiment
+multi-profile-callout-subtitle = I profîi ti permetin di mantignî separadis dal dut lis informazions di navigazion, come la cronologjie des ricercjis e lis passwords.
+multi-profile-callout-cta = Cree un profîl
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Discjame, sincronize e va!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Scansione il codiç QR par discjariâ { -brand-product-name } par dispositîfs mobii. Une volte che al è stât instalât, selezione “Sincronize cun dispositîfs mobii” par acedi aes tôs passwords, ai tiei segnelibris e tant altri dapardut là che tu ti cjatis.
+dismiss-button-label = Siere
+sync-to-mobile-button-label = Sincronize cun dispositîfs mobii
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Codiç QR par discjariâ { -brand-product-name } par dispositîfs mobii
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Desideristu inzornâ a Windows 11?
+    Fasìn daurman il backup dai dâts di { -brand-product-name }.
+create-backup-screen-1-subtitle = Protêç in automatic passwords, segnelibris e altri dâts in 1–2 minûts.
+create-backup-screen-1-flair = Conseâts
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Plui informazions</a>
+create-backup-screen-1-sync-label = Sincronize cun { -brand-product-name }
+create-backup-screen-1-sync-body = Fâs il backup di ducj i dispositîfs che a àn fat l’acès
+create-backup-screen-1-backup-label = Salve sul computer
+create-backup-screen-1-backup-body = Salve sul dispositîf o su OneDrive
+create-backup-select-tile-button-label = Selezione
+create-backup-back-button-label = Indaûr
+create-backup-show-fewer =
+    .label = Mostre mancul messaçs come chest
+create-backup-screen-2-title = Sielç i dâts di { -brand-product-name } di salvâ
+create-backup-screen-2-subtitle = Al puarte vie nome un minût. I dâts a vignaran salvâts une volte par dì.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Configurazion semplificade
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Segnelibris, cronologjie, impostazions e altris dâts
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Nol inclût passwords e metodis di paiament
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = No cifrât
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Ducj i dâts
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Al inclût passwords e metodis di paiaments
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Cifrât cuntune password
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Dulà desideristu salvâ il backup?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Cree une password pal file di backup
+create-backup-screen-3-subtitle = Obligatori par cifrâ i tiei dâts. Tegnile intun puest che tu ti visis.
+fx-backup-opt-in-header = Sielç dulà salvâ il file
+fx-backup-opt-in-filepath-label = Sielç un puest che tu progjetis di trasferî sul gnûf dispositîf, par esempli OneDrive.
+fx-backup-opt-in-create-password-label = Inserìs la password
+fx-backup-opt-in-confirm-btn-label = Continue
+fx-backup-opt-in-cancel-btn-label = Indaûr
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Il backup al è programât
+fx-backup-confirmation-screen-close-button = Siere
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Includûts ducj i dâts di navigazion
+fx-backup-confirmation-screen-all-data-item-text-2 = Salvât sul to dispositîf
+fx-backup-confirmation-screen-all-data-item-text-3 = Cifrât e protet de password
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Segnelibris, cronologjie, impostazions e altris dâts includûts
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Salvât sul to dispositîf
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Passwords e metodis di paiament no includûts
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Va tes <a data-l10n-name="settings">Impostazions</a> par includi i dâts sensibii.
+fx-backup-confirmation-screen-item-subtext-1 = Il backup al scomençarà ca di pôcs minûts e vignarà fat une volte par dì. Tu puedis controlâ i progrès tes <a data-l10n-name="settings">Impostazions</a>.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } al cirarà il to backup in câs di gnove instalazion.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Ripristine dal backup
+restore-from-backup-title = Fasìn tornâ { -brand-short-name } come che ti plâs a ti
+restore-from-backup-subtitle = Ripristine segnelibris, cronologjie e ducj chei altris dâts par tornâ a navigâ.
+restore-from-backup-secondary-button = No sta ripristinâ
+multiple-backups-info-tile = <strong>A son stâts cjatâts plui files di backup.</strong> Al è stât selezionât chel plui resint. Ripristine altris profîi in <a data-l10n-name="settings-label">Impostazions</a>
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Ve ca che o sin! I tiei dâts di { -brand-short-name } a son stâts ripristinâts.
+restored-from-backup-success-with-checklist-subtitle = Desideristu tignî a puartade di clic il to navigadôr preferît e orientât ae riservatece?
+restored-from-backup-success-no-checklist-subtitle = Tu puedis ativâ il backup par chest dispositîf tes <a data-l10n-name="settings">Impostazions</a>.
+restored-from-backup-success-with-checklist-primary-button = Salve e continue
+restored-from-backup-success-with-checklist-secondary-button = Salte chest passaç
+restored-from-backup-success-no-checklist-primary-button = Continue
+restored-from-backup-error-title = Mmh… Al è vignût fûr un probleme cul file di backup.
+restored-from-backup-error-subtitle = Se tu âs un altri file backup di { -brand-short-name }, prove a ripristinâ cun chel. <a data-l10n-name="restore-problems">Âstu ancjemò problemis?</a>
+restored-from-backup-error-primary-button = Siere
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Personalize la tô esperience cun { -brand-short-name }
+onboarding-personalization-subtitle = Rispuint a cualchi domande e ti consearìn funzions e estensions par miorâ la tô utilizazion di { -brand-short-name }.
+onboarding-personalization-use-case-title = Par ce dopraressistu { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Ûs personâl
+onboarding-personalization-use-case-school-option = Scuele
+onboarding-personalization-use-case-work-option = Lavôr
+onboarding-personalization-motivation-title = Ce funzions di { -brand-short-name } cjatistu plui impuartantis par te?
+onboarding-personalization-motivation-privacy-option = Riservatece e sigurece
+onboarding-personalization-motivation-productivity-option = Produtivitât
+onboarding-personalization-motivation-other-option = Altri
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = O metìn in sigurece i tiei dâts e o fermìn lis aziendis che spiin i tiei clics — in automatic.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = Tu sês in buinis mans, anzit çatis
+onboarding-refresh-import-subtitle = Puartiti daûr lis tôs passwords, i segnelibris, la cronologjie e altris dâts.
+onboarding-refresh-import-title = Sintiti come a cjase cun { -brand-short-name }
+onboarding-refresh-onboarding-addons-subtitle = Lis estensions a son piçulis aplicazions che ti permetin di personalizâ { -brand-short-name }. A puedin rinfuarçâ la sigurece, miorâ la produtivitât, cambiâ l'aspiet di { -brand-short-name } e tant altri.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = Dai un sburt ae navigazion
+onboarding-refresh-sync-subtitle = Cjate segnelibris, passwords e inmò di plui dapardut là che tu âs fat l’acès a { -brand-short-name }. Sore, i tiei dâts a vegnin cifrâts, cussì che dome tu tu puedis viodiju.
+onboarding-refresh-sync-title = Va dulà che ti pâr. Sincronize dut.
+onboarding-refresh-gratitude-subtitle = Gracie par vê sielt { -brand-short-name }, l’unic dai navigadôrs principâi sostignût di une organizazion cence fins di vuadagn. Cul tô supuart, o lavorìn par rindi internet un puest sigûr e acessibil a ducj.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name } ti pare simpri

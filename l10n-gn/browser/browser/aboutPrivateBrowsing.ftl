@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Eheja { -brand-short-name 
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } ojapyhy umi banner kookie rehegua nde rérape
 about-private-browsing-cookie-banners-promo-body = Ko’ág̃a romboyke pya’e heta kookie ñe’ẽmondo sa’ive hag̃uáicha ojehapykueho ha eikundahakuaa hag̃ua opañuãi’ỹre.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Ani eheja ko mba’e’oka rapykuere
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } ombogue kookie, tembiasakue ha mba’ekuaarã tendápe embotypávo ne rovetã ñemiguáva.
 about-private-browsing-felt-privacy-v1-info-link = Mávapa ohechakuaa che rembiapo
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Oñembotývo ovetãita ñemi oguéta kookieita, tembiasakue ha tenda mba’ekuaarãita.
+about-private-browsing-nova-info-link = ¿Mávapa ohechakuaa che rembiapo?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Reime bambalína kupépe
+about-private-browsing-nova-info-subheader = Romboguepáta opaite jehekakue ha jeike rombotývo ko ovetã. Umi ñemo’ã jehe’apyre { -brand-short-name } rehegua oĩ avei ko’ápe, ikatúva tapykuehoha.

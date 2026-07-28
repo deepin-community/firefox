@@ -1,13 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef CTLogVerifier_h
 #define CTLogVerifier_h
-
-#include <memory>
 
 #include "CTKnownLogs.h"
 #include "CTLog.h"
@@ -16,6 +12,7 @@
 #include "mozpkix/Input.h"
 #include "mozpkix/Result.h"
 #include "mozpkix/pkix.h"
+#include "signature_cache_ffi.h"
 
 namespace mozilla {
 namespace ct {
@@ -31,9 +28,10 @@ class CTLogVerifier {
  public:
   // |operatorId| The numeric ID of the log operator.
   // |logState| "Qualified", "Usable", "ReadOnly", or "Retired".
+  // |logFormat| "RFC6962" or "Tiled"
   // |timestamp| timestamp associated with logState.
   CTLogVerifier(CTLogOperatorId operatorId, CTLogState logState,
-                uint64_t timestamp);
+                CTLogFormat logFormat, uint64_t timestamp);
 
   // Initializes the verifier with the given subjectPublicKeyInfo.
   // |subjectPublicKeyInfo| is a DER-encoded SubjectPublicKeyInfo.
@@ -47,12 +45,14 @@ class CTLogVerifier {
 
   CTLogOperatorId operatorId() const { return mOperatorId; }
   CTLogState state() const { return mState; }
+  CTLogFormat format() const { return mFormat; }
   uint64_t timestamp() const { return mTimestamp; }
 
   // Verifies that |sct| contains a valid signature for |entry|.
   // |sct| must be signed by the verifier's log.
   pkix::Result Verify(const LogEntry& entry,
-                      const SignedCertificateTimestamp& sct);
+                      const SignedCertificateTimestamp& sct,
+                      SignatureCache* signatureCache);
 
   // Returns true if the signature and hash algorithms in |signature|
   // match those of the log.
@@ -64,19 +64,17 @@ class CTLogVerifier {
   // DigitallySigned struct encoding).
   // Returns Success if passed verification, ERROR_BAD_SIGNATURE if failed
   // verification, or other result on error.
-  pkix::Result VerifySignature(pkix::Input data, pkix::Input signature);
-  pkix::Result VerifySignature(const Buffer& data, const Buffer& signature);
+  pkix::Result VerifySignature(pkix::Input data, pkix::Input signature,
+                               SignatureCache* signatureCache);
+  pkix::Result VerifySignature(const Buffer& data, const Buffer& signature,
+                               SignatureCache* signatureCache);
 
-  // mPublicECKey works around an architectural deficiency in NSS. In the case
-  // of EC, if we don't create, import, and cache this key, NSS will import and
-  // verify it every signature verification, which is slow. For RSA, this is
-  // unused and will be null.
-  UniqueSECKEYPublicKey mPublicECKey;
   Buffer mSubjectPublicKeyInfo;
   Buffer mKeyId;
   DigitallySigned::SignatureAlgorithm mSignatureAlgorithm;
   CTLogOperatorId mOperatorId;
   CTLogState mState;
+  CTLogFormat mFormat;
   uint64_t mTimestamp;
 };
 

@@ -5,77 +5,62 @@
 permissions-window2 =
     .title = استثنیات
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = ویب سائٹ کا پتہ
     .accesskey = d
-
 permissions-block =
     .label = بلاک کریں
     .accesskey = B
-
 permissions-session =
     .label = سیشن کے لیے اجازت دیں
     .accesskey = S
-
 permissions-allow =
     .label = اجازت دیں
     .accesskey = A
-
 permissions-button-off =
     .label = بند کریں
     .accesskey = O
-
 permissions-button-off-temporarily =
     .label = عارضی طور پر بندکریں
     .accesskey = T
-
 permissions-site-name =
     .label = ويب سائٹ
-
 permissions-status =
     .label = حالت
-
 permissions-remove =
     .label = ویب سائٹ ہٹائیں
     .accesskey = R
-
 permissions-remove-all =
     .label = تمام ویب سائٹیں ہٹائیں
     .accesskey = e
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = تبدیلیاں محفوظ کریں
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = تبدیلیاں محفوظ کریں
     .buttonaccesskeyaccept = S
-
 permissions-autoplay-menu = تمام ویب سائٹس کے لئے پہلے سے طے شدہ:
-
 permissions-searchbox =
     .placeholder = ویبسائٹ تلاش کریں
-
 permissions-capabilities-autoplay-allow =
     .label = آڈیو اور ویڈیو کی اجازت دیں
 permissions-capabilities-autoplay-block =
     .label = آڈیو کو مسدود کریں۔
 permissions-capabilities-autoplay-blockall =
     .label = آڈیو اور ویڈیو کو مسدود کریں
-
 permissions-capabilities-allow =
     .label = اجازت دیں
 permissions-capabilities-block =
     .label = بلاک کریں
 permissions-capabilities-prompt =
     .label = ہمیشہ پوچھیں
-
 permissions-capabilities-listitem-allow =
     .value = اجازت دیں
 permissions-capabilities-listitem-block =
     .value = بلاک کریں
 permissions-capabilities-listitem-allow-session =
     .value = سیشن کے لیے اجازت دیں
-
 permissions-capabilities-listitem-off =
     .value = ‏‏بندکریں
 permissions-capabilities-listitem-off-temporarily =
@@ -98,9 +83,6 @@ permissions-exceptions-cookie-window2 =
     .title = استثنیات - کوکیز اور سائٹ کا ڈیٹا
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = آپ اختصاص کر سکتے ہیں کی کس ویب سائٹس کو ہمیشہ یا کبھی کوکیز اور سائٹ کا ڈیٹا کو استعمال کرنے کی اجازت ہے۔ اس سائٹ کا پرا نام ٹائپ کرے جسکا آپ انتظام کرنا چاھتے ہے اور پھر کلک کریں بلاک، سیشن کے لئے اجازت دے، یا اجازت دے۔
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -176,8 +158,3 @@ permissions-site-microphone-desc = مندرجہ ذیل ویب سائٹ نے آپ
 permissions-site-microphone-disable-label =
     .label = اپنے مائیکروفون تک رسائی حاصل کرنے سے متعلق نئی درخواستیں بند کریں
 permissions-site-microphone-disable-desc = یہ کسی بھی ویب سائٹ کو آپکے مائکروفون کے رسائی کی اجازت کی درخواست کرنے سے روکتا ہے جو اوپر درج نہیں ہے۔ آپکے مائکروفون کے رسائی کو روکنے سے ویب سائٹ کی کچھ خوبی وقفہ ہو سکتی ہے۔
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

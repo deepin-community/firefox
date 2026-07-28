@@ -1,9 +1,8 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et tw=80 : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/dom/BrowsingContext.h"
 #include "nsJAR.h"
 #include "nsJARChannel.h"
 #include "nsJARProtocolHandler.h"
@@ -24,8 +23,7 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticPrefs_network.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/TelemetryComms.h"
+#include "mozilla/glean/LibjarMetrics.h"
 #include "private/pprio.h"
 #include "nsInputStreamPump.h"
 #include "nsThreadUtils.h"
@@ -159,15 +157,7 @@ nsJARInputThunk::IsNonBlocking(bool* nonBlocking) {
 // nsJARChannel
 //-----------------------------------------------------------------------------
 
-nsJARChannel::nsJARChannel()
-    : mOpened(false),
-      mCanceled(false),
-      mContentLength(-1),
-      mLoadFlags(LOAD_NORMAL),
-      mStatus(NS_OK),
-      mIsPending(false),
-      mEnableOMT(true),
-      mPendingEvent() {
+nsJARChannel::nsJARChannel() {
   LOG(("nsJARChannel::nsJARChannel [this=%p]\n", this));
   // hold an owning reference to the jar handler
   mJarHandler = gJarHandler;
@@ -255,7 +245,7 @@ nsresult nsJARChannel::CreateJarInput(nsIZipReaderCache* jarCache,
     if (NS_FAILED(rv)) return rv;
 
     if (mInnerJarEntry.IsEmpty())
-      reader = outerReader;
+      reader = std::move(outerReader);
     else {
       reader = do_CreateInstance(kZipReaderCID, &rv);
       if (NS_FAILED(rv)) return rv;
@@ -269,6 +259,9 @@ nsresult nsJARChannel::CreateJarInput(nsIZipReaderCache* jarCache,
       new nsJARInputThunk(reader, mJarEntry, jarCache != nullptr);
   rv = input->Init();
   if (NS_FAILED(rv)) {
+    if (rv == NS_ERROR_FILE_NOT_FOUND) {
+      CheckForBrokenChromeURL(mLoadInfo, mOriginalURI);
+    }
     return rv;
   }
 
@@ -297,6 +290,10 @@ nsresult nsJARChannel::LookupFile() {
   // does basic escaping by default, which breaks reading zipped files which
   // have e.g. spaces in their filenames.
   NS_UnescapeURL(mJarEntry);
+
+  if (mJarEntry.FindChar('\0') != -1) {
+    return NS_ERROR_MALFORMED_URI;
+  }
 
   if (mJarFileOverride) {
     mJarFile = mJarFileOverride;
@@ -407,7 +404,9 @@ nsresult nsJARChannel::OpenLocalFile() {
   RefPtr<nsJARChannel> self = this;
   return mWorker->Dispatch(NS_NewRunnableFunction(
       "nsJARChannel::OpenLocalFile",
-      [self, jarCache, clonedFile, jarEntry, innerJarEntry]() mutable {
+      [self, jarCache = std::move(jarCache), clonedFile = std::move(clonedFile),
+       jarEntry = std::move(jarEntry),
+       innerJarEntry = std::move(innerJarEntry)]() mutable {
         RefPtr<nsJARInputThunk> input;
         nsresult rv = CreateLocalJarInput(jarCache, clonedFile, innerJarEntry,
                                           jarEntry, getter_AddRefs(input));
@@ -777,6 +776,10 @@ nsJARChannel::GetContentCharset(nsACString& aContentCharset) {
   // If someone gives us a charset hint we should just use that charset.
   // So we don't care when this is being called.
   aContentCharset = mContentCharset;
+  if (mContentCharset.IsEmpty() && (mOriginalURI->SchemeIs("chrome") ||
+                                    mOriginalURI->SchemeIs("resource"))) {
+    aContentCharset.AssignLiteral("UTF-8");
+  }
   return NS_OK;
 }
 
@@ -829,21 +832,23 @@ nsJARChannel::SetContentLength(int64_t aContentLength) {
 
 static void RecordZeroLengthEvent(bool aIsSync, const nsCString& aSpec,
                                   nsresult aStatus, bool aCanceled,
+                                  const nsCString& aCanceledReason,
                                   nsILoadInfo* aLoadInfo) {
   if (!StaticPrefs::network_jar_record_failure_reason()) {
     return;
   }
 
-  if (aLoadInfo) {
-    bool shouldSkipCheckForBrokenURLOrZeroSized;
-    MOZ_ALWAYS_SUCCEEDS(aLoadInfo->GetShouldSkipCheckForBrokenURLOrZeroSized(
-        &shouldSkipCheckForBrokenURLOrZeroSized));
-    if (shouldSkipCheckForBrokenURLOrZeroSized) {
+  // If the BrowsingContext performing the load has already been discarded, and
+  // we're getting a zero-length event due to the channel being canceled, this
+  // event isn't interesting for YSOD analysis, so can be skipped.
+  if (RefPtr<mozilla::dom::BrowsingContext> targetBC =
+          aLoadInfo->GetTargetBrowsingContext()) {
+    if (targetBC->IsDiscarded() && aCanceled) {
       return;
     }
   }
 
-  // The event can only hold 80 characters.
+  // The Legacy Telemetry event can only hold 80 characters.
   // We only save the file name and path inside the jar.
   auto findFilenameStart = [](const nsCString& aSpec) -> uint32_t {
     int32_t pos = aSpec.Find("!/");
@@ -875,10 +880,24 @@ static void RecordZeroLengthEvent(bool aIsSync, const nsCString& aSpec,
   bool isTest = fileName.Find("test_empty_file.zip!") != -1;
   bool isOmniJa = StringBeginsWith(fileName, "omni.ja!"_ns);
 
-  Telemetry::SetEventRecordingEnabled("zero_byte_load"_ns, true);
-  Telemetry::EventID eventType = Telemetry::EventID::Zero_byte_load_Load_Others;
   if (StringEndsWith(fileName, ".ftl"_ns)) {
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Ftl;
+    // FTL uses I/O to test for file presence, so we get
+    // a high volume of events from it, but it is not erronous.
+    // Also, Fluent is resilient to empty loads, so even if any
+    // of the errors are real errors, they don't cause YSOD.
+    // We can investigate them separately.
+    if (!isTest && aStatus == NS_ERROR_FILE_NOT_FOUND) {
+      return;
+    }
+
+    glean::zero_byte_load::LoadFtlExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_ftl.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".dtd"_ns)) {
     // We're going to skip reporting telemetry on res DTDs.
     // See Bug 1693711 for investigation into those empty loads.
@@ -886,11 +905,24 @@ static void RecordZeroLengthEvent(bool aIsSync, const nsCString& aSpec,
       return;
     }
 
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Dtd;
+    glean::zero_byte_load::LoadDtdExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_dtd.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".properties"_ns)) {
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Properties;
+    glean::zero_byte_load::LoadPropertiesExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_properties.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".js"_ns) ||
-             StringEndsWith(fileName, ".jsm"_ns) ||
              StringEndsWith(fileName, ".mjs"_ns)) {
     // We're going to skip reporting telemetry on JS loads
     // coming not from omni.ja.
@@ -898,9 +930,24 @@ static void RecordZeroLengthEvent(bool aIsSync, const nsCString& aSpec,
     if (!isTest && !isOmniJa) {
       return;
     }
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Js;
+
+    glean::zero_byte_load::LoadJsExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_js.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".xml"_ns)) {
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Xml;
+    glean::zero_byte_load::LoadXmlExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_xml.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".xhtml"_ns)) {
     // This error seems to be very common and is not strongly
     // correlated to YSOD.
@@ -913,7 +960,14 @@ static void RecordZeroLengthEvent(bool aIsSync, const nsCString& aSpec,
       return;
     }
 
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Xhtml;
+    glean::zero_byte_load::LoadXhtmlExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_xhtml.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".css"_ns)) {
     // Bug 1702937: Filter out svg+'css'+'png'/NS_BINDING_ABORTED combo.
     if (aStatus == NS_BINDING_ABORTED) {
@@ -925,11 +979,34 @@ static void RecordZeroLengthEvent(bool aIsSync, const nsCString& aSpec,
     if (!isOmniJa && aStatus == NS_ERROR_CORRUPTED_CONTENT) {
       return;
     }
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Css;
+
+    glean::zero_byte_load::LoadCssExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_css.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".json"_ns)) {
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Json;
+    // FTL uses I/O to test for file presence, so we get
+    // a high volume of events from it, but it is not erronous.
+    // Also, Fluent is resilient to empty loads, so even if any
+    // of the errors are real errors, they don't cause YSOD.
+    // We can investigate them separately.
+    if (!isTest && aStatus == NS_ERROR_FILE_NOT_FOUND) {
+      return;
+    }
+
+    glean::zero_byte_load::LoadJsonExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_json.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".html"_ns)) {
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Html;
     // See bug 1695560. Filter out non-omni.ja HTML.
     if (!isOmniJa) {
       return;
@@ -937,73 +1014,67 @@ static void RecordZeroLengthEvent(bool aIsSync, const nsCString& aSpec,
 
     // See bug 1695560. "activity-stream-noscripts.html" with NS_ERROR_FAILURE
     // is filtered out.
-    if (fileName.EqualsLiteral("omni.ja!/chrome/browser/res/activity-stream/"
+    if (fileName.EqualsLiteral("omni.ja!/chrome/browser/res/newtab/"
                                "prerendered/activity-stream-noscripts.html") &&
         aStatus == NS_ERROR_FAILURE) {
       return;
     }
+
+    glean::zero_byte_load::LoadHtmlExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_html.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".png"_ns)) {
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Png;
     // See bug 1695560.
     // Bug 1702937: Filter out svg+'css'+'png'/NS_BINDING_ABORTED combo.
     if (!isOmniJa || aStatus == NS_BINDING_ABORTED) {
       return;
     }
+
+    glean::zero_byte_load::LoadPngExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_png.Record(Some(extra));
   } else if (StringEndsWith(fileName, ".svg"_ns)) {
-    eventType = Telemetry::EventID::Zero_byte_load_Load_Svg;
     // See bug 1695560.
     // Bug 1702937: Filter out svg+'css'+'png'/NS_BINDING_ABORTED combo.
     if (!isOmniJa || aStatus == NS_BINDING_ABORTED) {
       return;
     }
-  }
+    glean::zero_byte_load::LoadSvgExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_svg.Record(Some(extra));
+  } else {  // All others
+    // We're going to, for now, filter out `other` category.
+    // See Bug 1693711 for investigation into those empty loads.
+    // Bug 1702937: Filter other/*.ico/NS_BINDING_ABORTED.
+    if (!isTest && (!isOmniJa || (aStatus == NS_BINDING_ABORTED &&
+                                  StringEndsWith(fileName, ".ico"_ns)))) {
+      return;
+    }
 
-  // We're going to, for now, filter out `other` category.
-  // See Bug 1693711 for investigation into those empty loads.
-  // Bug 1702937: Filter other/*.ico/NS_BINDING_ABORTED.
-  if (!isTest && eventType == Telemetry::EventID::Zero_byte_load_Load_Others &&
-      (!isOmniJa || (aStatus == NS_BINDING_ABORTED &&
-                     StringEndsWith(fileName, ".ico"_ns)))) {
-    return;
+    glean::zero_byte_load::LoadOthersExtra extra = {
+        .cancelReason = Some(aCanceledReason),
+        .cancelled = Some(aCanceled),
+        .fileName = Some(fileName),
+        .status = Some(errorCString),
+        .sync = Some(aIsSync),
+    };
+    glean::zero_byte_load::load_others.Record(Some(extra));
   }
-
-  // FTL uses I/O to test for file presence, so we get
-  // a high volume of events from it, but it is not erronous.
-  // Also, Fluent is resilient to empty loads, so even if any
-  // of the errors are real errors, they don't cause YSOD.
-  // We can investigate them separately.
-  if (!isTest &&
-      (eventType == Telemetry::EventID::Zero_byte_load_Load_Ftl ||
-       eventType == Telemetry::EventID::Zero_byte_load_Load_Json) &&
-      aStatus == NS_ERROR_FILE_NOT_FOUND) {
-    return;
-  }
-
-  // See bug 1695560. "search-extensions/google/favicon.ico" with
-  // NS_BINDING_ABORTED is filtered out.
-  if (fileName.EqualsLiteral(
-          "omni.ja!/chrome/browser/search-extensions/google/favicon.ico") &&
-      aStatus == NS_BINDING_ABORTED) {
-    return;
-  }
-
-  // See bug 1695560. "update.locale" with
-  // NS_ERROR_FILE_NOT_FOUND is filtered out.
-  if (fileName.EqualsLiteral("omni.ja!/update.locale") &&
-      aStatus == NS_ERROR_FILE_NOT_FOUND) {
-    return;
-  }
-
-  auto res = CopyableTArray<Telemetry::EventExtraEntry>{};
-  res.SetCapacity(4);
-  res.AppendElement(
-      Telemetry::EventExtraEntry{"sync"_ns, aIsSync ? "true"_ns : "false"_ns});
-  res.AppendElement(
-      Telemetry::EventExtraEntry{"file_name"_ns, nsCString(fileName)});
-  res.AppendElement(Telemetry::EventExtraEntry{"status"_ns, errorCString});
-  res.AppendElement(Telemetry::EventExtraEntry{
-      "cancelled"_ns, aCanceled ? "true"_ns : "false"_ns});
-  Telemetry::RecordEvent(eventType, Nothing{}, Some(res));
 }
 
 NS_IMETHODIMP
@@ -1016,7 +1087,8 @@ nsJARChannel::Open(nsIInputStream** aStream) {
 
   auto recordEvent = MakeScopeExit([&] {
     if (mContentLength <= 0 || NS_FAILED(rv)) {
-      RecordZeroLengthEvent(true, mSpec, rv, mCanceled, mLoadInfo);
+      RecordZeroLengthEvent(true, mSpec, rv, mCanceled, mCanceledReason,
+                            mLoadInfo);
     }
   });
 
@@ -1088,7 +1160,7 @@ nsJARChannel::AsyncOpen(nsIStreamListener* aListener) {
   // Initialize mProgressSink
   NS_QueryNotificationCallbacks(mCallbacks, mLoadGroup, mProgressSink);
 
-  mListener = listener;
+  mListener = std::move(listener);
   mIsPending = true;
 
   rv = LookupFile();
@@ -1202,7 +1274,8 @@ nsJARChannel::OnStartRequest(nsIRequest* req) {
   LOG(("nsJARChannel::OnStartRequest [this=%p %s]\n", this, mSpec.get()));
 
   mRequest = req;
-  nsresult rv = mListener->OnStartRequest(this);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  nsresult rv = listener->OnStartRequest(this);
   if (NS_FAILED(rv)) {
     return rv;
   }
@@ -1236,12 +1309,13 @@ nsJARChannel::OnStopRequest(nsIRequest* req, nsresult status) {
 
   if (NS_SUCCEEDED(mStatus)) mStatus = status;
 
-  if (mListener) {
+  if (nsCOMPtr<nsIStreamListener> listener = mListener) {
     if (!mOnDataCalled || NS_FAILED(status)) {
-      RecordZeroLengthEvent(false, mSpec, status, mCanceled, mLoadInfo);
+      RecordZeroLengthEvent(false, mSpec, status, mCanceled, mCanceledReason,
+                            mLoadInfo);
     }
 
-    mListener->OnStopRequest(this, status);
+    listener->OnStopRequest(this, status);
     mListener = nullptr;
   }
 
@@ -1277,7 +1351,8 @@ nsJARChannel::OnDataAvailable(nsIRequest* req, nsIInputStream* stream,
   }
 
   mOnDataCalled = true;
-  rv = mListener->OnDataAvailable(this, stream, offset, count);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  rv = listener->OnDataAvailable(this, stream, offset, count);
 
   // simply report progress here instead of hooking ourselves up as a
   // nsITransportEventSink implementation.

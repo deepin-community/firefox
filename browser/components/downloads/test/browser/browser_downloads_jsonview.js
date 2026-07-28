@@ -12,7 +12,7 @@ const { FileTestUtils } = ChromeUtils.importESModule(
 
 add_task(async function test_save_jsonview() {
   // Create a cookie that will be valid for the given JSON Document
-  Services.cookies.add(
+  const cv = Services.cookies.add(
     "example.org",
     "/",
     "cookieKey",
@@ -20,15 +20,16 @@ add_task(async function test_save_jsonview() {
     false,
     false,
     false,
-    Number.MAX_SAFE_INTEGER,
+    Date.now() + 24000 * 60 * 60,
     {},
     Ci.nsICookie.SAMESITE_LAX,
     Ci.nsICookie.SCHEME_HTTPS
   );
+  Assert.equal(cv.result, Ci.nsICookieValidation.eOK);
 
   // Set up the download
   let MockFilePicker = SpecialPowers.MockFilePicker;
-  MockFilePicker.init(window.browsingContext);
+  MockFilePicker.init();
   let list = await Downloads.getList(Downloads.PUBLIC);
   let downloadFinishedPromise = promiseDownloadFinished(list);
   let saveFile = FileTestUtils.getTempFile("cookies.sjs");
@@ -64,7 +65,8 @@ add_task(async function test_save_jsonview() {
     await IOUtils.readUTF8(download.target.path),
     '{"cookieHeaderValue":"cookieKey=cookieValue"}'
   );
-  Assert.equal(download.target.size, 45);
+
+  Assert.equal(await expectNonZeroDownloadTargetSize(download.target), 45);
 
   MockFilePicker.cleanup();
 });

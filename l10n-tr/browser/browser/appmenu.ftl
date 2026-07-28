@@ -15,6 +15,8 @@ appmenuitem-banner-update-unsupported =
     .label = Güncelleme yapılamadı: Sistem uyumsuz
 appmenuitem-banner-update-restart =
     .label = Güncelleme var: Yeniden başlat
+appmenu-nova-update-link = Güncellemek için yeniden başlat
+appmenu-nova-fxa-sign-in = Giriş yap
 appmenuitem-new-tab =
     .label = Yeni sekme
 appmenuitem-new-window =
@@ -23,10 +25,16 @@ appmenuitem-new-private-window =
     .label = Yeni gizli pencere
 appmenuitem-history =
     .label = Geçmiş
+appmenuitem-tab-groups =
+    .label = Sekme grupları
 appmenuitem-downloads =
     .label = İndirilenler
 appmenuitem-passwords =
     .label = Parolalar
+appmenuitem-extensions-and-themes =
+    .label = Uzantılar ve temalar
+appmenuitem-extensions =
+    .label = Uzantılar
 appmenuitem-addons-and-themes =
     .label = Eklentiler ve temalar
 appmenuitem-print =
@@ -108,8 +116,11 @@ appmenu-fxa-sync-and-save-data2 = Verileri eşitle ve kaydet
 appmenu-fxa-signed-in-label = Giriş yap
 appmenu-fxa-setup-sync =
     .label = Eşitlemeyi aç…
+appmenu-fxa-setup-sync-new = Aç
 appmenuitem-save-page =
     .label = Sayfayı farklı kaydet…
+appmenuitem-fxa-sync-off-title = Eşitleme kapalı
+appmenuitem-fxa-sync-off-description = Yer imlerinizi, parolalarınızı ve diğer verilerinizi koruyun ve onlara her yerden erişin.
 
 ## What's New panel in App menu.
 
@@ -148,7 +159,7 @@ profiler-popup-edit-settings-button =
     .label = Ayarları düzenle…
 profiler-popup-recording-screen = Kaydediliyor…
 profiler-popup-start-recording-button =
-    .label = Kaydetmeye başla
+    .label = Kaydı başlatın
 profiler-popup-discard-button =
     .label = Sil
 profiler-popup-capture-button =
@@ -163,6 +174,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Profilleyici panelini aç
+    .tooltiptext = Profilleyici panelini aç
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +203,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = { -brand-shorter-name } tarayıcısında ses ve video hatalarını araştırma ayarı.
 profiler-popup-presets-media-label =
     .label = Ortam
+profiler-popup-presets-ml-description = { -brand-shorter-name } tarayıcısında makine öğrenimi hatalarını araştırma ayarı.
+profiler-popup-presets-ml-label =
+    .label = Makine öğrenimi
 profiler-popup-presets-networking-description = { -brand-shorter-name } tarayıcısında ağ hatalarını araştırma ayarı.
 profiler-popup-presets-networking-label =
     .label = Ağ
@@ -196,8 +213,12 @@ profiler-popup-presets-power-description = { -brand-shorter-name } tarayıcısı
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Güç
+profiler-popup-presets-debug-description = { -brand-shorter-name } tarayıcısında hata ayıklama ayarı. Yüksek ek yük nedeniyle performans çalışması için uygun değildir, tarayıcı davranışını anlamaya odaklanmak için kullanın.
 profiler-popup-presets-debug-label =
     .label = Hata ayıklama
+profiler-popup-presets-web-compat-description = Performansı izlemek için değil de web sitelerindeki web uyumluluğu sorunlarıyla ilgili hata ayıklamak için önerilen ayarlar.
+profiler-popup-presets-web-compat-label =
+    .label = Web uyumluluğu
 profiler-popup-presets-custom-label =
     .label = Özel
 
@@ -263,6 +284,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Araç çubuğunu özelleştir…
+appmenu-abouttranslations =
+    .label = Çeviri yap…
+appmenu-edit-pdf =
+    .label = PDF düzenle…
 appmenu-developer-tools-subheader = Tarayıcı araçları
 appmenu-developer-tools-extensions =
     .label = Geliştiricilere özel uzantılar
@@ -272,9 +297,49 @@ appmenuitem-report-broken-site =
 ## Panel for privacy and security products
 
 appmenuitem-sign-in-account = Hesabınıza giriş yapın
+appmenuitem-monitor-title2 = Kimlik hırsızlığını önleyin
+appmenuitem-monitor-description2 = Verileriniz çalınırsa haberiniz olsun
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Veri ihlali uyarıları alın
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = E-postanızı gizli tutun
 appmenuitem-relay-description = Gerçek e-posta adresinizi ve telefon numaranızı maskeleyin
+appmenuitem-services-relay-description = E-posta maskeleri panosunu aç
+appmenuitem-vpn-title2 = { -mozilla-vpn-brand-name } ile konumunuzu gizleyin
+appmenuitem-vpn-description3 = Gezintilerinizin izlenmesini zorlaştırın
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Bütün cihazlarınızı koruyun
 appmenuitem-vpn-description = Çevrimiçi etkinliklerinizi koruyun
+appmenu-services-header = Servislerim
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = Gizlilik araçları
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Mozilla’nın diğer koruma araçlarını deneyin:
+appmenu-other-protection-header = Diğer { -vendor-short-name } koruma araçlarını deneyin:
+
+## Profiles panel
+
+appmenu-other-profiles = Diğer profiller
+appmenu-manage-profiles =
+    .label = Profilleri yönet
+appmenu-copy-profile =
+    .label = Bu profili kopyala
+appmenu-create-profile2 =
+    .label = Yeni profil oluştur
+appmenu-create-profile =
+    .label = Yeni profil
+appmenu-edit-profile =
+    .aria-label = Profili düzenle
+appmenu-edit-this-profile =
+    .label = Bu profili düzenle
+appmenu-profile-current-in-use = Kullanılan profil
+appmenu-profiles-2 =
+    .label = Profiller
+appmenu-profiles-header = Profiller
+appmenu-all-profiles =
+    .label = Tüm profiller
+appmenu-secure-sync-header = Güvenli eşitleme

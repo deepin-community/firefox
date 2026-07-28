@@ -9,6 +9,7 @@ itself to the target of the initiating event when opened with
 Note: XUL is currently required to
 support accesskey underlining (although using `moz-label` could change that).
 Shortcuts are not displayed automatically in the `panel-item`.
+This XUL requirement affects the "With Accesskeys" story, enabling or disabling accesskeys will not show any visual change in the story.
 
 ```html story
 <panel-list stay-open open>
@@ -41,19 +42,19 @@ be brought up to our design systems standards.
 * When there is only one action.
 * When the actions are frequently needed.
 * In the browser chrome, you probably want to use
-  [menupopup](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/menupopup.js)
+  [menupopup](https://searchfox.org/firefox-main/source/toolkit/content/widgets/menupopup.js)
   or
-  [panel](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/panel.js)
+  [panel](https://searchfox.org/firefox-main/source/toolkit/content/widgets/panel.js)
   instead.
 
 ## Basic usage
 
 The source for `panel-list` can be found under
-[toolkit/content/widgets/panel-list.js](https://searchfox.org/mozilla-central/source/toolkit/content/widgets/panel-list.js).
+[toolkit/content/widgets/panel-list/panel-list.mjs](https://searchfox.org/firefox-main/source/toolkit/content/widgets/panel-list/panel-list.mjs).
 You can find an examples of `panel-list` in use in the Firefox codebase in both
-[about:addons](https://searchfox.org/mozilla-central/source/toolkit/mozapps/extensions/content/aboutaddons.html#87,102,114)
+[about:addons](https://searchfox.org/mozilla-central/rev/6f4bc07bd9eb07ed34774841ecf3b1f3678791e8/toolkit/mozapps/extensions/content/aboutaddons.html#209,252,280)
 and the
-[migration-wizard](https://searchfox.org/mozilla-central/source/browser/components/migration/content/migration-dialog-window.html#18).
+[migration-wizard](https://searchfox.org/mozilla-central/rev/6f4bc07bd9eb07ed34774841ecf3b1f3678791e8/browser/components/migration/content/migration-wizard.mjs#443).
 
 `panel-list` will automatically be imported in chrome documents, both through
 markup and through JS with `document.createElement("panel-list")` or by cloning
@@ -67,7 +68,10 @@ a template.
 In non-chrome documents it can be imported into `.html`/`.xhtml` files:
 
 ```html
-<script src="chrome://global/content/elements/panel-list.js"></script>
+<script
+  src="chrome://global/content/elements/panel-list.mjs"
+  type="module"
+></script>
 ```
 
 And used as follows:
@@ -157,6 +161,27 @@ menuButton.addEventListener("mousedown", openMenu);
 menuButton.addEventListener("click", openMenu);
 ```
 
+
+### Checkbox
+
+Items may be used as a checkbox by setting the `type` attribute.
+This allows checkmark icon to be automatically rendered and removed via the item's `checked` attribute.
+Note: this item does not have its own click handler for adding or removing the checkmark, you must handle that.
+
+```html story
+<panel-list stay-open open>
+  <panel-item action="toggle-setting" type="checkbox" checked="">Toggle Setting</panel-item>
+  <panel-item action="toggle-panel" type="checkbox">Toggle Panel</panel-item>
+</panel-list>
+```
+
+```html
+<panel-list>
+  <panel-item action="toggle-setting" type="checkbox" checked="">Toggle Setting</panel-item>
+  <panel-item action="toggle-panel" type="checkbox">Toggle Panel</panel-item>
+</panel-list>
+```
+
 ### Icons
 
 Icons can be added to the `panel-item`s by setting a `background-image` on
@@ -174,8 +199,8 @@ panel-item[action="save"]::part(button) {
 
 ### Badging
 
-Icons may be badged by setting the `badged` attribute. This adds a dot next to
-the icon.
+There are two types of badging. Icons may be badged by setting the `badged`
+attribute. This adds a dot next to the icon.
 
 ```html
 <panel-list>
@@ -188,6 +213,25 @@ the icon.
 <panel-list stay-open open>
   <panel-item action="new">New</panel-item>
   <panel-item action="save" badged>Save</panel-item>
+</panel-list>
+```
+
+A `moz-badge` element can be added next to the label by setting the `badge-type`
+attribute.
+
+```html
+<panel-list>
+  <panel-item action="new">New</panel-item>
+  <panel-item action="save" badge-type="new">Save</panel-item>
+  <panel-item action="delete" badge-type="beta">Delete</panel-item>
+</panel-list>
+```
+
+```html story
+<panel-list stay-open open>
+  <panel-item action="new">New</panel-item>
+  <panel-item action="save" badge-type="new">Save</panel-item>
+  <panel-item action="delete" badge-type="beta">Delete</panel-item>
 </panel-list>
 ```
 

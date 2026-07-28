@@ -2,7 +2,8 @@
 Frontend parsers that consume binary and text shaders and load them into [`Module`](super::Module)s.
 */
 
-mod interpolator;
+#[cfg(any(feature = "spv-in", feature = "wgsl-in"))]
+pub(crate) mod interpolator;
 mod type_gen;
 
 #[cfg(feature = "spv-in")]
@@ -14,12 +15,14 @@ pub mod spv;
 #[cfg(feature = "wgsl-in")]
 pub mod wgsl;
 
+use alloc::{boxed::Box, vec, vec::Vec};
+use core::ops;
+
 use crate::{
     arena::{Arena, Handle, HandleVec, UniqueArena},
     proc::{ResolveContext, ResolveError, TypeResolution},
     FastHashMap,
 };
-use std::ops;
 
 /// A table of types for an `Arena<Expression>`.
 ///
@@ -112,7 +115,7 @@ impl Typifier {
             for (eh, expr) in expressions.iter().skip(self.resolutions.len()) {
                 //Note: the closure can't `Err` by construction
                 let resolution = ctx.resolve(expr, |h| Ok(&self.resolutions[h]))?;
-                log::debug!("Resolving {:?} = {:?} : {:?}", eh, expr, resolution);
+                log::debug!("Resolving {eh:?} = {expr:?} : {resolution:?}");
                 self.resolutions.insert(eh, resolution);
             }
         }
@@ -221,6 +224,7 @@ pub struct SymbolTable<Name, Var> {
     ///
     /// [`scopes`]: Self::scopes
     cursor: usize,
+    lookup_cursor_is_one_behind: bool,
 }
 
 impl<Name, Var> SymbolTable<Name, Var> {
@@ -230,8 +234,13 @@ impl<Name, Var> SymbolTable<Name, Var> {
     /// until another scope is pushed or [`pop_scope`] is called, causing this
     /// scope to be removed along with all variables added to it.
     ///
+    /// # PANICS
+    /// - If the current lookup scope doesn't match the current scope
+    ///
     /// [`pop_scope`]: Self::pop_scope
     pub fn push_scope(&mut self) {
+        self.check_lookup_scope_matches_current_scope();
+
         // If the cursor is equal to the scope's stack length then we need to
         // push another empty scope. Otherwise we can reuse the already existing
         // scope.
@@ -248,6 +257,7 @@ impl<Name, Var> SymbolTable<Name, Var> {
     ///
     /// # PANICS
     /// - If the current lexical scope is the root scope
+    /// - If the current lookup scope doesn't match the current scope
     pub fn pop_scope(&mut self) {
         // Despite the method title, the variables are only deleted when the
         // scope is reused. This is because while a clear is inevitable if the
@@ -255,14 +265,43 @@ impl<Name, Var> SymbolTable<Name, Var> {
         // popped and not reused, i.e. if another scope with the same nesting
         // level is never pushed again.
         assert!(self.cursor != 1, "Tried to pop the root scope");
+        self.check_lookup_scope_matches_current_scope();
 
         self.cursor -= 1;
+    }
+
+    /// Reduces the lookup scope by one level.
+    ///
+    /// # PANICS
+    /// - If the current lookup scope doesn't match the current scope
+    pub fn reduce_lookup_scope(&mut self) {
+        self.check_lookup_scope_matches_current_scope();
+        self.lookup_cursor_is_one_behind = true;
+    }
+
+    /// Resets the lookup scope to the current scope.
+    ///
+    /// # PANICS
+    /// - If the current lookup scope already matches the current scope
+    pub fn reset_lookup_scope(&mut self) {
+        assert!(
+            self.lookup_cursor_is_one_behind,
+            "current lookup scope already matches the current scope"
+        );
+        self.lookup_cursor_is_one_behind = false;
+    }
+
+    fn check_lookup_scope_matches_current_scope(&self) {
+        assert!(
+            !self.lookup_cursor_is_one_behind,
+            "current lookup scope doesn't match the current scope"
+        );
     }
 }
 
 impl<Name, Var> SymbolTable<Name, Var>
 where
-    Name: std::hash::Hash + Eq,
+    Name: core::hash::Hash + Eq,
 {
     /// Perform a lookup for a variable named `name`.
     ///
@@ -272,11 +311,14 @@ where
     /// scope.
     pub fn lookup<Q>(&self, name: &Q) -> Option<&Var>
     where
-        Name: std::borrow::Borrow<Q>,
-        Q: std::hash::Hash + Eq + ?Sized,
+        Name: core::borrow::Borrow<Q>,
+        Q: core::hash::Hash + Eq + ?Sized,
     {
+        let cursor = self
+            .cursor
+            .saturating_sub(self.lookup_cursor_is_one_behind.into());
         // Iterate backwards through the scopes and try to find the variable
-        for scope in self.scopes[..self.cursor].iter().rev() {
+        for scope in self.scopes[..cursor].iter().rev() {
             if let Some(var) = scope.get(name) {
                 return Some(var);
             }
@@ -314,11 +356,12 @@ impl<Name, Var> Default for SymbolTable<Name, Var> {
         Self {
             scopes: vec![FastHashMap::default()],
             cursor: 1,
+            lookup_cursor_is_one_behind: false,
         }
     }
 }
 
-use std::fmt;
+use core::fmt;
 
 impl<Name: fmt::Debug, Var: fmt::Debug> fmt::Debug for SymbolTable<Name, Var> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -326,5 +369,12 @@ impl<Name: fmt::Debug, Var: fmt::Debug> fmt::Debug for SymbolTable<Name, Var> {
         f.debug_list()
             .entries(self.scopes[..self.cursor].iter())
             .finish()
+    }
+}
+
+impl crate::Module {
+    pub fn get_or_insert_default_doc_comments(&mut self) -> &mut Box<crate::DocComments> {
+        self.doc_comments
+            .get_or_insert_with(|| Box::new(crate::DocComments::default()))
     }
 }

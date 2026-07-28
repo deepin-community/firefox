@@ -11,7 +11,7 @@ experimental-features-css-masonry-description = Zapne podporu experimentálního
 # by various online articles and is technical in nature.
 experimental-features-web-gpu2 =
     .label = Web API: WebGPU
-experimental-features-web-gpu-description3 = <a data-l10n-name="wikipedia-webgpu">WebGPU API</a> poskytuje nízkoúrovňovou podporu pro provádění výpočtů a vykreslování grafiky pomocí  <a data-l10n-name="wikipedia-gpu">grafického procesoru (GPU)</a> na zařízení uživatele nebo počítači. První verze <a data-l10n-name="spec">specifikace</a> je téměř finální. Pro více informací se podívejte na <a data-l10n-name="bugzilla">bug 1616739</a>.
+experimental-features-web-gpu-description3 = <a data-l10n-name="wikipedia-webgpu">WebGPU API</a> poskytuje nízkoúrovňovou podporu pro provádění výpočtů a vykreslování grafiky pomocí <a data-l10n-name="wikipedia-gpu">grafického procesoru (GPU)</a> na zařízení uživatele nebo počítači. První verze <a data-l10n-name="spec">specifikace</a> je téměř finální. Pro více informací se podívejte na <a data-l10n-name="bugzilla">bug 1616739</a>.
 # The title of the experiment should be kept in English as it may be referenced
 # by various online articles and is technical in nature.
 experimental-features-media-jxl =
@@ -23,7 +23,7 @@ experimental-features-media-jxl-description =
     }
 experimental-features-devtools-compatibility-panel =
     .label = Nástroje pro vývojáře: panel kompatibility
-experimental-features-devtools-compatibility-panel-description = Postranní panel průzkumníka stránky, kde uvidíte podrobnosti o kompatibilitě vaší aplikaci s různými prohlížeči. Podrobnosti najdete v <a data-l10n-name="bugzilla">bugu 1584464</a>.
+experimental-features-devtools-compatibility-panel-description = Postranní panel průzkumníka stránky, kde uvidíte podrobnosti o kompatibilitě vaší aplikace s různými prohlížeči. Podrobnosti najdete v <a data-l10n-name="bugzilla">bugu 1584464</a>.
 # Do not translate 'SameSite', 'Lax' and 'None'.
 experimental-features-cookie-samesite-none-requires-secure2 =
     .label = Cookies: SameSite=None pouze s atributem secure
@@ -50,25 +50,3 @@ experimental-features-js-warp-description = Povolí projekt Warp, který má zle
 experimental-features-ime-search =
     .label = Adresní řádek: zobrazovat výsledky při použití IME
 experimental-features-ime-search-description = IME (Input Method Editor) je nástroj pro zadávání komplexních symbolů, jako jsou znaky východoasijských nebo indických jazyků, pomocí běžné klávesnice. Po zapnutí tohoto experimentu bude panel adresního řádku zobrazovat výsledky vyhledávání a návrhy našeptávače i při použití IME pro zadávání textu. Protože IME může zakrýt výsledky adresního řádku, doporučujeme tuto předvolbu použít jen s IME, který toto nedělá.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Obraz v obraze: automatické otevírání při přepnutí panelu
-experimental-features-auto-pip-description = Povolí obraz v obraze u aktivních videí při přepínání panelů.
-genai-settings-chat-title =
-    .label = AI chatbot
-# Updated sidebar settings
-sidebar-title =
-    .label = Postranní lišta
-sidebar-description = Mějte během prohlížení snadný přístup ke své historii, panelům z jiných zařízení, rozšířením postranní lišty a dalším funkcím. <a data-l10n-name="connect">Sdílet zpětnou vazbu</a>
-vertical-tabs-title =
-    .label = Svislé panely
-vertical-tabs-description = Přesuňte si panely z horní části prohlížeče na stranu. Vyžaduje, abyste také vyzkoušeli postranní lištu. <a data-l10n-name="connect">Sdílet zpětnou vazbu</a>
-experimental-features-group-browsing =
-    .label = Prohlížení
-experimental-features-group-developer-tools =
-    .label = Vývojářské nástroje
-experimental-features-group-webpage-display =
-    .label = Zobrazení webové stránky
-experimental-features-group-customize-browsing =
-    .label = Přizpůsobte si své prohlížení
-experimental-features-group-customize-browsing-description = Pokud tyto funkce vyzkoušíte, <a data-l10n-name="connect">podělte se o svůj názor na fóru Connect</a>

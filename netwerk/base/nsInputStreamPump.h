@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsInputStreamPump_h__
-#define nsInputStreamPump_h__
+#ifndef nsInputStreamPump_h_
+#define nsInputStreamPump_h_
 
 #include "nsIInputStreamPump.h"
 #include "nsIAsyncInputStream.h"
@@ -22,12 +21,8 @@ class nsIInputStream;
 class nsILoadGroup;
 class nsIStreamListener;
 
-#define NS_INPUT_STREAM_PUMP_IID                     \
-  {                                                  \
-    0x42f1cc9b, 0xdf5f, 0x4c9b, {                    \
-      0xbd, 0x71, 0x8d, 0x4a, 0xe2, 0x27, 0xc1, 0x8a \
-    }                                                \
-  }
+#define NS_INPUT_STREAM_PUMP_IID \
+  {0x42f1cc9b, 0xdf5f, 0x4c9b, {0xbd, 0x71, 0x8d, 0x4a, 0xe2, 0x27, 0xc1, 0x8a}}
 
 class nsInputStreamPump final : public nsIInputStreamPump,
                                 public nsIInputStreamCallback,
@@ -42,7 +37,7 @@ class nsInputStreamPump final : public nsIInputStreamPump,
   NS_DECL_NSIINPUTSTREAMPUMP
   NS_DECL_NSIINPUTSTREAMCALLBACK
   NS_DECL_NSITHREADRETARGETABLEREQUEST
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_INPUT_STREAM_PUMP_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_INPUT_STREAM_PUMP_IID)
 
   nsInputStreamPump();
 
@@ -69,6 +64,14 @@ class nsInputStreamPump final : public nsIInputStreamPump,
    * thread. Updates mState based on return value of OnStateStop.
    */
   nsresult CallOnStateStop();
+
+  /**
+   * Used by nsPipe to dispatch events with increased priority.
+   */
+  void SetHighPriority(bool aHighPriority) {
+    mHighPriorityStream = aHighPriority;
+  }
+  bool IsHighPriority() { return mHighPriorityStream; }
 
  protected:
   enum { STATE_IDLE, STATE_START, STATE_TRANSFER, STATE_STOP, STATE_DEAD };
@@ -122,8 +125,9 @@ class nsInputStreamPump final : public nsIInputStreamPump,
   const bool mOffMainThread;
   // Protects state/member var accesses across multiple threads.
   mozilla::RecursiveMutex mMutex{"nsInputStreamPump"};
+  // Whether events from this input stream should be dispatched
+  // with increased priority
+  mozilla::Atomic<bool, mozilla::Relaxed> mHighPriorityStream{false};
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(nsInputStreamPump, NS_INPUT_STREAM_PUMP_IID)
-
-#endif  // !nsInputStreamChannel_h__
+#endif  // !nsInputStreamChannel_h_

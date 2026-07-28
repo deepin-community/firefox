@@ -14,6 +14,7 @@ use crate::parallel;
 use crate::scoped_tls::ScopedTLS;
 use crate::traversal::{DomTraversal, PerLevelTraversalData, PreTraverseToken};
 use std::collections::VecDeque;
+use std::time::Instant;
 
 #[cfg(feature = "servo")]
 fn should_report_statistics() -> bool {
@@ -22,7 +23,7 @@ fn should_report_statistics() -> bool {
 
 #[cfg(feature = "gecko")]
 fn should_report_statistics() -> bool {
-    unsafe { crate::gecko_bindings::structs::ServoTraversalStatistics_sActive }
+    unsafe { !crate::gecko_bindings::structs::ServoTraversalStatistics_sSingleton.is_null() }
 }
 
 #[cfg(feature = "servo")]
@@ -36,9 +37,7 @@ fn report_statistics(stats: &PerThreadTraversalStatistics) {
     // to update the statistics in a global variable.
     unsafe {
         debug_assert!(crate::gecko_bindings::bindings::Gecko_IsMainThread());
-        let gecko_stats = std::ptr::addr_of_mut!(
-            crate::gecko_bindings::structs::ServoTraversalStatistics_sSingleton
-        );
+        let gecko_stats = crate::gecko_bindings::structs::ServoTraversalStatistics_sSingleton;
         (*gecko_stats).mElementsTraversed += stats.elements_traversed;
         (*gecko_stats).mElementsStyled += stats.elements_styled;
         (*gecko_stats).mElementsMatched += stats.elements_matched;
@@ -102,7 +101,7 @@ where
     let report_stats = should_report_statistics();
     let dump_stats = traversal.shared_context().options.dump_style_statistics;
     let start_time = if dump_stats {
-        Some(time::precise_time_s())
+        Some(Instant::now())
     } else {
         None
     };

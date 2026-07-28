@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,15 +5,15 @@
 #include "SVGNumberPairSMILType.h"
 
 #include "mozilla/SMILValue.h"
-#include "nsMathUtils.h"
 #include "nsDebug.h"
+#include "nsMathUtils.h"
 
 namespace mozilla {
 
 /*static*/
 SVGNumberPairSMILType SVGNumberPairSMILType::sSingleton;
 
-void SVGNumberPairSMILType::Init(SMILValue& aValue) const {
+void SVGNumberPairSMILType::InitValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.IsNull(), "Unexpected value type");
 
   aValue.mU.mNumberPair[0] = 0;
@@ -23,7 +21,7 @@ void SVGNumberPairSMILType::Init(SMILValue& aValue) const {
   aValue.mType = this;
 }
 
-void SVGNumberPairSMILType::Destroy(SMILValue& aValue) const {
+void SVGNumberPairSMILType::DestroyValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.mType == this, "Unexpected SMIL value");
   aValue.mU.mNumberPair[0] = 0;
   aValue.mU.mNumberPair[1] = 0;

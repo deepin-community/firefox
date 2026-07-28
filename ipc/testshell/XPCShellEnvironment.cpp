@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -34,7 +32,7 @@
 
 #include "nsJSUtils.h"
 
-#include "BackstagePass.h"
+#include "SystemGlobal.h"
 
 #include "TestShellChild.h"
 
@@ -361,7 +359,7 @@ bool XPCShellEnvironment::Init() {
 
   // unbuffer stdout so that output is in the correct order; note that stderr
   // is unbuffered by default
-  setbuf(stdout, 0);
+  setbuf(stdout, nullptr);
 
   AutoSafeJSContext cx;
 
@@ -383,7 +381,7 @@ bool XPCShellEnvironment::Init() {
             "principals");
   }
 
-  auto backstagePass = MakeRefPtr<BackstagePass>();
+  auto systemGlobal = MakeRefPtr<SystemGlobal>();
 
   JS::RealmOptions options;
   options.creationOptions().setNewCompartmentInSystemZone();
@@ -391,7 +389,7 @@ bool XPCShellEnvironment::Init() {
 
   JS::Rooted<JSObject*> globalObj(cx);
   rv = xpc::InitClassesWithNewWrappedGlobal(
-      cx, static_cast<nsIGlobalObject*>(backstagePass), principal, 0, options,
+      cx, static_cast<nsIGlobalObject*>(systemGlobal), principal, 0, options,
       &globalObj);
   if (NS_FAILED(rv)) {
     NS_ERROR("InitClassesWithNewWrappedGlobal failed!");
@@ -404,7 +402,7 @@ bool XPCShellEnvironment::Init() {
   }
   JSAutoRealm ar(cx, globalObj);
 
-  backstagePass->SetGlobalObject(globalObj);
+  systemGlobal->SetGlobalObject(globalObj);
 
   JS::Rooted<Value> privateVal(cx, PrivateValue(this));
   if (!JS_DefineProperty(cx, globalObj, "__XPCShellEnvironment", privateVal,

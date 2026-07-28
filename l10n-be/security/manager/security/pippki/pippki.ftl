@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Прагляд
 download-cert-view-text = Праверыць сертыфікат ЦС
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Выдавец: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Захаваны: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Запомніць гэты выбар
+client-auth-cert-remember-label = Запомніць гэты выбар:
+client-auth-cert-remember-never =
+    .label = Аднаразова
+client-auth-cert-remember-always =
+    .label = Пастаянна
+client-auth-cert-remember-temporarily =
+    .label = Для гэтага сеанса
 
 ## Set password (p12) dialog
 
@@ -98,6 +100,14 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Пароль рэзервовай копіі (зноў):
 set-password-reminder = Увага: Калі вы забудзеце ваш пароль рэзервовай копіі сертыфікатаў, вы не зможаце ўзнавіць файлы з гэтай копіі пазней.  Занатуйце яго, калі ласка, у надзейным месцы.
+
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Абароненая аўтэнтыфікацыя
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Калі ласка, прайдзіце аўтэнтыфікацыю на прыладзе бяспекі ({ $tokenName }). Як гэта зрабіць, залежыць ад прылады (напрыклад, з дапамогай сканера адбіткаў пальцаў або ўводу кода з клавіятуры).
 
 ## Protected authentication alert
 

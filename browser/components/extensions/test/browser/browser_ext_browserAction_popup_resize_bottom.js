@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 loadTestSubscript("head_browserAction.js");
@@ -16,6 +14,8 @@ add_task(async function testBrowserActionMenuResizeBottomArrow() {
 
   let win = await BrowserTestUtils.openNewBrowserWindow();
 
+  info(`Trying to position in (${left}, ${top})`);
+
   win.resizeTo(WIDTH, HEIGHT);
 
   // Sometimes we run into problems on Linux with resizing being asynchronous
@@ -23,6 +23,8 @@ add_task(async function testBrowserActionMenuResizeBottomArrow() {
   // it is off-screen, so we need to try more than once.
   for (let i = 0; i < 20; i++) {
     win.moveTo(left, top);
+
+    info(`got (${win.screenX}, ${win.screenY})`);
 
     if (win.screenX == left && win.screenY == top) {
       break;

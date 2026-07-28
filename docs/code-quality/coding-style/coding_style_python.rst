@@ -10,8 +10,8 @@ Coding style
 Linting
 ~~~~~~~
 
-The Python linting is done by :ref:`Flake8` and :ref:`pylint`
-They are executed by mozlint both at review phase and in the CI.
+The Python linting is done by :ref:`ruff` which includes rules from `flake8` and `pylint`.
+It is executed by mozlint both at review phase and in the CI.
 
 Indentation
 ~~~~~~~~~~~
@@ -53,8 +53,8 @@ Makefile/moz.build practices
    architecture rather than ``CONFIG['OS_TEST'] {=armv7}`` (re: bug 886689).
 
 
-Other advices
-~~~~~~~~~~~~~
+Other advice
+~~~~~~~~~~~~
 
 -  Install the
    `mozext <https://hg.mozilla.org/hgcustom/version-control-tools/file/default/hgext/mozext>`__

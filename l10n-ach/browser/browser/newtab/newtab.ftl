@@ -9,6 +9,28 @@ newtab-page-title = Dirica matidi manyen
 newtab-settings-button =
     .title = Yub potbuk me dirica matidi mamegi manyen
 
+## Strings for "Homepage" and "Firefox Home" sections of about:settings#home.
+## Homepage panel
+
+home-homepage-new-tabs =
+    .label = Dirica matino manyen
+
+## Firefox Home content
+
+home-restore-defaults-srd =
+    .label = Dwok makwongo
+    .accesskey = D
+home-mode-choice-blank-srd =
+    .label = Potbuk ma nono
+home-prefs-recommended-by-option-sponsored-stories-srd =
+    .label = Lok ma kicwako
+home-prefs-highlights-option-visited-pages-srd =
+    .label = Potbuk ma kilimo
+home-prefs-highlights-options-bookmarks-srd =
+    .label = Alamabuk
+home-prefs-highlights-option-most-recent-download-srd =
+    .label = Gam ma cokcoki loyo
+
 ## Search box component.
 
 # "Search" is a verb/action
@@ -16,19 +38,17 @@ newtab-search-box-search-button =
     .title = Yeny
     .aria-label = Yeny
 
-## Top Sites - General form dialog.
+## Clear text button for the URL and image URL input fields in the Top Sites form.
 
 newtab-topsites-add-search-engine-header = Med ingin me yeny
 newtab-topsites-edit-topsites-header = Yub Kakube maloyo
 newtab-topsites-title-label = Wiye madit
 newtab-topsites-title-input =
     .placeholder = Ket wiye
-
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = Coo onyo mwon URL
 newtab-topsites-url-validation = URL ma tye atir mite
-
 newtab-topsites-image-url-label = URL me cal ma kiyubo
 newtab-topsites-use-image-link = Tii ki cal ma kiyubo…
 newtab-topsites-image-validation = Cano cal pe olare. Tem URL mukene.
@@ -47,24 +67,19 @@ newtab-confirm-delete-history-p1 = Imoko ni imito kwanyo nyig jami weng me potbu
 # "This action" refers to deleting a page from history.
 newtab-confirm-delete-history-p2 = Pe ki twero gonyo tic man.
 
-## Top Sites - Sponsored label
-
-
 ## Context Menu - Action Tooltips.
 
 # General tooltip for context menus.
 newtab-menu-section-tooltip =
     .title = Yab jami ayera
     .aria-label = Yab jami ayera
-
 # Tooltip for dismiss button
 newtab-dismiss-button-tooltip =
     .title = Kwany
     .aria-label = Kwany
-
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Yab jami ayera
     .aria-label = Yab jami ayera pi { $title }
@@ -152,16 +167,15 @@ newtab-section-expand-section-label =
 
 newtab-section-header-topsites = Kakube maloyo
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Lami tam obedo { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = Cak yeny, ka wa binyuto coc akwana mabeco, video, ki potbuk mukene ma ilimo cokcokki onyo ma kiketo alamabuk kany.
-
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Ityeko weng. Rot doki lacen pi lok madito mapol ki bot { $provider }. Pe itwero kuro? Yer lok macuke lamal me nongo lok mabeco mapol ki i but kakube.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -180,15 +194,8 @@ newtab-pocket-read-more = Lok macuk gi lamal:
 newtab-pocket-learn-more = Nong ngec mapol
 newtab-pocket-cta-button = Nong { -pocket-brand-name }
 newtab-pocket-cta-text = Gwok lok ma imaro ii { -pocket-brand-name }, ka i pik wii ki jami me akwana ma mako wii.
-
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
-
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Gwoki
 newtab-pocket-saved = Kigwoko
-
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.

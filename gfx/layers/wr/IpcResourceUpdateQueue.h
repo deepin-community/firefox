@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -132,6 +130,8 @@ class IpcResourceUpdateQueue {
   bool AddBlobImage(wr::BlobImageKey aKey, const ImageDescriptor& aDescriptor,
                     Range<uint8_t> aBytes, ImageIntRect aVisibleRect);
 
+  void AddSnapshotImage(wr::SnapshotImageKey aKey);
+
   void AddSharedExternalImage(wr::ExternalImageId aExtId, wr::ImageKey aKey);
 
   void PushExternalImageForTexture(wr::ExternalImageId aExtId,
@@ -155,6 +155,8 @@ class IpcResourceUpdateQueue {
   void DeleteImage(wr::ImageKey aKey);
 
   void DeleteBlobImage(wr::BlobImageKey aKey);
+
+  void DeleteSnapshotImage(wr::SnapshotImageKey aKey);
 
   bool AddRawFont(wr::FontKey aKey, Range<uint8_t> aBytes, uint32_t aIndex);
 

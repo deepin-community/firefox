@@ -1,8 +1,7 @@
-// |reftest| shell-option(--enable-arraybuffer-resizable) shell-option(--enable-float16array) skip-if(!ArrayBuffer.prototype.resize||!xulRuntime.shell) -- resizable-arraybuffer is not enabled unconditionally, requires shell-options
 // Copyright (C) 2021 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
-esid: sec-array.prototype.forEach
+esid: sec-array.prototype.foreach
 description: TypedArray instance buffer can be resized during iteration
 includes: [testTypedArray.js, compareArray.js]
 features: [TypedArray, resizable-arraybuffer]
@@ -67,6 +66,6 @@ testWithTypedArrayConstructors(function(TA) {
   assert.compareArray(indices, expectedIndices, 'indices (grow)');
   assert.compareArray(arrays, expectedArrays, 'arrays (grow)');
   assert.sameValue(result, undefined, 'result (grow)');
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

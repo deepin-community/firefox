@@ -2,13 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsAHttpTransaction_h__
-#define nsAHttpTransaction_h__
+#ifndef nsAHttpTransaction_h_
+#define nsAHttpTransaction_h_
 
 #include "nsTArray.h"
 #include "nsWeakReference.h"
 #include "nsIRequest.h"
 #include "nsITRRSkipReason.h"
+#include "nsILoadInfo.h"
 
 #ifdef Status
 /* Xlib headers insist on this for some reason... Nuke it because
@@ -36,7 +37,7 @@ class nsHttpRequestHead;
 class nsHttpConnectionInfo;
 class NullHttpTransaction;
 
-enum class WebSocketSupport { UNSURE, NO_SUPPORT, SUPPORTED };
+enum class ExtendedCONNECTSupport { UNSURE, NO_SUPPORT, SUPPORTED };
 
 //----------------------------------------------------------------------------
 // Abstract base class for a HTTP transaction:
@@ -48,16 +49,12 @@ enum class WebSocketSupport { UNSURE, NO_SUPPORT, SUPPORTED };
 //----------------------------------------------------------------------------
 
 // 2af6d634-13e3-494c-8903-c9dce5c22fc0
-#define NS_AHTTPTRANSACTION_IID                      \
-  {                                                  \
-    0x2af6d634, 0x13e3, 0x494c, {                    \
-      0x89, 0x03, 0xc9, 0xdc, 0xe5, 0xc2, 0x2f, 0xc0 \
-    }                                                \
-  }
+#define NS_AHTTPTRANSACTION_IID \
+  {0x2af6d634, 0x13e3, 0x494c, {0x89, 0x03, 0xc9, 0xdc, 0xe5, 0xc2, 0x2f, 0xc0}}
 
 class nsAHttpTransaction : public nsSupportsWeakReference {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_AHTTPTRANSACTION_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_AHTTPTRANSACTION_IID)
 
   // called by the connection when it takes ownership of the transaction.
   virtual void SetConnection(nsAHttpConnection*) = 0;
@@ -111,6 +108,9 @@ class nsAHttpTransaction : public nsSupportsWeakReference {
 
   // called to close the transaction
   virtual void Close(nsresult reason) = 0;
+
+  // called to cancel the transaction; default implementation is a no-op.
+  virtual void Cancel(nsresult aReason) {}
 
   // called to indicate a failure with proxy CONNECT
   virtual void SetProxyConnectFailed() = 0;
@@ -185,6 +185,10 @@ class nsAHttpTransaction : public nsSupportsWeakReference {
   virtual bool IsHttp2Websocket() { return false; }
   virtual void SetTRRInfo(nsIRequest::TRRMode aMode,
                           TRRSkippedReason aSkipReason) {};
+  virtual bool AllowedToConnectToIpAddressSpace(
+      nsILoadInfo::IPAddressSpace aTargetIpAddressSpace) {
+    return true;
+  };
 
   // We call this function if we want to use alt-svc host again on the next
   // restart. If this function is not called on the next restart the
@@ -198,10 +202,19 @@ class nsAHttpTransaction : public nsSupportsWeakReference {
   // the next restart.
   virtual void DoNotResetIPFamilyPreference() {}
 
-  // Returns true if early-data is possible and transaction will remember
-  // that it is in 0RTT mode (to know should it rewide transaction or not
-  // in the case of an error).
-  [[nodiscard]] virtual bool Do0RTT() { return false; }
+  // Signals that a PSK resumption token was offered in the ClientHello.
+  // aCanSendEarlyData is true when the server advertised max_early_data_size
+  // and the transaction may also send early data; false when a PSK was offered
+  // but no early data was sent (server didn't advertise max_early_data_size).
+  // Returns true only when early data was actually started.
+  [[nodiscard]] virtual bool Do0RTT(bool aCanSendEarlyData = true) {
+    return false;
+  }
+
+  // Called when the TLS handshake succeeds and the PSK was accepted by the
+  // server. Clears any pending PSK-retry state so that post-handshake errors
+  // (e.g. ALPN mismatch) do not trigger a spurious PSK retry.
+  virtual void OnPSKResumptionAccepted() {}
   // This function will be called when a tls handshake has been finished and
   // we know whether early-data that was sent has been accepted or not, e.g.
   // do we need to restart a transaction. This will be called only if Do0RTT
@@ -226,12 +239,17 @@ class nsAHttpTransaction : public nsSupportsWeakReference {
 
   virtual nsresult FetchHTTPSRR() { return NS_ERROR_NOT_IMPLEMENTED; }
   virtual nsresult OnHTTPSRRAvailable(nsIDNSHTTPSSVCRecord* aHTTPSSVCRecord,
-                                      nsISVCBRecord* aHighestPriorityRecord) {
+                                      nsISVCBRecord* aHighestPriorityRecord,
+                                      const nsACString& aCname) {
     return NS_ERROR_NOT_IMPLEMENTED;
   }
-};
+  virtual bool IsForWebTransport() { return false; }
+  virtual bool IsResettingForTunnelConn() { return false; }
+  virtual void SetResettingForTunnelConn(bool aValue) {}
 
-NS_DEFINE_STATIC_IID_ACCESSOR(nsAHttpTransaction, NS_AHTTPTRANSACTION_IID)
+  virtual void InvokeCallback() {}
+  virtual bool IsForFallback() { return false; }
+};
 
 #define NS_DECL_NSAHTTPTRANSACTION                                             \
   void SetConnection(nsAHttpConnection*) override;                             \
@@ -304,4 +322,4 @@ class nsAHttpSegmentWriter {
 }  // namespace net
 }  // namespace mozilla
 
-#endif  // nsAHttpTransaction_h__
+#endif  // nsAHttpTransaction_h_

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +5,10 @@
 #ifndef mozilla_dom_FormData_h
 #define mozilla_dom_FormData_h
 
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/BindingDeclarations.h"
-#include "mozilla/dom/HTMLFormSubmission.h"
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/FormDataBinding.h"
+#include "mozilla/dom/HTMLFormSubmission.h"
 #include "nsGenericHTMLElement.h"
 #include "nsTArray.h"
 #include "nsWrapperCache.h"
@@ -56,7 +53,7 @@ class FormData final : public nsISupports,
                     NotNull<const Encoding*> aEncoding = UTF_8_ENCODING,
                     Element* aSubmitter = nullptr);
 
-  already_AddRefed<FormData> Clone();
+  already_AddRefed<FormData> Clone() const;
 
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(FormData)
@@ -71,6 +68,10 @@ class FormData final : public nsISupports,
   static already_AddRefed<FormData> Constructor(
       const GlobalObject& aGlobal,
       const Optional<NonNull<HTMLFormElement> >& aFormElement,
+      nsGenericHTMLElement* aSubmitter, ErrorResult& aRv);
+
+  static already_AddRefed<FormData> Constructor(
+      nsISupports* aGlobal, HTMLFormElement* aFormElement,
       nsGenericHTMLElement* aSubmitter, ErrorResult& aRv);
 
   void Append(const nsAString& aName, const nsAString& aValue,

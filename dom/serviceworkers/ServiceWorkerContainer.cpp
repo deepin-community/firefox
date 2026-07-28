@@ -1,30 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ServiceWorkerContainer.h"
 
-#include "nsContentPolicyUtils.h"
-#include "nsContentSecurityManager.h"
-#include "nsContentUtils.h"
-#include "mozilla/dom/Document.h"
-#include "nsIServiceWorkerManager.h"
-#include "nsIScriptError.h"
-#include "nsThreadUtils.h"
-#include "nsNetUtil.h"
-#include "nsPIDOMWindow.h"
+#include "mozilla/BasePrincipal.h"
 #include "mozilla/Components.h"
-
-#include "nsCycleCollectionParticipant.h"
-#include "nsGlobalWindowInner.h"
-#include "nsServiceManagerUtils.h"
-#include "mozilla/LoadInfo.h"
 #include "mozilla/SchedulerGroup.h"
 #include "mozilla/StaticPrefs_extensions.h"
 #include "mozilla/StaticPrefs_privacy.h"
-#include "mozilla/StorageAccess.h"
 #include "mozilla/StoragePrincipalHelper.h"
 #include "mozilla/dom/ClientIPCTypes.h"
 #include "mozilla/dom/DOMMozPromiseRequestHolder.h"
@@ -37,13 +21,23 @@
 #include "mozilla/dom/ServiceWorkerContainerBinding.h"
 #include "mozilla/dom/ServiceWorkerContainerChild.h"
 #include "mozilla/dom/ServiceWorkerManager.h"
+#include "mozilla/dom/ServiceWorkerRegistration.h"
+#include "mozilla/dom/ServiceWorkerUtils.h"
+#include "mozilla/dom/TrustedTypeUtils.h"
+#include "mozilla/dom/TrustedTypesConstants.h"
 #include "mozilla/dom/ipc/StructuredCloneData.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/PBackgroundChild.h"
-
-#include "ServiceWorker.h"
-#include "ServiceWorkerRegistration.h"
-#include "ServiceWorkerUtils.h"
+#include "nsContentSecurityManager.h"
+#include "nsContentUtils.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsGlobalWindowInner.h"
+#include "nsIScriptError.h"
+#include "nsIServiceWorkerManager.h"
+#include "nsNetUtil.h"
+#include "nsPIDOMWindow.h"
+#include "nsServiceManagerUtils.h"
+#include "nsThreadUtils.h"
 
 // This is defined to something else on Windows
 #ifdef DispatchMessage
@@ -130,12 +124,11 @@ using mozilla::dom::ipc::StructuredCloneData;
 // incoming messages and as an interface to DispatchMessage().
 struct MOZ_HEAP_CLASS ServiceWorkerContainer::ReceivedMessage {
   explicit ReceivedMessage(const ClientPostMessageArgs& aArgs)
-      : mServiceWorker(aArgs.serviceWorker()) {
-    mClonedData.CopyFromClonedMessageData(aArgs.clonedData());
-  }
+      : mServiceWorker(aArgs.serviceWorker()),
+        mClonedData(aArgs.clonedData()) {}
 
   ServiceWorkerDescriptor mServiceWorker;
-  StructuredCloneData mClonedData;
+  NotNull<RefPtr<StructuredCloneData>> mClonedData;
 
   NS_INLINE_DECL_REFCOUNTING(ReceivedMessage)
 
@@ -167,45 +160,16 @@ JSObject* ServiceWorkerContainer::WrapObject(
   return ServiceWorkerContainer_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-namespace {
-
-already_AddRefed<nsIURI> GetBaseURIFromGlobal(nsIGlobalObject* aGlobal,
-                                              ErrorResult& aRv) {
-  // It would be nice not to require a window here, but right
-  // now we don't have a great way to get the base URL just
-  // from the nsIGlobalObject.
-  nsCOMPtr<nsPIDOMWindowInner> window = do_QueryInterface(aGlobal);
-  if (!window) {
-    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
-    return nullptr;
-  }
-
-  Document* doc = window->GetExtantDoc();
-  if (!doc) {
-    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
-    return nullptr;
-  }
-
-  nsCOMPtr<nsIURI> baseURI = doc->GetDocBaseURI();
-  if (!baseURI) {
-    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
-    return nullptr;
-  }
-
-  return baseURI.forget();
-}
-
-}  // anonymous namespace
-
 already_AddRefed<Promise> ServiceWorkerContainer::Register(
-    const nsAString& aScriptURL, const RegistrationOptions& aOptions,
-    const CallerType aCallerType, ErrorResult& aRv) {
-  AUTO_PROFILER_MARKER_TEXT("SWC Register", DOM, {}, ""_ns);
+    const TrustedScriptURLOrUSVString& aScriptURL,
+    const RegistrationOptions& aOptions, nsIPrincipal* aSubjectPrincipal,
+    ErrorResult& aRv) {
+  AUTO_PROFILER_MARKER_UNTYPED("SWC Register", DOM, {});
 
   // Note, we can't use GetGlobalIfValid() from the start here.  If we
   // hit a storage failure we want to log a message with the final
   // scope string we put together below.
-  nsIGlobalObject* global = GetParentObject();
+  nsCOMPtr<nsIGlobalObject> global = GetParentObject();
   if (!global) {
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return nullptr;
@@ -217,14 +181,25 @@ already_AddRefed<Promise> ServiceWorkerContainer::Register(
     return nullptr;
   }
 
-  nsCOMPtr<nsIURI> baseURI = GetBaseURIFromGlobal(global, aRv);
+  nsCOMPtr<nsIURI> baseURI = global->GetBaseURI();
+  if (!baseURI) {
+    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
+    return nullptr;
+  }
+
+  constexpr nsLiteralString sink = u"ServiceWorkerContainer register"_ns;
+  Maybe<nsAutoString> compliantStringHolder;
+  const nsAString* compliantString =
+      TrustedTypeUtils::GetTrustedTypesCompliantString(
+          aScriptURL, sink, kTrustedTypesOnlySinkGroup, *global,
+          aSubjectPrincipal, compliantStringHolder, aRv);
   if (aRv.Failed()) {
     return nullptr;
   }
 
   // Don't use NS_ConvertUTF16toUTF8 because that doesn't let us handle OOM.
   nsAutoCString scriptURL;
-  if (!AppendUTF16toUTF8(aScriptURL, scriptURL, fallible)) {
+  if (!AppendUTF16toUTF8(*compliantString, scriptURL, fallible)) {
     aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
     return nullptr;
   }
@@ -288,45 +263,8 @@ already_AddRefed<Promise> ServiceWorkerContainer::Register(
   scopeURI = std::move(cloneWithoutRef);
 
   ServiceWorkerScopeAndScriptAreValid(clientInfo.ref(), scopeURI, scriptURI,
-                                      aRv);
+                                      aRv, global);
   if (aRv.Failed()) {
-    return nullptr;
-  }
-
-  nsCOMPtr<nsPIDOMWindowInner> window = do_QueryInterface(global);
-  if (!window) {
-    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
-    return nullptr;
-  }
-
-  Document* doc = window->GetExtantDoc();
-  if (!doc) {
-    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
-    return nullptr;
-  }
-
-  // The next section of code executes an NS_CheckContentLoadPolicy()
-  // check.  This is necessary to enforce the CSP of the calling client.
-  // Currently this requires an Document.  Once bug 965637 lands we
-  // should try to move this into ServiceWorkerScopeAndScriptAreValid()
-  // using the ClientInfo instead of doing a window-specific check here.
-  // See bug 1455077 for further investigation.
-  nsCOMPtr<nsILoadInfo> secCheckLoadInfo = new mozilla::net::LoadInfo(
-      doc->NodePrincipal(),  // loading principal
-      doc->NodePrincipal(),  // triggering principal
-      doc,                   // loading node
-      nsILoadInfo::SEC_ONLY_FOR_EXPLICIT_CONTENTSEC_CHECK,
-      nsIContentPolicy::TYPE_INTERNAL_SERVICE_WORKER);
-
-  // Check content policy.
-  int16_t decision = nsIContentPolicy::ACCEPT;
-  rv = NS_CheckContentLoadPolicy(scriptURI, secCheckLoadInfo, &decision);
-  if (NS_FAILED(rv)) {
-    aRv.Throw(NS_ERROR_DOM_SECURITY_ERR);
-    return nullptr;
-  }
-  if (NS_WARN_IF(decision != nsIContentPolicy::ACCEPT)) {
-    aRv.Throw(NS_ERROR_CONTENT_BLOCKED);
     return nullptr;
   }
 
@@ -347,16 +285,21 @@ already_AddRefed<Promise> ServiceWorkerContainer::Register(
   // Verify that the global is valid and has permission to store
   // data.  We perform this late so that we can report the final
   // scope URL in any error message.
-  Unused << GetGlobalIfValid(aRv, [&](Document* aDoc) {
+  (void)GetGlobalIfValid(aRv, [&](nsIGlobalObject* aGlobal) {
     AutoTArray<nsString, 1> param;
     CopyUTF8toUTF16(cleanedScopeURL, *param.AppendElement());
-    nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
-                                    "Service Workers"_ns, aDoc,
-                                    nsContentUtils::eDOM_PROPERTIES,
-                                    "ServiceWorkerRegisterStorageError", param);
+    aGlobal->ReportToConsole(nsIScriptError::errorFlag, "Service Workers"_ns,
+                             PropertiesFile::DOM_PROPERTIES,
+                             "ServiceWorkerRegisterStorageError"_ns, param);
   });
 
-  window->NoteCalledRegisterForServiceWorkerScope(cleanedScopeURL);
+  // TODO: For bug 1836707 we will move this tracking to ServiceWorkerManager
+  // where it can establish the mapping between the job and our client info,
+  // which will also work on workers.  For now we leave this notification for
+  // Windows only.
+  if (auto* window = global->GetAsInnerWindow()) {
+    window->NoteCalledRegisterForServiceWorkerScope(cleanedScopeURL);
+  }
 
   RefPtr<Promise> outer =
       Promise::Create(global, aRv, Promise::ePropagateUserInteraction);
@@ -372,12 +315,12 @@ already_AddRefed<Promise> ServiceWorkerContainer::Register(
   }
 
   mActor->SendRegister(
-      clientInfo.ref().ToIPC(), nsCString(cleanedScopeURL),
+      clientInfo.ref().ToIPC(), nsCString(cleanedScopeURL), aOptions.mType,
       nsCString(cleanedScriptURL), aOptions.mUpdateViaCache,
       [self,
        outer](const IPCServiceWorkerRegistrationDescriptorOrCopyableErrorResult&
                   aResult) {
-        AUTO_PROFILER_MARKER_TEXT("SWC Register (inner)", DOM, {}, ""_ns);
+        AUTO_PROFILER_MARKER_UNTYPED("SWC Register (inner)", DOM, {});
 
         if (aResult.type() ==
             IPCServiceWorkerRegistrationDescriptorOrCopyableErrorResult::
@@ -419,11 +362,10 @@ already_AddRefed<ServiceWorker> ServiceWorkerContainer::GetController() {
 
 already_AddRefed<Promise> ServiceWorkerContainer::GetRegistrations(
     ErrorResult& aRv) {
-  nsIGlobalObject* global = GetGlobalIfValid(aRv, [](Document* aDoc) {
-    nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
-                                    "Service Workers"_ns, aDoc,
-                                    nsContentUtils::eDOM_PROPERTIES,
-                                    "ServiceWorkerGetRegistrationStorageError");
+  nsIGlobalObject* global = GetGlobalIfValid(aRv, [](nsIGlobalObject* aGlobal) {
+    aGlobal->ReportToConsole(nsIScriptError::errorFlag, "Service Workers"_ns,
+                             PropertiesFile::DOM_PROPERTIES,
+                             "ServiceWorkerGetRegistrationStorageError"_ns);
   });
   if (aRv.Failed()) {
     return nullptr;
@@ -505,11 +447,10 @@ void ServiceWorkerContainer::StartMessages() {
 
 already_AddRefed<Promise> ServiceWorkerContainer::GetRegistration(
     const nsAString& aURL, ErrorResult& aRv) {
-  nsIGlobalObject* global = GetGlobalIfValid(aRv, [](Document* aDoc) {
-    nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
-                                    "Service Workers"_ns, aDoc,
-                                    nsContentUtils::eDOM_PROPERTIES,
-                                    "ServiceWorkerGetRegistrationStorageError");
+  nsIGlobalObject* global = GetGlobalIfValid(aRv, [](nsIGlobalObject* aGlobal) {
+    aGlobal->ReportToConsole(nsIScriptError::errorFlag, "Service Workers"_ns,
+                             PropertiesFile::DOM_PROPERTIES,
+                             "ServiceWorkerGetRegistrationStorageError"_ns);
   });
   if (aRv.Failed()) {
     return nullptr;
@@ -521,8 +462,8 @@ already_AddRefed<Promise> ServiceWorkerContainer::GetRegistration(
     return nullptr;
   }
 
-  nsCOMPtr<nsIURI> baseURI = GetBaseURIFromGlobal(global, aRv);
-  if (aRv.Failed()) {
+  nsCOMPtr<nsIURI> baseURI = global->GetBaseURI();
+  if (!baseURI) {
     return nullptr;
   }
 
@@ -566,7 +507,7 @@ already_AddRefed<Promise> ServiceWorkerContainer::GetRegistration(
             //  If rv is a failure then this is an application layer error.
             //  Note, though, we also reject with NS_OK to indicate that we just
             //  didn't find a registration.
-            Unused << self->GetGlobalIfValid(rv);
+            (void)self->GetGlobalIfValid(rv);
             if (!rv.Failed()) {
               outer->MaybeResolveWithUndefined();
               return;
@@ -671,93 +612,52 @@ Promise* ServiceWorkerContainer::GetReady(ErrorResult& aRv) {
   return mReadyPromise;
 }
 
-// Testing only.
-void ServiceWorkerContainer::GetScopeForUrl(const nsAString& aUrl,
-                                            nsString& aScope,
-                                            ErrorResult& aRv) {
-  nsCOMPtr<nsIServiceWorkerManager> swm =
-      mozilla::components::ServiceWorkerManager::Service();
-  if (!swm) {
-    aRv.Throw(NS_ERROR_FAILURE);
-    return;
-  }
-
-  nsCOMPtr<nsPIDOMWindowInner> window = GetOwnerWindow();
-  if (NS_WARN_IF(!window)) {
-    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
-    return;
-  }
-
-  nsCOMPtr<nsIPrincipal> principal;
-  nsresult rv = StoragePrincipalHelper::GetPrincipal(
-      window,
-      StaticPrefs::privacy_partition_serviceWorkers()
-          ? StoragePrincipalHelper::eForeignPartitionedPrincipal
-          : StoragePrincipalHelper::eRegularPrincipal,
-      getter_AddRefs(principal));
-
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    aRv.Throw(rv);
-    return;
-  }
-
-  aRv = swm->GetScopeForUrl(principal, aUrl, aScope);
-}
-
 nsIGlobalObject* ServiceWorkerContainer::GetGlobalIfValid(
     ErrorResult& aRv,
-    const std::function<void(Document*)>&& aStorageFailureCB) const {
-  // For now we require a window since ServiceWorkerContainer is
-  // not exposed on worker globals yet.  The main thing we need
-  // to fix here to support that is the storage access check via
-  // the nsIGlobalObject.
-  nsGlobalWindowInner* window = GetOwnerWindow();
-  if (NS_WARN_IF(!window)) {
+    const std::function<void(nsIGlobalObject*)>&& aStorageFailureCB) const {
+  nsIGlobalObject* global = GetRelevantGlobal();
+  if (NS_WARN_IF(!global)) {
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return nullptr;
   }
 
-  nsCOMPtr<Document> doc = window->GetExtantDoc();
-  if (NS_WARN_IF(!doc)) {
+  if (NS_FAILED(CheckCurrentGlobalCorrectness())) {
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return nullptr;
   }
 
   // Don't allow a service worker to access service worker registrations
-  // from a window with storage disabled.  If these windows can access
+  // from a global with storage disabled.  If these globals can access
   // the registration it increases the chance they can bypass the storage
   // block via postMessage(), etc.
-  auto storageAllowed = StorageAllowedForWindow(window);
-  if (NS_WARN_IF(storageAllowed != StorageAccess::eAllow &&
-                 (!StaticPrefs::privacy_partition_serviceWorkers() ||
-                  !StoragePartitioningEnabled(storageAllowed,
-                                              doc->CookieJarSettings())))) {
+  if (NS_WARN_IF(!ServiceWorkersStorageAllowedForGlobal(global))) {
     if (aStorageFailureCB) {
-      aStorageFailureCB(doc);
+      aStorageFailureCB(global);
     }
     aRv.Throw(NS_ERROR_DOM_SECURITY_ERR);
     return nullptr;
   }
 
-  // Don't allow service workers when the document is chrome.
-  if (NS_WARN_IF(doc->NodePrincipal()->IsSystemPrincipal())) {
+  // Don't allow service workers for system principals.
+  nsIPrincipal* principal = global->PrincipalOrNull();
+  if (NS_WARN_IF(!principal || principal->IsSystemPrincipal())) {
     aRv.Throw(NS_ERROR_DOM_SECURITY_ERR);
     return nullptr;
   }
 
-  return window->AsGlobal();
+  return global;
 }
 
 void ServiceWorkerContainer::EnqueueReceivedMessageDispatch(
     RefPtr<ReceivedMessage> aMessage) {
-  NS_DispatchToMainThread(NewRunnableMethod<RefPtr<ReceivedMessage>>(
+  NS_DispatchToCurrentThread(NewRunnableMethod<RefPtr<ReceivedMessage>>(
       "ServiceWorkerContainer::DispatchMessage", this,
       &ServiceWorkerContainer::DispatchMessage, std::move(aMessage)));
 }
 
 template <typename F>
 void ServiceWorkerContainer::RunWithJSContext(F&& aCallable) {
-  nsCOMPtr<nsIGlobalObject> globalObject = GetOwnerGlobal();
+  nsCOMPtr<nsIGlobalObject> globalObject = GetRelevantGlobal();
 
   // If AutoJSAPI::Init() fails then either global is nullptr or not
   // in a usable state.
@@ -770,7 +670,10 @@ void ServiceWorkerContainer::RunWithJSContext(F&& aCallable) {
 }
 
 void ServiceWorkerContainer::DispatchMessage(RefPtr<ReceivedMessage> aMessage) {
-  MOZ_ASSERT(NS_IsMainThread());
+  nsresult rv = CheckCurrentGlobalCorrectness();
+  if (NS_FAILED(rv)) {
+    return;
+  }
 
   // When dispatching a message, either DOMContentLoaded has already
   // been fired, or someone called startMessages() or set onmessage.
@@ -778,19 +681,17 @@ void ServiceWorkerContainer::DispatchMessage(RefPtr<ReceivedMessage> aMessage) {
   // not, we'd fail to initialize the JS API and exit.
   RunWithJSContext([this, message = std::move(aMessage)](
                        JSContext* const aCx, nsIGlobalObject* const aGlobal) {
-    ErrorResult result;
     bool deserializationFailed = false;
     RootedDictionary<MessageEventInit> init(aCx);
-    auto res = FillInMessageEventInit(aCx, aGlobal, *message, init, result);
+    auto res = FillInMessageEventInit(aCx, aGlobal, *message, init);
     if (res.isErr()) {
       deserializationFailed = res.unwrapErr();
       MOZ_ASSERT_IF(deserializationFailed, init.mData.isNull());
       MOZ_ASSERT_IF(deserializationFailed, init.mPorts.IsEmpty());
       MOZ_ASSERT_IF(deserializationFailed, !init.mOrigin.IsEmpty());
       MOZ_ASSERT_IF(deserializationFailed, !init.mSource.IsNull());
-      result.SuppressException();
 
-      if (!deserializationFailed && result.MaybeSetPendingException(aCx)) {
+      if (!deserializationFailed) {
         return;
       }
     }
@@ -799,11 +700,7 @@ void ServiceWorkerContainer::DispatchMessage(RefPtr<ReceivedMessage> aMessage) {
         this, deserializationFailed ? u"messageerror"_ns : u"message"_ns, init);
     event->SetTrusted(true);
 
-    result = NS_OK;
-    DispatchEvent(*event, result);
-    if (result.Failed()) {
-      result.SuppressException();
-    }
+    DispatchEvent(*event, IgnoreErrors());
   });
 }
 
@@ -835,7 +732,7 @@ nsresult FillInOriginNoSuffix(const ServiceWorkerDescriptor& aServiceWorker,
 
 Result<Ok, bool> ServiceWorkerContainer::FillInMessageEventInit(
     JSContext* const aCx, nsIGlobalObject* const aGlobal,
-    ReceivedMessage& aMessage, MessageEventInit& aInit, ErrorResult& aRv) {
+    ReceivedMessage& aMessage, MessageEventInit& aInit) {
   // Determining the source and origin should preceed attempting deserialization
   // because on a "messageerror" event (i.e. when deserialization fails), the
   // dispatched message needs to contain such an origin and source, per spec:
@@ -857,15 +754,16 @@ Result<Ok, bool> ServiceWorkerContainer::FillInMessageEventInit(
     return Err(false);
   }
 
+  IgnoredErrorResult readError;
   JS::Rooted<JS::Value> messageData(aCx);
-  aMessage.mClonedData.Read(aCx, &messageData, aRv);
-  if (aRv.Failed()) {
+  aMessage.mClonedData->Read(aCx, &messageData, readError);
+  if (readError.Failed()) {
     return Err(true);
   }
 
   aInit.mData = messageData;
 
-  if (!aMessage.mClonedData.TakeTransferredPortsAsSequence(aInit.mPorts)) {
+  if (!aMessage.mClonedData->TakeTransferredPortsAsSequence(aInit.mPorts)) {
     xpc::Throw(aCx, NS_ERROR_OUT_OF_MEMORY);
     return Err(false);
   }

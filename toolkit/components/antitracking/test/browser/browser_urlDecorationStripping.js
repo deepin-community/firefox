@@ -5,16 +5,6 @@
 
 "use strict";
 
-const { RemoteSettings } = ChromeUtils.importESModule(
-  "resource://services-settings/remote-settings.sys.mjs"
-);
-const { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
-);
-
-const APS_PREF =
-  "privacy.partition.always_partition_third_party_non_cookie_storage";
-
 const COLLECTION_NAME = "anti-tracking-url-decoration";
 const PREF_NAME = "privacy.restrict3rdpartystorage.url_decorations";
 const TOKEN_1 = "fooBar";
@@ -57,16 +47,16 @@ add_task(async _ => {
 
   await uds.ensureUpdated();
 
-  let list = Preferences.get(PREF_NAME).split(" ");
+  let list = Services.prefs.getStringPref(PREF_NAME).split(" ");
   ok(list.includes(TOKEN_1), "Token must now be available in " + PREF_NAME);
-  ok(Preferences.locked(PREF_NAME), PREF_NAME + " must be locked");
+  ok(Services.prefs.prefIsLocked(PREF_NAME), PREF_NAME + " must be locked");
 
   async function verifyList(array, not_array) {
     await emitSync();
 
     await uds.ensureUpdated();
 
-    list = Preferences.get(PREF_NAME).split(" ");
+    list = Services.prefs.getStringPref(PREF_NAME).split(" ");
     for (let token of array) {
       ok(
         list.includes(token),
@@ -79,7 +69,7 @@ add_task(async _ => {
         token + " must not be available in " + PREF_NAME
       );
     }
-    ok(Preferences.locked(PREF_NAME), PREF_NAME + " must be locked");
+    ok(Services.prefs.prefIsLocked(PREF_NAME), PREF_NAME + " must be locked");
   }
 
   records.push(
@@ -143,7 +133,6 @@ AntiTracking._createTask({
   extraPrefs: [
     ["network.http.referer.defaultPolicy", 3], // Ensure we don't downgrade because of the default policy.
     ["network.http.referer.defaultPolicy.trackers", 3],
-    [APS_PREF, false],
   ],
   expectedBlockingNotifications: 0,
   runInPrivateWindow: false,
@@ -171,10 +160,7 @@ AntiTracking._createTask({
       ok(false, "No query parameters should be found");
     }
   },
-  extraPrefs: [
-    ["network.http.referer.defaultPolicy.trackers", 2],
-    [APS_PREF, false],
-  ],
+  extraPrefs: [["network.http.referer.defaultPolicy.trackers", 2]],
   expectedBlockingNotifications: 0,
   runInPrivateWindow: false,
   iframeSandbox: null,
@@ -204,7 +190,6 @@ AntiTracking._createTask({
   extraPrefs: [
     ["network.http.referer.defaultPolicy", 3], // Ensure we don't downgrade because of the default policy.
     ["network.http.referer.defaultPolicy.trackers", 3],
-    [APS_PREF, false],
   ],
   expectedBlockingNotifications: 0,
   runInPrivateWindow: false,
@@ -232,10 +217,7 @@ AntiTracking._createTask({
       ok(false, "No query parameters should be found");
     }
   },
-  extraPrefs: [
-    ["network.http.referer.defaultPolicy.trackers", 2],
-    [APS_PREF, false],
-  ],
+  extraPrefs: [["network.http.referer.defaultPolicy.trackers", 2]],
   expectedBlockingNotifications: 0,
   runInPrivateWindow: false,
   iframeSandbox: null,

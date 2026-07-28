@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-// vim:cindent:ts=8:et:sw=4:
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,26 +10,26 @@
  * build).
  */
 
-#include "nsXPCOM.h"
-#include "nsCOMPtr.h"
-
-#include "nsIFile.h"
-#include "nsNetUtil.h"
-
 #include "mozilla/StyleSheetInlines.h"
 #include "mozilla/css/Loader.h"
+#include "nsCOMPtr.h"
+#include "nsIFile.h"
+#include "nsNetUtil.h"
+#include "nsXPCOM.h"
 
 using namespace mozilla;
 
 static already_AddRefed<nsIURI> FileToURI(const char* aFilename,
                                           nsresult* aRv = 0) {
-  nsCOMPtr<nsIFile> lf(do_CreateInstance(NS_LOCAL_FILE_CONTRACTID, aRv));
-  NS_ENSURE_TRUE(lf, nullptr);
+  nsCOMPtr<nsIFile> lf;
   // XXX Handle relative paths somehow.
-  lf->InitWithNativePath(nsDependentCString(aFilename));
+  nsresult rv =
+      NS_NewNativeLocalFile(nsDependentCString(aFilename), getter_AddRefs(lf));
 
   nsIURI* uri = nullptr;
-  nsresult rv = NS_NewFileURI(&uri, lf);
+  if (NS_SUCCEEDED(rv)) {
+    rv = NS_NewFileURI(&uri, lf);
+  }
   if (aRv) *aRv = rv;
   return uri;
 }

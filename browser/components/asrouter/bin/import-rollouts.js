@@ -135,6 +135,14 @@ async function getMessageValidators(skipValidation) {
       "./content-src/templates/OnboardingMessage/Spotlight.schema.json",
       { common: true }
     ),
+    menu_message: await getValidator(
+      "./content-src/templates/OnboardingMessage/MenuMessage.schema.json",
+      { common: true }
+    ),
+    newtab_message: await getValidator(
+      "./content-src/templates/OnboardingMessage/NewtabMessage.schema.json",
+      { common: true }
+    ),
   };
 
   messageValidators.milestone_message = messageValidators.cfr_doorhanger;
@@ -177,9 +185,8 @@ async function format(content) {
 
 async function main() {
   const { default: meow } = await import("meow");
-  const { MESSAGING_EXPERIMENTS_DEFAULT_FEATURES } = await import(
-    "../modules/MessagingExperimentConstants.sys.mjs"
-  );
+  const { MESSAGING_EXPERIMENTS_DEFAULT_FEATURES } =
+    await import("../modules/MessagingExperimentConstants.sys.mjs");
 
   const fileUrl = pathToFileURL(__filename);
 
@@ -187,17 +194,17 @@ async function main() {
     `
     Usage
       $ node bin/import-rollouts.js [options]
-  
+
     Options
       -c ID, --collection ID   The Nimbus collection ID to import from
                                default: ${DEFAULT_COLLECTION_ID}
       -e, --experiments        Import all messaging experiments, not just rollouts
       -s, --skip-validation    Skip validation of experiments and messages
       -h, --help               Show this help message
-  
+
     Examples
       $ node bin/import-rollouts.js --collection nimbus-preview
-      $ ./mach npm run import-rollouts --prefix=browser/components/newtab -- -e
+      $ ./mach npm run import-rollouts --prefix=browser/components/asrouter -- -e
   `,
     {
       description: false,
@@ -216,17 +223,17 @@ async function main() {
       flags: {
         collection: {
           type: "string",
-          alias: "c",
+          shortFlag: "c",
           default: DEFAULT_COLLECTION_ID,
         },
         experiments: {
           type: "boolean",
-          alias: "e",
+          shortFlag: "e",
           default: false,
         },
         skipValidation: {
           type: "boolean",
-          alias: "s",
+          shortFlag: "s",
           default: false,
         },
       },

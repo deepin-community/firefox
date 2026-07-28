@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -45,7 +43,7 @@ function runNextTest() {
   }
 }
 
-/** ***********
+/*************
  * TEST DATA *
  *************/
 
@@ -72,7 +70,7 @@ const LATTER_HALF_THIRD_SEGMENT = [11, 12];
 
 const TWO_HALF_SEGMENTS = [1, 2, 1, 2];
 
-/** *******
+/*********
  * TESTS *
  *********/
 
@@ -318,7 +316,7 @@ function sinkAndSourceClosedWithPendingData(next) {
   t.expect(Cr.NS_ERROR_UNEXPECTED, []);
 }
 
-/** ***********
+/*************
  * UTILITIES *
  *************/
 
@@ -375,7 +373,7 @@ function note(m) {
   dumpn(asterisks + "\n* " + m + " *\n" + asterisks);
 }
 
-/** *********
+/***********
  * MOCKERY *
  ***********/
 
@@ -462,8 +460,9 @@ function CustomPipe(name) {
     interceptStreamReadyCallbacks(streamReadyInterceptCreator) {
       dumpn("*** [" + this.name + "].interceptStreamReadyCallbacks");
 
-      Assert.ok(
-        this._streamReadyInterceptCreator === null,
+      Assert.strictEqual(
+        this._streamReadyInterceptCreator,
+        null,
         "intercepting twice"
       );
       this._streamReadyInterceptCreator = streamReadyInterceptCreator;
@@ -481,8 +480,9 @@ function CustomPipe(name) {
     removeStreamReadyInterceptor() {
       dumpn("*** [" + this.name + "].removeStreamReadyInterceptor()");
 
-      Assert.ok(
-        this._streamReadyInterceptCreator !== null,
+      Assert.notStrictEqual(
+        this._streamReadyInterceptCreator,
+        null,
         "removing interceptor when none present?"
       );
       this._streamReadyInterceptCreator = null;
@@ -655,7 +655,7 @@ function CustomPipe(name) {
     maybeNotifyFinally: function maybeNotifyFinally() {
       dumpn("*** [" + this.name + "].maybeNotifyFinally()");
 
-      Assert.ok(this._waiter !== null, "must be waiting now");
+      Assert.notStrictEqual(this._waiter, null, "must be waiting now");
 
       if (self._data.length) {
         dumpn(
@@ -683,7 +683,7 @@ function CustomPipe(name) {
       dumpn("*** [" + this.name + "]._notify()");
 
       var waiter = this._waiter;
-      Assert.ok(waiter !== null, "no waiter?");
+      Assert.notStrictEqual(waiter, null, "no waiter?");
 
       if (this._event === null) {
         var event = (this._event = {
@@ -756,8 +756,9 @@ function CustomPipe(name) {
     interceptStreamReadyCallbacks(streamReadyInterceptCreator) {
       dumpn("*** [" + this.name + "].interceptStreamReadyCallbacks");
 
-      Assert.ok(
-        this._streamReadyInterceptCreator !== null,
+      Assert.notStrictEqual(
+        this._streamReadyInterceptCreator,
+        null,
         "intercepting onOutputStreamReady twice"
       );
       this._streamReadyInterceptCreator = streamReadyInterceptCreator;
@@ -775,8 +776,9 @@ function CustomPipe(name) {
     removeStreamReadyInterceptor() {
       dumpn("*** [" + this.name + "].removeStreamReadyInterceptor()");
 
-      Assert.ok(
-        this._streamReadyInterceptCreator !== null,
+      Assert.notStrictEqual(
+        this._streamReadyInterceptCreator,
+        null,
         "removing interceptor when none present?"
       );
       this._streamReadyInterceptCreator = null;
@@ -912,8 +914,9 @@ function CustomPipe(name) {
       if (this._writableAmounts.length === 0) {
         actualWritten = Math.min(this._writable, length);
       } else {
-        Assert.ok(
-          this._writable >= this._writableAmounts[0],
+        Assert.greaterOrEqual(
+          this._writable,
+          this._writableAmounts[0],
           "writable amounts value greater than writable data?"
         );
         Assert.equal(
@@ -1030,7 +1033,7 @@ function CustomPipe(name) {
       dumpn("*** [" + this.name + "]._notify()");
 
       var waiter = this._waiter;
-      Assert.ok(waiter !== null, "no waiter?");
+      Assert.notStrictEqual(waiter, null, "no waiter?");
 
       if (this._event === null) {
         var event = (this._event = {

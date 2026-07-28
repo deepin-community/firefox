@@ -1,14 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et ft=cpp : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "video_capture_factory.h"
 
-#include "mozilla/StaticPrefs_media.h"
-#include "desktop_capture_impl.h"
 #include "VideoEngine.h"
+#include "desktop_capture_impl.h"
+#include "fake_video_capture/device_info_empty.h"
+#include "fake_video_capture/device_info_fake.h"
+#include "fake_video_capture/video_capture_fake.h"
+#include "mozilla/StaticPrefs_media.h"
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 #  include "video_engine/placeholder_device_info.h"
@@ -44,9 +45,20 @@ VideoCaptureFactory::VideoCaptureFactory() {
 
 std::shared_ptr<webrtc::VideoCaptureModule::DeviceInfo>
 VideoCaptureFactory::CreateDeviceInfo(
-    int32_t aId, mozilla::camera::CaptureDeviceType aType) {
+    mozilla::camera::CaptureDeviceType aType) {
   if (aType == mozilla::camera::CaptureDeviceType::Camera) {
     std::shared_ptr<webrtc::VideoCaptureModule::DeviceInfo> deviceInfo;
+    mUseFakeCamera = mUseFakeCamera.orElse([] {
+      return Some(StaticPrefs::media_getusermedia_camera_fake_force());
+    });
+    if (*mUseFakeCamera) {
+      if (StaticPrefs::media_getusermedia_camera_fake_no_capabilities()) {
+        deviceInfo.reset(new webrtc::videocapturemodule::DeviceInfoEmpty());
+      } else {
+        deviceInfo.reset(new webrtc::videocapturemodule::DeviceInfoFake());
+      }
+      return deviceInfo;
+    }
 #if (defined(WEBRTC_LINUX) || defined(WEBRTC_BSD)) && !defined(WEBRTC_ANDROID)
 #  if defined(WEBRTC_USE_PIPEWIRE)
     // Special case when PipeWire is not initialized yet and we need to insert
@@ -72,16 +84,24 @@ VideoCaptureFactory::CreateDeviceInfo(
   MOZ_ASSERT("CreateDeviceInfo NO DESKTOP CAPTURE IMPL ON ANDROID" == nullptr);
   return nullptr;
 #else
-  return webrtc::DesktopCaptureImpl::CreateDeviceInfo(aId, aType);
+  return webrtc::DesktopCaptureImpl::CreateDeviceInfo(aType);
 #endif
 }
 
 VideoCaptureFactory::CreateVideoCaptureResult
 VideoCaptureFactory::CreateVideoCapture(
-    int32_t aModuleId, const char* aUniqueId,
+    int32_t aCaptureId, const char* aUniqueId,
     mozilla::camera::CaptureDeviceType aType) {
   CreateVideoCaptureResult result;
   if (aType == mozilla::camera::CaptureDeviceType::Camera) {
+    if (mUseFakeCamera.valueOr(false)) {
+      nsCOMPtr<nsISerialEventTarget> target;
+      NS_CreateBackgroundTaskQueue("VideoCaptureFake::mTarget",
+                                   getter_AddRefs(target));
+      result.mCapturer =
+          webrtc::videocapturemodule::VideoCaptureFake::Create(target);
+      return result;
+    }
 #if (defined(WEBRTC_LINUX) || defined(WEBRTC_BSD)) && !defined(WEBRTC_ANDROID)
     result.mCapturer = webrtc::VideoCaptureFactory::Create(
         mVideoCaptureOptions.get(), aUniqueId);
@@ -95,10 +115,11 @@ VideoCaptureFactory::CreateVideoCapture(
   MOZ_ASSERT("CreateVideoCapture NO DESKTOP CAPTURE IMPL ON ANDROID" ==
              nullptr);
 #else
-  result.mDesktopImpl =
-      webrtc::DesktopCaptureImpl::Create(aModuleId, aUniqueId, aType);
+  RefPtr desktopImpl =
+      webrtc::DesktopCaptureImpl::Create(aCaptureId, aUniqueId, aType);
+  result.mDesktopImpl = desktopImpl;
   result.mCapturer =
-      rtc::scoped_refptr<webrtc::VideoCaptureModule>(result.mDesktopImpl);
+      webrtc::scoped_refptr<webrtc::VideoCaptureModule>(desktopImpl);
 #endif
 
   return result;
@@ -231,5 +252,7 @@ void VideoCaptureFactory::OnInitialized(
       return;
   }
 }
+
+void VideoCaptureFactory::Invalidate() { mUseFakeCamera = Nothing(); }
 
 }  // namespace mozilla

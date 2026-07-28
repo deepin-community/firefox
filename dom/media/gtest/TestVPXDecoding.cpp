@@ -2,12 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "gtest/gtest.h"
-#include "mozilla/ArrayUtils.h"
-#include "nsTArray.h"
-#include "VPXDecoder.h"
-
 #include <stdio.h>
+
+#include "VPXDecoder.h"
+#include "gtest/gtest.h"
+#include "nsTArray.h"
 
 using namespace mozilla;
 
@@ -71,7 +70,7 @@ static const TestFileData testFiles[] = {
 
 TEST(libvpx, test_cases)
 {
-  for (size_t test = 0; test < ArrayLength(testFiles); ++test) {
+  for (size_t test = 0; test < std::size(testFiles); ++test) {
     nsTArray<uint8_t> data;
     ReadVPXFile(testFiles[test].mFilename, data);
     ASSERT_GT(data.Length(), 0u);

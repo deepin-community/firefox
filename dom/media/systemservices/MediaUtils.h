@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,8 +5,7 @@
 #ifndef mozilla_MediaUtils_h
 #define mozilla_MediaUtils_h
 
-#include <map>
-
+#include "MediaEventSource.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Monitor.h"
 #include "mozilla/MozPromise.h"
@@ -17,7 +14,6 @@
 #include "mozilla/SharedThreadPool.h"
 #include "mozilla/TaskQueue.h"
 #include "mozilla/UniquePtr.h"
-#include "MediaEventSource.h"
 #include "nsCOMPtr.h"
 #include "nsIAsyncShutdown.h"
 #include "nsISupportsImpl.h"
@@ -27,6 +23,17 @@
 class nsIEventTarget;
 
 namespace mozilla::media {
+
+/* Utility function, given a comma-separated list of hostnames and a hostname,
+ * returns whether the hostname occurs in the list. Wildcards are supported
+ * (e.g. *.example.com). Safe to call from any thread.
+ */
+bool HostnameInValue(const nsACString& aList, const nsCString& aHostName);
+
+/* Like HostnameInValue but reads the list from a string preference. Must be
+ * called on the main thread (Preferences::GetCString is main-thread only).
+ */
+bool HostnameInPref(const char* aPrefList, const nsCString& aHostName);
 
 /* media::NewRunnableFrom() - Create a Runnable from a lambda.
  *
@@ -213,6 +220,46 @@ class ShutdownBlockingTicket {
 };
 
 /**
+ * A convenience class intended to be subclassed by DOM objects wanting to be
+ * notified when its owning thread shutdown is about to occur.
+ */
+class ShutdownConsumer {
+ public:
+  /**
+   * On the main thread, this is called with the xpcom-will-shutdown event.
+   * On a worker thread, this is called by the WeakWorkerRef callback.
+   */
+  virtual void OnShutdown() = 0;
+};
+
+/**
+ * A convenience class intended to be held by DOM objects wanting to be notified
+ * when its owning thread shutdown is about to occur.
+ */
+class ShutdownWatcher : public nsISupports {
+ public:
+  /**
+   * Create a shutdown watcher for the given consumer.
+   */
+  static already_AddRefed<ShutdownWatcher> Create(ShutdownConsumer* aConsumer);
+
+  /**
+   * Destroy a shutdown watcher. Must be called by the owning object prior to
+   * clearing its reference.
+   */
+  virtual void Destroy() = 0;
+
+ protected:
+  explicit ShutdownWatcher(ShutdownConsumer* aConsumer) : mConsumer(aConsumer) {
+    MOZ_ASSERT(aConsumer);
+  }
+
+  virtual ~ShutdownWatcher() { MOZ_ASSERT(!mConsumer); }
+
+  ShutdownConsumer* mConsumer;
+};
+
+/**
  * Await convenience methods to block until the promise has been resolved or
  * rejected. The Resolve/Reject functions, while called on a different thread,
  * would be running just as on the current thread thanks to the memory barrier
@@ -306,8 +353,8 @@ void AwaitAll(
       TaskQueue::Create(do_AddRef(pool), "MozPromiseAwaitAll");
   RefPtr<typename Promise::AllPromiseType> p =
       Promise::All(taskQueue, aPromises);
-  Await(pool.forget(), p, std::move(aResolveFunction),
-        std::move(aRejectFunction));
+  Await(pool.forget(), p, std::forward<ResolveFunction>(aResolveFunction),
+        std::forward<RejectFunction>(aRejectFunction));
 }
 
 // Note: only works with exclusive MozPromise, as Promise::All would attempt

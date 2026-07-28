@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -14,7 +14,7 @@
 
 #include "config/aom_dsp_rtcd.h"
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
 #include "test/register_state_check.h"
@@ -27,19 +27,19 @@ namespace AV1CornerMatch {
 
 using libaom_test::ACMRandom;
 
-typedef bool (*ComputeMeanStddevFunc)(const unsigned char *frame, int stride,
-                                      int x, int y, double *mean,
-                                      double *one_over_stddev);
-typedef double (*ComputeCorrFunc)(const unsigned char *frame1, int stride1,
-                                  int x1, int y1, double mean1,
-                                  double one_over_stddev1,
-                                  const unsigned char *frame2, int stride2,
-                                  int x2, int y2, double mean2,
-                                  double one_over_stddev2);
+using ComputeMeanStddevFunc = bool (*)(const unsigned char *frame, int stride,
+                                       int x, int y, double *mean,
+                                       double *one_over_stddev);
+using ComputeCorrFunc = double (*)(const unsigned char *frame1, int stride1,
+                                   int x1, int y1, double mean1,
+                                   double one_over_stddev1,
+                                   const unsigned char *frame2, int stride2,
+                                   int x2, int y2, double mean2,
+                                   double one_over_stddev2);
 
 using std::make_tuple;
 using std::tuple;
-typedef tuple<int, ComputeMeanStddevFunc, ComputeCorrFunc> CornerMatchParam;
+using CornerMatchParam = tuple<int, ComputeMeanStddevFunc, ComputeCorrFunc>;
 
 class AV1CornerMatchTest : public ::testing::TestWithParam<CornerMatchParam> {
  public:

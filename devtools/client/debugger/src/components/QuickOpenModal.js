@@ -2,11 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
-import React, { Component } from "devtools/client/shared/vendor/react";
-import { div } from "devtools/client/shared/vendor/react-dom-factories";
+import React, {
+  Component,
+  createRef,
+} from "devtools/client/shared/vendor/react";
 import PropTypes from "devtools/client/shared/vendor/react-prop-types";
 import { connect } from "devtools/client/shared/vendor/react-redux";
-import { basename } from "../utils/path";
 import { createLocation } from "../utils/location";
 
 const fuzzyAldrin = require("resource://devtools/client/shared/vendor/fuzzaldrin-plus.js");
@@ -19,7 +20,7 @@ import {
   getQuickOpenType,
   getSelectedLocation,
   getSettledSourceTextContent,
-  getSourceTabs,
+  getOpenedSources,
   getBlackBoxRanges,
   getProjectDirectoryRoot,
 } from "../selectors/index";
@@ -54,9 +55,12 @@ export class QuickOpenModal extends Component {
   // Put it on the class so it can be retrieved in tests
   static UPDATE_RESULTS_THROTTLE = 100;
 
+  #willUnmountCalled = false;
+
   constructor(props) {
     super(props);
     this.state = { results: null, selectedIndex: 0 };
+    this.resultListRef = createRef();
   }
 
   static get propTypes() {
@@ -80,7 +84,7 @@ export class QuickOpenModal extends Component {
       selectedContentLoaded: PropTypes.bool,
       selectedLocation: PropTypes.object,
       setQuickOpenQuery: PropTypes.func.isRequired,
-      openedTabUrls: PropTypes.array.isRequired,
+      openedSources: PropTypes.array.isRequired,
       toggleShortcutsModal: PropTypes.func.isRequired,
       projectDirectoryRoot: PropTypes.string,
       getFunctionSymbols: PropTypes.func.isRequired,
@@ -112,6 +116,10 @@ export class QuickOpenModal extends Component {
     }
   }
 
+  componentWillUnmount() {
+    this.#willUnmountCalled = true;
+  }
+
   closeModal = () => {
     this.props.closeQuickOpen();
   };
@@ -122,12 +130,12 @@ export class QuickOpenModal extends Component {
   };
 
   formatSources = memoizeLast(
-    (displayedSources, openedTabUrls, blackBoxRanges, projectDirectoryRoot) => {
+    (displayedSources, openedSources, blackBoxRanges, projectDirectoryRoot) => {
       // Note that we should format all displayed sources,
       // the actual filtering will only be done late from `searchSources()`
       return displayedSources.map(source => {
         const isBlackBoxed = !!blackBoxRanges[source.url];
-        const hasTabOpened = openedTabUrls.includes(source.url);
+        const hasTabOpened = openedSources.includes(source);
         return formatSourceForList(
           source,
           hasTabOpened,
@@ -141,14 +149,14 @@ export class QuickOpenModal extends Component {
   searchSources = query => {
     const {
       displayedSources,
-      openedTabUrls,
+      openedSources,
       blackBoxRanges,
       projectDirectoryRoot,
     } = this.props;
 
     const sources = this.formatSources(
       displayedSources,
-      openedTabUrls,
+      openedSources,
       blackBoxRanges,
       projectDirectoryRoot
     );
@@ -186,49 +194,53 @@ export class QuickOpenModal extends Component {
    * This method is called when we just opened the modal and the query input is empty
    */
   showTopSources = () => {
-    const { openedTabUrls, blackBoxRanges, projectDirectoryRoot } = this.props;
+    const { openedSources, blackBoxRanges, projectDirectoryRoot } = this.props;
     let { displayedSources } = this.props;
 
     // If there is some tabs opened, only show tab's sources.
     // Otherwise, we display all visible sources (per SourceTree definition),
     // setResults will restrict the number of results to a maximum limit.
-    if (openedTabUrls.length) {
+    if (openedSources.length) {
       displayedSources = displayedSources.filter(
-        source => !!source.url && openedTabUrls.includes(source.url)
+        source => !!source.url && openedSources.includes(source)
       );
     }
 
     this.setResults(
       this.formatSources(
         displayedSources,
-        openedTabUrls,
+        openedSources,
         blackBoxRanges,
         projectDirectoryRoot
       )
     );
   };
 
-  updateResults = throttle(query => {
-    if (this.isGotoQuery()) {
-      return;
-    }
+  updateResults = throttle(async query => {
+    try {
+      if (this.isGotoQuery()) {
+        return;
+      }
 
-    if (query == "" && !this.isShortcutQuery()) {
-      this.showTopSources();
-      return;
+      if (query == "" && !this.isShortcutQuery()) {
+        this.showTopSources();
+      } else if (this.isSymbolSearch()) {
+        await this.searchSymbols(query);
+      } else if (this.isShortcutQuery()) {
+        this.searchShortcuts(query);
+      } else {
+        this.searchSources(query);
+      }
+      this.highlightQueryMatches(this.props.query);
+    } catch (e) {
+      // Due to throttling this might get scheduled after the component and the
+      // toolbox are destroyed.
+      if (this.#willUnmountCalled) {
+        console.warn("Throttled QuickOpen.updateResults failed", e);
+      } else {
+        throw e;
+      }
     }
-
-    if (this.isSymbolSearch()) {
-      this.searchSymbols(query);
-      return;
-    }
-
-    if (this.isShortcutQuery()) {
-      this.searchShortcuts(query);
-      return;
-    }
-
-    this.searchSources(query);
   }, QuickOpenModal.UPDATE_RESULTS_THROTTLE);
 
   setModifier = item => {
@@ -304,13 +316,12 @@ export class QuickOpenModal extends Component {
     const { selectSpecificLocation, selectedLocation } = this.props;
 
     if (location != null) {
-      selectSpecificLocation(
-        createLocation({
-          source: location.source || selectedLocation?.source,
-          line: location.line,
-          column: location.column,
-        })
-      );
+      const sourceLocation = createLocation({
+        source: location.source || selectedLocation?.source,
+        line: location.line,
+        column: location.column || 0,
+      });
+      selectSpecificLocation(sourceLocation);
       this.closeModal();
     }
   };
@@ -376,23 +387,31 @@ export class QuickOpenModal extends Component {
   isSourcesQuery = () => this.props.searchType === "sources";
   isSourceSearch = () => this.isSourcesQuery() || this.isGotoSourceQuery();
 
-  /* eslint-disable react/no-danger */
-  renderHighlight(candidateString, query) {
+  highlightQueryMatches(query) {
     const options = {
       wrap: {
         tagOpen: '<mark class="highlight">',
         tagClose: "</mark>",
       },
     };
-    const html = fuzzyAldrin.wrap(candidateString, query, options);
-    return div({
-      dangerouslySetInnerHTML: {
-        __html: html,
-      },
-    });
+    if (this.resultListRef.current) {
+      const domEl = this.resultListRef.current.ref.current;
+      for (const titleNode of domEl.querySelectorAll(".title")) {
+        const htmlString = fuzzyAldrin.wrap(
+          titleNode.innerText,
+          query,
+          options
+        );
+        const sanitizer = new Sanitizer({
+          elements: ["mark"],
+          attributes: ["class"],
+        });
+        titleNode.setHTML(htmlString, { sanitizer });
+      }
+    }
   }
 
-  highlightMatching = (query, results) => {
+  renderResults = (query, results) => {
     let newQuery = query;
     if (newQuery === "") {
       return results;
@@ -403,11 +422,7 @@ export class QuickOpenModal extends Component {
       if (typeof result.title == "string") {
         return {
           ...result,
-          title: this.renderHighlight(
-            result.title,
-            basename(newQuery),
-            "title"
-          ),
+          title: result.title,
         };
       }
       return result;
@@ -436,7 +451,7 @@ export class QuickOpenModal extends Component {
     const { query } = this.props;
     const { selectedIndex, results } = this.state;
 
-    const items = this.highlightMatching(query, results || []);
+    const items = this.renderResults(query, results || []);
     const expanded = !!items && !!items.length;
     return React.createElement(
       Modal,
@@ -469,7 +484,7 @@ export class QuickOpenModal extends Component {
           items,
           selected: selectedIndex,
           selectItem: this.selectResultItem,
-          ref: "resultList",
+          ref: this.resultListRef,
           expanded,
           ...(this.isSourceSearch() ? SIZE_BIG : SIZE_DEFAULT),
         })
@@ -481,8 +496,7 @@ export class QuickOpenModal extends Component {
 function mapStateToProps(state) {
   const selectedLocation = getSelectedLocation(state);
   const displayedSources = getDisplayedSourcesList(state);
-  const tabs = getSourceTabs(state);
-  const openedTabUrls = [...new Set(tabs.map(tab => tab.url))];
+  const openedSources = getOpenedSources(state);
 
   return {
     displayedSources,
@@ -494,7 +508,7 @@ function mapStateToProps(state) {
       : undefined,
     query: getQuickOpenQuery(state),
     searchType: getQuickOpenType(state),
-    openedTabUrls,
+    openedSources,
   };
 }
 

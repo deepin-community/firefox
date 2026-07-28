@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGTitleElement.h"
-#include "mozilla/dom/SVGTitleElementBinding.h"
 
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/SVGTitleElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(Title)
 
@@ -32,7 +30,7 @@ SVGTitleElement::SVGTitleElement(
     : SVGTitleElementBase(std::move(aNodeInfo)) {
   AddMutationObserver(this);
   SetEnabledCallbacks(kCharacterDataChanged | kContentAppended |
-                      kContentInserted | kContentRemoved);
+                      kContentInserted | kContentWillBeRemoved);
 }
 
 void SVGTitleElement::CharacterDataChanged(nsIContent* aContent,
@@ -40,16 +38,18 @@ void SVGTitleElement::CharacterDataChanged(nsIContent* aContent,
   SendTitleChangeEvent(false);
 }
 
-void SVGTitleElement::ContentAppended(nsIContent* aFirstNewContent) {
+void SVGTitleElement::ContentAppended(nsIContent* aFirstNewContent,
+                                      const ContentAppendInfo&) {
   SendTitleChangeEvent(false);
 }
 
-void SVGTitleElement::ContentInserted(nsIContent* aChild) {
+void SVGTitleElement::ContentInserted(nsIContent* aChild,
+                                      const ContentInsertInfo&) {
   SendTitleChangeEvent(false);
 }
 
-void SVGTitleElement::ContentRemoved(nsIContent* aChild,
-                                     nsIContent* aPreviousSibling) {
+void SVGTitleElement::ContentWillBeRemoved(nsIContent* aChild,
+                                           const ContentRemoveInfo&) {
   SendTitleChangeEvent(false);
 }
 
@@ -77,8 +77,7 @@ void SVGTitleElement::DoneAddingChildren(bool aHaveNotified) {
 }
 
 void SVGTitleElement::SendTitleChangeEvent(bool aBound) {
-  Document* doc = GetUncomposedDoc();
-  if (doc) {
+  if (Document* doc = GetUncomposedDoc()) {
     doc->NotifyPossibleTitleChange(aBound);
   }
 }

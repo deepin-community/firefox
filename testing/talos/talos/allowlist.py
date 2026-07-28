@@ -1,5 +1,3 @@
-# -*- Mode: python; tab-width: 8; indent-tabs-mode: nil -*-
-# vim: set ts=8 sts=4 et sw=4 tw=80:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -39,13 +37,13 @@ class Allowlist:
             return False
 
         try:
-            with open(filename, "r") as fHandle:
+            with open(filename) as fHandle:
                 temp = json.load(fHandle)
 
             for allowlist_name in temp:
                 self.listmap[allowlist_name.lower()] = temp[allowlist_name]
 
-        except IOError as e:
+        except OSError as e:
             print("%s: %s" % (e.filename, e.strerror))
             return False
         return True
@@ -172,13 +170,13 @@ class Allowlist:
     def load_dependent_libs(self):
         filename = "%s%sdependentlibs.list" % (self.paths[KEY_XRE], os.path.sep)
         try:
-            with open(filename, "r") as f:
+            with open(filename) as f:
                 libs = f.readlines()
             self.dependent_libs = {
                 "%s%s%s" % (KEY_XRE, os.path.sep, lib.strip()): {"ignore": True}
                 for lib in libs
             }
             return True
-        except IOError as e:
+        except OSError as e:
             print("%s: %s" % (e.filename, e.strerror))
             return False

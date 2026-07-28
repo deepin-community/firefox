@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2024, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -23,18 +23,12 @@
 #include "aom_dsp/arm/transpose_neon.h"
 #include "aom_ports/mem.h"
 #include "av1/common/arm/convolve_scale_neon.h"
+#include "av1/common/arm/av1_convolve_scale_neon_dotprod.h"
 #include "av1/common/convolve.h"
 #include "av1/common/enums.h"
 #include "av1/common/filter.h"
 
-// clang-format off
-DECLARE_ALIGNED(16, static const uint8_t, kScale2DotProdPermuteTbl[32]) = {
-  0, 1, 2, 3, 2, 3, 4, 5, 4, 5,  6,  7,  6,  7,  8,  9,
-  4, 5, 6, 7, 6, 7, 8, 9, 8, 9, 10, 11, 10, 11, 12, 13
-};
-// clang-format on
-
-static INLINE int16x4_t convolve8_4_h(const uint8x8_t s0, const uint8x8_t s1,
+static inline int16x4_t convolve8_4_h(const uint8x8_t s0, const uint8x8_t s1,
                                       const uint8x8_t s2, const uint8x8_t s3,
                                       const int8x8_t filter,
                                       const int32x4_t horiz_const) {
@@ -52,7 +46,7 @@ static INLINE int16x4_t convolve8_4_h(const uint8x8_t s0, const uint8x8_t s1,
   return vshrn_n_s32(sum, ROUND0_BITS - 1);
 }
 
-static INLINE int16x8_t convolve8_8_h(const uint8x8_t s0, const uint8x8_t s1,
+static inline int16x8_t convolve8_8_h(const uint8x8_t s0, const uint8x8_t s1,
                                       const uint8x8_t s2, const uint8x8_t s3,
                                       const uint8x8_t s4, const uint8x8_t s5,
                                       const uint8x8_t s6, const uint8x8_t s7,
@@ -78,7 +72,7 @@ static INLINE int16x8_t convolve8_8_h(const uint8x8_t s0, const uint8x8_t s1,
                       vshrn_n_s32(sum4567, ROUND0_BITS - 1));
 }
 
-static INLINE void convolve_horiz_scale_neon_i8mm(const uint8_t *src,
+static inline void convolve_horiz_scale_neon_i8mm(const uint8_t *src,
                                                   int src_stride, int16_t *dst,
                                                   int dst_stride, int w, int h,
                                                   const int16_t *x_filter,
@@ -175,7 +169,7 @@ static INLINE void convolve_horiz_scale_neon_i8mm(const uint8_t *src,
   }
 }
 
-static INLINE int16x4_t convolve8_4_h_scale_2(uint8x16_t samples,
+static inline int16x4_t convolve8_4_h_scale_2(uint8x16_t samples,
                                               const int8x8_t filters,
                                               const int32x4_t horiz_const,
                                               const uint8x16x2_t permute_tbl) {
@@ -192,7 +186,7 @@ static INLINE int16x4_t convolve8_4_h_scale_2(uint8x16_t samples,
   return vshrn_n_s32(sum, ROUND0_BITS - 1);
 }
 
-static INLINE int16x8_t convolve8_8_h_scale_2(uint8x16_t samples[2],
+static inline int16x8_t convolve8_8_h_scale_2(uint8x16_t samples[2],
                                               const int8x8_t filters,
                                               const int32x4_t horiz_const,
                                               const uint8x16x2_t permute_tbl) {
@@ -219,7 +213,7 @@ static INLINE int16x8_t convolve8_8_h_scale_2(uint8x16_t samples[2],
                       vshrn_n_s32(sum4567, ROUND0_BITS - 1));
 }
 
-static INLINE void convolve_horiz_scale_2_neon_i8mm(
+static inline void convolve_horiz_scale_2_neon_i8mm(
     const uint8_t *src, int src_stride, int16_t *dst, int dst_stride, int w,
     int h, const int16_t *x_filter) {
   const int bd = 8;

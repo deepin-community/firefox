@@ -1,8 +1,9 @@
 Gecko Logging
 =============
 
-A minimal C++ logging framework is provided for use in core Gecko code. It is
-enabled for all builds and is thread-safe.
+A minimal logging framework is provided for use in core Gecko code,
+written in C++ and enabled for all builds and is thread-safe.
+It can be accessed via C++, JavaScript or Rust.
 
 This page covers enabling logging for particular logging module, configuring
 the logging output, and how to use the logging facilities in native code.
@@ -99,6 +100,9 @@ terms:
 | profilerstacks       | Profiler| | When profiling with the Firefox Profiler and log modules are enabled, capture the call  |
 |                      |         | | stack for each log statement.                                                           |
 +----------------------+---------+-------------------------------------------------------------------------------------------+
+| jsstacks             | Any     | Enables logging JavaScript stack traces when logging JavaScript console messages.         |
+|                      |         | (this may be extended outside of only console messages)                                   |
++----------------------+---------+-------------------------------------------------------------------------------------------+
 
 This syntax is used for most methods of enabling logging.
 
@@ -173,7 +177,7 @@ preset. If no preset is selected, then a generic profiling preset is used,
 
 will profile the threads in the ``Media`` profiler preset, but will only log
 specific log modules (instead of the `long list
-<https://searchfox.org/mozilla-central/search?q="media-playback"&path=toolkit%2Fcontent%2FaboutLogging.js>`_
+<https://searchfox.org/mozilla-central/search?q="media-playback"&path=toolkit%2Fcontent%2FaboutLogging.mjs>`_
 in the ``media-playback`` preset). In addition, it disallows logging to a file.
 
 Enabling logging using environment variables
@@ -244,8 +248,6 @@ timestamp prepended to each line, rotate the logs with 4 files of each 50MB
 (for a total of 200MB), and write the output to the temporary directory on
 Windows, with name starting with ``firefox-logs``.
 
-.. _Enabling logging using preferences:
-
 Enabling logging using preferences
 ''''''''''''''''''''''''''''''''''
 
@@ -253,25 +255,21 @@ To adjust the logging after Firefox has started, you can set prefs under the
 ``logging.`` prefix. For example, setting ``logging.foo`` to ``3`` will set the log
 module ``foo`` to start logging at level 3.
 
-The MOZ_LOG syntax can be used directly as well, by setting the preference
-``logging.config.modules``. All modules can be used but only the special string
-`profilerstacks` is supported.
-
 A number of special prefs can be set as well, described in the table below:
 
 +-------------------------------------+------------+-------------------------------+--------------------------------------------------------+
 |         Preference name             | Preference |   Preference value            |                  Description                           |
 +=====================================+============+===============================+========================================================+
-| ``logging.config.clear_on_startup`` |    bool    | --                            | Whether to clear all prefs under ``logging.``          |
+| ``logging.config.clear_on_startup`` |    bool    | \--                           | Whether to clear all prefs under ``logging.``          |
 +-------------------------------------+------------+-------------------------------+--------------------------------------------------------+
 | ``logging.config.LOG_FILE``         |   string   | A path (relative or absolute) | The path to which the log files will be written.       |
 +-------------------------------------+------------+-------------------------------+--------------------------------------------------------+
-| ``logging.config.add_timestamp``    |   bool     | --                            | Whether to prefix all lines by a timestamp.            |
+| ``logging.config.add_timestamp``    |   bool     | \--                           | Whether to prefix all lines by a timestamp.            |
 +-------------------------------------+------------+-------------------------------+--------------------------------------------------------+
-| ``logging.config.sync``             |   bool     | --                            | Whether to flush the stream after each log statements. |
+| ``logging.config.sync``             |   bool     | \--                           | Whether to flush the stream after each log statements. |
 +-------------------------------------+------------+-------------------------------+--------------------------------------------------------+
-| ``logging.config.profilerstacks``   |   bool     | --                            | | When logging to the Firefox Profiler, whether to     |
-|                                     |            |                               | | include the call stack in each logging statement.    |
+| ``logging.config.profilerstacks``   |   bool     | \--                           | When logging to the Firefox Profiler, whether to       |
+|                                     |            |                               | include the call stack in each logging statement.      |
 +-------------------------------------+------------+-------------------------------+--------------------------------------------------------+
 
 Enabling logging in Rust code
@@ -444,6 +442,12 @@ A basic interface is provided in the form of 2 macros and an enum class.
 |                                        | *   message: A printf-style message to output. Must be enclosed in         |
 |                                        |     parentheses.                                                           |
 +----------------------------------------+----------------------------------------------------------------------------+
+| MOZ_LOG_FMT(module, level, message)    | Outputs the given message if the module has the given log level enabled:   |
+|                                        |                                                                            |
+|                                        | *   module: The log module to use.                                         |
+|                                        | *   level: The log level of the message.                                   |
+|                                        | *   message: An {fmt} style message to output.                             |
++----------------------------------------+----------------------------------------------------------------------------+
 | MOZ_LOG_TEST(module, level)            | Checks if the module has the given level enabled:                          |
 |                                        |                                                                            |
 |                                        | *    module: The log module to use.                                        |
@@ -502,3 +506,111 @@ Example Usage
       MOZ_LOG(sLogger, LogLevel::Error, ("i should be 10!"));
     }
   }
+
+
+Logging from JavaScript via the ``console`` API
++++++++++++++++++++++++++++++++++++++++++++++++
+
+Any call made to a ``console`` API from JavaScript will be logged through the
+``MOZ_LOG`` pipeline.
+
+- Web Pages as well as privileged context using ``console`` API expose to
+  JavaScript will automatically generate MOZ_LOG messages under the ``console``
+  module name.
+
+- Privileged context can use a specific module name by instantiating their own
+  console object:
+  ``const logger = console.createInstance({ prefix: "module-name" })``,
+  ``prefix`` value will be used as the MOZ_LOG module name.
+
+More info about ``console.createInstance`` is available on the
+`JavaScript Logging page </toolkit/javascript-logging.html>`_
+
+When using the ``console`` API, the console methods calls will be visible
+in the Developer Tools, as well as through MOZ_LOG stdout, file or profiler
+outputs.
+
+.. code-block:: javascript
+
+  // The following two logs can be visible through MOZ_LOG by using:
+  // MOZ_LOG=console:5
+
+  // Both call will be logged through "console" module name.
+  // Any console API call from privileged or content page will be logged.
+  console.log("Doing stuff.");
+
+  console.error("Error happened");
+
+  // The following two other logs can be visible through MOZ_LOG by using:
+  // MOZ_LOG=example_logger:5
+
+  // From a privileged context, you can instantiate your own console object
+  // with a specific module name, here "example_logger":
+  const logger = console.createInstance({ prefix: "example_logger" });
+
+  logger.warn("something failed");
+
+  logger.debug("some debug info");
+
+To avoid unnecessarily computing expensive log-only strings, use
+``console.shouldLog()`` to check if a given log level would actually be logged
+based on either the ``maxLogLevel{Pref}`` setting from ``createInstance`` or
+the current ``MOZ_LOG`` environment variable.
+
+.. code-block:: javascript
+
+  const logger = console.createInstance({
+    prefix: "example_logger",
+    maxLogLevel: "Warn",
+  });
+
+  if (logger.shouldLog("Debug")) {
+    logger.debug("Expensive computation:", computeExpensiveDebugInfo());
+  }
+
+
+Logging from Java
++++++++++++++++++
+
+In GeckoView, the Java code can log messages using the `org.mozilla.gecko.MozLog` class.
+
+.. code-block:: java
+
+  import org.mozilla.gecko.MozLog;
+
+  public class Example {
+      public void doStuff() {
+          final String MODULE = "GeckoSample";
+          MozLog.d(MODULE, "Doing stuff");
+          MozLog.w(MODULE, "Warning");
+          MozLog.e(MODULE, "Error happened");
+      }
+  }
+
+Logging web page errors and warnings
+++++++++++++++++++++++++++++++++++++
+
+Any error or warning message sent to the ``nsConsoleService`` C++ class can be
+logged via the ``PageMessages`` module name.
+
+These messages are typically emitted via ``nsContentUtils::ReportToConsole*()``
+or ``nsContentUtils::LogMessageToConsole()`` methods.
+
+They includes any JavaScript exception and most DOM API warnings and errors.
+
+Console API levels
+------------------
+
++----------------------+---------------+
+|  Console API Method  | MOZ_LOG Level |
++======================+===============+
+|   console.error()    |   1 (Error)   |
+|   console.assert()   |               |
++----------------------+---------------+
+|   console.warn()     |   2 (Warning) |
++----------------------+---------------+
+| All other methods,   |   3 (Info)    |
+| but console.debug()  |               |
++----------------------+---------------+
+|   console.debug()    |   4 (Debug    |
++----------------------+---------------+

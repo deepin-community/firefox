@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-*/
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -25,9 +24,7 @@ void DirectMediaTrackListener::MirrorAndDisableSegment(
     VideoSegment& aFrom, VideoSegment& aTo, DisabledTrackMode aMode) {
   if (aMode == DisabledTrackMode::SILENCE_BLACK) {
     for (VideoSegment::ChunkIterator it(aFrom); !it.IsEnded(); it.Next()) {
-      aTo.AppendFrame(do_AddRef(it->mFrame.GetImage()),
-                      it->mFrame.GetIntrinsicSize(), it->GetPrincipalHandle(),
-                      true);
+      aTo.AppendFrame(*it, Some(true));
       aTo.ExtendLastFrameBy(it->GetDuration());
     }
   } else if (aMode == DisabledTrackMode::SILENCE_FREEZE) {

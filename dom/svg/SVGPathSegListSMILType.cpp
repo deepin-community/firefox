@@ -1,28 +1,25 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SVGPathSegListSMILType.h"
 
-#include "mozilla/DebugOnly.h"
-#include "mozilla/SMILValue.h"
 #include "SVGPathData.h"
 #include "SVGPathSegUtils.h"
+#include "mozilla/SMILValue.h"
 
 namespace mozilla {
 
 //----------------------------------------------------------------------
 // nsISMILType implementation
 
-void SVGPathSegListSMILType::Init(SMILValue& aValue) const {
+void SVGPathSegListSMILType::InitValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.IsNull(), "Unexpected value type");
   aValue.mU.mPtr = new SVGPathDataAndInfo();
   aValue.mType = this;
 }
 
-void SVGPathSegListSMILType::Destroy(SMILValue& aValue) const {
+void SVGPathSegListSMILType::DestroyValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.mType == this, "Unexpected SMIL value type");
   delete static_cast<SVGPathDataAndInfo*>(aValue.mU.mPtr);
   aValue.mU.mPtr = nullptr;

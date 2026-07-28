@@ -19,7 +19,6 @@ open-location = Lorg no cuir seòladh ann
 share = Co-roinn
 close-window = Dùin an uinneag
 open-sidebar = Na bàraichean-taoibh
-
 # This string describes shortcuts for search.
 search-popover = Ath-ghoiridean an luirg
 # Describes searches limited to a specific scope
@@ -33,6 +32,3 @@ search-history = An eachdraidh
 search-opentabs = Tabaichean fosgailte
 search-tags = Tagaichean
 search-titles = Tiotalan
-
-##
-

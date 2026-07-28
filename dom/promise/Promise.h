@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,12 +8,14 @@
 #include <functional>
 #include <type_traits>
 #include <utility>
+
 #include "ErrorList.h"
 #include "js/RootingAPI.h"
 #include "js/TypeDecls.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/ErrorResult.h"
+#include "mozilla/HoldDropJSObjects.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/Result.h"
 #include "mozilla/WeakPtr.h"
@@ -34,6 +34,10 @@ namespace JS {
 class Value;
 }
 
+namespace mozilla::webgpu {
+class PipelineError;
+}
+
 namespace mozilla::dom {
 
 class AnyCallback;
@@ -42,7 +46,7 @@ class PromiseInit;
 class PromiseNativeHandler;
 class PromiseDebugging;
 
-class Promise : public SupportsWeakPtr {
+class Promise : public SupportsWeakPtr, public JSHolderBase {
   friend class PromiseTask;
   friend class PromiseWorkerProxy;
   friend class PromiseWorkerProxyRunnable;
@@ -119,6 +123,7 @@ class Promise : public SupportsWeakPtr {
   }
 
   void MaybeReject(const RefPtr<MediaStreamError>& aArg);
+  void MaybeReject(const RefPtr<webgpu::PipelineError>& aArg);
 
   void MaybeRejectWithUndefined();
 
@@ -133,11 +138,11 @@ class Promise : public SupportsWeakPtr {
     MaybeReject(std::move(res));                                  \
   }                                                               \
   template <int N>                                                \
-  void MaybeRejectWith##name(const char(&aMessage)[N]) {          \
+  void MaybeRejectWith##name(const char (&aMessage)[N]) {         \
     MaybeRejectWith##name(nsLiteralCString(aMessage));            \
   }
 
-#include "mozilla/dom/DOMExceptionNames.h"
+#include "mozilla/dom/DOMExceptionNames.inc"
 
 #undef DOMEXCEPTION
 
@@ -220,6 +225,29 @@ class Promise : public SupportsWeakPtr {
       PropagateUserInteraction aPropagateUserInteraction =
           eDontPropagateUserInteraction);
 
+  // Do the equivalent of Promise.resolve in the compartment of aGlobal.
+  // The promise is resolved with the JS value corresponding to aValue.
+  // If this fails, the promise is rejected with the exception.
+  template <typename T>
+  static already_AddRefed<Promise> Resolve(
+      nsIGlobalObject* aGlobal, T&& aValue, ErrorResult& aError,
+      PropagateUserInteraction aPropagateUserInteraction =
+          eDontPropagateUserInteraction) {
+    AutoJSAPI jsapi;
+    if (!jsapi.Init(aGlobal)) {
+      aError.Throw(NS_ERROR_UNEXPECTED);
+      return nullptr;
+    }
+
+    JSContext* cx = jsapi.cx();
+    JS::Rooted<JS::Value> val(cx);
+    if (!ToJSValue(cx, std::forward<T>(aValue), &val)) {
+      return Promise::RejectWithExceptionFromContext(aGlobal, cx, aError);
+    }
+
+    return Resolve(aGlobal, cx, val, aError, aPropagateUserInteraction);
+  }
+
   // Do the equivalent of Promise.reject in the compartment of aGlobal.  The
   // compartment of aCx is ignored.  Errors are reported on the ErrorResult; if
   // aRv comes back !Failed(), this function MUST return a non-null value.
@@ -260,6 +288,19 @@ class Promise : public SupportsWeakPtr {
       ErrorResult& aRv,
       PropagateUserInteraction aPropagateUserInteraction =
           eDontPropagateUserInteraction);
+
+  using SuccessSteps =
+      const std::function<void(const Span<JS::Heap<JS::Value>>&)>&;
+  using FailureSteps = const std::function<void(JS::Handle<JS::Value>)>&;
+  // Wait for all aPromises' results, calling either aFailureSteps if any
+  // promise rejects, or aSuccessSteps if all promises resolves.
+  // aCycleCollectedArg can be passed to keep state alive while waiting for the
+  // promises, making sure that it's cycle collected.
+  MOZ_CAN_RUN_SCRIPT
+  static void WaitForAll(nsIGlobalObject* aGlobal,
+                         const Span<RefPtr<Promise>>& aPromises,
+                         SuccessSteps aSuccessSteps, FailureSteps aFailureSteps,
+                         nsISupports* aCycleCollectedArg = nullptr);
 
   template <typename Callback, typename... Args>
   using IsHandlerCallback =
@@ -409,6 +450,10 @@ class Promise : public SupportsWeakPtr {
   // Pass ePropagateUserInteraction for aPropagateUserInteraction if you want
   // the promise resolve handler to be called as if we were handling user
   // input events in case we are currently handling user input events.
+  // The error code can be:
+  // * NS_ERROR_UNEXPECTED when AutoJSAPI.Init fails
+  // * NS_ERROR_OUT_OF_MEMORY when NewPromiseObject throws OOM
+  // * NS_ERROR_NOT_INITIALIZED when NewPromiseObject fails without OOM
   void CreateWrapper(ErrorResult& aRv,
                      PropagateUserInteraction aPropagateUserInteraction =
                          eDontPropagateUserInteraction);
@@ -419,7 +464,9 @@ class Promise : public SupportsWeakPtr {
 
   template <typename T>
   void MaybeSomething(T&& aArgument, MaybeFunc aFunc) {
-    MOZ_ASSERT(PromiseObj());  // It was preserved!
+    if (NS_WARN_IF(!PromiseObj())) {
+      return;
+    }
 
     AutoAllowLegacyScriptExecution exemption;
     AutoEntryScript aes(mGlobal, "Promise resolution or rejection");

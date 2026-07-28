@@ -33,6 +33,10 @@ const { SessionStoreTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/SessionStoreTestUtils.sys.mjs"
 );
 
+const { PageWireframes } = ChromeUtils.importESModule(
+  "resource:///modules/sessionstore/PageWireframes.sys.mjs"
+);
+
 const ss = SessionStore;
 SessionStoreTestUtils.init(this, window);
 
@@ -356,9 +360,24 @@ function forgetClosedWindows() {
 
 // Forget all closed tabs for a window
 function forgetClosedTabs(win) {
-  while (ss.getClosedTabCountForWindow(win) > 0) {
-    ss.forgetClosedTab(win, 0);
+  const closedTabCount = ss.getClosedTabCountForWindow(win);
+  for (let i = 0; i < closedTabCount; i++) {
+    try {
+      ss.forgetClosedTab(win, 0);
+    } catch (err) {
+      // This will fail if there are tab groups in here
+    }
   }
+}
+
+function forgetSavedTabGroups() {
+  const tabGroups = ss.getSavedTabGroups();
+  tabGroups.forEach(tabGroup => ss.forgetSavedTabGroup(tabGroup.id));
+}
+
+function forgetClosedTabGroups(win) {
+  const tabGroups = ss.getClosedTabGroups(win);
+  tabGroups.forEach(tabGroup => ss.forgetClosedTabGroup(win, tabGroup.id));
 }
 
 /**
@@ -503,7 +522,7 @@ function setScrollPosition(bc, x, y) {
       content.addEventListener(
         "mozvisualscroll",
         function onScroll(event) {
-          if (content.document.ownerGlobal.visualViewport == event.target) {
+          if (content.document.documentGlobal.visualViewport == event.target) {
             content.removeEventListener("mozvisualscroll", onScroll, {
               mozSystemGroup: true,
             });
@@ -551,36 +570,38 @@ function setPropertyOfFormField(browserContext, selector, propName, newValue) {
       node[propNameChild] = newValueChild;
 
       let event = node.ownerDocument.createEvent("UIEvents");
-      event.initUIEvent("input", true, true, node.ownerGlobal, 0);
+      event.initUIEvent("input", true, true, node.documentGlobal, 0);
       node.dispatchEvent(event);
     }
   );
 }
 
 function promiseOnHistoryReplaceEntry(browser) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     let sessionHistory = browser.browsingContext?.sessionHistory;
-    if (sessionHistory) {
-      var historyListener = {
-        OnHistoryNewEntry() {},
-        OnHistoryGotoIndex() {},
-        OnHistoryPurge() {},
-        OnHistoryReload() {
-          return true;
-        },
-
-        OnHistoryReplaceEntry() {
-          resolve();
-        },
-
-        QueryInterface: ChromeUtils.generateQI([
-          "nsISHistoryListener",
-          "nsISupportsWeakReference",
-        ]),
-      };
-
-      sessionHistory.addSHistoryListener(historyListener);
+    if (!sessionHistory) {
+      reject("No session history?");
     }
+
+    var historyListener = {
+      OnHistoryNewEntry() {},
+      OnHistoryGotoIndex() {},
+      OnHistoryPurge() {},
+      OnHistoryReload() {
+        return true;
+      },
+
+      OnHistoryReplaceEntry() {
+        resolve();
+      },
+
+      QueryInterface: ChromeUtils.generateQI([
+        "nsISHistoryListener",
+        "nsISupportsWeakReference",
+      ]),
+    };
+
+    sessionHistory.addSHistoryListener(historyListener);
   });
 }
 
@@ -651,7 +672,7 @@ async function openTabMenuFor(tab) {
   EventUtils.synthesizeMouseAtCenter(
     tab,
     { type: "contextmenu" },
-    tab.ownerGlobal
+    tab.documentGlobal
   );
   await tabMenuShown;
 

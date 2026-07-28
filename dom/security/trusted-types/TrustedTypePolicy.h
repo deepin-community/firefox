@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,6 +17,9 @@
 #include "nsISupportsImpl.h"
 #include "nsString.h"
 #include "nsWrapperCache.h"
+
+template <typename T>
+class nsTArray;
 
 namespace mozilla::dom {
 
@@ -65,6 +66,17 @@ class TrustedTypePolicy : public nsWrapperCache {
       JSContext* aJSContext, const nsAString& aInput,
       const Sequence<JS::Value>& aArguments, ErrorResult& aErrorResult) const;
 
+  // https://w3c.github.io/trusted-types/dist/spec/#abstract-opdef-get-trusted-type-policy-value
+  //
+  // @param aResult may become void.
+  template <typename CallbackObject>
+  MOZ_CAN_RUN_SCRIPT void DetermineTrustedPolicyValue(
+      const RefPtr<CallbackObject>& aCallbackObject, const nsAString& aValue,
+      const nsTArray<JS::Value>& aArguments, bool aThrowIfMissing,
+      ErrorResult& aErrorResult, nsAString& aResult) const;
+
+  const Options& GetOptions() const { return mOptions; }
+
  private:
   // Required because this class is ref-counted.
   virtual ~TrustedTypePolicy() = default;
@@ -75,14 +87,6 @@ class TrustedTypePolicy : public nsWrapperCache {
       const RefPtr<CallbackObject>& aCallbackObject, const nsAString& aValue,
       const Sequence<JS::Value>& aArguments, ErrorResult& aErrorResult) const;
 
-  // https://w3c.github.io/trusted-types/dist/spec/#abstract-opdef-get-trusted-type-policy-value
-  //
-  // @param aResult may become void.
-  template <typename CallbackObject>
-  MOZ_CAN_RUN_SCRIPT void DetermineTrustedPolicyValue(
-      const RefPtr<CallbackObject>& aCallbackObject, const nsAString& aValue,
-      const Sequence<JS::Value>& aArguments, bool aThrowIfMissing,
-      ErrorResult& aErrorResult, nsAString& aResult) const;
   RefPtr<TrustedTypePolicyFactory> mParentObject;
 
   const nsString mName;

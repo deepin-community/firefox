@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Debugging - Runtime / { $selectedRunti
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Dizze { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Dizze { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Dizze { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Konfiguraasje
+about-debugging-sidebar-setup-title =
+    .title = Konfiguraasje
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Push-tsjinst
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Oarsprong
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Service Worker-ynspeksje is op dit stuit útskeakele foar multiproses-{ -brand-shorter-name }
@@ -325,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Multiproses-arkset
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Haadproses en ynhâldsprosessen foar de doelbrowser
+about-debugging-message-error-icon =
+    .alt = Flaterpiktogram
+about-debugging-message-info-icon =
+    .alt = Ynformaasjepiktogram
+about-debugging-message-warning-icon =
+    .alt = Warskôgingspiktogram
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Berjocht slute
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Berjocht slute

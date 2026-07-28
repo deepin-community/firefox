@@ -6,24 +6,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {exec} from 'child_process';
-import {readdirSync} from 'fs';
-import path from 'path';
-import url from 'url';
-import {promisify} from 'util';
+import {exec} from 'node:child_process';
+import {readdirSync} from 'node:fs';
+import path from 'node:path';
+import {promisify} from 'node:util';
 
 const execAsync = promisify(exec);
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-const puppeteerRoot = path.join(__dirname, '../');
-
 try {
   await execAsync('git status');
-} catch (e) {
+} catch {
   // If `git status` threw an error, we are not in a git repository, bail out.
   console.log('Not inside a .git repository');
   process.exit(0);
 }
+
+const puppeteerRoot = path.join(import.meta.dirname, '../');
 
 const {stdout} = await execAsync('git rev-parse --show-toplevel');
 const gitTopLevel = stdout.replaceAll('\n', '').trim();
@@ -45,5 +43,5 @@ await execAsync(
     .filter(file => {
       return file !== 'node_modules';
     })
-    .join(' ')}`
+    .join(' ')}`,
 );

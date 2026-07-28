@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Consulta outros produtos { -vendor-short-name } que funcionan para ofrecer unha Internet saudábel.
 more-from-moz-firefox-mobile-title = { -brand-product-name } Mobile
 more-from-moz-firefox-mobile-description = O navegador móbil que pon a súa privacidade primeiro.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } para móbil
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Descubra unha capa adicional de protección e navegación anónima.
 more-from-moz-qr-code-box-firefox-mobile-title = Descargue empregando o seu dispositivo móbil. Apunte a cámara ao código QR. Cando apareza unha ligazón, tóquea.
@@ -19,6 +20,8 @@ more-from-moz-qr-code-firefox-mobile-img =
     .alt = Código QR para descargar { -brand-product-name } para móbil
 more-from-moz-button-mozilla-vpn-2 = Obter unha VPN
 more-from-moz-learn-more-link = Máis información
+more-from-moz-title2 = Máis contido de { -vendor-short-name }
+    .title = Máis contido de { -vendor-short-name }
 
 ## These strings are for the Firefox Relay card in about:preferences moreFromMozilla page
 
@@ -29,3 +32,17 @@ more-from-moz-firefox-relay-button = Obter { -relay-brand-short-name }
 ## These strings are for the Mozilla Monitor card in about:preferences moreFromMozilla page
 
 more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
+more-from-moz-mozilla-monitor-us-description = Recupera automaticamente a túa información persoal exposta.
+more-from-moz-mozilla-monitor-global-description = Recibir alertas cando os teus datos estean nunha filtración.
+more-from-moz-mozilla-monitor-button = Obter { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } IA
+more-from-moz-solo-description = Crea o teu sitio web ao instante e conecta o teu propio dominio personalizado de balde.
+more-from-moz-solo-button = Proba { -solo-ai-brand-name }
+
+## These strings are for the MDN card in about:preferences moreFromMozilla page
+
+more-from-moz-mdn-description = Aprende desenvolvemento web con guías e referencias gratuítas e completas.
+more-from-moz-mdn-button = Aprender desenvolvemento web

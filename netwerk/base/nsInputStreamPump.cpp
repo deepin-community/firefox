@@ -1,11 +1,10 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=4 sts=2 sw=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsIOService.h"
 #include "nsInputStreamPump.h"
+#include "nsIInputStreamPriority.h"
 #include "nsIStreamTransportService.h"
 #include "nsIThreadRetargetableStreamListener.h"
 #include "nsThreadUtils.h"
@@ -73,7 +72,10 @@ static nsresult CallPeekFunc(nsIInputStream* aInStream, void* aClosure,
 nsresult nsInputStreamPump::PeekStream(PeekSegmentFun callback, void* closure) {
   RecursiveMutexAutoLock lock(mMutex);
 
-  MOZ_ASSERT(mAsyncStream, "PeekStream called without stream");
+  if (!mAsyncStream) {
+    MOZ_DIAGNOSTIC_ASSERT(false, "PeekStream called without stream");
+    return NS_ERROR_NOT_AVAILABLE;
+  }
 
   nsresult rv = CreateBufferedStreamIfNeeded();
   NS_ENSURE_SUCCESS(rv, rv);
@@ -328,6 +330,23 @@ nsInputStreamPump::Init(nsIInputStream* stream, uint32_t segsize,
 }
 
 NS_IMETHODIMP
+nsInputStreamPump::Reset() {
+  RecursiveMutexAutoLock lock(mMutex);
+  LOG(("nsInputStreamPump::Reset [this=%p]\n", this));
+  mListener = nullptr;
+
+  if (mAsyncStream && NS_SUCCEEDED(mAsyncStream->StreamStatus())) {
+    mAsyncStream->Close();
+    mAsyncStream->AsyncWait(nullptr, 0, 0, nullptr);
+  }
+
+  // release the reference, input stream must be closed by the transaction
+  mStream = nullptr;
+
+  return NS_OK;
+}
+
+NS_IMETHODIMP
 nsInputStreamPump::AsyncRead(nsIStreamListener* listener) {
   RecursiveMutexAutoLock lock(mMutex);
 
@@ -358,6 +377,13 @@ nsInputStreamPump::AsyncRead(nsIStreamListener* listener) {
     mTargetThread = mozilla::GetCurrentSerialEventTarget();
   }
   NS_ENSURE_STATE(mTargetThread);
+
+  if (mHighPriorityStream) {
+    if (nsCOMPtr<nsIInputStreamPriority> pri =
+            do_QueryInterface(mAsyncStream)) {
+      pri->SetPriority(nsIRunnablePriority::PRIORITY_MEDIUMHIGH);
+    }
+  }
 
   rv = EnsureWaiting();
   if (NS_FAILED(rv)) return rv;
@@ -474,7 +500,7 @@ nsInputStreamPump::OnInputStreamReady(nsIAsyncInputStream* stream) {
   return NS_OK;
 }
 
-uint32_t nsInputStreamPump::OnStateStart() {
+uint32_t nsInputStreamPump::OnStateStart() MOZ_REQUIRES(mMutex) {
   mMutex.AssertCurrentThreadIn();
 
   AUTO_PROFILER_LABEL("nsInputStreamPump::OnStateStart", NETWORK);
@@ -494,6 +520,9 @@ uint32_t nsInputStreamPump::OnStateStart() {
 
   {
     nsCOMPtr<nsIStreamListener> listener = mListener;
+    if (!listener) {
+      return STATE_DEAD;
+    }
     // We're on the writing thread
     AssertOnThread();
 
@@ -511,7 +540,7 @@ uint32_t nsInputStreamPump::OnStateStart() {
   return NS_SUCCEEDED(mStatus) ? STATE_TRANSFER : STATE_STOP;
 }
 
-uint32_t nsInputStreamPump::OnStateTransfer() {
+uint32_t nsInputStreamPump::OnStateTransfer() MOZ_REQUIRES(mMutex) {
   mMutex.AssertCurrentThreadIn();
 
   AUTO_PROFILER_LABEL("nsInputStreamPump::OnStateTransfer", NETWORK);
@@ -573,6 +602,9 @@ uint32_t nsInputStreamPump::OnStateTransfer() {
       }
 
       nsCOMPtr<nsIStreamListener> listener = mListener;
+      if (!listener) {
+        return STATE_DEAD;
+      }
       // Note: Must exit mutex for call to OnStartRequest to avoid
       // deadlocks when calls to RetargetDeliveryTo for multiple
       // nsInputStreamPumps are needed (e.g. nsHttpChannel).
@@ -645,7 +677,7 @@ nsresult nsInputStreamPump::CallOnStateStop() {
   return NS_OK;
 }
 
-uint32_t nsInputStreamPump::OnStateStop() {
+uint32_t nsInputStreamPump::OnStateStop() MOZ_REQUIRES(mMutex) {
   mMutex.AssertCurrentThreadIn();
 
   if (!NS_IsMainThread() && !mOffMainThread) {
@@ -675,9 +707,8 @@ uint32_t nsInputStreamPump::OnStateStop() {
   // stream.  in some cases, this is redundant, but since close is idempotent,
   // this is OK.  otherwise, be sure to honor the "close-when-done" option.
 
-  if (!mAsyncStream || !mListener) {
+  if (!mAsyncStream) {
     MOZ_ASSERT(mAsyncStream, "null mAsyncStream: OnStateStop called twice?");
-    MOZ_ASSERT(mListener, "null mListener: OnStateStop called twice?");
     return STATE_DEAD;
   }
 

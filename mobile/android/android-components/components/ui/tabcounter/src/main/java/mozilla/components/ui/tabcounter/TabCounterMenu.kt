@@ -14,7 +14,7 @@ import mozilla.components.concept.menu.candidate.TextStyle
 import mozilla.components.ui.icons.R as iconsR
 
 /**
- * The menu that is shown when clicking on the [TabCounter]
+ * The menu that is shown when clicking on the [TabCounterView]
  *
  * @param context the context.
  * @param onItemTapped behavior for when an item in the menu is tapped.
@@ -66,7 +66,7 @@ open class TabCounterMenu(
             text = context.getString(R.string.mozac_browser_menu_new_private_tab),
             start = DrawableMenuIcon(
                 context,
-                iconsR.drawable.mozac_ic_private_mode_24,
+                iconsR.drawable.mozac_ic_private_mode_fill_24,
                 tint = iconColor ?: getColor(context, R.color.mozac_ui_tabcounter_default_text),
             ),
             textStyle = TextStyle(),

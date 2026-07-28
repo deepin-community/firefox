@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Dovoli
     .accesskey = D
+permissions-add =
+    .label = Dodaj
+    .accesskey = D
 permissions-button-off =
     .label = Izključi
     .accesskey = I
@@ -37,6 +40,9 @@ permissions-remove =
 permissions-remove-all =
     .label = Odstrani vsa spletna mesta
     .accesskey = v
+permissions-save-changes-2 =
+    .buttonlabelaccept = Shrani spremembe
+    .buttonaccesskeyaccept = S
 permission-dialog =
     .buttonlabelaccept = Shrani spremembe
     .buttonaccesskeyaccept = S
@@ -85,6 +91,13 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Določite lahko, katera spletna mesta lahko vedno ali ne smejo nikoli shranjevati piškotkov in podatkov strani. Vnesite točen naslov spletnega mesta in nato kliknite gumb Prepovej, Dovoli v tej seji ali Dovoli.
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = Izjeme – Brisanje zgodovine ob zapiranju
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = Določite, podatki katerih spletnih mest naj se ohranijo, ko se { -brand-short-name } zapre in ob tem izbriše zgodovino. Vnesite točen naslov spletnega mesta, nato pa kliknite gumb Dovoli.
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
@@ -92,6 +105,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Način "samo HTTPS" lahko izklopite za določena spletna mesta. Na teh spletnih mestih { -brand-short-name } ne bo poskušal nadgraditi povezave na zavarovani HTTPS. Izjeme ne bodo veljale v zasebnih oknih.
 permissions-exceptions-https-only-desc2 = Način "samo HTTPS" lahko izklopite za določena spletna mesta. Na teh spletnih mestih { -brand-short-name } ne bo poskušal nadgraditi povezave na zavarovani HTTPS.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Dovoljena spletna mesta – Pojavna okna in preusmeritve tretjih strani
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Določite lahko, katera spletna mesta lahko odpirajo pojavna okna in jih preusmerjajo okvirji s tretjimi stranmi.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +187,26 @@ permissions-site-camera-desc = Naslednja spletna mesta so zahtevala dostop do ka
 permissions-site-camera-disable-label =
     .label = Zavrni nove zahteve, ki zahtevajo dostop do kamere
 permissions-site-camera-disable-desc = To bo preprečilo, da bi katero koli spletno mesto, ki ni navedeno zgoraj, zahtevalo dovoljenje za dostop do kamere. Blokiranje dostopa do kamere lahko povzroči nedelovanje nekaterih funkcij spletnega mesta.
+
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Nastavitve – Aplikacije in storitve na napravi
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Naslednja spletna mesta so zahtevala dostop do aplikacij in storitev na tej napravi. Lahko jim ga dovolite ali prepoveste.
+permissions-site-localhost-disable-label =
+    .label = Zavrni nove zahteve za dostop do aplikacij in storitev na tej napravi
+permissions-site-localhost-disable-desc = To bo preprečilo vsem spletnim mestom, ki niso navedena zgoraj, da bi zahtevala dostop do aplikacij in storitev na tej napravi. S tem lahko povzročite, da nekatera ne bodo pravilno delovala.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Nastavitve - Naprave v krajevnem omrežju
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Te spletne strani so zahtevale dostop do aplikacij in storitev na napravah, povezanih na vaš Wi-Fi ali lokalno omrežje. Lahko se odločite, ali jim dovolite ali blokirate ta dostop.
+permissions-site-local-network-disable-label =
+    .label = Blokirajte nove zahteve za dostop do aplikacij in storitev na napravah, povezanih z vašim Wi-Fi ali lokalnim omrežjem.
+permissions-site-local-network-disable-desc = S tem boste preprečili, da bi katera koli spletna stran, ki ni na zgornjem seznamu, zahtevala dostop do aplikacij in storitev na napravah, povezanih z vašim Wi-Fi ali lokalnim omrežjem. To lahko povzroči, da nekatere funkcije spletnih strani ne bodo delovale pravilno.
 
 ## Site Permissions - Microphone
 

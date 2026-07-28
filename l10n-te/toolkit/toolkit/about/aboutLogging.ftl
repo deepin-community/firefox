@@ -9,9 +9,11 @@ about-logging-set-log-modules = లాగ్ మాడ్యూల్ సెట�
 about-logging-start-logging = లాగింగ్ ప్రారంభించు
 about-logging-stop-logging = లాగింగ్ ఆపివేయి
 
-## Logging presets
+## The upload interface is shown only with the preference toolkit.aboutLogging.uploadProfileToCloud
+## set to true. It is false by default, except on Android.
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+about-logging-save-button = భద్రపరుచు
 
+## Uploaded Profiles section
+
+about-logging-delete-uploaded-profile = తొలగించు

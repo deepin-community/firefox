@@ -36,10 +36,17 @@ certificate-viewer-key-size = ਕੁੰਜੀ ਆਕਾਰ
 certificate-viewer-inc-locality = ਸਥਾਪਿਤੀ
 certificate-viewer-locality = ਟਿਕਾਣਾ
 certificate-viewer-location = ਟਿਕਾਣਾ
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = ਲਾਗ ਦਾ ਨਾਂ
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ਲਾਗ ਪਛਾਣ
 certificate-viewer-method = ਢੰਗ
 certificate-viewer-modulus = ਮੋਡੀਊਲ
 certificate-viewer-name = ਨਾਂ
+certificate-viewer-surname = ਮੁੱਢਲਾ ਨਾਂ
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = ਦਿੱਤਾ ਨਾਂ
 certificate-viewer-not-after = ਇਸ ਦੇ ਬਾਅਦ ਨਹੀਂ
 certificate-viewer-not-before = ਇਸ ਤੋਂ ਪਹਿਲਾਂ ਨਹੀਂ
 certificate-viewer-organization = ਸੰਗਠਨ
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = ਅਥਾਰਟੀ ਜਾਣਕਾਰੀ
 certificate-viewer-certificate-policies = ਸਰਟੀਫਿਕੇਟ ਨੀਤੀਆਂ
 certificate-viewer-embedded-scts = ਵਿਚੇ ਸ਼ਾਮਲ SCT
 certificate-viewer-crl-endpoints = CRL ਅੰਤ-ਸਥਾਨ
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = ਡਾਊਨਲੋਡ ਕਰੋ
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (ਸਰਟੀਫਿਕੇਟ)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (ਚੇਨ)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = ਇਹ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ ਗੰਭੀਰ ਵਜੋਂ ਨਿਸ਼ਾਨਬੱਧ ਕੀਤਾ ਹੈ, ਇਸ ਦਾ ਅਰਥ ਹੈ ਕਿ ਕਲਾਈਂਟਾਂ ਨੂੰ ਸਰਟੀਫਿਕੇਟ ਰੱਦ ਕਰ ਦੇਣਾ ਚਾਹੀਦਾ ਹੈ, ਜੇ ਉਹਨਾਂ ਨੂੰ ਇਸ ਬਾਰੇ ਸਮਝ ਨਾ ਹੋਵੇ।
@@ -112,6 +117,8 @@ certificate-viewer-export = ਬਰਾਮਦ
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (ਅਣਪਛਾਤਾ)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = ਸਰਟੀਫਿਕੇਟ
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

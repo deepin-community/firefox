@@ -18,6 +18,9 @@ The resources to which identifiers refer are freed explicitly.
 Attempting to use an identifier for a resource that has been freed
 elicits an error result.
 
+Eventually, we would like to remove numeric IDs from wgpu-core.
+See <https://github.com/gfx-rs/wgpu/issues/5121>.
+
 ## Assigning ids to resources
 
 The users of `wgpu_core` generally want resource ids to be assigned
@@ -27,9 +30,9 @@ in one of two ways:
   For example, `wgpu` expects to call `Global::device_create_buffer`
   and have the return value indicate the newly created buffer's id.
 
-- Users like `player` and Firefox want to allocate ids themselves, and
-  pass `Global::device_create_buffer` and friends the id to assign the
-  new resource.
+- Users like Firefox want to allocate ids themselves, and pass
+  `Global::device_create_buffer` and friends the id to assign the new
+  resource.
 
 To accommodate either pattern, `wgpu_core` methods that create
 resources all expect an `id_in` argument that the caller can use to
@@ -98,19 +101,36 @@ flagged as errors as well.
 [wrapped in a mutex]: trait.IdentityHandler.html#impl-IdentityHandler%3CI%3E-for-Mutex%3CIdentityManager%3E
 [WebGPU]: https://www.w3.org/TR/webgpu/
 
+## IDs and tracing
+
+As of `wgpu` v27, commands are encoded all at once when
+`CommandEncoder::finish` is called, not when the encoding methods are
+called for each command. This implies storing a representation of the
+commands in memory until `finish` is called.  `Arc`s are more suitable
+for this purpose than numeric ids. Rather than redundantly store both
+`Id`s and `Arc`s, tracing has been changed to work with `Arc`s. The
+serialized trace identifies resources by the integer value of
+`Arc::as_ptr`. These IDs have the type [`crate::id::PointerId`]. The
+trace player uses hash maps to go from `PointerId`s to `Arc`s
+when replaying a trace.
+
 */
+
+use alloc::sync::Arc;
+use core::fmt::Debug;
 
 use crate::{
     binding_model::{BindGroup, BindGroupLayout, PipelineLayout},
-    command::{CommandBuffer, RenderBundle},
+    command::{CommandBuffer, CommandEncoder, RenderBundle},
     device::{queue::Queue, Device},
-    instance::{Adapter, Surface},
+    instance::Adapter,
     pipeline::{ComputePipeline, PipelineCache, RenderPipeline, ShaderModule},
     registry::{Registry, RegistryReport},
-    resource::{Buffer, QuerySet, Sampler, StagingBuffer, Texture, TextureView},
-    storage::{Element, Storage},
+    resource::{
+        Blas, Buffer, ExternalTexture, Fallible, QuerySet, Sampler, StagingBuffer, Texture,
+        TextureView, Tlas,
+    },
 };
-use std::fmt::Debug;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct HubReport {
@@ -121,6 +141,7 @@ pub struct HubReport {
     pub shader_modules: RegistryReport,
     pub bind_group_layouts: RegistryReport,
     pub bind_groups: RegistryReport,
+    pub command_encoders: RegistryReport,
     pub command_buffers: RegistryReport,
     pub render_bundles: RegistryReport,
     pub render_pipelines: RegistryReport,
@@ -130,6 +151,7 @@ pub struct HubReport {
     pub buffers: RegistryReport,
     pub textures: RegistryReport,
     pub texture_views: RegistryReport,
+    pub external_textures: RegistryReport,
     pub samplers: RegistryReport,
 }
 
@@ -159,27 +181,30 @@ impl HubReport {
 /// Inside the `Registry` there are `Arc<T>` where `T` is a Resource
 /// Lock of `Registry` happens only when accessing to get the specific resource
 ///
-///
-/// [`A::hub(global)`]: HalApi::hub
+/// [`Storage`]: crate::storage::Storage
 pub struct Hub {
-    pub(crate) adapters: Registry<Adapter>,
-    pub(crate) devices: Registry<Device>,
-    pub(crate) queues: Registry<Queue>,
-    pub(crate) pipeline_layouts: Registry<PipelineLayout>,
-    pub(crate) shader_modules: Registry<ShaderModule>,
-    pub(crate) bind_group_layouts: Registry<BindGroupLayout>,
-    pub(crate) bind_groups: Registry<BindGroup>,
-    pub(crate) command_buffers: Registry<CommandBuffer>,
-    pub(crate) render_bundles: Registry<RenderBundle>,
-    pub(crate) render_pipelines: Registry<RenderPipeline>,
-    pub(crate) compute_pipelines: Registry<ComputePipeline>,
-    pub(crate) pipeline_caches: Registry<PipelineCache>,
-    pub(crate) query_sets: Registry<QuerySet>,
-    pub(crate) buffers: Registry<Buffer>,
+    pub(crate) adapters: Registry<Arc<Adapter>>,
+    pub(crate) devices: Registry<Arc<Device>>,
+    pub(crate) queues: Registry<Arc<Queue>>,
+    pub(crate) pipeline_layouts: Registry<Fallible<PipelineLayout>>,
+    pub(crate) shader_modules: Registry<Fallible<ShaderModule>>,
+    pub(crate) bind_group_layouts: Registry<Fallible<BindGroupLayout>>,
+    pub(crate) bind_groups: Registry<Fallible<BindGroup>>,
+    pub(crate) command_encoders: Registry<Arc<CommandEncoder>>,
+    pub(crate) command_buffers: Registry<Arc<CommandBuffer>>,
+    pub(crate) render_bundles: Registry<Fallible<RenderBundle>>,
+    pub(crate) render_pipelines: Registry<Fallible<RenderPipeline>>,
+    pub(crate) compute_pipelines: Registry<Fallible<ComputePipeline>>,
+    pub(crate) pipeline_caches: Registry<Fallible<PipelineCache>>,
+    pub(crate) query_sets: Registry<Fallible<QuerySet>>,
+    pub(crate) buffers: Registry<Fallible<Buffer>>,
     pub(crate) staging_buffers: Registry<StagingBuffer>,
-    pub(crate) textures: Registry<Texture>,
-    pub(crate) texture_views: Registry<TextureView>,
-    pub(crate) samplers: Registry<Sampler>,
+    pub(crate) textures: Registry<Fallible<Texture>>,
+    pub(crate) texture_views: Registry<Fallible<TextureView>>,
+    pub(crate) external_textures: Registry<Fallible<ExternalTexture>>,
+    pub(crate) samplers: Registry<Fallible<Sampler>>,
+    pub(crate) blas_s: Registry<Fallible<Blas>>,
+    pub(crate) tlas_s: Registry<Fallible<Tlas>>,
 }
 
 impl Hub {
@@ -192,6 +217,7 @@ impl Hub {
             shader_modules: Registry::new(),
             bind_group_layouts: Registry::new(),
             bind_groups: Registry::new(),
+            command_encoders: Registry::new(),
             command_buffers: Registry::new(),
             render_bundles: Registry::new(),
             render_pipelines: Registry::new(),
@@ -202,48 +228,11 @@ impl Hub {
             staging_buffers: Registry::new(),
             textures: Registry::new(),
             texture_views: Registry::new(),
+            external_textures: Registry::new(),
             samplers: Registry::new(),
+            blas_s: Registry::new(),
+            tlas_s: Registry::new(),
         }
-    }
-
-    pub(crate) fn clear(&self, surface_guard: &Storage<Surface>) {
-        let mut devices = self.devices.write();
-        for element in devices.map.iter() {
-            if let Element::Occupied(ref device, _) = *element {
-                device.prepare_to_die();
-            }
-        }
-
-        self.command_buffers.write().map.clear();
-        self.samplers.write().map.clear();
-        self.texture_views.write().map.clear();
-        self.textures.write().map.clear();
-        self.buffers.write().map.clear();
-        self.bind_groups.write().map.clear();
-        self.shader_modules.write().map.clear();
-        self.bind_group_layouts.write().map.clear();
-        self.pipeline_layouts.write().map.clear();
-        self.compute_pipelines.write().map.clear();
-        self.render_pipelines.write().map.clear();
-        self.pipeline_caches.write().map.clear();
-        self.query_sets.write().map.clear();
-
-        for element in surface_guard.map.iter() {
-            if let Element::Occupied(ref surface, _epoch) = *element {
-                if let Some(ref mut present) = surface.presentation.lock().take() {
-                    let suf = surface.raw(present.device.backend());
-                    unsafe {
-                        suf.unwrap().unconfigure(present.device.raw());
-                    }
-                }
-            }
-        }
-
-        self.queues.write().map.clear();
-        devices.map.clear();
-
-        drop(devices);
-        self.adapters.write().map.clear();
     }
 
     pub fn generate_report(&self) -> HubReport {
@@ -255,6 +244,7 @@ impl Hub {
             shader_modules: self.shader_modules.generate_report(),
             bind_group_layouts: self.bind_group_layouts.generate_report(),
             bind_groups: self.bind_groups.generate_report(),
+            command_encoders: self.command_encoders.generate_report(),
             command_buffers: self.command_buffers.generate_report(),
             render_bundles: self.render_bundles.generate_report(),
             render_pipelines: self.render_pipelines.generate_report(),
@@ -264,6 +254,7 @@ impl Hub {
             buffers: self.buffers.generate_report(),
             textures: self.textures.generate_report(),
             texture_views: self.texture_views.generate_report(),
+            external_textures: self.external_textures.generate_report(),
             samplers: self.samplers.generate_report(),
         }
     }

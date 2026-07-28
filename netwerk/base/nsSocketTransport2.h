@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsSocketTransport2_h__
-#define nsSocketTransport2_h__
+#ifndef nsSocketTransport2_h_
+#define nsSocketTransport2_h_
 
 #ifdef DEBUG_darinf
 #  define ENABLE_SOCKET_TRACING
@@ -11,6 +11,7 @@
 
 #include <functional>
 
+#include "mozilla/Atomics.h"
 #include "mozilla/Mutex.h"
 #include "nsSocketTransportService2.h"
 #include "nsString.h"
@@ -23,9 +24,9 @@
 #include "nsIDNSListener.h"
 #include "nsIDNSRecord.h"
 #include "nsIClassInfo.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "mozilla/net/DNS.h"
 #include "nsASocketHandler.h"
-#include "mozilla/Telemetry.h"
 
 #include "prerror.h"
 #include "ssl.h"
@@ -108,12 +109,8 @@ class nsSocketTransport final : public nsASocketHandler,
 
   uint64_t ByteCountReceived() override;
   uint64_t ByteCountSent() override;
-  static void CloseSocket(PRFileDesc* aFd, bool aTelemetryEnabled);
-  static void SendPRBlockingTelemetry(
-      PRIntervalTime aStart, Telemetry::HistogramID aIDNormal,
-      Telemetry::HistogramID aIDShutdown,
-      Telemetry::HistogramID aIDConnectivityChange,
-      Telemetry::HistogramID aIDLinkChange, Telemetry::HistogramID aIDOffline);
+  bool IsTRRConnection() override;
+  static void CloseSocket(PRFileDesc* aFd);
 
  protected:
   virtual ~nsSocketTransport();
@@ -228,7 +225,7 @@ class nsSocketTransport final : public nsASocketHandler,
   bool mProxyTransparent{false};
   bool mProxyTransparentResolvesHost{false};
   bool mHttpsProxy{false};
-  uint32_t mConnectionFlags{0};
+  Atomic<uint32_t, Relaxed> mConnectionFlags{0};
   // When we fail to connect using a prefered IP family, we tell the consumer to
   // reset the IP family preference on the connection entry.
   bool mResetFamilyPreference{false};
@@ -268,11 +265,13 @@ class nsSocketTransport final : public nsASocketHandler,
   nsCOMPtr<nsICancelable> mDNSRequest;
   nsCOMPtr<nsIDNSAddrRecord> mDNSRecord;
 
-  nsCString mEchConfig;
-  bool mEchConfigUsed = false;
-  bool mResolvedByTRR{false};
-  nsIRequest::TRRMode mEffectiveTRRMode{nsIRequest::TRR_DEFAULT_MODE};
-  nsITRRSkipReason::value mTRRSkipReason{nsITRRSkipReason::TRR_UNSET};
+  nsCString mEchConfig MOZ_GUARDED_BY(mLock);
+  Atomic<bool, Relaxed> mEchConfigUsed{false};
+  Atomic<bool, Relaxed> mResolvedByTRR{false};
+  Atomic<nsIRequest::TRRMode, Relaxed> mEffectiveTRRMode{
+      nsIRequest::TRR_DEFAULT_MODE};
+  Atomic<nsITRRSkipReason::value, Relaxed> mTRRSkipReason{
+      nsITRRSkipReason::TRR_UNSET};
 
   nsCOMPtr<nsISupports> mInputCopyContext;
   nsCOMPtr<nsISupports> mOutputCopyContext;
@@ -285,7 +284,7 @@ class nsSocketTransport final : public nsASocketHandler,
   Atomic<bool, Relaxed> mNetAddrIsSet{false};
   Atomic<bool, Relaxed> mSelfAddrIsSet{false};
 
-  UniquePtr<NetAddr> mBindAddr;
+  UniquePtr<NetAddr> mBindAddr;  // socket thread only; Bind() is [noscript]
 
   // socket methods (these can only be called on the socket thread):
 
@@ -330,25 +329,28 @@ class nsSocketTransport final : public nsASocketHandler,
   // to scoping.
   RefPtr<nsSocketTransportService> mSocketTransportService;
 
-  nsCOMPtr<nsIInterfaceRequestor> mCallbacks;
-  nsCOMPtr<nsITransportEventSink> mEventSink;
+  nsCOMPtr<nsIInterfaceRequestor> mCallbacks MOZ_GUARDED_BY(mLock);
+  nsCOMPtr<nsITransportEventSink> mEventSink MOZ_GUARDED_BY(mLock);
   nsCOMPtr<nsITLSSocketControl> mTLSSocketControl;
+
+  // Called just before the fd is closed in OnSocketDetached. Used by
+  // TLSServerSocket to clear NSS handshake callbacks and release refs
+  // that would otherwise leak if the handshake never completed.
+  std::function<void(PRFileDesc*)> mFDDetachCallback;
 
   UniquePtr<nsSocketInputStream> mInput;
   UniquePtr<nsSocketOutputStream> mOutput;
 
   friend class nsSocketInputStream;
   friend class nsSocketOutputStream;
+  friend class TLSServerSocket;
 
-  // socket timeouts are protected by mLock.
-  uint16_t mTimeouts[2]{0};
+  uint16_t mTimeouts[2] MOZ_GUARDED_BY(mLock){0};
 
-  // linger options to use when closing
-  bool mLingerPolarity{false};
-  int16_t mLingerTimeout{0};
+  bool mLingerPolarity MOZ_GUARDED_BY(mLock){false};
+  int16_t mLingerTimeout MOZ_GUARDED_BY(mLock){0};
 
-  // QoS setting for socket
-  uint8_t mQoSBits{0x00};
+  Atomic<uint32_t, Relaxed> mQoSBits{0};
 
   //
   // mFD access methods: called with mLock held.
@@ -420,6 +422,8 @@ class nsSocketTransport final : public nsASocketHandler,
 
   bool mExternalDNSResolution = false;
   bool mRetryDnsIfPossible = false;
+
+  bool mIsTRRConnection = false;
 };
 
 class nsSocketInputStream : public nsIAsyncInputStream {

@@ -66,7 +66,6 @@ pub fn get_shader_features(flags: ShaderFeatureFlags) -> ShaderFeatures {
 
     // Clip shaders
     shaders.insert("cs_clip_rectangle", vec![String::new(), "FAST_PATH".to_string()]);
-    shaders.insert("cs_clip_box_shadow", vec!["TEXTURE_2D".to_string()]);
 
     // Cache shaders
     shaders.insert("cs_blur", vec!["ALPHA_TARGET".to_string(), "COLOR_TARGET".to_string()]);
@@ -75,26 +74,11 @@ pub fn get_shader_features(flags: ShaderFeatureFlags) -> ShaderFeatures {
 
     for name in &[
         "cs_line_decoration",
-        "cs_fast_linear_gradient",
         "cs_border_segment",
         "cs_border_solid",
-        "cs_svg_filter",
         "cs_svg_filter_node",
     ] {
         shaders.insert(name, vec![String::new()]);
-    }
-
-    for name in &[
-        "cs_linear_gradient",
-        "cs_radial_gradient",
-        "cs_conic_gradient",
-    ] {
-        let mut features = Vec::new();
-        features.push(String::new());
-        if flags.contains(ShaderFeatureFlags::DITHERING) {
-            features.push("DITHERING".to_string());
-        }
-        shaders.insert(name, features);
     }
 
     let mut base_prim_features = FeatureList::new();
@@ -102,32 +86,24 @@ pub fn get_shader_features(flags: ShaderFeatureFlags) -> ShaderFeatures {
     // Brush shaders
     let mut brush_alpha_features = base_prim_features.with("ALPHA_PASS");
     for name in &["brush_solid", "brush_blend", "brush_mix_blend"] {
-        let mut features: Vec<String> = Vec::new();
-        features.push(base_prim_features.finish());
-        features.push(brush_alpha_features.finish());
-        features.push("DEBUG_OVERDRAW".to_string());
-        shaders.insert(name, features);
-    }
-    for name in &["brush_linear_gradient"] {
-        let mut features: Vec<String> = Vec::new();
-        let mut list = FeatureList::new();
-        if flags.contains(ShaderFeatureFlags::DITHERING) {
-            list.add("DITHERING");
-        }
-        features.push(list.concat(&base_prim_features).finish());
-        features.push(list.concat(&brush_alpha_features).finish());
-        features.push(list.with("DEBUG_OVERDRAW").finish());
+        let features: Vec<String> = vec![
+            base_prim_features.finish(),
+            brush_alpha_features.finish(),
+            "DEBUG_OVERDRAW".to_string(),
+        ];
         shaders.insert(name, features);
     }
 
+
     {
-        let mut features: Vec<String> = Vec::new();
-        features.push(base_prim_features.finish());
-        features.push(brush_alpha_features.finish());
-        features.push(base_prim_features.with("ANTIALIASING").finish());
-        features.push(brush_alpha_features.with("ANTIALIASING").finish());
-        features.push("ANTIALIASING,DEBUG_OVERDRAW".to_string());
-        features.push("DEBUG_OVERDRAW".to_string());
+        let features: Vec<String> = vec![
+            base_prim_features.finish(),
+            brush_alpha_features.finish(),
+            base_prim_features.with("ANTIALIASING").finish(),
+            brush_alpha_features.with("ANTIALIASING").finish(),
+            "ANTIALIASING,DEBUG_OVERDRAW".to_string(),
+            "DEBUG_OVERDRAW".to_string(),
+        ];
         shaders.insert("brush_opacity", features);
     }
 
@@ -204,6 +180,14 @@ pub fn get_shader_features(flags: ShaderFeatureFlags) -> ShaderFeatures {
         }
         list.add("FAST_PATH");
         composite_features.push(list.finish());
+
+        // YUV shaders are not compatible with ESSL1
+        if *texture_type == "TEXTURE_EXTERNAL_ESSL1" {
+            continue;
+        }
+
+        list.add("YUV");
+        composite_features.push(list.finish());
     }
     shaders.insert("composite", composite_features);
 
@@ -229,9 +213,16 @@ pub fn get_shader_features(flags: ShaderFeatureFlags) -> ShaderFeatures {
 
     shaders.insert("ps_quad_textured", vec![base_prim_features.finish()]);
 
-    shaders.insert("ps_quad_radial_gradient", vec![base_prim_features.finish()]);
+    shaders.insert("ps_quad_repeat", vec![base_prim_features.finish()]);
 
-    shaders.insert("ps_quad_conic_gradient", vec![base_prim_features.finish()]);
+    shaders.insert("ps_quad_box_shadow", vec![base_prim_features.finish()]);
+
+    let mut maybe_dithering = FeatureList::new();
+    if flags.contains(ShaderFeatureFlags::DITHERING) {
+        maybe_dithering.add("DITHERING");
+    }
+
+    shaders.insert("ps_quad_gradient", vec![base_prim_features.concat(&maybe_dithering).finish()]);
 
     shaders.insert("ps_clear", vec![base_prim_features.finish()]);
 
@@ -245,4 +236,3 @@ pub fn get_shader_features(flags: ShaderFeatureFlags) -> ShaderFeatures {
 
     shaders
 }
-

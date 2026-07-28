@@ -10,28 +10,26 @@
 
 psmerr-ssl-disabled = تعذّر الاتصال بسريّة لأن بروتوكول SSL مُعطّل.
 psmerr-ssl2-disabled = تعذّر الاتصال بسريّة لأن الموقع يستخدم إصدارة قديمة غير مُؤَمّنة من برتوكول SSL.
-
 # This is a multi-line message.
 psmerr-hostreusedissuerandserial =
     استقبلت شهادة غير صالحة.  الرّجاء الاتّصال بمدير النّظام أو مراسل البريد الإلكتروني و إعطائهم المعلومات التّالية:
     
     تحتوي شهادتك على نفس الرّقم التسلسلي لشهادة أخرى من نفس سلطة الشّهادات.  الرّجاء الحصول على شهادة جديدة تحتوي رقمًا تسلسليًا فريدًا.
-
 ssl-error-export-only-server = تعذر التواصل بشكل آمن. الجهاز الند لا يدعم التعمية عالية المستوى.
 ssl-error-us-only-server = تعذر التواصل بشكل آمن. الجهاز الند يحتاج تعمية عالية المستوى وهي غير مدعومة.
 ssl-error-no-cypher-overlap = لا يمكن التواصل بشكل آمن مع الجهاز الند: لا توجد خوارزميات تعمية مشتركة.
-ssl-error-no-certificate = تعذر إيجاد الشهادة أو المفتاح الضروري للمصادقة.
+ssl-error-no-certificate = تعذّر إيجاد الشهادة أو المفتاح الضروري لاستيثاق.
 ssl-error-bad-certificate = تعذر التواصل بشكل آمن مع الجهاز الند: شهادة الند مرفوضة.
 ssl-error-bad-client = تلقى الخادوم بيانات سيئة من العميل.
 ssl-error-bad-server = تلقى العميل بيانات سيئة من الخادوم.
 ssl-error-unsupported-certificate-type = نوع الشهادة غير مدعوم.
 ssl-error-unsupported-version = الجهاز الند يستخدم نسخة غير مدعومة من بروتوكول الأمان.
-ssl-error-wrong-certificate = فشلت مصادقة العميل: المفتاح الخاص في قاعدة بيانات المفاتيح لا يتطابق مع المفتاح العام في قاعدة بيانات الشهادات.
+ssl-error-wrong-certificate = فشل استيثاق العميل: المفتاح الخاص في قاعدة بيانات المفاتيح لا يتطابق مع المفتاح العام في قاعدة بيانات الشهادات.
 ssl-error-bad-cert-domain = تعذر التواصل بشكل آمن مع الجهاز الند: اسم المجال المطلوب لا يتطابق مع شهادة الخادوم.
 ssl-error-post-warning = رمز خطأ SSL غير متعرّف عليه.
 ssl-error-ssl2-disabled = الجهاز الند يدعم فقط النسخة 2 من SSL، والتي هي معطلة محليًا.
-ssl-error-bad-mac-read = استلم SSL سجلًا ذا رمز مصادقة رسالة غير صحيح.
-ssl-error-bad-mac-alert = أخبر ند SSL عن رمز مصادقة رسالة غير صحيح.
+ssl-error-bad-mac-read = استلم SSL سجلًا ذا رمز استيثاق رسالة غير صحيح.
+ssl-error-bad-mac-alert = أخبر ند SSL عن رمز استيثاق رسالة غير صحيح.
 ssl-error-bad-cert-alert = ند SSL لا يمكنه التحقق من شهادتك.
 ssl-error-revoked-cert-alert = رفض ند SSL شهادتك لأنها باطلة.
 ssl-error-expired-cert-alert = رفض ند SSL شهادتك لأنها منتهية الصلاحية.
@@ -104,7 +102,7 @@ ssl-error-no-compression-overlap = لا يمكن التواصل بشكل آمن 
 ssl-error-handshake-not-completed = لا يمكن بدء مصافحة SSL أخرى حتى تكتمل المصافحة الحالية.
 ssl-error-bad-handshake-hash-value = استُلمت قيم بعثرة مصافحات غير صحيحة من الند.
 ssl-error-cert-kea-mismatch = لا يمكن أن تُستخدم الشهادة المزودة مع خوارزمية تبادل المفاتيح.
-ssl-error-no-trusted-ssl-client-ca = ليس هناك سلطات شهادات موثوقة من أجل مصادقة عميل SSL.
+ssl-error-no-trusted-ssl-client-ca = ليس هناك سلطات شهادات موثوقة من أجل استيثاق عميل SSL.
 ssl-error-session-not-found = لم يُعثر على معرف جلسة SSL للعميل في مخبأ جلسات الخادوم.
 ssl-error-decryption-failed-alert = لم يتمكن الند من استخراج سجل SSL الذي استلمه.
 ssl-error-record-overflow-alert = استلم الند سجل SSL أطول من المسموح.
@@ -153,8 +151,7 @@ ssl-error-no-supported-signature-algorithm = لم تُعد أي خوارزمية
 ssl-error-unsupported-signature-algorithm = استخدم الند زوجًا غير مدعوم من التواقيع و خوازميات التلبيد.
 ssl-error-missing-extended-master-secret = حاول الند الاستكمال دون امتداد extended_master_secret صحيح.
 ssl-error-unexpected-extended-master-secret = حاول الند الاستكمال مع امتداد extended_master_secret غير متوقع.
-
-sec-error-io = حصل خطأ دخل/خرج أثناء المصادقة الأمنية.
+sec-error-io = حصل خطأ دخل/خرج أثناء الاستيثاق الأمني.
 sec-error-library-failure = فشل في المكتبة الأمنية.
 sec-error-bad-data = المكتبة الأمنية: استُلمت بيانات سيئة.
 sec-error-output-len = المكتبة الأمنية: خطأ في طول الخرج.
@@ -320,7 +317,6 @@ sec-error-locked-password = كلمة الصر مقفلة.
 sec-error-unknown-pkcs11-error = عُطل PKCS #11 غير معروف.
 sec-error-bad-crl-dp-url = مسار غير سليم أو غير مدعوم في اسم نقطة توزيع قائمة فسخ الشهادات.
 sec-error-cert-signature-algorithm-disabled = وُقَّعت الشهادة باستخدام خوارزمية عُطّلت لعدم أمانها.
-
 mozilla-pkix-error-key-pinning-failure = يستعمل الخادوم ميزة تثبيت المفاتيح (HPKP) ولكن تعذرت إقامة سلسلة شهادات موثوقة تُطابق مجموعة التثبيت. لا يمكنك تجاوز انتهاكات ميزة تثبيت المفاتيح (Key pinning).
 mozilla-pkix-error-ca-cert-used-as-end-entity = يستخدم الخادوم شهادة بامتداد قيود أساسية يعرفها سلطة شهادات. وبالنسبة لشهادة مصدرة بشكل صحيح، ينبغي ألا يكون هذا هو الحال.
 mozilla-pkix-error-inadequate-key-size = قدّم الخادوم شهادة حجم مفتاحها صغير جدا لإنشاء اتصال آمن.
@@ -335,11 +331,10 @@ mozilla-pkix-error-invalid-integer-encoding = قدّم الخادوم شهادة
 mozilla-pkix-error-empty-issuer-name = قدّم الخادوم شهادة تحتوي اسم مُصْدِر مميز خالٍ.
 mozilla-pkix-error-additional-policy-constraint-failed = فشل قيد سياسة إضافي أثناء التحقق من الشهادة.
 mozilla-pkix-error-self-signed-cert = الشهادة غير موثوقة لأنها موقعّة ذاتيًا.
-
+mozilla-pkix-error-issuer-no-longer-trusted = كانت سُلطة الشهادات التي أصدرت الشهادة غير موثوقة قبل إصدار الشهادة.
 xp-java-remove-principal-error = تعذرت إزالة الرئيس
 xp-java-delete-privilege-error = تعذرت إزالة الامتياز
 xp-java-cert-not-exists-error = هذا الرئيس لا يملك شهادة
-
 xp-sec-fortezza-bad-card = لم تُنشّط بطاقة فورتيزا بشكل صحيح. رجاءً أزلها وأعدها إلى مُصْدِرها.
 xp-sec-fortezza-no-card = لم يُعثر على بطاقات فورتيزا
 xp-sec-fortezza-none-selected = لم تُختر أي بطاقة فورتيزا

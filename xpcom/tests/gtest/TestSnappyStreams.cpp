@@ -1,10 +1,7 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <algorithm>
 #include "gtest/gtest.h"
 #include "Helpers.h"
 #include "mozilla/gtest/MozAssertions.h"
@@ -15,6 +12,8 @@
 #include "nsString.h"
 #include "nsStringStream.h"
 #include "nsTArray.h"
+
+#include "snappy/snappy.h"
 
 namespace {
 
@@ -96,46 +95,72 @@ static void TestUncompressCorrupt(const char* aCorruptData,
 }  // namespace
 
 TEST(SnappyStream, Compress_32k)
-{ TestCompress(32 * 1024); }
+{
+  TestCompress(32 * 1024);
+}
 
 TEST(SnappyStream, Compress_64k)
-{ TestCompress(64 * 1024); }
+{
+  TestCompress(64 * 1024);
+}
 
 TEST(SnappyStream, Compress_128k)
-{ TestCompress(128 * 1024); }
+{
+  TestCompress(128 * 1024);
+}
 
 TEST(SnappyStream, CompressUncompress_0)
-{ TestCompressUncompress(0); }
+{
+  TestCompressUncompress(0);
+}
 
 TEST(SnappyStream, CompressUncompress_1)
-{ TestCompressUncompress(1); }
+{
+  TestCompressUncompress(1);
+}
 
 TEST(SnappyStream, CompressUncompress_32)
-{ TestCompressUncompress(32); }
+{
+  TestCompressUncompress(32);
+}
 
 TEST(SnappyStream, CompressUncompress_1k)
-{ TestCompressUncompress(1024); }
+{
+  TestCompressUncompress(1024);
+}
 
 TEST(SnappyStream, CompressUncompress_32k)
-{ TestCompressUncompress(32 * 1024); }
+{
+  TestCompressUncompress(32 * 1024);
+}
 
 TEST(SnappyStream, CompressUncompress_64k)
-{ TestCompressUncompress(64 * 1024); }
+{
+  TestCompressUncompress(64 * 1024);
+}
 
 TEST(SnappyStream, CompressUncompress_128k)
-{ TestCompressUncompress(128 * 1024); }
+{
+  TestCompressUncompress(128 * 1024);
+}
 
 // Test buffers that are not exactly power-of-2 in length to try to
 // exercise more edge cases.  The number 13 is arbitrary.
 
 TEST(SnappyStream, CompressUncompress_256k_less_13)
-{ TestCompressUncompress((256 * 1024) - 13); }
+{
+  TestCompressUncompress((256 * 1024) - 13);
+}
 
 TEST(SnappyStream, CompressUncompress_256k)
-{ TestCompressUncompress(256 * 1024); }
+{
+  TestCompressUncompress(256 * 1024);
+}
 
 TEST(SnappyStream, CompressUncompress_256k_plus_13)
-{ TestCompressUncompress((256 * 1024) + 13); }
+{
+  TestCompressUncompress((256 * 1024) + 13);
+}
 
 TEST(SnappyStream, UncompressCorruptStreamIdentifier)
 {
@@ -159,4 +184,26 @@ TEST(SnappyStream, UncompressCorruptCompressedDataContent)
       "\x00\x25\x00\x00This is not a valid compressed stream";
   static const uint32_t dataLength = (sizeof(data) / sizeof(const char)) - 1;
   TestUncompressCorrupt(data, dataLength);
+}
+
+TEST(SnappyStream, UncompressCorruptCompressDataLengthTooLarge)
+{
+  uint32_t compressedBufferLength =
+      mozilla::detail::SnappyFrameUtils::MaxCompressedBufferLength(
+          snappy::kBlockSize);
+  uint32_t badLength = compressedBufferLength * 2;
+
+  std::vector<char> data;
+  static const char streamIdentifier[] = "\xff\x06\x00\x00sNaPpY";
+  data.assign(std::begin(streamIdentifier), std::end(streamIdentifier) - 1);
+  data.push_back(0);
+  data.push_back(static_cast<char>(badLength));  // little-endian
+  data.push_back(static_cast<char>(badLength >> 8));
+  data.push_back(static_cast<char>(badLength >> 16));
+
+  // Ensure there is actually enough data in the buffer to read
+  // badLength bytes.
+  data.resize(data.size() + badLength, 'X');
+
+  TestUncompressCorrupt(data.data(), data.size());
 }

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,6 +11,8 @@
 
 #include "BufferEdgePad.h"
 #include "BufferUnrotate.h"
+
+#include "FilterSupport.h"
 
 #ifdef USE_NEON
 #  include "mozilla/arm.h"
@@ -257,7 +257,7 @@ already_AddRefed<SourceSurface> DrawTarget::IntoLuminanceSource(
   return destMaskSurface.forget();
 }
 
-void DrawTarget::Blur(const AlphaBoxBlur& aBlur) {
+void DrawTarget::Blur(const GaussianBlur& aBlur) {
   uint8_t* data;
   IntSize size;
   int32_t stride;
@@ -267,10 +267,7 @@ void DrawTarget::Blur(const AlphaBoxBlur& aBlur) {
     return;
   }
 
-  // Sanity check that the blur size matches the draw target.
-  MOZ_ASSERT(size == aBlur.GetSize());
-  MOZ_ASSERT(stride == aBlur.GetStride());
-  aBlur.Blur(data);
+  aBlur.Blur(data, stride, size, format);
 
   ReleaseBits(data);
 }
@@ -296,7 +293,7 @@ bool DrawTarget::Unrotate(IntPoint aRotation) {
 }
 
 int32_t ShadowOptions::BlurRadius() const {
-  return AlphaBoxBlur::CalculateBlurRadius(Point(mSigma, mSigma)).width;
+  return GaussianBlur::CalculateBlurRadius(Point(mSigma, mSigma)).width;
 }
 
 void DrawTarget::DrawShadow(const Path* aPath, const Pattern& aPattern,
@@ -349,6 +346,44 @@ void DrawTarget::DrawShadow(const Path* aPath, const Pattern& aPattern,
   if (snapshot) {
     DrawSurfaceWithShadow(snapshot, offset, aShadow, aOptions.mCompositionOp);
   }
+}
+
+already_AddRefed<SourceSurface> DrawTarget::ResolveFilterInput(
+    const Path* aPath, const Pattern& aPattern, const IntRect& aSourceRect,
+    const Matrix& aDestTransform, const DrawOptions& aOptions,
+    const StrokeOptions* aStrokeOptions, SurfaceFormat aFormat) {
+  if (!CanCreateSimilarDrawTarget(aSourceRect.Size(), aFormat)) {
+    return nullptr;
+  }
+  RefPtr<DrawTarget> dt = CreateSimilarDrawTarget(aSourceRect.Size(), aFormat);
+  if (dt) {
+    // See bug 1524554.
+    dt->ClearRect(Rect());
+  }
+  if (!dt || !dt->IsValid()) {
+    return nullptr;
+  }
+  dt->SetTransform(
+      Matrix(aDestTransform).PostTranslate(-aSourceRect.TopLeft()));
+  if (aStrokeOptions) {
+    dt->Stroke(aPath, aPattern, *aStrokeOptions, aOptions);
+  } else {
+    dt->Fill(aPath, aPattern, aOptions);
+  }
+  return dt->Snapshot();
+}
+
+already_AddRefed<FilterNode> DrawTarget::DeferFilterInput(
+    const Path* aPath, const Pattern& aPattern, const IntRect& aSourceRect,
+    const IntPoint& aDestOffset, const DrawOptions& aOptions,
+    const StrokeOptions* aStrokeOptions) {
+  RefPtr<SourceSurface> surface = ResolveFilterInput(
+      aPath, aPattern, aSourceRect, GetTransform().PostTranslate(aDestOffset),
+      aOptions, aStrokeOptions);
+  if (!surface) {
+    return nullptr;
+  }
+  return FilterWrappers::ForSurface(this, surface, aSourceRect.TopLeft());
 }
 
 }  // namespace gfx

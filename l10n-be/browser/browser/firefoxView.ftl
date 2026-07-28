@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Закрыць
     .aria-label = Закрыць
-firefoxview-empty-state-icon =
-    .alt = Увага:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Толькі што
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% завершана
 firefoxview-tabpickup-step-signin-header = Лёгка пераключайцеся паміж прыладамі
 firefoxview-tabpickup-step-signin-description = Каб атрымаць тут карткі з тэлефона, спачатку ўвайдзіце або стварыце ўліковы запіс.
 firefoxview-tabpickup-step-signin-primarybutton = Працягнуць
-firefoxview-syncedtabs-signin-header = Захоплівайце карткі адусюль
-firefoxview-syncedtabs-signin-description = Каб бачыць свае карткі ўсюды, дзе вы карыстаецеся { -brand-product-name }, увайдзіце ў свой уліковы запіс. Калі ў вас няма ўліковага запісу, мы правядзём вас праз крокі рэгістрацыі.
-firefoxview-syncedtabs-signin-primarybutton = Увайсці або зарэгістравацца
+firefoxview-syncedtabs-signin-header-2 = Ваш { -brand-product-name } на ўсіх вашых прыладах
+firefoxview-syncedtabs-signin-description-2 = Каб пабачыць адкрытыя карткі на тэлефоне і іншых прыладах, увайдзіце ў сістэму або зарэгіструйцеся. З уліковым запісам вы таксама можаце сінхранізаваць свае паролі, гісторыю і многае іншае.
+firefoxview-syncedtabs-signin-primarybutton-2 = Увайсці
 firefoxview-tabpickup-adddevice-header = Сінхранізуйце { -brand-product-name } на сваім тэлефоне або планшэце
 firefoxview-tabpickup-adddevice-description = Сцягніце { -brand-product-name } для мабільнага і ўвайдзіце там.
 firefoxview-tabpickup-adddevice-learn-how = Даведацца, як
 firefoxview-tabpickup-adddevice-primarybutton = Атрымаць { -brand-product-name } для мабільнага
-firefoxview-syncedtabs-adddevice-header = Увайдзіце ў { -brand-product-name } на іншых сваіх прыладах
-firefoxview-syncedtabs-adddevice-description = Каб бачыць свае карткі ўсюды, дзе вы карыстаецеся { -brand-product-name }, увайдзіце ва ўліковы запіс на ўсіх сваіх прыладах. Даведайцеся, як <a data-l10n-name="url">падключыць дадатковыя прылады</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Захоплівайце карткі адусюль
+firefoxview-syncedtabs-adddevice-description-2 = Увайдзіце ў { -brand-product-name } на сваім тэлефоне або іншым камп'ютары, каб убачыць тут карткі. Даведайцеся, як <a data-l10n-name="url">падключыць дадатковыя прылады</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Паспрабаваць { -brand-product-name } для мабільных прылад
 firefoxview-tabpickup-synctabs-header = Уключыць сінхранізацыю картак
 firefoxview-tabpickup-synctabs-description = Дазволіць { -brand-short-name } дзяліцца карткамі паміж прыладамі.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Даведацца, як
 firefoxview-tabpickup-synctabs-primarybutton = Сінхранізаваць адкрытыя карткі
 firefoxview-syncedtabs-synctabs-header = Абнавіце налады сінхранізацыі
 firefoxview-syncedtabs-synctabs-description = Каб бачыць карткі з іншых прылад, трэба сінхранізаваць адкрытыя карткі.
-firefoxview-syncedtabs-synctabs-checkbox = Дазволіць сінхранізацыю адкрытых картак
 firefoxview-syncedtabs-loading-header = Ідзе сінхранізацыя
 firefoxview-syncedtabs-loading-description = Па заканчэнні вы ўбачыце ўсе карткі, адкрытыя на іншых прыладах. Праверце пазней.
 firefoxview-tabpickup-fxa-admin-disabled-header = У ваша арганізацыі сінхранізацыя адключана
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Нядаўна закрытыя
 firefoxview-closed-tabs-description2 = Паўторна адкрыць старонкі, якія вы закрылі ў гэтым акне.
 firefoxview-closed-tabs-placeholder-header = Няма нядаўна закрытых картак
 firefoxview-closed-tabs-placeholder-body = Калі вы закрыеце картку ў гэтым акне, яе можна атрымаць тут.
-firefoxview-closed-tabs-placeholder-body2 = Калі вы закрыеце картку, яе можна атрымаць тут.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -117,6 +113,8 @@ firefoxview-history-nav = Гісторыя
 firefoxview-history-header = Гісторыя
 firefoxview-history-context-delete = Выдаліць з гісторыі
     .accesskey = ы
+firefoxview-history-context-forget-site = Забыць гэты сайт…
+    .accesskey = а
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
@@ -148,8 +146,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Акно { $winID } (бягучае)
-firefoxview-opentabs-focus-tab =
-    .title = Пераключыцца ў гэту картку
 firefoxview-show-more = Паказаць больш
 firefoxview-show-less = Паказаць менш
 firefoxview-show-all = Паказаць усе
@@ -161,12 +157,15 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Шукаць у гісторыі
+# Placeholder for the input field to search in bookmarks ("search" is a verb).
+firefoxview-search-text-box-bookmarks =
+    .placeholder = Пошук у закладках
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Шукаць у нядаўна закрытых картках
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Шукаць у сінхранізаваных картках
+firefoxview-search-text-box-tabs =
+    .placeholder = Шукаць у картках
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Шукаць у адкрытых картках
@@ -190,10 +189,6 @@ firefoxview-sort-history-by-date-label = Сартаваць па даце
 firefoxview-sort-history-by-site-label = Сартаваць па сайтах
 firefoxview-sort-open-tabs-by-recency-label = Сартаваць па апошняй актыўнасці
 firefoxview-sort-open-tabs-by-order-label = Сартаваць па парадку картак
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Пераключыцца на { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -210,7 +205,6 @@ firefoxview-history-site-localhost = (лакальныя файлы)
 ##
 
 firefoxview-show-all-history = Паказаць усю гісторыю
-firefoxview-view-more-browsing-history = Паглядзець больш гісторыі аглядання
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -226,9 +220,8 @@ firefoxview-choose-browser-button = Выбраць браўзер
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Няма чаго паказаць
-firefoxview-dont-remember-history-empty-description = Ахова вашай прыватнасці з'яўляецца сутнасцю нашай дзейнасці. Вось чаму вы можаце кантраляваць дзеянні, якія запамінае { -brand-short-name }.
-firefoxview-dont-remember-history-empty-description-two = Зыходзячы з вашых цяперашніх налад, { -brand-short-name } не запамінае вашы дзеянні ў часе аглядання. Каб змяніць гэта, <a data-l10n-name="history-settings-url-two">змяніце налады гісторыі, каб запамінаць яе</a>.
+firefoxview-dont-remember-history-empty-header-2 = Вы самі кіруеце тым, што запамінае { -brand-short-name }
+firefoxview-dont-remember-history-empty-description-one = На дадзены момант { -brand-short-name } не запамінае вашу дзейнасць у сеціве. Каб змяніць гэта, <a data-l10n-name="history-settings-url-two">абнавіце налады гісторыі</a>.
 
 ##
 
@@ -253,7 +246,7 @@ firefoxview-recentlyclosed-empty-description-two = Каб знайсці даў�
 firefoxview-syncedtabs-device-notabs = На гэтай прыладзе няма адкрытых картак
 firefoxview-syncedtabs-connect-another-device = Злучыць іншую прыладу
 firefoxview-pinned-tabs =
-    .title = Прышпіленыя карткі
+    .title = Замацаваныя карткі
 firefoxview-tabs =
     .title = Карткі
 

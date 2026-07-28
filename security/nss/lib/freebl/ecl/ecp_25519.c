@@ -91,7 +91,7 @@ ec_Curve25519_pt_validate(const SECItem *px)
 }
 
 /*
- * scalar validation is not necessary. 
+ * scalar validation is not necessary.
  */
 SECStatus
 ec_Curve25519_scalar_validate(const SECItem *scalar)
@@ -131,10 +131,13 @@ ec_Curve25519_pt_mul(SECItem *X, SECItem *k, SECItem *P)
     if (k->len != 32) {
         return SECFailure;
     }
-
+#ifndef UNSAFE_FUZZER_MODE
     SECStatus rv = ec_Curve25519_mul(X->data, k->data, px);
     if (NSS_SecureMemcmpZero(X->data, X->len) == 0) {
         return SECFailure;
     }
     return rv;
+#else
+    return px != NULL;
+#endif
 }

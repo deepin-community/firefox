@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -27,11 +26,11 @@ var throwDesc = {
 Object.defineProperty(proto, "0", throwDesc);
 Object.defineProperty(proto, "1", throwDesc);
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA([42, 1]);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg([42, 1]));
 
   assert.sameValue(sample["0"], 42);
   assert.sameValue(sample["1"], 1);
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

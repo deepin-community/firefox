@@ -6,11 +6,17 @@
  * correctly, without stretching
  */
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function () {
   await BrowserTestUtils.withNewTab(
     {
       gBrowser,
-      url: "about:logo",
+      url: getRootDirectory(gTestPath) + "large.png",
     },
     async () => {
       const dialogLoad = BrowserTestUtils.domWindowOpened(null, async win => {

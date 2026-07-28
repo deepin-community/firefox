@@ -41,7 +41,7 @@ detail-version =
 detail-last-updated =
     .label = Санаи навсозии охирин
 addon-detail-description-expand = Бештар нишон диҳед
-addon-detail-description-collapse = Камтар нишон диҳед
+addon-detail-description-collapse = Камтар нишон додан
 detail-contributions-description = Барномасози ин ҷузъи иловагӣ мепурсад, ки шумо рушди минбаъдаи барномаро бо саҳмгузории андак дастгирӣ намоед.
 detail-contributions-button = Мусоидат
     .title = Барои рушди минбаъдаи ин ҷузъи иловагӣ мусоидат намоед
@@ -62,16 +62,16 @@ detail-private-browsing-label = Иҷро кардан дар равзанаҳо�
 # Some add-ons may elect to not run in private windows by setting incognito: not_allowed in the manifest.  This
 # cannot be overridden by the user.
 detail-private-disallowed-label = Дар равзанаҳои хусусӣ иҷозат дода намешавад
-detail-private-disallowed-description2 = Ин васеъшавӣ дар реҷаи тамошокунии хусусӣ иҷро намешавад. <a data-l10n-name="learn-more">Маълумоти бештар</a>
+detail-private-disallowed-description2 = Ин васеъшавӣ дар реҷаи тамошобинии хусусӣ иҷро намешавад. <a data-l10n-name="learn-more">Маълумоти бештар</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Дастрасӣ ба равзанаҳои хусусӣ лозим аст
-detail-private-required-description2 = Ин васеъшавӣ дар реҷаи тамошокунии хусусӣ дорои қобили дастрасӣ ба фаъолияти шумо дар Интернет мебошад. <a data-l10n-name="learn-more">Маълумоти бештар</a>
+detail-private-required-description2 = Ин васеъшавӣ дар реҷаи тамошобинии хусусӣ дорои қобили дастрасӣ ба фаъолияти шумо дар Интернет мебошад. <a data-l10n-name="learn-more">Маълумоти бештар</a>
 detail-private-browsing-on =
     .label = Иҷозат додан
-    .tooltiptext = Фаъол кардан дар тамошокунии хусусӣ
+    .tooltiptext = Фаъол кардан дар тамошобинии хусусӣ
 detail-private-browsing-off =
     .label = Иҷозат дода нашавад
-    .tooltiptext = Ғайрифаъол кардан дар тамошокунии хусусӣ
+    .tooltiptext = Ғайрифаъол кардан дар тамошобинии хусусӣ
 detail-home =
     .label = Саҳифаи асосӣ
 detail-home-value =
@@ -117,11 +117,13 @@ legacy-extensions =
     .value = Васеъшавиҳои қуҳнашуда
 legacy-extensions-description = Васеъшавиҳои мазкур ба стандартҳои ҷории «{ -brand-short-name }» мувофиқат намекунанд ва аз ин боис онҳо ғайрифаъол карда шудаанд. <label data-l10n-name="legacy-learn-more">Дар бораи тағйироти воридшуда ба васеъшавиҳо маълумоти бештар гиред</label>
 private-browsing-description2 =
-    «{ -brand-short-name }» тарзи кори васеъшавиҳоро дар реҷаи тамошокунии хусусӣ иваз мекунад. Ҳар гуна васеъшавии наве, ки шумо ба «{ -brand-short-name }» илова мекунед,
-    дар равзанаи хусусӣ ба сурати пешфарз иҷро намешавад. То вақте ки шумо ба он дар танзимот иҷозат надиҳед, васеъшавӣ дар реҷаи тамошокунии хусусӣ иҷро намешавад
+    «{ -brand-short-name }» тарзи кори васеъшавиҳоро дар реҷаи тамошобинии хусусӣ иваз мекунад. Ҳар гуна васеъшавии наве, ки шумо ба «{ -brand-short-name }» илова мекунед,
+    дар равзанаи хусусӣ ба сурати пешфарз иҷро намешавад. То вақте ки шумо ба он дар танзимот иҷозат надиҳед, васеъшавӣ дар реҷаи тамошобинии хусусӣ иҷро намешавад
     ва ба фаъолияти шумо дар Интернет дастрасӣ пайдо намекунад.
-    Мо барои таъмини тамошокунии хусусии шумо дар Интернет, ин тағйирот ворид кардем.
+    Мо барои таъмини тамошобинии хусусии шумо дар Интернет, ин тағйирот ворид кардем.
     <label data-l10n-name="private-browsing-learn-more">Дар бораи идоракунии танзимоти васеъшавӣ маълумоти бештар гиред</label>
+aboutaddons-sidebar =
+    .heading = Ҷузъҳои иловагӣ
 addon-category-discover = Тавсияҳо
 addon-category-discover-title =
     .title = Тавсияҳо
@@ -172,6 +174,8 @@ extensions-warning-update-security-button = Фаъол кардан
 extensions-warning-imported-addons2 =
     .message = Лутфан, насби васеъшавиҳоеро, ки ба «{ -brand-short-name }» ворид карда шудаанд, ба анҷом расонед.
 extensions-warning-imported-addons-button = Насби васеъшавиҳо
+extensions-warning-safe-mode3 =
+    .message = Ҳамаи ҷузъҳои иловагӣ тавассути «Реҷаи ислоҳи нуқсонҳо» ғайрифаъол карда шудаанд.
 
 ## Strings connected to add-on updates
 
@@ -207,6 +211,10 @@ addon-updates-manual-updates-found = Дидани навсозиҳои даст�
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Насб кардани ҷузъи иловагӣ аз файл…
+    .accesskey = Н
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Насб ё навсозӣ кардани ҷузъи иловагӣ аз файл…
     .accesskey = Н
 addon-install-from-file-dialog-title = Ҷузъи иловагиеро барои насб интихоб намоед
 addon-install-from-file-filter-name = Ҷузъҳои иловагӣ
@@ -254,7 +262,7 @@ shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Намоиш додани { $numberToShow } дигар
     }
-shortcuts-card-collapse-button = Камтар нишон диҳед
+shortcuts-card-collapse-button = Камтар нишон додан
 header-back-button =
     .title = Бозгашт
 
@@ -275,6 +283,16 @@ discopane-notice-recommendations2 =
         Баъзе аз ин тавсияҳо шахсӣ карда шудаанд. Онҳо дар омори истифодабарӣ, бартариҳои
         профил ва васеъшавиҳои дигаре, ки шумо насб кардед, асос меёбанд.
 discopane-notice-learn-more = Маълумоти бештар
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Мавзуъҳои нақшу нигори шумо тоза карда шудаанд.
+    .message = «{ -brand-product-name }» маҷмуаи нақшу нигорҳоро нав кард. Мо версия(ҳои) куҳнаро аз рӯйхати «Мавзуъҳои нигоҳдошташуда»-и шумо тоза кардем. Шаклҳои нави онҳоро дар сомонаи ҷузъҳои иловагӣ гиред.
+colorway-removal-notice-learn-more = Маълумоти бештар
+colorway-removal-notice-button = Мавзуъҳои нақшу нигори навшударо гиред
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Танзимоти тазоди экрани «Windows»-и шумо танзимоти мавзуҳои «{ -brand-short-name }»-ро иваз мекунад. Барои истифодаи мавзуъҳо дар «{ -brand-short-name }», ин танзимотро хомӯш кунед.
 privacy-policy = Сиёсати махфият
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -295,6 +313,16 @@ find-more-themes = Гирифтани мавзуъҳои бештар
 # used for screen readers.
 addon-options-button =
     .aria-label = Имконоти бештар
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Васеъшавиҳо ва мавзуъҳо ба шумо барои татбиқи танзимоти шахсӣ дар «{ -brand-product-name }» имкон медиҳанд.
+    Онҳо метавонанд махфияти шуморо афзоиш диҳанд, расонаҳоро беҳтар кунанд, намуди зоҳирии «{ -brand-product-name }» иваз кунанд
+    ва имкониятҳои дигар пешниҳод намоянд. Ин барномаҳои нармафзории хурд  аксари вақт аз ҷониби тарафҳои сеюм таҳия карда
+    мешаванд. Дар ин маҷмуъ аз ҷониби «Firefox» чизҳои беҳтарин барои амнияти махсус, самаранокӣ ва қобилиятнокӣ
+    <a data-l10n-name="learn-more-trigger">тавсия дода мешаванд</a>.
 
 ## Add-on actions
 
@@ -381,10 +409,14 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Дар равзанаҳои хусусӣ иҷозат дода мешавад
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Дар равзанаҳои хусусӣ иҷозат дода мешавад
     .aria-label = { addon-badge-private-browsing-allowed2.title }
-addon-detail-private-browsing-help = Агар иҷозат бошад, васеъшавӣ дар реҷаи тамошокунии хусусӣ дорои қобили дастрасӣ ба фаъолияти шумо дар Интернет мебошад. <a data-l10n-name="learn-more">Маълумоти бештар</a>
+addon-detail-private-browsing-help = Агар иҷозат бошад, васеъшавӣ дар реҷаи тамошобинии хусусӣ дорои қобили дастрасӣ ба фаъолияти шумо дар Интернет мебошад. <a data-l10n-name="learn-more">Маълумоти бештар</a>
 addon-detail-private-browsing-allow = Иҷозат додан
 addon-detail-private-browsing-disallow = Иҷозат дода нашавад
 # aria-label associated to the private browsing row to help screen readers to announce the group
@@ -418,8 +450,26 @@ addon-badge-line3 =
     .title = Васеъшавии расмие, ки аз тарафи «Mozilla» эҷод карда шудааст. Ба стандартҳои мо оид ба амният ва самаранокӣ ҷавобгӯ мебошад
     .aria-label = { addon-badge-line3.title }
 addon-badge-verified2 =
-    .title = Ин васеъшавӣ нисбат ба мувофиқат ба стандартҳои мо оида ба амният ва самаранокӣ тасдиқ карда шудааст
+    .title = Ин васеъшавӣ нисбат ба мувофиқат ба стандартҳои мо оид ба амният ва самаранокӣ тасдиқ карда шудааст
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Васеъшавии расмие, ки аз тарафи «Mozilla» эҷод карда шудааст. Ба стандартҳои мо оид ба амният ва самаранокӣ ҷавобгӯ мебошад
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Ин васеъшавӣ нисбат ба мувофиқат ба стандартҳои амният ва самаранокӣ баррасӣ карда шудааст
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Браузери «Firefox» танҳо он васеъшавиҳоро тавсия медиҳад, ки ба стандартҳои амният ва самаранокӣ ҷавобгӯ мебошанд
 
 ##
 
@@ -427,6 +477,10 @@ available-updates-heading = Навсозиҳои дастрас
 recent-updates-heading = Навсозиҳои охирин
 release-notes-loading = Бор шуда истодааст…
 release-notes-error = Мутаассифона, ҳангоми боркунии тавзеҳоти релиз хато ба миён омад.
+addon-permissions-heading = Иҷозатҳо
+addon-permissions-empty2 = Ин васеъшавӣ ягон иҷозатро талаб намекунад.
+addon-permissions-required-label = Ҳатмӣ аст:
+addon-permissions-optional-label = Интихобӣ аст:
 addon-permissions-empty = Ин васеъшавӣ ягон иҷозатро талаб намекунад
 addon-permissions-required = Иҷозатҳои лозимӣ барои фаъолияти асосӣ:
 addon-permissions-optional = Иҷозатҳои ихтиёрӣ барои фаъолияти иловагӣ:
@@ -454,6 +508,9 @@ shortcuts-heading = Идоракунии миёнбурҳои васеъшавӣ
 default-heading-search-label = Ёфтани ҷузъҳои иловагии бештар
 addons-heading-search-input =
     .placeholder = Ҷустуҷӯ дар addons.mozilla.org
+addons-heading-search-button =
+    .title = Ҷустуҷӯ дар addons.mozilla.org
+    .aria-label = Ҷустуҷӯ дар addons.mozilla.org
 addon-page-options-button =
     .title = Абзорҳо барои ҳамаи ҷузъҳои иловагӣ
 
@@ -476,14 +533,32 @@ details-notification-unsigned-and-disabled-link = Маълумоти бешта�
 details-notification-unsigned = Истифодаи «{ $name }» дар «{ -brand-short-name }» тасдиқ карда нашуд. Бо эҳтиёт истифода баред.
 details-notification-unsigned2 =
     .message = Истифодаи «{ $name }» дар «{ -brand-short-name }» тасдиқ карда нашуд. Бо эҳтиёт истифода баред.
+details-notification-hard-blocked-extension =
+    .message = Ин васеъшавӣ ба сабаби вайрон кардани сиёсатҳои «Mozilla» манъ карда шуд ва ғайрифаъол шудааст.
+details-notification-hard-blocked-other =
+    .message = Ин ҷузъи иловагӣ ба сабаби вайрон кардани сиёсатҳои «Mozilla» манъ карда шуд ва ғайрифаъол шудааст.
 details-notification-unsigned-link = Маълумоти бештар
 details-notification-blocked = Ба сабабҳои мушкилиҳои амниятӣ ё ноустувории кор, { $name } ғайрифаъол карда шуд.
-details-notification-blocked2 =
-    .message = Ба сабабҳои мушкилиҳои амниятӣ ё ноустувории кор, { $name } ғайрифаъол карда шуд.
+details-notification-blocked-link2 = Дидани тафсилот
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Ин васеъшавӣ маҳдуд шудааст ва ҳам ғайрифаъол шудааст. Шумо метавонед онро фаъол созед, аммо ин метавонад хатарнок бошад.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Ин васеъшавӣ маҳдуд шудааст. Истифодаи он метавонад хатарнок бошад.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Ин ҷузъи иловагӣ маҳдуд шудааст ва пас ғайрифаъол шудааст. Шумо метавонед онро фаъол созед, аммо ин метавонад хатарнок бошад.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Ин ҷузъи иловагӣ маҳдуд шудааст. Истифодаи он метавонад хатарнок бошад.
+details-notification-soft-blocked-extension-disabled =
+    .message = Ин васеъшавӣ ба сабаби вайрон кардани сиёсатҳои «Mozilla» маҳдуд карда шуд ва ғайрифаъол шудааст. Шумо метавонед онро фаъол созед, аммо ин метавонад хатарнок бошад.
+details-notification-soft-blocked-extension-enabled =
+    .message = Ин васеъшавӣ сиёсати «Mozilla»-ро вайрон мекунад. Истифодаи он метавонад хатарнок бошад.
+details-notification-soft-blocked-other-disabled =
+    .message = Ин ҷузъи иловагӣ ба сабаби вайрон кардани сиёсатҳои «Mozilla» маҳдуд карда шуд ва ғайрифаъол шудааст. Шумо метавонед онро фаъол созед, аммо ин метавонад хатарнок бошад.
+details-notification-soft-blocked-other-enabled =
+    .message = Ин ҷузъи иловагӣ сиёсати «Mozilla»-ро вайрон мекунад. Истифодаи он метавонад хатарнок бошад.
+details-notification-softblocked-link2 = Дидани тафсилот
 details-notification-blocked-link = Маълумоти бештар
 details-notification-softblocked = { $name } мушкилиҳои амниятӣ ва ноустувории корро ба вуҷуд меорад.
-details-notification-softblocked2 =
-    .message = { $name } мушкилиҳои амниятӣ ва ноустувории корро ба вуҷуд меорад.
 details-notification-softblocked-link = Маълумоти бештар
 details-notification-gmp-pending = { $name } ба зудӣ насб карда мешавад.
 details-notification-gmp-pending2 =
@@ -497,3 +572,45 @@ plugins-openh264-name = Кодеки видеоии «OpenH264» аз тараф
 plugins-openh264-description = Барои мувофиқат кардан ба хусусиятҳои «WebRTC» ва фаъол кардани зангҳои «WebRTC» бо дастгоҳҳое, ки кодеки видеоии «H.264»-ро талаб мекунанд, ин плагин аз тарафи «Mozilla» ба таври худкор насб карда мешавад. Барои дидани рамзи манбаи кодек ва гирифтани маълумоти муфассал оид ба амалисозӣ, ба сомонаи https://www.openh264.org/ ворид шавед.
 plugins-widevine-name = Плагини рамзкушоии муҳтавои «Widevine» аз тарафи Google Inc.
 plugins-widevine-description = Ин плагин пахшкунии расонаи рамзгузоришударо мувофиқи талаботи «Encrypted Media Extensions» фаъол мекунад. Одатан, расонаи рамзгузоришуда аз тарафи сомонаҳо барои муҳофизат кардани муҳтавои мултимедиаи пулакӣ бар зидди нусхабардорӣ истифода мешавад. Барои гирифтани маълумоти бештар оид ба «Encrypted Media Extensions», ба сомонаи https://www.w3.org/TR/encrypted-media/ ворид шавед.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Ҷамъоварии маълумоти зарурӣ:
+addon-permissions-optional-data-collection = Ҷамъоварии маълумоти иловагӣ:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Иҷозатҳо ва маълумот
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Аз ҷониби васеъшавии «{ $extensionName }» истифода мешавад
+addon-permissions-data-collection-heading = Ҷамъоварии маълумот
+addon-permissions-data-collection-empty = Барномасоз хабар медиҳад, ки ин васеъшавӣ ҷамъоварии маълумотро талаб намекунад.
+addon-data-collection-provided = Маълумот аз ҷониби таҳиягари васеъшавӣ пешниҳод карда шудааст
+addon-data-collection-learnmore = Маълумоти бештар дар бораи ҷамъоварии маълумот
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = «{ -brand-short-name }» инро дар «about:inference» истифода мебарад
+mlmodel-link-preview = «{ -brand-short-name }» инро барои эҷод кардани нуқтаҳои асосӣ ҳангоми пешнамоиши пайвандҳо истифода мебарад
+mlmodel-pdfjs = «{ -brand-short-name }» инро барои эҷод кардани матни иловагӣ дар тасвирҳое, ки шумо ба файлҳои «PDF» илова мекунед, истифода мебарад
+mlmodel-smart-tab-topic-engine = «{ -brand-short-name }» инро барои пешниҳод кардани номҳо дар гурӯҳҳои варақаҳои шумо истифода мебарад
+mlmodel-smart-tab-embedding-engine = «{ -brand-short-name }» инро барои пешниҳод кардани варақаҳо дар гурӯҳҳои варақаҳои шумо истифода мебарад
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = Зеҳни сунъӣ (AI) дар дастгоҳ
+addon-category-mlmodel-title =
+    .title = Зеҳни сунъӣ (AI) дар дастгоҳ
+mlmodel-heading = Идоракунии моделҳои зеҳни сунъӣ (AI) дар дастгоҳ
+mlmodel-description = Баъзе хусусиятҳо ва васеъшавиҳо дар «{ -brand-short-name }» дар асоси моделҳои зеҳни сунъӣ (AI) сохта шудаанд, ки дар дастгоҳи шумо ба таври маҳаллӣ кор мекунанд. Ин равиш махфияти шуморо муҳофизат мекунад ва дар бисёр мавридҳо иҷроишро суръат мебахшад. <a data-l10n-name="learn-more">Маълумоти бештар</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Тоза кардан
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Андозаи файл
+mlmodel-addon-detail-last-used-label = Истифодашудаи охирин
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Истифода аз ҷониби
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Корти модел
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Намоиш додан дар «Hugging Face»

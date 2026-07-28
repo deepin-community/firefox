@@ -36,7 +36,7 @@ about-reader-estimated-read-time =
        *[other] { $range } minuta
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Smanji veličinu fonta
@@ -55,11 +55,11 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = Serifni
 about-reader-font-type-sans-serif = Bezserifni
-about-reader-font-type-monospace = Monospace
+about-reader-font-type-monospace = Fiksne širine
 
 ## Reader View toolbar buttons
 
-about-reader-toolbar-close = Zatvori pregled čitača
+about-reader-toolbar-close = Zatvori prikaz čitača
 about-reader-toolbar-type-controls = Kontrole tipova
 about-reader-toolbar-text-layout-controls = Tekst i raspored
 about-reader-toolbar-theme-controls = Tema
@@ -75,19 +75,24 @@ about-reader-customtheme-tab = Prilagođeno
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Tekst
+about-reader-reset-button = Obnovi standardne vrijednosti
+about-reader-custom-colors-foreground2 =
+    .label = Tekst
     .title = Uredi boju
-about-reader-custom-colors-background = Pozadina
+about-reader-custom-colors-background2 =
+    .label = Pozadina
     .title = Uredi boju
-about-reader-custom-colors-unvisited-links = Neposjećene poveznice
+about-reader-custom-colors-unvisited-links2 =
+    .label = Neposjećene poveznice
     .title = Uredi boju
-about-reader-custom-colors-visited-links = Posjećene poveznice
+about-reader-custom-colors-visited-links2 =
+    .label = Posjećene poveznice
     .title = Uredi boju
-about-reader-custom-colors-selection-highlight = Marker za čitanje naglas
+about-reader-custom-colors-selection-highlight2 =
+    .label = Marker za čitanje naglas
     .title = Uredi boju
-about-reader-reset-button = Obnovi standardne
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Tekst
 about-reader-text-size-label = Veličina teksta
@@ -98,7 +103,7 @@ about-reader-font-weight-regular = Normalno
 about-reader-font-weight-bold = Podebljano
 about-reader-layout-header = Raspored
 about-reader-slider-label-spacing-standard = Standardno
-about-reader-slider-label-spacing-wide = Širok
+about-reader-slider-label-spacing-wide = Široko
 about-reader-content-width-label =
     .label = Širina sadržaja
 about-reader-line-spacing-label =
@@ -115,3 +120,5 @@ about-reader-text-alignment-center =
     .title = Centriraj tekst
 about-reader-text-alignment-right =
     .title = Poravnaj tekst desno
+about-reader-text-alignment-justify =
+    .title = Poravnaj tekst

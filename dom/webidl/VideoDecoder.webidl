@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,9 +6,9 @@
  * https://w3c.github.io/webcodecs/#videodecoder
  */
 
-[Exposed=(Window,DedicatedWorker), SecureContext, Pref="dom.media.webcodecs.enabled"]
+[Exposed=(Window,DedicatedWorker), SecureContext, Func="nsRFPService::ExposeWebCodecsAPI"]
 interface VideoDecoder : EventTarget {
-  [Throws]
+  [Throws, UseCounter]
   constructor(VideoDecoderInit init);
 
   readonly attribute CodecState state;
@@ -45,8 +44,7 @@ dictionary VideoDecoderSupport {
 
 dictionary VideoDecoderConfig {
   required DOMString codec;
-  // Bug 1696216: Should be [AllowShared] BufferSource description;
-  ([AllowShared] ArrayBufferView or [AllowShared] ArrayBuffer) description;
+  AllowSharedBufferSource description;
   [EnforceRange] unsigned long codedWidth;
   [EnforceRange] unsigned long codedHeight;
   [EnforceRange] unsigned long displayAspectWidth;

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -48,6 +46,10 @@ static_assert(MEMFD_CREATE_NR == SYS_memfd_create,
 #ifndef MFD_CLOEXEC
 #  define MFD_CLOEXEC 0x0001U
 #  define MFD_ALLOW_SEALING 0x0002U
+#endif
+
+#ifndef MFD_NOEXEC_SEAL
+#  define MFD_NOEXEC_SEAL 0x0008U
 #endif
 
 #ifndef F_ADD_SEALS

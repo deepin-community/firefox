@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,6 +13,7 @@
 #include "mozilla/gfx/BaseSize.h"  // for BaseSize
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/Logging.h"  // for gfxCriticalError
+#include "mozilla/layers/Fence.h"
 #include "mozilla/layers/ISurfaceAllocator.h"
 #include "mozilla/webrender/RenderEGLImageTextureHost.h"
 #include "mozilla/webrender/WebRenderAPI.h"
@@ -81,6 +80,11 @@ already_AddRefed<TextureHost> CreateTextureHostOGL(
 #endif
 
     case SurfaceDescriptor::TEGLImageDescriptor: {
+      if (aDeallocator && !aDeallocator->IsSameProcess()) {
+        gfxCriticalError()
+            << "EGLImageDescriptor must only be used in same process";
+        return nullptr;
+      }
       const EGLImageDescriptor& desc = aDesc.get_EGLImageDescriptor();
       result = new EGLImageTextureHost(aFlags, (EGLImage)desc.image(),
                                        (EGLSync)desc.fence(), desc.size(),
@@ -109,6 +113,11 @@ already_AddRefed<TextureHost> CreateTextureHostOGL(
 #endif
 
     case SurfaceDescriptor::TSurfaceDescriptorSharedGLTexture: {
+      if (aDeallocator && !aDeallocator->IsSameProcess()) {
+        gfxCriticalError() << "SurfaceDescriptorSharedGLTexture must only be "
+                              "used in same process";
+        return nullptr;
+      }
       const auto& desc = aDesc.get_SurfaceDescriptorSharedGLTexture();
       result =
           new GLTextureHost(aFlags, desc.texture(), desc.target(),
@@ -571,10 +580,22 @@ void SurfaceTextureHost::PushResourceUpdates(
         wr::ImageBufferKind::TextureExternalBT709);
   }
 
+  // Hardware webrender directly renders from the SurfaceTexture therefore we
+  // must provide it the (transformed) normalized UVs. For software webrender we
+  // first read from the SurfaceTexture in to a CPU buffer, which we sample from
+  // using unnormalized UVs. The readback code handles the texture transform.
+  // See RenderAndroidSurfaceTextureHost::Lock() and
+  // RenderAndroidSurfaceTextureHost::ReadTexImage(), respectively.
+  const bool normalizedUvs =
+      aResources.GetBackendType() == WebRenderBackend::HARDWARE;
+
   switch (GetFormat()) {
     case gfx::SurfaceFormat::R8G8B8X8:
     case gfx::SurfaceFormat::R8G8B8A8: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
+      if (aImageKeys.length() != 1) {
+        MOZ_ASSERT_UNREACHABLE("unexpected to be called");
+        return;
+      }
 
       // XXX Add RGBA handling. Temporary hack to avoid crash
       // With BGRA format setting, rendering works without problem.
@@ -582,7 +603,8 @@ void SurfaceTextureHost::PushResourceUpdates(
                         ? gfx::SurfaceFormat::B8G8R8A8
                         : gfx::SurfaceFormat::B8G8R8X8;
       wr::ImageDescriptor descriptor(GetSize(), format);
-      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                           normalizedUvs);
       break;
     }
     default: {
@@ -607,7 +629,10 @@ void SurfaceTextureHost::PushDisplayItems(wr::DisplayListBuilder& aBuilder,
     case gfx::SurfaceFormat::R8G8B8A8:
     case gfx::SurfaceFormat::B8G8R8A8:
     case gfx::SurfaceFormat::B8G8R8X8: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
+      if (aImageKeys.length() != 1) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length");
+        return;
+      }
       aBuilder.PushImage(aBounds, aClip, true, false, aFilter, aImageKeys[0],
                          !(mFlags & TextureFlags::NON_PREMULTIPLIED),
                          wr::ColorF{1.0f, 1.0f, 1.0f, 1.0f},
@@ -652,19 +677,18 @@ bool AndroidHardwareBufferTextureSource::EnsureEGLImage() {
   }
 
   auto fenceFd = mAndroidHardwareBuffer->GetAndResetAcquireFence();
-  if (fenceFd.IsValid()) {
+  if (fenceFd) {
     const auto& gle = gl::GLContextEGL::Cast(mGL);
     const auto& egl = gle->mEgl;
 
-    auto rawFD = fenceFd.TakePlatformHandle();
     const EGLint attribs[] = {LOCAL_EGL_SYNC_NATIVE_FENCE_FD_ANDROID,
-                              rawFD.get(), LOCAL_EGL_NONE};
+                              fenceFd.get(), LOCAL_EGL_NONE};
 
     EGLSync sync =
         egl->fCreateSync(LOCAL_EGL_SYNC_NATIVE_FENCE_ANDROID, attribs);
     if (sync) {
       // Release fd here, since it is owned by EGLSync
-      Unused << rawFD.release();
+      (void)fenceFd.release();
 
       if (egl->IsExtensionSupported(gl::EGLExtension::KHR_wait_sync)) {
         egl->fWaitSync(sync, 0);
@@ -809,28 +833,19 @@ void AndroidHardwareBufferTextureHost::DeallocateDeviceData() {
   mAndroidHardwareBuffer = nullptr;
 }
 
-void AndroidHardwareBufferTextureHost::SetAcquireFence(
-    mozilla::ipc::FileDescriptor&& aFenceFd) {
-  if (!mAndroidHardwareBuffer) {
+void AndroidHardwareBufferTextureHost::SetReadFence(Fence* aReadFence) {
+  MOZ_ASSERT(aReadFence);
+  MOZ_ASSERT(aReadFence->AsFenceFileHandle());
+  MOZ_ASSERT(mAndroidHardwareBuffer);
+
+  if (!aReadFence || !aReadFence->AsFenceFileHandle() ||
+      !mAndroidHardwareBuffer) {
     return;
   }
-  mAndroidHardwareBuffer->SetAcquireFence(std::move(aFenceFd));
-}
 
-void AndroidHardwareBufferTextureHost::SetReleaseFence(
-    mozilla::ipc::FileDescriptor&& aFenceFd) {
-  if (!mAndroidHardwareBuffer) {
-    return;
-  }
-  mAndroidHardwareBuffer->SetReleaseFence(std::move(aFenceFd));
-}
-
-mozilla::ipc::FileDescriptor
-AndroidHardwareBufferTextureHost::GetAndResetReleaseFence() {
-  if (!mAndroidHardwareBuffer) {
-    return mozilla::ipc::FileDescriptor();
-  }
-  return mAndroidHardwareBuffer->GetAndResetReleaseFence();
+  UniqueFileHandle handle =
+      aReadFence->AsFenceFileHandle()->DuplicateFileHandle();
+  mAndroidHardwareBuffer->SetReleaseFence(std::move(handle));
 }
 
 void AndroidHardwareBufferTextureHost::CreateRenderTexture(
@@ -867,7 +882,10 @@ void AndroidHardwareBufferTextureHost::PushResourceUpdates(
   switch (GetFormat()) {
     case gfx::SurfaceFormat::R8G8B8X8:
     case gfx::SurfaceFormat::R8G8B8A8: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
+      if (aImageKeys.length() != 1) {
+        MOZ_ASSERT_UNREACHABLE("unexpected to be called");
+        return;
+      }
 
       // XXX Add RGBA handling. Temporary hack to avoid crash
       // With BGRA format setting, rendering works without problem.
@@ -875,7 +893,8 @@ void AndroidHardwareBufferTextureHost::PushResourceUpdates(
                         ? gfx::SurfaceFormat::B8G8R8A8
                         : gfx::SurfaceFormat::B8G8R8X8;
       wr::ImageDescriptor descriptor(GetSize(), format);
-      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
       break;
     }
     default: {
@@ -898,7 +917,10 @@ void AndroidHardwareBufferTextureHost::PushDisplayItems(
     case gfx::SurfaceFormat::R8G8B8A8:
     case gfx::SurfaceFormat::B8G8R8A8:
     case gfx::SurfaceFormat::B8G8R8X8: {
-      MOZ_ASSERT(aImageKeys.length() == 1);
+      if (aImageKeys.length() != 1) {
+        MOZ_ASSERT_UNREACHABLE("unexpected key length");
+        return;
+      }
       aBuilder.PushImage(aBounds, aClip, true, false, aFilter, aImageKeys[0],
                          !(mFlags & TextureFlags::NON_PREMULTIPLIED),
                          wr::ColorF{1.0f, 1.0f, 1.0f, 1.0f},
@@ -1024,14 +1046,19 @@ void EGLImageTextureHost::PushResourceUpdates(
 
   gfx::SurfaceFormat format = GetFormat();
 
-  MOZ_ASSERT(aImageKeys.length() == 1);
+  if (aImageKeys.length() != 1) {
+    MOZ_ASSERT_UNREACHABLE("unexpected to be called");
+    return;
+  }
+
   // XXX Add RGBA handling. Temporary hack to avoid crash
   // With BGRA format setting, rendering works without problem.
   auto formatTmp = format == gfx::SurfaceFormat::R8G8B8A8
                        ? gfx::SurfaceFormat::B8G8R8A8
                        : gfx::SurfaceFormat::B8G8R8X8;
   wr::ImageDescriptor descriptor(GetSize(), formatTmp);
-  (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+  (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                       /* aNormalizedUvs */ false);
 }
 
 void EGLImageTextureHost::PushDisplayItems(
@@ -1043,7 +1070,10 @@ void EGLImageTextureHost::PushDisplayItems(
   bool supportsExternalCompositing =
       SupportsExternalCompositing(aBuilder.GetBackendType());
 
-  MOZ_ASSERT(aImageKeys.length() == 1);
+  if (aImageKeys.length() != 1) {
+    MOZ_ASSERT_UNREACHABLE("unexpected key length");
+    return;
+  }
   aBuilder.PushImage(aBounds, aClip, true, false, aFilter, aImageKeys[0],
                      !(mFlags & TextureFlags::NON_PREMULTIPLIED),
                      wr::ColorF{1.0f, 1.0f, 1.0f, 1.0f},

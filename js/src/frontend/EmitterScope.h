@@ -1,21 +1,17 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #ifndef frontend_EmitterScope_h
 #define frontend_EmitterScope_h
 
+#include "mozilla/Attributes.h"
 #include "mozilla/Maybe.h"
 
 #include <stdint.h>
 
 #include "ds/Nestable.h"
 #include "frontend/AbstractScopePtr.h"
-#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
-#  include "frontend/BytecodeOffset.h"
-#endif
 #include "frontend/NameAnalysisTypes.h"
 #include "frontend/NameCollections.h"
 #include "frontend/Stencil.h"
@@ -36,7 +32,7 @@ class ModuleSharedContext;
 class TaggedParserAtomIndex;
 
 // A scope that introduces bindings.
-class EmitterScope : public Nestable<EmitterScope> {
+class MOZ_STACK_CLASS EmitterScope : public Nestable<EmitterScope> {
   // The cache of bound names that may be looked up in the
   // scope. Initially populated as the set of names this scope binds. As
   // names are looked up in enclosing scopes, they are cached on the
@@ -54,15 +50,12 @@ class EmitterScope : public Nestable<EmitterScope> {
 #ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
   mozilla::Maybe<UsingEmitter> usingEmitter_;
 
- public:
-  enum class IsSwitchBlock : uint8_t { No, Yes };
-
  private:
-  IsSwitchBlock isSwitchBlock_ = IsSwitchBlock::No;
+  BlockKind blockKind_ = BlockKind::Other;
 #endif
 
   // The number of enclosing environments. Used for error checking.
-  uint8_t environmentChainLength_;
+  uint16_t environmentChainLength_;
 
   // The next usable slot on the frame for not-closed over bindings.
   //
@@ -134,11 +127,11 @@ class EmitterScope : public Nestable<EmitterScope> {
 
   void dump(BytecodeEmitter* bce);
 
-  [[nodiscard]] bool enterLexical(
-      BytecodeEmitter* bce, ScopeKind kind, LexicalScope::ParserData* bindings
+  [[nodiscard]] bool enterLexical(BytecodeEmitter* bce, ScopeKind kind,
+                                  LexicalScope::ParserData* bindings
 #ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
-      ,
-      IsSwitchBlock isSwitchBlock = IsSwitchBlock::No
+                                  ,
+                                  BlockKind blockKind = BlockKind::Other
 #endif
   );
   [[nodiscard]] bool enterClassBody(BytecodeEmitter* bce, ScopeKind kind,
@@ -178,13 +171,7 @@ class EmitterScope : public Nestable<EmitterScope> {
   // a lexical scope and a module scope.
   [[nodiscard]] bool prepareForDisposableScopeBody(BytecodeEmitter* bce);
 
-  [[nodiscard]] bool emitSwitchBlockEndForDisposableScopeBodyEnd(
-      BytecodeEmitter* bce);
-
   [[nodiscard]] bool emitDisposableScopeBodyEnd(BytecodeEmitter* bce);
-
-  [[nodiscard]] bool emitDisposableScopeBodyEndForNonLocalJump(
-      BytecodeEmitter* bce);
 
  public:
   [[nodiscard]] bool prepareForModuleDisposableScopeBody(BytecodeEmitter* bce);
@@ -193,11 +180,11 @@ class EmitterScope : public Nestable<EmitterScope> {
 
   [[nodiscard]] bool prepareForDisposableAssignment(UsingHint hint);
 
-  [[nodiscard]] bool prepareForForOfLoopIteration();
-
-  [[nodiscard]] bool prepareForForOfIteratorCloseOnThrow();
-
   bool hasDisposables() const { return usingEmitter_.isSome(); }
+
+  bool hasAsyncDisposables() const {
+    return hasDisposables() && usingEmitter_->hasAwaitUsing();
+  }
 #endif
 
   // The first frame slot used.

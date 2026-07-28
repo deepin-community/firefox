@@ -1,5 +1,5 @@
 // META: title=ensure an MLOperand cannot be created with an invalid rank
-// META: global=window,dedicatedworker
+// META: global=window,worker
 // META: variant=?cpu
 // META: variant=?gpu
 // META: variant=?npu
@@ -11,6 +11,6 @@ promise_test(async t => {
   const shapeWithLargeRank = Array(10).fill(2);
   assert_throws_js(
       TypeError,
-      () => builder.input(
-          'a', {dataType: 'float32', dimensions: shapeWithLargeRank}));
+      () =>
+          builder.input('a', {dataType: 'float32', shape: shapeWithLargeRank}));
 }, 'Throw if rank is too large');

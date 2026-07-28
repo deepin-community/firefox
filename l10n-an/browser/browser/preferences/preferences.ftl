@@ -9,18 +9,28 @@ do-not-track-option-default-content-blocking-known =
 do-not-track-option-always =
     .label = Siempre
 managed-notice = Lo tuyo navegador ye chestionau per la tuya organización.
+managed-notice-nav =
+    .label = Lo tuyo navegador ye chestionau per la tuya organización.
 pane-general-title = Cheneral
 category-general =
     .tooltiptext = { pane-general-title }
 pane-home-title = Inicio
+pane-search-title2 = Mirar
+    .title = Mirar
+pane-privacy-title3 = Privacidat & Seguranza
+    .title = Privacidat & Seguranza
 category-home =
     .tooltiptext = { pane-home-title }
 pane-search-title = Mirar
 category-search =
     .tooltiptext = { pane-search-title }
+pane-privacy-section =
+    .heading = Privacidat & Seguranza
 pane-privacy-title = Privacidat & Seguranza
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+settings-pane-labs-title2 = { -firefoxlabs-brand-name }
+    .title = { -firefoxlabs-brand-name }
 pane-experimental-title = Experimentos de { -brand-short-name }
 category-experimental =
     .tooltiptext = Experimentos de { -brand-short-name }
@@ -29,6 +39,10 @@ pane-experimental-search-results-header = Experimentos de { -brand-short-name }:
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+help-button-label2 = Soporte de { -brand-short-name }
+    .title = Soporte de { -brand-short-name }
+addons-button-label2 = Extensions y temas
+    .title = Extensions y temas
 help-button-label = Soporte de { -brand-short-name }
 addons-button-label = Extensions y temas
 focus-search =
@@ -82,6 +96,8 @@ startup-restore-warn-on-quit =
     .label = Alvertir-te quan se salga d'o navegador
 disable-extension =
     .label = Desactivar extensión
+tabs-group-header2 =
+    .label = Pestanyas
 tabs-group-header = Pestanyas
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab cambia de pestanya en orden d'uso mas recient
@@ -103,6 +119,8 @@ browser-containers-settings =
     .label = Configuración…
     .accesskey = g
 containers-disable-alert-title = Zarrar totas las pestanyas de contenedor?
+startup-group =
+    .label = Inicio
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -123,7 +141,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Mantener habilitadas
 containers-remove-alert-title = Borrar iste contenedor?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Si borra iste contenedor agora, { $count } pestanya de contender se zarrará. Ye seguro que quiere borrar iste contenedor?
@@ -142,10 +160,15 @@ default-font-size = Mida:
 advanced-fonts =
     .label = Abanzadas…
     .accesskey = A
+preferences-default-zoom-label =
+    .label = Zoom per defecto
+    .accesskey = Z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoom
 preferences-default-zoom = Zoom per defecto
     .accesskey = Z
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -162,6 +185,8 @@ manage-browser-languages-button =
     .accesskey = l
 confirm-browser-language-change-description = Reiniciar { -brand-short-name } pa aplicar estes cambios
 confirm-browser-language-change-button = Aplicar y reiniciar
+browser-language-install-error =
+    .message = { -brand-short-name } no puet actualizar agora mesmo los idiomas. Comprebe que ye connectau a internet u torne-lo a prebar.
 translate-web-pages =
     .label = Traducir o conteniu web
     .accesskey = T
@@ -182,6 +207,10 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Fichers y aplicacions
+download-save-files-header =
+    .label = Alzar os fichers en
+download-save-where-3 =
+    .aria-label = Alzar os fichers en
 download-header = Descargas
 download-save-where = Alzar os fichers en
     .accesskey = A
@@ -206,9 +235,11 @@ applications-filter =
 applications-type-column =
     .label = Mena de conteniu
     .accesskey = M
+applications-type-heading = Mena de conteniu
 applications-action-column =
     .label = Acción
     .accesskey = A
+applications-action-heading = Acción
 # Variables:
 #   $extension (String) - file extension (e.g .TXT)
 applications-file-ending = fichero { $extension }
@@ -237,15 +268,15 @@ applications-manage-app =
 applications-always-ask =
     .label = Preguntar siempre
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Usar { $plugin-name } (en o { -brand-short-name })
 applications-open-inapp =
@@ -272,8 +303,10 @@ applications-use-other-label =
 applications-use-os-default-label =
     .value = { applications-use-os-default.label }
 
-##
+## Firefox updates
 
+drm-group =
+    .label = Conteniu DRM (Digital Rights Management, Chestión de dreitos dichitals)
 drm-content-header = Conteniu DRM (Digital Rights Management, Chestión de dreitos dichitals)
 play-drm-content =
     .label = Reproducir conteniu controlau per DRM
@@ -281,7 +314,12 @@ play-drm-content =
 play-drm-content-learn-more = Mas información
 update-application-title = Actualizacions d'o { -brand-short-name }:
 update-application-description = Mantener { -brand-short-name } a lo día pa tener lo millor rendimiento, estabilidat y seguranza.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Versión { $version } <a data-l10n-name="learn-more">Novedatz</a>
+update-history-2 =
+    .label = Amostrar l'historial d'actualizacions
+    .accesskey = h
 update-history =
     .label = Amostrar l'historial d'actualizacions
     .accesskey = h
@@ -295,6 +333,8 @@ update-application-check-choose =
 update-application-manual =
     .label = No comprebar nunca las actualizacions
     .accesskey = N
+update-application-warning-cross-user-setting-2 =
+    .message = Esta configuración s'aplicará a totas las cuentas de Windows y perfils de { -brand-short-name } que fagan servir esta instalación de { -brand-short-name }.
 update-application-warning-cross-user-setting = Esta configuración s'aplicará a totas las cuentas de Windows y perfils de { -brand-short-name } que fagan servir esta instalación de { -brand-short-name }.
 update-application-use-service =
     .label = Instalar as actualizacions en un segundo plan
@@ -322,11 +362,13 @@ performance-limit-content-process-option = Limite de procesado de conteniu
 performance-limit-content-process-enabled-desc = Los procesos de conteniu adicional pueden millorar las prestacions quan se fan servir multiples pestanyas, pero tamién usarán mas memoria.
 performance-limit-content-process-blocked-desc = Modificar lo numero de procesos de contenius no ye posible soque con la versión multiproceso de { -brand-short-name }. <a data-l10n-name="learn-more">Aprender a comprebar si los multiprocesos son activaus</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (por defecto)
+performance-group =
+    .label = Rendimiento
 
-## General Section - Browsing
+## Accessibility page
 
 browsing-title = Navegación
 browsing-use-autoscroll =
@@ -355,6 +397,8 @@ browsing-cfr-features =
     .label = Recomendar caracteristicas mientres navegas
     .accesskey = c
 browsing-cfr-recommendations-learn-more = Saber-ne mas
+browsing-group =
+    .label = Navegación
 
 ## General Section - Proxy
 
@@ -370,10 +414,18 @@ network-proxy-connection-settings =
 home-new-windows-tabs-header = Nuevas finestras y pestanyas
 home-new-windows-tabs-description2 = Triar qué ye lo que se vei quan s'ubre la pachina d'inicio, finestras nuevas y pestanyas nuevas.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Definir per defecto
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Pachina d'inicio y nuevas finestras
 home-newtabs-mode-label = Nuevas pestanyas
+home-homepage-new-tabs =
+    .label = Nuevas pestanyas
 home-restore-defaults =
     .label = Restaurar valors per defecto
     .accesskey = R
@@ -403,8 +455,7 @@ choose-bookmark =
 home-prefs-search-header =
     .label = Busqueda web
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Recomendau per { $provider }
@@ -428,6 +479,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Retallos
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -454,15 +507,17 @@ search-suggestions-option =
     .label = Dar sucherencia de busca
     .accesskey = b
 search-show-suggestions-url-bar-option =
-    .label = Amostrar las sucherencias de busqueda en os resultaus d'a barra d'adrezas
+    .label = Amostrar as sucherencias de busqueda en os resultaus d'a barra d'adrezas
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = No s'amostrarán sucherencias de busca a os resultaus d'a barra d'ubicación porque ha configurau o { -brand-short-name } pa que no recuerde nunca o historial.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
 # "ahead" refers to location (appearing most proximate to), not time
 # (appearing before).
 search-show-suggestions-above-history-option =
-    .label = Amostrar las sucherencias de busqueda antes de l'hstorial de navegación en os resultasu d'a barra d'adrezas
+    .label = Amostrar as sucherencias de busqueda antes de l'historial de navegación en os resultaus d'a barra d'adrezas
 search-show-suggestions-private-windows =
     .label = Amostrar las sucherencias de busqueda en as finestras privadas
 search-suggestions-cant-show = No s'amostrarán sucherencias de busca a os resultaus d'a barra d'ubicación porque ha configurau o { -brand-short-name } pa que no recuerde nunca o historial.
@@ -485,13 +540,19 @@ search-find-more-link = Troba mas motors de busqueda
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Duplicar a parola clau
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Ha trigau una parola clau que ya emplega "{ $name }". Trigue-ne unatra.
 search-keyword-warning-bookmark = Ha trigau una parola clau que ya emplega unatro marcapachinas. Trigue-ne unatra.
+search-engine-group =
+    .label = Motor de busca por defecto
+search-default-engine =
+    .aria-label = Motor de busca por defecto
 
 ## Containers Section
 
 containers-header = Pestanyas contenederas
+containers-section-header =
+    .heading = Pestanyas contenederas
 containers-add-button =
     .label = Anyader nuevo contenedor
     .accesskey = A
@@ -525,11 +586,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = Zarrar la sesión…
     .accesskey = Z
+sync-sign-out2 =
+    .label = Zarrar la sesión
+    .accesskey = Z
 sync-manage-account = Chestionar la cuenta
+    .accesskey = t
+sync-manage-account2 =
+    .label = Chestionar la cuenta
     .accesskey = t
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } no ye verificau.
 sync-signedin-login-failure = Enciete una sesión ta reconnectar { $email }
@@ -557,8 +625,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sincronizar agora
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = Sincronizar agora
+    .accesskey = N
 prefs-syncing-button =
     .label = Se ye sincronizando…
+prefs-syncing-button-2 =
+    .label = Se ye sincronizando…
+    .title = Sincronizar agora
 
 ## The list of things currently syncing.
 
@@ -612,6 +686,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = Nombre d'o dispositivo
+sync-device-name-header-2 =
+    .label = Nombre d'o dispositivo
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Nombre d'o dispositivo
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Cambiar lo nombre d'o dispositivo
+    .accesskey = b
 sync-device-name-change =
     .label = Cambiar lo nombre d'o dispositivo...
     .accesskey = b
@@ -622,6 +706,8 @@ sync-device-name-save =
     .label = Alzar
     .accesskey = z
 sync-connect-another-device = Connectar belatro dispositivo
+sync-connect-another-device-2 =
+    .label = Connectar belatro dispositivo
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -647,7 +733,7 @@ forms-ask-to-save-logins =
     .label = Demandar alzar usuarios y claus d'os puestos web
     .accesskey = r
 
-## Privacy Section - Passwords
+## Privacy Panel Settings
 
 forms-exceptions =
     .label = Excepcions…
@@ -697,9 +783,6 @@ primary-password-os-auth-dialog-message-win = Pa crear una clau primaria, escrib
 primary-password-os-auth-dialog-message-macosx = Crear una clau primaria
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Historial
@@ -720,6 +803,12 @@ history-remember-option-never =
     .label = no remerará l'historial
 history-remember-option-custom =
     .label = ferá servir a configuración personalizada de l'historial
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } recordará la tuya navegación, descargas, formularios y historial de busqueda.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = O { -brand-short-name } ferá servir a mesma configuración que en a navegación privada, y no remerará garra dato d'o suyo historial entre que navega por a Web.
 history-remember-description = { -brand-short-name } recordará la tuya navegación, descargas, formularios y historial de busqueda.
 history-dontremember-description = O { -brand-short-name } ferá servir a mesma configuración que en a navegación privada, y no remerará garra dato d'o suyo historial entre que navega por a Web.
 history-private-browsing-permanent =
@@ -740,14 +829,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Borrar l'historial…
     .accesskey = h
+history-group =
+    .label = Historial
 
 ## Privacy Section - Site Data
 
 sitedata-header = Cookies y datos de puestos web
 sitedata-total-size-calculating = Calculando los datos d'o puesto y la grandaria d'a caché…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Las tuyas cookies, datos d'o puesto y caché son usando per agora { $value } { $unit } d'o espacio de disco
 sitedata-learn-more = Saber-ne mas
 sitedata-delete-on-close =
@@ -779,14 +870,10 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Chestionar excepcions…
     .accesskey = x
+cookies-site-data-group =
+    .label = Cookies y datos de puestos web
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Barra d'adrezas
 addressbar-suggest = Quan s'use la barra d'adrezas, sucherir
@@ -905,6 +992,8 @@ permissions-notification-link = Saber-ne mas
 permissions-notification-pause =
     .label = Notificacions de pausa dica que { -brand-short-name } se reinicie
     .accesskey = n
+permissions-autoplay2 =
+    .label = Reproducción automatica
 permissions-autoplay = Reproducción automatica
 permissions-autoplay-settings =
     .label = Configuración…
@@ -918,6 +1007,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Excepcions…
     .accesskey = E
+permissions-location2 =
+    .label = Puesto
+permissions-xr2 =
+    .label = Realidat Virtual
+permissions-camera2 =
+    .label = Camara
+permissions-microphone2 =
+    .label = Microfono
+permissions-notification2 =
+    .label = Notificacions
 
 ## Privacy Section - Data Collection
 
@@ -939,9 +1038,10 @@ addon-recommendations-link = Saber-ne mas
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Lo reporte de datos ye desactivau en esta configuración de programa
-
-## Privacy Section - Website Advertising Preferences
-
+data-collection-health-report-telemetry-disabled =
+    .message = Ya no permites que { -vendor-short-name } obtienga datos tecnicos y d'interacción. Totz los datos anteriors se borrarán en 30 días.
+data-collection-studies-link =
+    .label = Veyer estudios de { -brand-short-name }
 
 ## Privacy Section - Security
 ##
@@ -973,6 +1073,7 @@ certs-view =
 certs-devices =
     .label = Dispositivos de seguranza…
     .accesskey = D
+certs-devices-enable-fips = Activar os FIPS
 
 ## Privacy Section - HTTPS-Only
 
@@ -985,9 +1086,6 @@ httpsonly-radio-enabled-pbm =
     .label = Activar lo modo Nomás-HTTPS nomás en as finestras privadas
 httpsonly-radio-disabled =
     .label = No activar lo modo Nomás-HTTPS
-
-## DoH Section
-
 
 ## The following strings are used in the Download section of settings
 

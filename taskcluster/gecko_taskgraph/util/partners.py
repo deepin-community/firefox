@@ -3,15 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-import json
 import logging
 import os
 import xml.etree.ElementTree as ET
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 import requests
 import yaml
 from redo import retry
+from taskgraph.util import json
 from taskgraph.util.copy import deepcopy
 from taskgraph.util.schema import resolve_keyed_by
 
@@ -40,7 +40,7 @@ LOGIN_QUERY = """query {
 # Returns the contents of default.xml from a manifest repository
 MANIFEST_QUERY = """query {
   repository(owner:"%(owner)s", name:"%(repo)s") {
-    object(expression: "master:%(file)s") {
+    object(expression: "HEAD:%(file)s") {
       ... on Blob {
         text
       }
@@ -127,7 +127,6 @@ REPACK_CFG_QUERY = """query{
 
 # Map platforms in repack.cfg into their equivalents in taskcluster
 TC_PLATFORM_PER_FTP = {
-    "linux-i686": "linux-shippable",
     "linux-x86_64": "linux64-shippable",
     "mac": "macosx64-shippable",
     "win32": "win32-shippable",
@@ -432,9 +431,9 @@ def fix_partner_config(orig_config):
                     if not subpartner_config:
                         continue
                     # Make sure our locale list is a subset of all_locales
-                    pc.setdefault(kind, {}).setdefault(partner, {})[
-                        subpartner
-                    ] = _fix_subpartner_locales(subpartner_config, all_locales)
+                    pc.setdefault(kind, {}).setdefault(partner, {})[subpartner] = (
+                        _fix_subpartner_locales(subpartner_config, all_locales)
+                    )
     return pc
 
 
@@ -448,8 +447,6 @@ def get_ftp_platform(platform):
         return "win64"
     if platform.startswith("macosx"):
         return "mac"
-    if platform.startswith("linux-"):
-        return "linux-i686"
     if platform.startswith("linux64"):
         return "linux-x86_64"
     raise ValueError(f"Unimplemented platform {platform}")
@@ -468,7 +465,7 @@ def get_partner_url_config(parameters, graph_config):
     partner_url_config = deepcopy(graph_config["partner-urls"])
     substitutions = {
         "release-product": parameters["release_product"],
-        "release-level": release_level(parameters["project"]),
+        "release-level": release_level(parameters),
         "release-type": parameters["release_type"],
     }
     resolve_keyed_by(
@@ -508,13 +505,31 @@ def get_repack_ids_by_platform(config, build_platform):
 
 
 def get_partners_to_be_published(config):
-    # hardcoded kind because release-bouncer-aliases doesn't match otherwise
-    partner_config = get_partner_config_by_kind(config, "release-partner-repack")
+    return _get_repack_partners(config) + _get_attribution_partners(config)
+
+
+def _get_repack_partners(config):
+    repack_partner_config = get_partner_config_by_kind(config, "release-partner-repack")
     partners = []
-    for partner, subconfigs in partner_config.items():
+
+    for partner, subconfigs in repack_partner_config.items():
         for sub_config_name, sub_config in subconfigs.items():
             if sub_config.get("publish_to_releases"):
                 partners.append((partner, sub_config_name, sub_config["platforms"]))
+
+    return partners
+
+
+def _get_attribution_partners(config):
+    attribution_partner_config = get_partner_config_by_kind(
+        config, "release-partner-attribution"
+    )
+    partners = []
+
+    for entry in attribution_partner_config.get("configs", []):
+        if entry.get("publish_to_releases"):
+            partners.append((entry["campaign"], entry["content"], entry["platforms"]))
+
     return partners
 
 
@@ -527,10 +542,11 @@ def apply_partner_priority(config, jobs):
     # integration branches because we don't want to wait a lot for the graph to be done, but
     # for multiple releases the partner tasks always wait for non-partner.
     if (
-        config.kind.startswith(
-            ("release-partner-repack", "release-partner-attribution")
-        )
-        and release_level(config.params["project"]) == "production"
+        config.kind.startswith((
+            "release-partner-repack",
+            "release-partner-attribution",
+        ))
+        and release_level(config.params) == "production"
     ):
         priority = "medium"
     for job in jobs:
@@ -553,3 +569,44 @@ def generate_attribution_code(defaults, partner):
 
     code = urlencode(params)
     return code
+
+
+MACOS_ATTRIBUTION_SENTINEL = "__MOZCUSTOM__"
+
+
+def build_macos_attribution_dmg_command(dmg_app_path, attributions):
+    command = []
+    for a in attributions:
+        output_dir = os.path.dirname(os.path.abspath(a["output"]))
+        create_dir_command = f"mkdir -p {output_dir}"
+        if create_dir_command not in command:
+            command.append(create_dir_command)
+
+        command.append(
+            " ".join([
+                dmg_app_path,
+                "attribute",
+                a["input"],
+                a["output"],
+                MACOS_ATTRIBUTION_SENTINEL,
+                _build_macos_attribution_string(attribution_code=a["attribution"]),
+            ])
+        )
+    return " && ".join(command)
+
+
+def _build_macos_attribution_string(attribution_code):
+    quoted_attribution_code = quote(attribution_code)
+    attribution_string = f"{MACOS_ATTRIBUTION_SENTINEL}{quoted_attribution_code}"
+    # Padding must happen after string is URL-quoted, otherwise the tabs themselves
+    # are quoted as well.
+    padded_attribution_string = _pad_macos_attribution_code(attribution_string)
+    return f"'{padded_attribution_string}'"
+
+
+def _pad_macos_attribution_code(attribution_string):
+    # Attribution length should be aligned with ATTR_CODE_MAX_LENGTH
+    #   from browser/components/attribution/AttributionCode.sys
+    while len(attribution_string) < 1010:
+        attribution_string += "\t"
+    return attribution_string

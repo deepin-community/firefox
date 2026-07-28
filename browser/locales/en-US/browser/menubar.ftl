@@ -11,6 +11,11 @@
 
 menu-application-preferences =
     .label = Preferences
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Settings…
+menu-application-set-as-default =
+    .label = Set { -brand-shorter-name } as Default Browser
 menu-application-services =
     .label = Services
 menu-application-hide-this =
@@ -91,6 +96,9 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Share
     .accesskey = h
+menu-file-share-qrcode =
+    .label = Generate QR Code…
+    .accesskey = Q
 menu-file-print-setup =
     .label = Page Setup…
     .accesskey = u
@@ -139,8 +147,6 @@ menu-view-history-button =
     .label = History
 menu-view-synced-tabs-sidebar =
     .label = Synced Tabs
-menu-view-megalist-sidebar =
-    .label = Passwords
 menu-view-full-zoom =
     .label = Zoom
     .accesskey = Z
@@ -248,6 +254,20 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobile Bookmarks
 
+## Profiles Menu
+
+menu-profiles-menu =
+    .label = Profiles
+    .accesskey = P
+menu-profiles-manage-profiles =
+    .label = Manage Profiles
+menu-profiles-new-profile =
+    .label = New Profile
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (current)
+
 ## Tools Menu
 
 menu-tools =
@@ -256,9 +276,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Downloads
     .accesskey = D
-menu-tools-addons-and-themes =
-    .label = Add-ons and Themes
-    .accesskey = A
+menu-tools-extensions-and-themes =
+    .label = Extensions and Themes
+    .accesskey = E
 menu-tools-fxa-sign-in2 =
     .label = Sign In
     .accesskey = g
@@ -320,8 +340,6 @@ menu-get-help =
 menu-help-more-troubleshooting-info =
     .label = More Troubleshooting Information
     .accesskey = T
-menu-help-report-site-issue =
-    .label = Report Site Issue…
 menu-help-share-ideas =
     .label = Share Ideas and Feedback…
     .accesskey = S

@@ -3,10 +3,14 @@
 const { AddonTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/AddonTestUtils.sys.mjs"
 );
+const { EnterprisePolicyTesting } = ChromeUtils.importESModule(
+  "resource://testing-common/EnterprisePolicyTesting.sys.mjs"
+);
 
 AddonTestUtils.initMochitest(this);
 
 const server = AddonTestUtils.createHttpServer();
+const serverHost = `http://localhost:${server.identity.primaryPort}`;
 
 const initialAutoUpdate = AddonManager.autoUpdateDefault;
 registerCleanupFunction(() => {
@@ -127,9 +131,9 @@ add_task(async function testChangeAutoUpdates() {
 
 async function setupExtensionWithUpdate(
   id,
-  { releaseNotes, cancelUpdate } = {}
+  { releaseNotes, cancelUpdate, policy } = {}
 ) {
-  let serverHost = `http://localhost:${server.identity.primaryPort}`;
+  // Keep this path in sync with fakeUpdateAvailableOnServer.
   let updatesPath = `/ext-updates-${id}.json`;
 
   let baseManifest = {
@@ -147,11 +151,11 @@ async function setupExtensionWithUpdate(
     manifest: {
       ...baseManifest,
       version: "2",
-      // Include a permission in the updated extension, to make
+      // Include permissions in the updated extension, to make
       // sure that we trigger the permission prompt as expected
       // (and that we can accept or cancel the update by observing
       // the underlying observerService notification).
-      permissions: ["http://*.example.com/*"],
+      permissions: ["bookmarks", "http://*.example.com/*"],
     },
   });
 
@@ -187,6 +191,34 @@ async function setupExtensionWithUpdate(
     },
   });
 
+  if (policy) {
+    // If policy is used, we need to explicitly install the extension
+    // via policy and there is no prompt.
+    let originalXpi = AddonTestUtils.createTempWebExtensionFile({
+      manifest: {
+        ...baseManifest,
+        version: "1",
+      },
+    });
+
+    let xpiFilename = `/original-${id}.xpi`;
+    server.registerFile(xpiFilename, originalXpi);
+    await Promise.all([
+      AddonTestUtils.promiseInstallEvent("onInstallEnded"),
+      EnterprisePolicyTesting.setupPolicyEngineWithJson({
+        policies: {
+          ExtensionSettings: {
+            [id]: {
+              installation_mode: "force_installed",
+              install_url: serverHost + xpiFilename,
+            },
+          },
+        },
+      }),
+    ]);
+    return null;
+  }
+
   handlePermissionPrompt({ addonId: id, reject: cancelUpdate });
 
   let extension = ExtensionTestUtils.loadExtension({
@@ -199,6 +231,23 @@ async function setupExtensionWithUpdate(
   });
   await extension.startup();
   return extension;
+}
+
+function fakeUpdateAvailableOnServer(id, version) {
+  info(`Serving update (with missing xpi) for ${id} version ${version}`);
+
+  // Keep this path in sync with setupExtensionWithUpdate.
+  let updatesPath = `/ext-updates-${id}.json`;
+
+  AddonTestUtils.registerJSON(server, updatesPath, {
+    addons: {
+      [id]: {
+        updates: [
+          { version, update_link: `${serverHost}/non-existing/${id}.xpi` },
+        ],
+      },
+    },
+  });
 }
 
 function disableAutoUpdates(card) {
@@ -237,6 +286,25 @@ async function findUpdatesForAddonId(id) {
       AddonManager.UPDATE_WHEN_USER_REQUESTED
     );
   });
+}
+
+async function waitForUpdateAvailableCountUpdatedAfterUpdateCheck() {
+  // When checkForUpdates() / findUpdates() completes, and an update exists,
+  // then updateAvailableCount() is called from onNewInstall in aboutaddons.js.
+  // That method updates the badge count, but only after making async calls
+  // into the AddonManager. Currently, all Promises that it awaits for are
+  // resolved immediately, so if we wait for one macrotasks, all microtasks
+  // have run and the "Available Updates" count should be up to date.
+  await new Promise(executeSoon);
+}
+
+async function cancelIgnoredInstall(id, version) {
+  const installs = (await AddonManager.getAllInstalls()).filter(
+    install => install.existingAddon?.id === id && install.version === version
+  );
+  is(installs.length, 1, `Found AddonInstall for ${id} ${version}`);
+  is(installs[0].state, AddonManager.STATE_AVAILABLE, "State before cancel");
+  installs[0].cancel();
 }
 
 function assertUpdateState({
@@ -540,7 +608,7 @@ add_task(async function testAvailableUpdates() {
 
   // Check for all updates.
   let updatesFound = TestUtils.topicObserved("EM-update-check-finished");
-  doc.querySelector('#page-options [action="check-for-updates"]').click();
+  await triggerPageOptionsAction(win, "check-for-updates");
 
   is_element_visible(updatesMessage, "The message is visible");
   ok(!updatesMessage.message.textContent, "The message is empty");
@@ -632,11 +700,87 @@ add_task(async function testAvailableUpdates() {
     "All 3 cards are still visible on the updates page"
   );
 
+  // Switch to some other view and back.
+  await switchView(win, "extension");
+  await switchView(win, "available-updates");
+  is(
+    doc.querySelectorAll("addon-card").length,
+    0,
+    "All cards are gone from updates page after switching away and back"
+  );
+
+  const id0 = ids[0];
+  fakeUpdateAvailableOnServer(id0, "3");
+  await findUpdatesForAddonId(id0);
+  await waitForUpdateAvailableCountUpdatedAfterUpdateCheck();
+  is(availableCat.badgeCount, 1, "Badge count updated after finding update");
+  // The following check is a regression test for bug 1578182.
+  is(
+    doc.querySelectorAll("addon-card").length,
+    1,
+    "Card appears when an update is found while in the Available Updates view"
+  );
+
+  // Make sure that an even newer version of the add-on is not counted twice,
+  // nor results in multiple cards being rendered.
+  fakeUpdateAvailableOnServer(id0, "4");
+  await findUpdatesForAddonId(id0);
+  await waitForUpdateAvailableCountUpdatedAfterUpdateCheck();
+  is(availableCat.badgeCount, 1, "Badge count still 1 with a newer version");
+  cards = doc.querySelectorAll("addon-card");
+  is(cards.length, 1, "There is still only one card");
+  assertUpdateState({ card: cards[0], shown: true, expanded: false });
+
+  // The addon.updateInstall field is currently used to identify updates.
+  // When an add-on is re-installed, that field is cleared. Confirm that the
+  // state in the UI is reasonable and consistent.
+  //
+  // First: re-install add-on to have its addon.updateInstall field cleared.
+  {
+    info("Re-installing current version (2) of the add-on");
+    const addon = await AddonManager.getAddonByID(id0);
+    const install = await AddonManager.getInstallForURL(addon.sourceURI.spec);
+    await Promise.all([
+      AddonTestUtils.promiseWebExtensionStartup(id0),
+      AddonTestUtils.promiseCompleteInstall(install),
+    ]);
+  }
+
+  is(availableCat.badgeCount, 0, "No updates known any more");
+  cards = doc.querySelectorAll("addon-card");
+  is(cards.length, 1, "Card is still there despite no updates being available");
+  // Card still there (because we do not remove cards while the update view
+  // is shown), but cannot be updated.
+  assertUpdateState({ card: cards[0], shown: false, expanded: false });
+
+  await addons[0].unload();
+  cards = doc.querySelectorAll("addon-card");
+  is(cards.length, 0, "Card is gone when the add-on is removed");
+  await cancelIgnoredInstall(id0, "3");
+  await cancelIgnoredInstall(id0, "4");
+
   // Enable global add-on updates again.
   AddonManager.autoUpdateDefault = true;
 
+  // Sanity check: the addon we're going to test next has auto-updates enabled.
+  const addon1 = await AddonManager.getAddonByID(ids[1]);
+  ok(AddonManager.shouldAutoUpdate(addon1), "Auto-update enabled");
+
+  fakeUpdateAvailableOnServer(ids[1], "5");
+  // This simulates finding an update. Ordinarily, that is the point where a
+  // card may appear. We want to check that the card does not appear.
+  await findUpdatesForAddonId(ids[1]);
+  await waitForUpdateAvailableCountUpdatedAfterUpdateCheck();
+  is(availableCat.badgeCount, 0, "Badge count 0 with auto updates re-enabled");
+  cards = doc.querySelectorAll("addon-card");
+  is(cards.length, 0, "Card not shown when automatic updates are enabled");
+  // This verifies that an install was created, and then cancels it.
+  await cancelIgnoredInstall(ids[1], "5");
+
   await closeView(win);
-  await Promise.all(addons.map(addon => addon.unload()));
+
+  // Ignore addons[0] because we already unloaded it before.
+  await Promise.all(addons.slice(1).map(addon => addon.unload()));
 });
 
 add_task(async function testUpdatesShownOnLoad() {
@@ -699,10 +843,18 @@ add_task(async function testPromptOnBackgroundUpdateCheck() {
 
   let card = getAddonCard(win, id);
 
+  const popupPromise = promisePopupNotificationShown(
+    "addon-webext-permissions"
+  );
   const promisePromptInfo = promisePermissionPrompt(id);
   await installUpdate(card, "update-installed");
   const promptInfo = await promisePromptInfo;
   ok(promptInfo, "Got a permission prompt as expected");
+  let panel = await popupPromise;
+  ok(
+    !panel.querySelector(".webext-perm-privatebrowsing moz-checkbox"),
+    "Expect no incognito checkbox in update prompt"
+  );
 
   AddonManager.autoUpdateDefault = true;
 
@@ -747,4 +899,39 @@ add_task(async function testNoUpdateAvailableOnUnrelatedAddonCards() {
 
   await closeView(win);
   await extensionNoUpdate.unload();
+});
+
+add_task(async function testNoPromptForPolicy() {
+  const id = "test-noprompt-for-policy@mochi.test";
+  await setupExtensionWithUpdate(id, { policy: true });
+
+  AddonManager.autoUpdateDefault = false;
+
+  let addon = await AddonManager.getAddonByID(id);
+  is(addon.version, "1", "Version is 1 to start");
+  let policy = WebExtensionPolicy.getByID(addon.id);
+  Assert.deepEqual(policy.permissions, [], "Expected no permissions");
+
+  await AddonTestUtils.promiseFindAddonUpdates(
+    addon,
+    AddonManager.UPDATE_WHEN_PERIODIC_UPDATE
+  );
+
+  let win = await loadInitialView("extension");
+  let card = getAddonCard(win, id);
+  await installUpdate(card, "update-installed");
+
+  addon = await AddonManager.getAddonByID(id);
+  is(addon.version, "2", "Version is 2 after update");
+  policy = WebExtensionPolicy.getByID(addon.id);
+  Assert.deepEqual(policy.permissions, ["bookmarks"], "Expected permissions");
+  Assert.ok(
+    policy.allowedOrigins.matches("http://foo.example.com/bar"),
+    "Expected origins"
+  );
+
+  AddonManager.autoUpdateDefault = true;
+
+  await closeView(win);
+  await addon.uninstall();
 });

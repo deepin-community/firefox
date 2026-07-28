@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,12 +5,13 @@
 /* implements DOM interface for querying and observing media queries */
 
 #include "mozilla/dom/MediaQueryList.h"
-#include "mozilla/dom/MediaQueryListEvent.h"
-#include "mozilla/dom/MediaList.h"
+
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/EventTarget.h"
 #include "mozilla/dom/EventTargetBinding.h"
+#include "mozilla/dom/MediaList.h"
+#include "mozilla/dom/MediaQueryListEvent.h"
 #include "nsPresContext.h"
-#include "mozilla/dom/Document.h"
 
 namespace mozilla::dom {
 
@@ -68,7 +67,7 @@ bool MediaQueryList::Matches() {
   return mMatches;
 }
 
-void MediaQueryList::AddListener(EventListener* aListener, ErrorResult& aRv) {
+void MediaQueryList::AddListener(EventListener* aListener) {
   if (!aListener) {
     return;
   }
@@ -76,11 +75,10 @@ void MediaQueryList::AddListener(EventListener* aListener, ErrorResult& aRv) {
   AddEventListenerOptionsOrBoolean options;
   options.SetAsBoolean() = false;
 
-  AddEventListener(u"change"_ns, aListener, options, Nullable<bool>(), aRv);
+  AddEventListener(u"change"_ns, aListener, options, Nullable<bool>());
 }
 
-void MediaQueryList::RemoveListener(EventListener* aListener,
-                                    ErrorResult& aRv) {
+void MediaQueryList::RemoveListener(EventListener* aListener) {
   if (!aListener) {
     return;
   }
@@ -88,7 +86,7 @@ void MediaQueryList::RemoveListener(EventListener* aListener,
   EventListenerOptionsOrBoolean options;
   options.SetAsBoolean() = false;
 
-  RemoveEventListener(u"change"_ns, aListener, options, aRv);
+  RemoveEventListener(u"change"_ns, aListener, options);
 }
 
 bool MediaQueryList::HasListeners() const {

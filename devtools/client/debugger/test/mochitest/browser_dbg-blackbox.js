@@ -64,15 +64,15 @@ add_task(async function testBlackBoxOnReload() {
   const onReloaded = reload(dbg, file);
 
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 2);
+  await assertPausedAtSourceAndLine(dbg, source.id, 2);
   await resume(dbg);
 
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 8);
+  await assertPausedAtSourceAndLine(dbg, source.id, 8);
   await resume(dbg);
 
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 12);
+  await assertPausedAtSourceAndLine(dbg, source.id, 12);
   await resume(dbg);
 
   info("Wait for reload to complete after resume");
@@ -81,7 +81,7 @@ add_task(async function testBlackBoxOnReload() {
   assertNotPaused(dbg);
 
   info("Ignoring line 2 using the gutter context menu");
-  await openContextMenuInDebugger(dbg, "gutter", 2);
+  await openContextMenuInDebugger(dbg, "gutterElement", 2);
   await selectBlackBoxContextMenuItem(dbg, "blackbox-line");
 
   info("Ignoring line 7 to 9 using the editor context menu");
@@ -91,7 +91,7 @@ add_task(async function testBlackBoxOnReload() {
   const onReloaded2 = reload(dbg, file);
 
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 12);
+  await assertPausedAtSourceAndLine(dbg, source.id, 12);
   await resume(dbg);
   info("Wait for reload to complete after resume");
   await onReloaded2;
@@ -132,15 +132,15 @@ add_task(async function testBlackBoxOnToolboxRestart() {
   await waitForPaused(dbg);
 
   info("Assert it paused at the debugger statement");
-  assertPausedAtSourceAndLine(dbg, source.id, 2);
+  await assertPausedAtSourceAndLine(dbg, source.id, 2);
   await resume(dbg);
   await onReloaded;
 
   info("Ignoring line 2 using the gutter context menu");
-  await openContextMenuInDebugger(dbg, "gutter", 2);
+  await openContextMenuInDebugger(dbg, "gutterElement", 2);
   await selectBlackBoxContextMenuItem(dbg, "blackbox-line");
 
-  await reloadBrowser();
+  await reloadSelectedTab();
   // Wait a little bit incase of a pause
   await wait(1000);
 
@@ -155,7 +155,16 @@ add_task(async function testBlackBoxOnToolboxRestart() {
   const dbg2 = createDebuggerContext(toolbox);
   await waitForSelectedSource(dbg2, findSource(dbg2, "simple4.js"));
 
-  await reloadBrowser();
+  // Reloading will automatically re-apply blackboxing which triggers a RDP request.
+  // Wait for blackbox action and requests to settle to avoid unhandled promise
+  // rejections due to pending promises.
+  const onBlackboxDone = waitForDispatch(dbg2.store, "BLACKBOX_SOURCE_RANGES");
+  await reloadSelectedTab();
+
+  info("Wait for the blackbox action to complete");
+  await onBlackboxDone;
+  await waitForRequestsToSettle(dbg);
+
   // Wait a little incase of a pause
   await wait(1000);
 
@@ -194,7 +203,7 @@ async function testBlackBoxSource(dbg, source) {
   await selectBlackBoxContextMenuItem(dbg, "blackbox");
 
   info("Assert that all lines in the source are styled correctly");
-  assertIgnoredStyleInSourceLines(dbg, { hasBlackboxedLinesClass: true });
+  await assertIgnoredStyleInSourceLines(dbg, { hasBlackboxedLinesClass: true });
 
   info("Assert that the source tree for simple4.js has the ignored style");
   const node = findSourceNodeWithText(dbg, "simple4.js");
@@ -237,7 +246,9 @@ async function testBlackBoxSource(dbg, source) {
   await selectBlackBoxContextMenuItem(dbg, "blackbox");
 
   info("Assert that all lines in the source are un-styled correctly");
-  assertIgnoredStyleInSourceLines(dbg, { hasBlackboxedLinesClass: false });
+  await assertIgnoredStyleInSourceLines(dbg, {
+    hasBlackboxedLinesClass: false,
+  });
 
   info(
     "Assert that the source tree for simple4.js does not have the ignored style"
@@ -252,12 +263,12 @@ async function testBlackBoxSource(dbg, source) {
 
   info("assert the pause at the debugger statement on line 2");
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 2);
+  await assertPausedAtSourceAndLine(dbg, source.id, 2);
   await resume(dbg);
 
   info("assert the pause at the breakpoint set on line 8");
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 8);
+  await assertPausedAtSourceAndLine(dbg, source.id, 8);
   await resume(dbg);
 
   assertNotPaused(dbg);
@@ -308,7 +319,7 @@ async function testBlackBoxMultipleLines(dbg, source) {
   });
 
   info("Assert that the ignored lines are styled correctly");
-  assertIgnoredStyleInSourceLines(dbg, {
+  await assertIgnoredStyleInSourceLines(dbg, {
     lines: [7, 13],
     hasBlackboxedLinesClass: true,
   });
@@ -325,7 +336,7 @@ async function testBlackBoxMultipleLines(dbg, source) {
 
   info("assert the pause at the debugger statement on line 2");
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 2);
+  await assertPausedAtSourceAndLine(dbg, source.id, 2);
   await resume(dbg);
 
   info(
@@ -357,7 +368,7 @@ async function testBlackBoxMultipleLines(dbg, source) {
   });
 
   info("Assert that the un-ignored lines are no longer have the style");
-  assertIgnoredStyleInSourceLines(dbg, {
+  await assertIgnoredStyleInSourceLines(dbg, {
     lines: [7, 13],
     hasBlackboxedLinesClass: false,
   });
@@ -375,12 +386,12 @@ async function testBlackBoxMultipleLines(dbg, source) {
 
   // assert the pause at the debugger statement on line 2
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 2);
+  await assertPausedAtSourceAndLine(dbg, source.id, 2);
   await resume(dbg);
 
   // assert the pause at the breakpoint set on line 8
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 8);
+  await assertPausedAtSourceAndLine(dbg, source.id, 8);
   await resume(dbg);
 
   assertNotPaused(dbg);
@@ -388,7 +399,7 @@ async function testBlackBoxMultipleLines(dbg, source) {
 
 async function testBlackBoxSingleLine(dbg, source) {
   info("Black box line 2 of funcA() with the debugger statement");
-  await openContextMenuInDebugger(dbg, "gutter", 2);
+  await openContextMenuInDebugger(dbg, "gutterElement", 2);
   await selectBlackBoxContextMenuItem(dbg, "blackbox-line");
 
   await assertEditorBlackBoxBoxContextMenuItems(dbg, {
@@ -411,17 +422,17 @@ async function testBlackBoxSingleLine(dbg, source) {
   });
 
   info("Assert that the ignored line 2 is styled correctly");
-  assertIgnoredStyleInSourceLines(dbg, {
+  await assertIgnoredStyleInSourceLines(dbg, {
     lines: [2],
     hasBlackboxedLinesClass: true,
   });
 
   info("Black box line 4 of funcC() with the debugger statement");
-  await openContextMenuInDebugger(dbg, "gutter", 4);
+  await openContextMenuInDebugger(dbg, "gutterElement", 4);
   await selectBlackBoxContextMenuItem(dbg, "blackbox-line");
 
   info("Assert that the ignored line 4 is styled correctly");
-  assertIgnoredStyleInSourceLines(dbg, {
+  await assertIgnoredStyleInSourceLines(dbg, {
     lines: [4],
     hasBlackboxedLinesClass: true,
   });
@@ -430,14 +441,17 @@ async function testBlackBoxSingleLine(dbg, source) {
 
   // assert the pause at the breakpoint set on line 8
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 8);
+  await assertPausedAtSourceAndLine(dbg, source.id, 8);
   await resume(dbg);
 
   assertNotPaused(dbg);
 
   info("Un-blackbox line 2 of funcA()");
-  selectEditorLines(dbg, 2, 2);
-  await openContextMenuInDebugger(dbg, "CodeMirrorLines");
+  await selectEditorLinesAndOpenContextMenu(
+    dbg,
+    { startLine: 2, endLine: 2 },
+    "CodeMirrorLines"
+  );
   await selectBlackBoxContextMenuItem(dbg, "blackbox-line");
 
   await assertEditorBlackBoxBoxContextMenuItems(dbg, {
@@ -460,7 +474,7 @@ async function testBlackBoxSingleLine(dbg, source) {
   });
 
   info("Assert that the un-ignored line 2 is styled correctly");
-  assertIgnoredStyleInSourceLines(dbg, {
+  await assertIgnoredStyleInSourceLines(dbg, {
     lines: [2],
     hasBlackboxedLinesClass: false,
   });
@@ -469,12 +483,12 @@ async function testBlackBoxSingleLine(dbg, source) {
 
   // assert the pause at the debugger statement on line 2
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 2);
+  await assertPausedAtSourceAndLine(dbg, source.id, 2);
   await resume(dbg);
 
   // assert the pause at the breakpoint set on line 8
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(dbg, source.id, 8);
+  await assertPausedAtSourceAndLine(dbg, source.id, 8);
   await resume(dbg);
 
   assertNotPaused(dbg);
@@ -493,8 +507,9 @@ async function assertContextMenuDisabled(dbg, selector, shouldBeDisabled) {
 
 /**
  * Asserts that the gutter blackbox context menu items which are visible are correct
- * @params {Object} dbg
- * @params {Array} testFixtures
+ *
+ * @param {object} dbg
+ * @param {Array} testFixtures
  *                 Details needed for the assertion. Any blackboxed/nonBlackboxed lines
  *                 and any blackboxed/nonBlackboxed sources
  */
@@ -507,7 +522,7 @@ async function assertGutterBlackBoxBoxContextMenuItems(dbg, testFixtures) {
     );
     const popup = await openContextMenuInDebugger(
       dbg,
-      "gutter",
+      "gutterElement",
       blackboxedLine
     );
     // When the whole source is blackboxed the the gutter visually shows `ignore line`
@@ -530,9 +545,15 @@ async function assertGutterBlackBoxBoxContextMenuItems(dbg, testFixtures) {
     info(
       "Asserts that the gutter context menu items when clicking on the gutter of a nonBlackboxed line"
     );
+
+    // Wait for CM6 to complete any updates so the popup
+    // does not lose focus while asserting the context menu items due
+    // late updates completion.
+    await waitForDocumentLoadComplete(dbg);
+
     const popup = await openContextMenuInDebugger(
       dbg,
-      "gutter",
+      "gutterElement",
       nonBlackBoxedLine
     );
     const item = contextMenuItems.ignoreLine;
@@ -544,8 +565,9 @@ async function assertGutterBlackBoxBoxContextMenuItems(dbg, testFixtures) {
 
 /**
  * Asserts that the source tree blackbox context menu items which are visible are correct
- * @params {Object} dbg
- * @params {Array} testFixtures
+ *
+ * @param {object} dbg
+ * @param {Array} testFixtures
  *                 Details needed for the assertion. Any blackboxed/nonBlackboxed sources
  */
 async function assertSourceTreeBlackBoxBoxContextMenuItems(dbg, testFixtures) {
@@ -576,8 +598,9 @@ async function assertSourceTreeBlackBoxBoxContextMenuItems(dbg, testFixtures) {
 
 /**
  * Asserts that the editor blackbox context menu items which are visible are correct
- * @params {Object} dbg
- * @params {Array} testFixtures
+ *
+ * @param {object} dbg
+ * @param {Array} testFixtures
  *                 Details needed for the assertion. Any blackboxed/nonBlackboxed lines
  *                 and any blackboxed/nonBlackboxed sources
  */
@@ -716,17 +739,4 @@ async function assertEditorBlackBoxBoxContextMenuItems(dbg, testFixtures) {
     }
     await closeContextMenu(dbg, popup);
   }
-}
-
-/**
- * Selects a range of lines
- * @param {Object} dbg
- * @param {Number} startLine
- * @param {Number} endLine
- */
-function selectEditorLines(dbg, startLine, endLine) {
-  getCM(dbg).setSelection(
-    { line: startLine - 1, ch: 0 },
-    { line: endLine, ch: 0 }
-  );
 }

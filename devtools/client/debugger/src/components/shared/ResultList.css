@@ -4,8 +4,8 @@
 
 .result-list {
   list-style: none;
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
   overflow: auto;
   width: 100%;
   background: var(--theme-body-background);
@@ -42,12 +42,8 @@
 }
 
 .result-list li.selected {
-  background: var(--theme-accordion-header-background);
-}
-
-.result-list.small li.selected {
   background-color: var(--theme-selection-background);
-  color: white;
+  color: var(--theme-selection-color);
 }
 
 .result-list li .result-item-icon {
@@ -73,21 +69,16 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  /** https://searchfox.org/mozilla-central/source/devtools/client/themes/variables.css **/
+  /** https://searchfox.org/firefox-main/source/devtools/client/themes/variables.css **/
   color: var(--grey-90);
 }
 
 .theme-dark .result-list li .title {
-  /** https://searchfox.org/mozilla-central/source/devtools/client/themes/variables.css **/
+  /** https://searchfox.org/firefox-main/source/devtools/client/themes/variables.css **/
   color: var(--grey-30);
 }
 
 .result-list li.selected .title {
-  color: white;
-}
-
-.result-list.big li.selected {
-  background-color: var(--theme-selection-background);
   color: white;
 }
 
@@ -102,7 +93,7 @@
 
 .result-list.big li .subtitle {
   word-break: break-all;
-  /** https://searchfox.org/mozilla-central/source/devtools/client/themes/variables.css **/
+  /** https://searchfox.org/firefox-main/source/devtools/client/themes/variables.css **/
   color: var(--grey-40);
   margin-left: 15px;
   text-overflow: ellipsis;
@@ -115,7 +106,7 @@
 }
 
 .theme-dark .result-list.big li .subtitle {
-  color: var(--theme-text-color-inactive);
+  color: var(--theme-text-color-alt);
 }
 
 .search-bar .result-list li.selected .subtitle {

@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Boarnetaal wizigje
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Sorry, wy stypje noch gjin oersettingen fan it { $language } út.
+translations-panel-error-unsupported-hint-unknown-2 = Sorry, wy stypje noch gjin oersettingen fan dizze taal út.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = Talen foar offline oersetting downloade.
 translations-manage-all-language = Alle talen
 translations-manage-download-button = Downloade
 translations-manage-delete-button = Fuortsmite
-translations-manage-intro = Stel jo foarkarren foar taal- en side-oersetting yn en behear talen dy’t ynstallearre binne foar offline oersetting.
-translations-manage-install-description = Talen foar offline oersetting ynstallearje.
-translations-manage-language-install-button =
-    .label = Ynstallearje
-translations-manage-language-install-all-button =
-    .label = Alle ynstallearje
-    .accesskey = y
 translations-manage-intro-2 = Stel jo foarkarren foar taal- en website-oersetting yn en behear talen dy’t ynstallearre binne foar offline oersetting.
 translations-manage-download-description = Talen foar offline oersetting downloade
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Alle fuortsmite
     .accesskey = m
-translations-manage-error-install = Der is in probleem bard by it ynstallearjen fan de taalbestannen. Probearje it opnij.
 translations-manage-error-download = Der is in probleem bard by it downloaden fan de taalbestannen. Probearje it opnij.
 translations-manage-error-delete = Der is in probleem bard by it fuortsmiten fan de taalbestannen. Probearje it opnij.
 translations-manage-error-remove = Der is in probleem bard by it fuortsmiten fan de taalbestannen. Probearje it opnij.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Der is in probleem bard by it oersetten. Probearje it opnij.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Sorry, wy stypje noch gjin oersettingen fan it { $language } út.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Sorry, wy stypje noch gjin oersettingen fan dizze taal út.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

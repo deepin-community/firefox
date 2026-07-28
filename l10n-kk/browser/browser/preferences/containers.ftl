@@ -10,10 +10,15 @@ containers-window-new2 =
 containers-window-update-settings2 =
     .title = { $name } контейнер баптаулары
     .style = min-width: 45em
-
 containers-window-close =
     .key = w
-
+containers-name-label2 =
+    .label = Аты
+    .placeholder = Атын қосыңыз
+containers-icon-label2 =
+    .label = Таңбаша
+containers-color-label2 =
+    .label = Түс
 # This is a term to store style to be applied
 # on the three labels in the containers add/edit dialog:
 #   - name
@@ -24,26 +29,20 @@ containers-window-close =
 # of the three messages ensures that all three labels
 # will be aligned correctly.
 -containers-labels-style = min-width: 4rem
-
 containers-name-label = Атауы
     .accesskey = А
     .style = { -containers-labels-style }
-
 containers-name-text =
     .placeholder = Контейнер атауын енгізіңіз
-
 containers-icon-label = Таңбашасы
     .accesskey = Т
     .style = { -containers-labels-style }
-
 containers-color-label = Түсі
     .accesskey = с
     .style = { -containers-labels-style }
-
 containers-dialog =
     .buttonlabelaccept = Дайын
     .buttonaccesskeyaccept = Д
-
 containers-color-blue =
     .label = Көк
 containers-color-turquoise =
@@ -62,7 +61,6 @@ containers-color-purple =
     .label = Қызыл көк
 containers-color-toolbar =
     .label = Саймандар панелі сияқты
-
 containers-icon-fence =
     .label = Шарбақ
 containers-icon-fingerprint =
@@ -91,3 +89,19 @@ containers-icon-tree =
     .label = Ағаш
 containers-icon-chill =
     .label = Салқындату
+containers-window-new3 =
+    .title = Жаңа контейнерді қосу
+    .style = min-width: 32em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings3 =
+    .title = { $name } контейнерінің баптаулары
+    .style = min-width: 32em
+
+## Container creation panel, anchored to the URL bar.
+
+containers-panel-title = Жаңа контейнерді қосу
+containers-panel-create-button =
+    .label = Дайын
+containers-panel-cancel-button =
+    .label = Бас тарту

@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = La { -brand-short-name } a
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } tar seg av infokapselbannere for deg
 about-private-browsing-cookie-banners-promo-body = Vi nekter nå automatisk mange infokapselbannere, slik at du kan spores mindre og gå tilbake til distraksjonsfri surfing.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Etterlat ingen spor på denne enheten
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } sletter infokapsler, historikk og nettstedsdata når du lukker alle dine private vinduer.
 about-private-browsing-felt-privacy-v1-info-link = Hvem kan ha mulighet til å se aktiviteten min?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Når du lukker alle private vinduer, slettes infokapslene, historikken og nettstedsdataene dine.
+about-private-browsing-nova-info-link = Hvem kan fortsatt se aktiviteten min?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Du etterlater ingen spor
+about-private-browsing-nova-info-subheader = Vi sletter alle søk og innlogginger når du lukker dette vinduet. { -brand-short-name } sin innebygde beskyttelse er også aktiv her, for eksempel blokkering av sporere.

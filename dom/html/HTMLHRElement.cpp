@@ -1,15 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/HTMLHRElement.h"
-#include "mozilla/dom/HTMLHRElementBinding.h"
 
+#include "mozilla/MappedDeclarationsBuilder.h"
+#include "mozilla/dom/HTMLHRElementBinding.h"
 #include "nsCSSProps.h"
 #include "nsStyleConsts.h"
-#include "mozilla/MappedDeclarationsBuilder.h"
 
 NS_IMPL_NS_NEW_HTML_ELEMENT(HR)
 
@@ -27,11 +25,11 @@ bool HTMLHRElement::ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
                                    const nsAString& aValue,
                                    nsIPrincipal* aMaybeScriptedPrincipal,
                                    nsAttrValue& aResult) {
-  static const nsAttrValue::EnumTable kAlignTable[] = {
+  static const nsAttrValue::EnumTableEntry kAlignTable[] = {
       {"left", StyleTextAlign::Left},
       {"right", StyleTextAlign::Right},
       {"center", StyleTextAlign::Center},
-      {nullptr, 0}};
+  };
 
   if (aNamespaceID == kNameSpaceID_None) {
     if (aAttribute == nsGkAtoms::width) {
@@ -150,7 +148,7 @@ void HTMLHRElement::MapAttributesIntoRule(MappedDeclarationsBuilder& aBuilder) {
       // 10000px on all corners; this triggers the clamping to make
       // circular ends.  This assumes the <hr> isn't larger than
       // that in *both* dimensions.
-      for (const nsCSSPropertyID* props =
+      for (const NonCustomCSSPropertyId* props =
                nsCSSProps::SubpropertyEntryFor(eCSSProperty_border_radius);
            *props != eCSSProperty_UNKNOWN; ++props) {
         aBuilder.SetPixelValueIfUnset(*props, 10000.0f);

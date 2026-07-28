@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,8 @@
 #ifndef mozilla_layers_InputBlockState_h
 #define mozilla_layers_InputBlockState_h
 
-#include "InputData.h"           // for MultiTouchInput
+#include "InputData.h"  // for MultiTouchInput
+#include "Units.h"
 #include "mozilla/RefCounted.h"  // for RefCounted
 #include "mozilla/RefPtr.h"      // for RefPtr
 #include "mozilla/StaticPrefs_apz.h"
@@ -93,6 +92,10 @@ class InputBlockState : public RefCounted<InputBlockState> {
    * be removed as the last item in the pending queue.
    */
   virtual bool MustStayActive() = 0;
+
+  const ScreenToParentLayerMatrix4x4& GetTransformToApzc() const {
+    return mTransformToApzc;
+  }
 
  protected:
   virtual void UpdateTargetApzc(
@@ -189,6 +192,9 @@ class CancelableBlockState : public InputBlockState {
 
   bool ShouldDropEvents() const override;
 
+  bool HasStateBeenReset() const { return mHasStateBeenReset; };
+  void ResetState() { mHasStateBeenReset = true; }
+
   void ResetContentResponseTimerExpired() {
     mContentResponseTimerExpired = false;
     mContentResponded = false;
@@ -198,6 +204,7 @@ class CancelableBlockState : public InputBlockState {
   bool mPreventDefault;
   bool mContentResponded;
   bool mContentResponseTimerExpired;
+  bool mHasStateBeenReset;
 };
 
 /**
@@ -365,6 +372,14 @@ class PanGestureBlockState : public CancelableBlockState {
     return mWaitingForContentResponse;
   }
   Maybe<LayersId> WheelTransactionLayersId() const override;
+
+  void ConfirmForHoldGesture() {
+    // Hold gestures get their own input block, but do not generate
+    // any events that get to web content (because the PANGESTURE_MAYSTART
+    // event has a zero delta). As a result, do not wait for a content
+    // response for them because it will never arrive.
+    mTargetConfirmed = InputBlockState::TargetConfirmationState::eConfirmed;
+  }
 
  private:
   bool mInterrupted;

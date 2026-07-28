@@ -4,15 +4,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import path from 'path';
+import path from 'node:path';
 
 import expect from 'expect';
 import {TimeoutError} from 'puppeteer';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
-import {waitEvent} from './utils.js';
+import {html} from './utils.js';
 
-const FILE_TO_UPLOAD = path.join(__dirname, '/../assets/file-to-upload.txt');
+const FILE_TO_UPLOAD = path.join(
+  import.meta.dirname,
+  '/../assets/file-to-upload.txt',
+);
 
 describe('input tests', function () {
   setupTestBrowserHooks();
@@ -39,17 +42,17 @@ describe('input tests', function () {
       expect(
         await input.evaluate(e => {
           return e.files?.[0]?.name;
-        })
+        }),
       ).toBe('file-to-upload.txt');
       expect(
         await input.evaluate(e => {
           return e.files?.[0]?.type;
-        })
+        }),
       ).toBe('text/plain');
       expect(
         await page.evaluate(() => {
           return (globalThis as any)._inputEvents;
-        })
+        }),
       ).toEqual(['input', 'change']);
     });
 
@@ -87,7 +90,7 @@ describe('input tests', function () {
           return promise.then(() => {
             return reader.result;
           });
-        })
+        }),
       ).toBe('contents of the file');
     });
   });
@@ -96,7 +99,7 @@ describe('input tests', function () {
     it('should work when file input is attached to DOM', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       const [chooser] = await Promise.all([
         page.waitForFileChooser(),
         page.click('input'),
@@ -163,7 +166,7 @@ describe('input tests', function () {
     it('should return the same file chooser when there are many watchdogs simultaneously', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       const [fileChooser1, fileChooser2] = await Promise.all([
         page.waitForFileChooser(),
         page.waitForFileChooser(),
@@ -190,31 +193,31 @@ describe('input tests', function () {
       const {page} = await getTestState();
 
       await page.setContent(
-        `<input type=file oninput='javascript:console.timeStamp()'>`
+        html`<input
+          type="file"
+          oninput="javascript:console.timeStamp()"
+        />`,
       );
       const [chooser] = await Promise.all([
         page.waitForFileChooser(),
         page.click('input'),
       ]);
-      await Promise.all([
-        chooser.accept([FILE_TO_UPLOAD]),
-        waitEvent(page, 'metrics'),
-      ]);
+      await Promise.all([chooser.accept([FILE_TO_UPLOAD])]);
       expect(
         await page.$eval('input', input => {
           return input.files!.length;
-        })
+        }),
       ).toBe(1);
       expect(
         await page.$eval('input', input => {
           return input.files![0]!.name;
-        })
+        }),
       ).toBe('file-to-upload.txt');
     });
     it('should be able to read selected file', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       void page.waitForFileChooser().then(chooser => {
         return chooser.accept([FILE_TO_UPLOAD]);
       });
@@ -232,13 +235,13 @@ describe('input tests', function () {
           return await promise.then(() => {
             return reader.result;
           });
-        })
+        }),
       ).toBe('contents of the file');
     });
     it('should be able to reset selected files with empty file list', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       void page.waitForFileChooser().then(chooser => {
         return chooser.accept([FILE_TO_UPLOAD]);
       });
@@ -249,7 +252,7 @@ describe('input tests', function () {
             return (pick.oninput = x);
           });
           return pick.files!.length;
-        })
+        }),
       ).toBe(1);
       void page.waitForFileChooser().then(chooser => {
         return chooser.accept([]);
@@ -261,13 +264,13 @@ describe('input tests', function () {
             return (pick.oninput = x);
           });
           return pick.files!.length;
-        })
+        }),
       ).toBe(0);
     });
     it('should not accept multiple files for single-file input', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       const [chooser] = await Promise.all([
         page.waitForFileChooser(),
         page.click('input'),
@@ -277,9 +280,12 @@ describe('input tests', function () {
         .accept([
           path.relative(
             process.cwd(),
-            __dirname + '/../assets/file-to-upload.txt'
+            import.meta.dirname + '/../assets/file-to-upload.txt',
           ),
-          path.relative(process.cwd(), __dirname + '/../assets/pptr.png'),
+          path.relative(
+            process.cwd(),
+            import.meta.dirname + '/../assets/pptr.png',
+          ),
         ])
         .catch(error_ => {
           return (error = error_);
@@ -289,7 +295,7 @@ describe('input tests', function () {
     it('should succeed even for non-existent files', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       const [chooser] = await Promise.all([
         page.waitForFileChooser(),
         page.click('input'),
@@ -303,7 +309,7 @@ describe('input tests', function () {
     it('should error on read of non-existent files', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       void page.waitForFileChooser().then(chooser => {
         return chooser.accept(['file-does-not-exist.txt']);
       });
@@ -321,13 +327,13 @@ describe('input tests', function () {
           return await promise.then(() => {
             return false;
           });
-        })
+        }),
       ).toBeFalsy();
     });
     it('should fail when accepting file chooser twice', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       const [fileChooser] = await Promise.all([
         page.waitForFileChooser(),
         page.$eval('input', input => {
@@ -340,7 +346,7 @@ describe('input tests', function () {
         return (error = error_);
       });
       expect(error.message).toBe(
-        'Cannot accept FileChooser which is already handled!'
+        'Cannot accept FileChooser which is already handled!',
       );
     });
   });
@@ -352,7 +358,7 @@ describe('input tests', function () {
       // Consider file chooser canceled if we can summon another one.
       // There's no reliable way in WebPlatform to see that FileChooser was
       // canceled.
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       const [fileChooser1] = await Promise.all([
         page.waitForFileChooser(),
         page.$eval('input', input => {
@@ -371,7 +377,7 @@ describe('input tests', function () {
     it('should fail when canceling file chooser twice', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       const [fileChooser] = await Promise.all([
         page.waitForFileChooser(),
         page.$eval('input', input => {
@@ -388,7 +394,7 @@ describe('input tests', function () {
       }
 
       expect(error.message).toBe(
-        'Cannot cancel FileChooser which is already handled!'
+        'Cannot cancel FileChooser which is already handled!',
       );
     });
   });
@@ -397,7 +403,7 @@ describe('input tests', function () {
     it('should work for single file pick', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input type=file>`);
+      await page.setContent(html`<input type="file" />`);
       const [chooser] = await Promise.all([
         page.waitForFileChooser(),
         page.click('input'),
@@ -407,7 +413,12 @@ describe('input tests', function () {
     it('should work for "multiple"', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input multiple type=file>`);
+      await page.setContent(
+        html`<input
+          multiple
+          type="file"
+        />`,
+      );
       const [chooser] = await Promise.all([
         page.waitForFileChooser(),
         page.click('input'),
@@ -417,7 +428,13 @@ describe('input tests', function () {
     it('should work for "webkitdirectory"', async () => {
       const {page} = await getTestState();
 
-      await page.setContent(`<input multiple webkitdirectory type=file>`);
+      await page.setContent(
+        html`<input
+          multiple
+          webkitdirectory
+          type="file"
+        />`,
+      );
       const [chooser] = await Promise.all([
         page.waitForFileChooser(),
         page.click('input'),

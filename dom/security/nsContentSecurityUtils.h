@@ -1,15 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* A namespace class for static content security utilities. */
 
-#ifndef nsContentSecurityUtils_h___
-#define nsContentSecurityUtils_h___
+#ifndef nsContentSecurityUtils_h_
+#define nsContentSecurityUtils_h_
 
 #include <utility>
+
 #include "mozilla/Maybe.h"
 #include "nsStringFwd.h"
 
@@ -17,6 +16,7 @@ struct JSContext;
 class nsIChannel;
 class nsIHttpChannel;
 class nsIPrincipal;
+class nsIURI;
 class NS_ConvertUTF8toUTF16;
 
 namespace mozilla::dom {
@@ -35,6 +35,10 @@ class nsContentSecurityUtils {
   // of simply calling aTriggeringPrincipal->Equals(aResultPrincipal).
   static bool IsConsideredSameOriginForUIR(nsIPrincipal* aTriggeringPrincipal,
                                            nsIPrincipal* aResultPrincipal);
+
+  // Check whether the scheme is trusted (for privileged code execution).
+  // @returns true, iff the scheme is chrome:, resource: or moz-src:
+  static bool IsTrustedScheme(nsIURI* aURI);
 
   static bool IsEvalAllowed(JSContext* cx, bool aIsSystemPrincipal,
                             const nsAString& aScript);
@@ -74,8 +78,7 @@ class nsContentSecurityUtils {
       const mozilla::dom::Element& aElement);
 
   // Helper function to Check if a Download is allowed;
-  static long ClassifyDownload(nsIChannel* aChannel,
-                               const nsAutoCString& aMimeTypeGuess);
+  static long ClassifyDownload(nsIChannel* aChannel);
 
   // Public only for testing
   static FilenameTypeAndDetails FilenameToFilenameType(
@@ -89,11 +92,14 @@ class nsContentSecurityUtils {
 
 #if defined(DEBUG)
   static void AssertAboutPageHasCSP(mozilla::dom::Document* aDocument);
+  static void AssertChromePageHasCSP(mozilla::dom::Document* aDocument);
 #endif
 
   static bool ValidateScriptFilename(JSContext* cx, const char* aFilename);
+  static nsresult GetVeryFirstUnexpectedScriptFilename(nsACString& aFilename);
+
   // Helper Function to Post a message to the corresponding JS-Console
   static void LogMessageToConsole(nsIHttpChannel* aChannel, const char* aMsg);
 };
 
-#endif /* nsContentSecurityUtils_h___ */
+#endif /* nsContentSecurityUtils_h_ */

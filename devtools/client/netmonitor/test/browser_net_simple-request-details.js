@@ -27,7 +27,7 @@ add_task(async function () {
   store.dispatch(Actions.batchEnable(false));
 
   const wait = waitForNetworkEvents(monitor, 1);
-  await reloadBrowser();
+  await reloadSelectedTab();
   await wait;
 
   is(
@@ -143,10 +143,10 @@ add_task(async function () {
 
     const headersTable = tabpanel.querySelector(".accordion");
     const responseScope = headersTable.querySelectorAll(
-      "tr[id^='/Response Headers']"
+      "tr[id^='/responseHeaders']"
     );
     const requestScope = headersTable.querySelectorAll(
-      "tr[id^='/Request Headers']"
+      "tr[id^='/requestHeaders']"
     );
 
     const headerLabels = headersTable.querySelectorAll(

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,11 +7,11 @@
 
 #include "FileInfoManager.h"
 #include "IndexedDBCipherKeyManager.h"
+#include "mozilla/InitializedOnce.h"
 #include "mozilla/dom/FlippedOnce.h"
 #include "mozilla/dom/quota/CommonMetadata.h"
 #include "mozilla/dom/quota/PersistenceType.h"
 #include "mozilla/dom/quota/UsageInfo.h"
-#include "mozilla/InitializedOnce.h"
 
 class nsIFile;
 class mozIStorageConnection;
@@ -89,11 +87,9 @@ class DatabaseFileManager final
 
   const nsAString& DatabaseFilePath() const { return mDatabaseFilePath; }
 
-  uint64_t DatabaseVersion() const { return mDatabaseVersion; }
+  uint64_t DatabaseVersion() const;
 
-  void UpdateDatabaseVersion(uint64_t aDatabaseVersion) {
-    mDatabaseVersion = aDatabaseVersion;
-  }
+  void UpdateDatabaseVersion(uint64_t aDatabaseVersion);
 
   IndexedDBCipherKeyManager& MutableCipherKeyManagerRef() const {
     MOZ_ASSERT(mIsInPrivateBrowsingMode);
@@ -108,7 +104,8 @@ class DatabaseFileManager final
 
   bool Initialized() const { return mInitialized; }
 
-  nsresult Init(nsIFile* aDirectory, mozIStorageConnection& aConnection);
+  nsresult Init(nsIFile* aDirectory, const uint64_t aDatabaseVersion,
+                mozIStorageConnection& aConnection);
 
   [[nodiscard]] nsCOMPtr<nsIFile> GetDirectory();
 
@@ -131,7 +128,9 @@ class DatabaseFileManager final
 
   MOZ_DECLARE_REFCOUNTED_TYPENAME(DatabaseFileManager)
 
-  static StaticMutex& Mutex() { return sMutex; }
+  static StaticMutex& MutexInstance() MOZ_RETURN_CAPABILITY(sMutex) {
+    return sMutex;
+  }
 
   ~DatabaseFileManager() = default;
 };

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -155,9 +153,7 @@ nsXPCComponents_Interfaces::GetClassIDNoAlloc(nsCID* aClassIDNoAlloc) {
 
 nsXPCComponents_Interfaces::nsXPCComponents_Interfaces() = default;
 
-nsXPCComponents_Interfaces::~nsXPCComponents_Interfaces() {
-  // empty
-}
+nsXPCComponents_Interfaces::~nsXPCComponents_Interfaces() = default;
 
 NS_IMPL_ISUPPORTS(nsXPCComponents_Interfaces, nsIXPCComponents_Interfaces,
                   nsIXPCScriptable, nsIClassInfo);
@@ -308,9 +304,7 @@ nsXPCComponents_Classes::GetClassIDNoAlloc(nsCID* aClassIDNoAlloc) {
 
 nsXPCComponents_Classes::nsXPCComponents_Classes() = default;
 
-nsXPCComponents_Classes::~nsXPCComponents_Classes() {
-  // empty
-}
+nsXPCComponents_Classes::~nsXPCComponents_Classes() = default;
 
 NS_IMPL_ISUPPORTS(nsXPCComponents_Classes, nsIXPCComponents_Classes,
                   nsIXPCScriptable, nsIClassInfo)
@@ -449,9 +443,7 @@ nsXPCComponents_Results::GetClassIDNoAlloc(nsCID* aClassIDNoAlloc) {
 
 nsXPCComponents_Results::nsXPCComponents_Results() = default;
 
-nsXPCComponents_Results::~nsXPCComponents_Results() {
-  // empty
-}
+nsXPCComponents_Results::~nsXPCComponents_Results() = default;
 
 NS_IMPL_ISUPPORTS(nsXPCComponents_Results, nsIXPCComponents_Results,
                   nsIXPCScriptable, nsIClassInfo)
@@ -590,9 +582,7 @@ nsXPCComponents_ID::GetClassIDNoAlloc(nsCID* aClassIDNoAlloc) {
 
 nsXPCComponents_ID::nsXPCComponents_ID() = default;
 
-nsXPCComponents_ID::~nsXPCComponents_ID() {
-  // empty
-}
+nsXPCComponents_ID::~nsXPCComponents_ID() = default;
 
 NS_IMPL_ISUPPORTS(nsXPCComponents_ID, nsIXPCComponents_ID, nsIXPCScriptable,
                   nsIClassInfo)
@@ -741,9 +731,7 @@ nsXPCComponents_Exception::GetClassIDNoAlloc(nsCID* aClassIDNoAlloc) {
 
 nsXPCComponents_Exception::nsXPCComponents_Exception() = default;
 
-nsXPCComponents_Exception::~nsXPCComponents_Exception() {
-  // empty
-}
+nsXPCComponents_Exception::~nsXPCComponents_Exception() = default;
 
 NS_IMPL_ISUPPORTS(nsXPCComponents_Exception, nsIXPCComponents_Exception,
                   nsIXPCScriptable, nsIClassInfo)
@@ -1034,9 +1022,7 @@ nsXPCComponents_Constructor::GetClassIDNoAlloc(nsCID* aClassIDNoAlloc) {
 
 nsXPCComponents_Constructor::nsXPCComponents_Constructor() = default;
 
-nsXPCComponents_Constructor::~nsXPCComponents_Constructor() {
-  // empty
-}
+nsXPCComponents_Constructor::~nsXPCComponents_Constructor() = default;
 
 NS_IMPL_ISUPPORTS(nsXPCComponents_Constructor, nsIXPCComponents_Constructor,
                   nsIXPCScriptable, nsIClassInfo)
@@ -1406,8 +1392,8 @@ nsXPCComponents_Utils::ReportError(HandleValue error, HandleValue stack,
     scripterr = CreateScriptError(win, exception, nullptr, nullptr);
   }
 
-  JSErrorReport* err = errorObj ? JS_ErrorFromException(cx, errorObj) : nullptr;
-  if (err) {
+  JS::BorrowedErrorReport err(cx);
+  if (errorObj && JS_ErrorFromException(cx, errorObj, err)) {
     // It's a proper JS Error
     uint32_t flags = err->isWarning() ? nsIScriptError::warningFlag
                                       : nsIScriptError::errorFlag;
@@ -1526,33 +1512,45 @@ nsXPCComponents_Utils::SetSandboxMetadata(HandleValue sandboxVal,
 }
 
 NS_IMETHODIMP
-nsXPCComponents_Utils::Import(const nsACString& registryLocation,
-                              HandleValue targetObj, JSContext* cx,
-                              uint8_t optionalArgc, MutableHandleValue retval) {
-  RefPtr moduleloader = mozJSModuleLoader::Get();
-  MOZ_ASSERT(moduleloader);
+nsXPCComponents_Utils::SetSandboxLocaleOverride(HandleValue sandboxVal,
+                                                const char* locale,
+                                                JSContext* cx) {
+  if (!sandboxVal.isObject()) {
+    return NS_ERROR_INVALID_ARG;
+  }
 
-  AUTO_PROFILER_LABEL_DYNAMIC_NSCSTRING("nsXPCComponents_Utils::Import", OTHER,
-                                        registryLocation);
+  RootedObject sandbox(cx, &sandboxVal.toObject());
+  // We only care about sandboxes here, so CheckedUnwrapStatic is fine.
+  sandbox = js::CheckedUnwrapStatic(sandbox);
+  if (!sandbox || !xpc::IsSandbox(sandbox)) {
+    return NS_ERROR_INVALID_ARG;
+  }
 
-  return moduleloader->ImportInto(registryLocation, targetObj, cx, optionalArgc,
-                                  retval);
+  nsresult rv = xpc::SetSandboxLocaleOverride(cx, sandbox, locale);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  return NS_OK;
 }
 
 NS_IMETHODIMP
-nsXPCComponents_Utils::IsModuleLoaded(const nsACString& aResourceURI,
-                                      bool* retval) {
-  RefPtr moduleloader = mozJSModuleLoader::Get();
-  MOZ_ASSERT(moduleloader);
-  return moduleloader->IsModuleLoaded(aResourceURI, retval);
-}
+nsXPCComponents_Utils::SetSandboxTimezoneOverride(HandleValue sandboxVal,
+                                                  const char* timezone,
+                                                  JSContext* cx) {
+  if (!sandboxVal.isObject()) {
+    return NS_ERROR_INVALID_ARG;
+  }
 
-NS_IMETHODIMP
-nsXPCComponents_Utils::IsJSModuleLoaded(const nsACString& aResourceURI,
-                                        bool* retval) {
-  RefPtr moduleloader = mozJSModuleLoader::Get();
-  MOZ_ASSERT(moduleloader);
-  return moduleloader->IsJSModuleLoaded(aResourceURI, retval);
+  RootedObject sandbox(cx, &sandboxVal.toObject());
+  // We only care about sandboxes here, so CheckedUnwrapStatic is fine.
+  sandbox = js::CheckedUnwrapStatic(sandbox);
+  if (!sandbox || !xpc::IsSandbox(sandbox)) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  nsresult rv = xpc::SetSandboxTimezoneOverride(cx, sandbox, timezone);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -1561,13 +1559,6 @@ nsXPCComponents_Utils::IsESModuleLoaded(const nsACString& aResourceURI,
   RefPtr moduleloader = mozJSModuleLoader::Get();
   MOZ_ASSERT(moduleloader);
   return moduleloader->IsESModuleLoaded(aResourceURI, retval);
-}
-
-NS_IMETHODIMP
-nsXPCComponents_Utils::Unload(const nsACString& registryLocation) {
-  RefPtr moduleloader = mozJSModuleLoader::Get();
-  MOZ_ASSERT(moduleloader);
-  return moduleloader->Unload(registryLocation);
 }
 
 NS_IMETHODIMP
@@ -1732,7 +1723,7 @@ struct IntentionallyLeakedObject {
 NS_IMETHODIMP
 nsXPCComponents_Utils::IntentionallyLeak() {
 #ifdef NS_FREE_PERMANENT_DATA
-  Unused << new IntentionallyLeakedObject();
+  (void)new IntentionallyLeakedObject();
   return NS_OK;
 #else
   return NS_ERROR_NOT_IMPLEMENTED;
@@ -2343,7 +2334,7 @@ NS_IMETHODIMP
 nsXPCComponents_Utils::ReadUTF8File(nsIFile* aFile, nsACString& aResult) {
   NS_ENSURE_TRUE(aFile, NS_ERROR_INVALID_ARG);
 
-  MOZ_TRY_VAR(aResult, URLPreloader::ReadFile(aFile));
+  aResult = MOZ_TRY(URLPreloader::ReadFile(aFile));
   return NS_OK;
 }
 
@@ -2351,14 +2342,7 @@ NS_IMETHODIMP
 nsXPCComponents_Utils::ReadUTF8URI(nsIURI* aURI, nsACString& aResult) {
   NS_ENSURE_TRUE(aURI, NS_ERROR_INVALID_ARG);
 
-  MOZ_TRY_VAR(aResult, URLPreloader::ReadURI(aURI));
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsXPCComponents_Utils::Now(double* aRetval) {
-  TimeStamp start = TimeStamp::ProcessCreation();
-  *aRetval = (TimeStamp::Now() - start).ToMilliseconds();
+  aResult = MOZ_TRY(URLPreloader::ReadURI(aURI));
   return NS_OK;
 }
 
@@ -2446,18 +2430,6 @@ nsXPCComponents_Utils::CreateHTMLCopyEncoder(
   NS_ENSURE_ARG_POINTER(aDocumentEncoder);
   nsCOMPtr<nsIDocumentEncoder> encoder = do_createHTMLCopyEncoder();
   encoder.forget(aDocumentEncoder);
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsXPCComponents_Utils::GetLoadedModules(nsTArray<nsCString>& aLoadedModules) {
-  return mozJSModuleLoader::Get()->GetLoadedJSAndESModules(aLoadedModules);
-}
-
-NS_IMETHODIMP
-nsXPCComponents_Utils::GetLoadedJSModules(
-    nsTArray<nsCString>& aLoadedJSModules) {
-  mozJSModuleLoader::Get()->GetLoadedModules(aLoadedJSModules);
   return NS_OK;
 }
 
@@ -2588,12 +2560,8 @@ NS_IMETHODIMP_(MozExternalRefCountType) ComponentsSH::Release(void) {
 
 NS_IMPL_QUERY_INTERFACE(ComponentsSH, nsIXPCScriptable)
 
-#define NSXPCCOMPONENTS_CID                          \
-  {                                                  \
-    0x3649f405, 0xf0ec, 0x4c28, {                    \
-      0xae, 0xb0, 0xaf, 0x9a, 0x51, 0xe4, 0x4c, 0x81 \
-    }                                                \
-  }
+#define NSXPCCOMPONENTS_CID \
+  {0x3649f405, 0xf0ec, 0x4c28, {0xae, 0xb0, 0xaf, 0x9a, 0x51, 0xe4, 0x4c, 0x81}}
 
 NS_IMPL_CLASSINFO(nsXPCComponents, &ComponentsSH::Get, 0, NSXPCCOMPONENTS_CID)
 NS_IMPL_ISUPPORTS_CI(nsXPCComponents, nsIXPCComponents)

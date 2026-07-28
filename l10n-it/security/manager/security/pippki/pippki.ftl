@@ -48,18 +48,17 @@ download-cert-view-cert =
     .label = Visualizza
 download-cert-view-text = Esamina certificato CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
     .title = Richiesta identificazione utente
-client-auth-send-no-certificate =
-  .label = Non inviare un certificato
 client-auth-site-description = Questo sito richiede di identificarti tramite un certificato:
-client-auth-site-identification = “{ $hostname }” richiede di identificarti tramite un certificato:
 client-auth-choose-cert = Scegliere un certificato da presentare come identificativo:
+client-auth-send-no-certificate =
+    .label = Non inviare un certificato
+# Variables:
+# $hostname (String) - The domain name of the site requesting the client authentication certificate
+client-auth-site-identification = “{ $hostname }” richiede di identificarti tramite un certificato:
 client-auth-cert-details = Dettagli del certificato selezionato:
 # Variables:
 # $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
@@ -83,8 +82,13 @@ client-auth-cert-details-issued-by = Rilasciato da: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Archiviato in: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Ricorda questa scelta
+client-auth-cert-remember-label = Ricorda questa scelta:
+client-auth-cert-remember-never =
+    .label = Una volta
+client-auth-cert-remember-always =
+    .label = In modo permanente
+client-auth-cert-remember-temporarily =
+    .label = Per questa sessione
 
 ## Set password (p12) dialog
 
@@ -97,9 +101,16 @@ set-password-repeat-backup-pw =
     .value = Password per il backup del certificato (conferma):
 set-password-reminder = Importante: se si dovesse scordare la password della copia di backup, non sarà possibile recuperarne successivamente il contenuto. Si consiglia di conservare la password in un luogo sicuro.
 
+## Protected authentication dialog
+
+protected-auth-window =
+    .title = Autenticazione protetta
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, “OS Client Cert Token (Modern)”)
+protected-auth-prompt = Effettuare l’autenticazione utilizzando il dispositivo di sicurezza “{ $tokenName }”. La modalità precisa dipende dal dispositivo, ad esempio potrebbe essere necessario utilizzare un lettore di impronte digitali o inserire un codice con un tastierino numerico.
+
 ## Protected authentication alert
 
 # Variables:
 # $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
 protected-auth-alert = Effettuare l’autenticazione utilizzando il token “{ $tokenName }”. La modalità precisa dipende dal token, ad esempio potrebbe essere necessario utilizzare un lettore di impronte digitali o inserire un codice con un tastierino numerico.
-

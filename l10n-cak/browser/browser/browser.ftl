@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -114,6 +111,12 @@ urlbar-result-menu-button =
     .title = Tijaq k'utsamaj
 urlbar-result-menu-button-feedback = Rutzijol
     .title = Tijaq k'utsamaj
+urlbar-result-menu-learn-more2 = Tetamäx ch'aqa' chik
+    .accesskey = t
+urlbar-result-menu-remove-from-history2 = Tiyuj pa natab'äl
+    .accesskey = y
+urlbar-result-menu-tip-get-help2 = Tk'ul to'ïk
+    .accesskey = t
 urlbar-result-menu-learn-more =
     .label = Tetamäx ch'aqa' chik
     .accesskey = t
@@ -178,6 +181,12 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Titz'aqatisäx re ruxaq k'amaya'l re' pa taq yaketal ({ $shortcut })
+
+## Searchbar context menu
+
+clear-search-history =
+    .label = Tijosq'ïx rupam ri runatab'al kanoxïk
+    .accesskey = L
 
 ## Page Action Context Menu
 
@@ -250,7 +259,7 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Ketz'et taq Tz'aqat
@@ -542,13 +551,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = K'amal:
+urlbar-go-button2 =
+    .title = Tib'e pa JAY richin ri rucholob'al taq ochochib'äl
 urlbar-go-button =
     .tooltiptext = Tib'e pa JAY richin ri rucholob'al taq ochochib'äl
 urlbar-page-action-button =
     .tooltiptext = Taq rub'anoj ruxaq
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -593,6 +605,26 @@ urlbar-result-action-copy-to-clipboard = Tiwachib'ëx
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Taq yaketal
+urlbar-searchmode-tabs =
+    .label = Taq ruwi'
+urlbar-searchmode-history =
+    .label = Natab'äl
+urlbar-searchmode-actions =
+    .label = Taq b'anoj
+urlbar-searchmode-bookmarks2 = Taq yaketal
+urlbar-searchmode-tabs2 = Taq ruwi'
+urlbar-searchmode-history2 = Natab'äl
+urlbar-searchmode-actions2 = Taq b'anoj
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = Titz'aqatisäx “{ $engineName }”
+    .title = Titz'aqatisäx kanob'äl “{ $engineName }”
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -751,7 +783,7 @@ repair-text-encoding-button =
     .label = Tichojmirisäx rub'itz'ib' tz'ib'anïk
     .tooltiptext = Tawila' ri ütz rub'itz'ib tz'ib'anïk  rik'in ri rupam ruxaq
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -802,6 +834,10 @@ eme-notifications-drm-content-playing-dismiss-accesskey = T
 
 panel-save-update-username = Rub'i' winäq
 panel-save-update-password = Ewan tzij
+panel-save-update-username-2 =
+    .label = Rub'i' winäq
+panel-save-update-password-2 =
+    .label = Ewan tzij
 
 ##
 
@@ -887,9 +923,6 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong> ¿La yejaq taq ruwi' xe'ik'o yan?</strong> Yatikïr natzolij ri amolojri'ïl pa ri rucha'ob'äl choköy{ -brand-short-name } <img data-l10n-name="icon"/>, pa Natab'äl.
 restore-session-startup-suggestion-button = Tik'ut achi'el
 
-## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } pa ruyonil yerutäq pa { -vendor-short-name } jujun taq tzij, ruma ri' yojtikïr niqutzilaj ri asamaj.
@@ -943,9 +976,6 @@ refresh-blocked-redirect-label = { -brand-short-name } man xuya' ta q'ij chi re 
 refresh-blocked-allow =
     .label = Tiya' q'ij
     .accesskey = y
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

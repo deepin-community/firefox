@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -101,8 +99,16 @@ class APZCTreeManagerTester : public APZCTesterBase {
   void QueueMockHitResult(ScrollableLayerGuid::ViewID aScrollId,
                           gfx::CompositorHitTestInfo aHitInfo =
                               gfx::CompositorHitTestFlags::eVisibleToHitTest) {
+    QueueMockHitResult(ScrollableLayerGuid(LayersId{0}, 0, aScrollId),
+                       aHitInfo);
+  }
+
+  // This overload allows customizing the LayersId as well.
+  void QueueMockHitResult(ScrollableLayerGuid aGuid,
+                          gfx::CompositorHitTestInfo aHitInfo =
+                              gfx::CompositorHitTestFlags::eVisibleToHitTest) {
     MOZ_ASSERT(mMockHitTester);
-    mMockHitTester->QueueHitResult(aScrollId, aHitInfo);
+    mMockHitTester->QueueHitResult(aGuid, aHitInfo);
   }
 
   RefPtr<TestAPZCTreeManager> manager;

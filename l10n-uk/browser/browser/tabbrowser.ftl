@@ -8,6 +8,19 @@ tabbrowser-menuitem-close-tab =
     .label = Закрити вкладку
 tabbrowser-menuitem-close =
     .label = Закрити
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs in a container.
+# Variables:
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-container = { $containerName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } — { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -34,6 +47,8 @@ tabbrowser-close-tabs-tooltip =
             [few] Закрити { $tabCount } вкладки
            *[many] Закрити { $tabCount } вкладок
         }
+tab-splitview-splitter =
+    .aria-label = Змінити розмір вкладок розділеного екрану
 
 ## Tooltips for tab audio control
 ## Variables:
@@ -79,6 +94,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[many] Відтворити звук { $tabCount } вкладок
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Увімкнути звук вкладки
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Вимкнути звук вкладки
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Відтворити вкладку
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -92,6 +117,7 @@ tabbrowser-confirm-close-tabs-title =
        *[many] Закрити { $tabCount } вкладок?
     }
 tabbrowser-confirm-close-tabs-button = Закрити вкладки
+tabbrowser-ask-close-tabs-checkbox = Запитувати перед закриттям кількох вкладок
 tabbrowser-confirm-close-tabs-checkbox = Підтверджувати перед закриттям кількох вкладок
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -119,7 +145,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Закрити вікно та в
 tabbrowser-confirm-close-tabs-with-key-button = Закрити { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Запитувати перед виходом за допомогою { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Підтверджувати перед виходом за допомогою { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Вийти з { -brand-short-name } чи закрити поточну вкладку?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Закрити { -brand-short-name }
+       *[other] Закрити { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = Закрити поточну вкладку
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -141,8 +181,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = Більше не показуват
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = Увага
-tabbrowser-confirm-close-duplicate-tabs-text = Ми залишимо відкритою останню активну вкладку
 tabbrowser-confirm-close-all-duplicate-tabs-title = Закрити дублікати вкладок?
 tabbrowser-confirm-close-all-duplicate-tabs-text =
     Ми закриємо дублікати вкладок у цьому вікні. Остання активна
@@ -189,6 +227,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
         }
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Вимкнути звук вкладки
@@ -196,3 +237,225 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Увімкнути звук вкладки
 tabbrowser-manager-close-tab =
     .tooltiptext = Закрити вкладку
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – закрито
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – поточне вікно
+
+##
+
+tab-group-editor-title-create = Створити групу вкладок
+tab-group-editor-title-edit = Керувати групою вкладок
+tab-group-editor-name-label = Назва
+tab-group-editor-name-field =
+    .placeholder = Наприклад: покупки
+tab-group-editor-cancel =
+    .label = Скасувати
+    .accesskey = С
+tab-group-editor-color-selector =
+    .aria-label = Колір групи вкладок
+tab-group-editor-color-selector2-blue = Блакитний
+    .title = Блакитний
+tab-group-editor-color-selector2-purple = Бузковий
+    .title = Бузковий
+tab-group-editor-color-selector2-cyan = Бірюзовий
+    .title = Бірюзовий
+tab-group-editor-color-selector2-orange = Помаранчевий
+    .title = Помаранчевий
+tab-group-editor-color-selector2-yellow = Жовтий
+    .title = Жовтий
+tab-group-editor-color-selector2-pink = Рожевий
+    .title = Рожевий
+tab-group-editor-color-selector2-green = Зелений
+    .title = Зелений
+tab-group-editor-color-selector2-gray = Сірий
+    .title = Сірий
+tab-group-editor-color-selector2-red = Червоний
+    .title = Червоний
+tab-group-description = { $tabGroupName } – група вкладок
+tab-group-label-tooltip-collapsed = { $tabGroupName } — Згорнуто
+tab-group-label-tooltip-expanded = { $tabGroupName } — Розгорнуто
+tab-group-preview-name =
+    .aria-label = Вкладки у згорнутій групі
+tab-context-unnamed-group =
+    .label = Група без назви
+tab-group-name-default = Група без назви
+
+## When collapsed, the tab group label's aria-description will indicate
+## whether the hover menu is open or closed.
+
+tab-group-preview-open-description = Список вкладок відкрито
+tab-group-preview-closed-description = Список вкладок закрито
+
+##
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Додати вкладку до нової групи
+           *[other] Додати вкладки до нової групи
+        }
+    .accesskey = о
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Додати вкладку до групи
+           *[other] Додати вкладки до групи
+        }
+    .accesskey = т
+tab-context-move-split-view-to-new-group =
+    .label =
+        { $splitViewCount ->
+            [1] Додати розділений екран до нової групи
+           *[other] Додати розділені екрани до нової групи
+        }
+    .accesskey = з
+tab-context-move-split-view-to-group =
+    .label =
+        { $splitViewCount ->
+            [1] Додати розділений екран до групи
+           *[other] Додати розділені екрани до групи
+        }
+    .accesskey = г
+tab-context-move-tab-to-group-saved-groups =
+    .label = Закриті групи
+tab-group-editor-action-new-tab =
+    .label = Нова вкладка в групі
+tab-group-editor-action-new-window =
+    .label = Перемістити групу в нове вікно
+tab-group-editor-action-save =
+    .label = Зберегти й закрити групу
+tab-group-editor-action-ungroup =
+    .label = Розгрупувати вкладки
+tab-group-editor-action-delete =
+    .label = Видалити групу
+tab-group-editor-done =
+    .label = Виконано
+    .accessKey = и
+tab-context-reopen-tab-group =
+    .label = Відновити групу вкладок
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Вилучити з групи
+           *[other] Вилучити з груп
+        }
+    .accesskey = л
+# When a tab group containing the active tab is collapsed, the active tab
+# remains visible. An indicator appears at the end of the group showing the
+# number of remaining tabs that are hidden by the collapsed group,
+# e.g. "+2" for a group with 3 total tabs.
+tab-group-overflow-count = +{ $tabCount }
+tab-group-overflow-count-tooltip =
+    { $tabCount ->
+        [one] Ще { $tabCount } вкладка
+        [few] Ще { $tabCount } вкладки
+       *[many] Ще { $tabCount } вкладок
+    }
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Перемістити групу в нове вікно
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Перемістити групу в це вікно
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Видалити групу
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Відкрити групу в цьому вікні
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Відкрити групу в новому вікні
+
+## Tab Notes
+
+tab-context-add-note =
+    .label = Додати нотатку
+    .accesskey = к
+tab-context-edit-note =
+    .label = Редагувати нотатку
+    .accesskey = г
+tab-context-delete-note =
+    .label = Видалити нотатку
+    .accesskey = л
+tab-note-editor-title-create = Додати нотатку
+tab-note-editor-title-edit = Редагувати нотатку
+tab-note-editor-text-field =
+    .placeholder = Що ви хочете запам'ятати про цю вкладку?
+tab-note-editor-button-cancel =
+    .label = Скасувати
+    .accesskey = к
+tab-note-editor-button-save =
+    .label = Зберегти
+    .accesskey = б
+# Link to show the full tab note in case it was truncated.
+tab-note-preview-expand = Докладніше
+tab-note-panel-add-note-new-badge =
+    .label = Нове
+# Displayed within the tab note edit dialog box when the user has entered more
+# characters than are allowed.
+# Variables:
+#   $totalCharacters (Number): the number of characters the user has entered.
+#   $maxAllowedCharacters (Number): the maximum number of characters allowed for a tab note.
+tab-note-editor-character-limit =
+    { $maxAllowedCharacters ->
+        [one] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } символ
+        [few] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } символи
+       *[many] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } символів
+    }
+
+## Split View
+
+# Open a new tab next to the current tab and display their contents side by side
+tab-context-add-split-view =
+    .label = Додати розділений екран
+    .accesskey = з
+# Display the two selected tabs' contents side by side
+tab-context-open-in-split-view =
+    .label = Відкрити на розділеному екрані
+    .accesskey = л
+# Separate the two split view tabs and display the tabs and their contents as normal
+tab-context-separate-split-view =
+    .label = Вийти з розділеного екрану
+    .accesskey = й
+tab-context-badge-new = Новий
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the left tab inside of a tab split view
+# "left" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-left = { $label }, розділений екран ліворуч
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the right tab inside of a tab split view
+# "right" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-right = { $label }, розділений екран праворуч
+
+## Manage Split View (icon in the address bar & three-dot menu in the footer)
+
+# "Separate" is a verb, as in "separate the split view tabs and display them normally".
+split-view-menuitem-separate-tabs =
+    .label = Розділити вкладки
+# "Reverse" is a verb, as in "reverse the order of split view tabs".
+split-view-menuitem-reverse-tabs =
+    .label = Переставити вкладки
+split-view-menuitem-close-both-tabs =
+    .label = Закрити обидві вкладки

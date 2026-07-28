@@ -1,14 +1,15 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SelectionState.h"
 
-#include "AutoRangeArray.h"  // for AutoRangeArray
-#include "EditorUtils.h"     // for EditorUtils, AutoRangeArray
-#include "ErrorList.h"
+#include "AutoClonedRangeArray.h"  // for AutoClonedRangeArray
+#include "EditorUtils.h"           // for EditorUtils
+#include "EditorLineBreak.h"       // for EditorLineBreak
+#include "HTMLEditHelpers.h"       // for DeleteRangeResult
 
+#include "ErrorList.h"
 #include "mozilla/Assertions.h"    // for MOZ_ASSERT, etc.
 #include "mozilla/IntegerRange.h"  // for IntegerRange
 #include "mozilla/Likely.h"        // For MOZ_LIKELY and MOZ_UNLIKELY
@@ -59,7 +60,7 @@ template nsresult RangeUpdater::SelAdjInsertNode(const EditorDOMPoint& aPoint);
 template nsresult RangeUpdater::SelAdjInsertNode(
     const EditorRawDOMPoint& aPoint);
 
-SelectionState::SelectionState(const AutoRangeArray& aRanges)
+SelectionState::SelectionState(const AutoClonedSelectionRangeArray& aRanges)
     : mDirection(aRanges.GetDirection()) {
   mArray.SetCapacity(aRanges.Ranges().Length());
   for (const OwningNonNull<nsRange>& range : aRanges.Ranges()) {
@@ -123,7 +124,7 @@ nsresult SelectionState::RestoreSelection(Selection& aSelection) {
   return NS_OK;
 }
 
-void SelectionState::ApplyTo(AutoRangeArray& aRanges) {
+void SelectionState::ApplyTo(AutoClonedSelectionRangeArray& aRanges) {
   aRanges.RemoveAllRanges();
   aRanges.SetDirection(mDirection);
   for (const RefPtr<RangeItem>& rangeItem : mArray) {
@@ -533,36 +534,113 @@ void RangeUpdater::DidRemoveContainer(const Element& aRemovedElement,
   }
 }
 
-void RangeUpdater::DidMoveNode(const nsINode& aOldParent, uint32_t aOldOffset,
-                               const nsINode& aNewParent, uint32_t aNewOffset) {
+void RangeUpdater::DidMoveNodes(
+    const nsTArray<SimpleEditorDOMPoint>& aOldPoints,
+    const SimpleEditorDOMPoint& aExpectedDestination,
+    const nsTArray<SimpleEditorDOMPoint>& aNewPoints) {
   if (mLocked) {
     // Do nothing if moving nodes is occurred while changing the container.
     return;
   }
-  auto AdjustDOMPoint = [&](nsCOMPtr<nsINode>& aNode, uint32_t& aOffset) {
-    if (aNode == &aOldParent) {
-      // If previously pointed the moved content, it should keep pointing it.
-      if (aOffset == aOldOffset) {
-        aNode = const_cast<nsINode*>(&aNewParent);
-        aOffset = aNewOffset;
-      } else if (aOffset > aOldOffset) {
-        aOffset--;
-      }
-      return;
-    }
-    if (aNode == &aNewParent) {
-      if (aOffset > aNewOffset) {
-        aOffset++;
-      }
-    }
-  };
-  for (RefPtr<RangeItem>& rangeItem : mArray) {
-    if (NS_WARN_IF(!rangeItem)) {
-      return;
-    }
 
-    AdjustDOMPoint(rangeItem->mStartContainer, rangeItem->mStartOffset);
-    AdjustDOMPoint(rangeItem->mEndContainer, rangeItem->mEndOffset);
+  AutoTArray<SimpleEditorRawDOMPoint, 12> oldPoints;
+  oldPoints.SetCapacity(aOldPoints.Length());
+  for (const size_t i : IntegerRange(aOldPoints.Length())) {
+    const SimpleEditorDOMPoint& oldPoint = aOldPoints[i];
+    if (MOZ_UNLIKELY(oldPoints.IsEmpty())) {
+      oldPoints.AppendElement(SimpleEditorRawDOMPoint(
+          oldPoint.mContainer, oldPoint.mChild, oldPoint.Offset()));
+      continue;
+    }
+    // Adjust offset as if preceding children removed before because if each
+    // node is moved separately, the old offset does not contain the old
+    // previous siblings which were moved togather.  Therefore, if moved in the
+    // same container and before the offset, we don't need to adjust the offset.
+    // If we moved to previous point in the same container, the old point does
+    // not need to be adjusted.
+    if (MOZ_UNLIKELY(aExpectedDestination.mContainer == oldPoint.mContainer) &&
+        aExpectedDestination.Offset() < oldPoint.Offset()) {
+      oldPoints.AppendElement(SimpleEditorRawDOMPoint(
+          oldPoint.mContainer, oldPoint.mChild, oldPoint.Offset()));
+      continue;
+    }
+    // If we moved the next sibling of the previously moved content, the
+    // sibling start position is same as the previous one.
+    if (oldPoints.LastElement().mChild->GetNextSibling() == oldPoint.mChild) {
+      oldPoints.AppendElement(
+          SimpleEditorRawDOMPoint(oldPoint.mContainer, oldPoint.mChild,
+                                  oldPoints.LastElement().Offset()));
+      continue;
+    }
+    // If the moved content was not the next sibling of the previous moved
+    // content, we need to count the number of previous siblings which we
+    // moved and decrease the count from the offset.  That's the offset if we
+    // moved each node separately.
+    uint32_t offset = oldPoint.Offset();
+    for (const SimpleEditorRawDOMPoint& precedingPoint : oldPoints) {
+      if (precedingPoint.mContainer == oldPoint.mContainer &&
+          precedingPoint.Offset() < oldPoint.Offset()) {
+        offset--;
+      }
+    }
+    oldPoints.AppendElement(
+        SimpleEditorRawDOMPoint{oldPoint.mContainer, oldPoint.mChild, offset});
+  }
+
+  size_t newPointIndex = 0;
+  for (const SimpleEditorRawDOMPoint& oldPoint : oldPoints) {
+    const SimpleEditorDOMPoint* newPoint =
+        newPointIndex < aNewPoints.Length() &&
+                oldPoint.mChild == aNewPoints[newPointIndex].mChild
+            ? &aNewPoints[newPointIndex++]
+            : nullptr;
+    auto AdjustDOMPoint = [&](nsCOMPtr<nsINode>& aNode, uint32_t& aOffset) {
+      // If the node was removed, we should adjust the point around aOldPoint.
+      if (!newPoint || !newPoint->mContainer) {
+        // If the point was in the removed container, the point should be moved
+        // where the node was.
+        if (aNode->IsInclusiveDescendantOf(oldPoint.mChild)) {
+          aNode = oldPoint.mContainer;
+          aOffset = std::min(oldPoint.Offset(), aNode->Length());
+          return;
+        }
+        // If the point was where the node was or latter, fix the position.
+        if (aNode == oldPoint.mContainer) {
+          if (aOffset > oldPoint.Offset()) {
+            aOffset--;
+          }
+          if (aOffset > aNode->Length()) {
+            aOffset = aNode->Length();
+          }
+          return;
+        }
+        return;
+      }
+      // The node was moved to another point, at least.
+      if (aNode == oldPoint.mContainer) {
+        // If previously pointed the moved content, it should keep pointing it.
+        if (aOffset == oldPoint.Offset()) {
+          aNode = newPoint->mContainer;
+          aOffset = newPoint->Offset();
+        } else if (aOffset > oldPoint.Offset()) {
+          aOffset--;
+        }
+        return;
+      }
+      if (aNode == newPoint->mContainer) {
+        if (aOffset > newPoint->Offset()) {
+          aOffset++;
+        }
+      }
+    };
+    for (RefPtr<RangeItem>& rangeItem : mArray) {
+      if (NS_WARN_IF(!rangeItem)) {
+        return;
+      }
+
+      AdjustDOMPoint(rangeItem->mStartContainer, rangeItem->mStartOffset);
+      AdjustDOMPoint(rangeItem->mEndContainer, rangeItem->mEndOffset);
+    }
   }
 }
 
@@ -586,6 +664,60 @@ already_AddRefed<nsRange> RangeItem::GetRange() const {
       mStartContainer, mStartOffset, mEndContainer, mEndOffset, IgnoreErrors());
   NS_WARNING_ASSERTION(range, "nsRange::Create() failed");
   return range.forget();
+}
+
+/******************************************************************************
+ * mozilla::AutoTrackDOMPoint
+ ******************************************************************************/
+
+AutoTrackDOMPoint::AutoTrackDOMPoint(RangeUpdater& aRangeUpdater,
+                                     CaretPoint* aCaretPoint)
+    : AutoTrackDOMPoint(aRangeUpdater, &aCaretPoint->mCaretPoint) {}
+
+/******************************************************************************
+ * mozilla::AutoTrackDOMMoveNodeResult
+ ******************************************************************************/
+
+AutoTrackDOMMoveNodeResult::AutoTrackDOMMoveNodeResult(
+    RangeUpdater& aRangeUpdater, MoveNodeResult* aMoveNodeResult)
+    : mTrackCaretPoint(aRangeUpdater,
+                       static_cast<CaretPoint*>(aMoveNodeResult)),
+      mTrackNextInsertionPoint(aRangeUpdater,
+                               &aMoveNodeResult->mNextInsertionPoint),
+      mTrackMovedContentRange(aRangeUpdater,
+                              &aMoveNodeResult->mMovedContentRange) {}
+
+/******************************************************************************
+ * mozilla::AutoTrackDeleteRangeResult
+ ******************************************************************************/
+
+AutoTrackDOMDeleteRangeResult::AutoTrackDOMDeleteRangeResult(
+    RangeUpdater& aRangeUpdater, DeleteRangeResult* aDeleteRangeResult)
+    : mTrackCaretPoint(aRangeUpdater,
+                       static_cast<CaretPoint*>(aDeleteRangeResult)),
+      mTrackDeleteRange(aRangeUpdater, &aDeleteRangeResult->mDeleteRange) {}
+
+/******************************************************************************
+ * mozilla::AutoTrackLineBreak
+ ******************************************************************************/
+
+AutoTrackLineBreak::AutoTrackLineBreak(RangeUpdater& aRangeUpdater,
+                                       EditorLineBreak* aLineBreak)
+    : mLineBreak(aLineBreak->IsPreformattedLineBreak() ? aLineBreak : nullptr),
+      mPoint(mLineBreak ? mLineBreak->To<EditorDOMPoint>() : EditorDOMPoint()),
+      mTracker(aRangeUpdater, &mPoint) {
+  MOZ_ASSERT(aLineBreak->IsPreformattedLineBreak());
+}
+
+void AutoTrackLineBreak::Flush(enum StopTracking aStopTracking) {
+  if (!mLineBreak) {
+    return;
+  }
+  mTracker.Flush(aStopTracking);
+  if (mPoint.GetContainer() == mLineBreak->mContent) {
+    mLineBreak->mOffsetInText = Some(mPoint.Offset());
+  }
+  mLineBreak = nullptr;
 }
 
 }  // namespace mozilla

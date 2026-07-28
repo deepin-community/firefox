@@ -11,6 +11,7 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = Ezarri politikak WebExtension gehigarriek chrome.storage.managed bidez sarbidea izan dezaten.
+policy-AIControls = Konfiguratu AA kontrolak.
 policy-AllowedDomainsForApps = Definitu Google Workspace-rako sarbidea izango duten domeinuak.
 policy-AllowFileSelectionDialogs = Baimendu fitxategi-hautapenerako elkarrizketa-koadroak.
 policy-AppAutoUpdate = Gaitu edo desgaitu aplikazioaren eguneraketa automatikoa.
@@ -21,6 +22,7 @@ policy-AutofillAddressEnabled = Gaitu helbideen osatze automatikoa
 policy-AutofillCreditCardEnabled = Gaitu ordainketa metodoen osatze automatikoa
 policy-AutoLaunchProtocolsFromOrigins = Definitu erabiltzaileari galdetu gabe jatorri zehatzetatik erabil daitezkeen kanpoko protokoloen zerrenda.
 policy-BackgroundAppUpdate2 = Gaitu edo desgaitu atzeko planoko eguneraketak.
+policy-Backup = Desgaitu profileko datuen babeskopia edo berrezartzea.
 policy-BlockAboutAddons = Blokeatu gehigarrien kudeatzailerako sarbidea (about:addons).
 policy-BlockAboutConfig = Blokeatu about:config orrirako sarbidea.
 policy-BlockAboutProfiles = Blokeatu about:profiles orrirako sarbidea.
@@ -35,6 +37,7 @@ policy-Containers = Ezarri edukiontziei lotutako politikak.
 policy-DisableAccounts = Desgaitu kontuetan oinarritutako zerbitzuak, sinkronizazioa barne.
 policy-DisabledCiphers = Desgaitu zifratzeak.
 policy-DefaultDownloadDirectory = Ezarri deskarga-direktorio lehenetsia.
+policy-DefaultSerialGuardSetting = Kontrolatu Serieko APIaren erabilpena.
 policy-DisableAppUpdate = Eragotzi nabigatzailea eguneratzea.
 policy-DisableBuiltinPDFViewer = Desgaitu PDF.js, { -brand-short-name }(r)en integratutako PDF ikustailea.
 policy-DisableDefaultBrowserAgent = Eragotzi lehenetsitako nabigatzaile agenteak ekintzarik egitea. Windowsen bakarrik; beste plataformek ez dute agentea.
@@ -55,6 +58,8 @@ policy-DisablePocket2 = Desgaitu webguneak { -pocket-brand-name } zerbitzura gor
 policy-DisablePrivateBrowsing = Desgaitu nabigatze pribatua.
 policy-DisableProfileImport = Desgaitu beste nabigatzaile batetik datuak inportatzeko menu-komandoa.
 policy-DisableProfileRefresh = Desgaitu 'Biziberritu { -brand-short-name }' botoia about:support orrian.
+policy-DisableRemoteImprovements = Eragotzi eguneraketen artean { -brand-short-name }(e)k errendimendu-, egonkortasun- eta eginbide-aldaketak aplikatzea.
+policy-DisableRemoteSettingsAndAcceptSecurityConsequences = Desgaitu urruneko ezarpenak.
 policy-DisableSafeMode = Desgaitu modu seguruan berrabiarazteko eginbidea. Oharra: modu segurura sartzeko shift tekla sakatzea Windowsen desgai daiteke soilik, talde-gidalerroak erabilita.
 policy-DisableSecurityBypass = Eragotzi erabiltzaileak zenbait segurtasun-abisu saihestea.
 policy-DisableSetAsDesktopBackground = Desgaitu irudientzat 'Jarri idazmahaiaren atzeko planoan' menu-komandoa.
@@ -79,6 +84,7 @@ policy-ExtensionSettings = Kudeatu hedapenen instalazioko arlo guztiak.
 policy-ExtensionUpdate = Gaitu edo desgaitu hedapenen eguneraketa automatikoa.
 policy-FirefoxHome2 = Konfiguratu { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Konfiguratu { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Konfiguratu AA sortzaileko eginbideak.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Hitz bakarreko sarrerak helbide-barran idaztean, behartu intranet gunerako nabigazio zuzena bilaketa egin ordez.
 policy-Handlers = Konfiguratu aplikazio-maneiatzaile lehenetsiak.
 policy-HardwareAcceleration = Ez badago ezarrita, hardware-azelerazioa desgaituko da.
@@ -87,6 +93,7 @@ policy-Homepage = Hasiera-orria ezarri eta ezarpen bidez aldatzea.
 policy-HttpAllowlist = HTTPSra bihurtuko ez diren jatorriak.
 policy-HttpsOnlyMode = Baimendu HTTPS-Only modua gaitzea.
 policy-InstallAddonsPermission = Baimendu zenbait webgunek gehigarriak instalatzea.
+policy-IPProtectionAvailable = Eragotzi integratutako VPNa erabiltzaileentzat erabilgarri egotea.
 policy-LegacyProfiles = Desgaitu instalazio bakoitzerako profil bereiziak behartzen dituen eginbidea
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
@@ -97,6 +104,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Leheneratu SameSite po
 ##
 
 policy-LocalFileLinks = Baimendu gune zehatzei fitxategi lokalen loturak egitea.
+policy-LocalNetworkAccess = Gaitu edo desgaitu sare lokaleko sarbidearen egiaztapenak.
 policy-ManagedBookmarks = Administratzaileak kudeatutako eta erabiltzaileak aldatu ezin duen laster-marken zerrenda konfiguratzen du.
 policy-ManualAppUpdateOnly = Baimendu eskuzko eguneraketak soilik eta ez jakinarazi erabiltzailea eguneratzeei buruz.
 policy-PrimaryPassword = Behartu edo eragotzi pasahitz nagusia erabiltzea.
@@ -117,11 +125,13 @@ policy-PostQuantumKeyAgreementEnabled = Gaitu TLSrako post-quantum gako-hitzarme
 policy-PDFjs = Desgaitu edo konfiguratu PDF.js, { -brand-short-name }(r)en integratutako PDF ikustailea.
 policy-Permissions2 = Konfiguratu kamera, mikrofonoa, kokapena, jakinarazpenak eta erreprodukzio automatikoa erabiltzeko baimenak.
 policy-PictureInPicture = Gaitu edo desgaitu bideo beste leiho batean ikusteko eginbidea.
-policy-PopupBlocking = Baimendu zenbait webguneri lehenespenez popup leihoak bistaratzea.
+policy-PopupBlocking2 = Baimendu zenbait webguneri laster-leihoak bistaratzea eta hirugarrenen markoengandik birbideratuak izatea.
+policy-PopupBlocking = Baimendu zenbait webguneri lehenespenez laster-leihoak bistaratzea.
 policy-Preferences = Ezarri eta blokeatu hobespen-azpimultzo baten balioak.
 policy-PrivateBrowsingModeAvailability = Ezarri nabigatze pribatuko moduaren erabilgarritasuna.
 policy-PromptForDownloadLocation = Galdetu non gorde deskargatutako fitxategiak.
 policy-Proxy = Konfiguratu proxy-ezarpenak.
+policy-RelaunchRequired = Behartu { -brand-short-name } berrabiaraztea denbora-tarte baten barruan eta jakinarazi erabiltzaileari gertatzear den berrabiaraztea.
 policy-RequestedLocales = Ezarri aplikazioari eskatuko zaizkion hizkuntza-kodeen zerrenda, hobetsitakoen arabera ordenatuta.
 policy-SanitizeOnShutdown2 = Ixtean, garbitu nabigazio-datuak.
 policy-SearchBar = Ezarri bilaketa-barraren kokaleku lehenetsia. Erabiltzaileek oraindik ere pertsonalizatu ahal izango dute.
@@ -130,6 +140,9 @@ policy-SearchSuggestEnabled = Gaitu edo desgaitu bilaketa-iradokizunak.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Gehitu edo ezabatu PKCS #11 moduluak.
 policy-ShowHomeButton = Erakutsi hasiera-orriko botoia tresna-barran.
+policy-SitePolicies = Gunearen araberako politikak.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Ez bistaratu erabiltzeko baldintzak eta pribatutasun-oharra abioan. Adierazten duzu nabigatzaile honetarako sarbidea ematen diezun norbanakoen izenean erabiltzeko baldintzak onartzeko autoritatea duzula eta hauek onartzen dituzula.
 policy-SSLVersionMax = Ezarri SSL bertsio maximoa.
 policy-SSLVersionMin = Ezarri SSL bertsio minimoa.
 policy-StartDownloadsInTempDirectory = Behartu deskargak aldi baterako kokaleku lokalean hastea deskarga-direktorio lehenetsiaren ordez.
@@ -137,6 +150,11 @@ policy-SupportMenu = Gehitu euskarrirako menu-elementu pertsonalizatua laguntzar
 policy-TranslateEnabled = Gaitu edo desgaitu web orrien itzulpena.
 policy-UserMessaging = Ez erakutsi zenbait mezu erabiltzaileari.
 policy-UseSystemPrintDialog = Inprimatu sistemaren inprimatzeko elkarrizketa-koadroa erabiliz…
+policy-VisualSearchEnabled = Gaitu edo desgaitu bilaketa bisuala.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokeatu zenbait webgune bisitatzea. Irakurri dokumentazioa formatuaren gaineko xehetasun gehiagorako.
 policy-Windows10SSO = Baimendu Windows saio-hasiera bakarra (SSO) Microsoft-, laneko eta eskolako kontuentzat.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Baimendu saio-hasiera bakarra Microsoft Entra kontuetarako.
+# Do not translate "XSLTProcessor" as it is the name of an API interface.
+policy-XSLTEnabled = Gaitu edo desgaitu XSLTProcessor JavaScript APIaren eta XSLT prozesatze-instrukzioaren euskarria.

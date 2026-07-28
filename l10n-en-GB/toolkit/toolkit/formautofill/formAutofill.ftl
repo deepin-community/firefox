@@ -15,8 +15,8 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } is trying to
 autofill-edit-payment-method-os-prompt-macos = show stored payment method information
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } is trying to show stored payment method information. Confirm access to this Windows account below.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } is trying to show stored payment method information.
-# The links lead users to Form Autofill browser preferences.
-autofill-options-link = Form Autofill Options
+# The link leads users to Form Autofill browser preferences.
+autofill-options-link = Form autofill options
 autofill-options-link-osx = Form Autofill Preferences
 
 ## The credit card capture doorhanger
@@ -81,3 +81,6 @@ autofill-category-name = name
 autofill-category-organization = organisation
 autofill-category-tel = phone
 autofill-category-email = email
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } has detected an insecure site. Form Autofill is temporarily disabled.

@@ -12,20 +12,25 @@ const {
 const {
   InspectorCSSParserWrapper,
 } = require("resource://devtools/shared/css/lexer.js");
-const TrackChangeEmitter = require("resource://devtools/server/actors/utils/track-change-emitter.js");
 const {
   getRuleText,
   getTextAtLineColumn,
-} = require("resource://devtools/server/actors/utils/style-utils.js");
+} = require("resource://devtools/server/actors/stylesheets/style-utils.js");
 
 const {
-  style: { ELEMENT_STYLE },
+  style: { ELEMENT_STYLE, PRES_HINTS },
 } = require("resource://devtools/shared/constants.js");
 
 loader.lazyRequireGetter(
   this,
   "CssLogic",
   "resource://devtools/server/actors/inspector/css-logic.js",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "getNodeDisplayName",
+  "resource://devtools/server/actors/inspector/utils.js",
   true
 );
 loader.lazyRequireGetter(
@@ -41,7 +46,7 @@ loader.lazyRequireGetter(
 );
 loader.lazyRequireGetter(
   this,
-  "isPropertyUsed",
+  "getInactiveCssDataForProperty",
   "resource://devtools/server/actors/utils/inactive-property-helper.js",
   true
 );
@@ -54,11 +59,30 @@ loader.lazyRequireGetter(
 loader.lazyRequireGetter(
   this,
   ["UPDATE_PRESERVING_RULES", "UPDATE_GENERAL"],
-  "resource://devtools/server/actors/utils/stylesheets-manager.js",
+  "resource://devtools/server/actors/stylesheets/stylesheets-manager.js",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "DocumentWalker",
+  "devtools/server/actors/inspector/document-walker",
   true
 );
 
 const XHTML_NS = "http://www.w3.org/1999/xhtml";
+
+const lazy = {};
+
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs",
+  { global: "contextual" }
+);
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "layoutCssAttrEnabled",
+  "layout.css.attr.enabled",
+  false
+);
 
 /**
  * An actor that represents a CSS style object on the protocol.
@@ -69,11 +93,25 @@ const XHTML_NS = "http://www.w3.org/1999/xhtml";
  * with a special rule type (100).
  */
 class StyleRuleActor extends Actor {
-  constructor(pageStyle, item, userAdded = false) {
+  /**
+   *
+   * @param {object} options
+   * @param {PageStyleActor} options.pageStyle
+   * @param {CSSStyleRule|Element} options.item
+   * @param {boolean} options.userAdded: Optional boolean to distinguish rules added by the user.
+   * @param {string} options.pseudoElement An optional pseudo-element type in cases when
+   *        the CSS rule applies to a pseudo-element.
+   */
+  constructor({ pageStyle, item, userAdded = false, pseudoElement = null }) {
     super(pageStyle.conn, styleRuleSpec);
     this.pageStyle = pageStyle;
     this.rawStyle = item.style;
     this._userAdded = userAdded;
+    this._pseudoElements = new Set();
+    this._pseudoElement = pseudoElement;
+    if (pseudoElement) {
+      this._pseudoElements.add(pseudoElement);
+    }
     this._parentSheet = null;
     // Parsed CSS declarations from this.form().declarations used to check CSS property
     // names and values before tracking changes. Using cached values instead of accessing
@@ -94,6 +132,16 @@ class StyleRuleActor extends Actor {
         this.column = InspectorUtils.getRuleColumn(this.rawRule);
         this._parentSheet = this.rawRule.parentStyleSheet;
       }
+    } else if (item.declarationOrigin === "pres-hints") {
+      this.type = PRES_HINTS;
+      this.ruleClassName = PRES_HINTS;
+      this.rawNode = item;
+      this.rawRule = {
+        style: item.style,
+        toString() {
+          return "[element attribute styles " + this.style + "]";
+        },
+      };
     } else {
       // Fake a rule
       this.type = ELEMENT_STYLE;
@@ -118,6 +166,10 @@ class StyleRuleActor extends Actor {
     this.rawNode = null;
     this.rawRule = null;
     this._declarations = null;
+    if (this._pseudoElements) {
+      this._pseudoElements.clear();
+      this._pseudoElements = null;
+    }
   }
 
   // Objects returned by this actor are owned by the PageStyleActor
@@ -157,7 +209,7 @@ class StyleRuleActor extends Actor {
     let rule = this.rawRule;
 
     while (rule.parentRule) {
-      ancestors.unshift(this.pageStyle._styleRef(rule.parentRule));
+      ancestors.unshift(this.pageStyle.styleRef(rule.parentRule));
       rule = rule.parentRule;
     }
 
@@ -174,7 +226,7 @@ class StyleRuleActor extends Actor {
    * - the rule's ancestor rules (@media, @supports, @keyframes), if any
    * - the rule's position within its ancestor tree, if any
    *
-   * @return {Object}
+   * @return {object}
    */
   get metadata() {
     const data = {};
@@ -232,7 +284,7 @@ class StyleRuleActor extends Actor {
         // Element style attributes don't have a rule index; use the generated selector.
         index: data.selector,
         // Whether the element lives in a different frame than the host document.
-        isFramed: this.rawNode.ownerGlobal !== this.pageStyle.ownerWindow,
+        isFramed: this.rawNode.documentGlobal !== this.pageStyle.ownerWindow,
       };
 
       const nodeActor = this.pageStyle.walker.getNode(this.rawNode);
@@ -253,20 +305,100 @@ class StyleRuleActor extends Actor {
       const inspectorActor = this.pageStyle.inspector;
       const resourceId =
         this.pageStyle.styleSheetsManager.getStyleSheetResourceId(sheet);
-      const styleSheetIndex =
-        this.pageStyle.styleSheetsManager.getStyleSheetIndex(resourceId);
       data.source = {
         // Inline stylesheets have a null href; Use window URL instead.
         type: sheet.href ? "stylesheet" : "inline",
         href: sheet.href || inspectorActor.window.location.toString(),
         id: resourceId,
-        index: styleSheetIndex,
         // Whether the stylesheet lives in a different frame than the host document.
         isFramed: inspectorActor.window !== inspectorActor.window.top,
       };
     }
 
     return data;
+  }
+
+  /**
+   * Returns true if the pseudo element anonymous node (e.g. ::before, ::marker, …) is selected.
+   * Returns false if a non pseudo element node is selected and we're looking into its pseudo
+   * elements rules (i.e. this is for the "Pseudo-elements" section in the Rules view")
+   */
+  get isPseudoElementAnonymousNodeSelected() {
+    if (!this._pseudoElement) {
+      return false;
+    }
+
+    // `this._pseudoElement` is the returned value by getNodeDisplayName, i.e that does
+    // differ from this.pageStyle.selectedElement.implementedPseudoElement (e.g. for
+    // view transition element, it will be `::view-transition-group(root)`, while
+    // implementedPseudoElement will be `::view-transition-group`).
+    return (
+      this._pseudoElement === getNodeDisplayName(this.pageStyle.selectedElement)
+    );
+  }
+
+  /**
+   * StyleRuleActor is spawned once per CSS Rule, but will be refreshed based on the
+   * currently selected DOM Element, which is updated when PageStyleActor.getApplied
+   * is called.
+   */
+  get currentlySelectedElement() {
+    let { selectedElement } = this.pageStyle;
+    // If we're not handling a pseudo element, or if the pseudo element node
+    // (e.g. ::before, ::marker, …) is the one selected in the markup view, we can
+    // directly return selected element.
+    if (!this._pseudoElement || this.isPseudoElementAnonymousNodeSelected) {
+      return selectedElement;
+    }
+
+    // Otherwise we are selecting the pseudo element "parent" (binding), and we need to
+    // walk down the tree from `selectedElement` to find the pseudo element.
+
+    // FIXME: ::view-transition pseudo elements don't have a _moz_generated_content_ prefixed
+    // nodename, but have specific type and name attribute.
+    // At the moment this isn't causing any issues because we don't display the view
+    // transition rules in the pseudo element section, but this should be fixed in Bug 1998345.
+    const pseudo = this._pseudoElement.replaceAll(":", "");
+    const nodeName = `_moz_generated_content_${pseudo}`;
+
+    if (selectedElement.nodeName !== nodeName) {
+      const walker = new DocumentWalker(
+        selectedElement,
+        selectedElement.documentGlobal
+      );
+
+      for (let next = walker.firstChild(); next; next = walker.nextSibling()) {
+        if (next.nodeName === nodeName) {
+          selectedElement = next;
+          break;
+        }
+      }
+    }
+
+    return selectedElement;
+  }
+
+  get currentlySelectedElementComputedStyle() {
+    if (!this._pseudoElement) {
+      return this.pageStyle.cssLogic.computedStyle;
+    }
+
+    const { selectedElement } = this.pageStyle;
+
+    return selectedElement.documentGlobal.getComputedStyle(
+      selectedElement,
+      // If we are selecting the pseudo element parent, we need to pass the pseudo element
+      // to getComputedStyle to actually get the computed style of the pseudo element.
+      !this.isPseudoElementAnonymousNodeSelected ? this._pseudoElement : null
+    );
+  }
+
+  get pseudoElements() {
+    return this._pseudoElements;
+  }
+
+  addPseudo(pseudoElement) {
+    this._pseudoElements.add(pseudoElement);
   }
 
   getDocument(sheet) {
@@ -287,6 +419,7 @@ class StyleRuleActor extends Actor {
     const form = {
       actor: this.actorID,
       type: this.type,
+      className: this.ruleClassName,
       line: this.line || undefined,
       column: this.column,
       traits: {
@@ -316,9 +449,15 @@ class StyleRuleActor extends Actor {
     // synchronously compute the authored text, but |form| also cannot
     // return a promise.  See bug 1205868.
     form.authoredText = this.authoredText;
+    form.cssText = this._getCssText();
 
     switch (this.ruleClassName) {
-      case "CSSStyleRule":
+      case "CSSNestedDeclarations":
+        form.isNestedDeclarations = true;
+        form.selectors = [];
+        form.selectorsSpecificity = [];
+        break;
+      case "CSSStyleRule": {
         form.selectors = [];
         form.selectorsSpecificity = [];
 
@@ -337,16 +476,19 @@ class StyleRuleActor extends Actor {
         if (selectorWarnings.length) {
           form.selectorWarnings = selectorWarnings;
         }
-        form.cssText = this.rawStyle.cssText || "";
         break;
-      case ELEMENT_STYLE:
+      }
+      case ELEMENT_STYLE: {
         // Elements don't have a parent stylesheet, and therefore
         // don't have an associated URI.  Provide a URI for
         // those.
         const doc = this.rawNode.ownerDocument;
         form.href = doc.location ? doc.location.href : "";
-        form.cssText = this.rawStyle.cssText || "";
         form.authoredText = this.rawNode.getAttribute("style");
+        break;
+      }
+      case PRES_HINTS:
+        form.href = "";
         break;
       case "CSSCharsetRule":
         form.encoding = this.rawRule.encoding;
@@ -355,11 +497,10 @@ class StyleRuleActor extends Actor {
         form.href = this.rawRule.href;
         break;
       case "CSSKeyframesRule":
-        form.cssText = this.rawRule.cssText;
+      case "CSSPositionTryRule":
         form.name = this.rawRule.name;
         break;
       case "CSSKeyframeRule":
-        form.cssText = this.rawStyle.cssText || "";
         form.keyText = this.rawRule.keyText || "";
         break;
     }
@@ -368,18 +509,11 @@ class StyleRuleActor extends Actor {
     // and so that we can safely determine if a declaration is valid rather than
     // have the client guess it.
     if (form.authoredText || form.cssText) {
-      // authoredText may be an empty string when deleting all properties; it's ok to use.
-      const cssText =
-        typeof form.authoredText === "string"
-          ? form.authoredText
-          : form.cssText;
-      const declarations = parseNamedDeclarations(
-        isCssPropertyKnown,
-        cssText,
-        true
-      );
-      const el = this.pageStyle.selectedElement;
-      const style = this.pageStyle.cssLogic.computedStyle;
+      const declarations = this.parseRuleDeclarations({
+        parseComments: true,
+      });
+      const el = this.currentlySelectedElement;
+      const style = this.currentlySelectedElementComputedStyle;
 
       // Whether the stylesheet is a user-agent stylesheet. This affects the
       // validity of some properties and property values.
@@ -418,20 +552,45 @@ class StyleRuleActor extends Actor {
         // InspectorUtils.supports only supports the 1-arg version, but that's
         // what we want to do anyways so that we also accept !important in the
         // value.
-        decl.isValid = InspectorUtils.supports(
-          `${decl.name}:${decl.value}`,
-          supportsOptions
+        decl.isValid =
+          // Always consider pres hints styles declarations valid. We need this because
+          // in some cases we might get quirks declarations for which we serialize the
+          // value to something meaningful for the user, but that can't be actually set.
+          // (e.g. for <table> in quirks mode, we get a `color: -moz-inherit-from-body-quirk`)
+          // In such case InspectorUtils.supports() would return false, but that would be
+          // odd to show "invalid" pres hints declaration in the UI.
+          this.ruleClassName === PRES_HINTS ||
+          (InspectorUtils.supports(
+            `${decl.name}:${decl.value}`,
+            supportsOptions
+          ) &&
+            // !important values are not valid in @position-try and @keyframes
+            // TODO: We might extend InspectorUtils.supports to take the actual rule
+            // so we wouldn't have to hardcode this, but this does come with some
+            // challenges (see Bug 2004379).
+            !(
+              decl.priority === "important" &&
+              (this.ruleClassName === "CSSPositionTryRule" ||
+                this.ruleClassName === "CSSKeyframesRule")
+            ));
+        const inactiveCssData = getInactiveCssDataForProperty(
+          el,
+          style,
+          this.rawRule,
+          decl.name
         );
-        // TODO: convert from Object to Boolean. See Bug 1574471
-        decl.isUsed = isPropertyUsed(el, style, this.rawRule, decl.name);
-        // Check property name. All valid CSS properties support "initial" as a value.
-        decl.isNameValid = InspectorUtils.supports(
-          `${decl.name}:initial`,
-          supportsOptions
-        );
+        if (inactiveCssData !== null) {
+          decl.inactiveCssData = inactiveCssData;
+        }
 
-        if (SharedCssLogic.isCssVariable(decl.name)) {
-          decl.isCustomProperty = true;
+        // Check property name. All valid CSS properties support "initial" as a value.
+        decl.isNameValid =
+          // InspectorUtils.supports can be costly, don't call it when the declaration
+          // is a CSS variable, it should always be valid
+          decl.isCustomProperty ||
+          InspectorUtils.supports(`${decl.name}:initial`, supportsOptions);
+
+        if (decl.isCustomProperty) {
           decl.computedValue = style.getPropertyValue(decl.name);
 
           // If the variable is a registered property, we check if the variable is
@@ -499,8 +658,51 @@ class StyleRuleActor extends Actor {
   }
 
   /**
+   * Return the rule cssText if applicable, null otherwise
    *
-   * @returns {Array<Object>} ancestorData: An array of ancestor item data
+   * @returns {string | null}
+   */
+  _getCssText() {
+    switch (this.ruleClassName) {
+      case "CSSNestedDeclarations":
+      case "CSSPositionTryRule":
+      case "CSSStyleRule":
+      case ELEMENT_STYLE:
+      case PRES_HINTS:
+        return this.rawStyle.cssText || "";
+      case "CSSKeyframesRule":
+      case "CSSKeyframeRule":
+        return this.rawRule.cssText;
+    }
+    return null;
+  }
+
+  /**
+   * Parse the rule declarations from its text.
+   *
+   * @param {object} options
+   * @param {boolean} options.parseComments
+   * @returns {Array} @see parseNamedDeclarations
+   */
+  parseRuleDeclarations({ parseComments }) {
+    const authoredText =
+      this.ruleClassName === ELEMENT_STYLE
+        ? this.rawNode.getAttribute("style")
+        : this.authoredText;
+
+    // authoredText may be an empty string when deleting all properties; it's ok to use.
+    const cssText =
+      typeof authoredText === "string" ? authoredText : this._getCssText();
+    if (!cssText) {
+      return [];
+    }
+
+    return parseNamedDeclarations(isCssPropertyKnown, cssText, parseComments);
+  }
+
+  /**
+   *
+   * @returns {Array<object>} ancestorData: An array of ancestor item data
    */
   _getAncestorDataForForm() {
     const ancestorData = [];
@@ -533,10 +735,20 @@ class StyleRuleActor extends Actor {
       } else if (ruleClassName === "CSSContainerRule") {
         ancestorData.push({
           type,
-          // Send containerName and containerQuery separately (instead of conditionText)
+          // send the array of conditions (e.g. their name and query instead of conditionText)
           // so the client has more flexibility to display the information.
-          containerName: rawRule.containerName,
-          containerQuery: rawRule.containerQuery,
+          conditions: Array.from(rawRule.conditions).map((condition, i) => ({
+            containerName: condition.name,
+            containerQuery: condition.query,
+            matched: rawRule.queryConditionMatchesElement(
+              this.currentlySelectedElement,
+              i
+            ),
+            hasContainer: !!rawRule.queryContainerFor(
+              this.currentlySelectedElement,
+              i
+            ),
+          })),
         });
       } else if (ruleClassName === "CSSSupportsRule") {
         ancestorData.push({
@@ -549,7 +761,10 @@ class StyleRuleActor extends Actor {
           start: rawRule.start,
           end: rawRule.end,
         });
-      } else if (ruleClassName === "CSSStartingStyleRule") {
+      } else if (
+        ruleClassName === "CSSStartingStyleRule" ||
+        ruleClassName === "CSSAppearanceBaseRule"
+      ) {
         ancestorData.push({
           type,
         });
@@ -615,8 +830,8 @@ class StyleRuleActor extends Actor {
    * Send an event notifying that the location of the rule has
    * changed.
    *
-   * @param {Number} line the new line number
-   * @param {Number} column the new column number
+   * @param {number} line the new line number
+   * @param {number} column the new column number
    */
   _notifyLocationChanged(line, column) {
     this.emit("location-changed", line, column);
@@ -692,6 +907,8 @@ class StyleRuleActor extends Actor {
     "CSSKeyframesRule",
     "CSSLayerBlockRule",
     "CSSMediaRule",
+    "CSSNestedDeclarations",
+    "CSSPositionTryRule",
     "CSSStyleRule",
     "CSSSupportsRule",
   ]);
@@ -715,7 +932,7 @@ class StyleRuleActor extends Actor {
    * The authored text will include invalid and otherwise ignored
    * properties.
    *
-   * @param {Boolean} skipCache
+   * @param {boolean} skipCache
    *        If a value for authoredText was previously found and cached,
    *        ignore it and parse the stylehseet again. The authoredText
    *        may be outdated if a descendant of this rule has changed.
@@ -735,13 +952,15 @@ class StyleRuleActor extends Actor {
     }
 
     try {
+      if (this.ruleClassName == "CSSNestedDeclarations") {
+        throw new Error("getRuleText doesn't deal well with bare declarations");
+      }
       const resourceId =
         this.pageStyle.styleSheetsManager.getStyleSheetResourceId(
           this._parentSheet
         );
-      const cssText = await this.pageStyle.styleSheetsManager.getText(
-        resourceId
-      );
+      const cssText =
+        await this.pageStyle.styleSheetsManager.getText(resourceId);
       const text = getRuleText(cssText, this.line, this.column);
       // Cache the result on the rule actor to avoid parsing again next time
       this._failedToGetRuleText = false;
@@ -765,7 +984,7 @@ class StyleRuleActor extends Actor {
    * selector that uniquely identifies the element and with the rule body consisting of
    * the element's style attribute.
    *
-   * @return {String}
+   * @return {string}
    */
   async getRuleText() {
     // Bail out if the rule is not supported or not an element inline style.
@@ -788,9 +1007,8 @@ class StyleRuleActor extends Actor {
         this.pageStyle.styleSheetsManager.getStyleSheetResourceId(
           this._parentSheet
         );
-      const stylesheetText = await this.pageStyle.styleSheetsManager.getText(
-        resourceId
-      );
+      const stylesheetText =
+        await this.pageStyle.styleSheetsManager.getText(resourceId);
 
       const [start, end] = getSelectorOffsets(
         stylesheetText,
@@ -809,7 +1027,7 @@ class StyleRuleActor extends Actor {
    * Set the contents of the rule.  This rewrites the rule in the
    * stylesheet and causes it to be re-evaluated.
    *
-   * @param {String} newText
+   * @param {string} newText
    *        The new text of the rule
    * @param {Array} modifications
    *        Array with modifications applied to the rule. Contains objects like:
@@ -842,9 +1060,8 @@ class StyleRuleActor extends Actor {
           this._parentSheet
         );
 
-      const sheetText = await this.pageStyle.styleSheetsManager.getText(
-        resourceId
-      );
+      const sheetText =
+        await this.pageStyle.styleSheetsManager.getText(resourceId);
       const cssText = InspectorUtils.replaceBlockRuleBodyTextInStylesheet(
         sheetText,
         this.line,
@@ -958,9 +1175,9 @@ class StyleRuleActor extends Actor {
    * current rule. Returns the newly inserted css rule or null if the rule is
    * unsuccessfully inserted to the parent style sheet.
    *
-   * @param {String} value
+   * @param {string} value
    *        The new selector value
-   * @param {Boolean} editAuthored
+   * @param {boolean} editAuthored
    *        True if the selector should be updated by editing the
    *        authored text; false if the selector should be updated via
    *        CSSOM.
@@ -986,9 +1203,8 @@ class StyleRuleActor extends Actor {
         this.pageStyle.styleSheetsManager.getStyleSheetResourceId(
           this._parentSheet
         );
-      let authoredText = await this.pageStyle.styleSheetsManager.getText(
-        resourceId
-      );
+      let authoredText =
+        await this.pageStyle.styleSheetsManager.getText(resourceId);
 
       const [startOffset, endOffset] = getSelectorOffsets(
         authoredText,
@@ -1041,11 +1257,11 @@ class StyleRuleActor extends Actor {
    * Take an object with instructions to modify a CSS declaration and log an object with
    * normalized metadata which describes the change in the context of this rule.
    *
-   * @param {Object} change
+   * @param {object} change
    *        Data about a modification to a declaration. @see |modifyProperties()|
-   * @param {Object} newDeclarations
+   * @param {object} newDeclarations
    *        The current declarations array to get the latest values, names...
-   * @param {Object} oldDeclarations
+   * @param {object} oldDeclarations
    *        The previous declarations array to use to fetch old values, names...
    */
   logDeclarationChange(change, newDeclarations, oldDeclarations) {
@@ -1072,7 +1288,7 @@ class StyleRuleActor extends Actor {
     const data = this.metadata;
 
     switch (change.type) {
-      case "set":
+      case "set": {
         data.type = prevValue ? "declaration-add" : "declaration-update";
         // If `change.newName` is defined, use it because the property is being renamed.
         // Otherwise, a new declaration is being created or the value of an existing
@@ -1110,6 +1326,7 @@ class StyleRuleActor extends Actor {
         }
 
         break;
+      }
 
       case "remove":
         data.type = "declaration-remove";
@@ -1124,20 +1341,20 @@ class StyleRuleActor extends Actor {
         break;
     }
 
-    TrackChangeEmitter.trackChange(data);
+    this.pageStyle.inspector.targetActor.emit("track-css-change", data);
   }
 
   /**
    * Helper method for tracking CSS changes. Logs the change of this rule's selector as
    * two operations: a removal using the old selector and an addition using the new one.
    *
-   * @param {String} oldSelector
+   * @param {string} oldSelector
    *        This rule's previous selector.
-   * @param {String} newSelector
+   * @param {string} newSelector
    *        This rule's new selector.
    */
   logSelectorChange(oldSelector, newSelector) {
-    TrackChangeEmitter.trackChange({
+    this.pageStyle.inspector.targetActor.emit("track-css-change", {
       ...this.metadata,
       type: "selector-remove",
       add: null,
@@ -1145,7 +1362,7 @@ class StyleRuleActor extends Actor {
       selector: oldSelector,
     });
 
-    TrackChangeEmitter.trackChange({
+    this.pageStyle.inspector.targetActor.emit("track-css-change", {
       ...this.metadata,
       type: "selector-add",
       add: null,
@@ -1165,82 +1382,75 @@ class StyleRuleActor extends Actor {
    *
    * @param {DOMNode} node
    *        The current selected element
-   * @param {String} value
+   * @param {string} value
    *        The new selector value
-   * @param {Boolean} editAuthored
+   * @param {boolean} editAuthored
    *        True if the selector should be updated by editing the
    *        authored text; false if the selector should be updated via
    *        CSSOM.
-   * @returns {Object}
+   * @returns {Promise<object>}
    *        Returns an object that contains the applied style properties of the
    *        new rule and a boolean indicating whether or not the new selector
    *        matches the current selected element
    */
-  modifySelector(node, value, editAuthored = false) {
+  async modifySelector(node, value, editAuthored = false) {
     if (this.type === ELEMENT_STYLE || this.rawRule.selectorText === value) {
       return { ruleProps: null, isMatching: true };
     }
 
     // The rule's previous selector is lost after calling _addNewSelector(). Save it now.
     const oldValue = this.rawRule.selectorText;
-    let selectorPromise = this._addNewSelector(value, editAuthored);
+    const newCssRule = await this._addNewSelector(value, editAuthored);
 
-    if (editAuthored) {
-      selectorPromise = selectorPromise.then(newCssRule => {
-        if (newCssRule) {
-          this.logSelectorChange(oldValue, value);
-          const style = this.pageStyle._styleRef(newCssRule);
-          // See the comment in |form| to understand this.
-          return style.getAuthoredCssText().then(() => newCssRule);
-        }
-        return newCssRule;
-      });
+    if (editAuthored && newCssRule) {
+      this.logSelectorChange(oldValue, value);
+      const style = this.pageStyle.styleRef(newCssRule);
+      // See the comment in |form| to understand this.
+      await style.getAuthoredCssText();
     }
 
-    return selectorPromise.then(newCssRule => {
-      let entries = null;
-      let isMatching = false;
+    let entries = null;
+    let isMatching = false;
 
-      if (newCssRule) {
-        const ruleEntry = this.pageStyle.findEntryMatchingRule(
-          node,
-          newCssRule
-        );
-        if (ruleEntry.length === 1) {
-          entries = this.pageStyle.getAppliedProps(node, ruleEntry, {
-            matchedSelectors: true,
-          });
-        } else {
-          entries = this.pageStyle.getNewAppliedProps(node, newCssRule);
-        }
-
-        isMatching = entries.some(
-          ruleProp => !!ruleProp.matchedSelectorIndexes.length
-        );
+    if (newCssRule) {
+      const ruleEntry = this.pageStyle.findEntryMatchingRule(node, newCssRule);
+      if (ruleEntry) {
+        entries = this.pageStyle.getAppliedProps(node, [ruleEntry], {
+          matchedSelectors: true,
+        });
+      } else {
+        entries = this.pageStyle.getNewAppliedProps(node, newCssRule);
       }
 
-      const result = { isMatching };
-      if (entries) {
-        result.ruleProps = { entries };
-      }
+      isMatching = entries.some(
+        ruleProp => !!ruleProp.matchedSelectorIndexes.length
+      );
+    }
 
-      return result;
-    });
+    const result = { isMatching };
+    if (entries) {
+      result.ruleProps = { entries };
+    }
+
+    return result;
   }
 
   /**
    * Get the eligible query container for a given @container rule and a given node
    *
-   * @param {Number} ancestorRuleIndex: The index of the @container rule in this.ancestorRules
+   * @param {number} ancestorRuleIndex: The index of the @container rule in this.ancestorRules
    * @param {NodeActor} nodeActor: The nodeActor for which we want to retrieve the query container
-   * @returns {Object} An object with the following properties:
+   * @param {number} conditionIndex: The index of <container-condition> in the @container rule
+   * @returns {object} An object with the following properties:
    *          - node: {NodeActor|null} The nodeActor representing the query container,
    *            null if none were found
+   *          - containerName: {string} The computed `containerType` value of the query container
+   *            when there's one, or the rule's condition `name`.
    *          - containerType: {string} The computed `containerType` value of the query container
-   *          - inlineSize: {string} The computed `inlineSize` value of the query container (e.g. `120px`)
-   *          - blockSize: {string} The computed `blockSize` value of the query container (e.g. `812px`)
+   *          - queryFeatures: {array<object>} An array of the properties used in the
+   *            query and their values.
    */
-  getQueryContainerForNode(ancestorRuleIndex, nodeActor) {
+  getQueryContainerForNode(ancestorRuleIndex, nodeActor, conditionIndex) {
     const ancestorRule = this.ancestorRules[ancestorRuleIndex];
     if (!ancestorRule) {
       console.error(
@@ -1250,23 +1460,159 @@ class StyleRuleActor extends Actor {
     }
 
     const containerEl = ancestorRule.rawRule.queryContainerFor(
-      nodeActor.rawNode
+      nodeActor.rawNode,
+      conditionIndex
     );
+    const condition = ancestorRule.rawRule.conditions[conditionIndex];
 
-    // queryContainerFor returns null when the container name wasn't find in any ancestor.
-    // In practice this shouldn't happen, as if the rule is applied, it means that an
-    // elligible container was found.
+    // queryContainerFor returns null when the container name wasn't find in any ancestor,
+    // which can happen for rules with multiple conditions.
     if (!containerEl) {
-      return { node: null };
+      return {
+        node: null,
+        containerName: condition?.name,
+      };
     }
 
     const computedStyle = CssLogic.getComputedStyle(containerEl);
+
     return {
       node: this.pageStyle.walker.getNode(containerEl),
       containerType: computedStyle.containerType,
-      inlineSize: computedStyle.inlineSize,
-      blockSize: computedStyle.blockSize,
+      containerName:
+        computedStyle.containerName !== "none"
+          ? computedStyle.containerName
+          : null,
+      queryFeatures: this.#getFeaturesForContainerQueryConditions({
+        condition,
+        computedStyle,
+        containerEl,
+      }),
     };
+  }
+
+  /**
+   * Get the different features (i.e. the properties used in the condition) of a given
+   * container query condition.
+   *
+   * @param {object} param
+   * @param {object} param.condition
+   * @param {object} param.computedStyle
+   * @param {Element} param.containerEl
+   * @returns Array<object>
+   */
+  #getFeaturesForContainerQueryConditions({
+    condition,
+    computedStyle,
+    containerEl,
+  }) {
+    const queryFeatures = [];
+    // We only want to send unique type/name/value entries (e.g. if a given variable is
+    // mentioned twice, we should only send it once).
+    const addQueryFeature = (type, name, value) => {
+      if (
+        queryFeatures.some(
+          // we don't need to check for `value`, as type/name should represent a unique
+          // attribute/variable/property , and we'll always get the same value for a
+          // given (type|name) pair.
+          feature => feature.name === name && feature.type === type
+        )
+      ) {
+        return;
+      }
+      queryFeatures.push({ type, name, value });
+    };
+    const parser = new InspectorCSSParser(condition.query);
+    let token;
+    const stack = [];
+    while ((token = parser.nextToken())) {
+      const lastStack = stack.at(-1);
+      if (token.tokenType === "Function") {
+        stack.push({
+          tokenType: token.tokenType,
+          functionName: token.value.toLowerCase(),
+        });
+        continue;
+      }
+      if (token.tokenType === "ParenthesisBlock") {
+        stack.push({ tokenType: token.tokenType });
+        continue;
+      }
+      if (token.tokenType === "CloseParenthesis") {
+        stack.pop();
+        continue;
+      }
+
+      if (token.tokenType === "Ident") {
+        let ident = token.text;
+        if (ident === "and" || ident === "or" || ident === "not") {
+          continue;
+        }
+
+        let propertyValue = computedStyle.getPropertyValue(ident);
+
+        // if we're in style() or var() and the ident starts with "--", it's most likely
+        // a reference to a CSS variable, so let's get its value
+        if (
+          lastStack.tokenType === "Function" &&
+          (lastStack.functionName === "style" ||
+            lastStack.functionName === "var") &&
+          ident.startsWith("--")
+        ) {
+          // the variable name is the first ident after the function token
+          if (!lastStack.varNameFound) {
+            // we want to return the ident if the variable is not defined, so we can display
+            // specific text for it
+            addQueryFeature(
+              "var",
+              ident,
+              // Use computedStyle.hasLonghandProperty(ident), so we can return an empty
+              // string for empty variables (e.g. `--x: ;`), and null when the variables isn't set.
+              computedStyle.hasLonghandProperty(ident) ? propertyValue : null
+            );
+            lastStack.varNameFound = true;
+          }
+          continue;
+        }
+        if (
+          lastStack.tokenType === "Function" &&
+          lastStack.functionName === "attr" &&
+          // only include attribute name/values if they would actually be matched.
+          // With the pref set to false, the rule still parses, but the condition will
+          // be unmatched, and showing the attributes could lead to confusion
+          lazy.layoutCssAttrEnabled
+        ) {
+          // the attribute name is the first ident after the function token
+          if (!lastStack.attrNameFound) {
+            // we want to return the attribute if it's not defined, so we can display
+            // specific text for it
+            addQueryFeature("attr", ident, containerEl.getAttribute(ident));
+            lastStack.attrNameFound = true;
+          }
+          continue;
+        }
+        if (lastStack.tokenType === "ParenthesisBlock") {
+          // if the value for the ident wasn't found, we may have some legacy syntax
+          // features (e.g. `max-height: 100px`, `min-width: 800px`)
+          if (!propertyValue) {
+            // Try to remove the leading min/max so we get the actual property name
+            ident = ident.replace(/(min|max)-/, "");
+            propertyValue = computedStyle.getPropertyValue(ident);
+          }
+
+          // If we couldn't still get the value, don't include anything for that ident
+          if (!propertyValue) {
+            continue;
+          }
+
+          // if we're not directly in a function, we might have regular size features,
+          // e.g. (inline-size > 1px and height < 80px). Let's return the value for those.
+          addQueryFeature("size", ident, propertyValue);
+        }
+      }
+    }
+
+    return queryFeatures;
   }
 
   /**
@@ -1276,21 +1622,29 @@ class StyleRuleActor extends Actor {
    * If any have changed their used/unused state, potentially as a result of changes in
    * another rule, fire a "rule-updated" event with this rule actor in its latest state.
    *
-   * @param {Boolean} forceRefresh: Set to true to emit "rule-updated", even if the state
+   * @param {boolean} forceRefresh: Set to true to emit "rule-updated", even if the state
    *        of the declarations didn't change.
    */
   maybeRefresh(forceRefresh) {
     let hasChanged = false;
 
-    const el = this.pageStyle.selectedElement;
-    const style = CssLogic.getComputedStyle(el);
+    const el = this.currentlySelectedElement;
+    const style = this.currentlySelectedElementComputedStyle;
 
     for (const decl of this._declarations) {
-      // TODO: convert from Object to Boolean. See Bug 1574471
-      const isUsed = isPropertyUsed(el, style, this.rawRule, decl.name);
+      const inactiveCssData = getInactiveCssDataForProperty(
+        el,
+        style,
+        this.rawRule,
+        decl.name
+      );
 
-      if (decl.isUsed.used !== isUsed.used) {
-        decl.isUsed = isUsed;
+      if (decl.inactiveCssData?.msgId !== inactiveCssData?.msgId) {
+        if (inactiveCssData) {
+          decl.inactiveCssData = inactiveCssData;
+        } else {
+          delete decl.inactiveCssData;
+        }
         hasChanged = true;
       }
     }
@@ -1314,10 +1668,11 @@ exports.StyleRuleActor = StyleRuleActor;
 /**
  * Compute the start and end offsets of a rule's selector text, given
  * the CSS text and the line and column at which the rule begins.
- * @param {String} initialText
- * @param {Number} line (1-indexed)
- * @param {Number} column (1-indexed)
- * @return {array} An array with two elements: [startOffset, endOffset].
+ *
+ * @param {string} initialText
+ * @param {number} line (1-indexed)
+ * @param {number} column (1-indexed)
+ * @return {Array} An array with two elements: [startOffset, endOffset].
  *                 The elements mark the bounds in |initialText| of
  *                 the CSS rule's selector.
  */

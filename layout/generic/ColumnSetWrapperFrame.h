@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -55,7 +53,7 @@ class ColumnSetWrapperFrame final : public nsBlockFrame {
 
   void MarkIntrinsicISizesDirty() override;
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const IntrinsicSizeInput& aInput,
                          IntrinsicISizeType aType) override;
 
   Maybe<nscoord> GetNaturalBaselineBOffset(
@@ -68,15 +66,11 @@ class ColumnSetWrapperFrame final : public nsBlockFrame {
   ~ColumnSetWrapperFrame() override = default;
 
   // MinISize() and PrefISize() are helpers to implement IntrinsicISize().
-  nscoord MinISize(gfxContext* aContext);
-  nscoord PrefISize(gfxContext* aContext);
+  nscoord MinISize(const IntrinsicSizeInput& aInput);
+  nscoord PrefISize(const IntrinsicSizeInput& aInput);
 
 #ifdef DEBUG
   static void AssertColumnSpanWrapperSubtreeIsSane(const nsIFrame* aFrame);
-
-  // True if frame constructor has finished building this frame and all of
-  // its descendants.
-  bool mFinishedBuildingColumns = false;
 #endif
 
   template <typename Iterator>

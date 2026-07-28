@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -50,7 +49,11 @@ interface nsIAccessibleEditableText : nsISupports
    * Pastes text from the clipboard.
    *
    * @param position - index at which to insert the text from the system
-   *                   clipboard into the text represented by this object.
+   *                   clipboard into the text represented by this object. If
+   *                   this is TEXT_OFFSET_CARET, the text will be pasted at the
+   *                   caret just as it would be when pasting using the keyboard
+   *                   or GUI. This means that if text is already selected, it
+   *                   will be replaced with the pasted text.
    */
   [can_run_script]
   void pasteText(in long position);

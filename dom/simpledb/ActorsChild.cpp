@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -181,8 +179,24 @@ mozilla::ipc::IPCResult SDBRequestChild::Recv__delete__(
       break;
 
     case SDBRequestResponse::TSDBRequestOpenResponse:
-      HandleResponse();
+      if (mConnection->IsAllowedToClose()) {
+        // If the connection is allowed to close already, then we shouldn't set
+        // a result here. Instead we set an abort error.
+        HandleResponse(NS_ERROR_ABORT);
+      } else {
+        HandleResponse();
+      }
 
+      // SDBConnection::OnOpen (which sets the SDBConnection::mOpen flag) must
+      // be called even when we set an abort error above. The parent is about
+      // to send the Closed message to the child and that ends up calling
+      // SDBConnection::OnClose which expects the SDBConnection::mOpen flag to
+      // be set. It's ok if the SDBConnection::mOpen flag is set to true for
+      // a short time after erroring out the open request because if the method
+      // SDBConnection::IsAllowToClose returns true it means that the flag
+      // SDBConnection::mAllowedToClose is set to true and that prevents any
+      // other operation from starting and the SDBConnection is basically
+      // unusable.
       mConnection->OnOpen();
 
       break;

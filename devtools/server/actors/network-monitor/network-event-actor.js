@@ -29,26 +29,34 @@ ChromeUtils.defineESModuleGetters(
 
 const CONTENT_TYPE_REGEXP = /^content-type/i;
 
+function isDataChannel(channel) {
+  return channel instanceof Ci.nsIDataChannel;
+}
+
+function isFileChannel(channel) {
+  return channel instanceof Ci.nsIFileChannel;
+}
+
 /**
  * Creates an actor for a network event.
  *
- * @constructor
+ * @class
  * @param {DevToolsServerConnection} conn
  *        The connection into which this Actor will be added.
- * @param {Object} sessionContext
+ * @param {object} sessionContext
  *        The Session Context to help know what is debugged.
  *        See devtools/server/actors/watcher/session-context.js
- * @param {Object} options
+ * @param {object} options
  *        Dictionary object with the following attributes:
  *        - onNetworkEventUpdate: optional function
  *          Callback for updates for the network event
  *        - onNetworkEventDestroy: optional function
  *          Callback for the destruction of the network event
- * @param {Object} networkEventOptions
+ * @param {object} networkEventOptions
  *        Object describing the network event or the configuration of the
  *        network observer, and which cannot be easily inferred from the raw
  *        channel.
- *        - blockingExtension: optional string
+ *        - extension: optional object with `blocking` or `blocked` extension IDs
  *          id of the blocking webextension if any
  *        - blockedReason: optional number or string
  *        - discardRequestBody: boolean
@@ -88,8 +96,13 @@ class NetworkEventActor extends Actor {
       content: {},
     };
 
-    if (channel instanceof Ci.nsIFileChannel) {
-      this._innerWindowId = null;
+    this._earlyHintsResponse = {
+      headers: [],
+      rawHeaders: "",
+    };
+
+    if (isDataChannel(channel) || isFileChannel(channel)) {
+      this._innerWindowId = lazy.NetworkUtils.getChannelInnerWindowId(channel);
       this._isNavigationRequest = false;
 
       this._request = {
@@ -106,6 +119,7 @@ class NetworkEventActor extends Actor {
     // should be destroyed when a window is destroyed. See network-events.js.
     this._innerWindowId = lazy.NetworkUtils.getChannelInnerWindowId(channel);
     this._isNavigationRequest = lazy.NetworkUtils.isNavigationRequest(channel);
+    this._isRedirect = false;
 
     // Retrieve cookies and headers from the channel
     const { cookies, headers } =
@@ -118,6 +132,8 @@ class NetworkEventActor extends Actor {
     };
 
     this._resource = this._createResource(networkEventOptions, channel);
+
+    this._memoryCacheData = null;
   }
 
   /**
@@ -137,8 +153,7 @@ class NetworkEventActor extends Actor {
   _createResource(networkEventOptions, channel) {
     let wsChannel;
     let method;
-    if (channel instanceof Ci.nsIFileChannel) {
-      channel = channel.QueryInterface(Ci.nsIFileChannel);
+    if (isDataChannel(channel) || isFileChannel(channel)) {
       channel.QueryInterface(Ci.nsIChannel);
       wsChannel = null;
       method = "GET";
@@ -201,18 +216,17 @@ class NetworkEventActor extends Actor {
     }
 
     const resource = {
-      resourceId: channel.channelId,
+      resourceId: this._channelId,
       resourceType: NETWORK_EVENT,
       blockedReason,
-      blockingExtension: networkEventOptions.blockingExtension,
+      extension: networkEventOptions.extension,
       browsingContextID,
       cause,
       // This is used specifically in the browser toolbox console to distinguish privileged
-      // resources from the parent process from those from the contet
+      // resources from the parent process from those from the content.
       chromeContext: lazy.NetworkUtils.isChannelFromSystemPrincipal(channel),
       innerWindowId: this._innerWindowId,
       isNavigationRequest: this._isNavigationRequest,
-      isFileRequest: channel instanceof Ci.nsIFileChannel,
       isThirdPartyTrackingResource:
         lazy.NetworkUtils.isThirdPartyTrackingResource(channel),
       isXHR,
@@ -222,6 +236,7 @@ class NetworkEventActor extends Actor {
       referrerPolicy: lazy.NetworkUtils.getReferrerPolicy(channel),
       stacktraceResourceId,
       startedDateTime: new Date(timeStamp).toISOString(),
+      securityFlags: channel.loadInfo.securityFlags,
       timeStamp,
       timings: {},
       url,
@@ -271,7 +286,6 @@ class NetworkEventActor extends Actor {
       headersSize = this._request.rawHeaders.length;
       rawHeaders = this._createLongStringActor(this._request.rawHeaders);
     }
-
     return {
       headers: this._request.headers.map(header => ({
         name: header.name,
@@ -328,6 +342,24 @@ class NetworkEventActor extends Actor {
   getSecurityInfo() {
     return {
       securityInfo: this._securityInfo,
+    };
+  }
+
+  /**
+   * The "getEarlyHintsResponseHeaders" packet type handler.
+   *
+   * @return object
+   *         The response packet - network early hint response headers.
+   */
+  getEarlyHintsResponseHeaders() {
+    const { rawHeaders, headers } = this._earlyHintsResponse;
+    return {
+      headers: headers.map(header => ({
+        name: header.name,
+        value: this._createLongStringActor(header.value),
+      })),
+      headersSize: rawHeaders.length,
+      rawHeaders: this._createLongStringActor(rawHeaders),
     };
   }
 
@@ -408,9 +440,64 @@ class NetworkEventActor extends Actor {
    * @return object
    *         The response packet - network response content.
    */
-  getResponseContent() {
+  async getResponseContent() {
+    if (!this._response.content.text && this._memoryCacheData) {
+      const data = this._memoryCacheData;
+      this._memoryCacheData = null;
+
+      if (data.key.startsWith("SharedScriptCache:")) {
+        // This should be performed on the same process as the
+        // http-on-resource-cache-response observer notification is received, in
+        // order to query on the SharedScriptCache instance that has the
+        // corresponding cache entry.
+        const text = ChromeUtils.getCachedJavaScriptSource(
+          data.key,
+          this._resource.url,
+          data.charset
+        );
+        if (text !== undefined) {
+          this._response.content.text = text;
+        } else {
+          this._discardResponseBody = true;
+        }
+      }
+    }
+
+    if (!this._response.content.text && this._response.content.encodedData) {
+      this._response.content.text =
+        await lazy.NetworkUtils.decodeResponseChunks(
+          this._response.content.encodedData,
+          {
+            charset: this._response.content.contentCharset,
+            compressionEncodings: this._response.content.compressionEncodings,
+            encodedBodySize: this._response.content.encodedBodySize,
+            encoding: this._response.content.encoding,
+          }
+        );
+      delete this._response.content.encodedData;
+    }
+
+    const content = { ...this._response.content };
+    if (this._response.contentLongStringActor) {
+      // Remove the old actor from the pool as new actor will be created
+      // with updated content.
+      this.unmanage(this._response.contentLongStringActor);
+    }
+    this._response.contentLongStringActor = new LongStringActor(
+      this.conn,
+      // When trying to fetch content on a previous page load, or a cancelled request,
+      // `response.content` can be an empty object
+      content.text || ""
+    );
+    // bug 1462561 - Use "json" type and manually manage/marshall actors to workaround
+    // protocol.js performance issue
+    this.manage(this._response.contentLongStringActor);
+    content.text = this._discardResponseBody
+      ? ""
+      : this._response.contentLongStringActor.form();
+
     return {
-      content: this._response.content,
+      content,
       contentDiscarded: this._discardResponseBody,
     };
   }
@@ -431,14 +518,28 @@ class NetworkEventActor extends Actor {
     };
   }
 
-  /** ****************************************************************
+  /******************************************************************
    * Listeners for new network event data coming from NetworkMonitor.
-   ******************************************************************/
+   *****************************************************************/
 
   addCacheDetails({ fromCache, fromServiceWorker }) {
     this._resource.fromCache = fromCache;
     this._resource.fromServiceWorker = fromServiceWorker;
-    this._onEventUpdate("cacheDetails", { fromCache, fromServiceWorker });
+    this._onEventUpdate(lazy.NetworkUtils.NETWORK_EVENT_TYPES.CACHE_DETAILS, {
+      fromCache,
+      fromServiceWorker,
+    });
+  }
+
+  addMemoryCacheData(channel, memoryCacheKey) {
+    let charset = "";
+    if (channel instanceof Ci.nsIHttpChannel) {
+      charset = channel.classicScriptHintCharset || "";
+    }
+    this._memoryCacheData = {
+      key: memoryCacheKey,
+      charset,
+    };
   }
 
   addRawHeaders({ channel, rawHeaders }) {
@@ -464,7 +565,10 @@ class NetworkEventActor extends Actor {
     }
 
     this._request.postData = postData;
-    this._onEventUpdate("requestPostData", {});
+    this._onEventUpdate(
+      lazy.NetworkUtils.NETWORK_EVENT_TYPES.REQUEST_POSTDATA,
+      {}
+    );
   }
 
   /**
@@ -475,24 +579,36 @@ class NetworkEventActor extends Actor {
    * @param {boolean} options.fromCache
    * @param {string} options.rawHeaders
    * @param {string} options.proxyResponseRawHeaders
+   * @param {string} options.earlyHintsResponseRawHeaders
    */
   addResponseStart({
     channel,
     fromCache,
     rawHeaders = "",
     proxyResponseRawHeaders,
+    earlyHintsResponseRawHeaders,
   }) {
     // Ignore calls when this actor is already destroyed
     if (this.isDestroyed()) {
       return;
     }
 
+    // Avoid reading responseStatus and responseStatusText dynamically from
+    // the channel as much as possible. In some cases, eg 304 Not Modified, the
+    // channel is dynamically replaced with the original channel and we lose the
+    // original information about the channel status as the request progresses.
+    // Reading this synchronously in this method is fine, but we extract them as
+    // separate variables here to bring some attention to this issue.
+    const { responseStatus, responseStatusText } = channel;
+
+    this._isRedirect = lazy.NetworkUtils.isRedirect(responseStatus);
     fromCache = fromCache || lazy.NetworkUtils.isFromCache(channel);
+    const isDataOrFile = isDataChannel(channel) || isFileChannel(channel);
 
     // Read response headers and cookies.
     let responseHeaders = [];
     let responseCookies = [];
-    if (!this._blockedReason && !(channel instanceof Ci.nsIFileChannel)) {
+    if (!this._blockedReason && !isDataOrFile) {
       const { cookies, headers } =
         lazy.NetworkUtils.fetchResponseHeadersAndCookies(channel);
       responseCookies = cookies;
@@ -507,8 +623,17 @@ class NetworkEventActor extends Actor {
     // Handle the rest of the response start metadata.
     this._response.headersSize = rawHeaders ? rawHeaders.length : 0;
 
-    // Discard the response body for known response statuses.
-    if (lazy.NetworkUtils.isRedirectedChannel(channel)) {
+    // Early Hint Response Headers
+    if (earlyHintsResponseRawHeaders) {
+      this._earlyHintsResponse.headers =
+        lazy.NetworkUtils.parseEarlyHintsResponseHeaders(
+          earlyHintsResponseRawHeaders
+        );
+      this._earlyHintsResponse.rawHeaders = earlyHintsResponseRawHeaders;
+    }
+
+    // Discard the response body for known redirect response statuses.
+    if (this._isRedirect) {
       this._discardResponseBody = true;
     }
 
@@ -523,7 +648,7 @@ class NetworkEventActor extends Actor {
     }
 
     let waitingTime = null;
-    if (!(channel instanceof Ci.nsIFileChannel)) {
+    if (!isDataOrFile) {
       const timedChannel = channel.QueryInterface(Ci.nsITimedChannel);
       waitingTime = Math.round(
         (timedChannel.responseStartTime - timedChannel.requestStartTime) / 1000
@@ -537,16 +662,17 @@ class NetworkEventActor extends Actor {
       proxyInfo = proxyResponseRawHeaders.split("\r\n")[0].split(" ");
     }
 
-    const isFileChannel = channel instanceof Ci.nsIFileChannel;
-    this._onEventUpdate("responseStart", {
-      httpVersion: isFileChannel
+    this._onEventUpdate(lazy.NetworkUtils.NETWORK_EVENT_TYPES.RESPONSE_START, {
+      httpVersion: isDataOrFile
         ? null
         : lazy.NetworkUtils.getHttpVersion(channel),
       mimeType,
       remoteAddress: fromCache ? "" : channel.remoteAddress,
       remotePort: fromCache ? "" : channel.remotePort,
-      status: isFileChannel ? "200" : channel.responseStatus + "",
-      statusText: isFileChannel ? "0K" : channel.responseStatusText,
+      status: isDataOrFile ? "200" : responseStatus + "",
+      statusText: isDataOrFile ? "0K" : responseStatusText,
+      isRedirect: this._isRedirect,
+      earlyHintsStatus: earlyHintsResponseRawHeaders ? "103" : "",
       waitingTime,
       isResolvedByTRR: channel.isResolvedByTRR,
       proxyHttpVersion: proxyInfo[0],
@@ -561,7 +687,7 @@ class NetworkEventActor extends Actor {
    * @param object info
    *        The object containing security information.
    */
-  addSecurityInfo(info, isRacing) {
+  addSecurityInfo(info) {
     // Ignore calls when this actor is already destroyed
     if (this.isDestroyed()) {
       return;
@@ -569,10 +695,29 @@ class NetworkEventActor extends Actor {
 
     this._securityInfo = info;
 
-    this._onEventUpdate("securityInfo", {
+    this._onEventUpdate(lazy.NetworkUtils.NETWORK_EVENT_TYPES.SECURITY_INFO, {
       state: info.state,
-      isRacing,
     });
+  }
+
+  /**
+   * Add network response content end.
+   *
+   * @param object
+   */
+  addResponseContentComplete({ blockedReason, extension }) {
+    // Ignore calls when this actor is already destroyed
+    if (this.isDestroyed()) {
+      return;
+    }
+
+    this._onEventUpdate(
+      lazy.NetworkUtils.NETWORK_EVENT_TYPES.RESPONSE_CONTENT_COMPLETE,
+      {
+        blockedReason,
+        extension,
+      }
+    );
   }
 
   /**
@@ -580,28 +725,26 @@ class NetworkEventActor extends Actor {
    *
    * @param object content
    *        The response content.
-   * @param object
    */
-  addResponseContent(content, { blockedReason, blockingExtension }) {
+  addResponseContent(content, data) {
+    const { blockedReason, extension } = data || {};
+
     // Ignore calls when this actor is already destroyed
     if (this.isDestroyed()) {
       return;
     }
 
     this._response.content = content;
-    content.text = new LongStringActor(this.conn, content.text);
-    // bug 1462561 - Use "json" type and manually manage/marshall actors to workaround
-    // protocol.js performance issue
-    this.manage(content.text);
-    content.text = content.text.form();
-
-    this._onEventUpdate("responseContent", {
-      mimeType: content.mimeType,
-      contentSize: content.size,
-      transferredSize: content.transferredSize,
-      blockedReason,
-      blockingExtension,
-    });
+    this._onEventUpdate(
+      lazy.NetworkUtils.NETWORK_EVENT_TYPES.RESPONSE_CONTENT,
+      {
+        mimeType: content.mimeType,
+        contentSize: content.size,
+        transferredSize: content.transferredSize,
+        blockedReason,
+        extension,
+      }
+    );
   }
 
   addResponseCache(content) {
@@ -610,7 +753,10 @@ class NetworkEventActor extends Actor {
       return;
     }
     this._response.responseCache = content.responseCache;
-    this._onEventUpdate("responseCache", {});
+    this._onEventUpdate(
+      lazy.NetworkUtils.NETWORK_EVENT_TYPES.RESPONSE_CACHE,
+      {}
+    );
   }
 
   /**
@@ -632,7 +778,9 @@ class NetworkEventActor extends Actor {
     this._timings = timings;
     this._offsets = offsets;
 
-    this._onEventUpdate("eventTimings", { totalTime: total });
+    this._onEventUpdate(lazy.NetworkUtils.NETWORK_EVENT_TYPES.EVENT_TIMINGS, {
+      totalTime: total,
+    });
   }
 
   /**

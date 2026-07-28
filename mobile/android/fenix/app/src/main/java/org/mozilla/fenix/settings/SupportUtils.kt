@@ -13,31 +13,23 @@ import mozilla.components.support.ktx.android.content.appVersionName
 import mozilla.components.support.ktx.android.content.getColorFromAttr
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.IntentReceiverActivity
-import org.mozilla.fenix.R
 import org.mozilla.fenix.customtabs.EXTRA_IS_SANDBOX_CUSTOM_TAB
 import org.mozilla.fenix.settings.account.AuthIntentReceiverActivity
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 import java.util.Locale
+import com.google.android.material.R as materialR
 
 object SupportUtils {
     const val RATE_APP_URL = "market://details?id=" + BuildConfig.APPLICATION_ID
-    const val POCKET_TRENDING_URL = "https://getpocket.com/fenix-top-articles"
-    const val WIKIPEDIA_URL = "https://www.wikipedia.org/"
     const val FENIX_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=${BuildConfig.APPLICATION_ID}"
     const val GOOGLE_URL = "https://www.google.com/"
-    const val BAIDU_URL = "https://m.baidu.com/"
-    const val JD_URL = "https://union-click.jd.com/jdc" +
-        "?e=&p=AyIGZRprFDJWWA1FBCVbV0IUWVALHFRBEwQAQB1AWQkFVUVXfFkAF14lRFRbJXstVWR3WQ1rJ08AZnhS" +
-        "HDJBYh4LZR9eEAMUBlccWCUBEQZRGFoXCxc3ZRteJUl8BmUZWhQ" +
-        "AEwdRGF0cMhIAVB5ZFAETBVAaXRwyFQdcKydLSUpaCEtYFAIXN2UrWCUyIgdVK1slXVZaCCtZFAMWDg%3D%3D"
-    const val PDD_URL = "https://mobile.yangkeduo.com/duo_cms_mall.html?pid=13289095_194240604&" +
-        "cpsSign=CM_210309_13289095_194240604_8bcfd56d5db3c43d983014d2658ec26e&duoduo_type=2"
-    const val TC_URL = "https://jumpluna.58.com/i/29HU"
-    const val MEITUAN_URL = "https://tb.j5k6.com/6ZSOp"
     const val GOOGLE_US_URL = "https://www.google.com/webhp?client=firefox-b-1-m&channel=ts"
     const val GOOGLE_XX_URL = "https://www.google.com/webhp?client=firefox-b-m&channel=ts"
     const val WHATS_NEW_URL = "https://www.mozilla.org/firefox/android/notes"
+    const val FXACCOUNT_SUMO_URL = "https://support.mozilla.org/kb/access-mozilla-services-firefox-account"
+    const val ANDROID_SUPPORT_SUMO_URL = "mzl.la/AndroidSupport"
+    const val RELAY_MANAGE_URL = "https://relay.firefox.com"
 
     // This is locale-less on purpose so that the content negotiation happens on the AMO side because the current
     // user language might not be supported by AMO and/or the language might not be exactly what AMO is expecting
@@ -51,26 +43,48 @@ object SupportUtils {
         TRACKING_PROTECTION("tracking-protection-firefox-android"),
         TOTAL_COOKIE_PROTECTION("enhanced-tracking-protection-android"),
         OPT_OUT_STUDIES("how-opt-out-studies-firefox-android"),
+        REMOTE_IMPROVEMENTS("remote-improvements"),
         SEND_TABS("send-tab-preview"),
         SET_AS_DEFAULT_BROWSER("make-firefox-default-browser-android"),
         SEARCH_SUGGESTION("how-search-firefox-preview"),
         CUSTOM_SEARCH_ENGINES("custom-search-engines"),
         SYNC_SETUP("how-set-firefox-sync-firefox-android"),
-        QR_CAMERA_ACCESS("qr-camera-access"),
         SMARTBLOCK("smartblock-enhanced-tracking-protection"),
         SPONSOR_PRIVACY("sponsor-privacy"),
         HTTPS_ONLY_MODE("https-only-mode-firefox-android"),
+        DNS_OVER_HTTPS("configure-dns-over-https-protection-levels-firefox-android"),
+        DNS_OVER_HTTPS_LOCAL_PROVIDER(
+            "configure-dns-over-https-protection-levels-firefox-android#w_what-is-a-local-provider",
+        ),
+        DNS_OVER_HTTPS_NETWORK("configure-dns-over-https-protection-levels-firefox-android"),
         UNSIGNED_ADDONS("unsigned-addons"),
-        REVIEW_QUALITY_CHECK("review_checker_mobile"),
         FX_SUGGEST("search-suggestions-firefox"),
         TRANSLATIONS("android-translation"),
+        AI_CONTROLS("android-ai-controls"),
         MANAGE_OPTIONAL_EXTENSION_PERMISSIONS("manage-optional-permissions-android-extensions"),
-        FIND_INSTALL_ADDONS("add-ons-firefox-android"),
+        EXTENSION_PERMISSIONS("extension-permissions"),
+        CRASH_REPORTS("mobile-crash-reports"),
+        TECHNICAL_AND_INTERACTION_DATA("mobile-technical-and-interaction-data"),
+        USAGE_PING_SETTINGS("usage-ping-settings-mobile"),
+        MARKETING_DATA("mobile-marketing-data"),
+        REQUESTED_CRASH_MINIDUMP("unsent-crash-reports-in-firefox-android"),
+        TERMS_OF_USE("firefox-terms-of-use-faq"),
+        RELAY("relay-masks-android"),
+        VPN("firefox-android-vpn"),
+
+        /**
+         * SUMO page for Local Network Access & Local Device Access permissions
+         */
+        LOCAL_NETWORK_AND_DEVICE_ACCESS("control-personal-device-local-network-permissions-firefox-android"),
+        PAGE_SUMMARIZATION("summarize-pages-android"),
     }
 
     enum class MozillaPage(internal val path: String) {
-        PRIVATE_NOTICE("privacy/firefox/"),
+        PRIVACY_NOTICE("privacy/firefox/"),
+        PRIVACY_NOTICE_UPDATE("${PRIVACY_NOTICE.path}update/"),
+        PRIVACY_NOTICE_NEXT("${PRIVACY_NOTICE.path}next/"),
         MANIFESTO("about/manifesto/"),
+        TERMS_OF_SERVICE("about/legal/terms/firefox/"),
     }
 
     /**
@@ -80,13 +94,19 @@ object SupportUtils {
         context: Context,
         topic: SumoTopic,
         locale: Locale = Locale.getDefault(),
+        useMobilePage: Boolean = true,
     ): String {
         val escapedTopic = getEncodedTopicUTF8(topic.topicStr)
         // Remove the whitespace so a search is not triggered:
         val appVersion = context.appVersionName.replace(" ", "")
         val osTarget = "Android"
         val langTag = getLanguageTag(locale)
-        return "https://support.mozilla.org/1/mobile/$appVersion/$osTarget/$langTag/$escapedTopic"
+        val platform = if (useMobilePage) {
+            "mobile"
+        } else {
+            "firefox"
+        }
+        return "https://support.mozilla.org/1/$platform/$appVersion/$osTarget/$langTag/$escapedTopic"
     }
 
     /**
@@ -99,10 +119,6 @@ object SupportUtils {
         return "https://support.mozilla.org/$langTag/kb/$escapedTopic"
     }
 
-    fun getFirefoxAccountSumoUrl(): String {
-        return "https://support.mozilla.org/kb/access-mozilla-services-firefox-account"
-    }
-
     fun getMozillaPageUrl(page: MozillaPage, locale: Locale = Locale.getDefault()): String {
         val path = page.path
         val langTag = getLanguageTag(locale)
@@ -112,7 +128,8 @@ object SupportUtils {
     fun createCustomTabIntent(context: Context, url: String): Intent = CustomTabsIntent.Builder()
         .setInstantAppsEnabled(false)
         .setDefaultColorSchemeParams(
-            CustomTabColorSchemeParams.Builder().setToolbarColor(context.getColorFromAttr(R.attr.layer1)).build(),
+            CustomTabColorSchemeParams.Builder()
+                .setToolbarColor(context.getColorFromAttr(materialR.attr.colorSurface)).build(),
         )
         .build()
         .intent
@@ -127,8 +144,19 @@ object SupportUtils {
      * Custom tab that cannot open the content in Firefox directly.
      * This ensures the content is contained to this custom tab only.
      */
-    fun createSandboxCustomTabIntent(context: Context, url: String): Intent =
+    private fun createSandboxCustomTabIntent(context: Context, url: String): Intent =
         createCustomTabIntent(context, url).putExtra(EXTRA_IS_SANDBOX_CUSTOM_TAB, true)
+
+    /**
+     * Launches a new sandboxed custom tab Activity.
+     *
+     * @param context The context to launch the Activity from.
+     * @param url The URL to load in the custom tab.
+     */
+    fun launchSandboxCustomTab(context: Context, url: String) {
+        val intent = createSandboxCustomTabIntent(context, url)
+        context.startActivity(intent)
+    }
 
     private fun getEncodedTopicUTF8(topic: String): String {
         try {

@@ -120,6 +120,8 @@ private-browsing-description2 =
     пашырэнне не будзе працаваць у часе прыватнага аглядання і не будзе мець доступу да вашай сеціўнай
     актыўнасці ў гэтым рэжыме. Мы зрабілі гэта для аховы вашай прыватнасці.
     <label data-l10n-name="private-browsing-learn-more">Даведайцеся, як кіраваць наладамі пашырэння.</label>
+aboutaddons-sidebar =
+    .heading = Дадаткі
 addon-category-discover = Рэкамендацыі
 addon-category-discover-title =
     .title = Рэкамендацыі
@@ -170,6 +172,8 @@ extensions-warning-update-security-button = Уключыць
 extensions-warning-imported-addons2 =
     .message = Калі ласка, завяршыце ўсталяванне пашырэнняў, якія былі імпартаваны ў { -brand-short-name }.
 extensions-warning-imported-addons-button = Усталяваць пашырэнні
+extensions-warning-safe-mode3 =
+    .message = Усе дадаткі адключаны ў рэжыме вырашэння праблем.
 
 ## Strings connected to add-on updates
 
@@ -206,6 +210,10 @@ addon-updates-manual-updates-found = Пабачыць даступныя абн�
 
 addon-install-from-file = Усталяваць дадатак з файла…
     .accesskey = У
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Усталяваць або абнавіць дадатак з файла…
+    .accesskey = д
 addon-install-from-file-dialog-title = Выберыце дадатак для ўсталявання
 addon-install-from-file-filter-name = Дадаткі
 addon-open-about-debugging = Адладка дадаткаў
@@ -279,6 +287,19 @@ discopane-notice-recommendations2 =
         Некаторыя з гэтых рэкамендацый персаніфікаваныя. Яны заснаваны на іншых
         пашырэннях, якія вы ўсталявалі, перавагах профілю і статыстыцы выкарыстання.
 discopane-notice-learn-more = Даведацца больш
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Вашы тэмы расфарбоўкі былі выдалены.
+    .message =
+        { -brand-product-name } абнавіў сваю калекцыю расфарбовак. Мы
+        выдалілі старыя версіі з вашага спісу "Захаваныя тэмы". Атрымайце
+        новыя версіі на сайце дадаткаў.
+colorway-removal-notice-learn-more = Падрабязней
+colorway-removal-notice-button = Атрымаць абноўленыя тэмы расфарбовак
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Вашы налады кантраснасці Windows перавызначаюць тэмы { -brand-short-name }. Выключыце гэтыя налады, каб выкарыстоўваць тэмы ў { -brand-short-name }.
 privacy-policy = Палітыка прыватнасці
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -299,6 +320,16 @@ find-more-themes = Знайсці іншыя тэмы
 # used for screen readers.
 addon-options-button =
     .aria-label = Дадатковыя параметры
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Пашырэнні і тэмы дазваляюць уладкаваць { -brand-product-name }. Яны могуць павысіць
+    прыватнасць, павялічыць прадукцыйнасць, палепшыць мультымедыя, змяніць выгляд
+    { -brand-product-name } і багата чаго яшчэ. Гэтыя невялікія праграмы часта распрацаваныя
+    трэцімі асобамі. Вось падборка, якую Firefox <a data-l10n-name="learn-more-trigger">рэкамендуе</a>
+    для выключнай бяспекі, прадукцыйнасці і функцыянальнасці.
 
 ## Add-on actions
 
@@ -386,6 +417,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Дазволена ў прыватных вокнах
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Дазволена ў прыватных вокнах
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -425,6 +460,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Гэта пашырэнне праверана на адпаведнасць нашым стандартам бяспекі і прадукцыйнасці
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Афіцыйнае пашырэнне, створанае Mozilla. Адпавядае стандартам бяспекі і прадукцыйнасці
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Гэта пашырэнне праверана на адпаведнасць стандартам бяспекі і прадукцыйнасці
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox рэкамендуе толькі тыя пашырэнні, якія адпавядаюць стандартам бяспекі і прадукцыйнасці
 
 ##
 
@@ -432,10 +485,18 @@ available-updates-heading = Даступныя абнаўленні
 recent-updates-heading = Нядаўнія абнаўленні
 release-notes-loading = Загрузка…
 release-notes-error = Выбачайце, здарылася памылка пры загрузцы заўваг да выпуску.
+addon-permissions-heading = Дазволы
+addon-permissions-empty2 = Гэта пашырэнне не патрабуе якіх-небудзь дазволаў.
+addon-permissions-required-label = Патрэбны:
+addon-permissions-optional-label = Неабавязкова:
 addon-permissions-empty = Гэта пашырэнне не патрабуе якіх-небудзь дазволаў
 addon-permissions-required = Неабходныя дазволы для асноўнай функцыянальнасці:
 addon-permissions-optional = Неабавязковыя дазволы для дадатковай функцыянальнасці:
 addon-permissions-learnmore = Даведацца больш пра дазволы
+# Shown above the permissions list when one or more permissions for this
+# extension are controlled by an enterprise policy and cannot be changed by
+# the user.
+addon-permissions-managed-by-policy = Некаторымі дазволамі кіруе ваша арганізацыя.
 recommended-extensions-heading = Рэкамендаваныя пашырэнні
 recommended-themes-heading = Рэкамендаваныя тэмы
 # Variables:
@@ -459,6 +520,9 @@ shortcuts-heading = Кіраваць спалучэннямі клавіш па�
 default-heading-search-label = Знайсці больш дадаткаў
 addons-heading-search-input =
     .placeholder = Пошук на addons.mozilla.org
+addons-heading-search-button =
+    .title = Пошук на addons.mozilla.org
+    .aria-label = Пошук па сайце addons.mozilla.org
 addon-page-options-button =
     .title = Прылады для ўсіх дадаткаў
 
@@ -481,14 +545,32 @@ details-notification-unsigned-and-disabled-link = Больш звестак
 details-notification-unsigned = Праца { $name } у { -brand-short-name } не была праверана. Працягвайце з асцярогай.
 details-notification-unsigned2 =
     .message = Праца { $name } у { -brand-short-name } не была праверана. Працягвайце з асцярогай.
+details-notification-hard-blocked-extension =
+    .message = Гэта пашырэнне заблакавана за парушэнне палітык Mozilla і было адключана.
+details-notification-hard-blocked-other =
+    .message = Гэты дадатак заблакаваны за парушэнне палітык Mozilla і быў адключаны.
 details-notification-unsigned-link = Больш звестак
 details-notification-blocked = { $name } забаронены, бо маюцца праблемы сумяшчальнасці або ўстойлівасці.
-details-notification-blocked2 =
-    .message = { $name } забаронены, бо маюцца праблемы сумяшчальнасці або ўстойлівасці.
+details-notification-blocked-link2 = Паказаць падрабязнасці
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Гэта пашырэнне абмежавана і было адключана. Вы можаце яго ўключыць, але гэта можа быць рызыкоўна.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Гэта пашырэнне абмежаванае. Яго выкарыстанне можа быць рызыкоўным.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Гэты дадатак абмежаваны і быў адключаны. Вы можаце яго ўключыць, але гэта можа быць рызыкоўна.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Гэты дадатак абмежаваны. Яго выкарыстанне можа быць рызыкоўным.
+details-notification-soft-blocked-extension-disabled =
+    .message = Гэта пашырэнне абмежавана з-за парушэння палітык Mozilla і было адключана. Вы можаце ўключыць яго, але гэта можа быць рызыкоўна.
+details-notification-soft-blocked-extension-enabled =
+    .message = Гэта пашырэнне парушае палітыку Mozilla. Яго выкарыстанне можа быць рызыкоўным.
+details-notification-soft-blocked-other-disabled =
+    .message = Гэты дадатак абмежаваны з-за парушэння палітык Mozilla і быў адключаны. Вы можаце ўключыць яго, але гэта можа быць рызыкоўна.
+details-notification-soft-blocked-other-enabled =
+    .message = Гэты дадатак парушае палітыку Mozilla. Яго выкарыстанне можа быць рызыкоўным.
+details-notification-softblocked-link2 = Паказаць падрабязнасці
 details-notification-blocked-link = Падрабязней
 details-notification-softblocked = Вядома, што { $name } мае праблемы сумяшчальнасці або ўстойлівасці.
-details-notification-softblocked2 =
-    .message = Вядома, што { $name } мае праблемы сумяшчальнасці або ўстойлівасці.
 details-notification-softblocked-link = Падрабязней
 details-notification-gmp-pending = { $name } будзе хутка усталявана.
 details-notification-gmp-pending2 =
@@ -502,3 +584,46 @@ plugins-openh264-name = OpenH264 відэакодэк ад Cisco Systems, Inc.
 plugins-openh264-description = Гэты плагін аўтаматычна ўсталяваны Mozilla для рэалізацыі спецыфікацыі WebRTC і тэлефанавання праз WebRTC на прылады, якія патрабуюць выкарыстання відэакодэка H.264. Каб паглядзець зыходны код кодэка і даведацца больш аб яго рэалізацыі, наведайце сайт http://www.openh264.org/.
 plugins-widevine-name = Плагін расшыфроўкі кантэнту Widevine ад Google Inc.
 plugins-widevine-description = Гэты плагін уключае падтрымку прайгравання шыфраваных медыя ў адпаведнасці з спецыфікацыяй Encrypted Media Extensions. Шыфраваныя медыя звычайна выкарыстоўваюцца на сайтах для аховы прэміум-змесціва ад капіявання. Наведайце https://www.w3.org/TR/encrypted-media/ для больш падрабязных звестак аб Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Неабходны збор дадзеных:
+addon-permissions-optional-data-collection = Неабавязковы збор дадзеных:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Дазволы і дадзеныя
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Выкарыстоўваецца пашырэннем { $extensionName }
+addon-permissions-data-collection-heading = Збор дадзеных
+addon-permissions-data-collection-empty = Распрацоўшчык сцвярджае, што гэта пашырэнне не патрабуе збору дадзеных.
+addon-data-collection-provided = Інфармацыя прадастаўлена распрацоўшчыкам пашырэння
+addon-data-collection-learnmore = Даведацца больш пра збор дадзеных
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } выкарыстоўвае гэта на about:inference
+mlmodel-link-preview = { -brand-short-name } выкарыстоўвае гэта, каб пералічваць ключавыя моманты пры папярэднім праглядзе спасылак
+mlmodel-pdfjs = { -brand-short-name } выкарыстоўвае гэта, каб ствараць альтэрнатыўны тэкст для выяў, якія вы дадаяце ў файлы PDF
+mlmodel-smart-tab-topic-engine = { -brand-short-name } выкарыстоўвае гэта, каб прапаноўваць назвы для вашых груп картак
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } выкарыстоўвае гэта, каб прапаноўваць карткі для вашых груп картак
+mlmodel-formfill-engine = { -brand-short-name } выкарыстоўвае гэта, каб дапамагчы запоўніць формы адрасоў
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = Штучны інтэлект на прыладзе
+addon-category-mlmodel-title =
+    .title = Штучны інтэлект на прыладзе
+mlmodel-heading = Кіраванне мадэлямі штучнага інтэлекту на прыладзе
+mlmodel-description = Некаторыя функцыі і пашырэнні ў { -brand-short-name } працуюць на аснове мадэляў штучнага інтэлекту, якія працуюць лакальна на вашай прыладзе. Такі падыход ахоўвае вашу прыватнасць і ў многіх выпадках павышае прадукцыйнасць. <a data-l10n-name="learn-more">Даведацца больш</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Выдаліць
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Памер файла
+mlmodel-addon-detail-last-used-label = Апошняе выкарыстанне
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Выкарыстоўваецца
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Карта мадэлі
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Адкрыць на Hugging Face

@@ -34,9 +34,13 @@ function getEditor(input) {
   return SpecialPowers.wrap(window).docShell.editor;
 }
 
+function isTextControl(input) {
+  return input instanceof HTMLInputElement ||
+         input instanceof HTMLTextAreaElement;
+}
+
 function resetEditableContent(input) {
-  if (input instanceof HTMLInputElement ||
-      input instanceof HTMLTextAreaElement) {
+  if (isTextControl(input)) {
     input.value = "";
     return;
   }
@@ -71,7 +75,11 @@ async function test_with_single_quote(input) {
           "don't run spellchecker during inputting word");
 
   synthesizeKey(" ");
-  is(input.value || input.textContent, "doesn\' ", "");
+  is(
+    input.value || input.textContent,
+    !isTextControl(input) ? "doesn\'\u00A0" : "doesn\' ",
+    `Typing white-space after "doesn'" should've succeeded`
+  );
 
   await new Promise((resolve) => { maybeOnSpellCheck(input, resolve); });
   misspeltWords.push("doesn");

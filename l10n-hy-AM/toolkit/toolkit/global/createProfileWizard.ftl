@@ -13,7 +13,7 @@ create-profile-first-page-header2 =
         [macos] Ներածություն
        *[other] Բարի գալուստ { create-profile-window2.title }
     }
-profile-creation-explanation-1 = { -brand-short-name }­-ը Ձեր նախընտրանքների և կազմաձևման վերաբերյալ տվյալները պահպանում է Ձեր անձնական հաշվում։
+profile-creation-explanation-1 = { -brand-short-name }­-ը Ձեր նախընտրանքների և կազմաձևման վերաբերյալ տվյալները պահում է Ձեր անձնական հաշվում։
 profile-creation-explanation-2 = Եթե Դուք { -brand-short-name }­-ը այլ օգտվողների հետ համատեղ եք օգտագործում, ապա կարող եք օգտագործել հաշիվներ՝ օգտվողների տեղեկություններն իրարից առանձին պահելու համար։ Դրա համար ամեն օգտվող պիտի ստեղծի իր անձնական հաշիվը։
 profile-creation-explanation-3 = Եթե Դուք { -brand-short-name }­-ի միակ օգտվողն եք, ապա պիտի ունենաք առնվազն մեկ հաշիվ։ Այնուամենայնիվ, կարող եք ստեղծել ձեր համար բազմաթիվ հաշիվներ նախընտրանքների և կազմաձեվման տարբեր խմբեր ունենալու համար։ Օրինակ՝. կարող եք ունենալ մեկ աշխատանքային հաշիվ եվ մեկ անձնական օգտագորման հաշիվ։
 profile-creation-explanation-4 =
@@ -34,7 +34,7 @@ profile-prompt = Մուտքագրեք նոր հաշվի անունը.
     .accesskey = E
 profile-default-name =
     .value = Սկզբնադիր օգտատեր
-profile-directory-explanation = Ձեր կարգավորումները և օգտվողի այլ նիշքեր կպահվեն՝
+profile-directory-explanation = Ձեր կարգավորումները, նախապատվությունները  և օգտվողի այլ տվյալներ կպահվեն՝
 create-profile-choose-folder =
     .label = Ընտրեք թղթապանակը…
     .accesskey = C

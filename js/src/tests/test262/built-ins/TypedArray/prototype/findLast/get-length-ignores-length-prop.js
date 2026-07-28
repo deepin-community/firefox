@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Microsoft. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -20,14 +19,14 @@ Object.defineProperty(TypedArray.prototype, "length", {
   }
 });
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   Object.defineProperty(TA.prototype, "length", {
     get: function() {
       throw new Test262Error();
     }
   });
 
-  var sample = new TA([42]);
+  var sample = new TA(makeCtorArg([42]));
 
   Object.defineProperty(sample, "length", {
     get: function() {
@@ -40,6 +39,6 @@ testWithTypedArrayConstructors(function(TA) {
     sample.findLast(function() { return true; }),
     42
   );
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

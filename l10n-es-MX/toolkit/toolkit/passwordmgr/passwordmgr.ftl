@@ -20,6 +20,9 @@ password-manager-save-password-button-never =
 # Variables
 #   $host (String) - Hostname for which the password is updated for.
 password-manager-update-password-message = ¿Actualizar contraseña para { $host }?
+password-manager-update-password-button-delete =
+    .label = Eliminar contraseña guardada
+    .accesskey = R
 password-manager-update-login-add-username = ¿Añadir nombre de usuario a la contraseña guardada?
 password-manager-password-password-button-allow =
     .label = Actualizar
@@ -27,10 +30,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = No actualizar
     .accesskey = D
+primary-password-prompt-message = Por favor, ingresa tu contraseña principal.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Sin nombre de usuario
-password-manager-toggle-password =
-    .label = Mostrar contraseña
-    .accesskey = h
 password-manager-confirm-password-change = Confirmar cambio de contraseña
 password-manager-select-username = Selecciona que inicio de sesión actualizar:

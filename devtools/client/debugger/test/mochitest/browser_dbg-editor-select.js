@@ -30,12 +30,10 @@ add_task(async function () {
   );
   assertHighlightLocation(dbg, "simple1.js", 1);
 
-  // Note that CodeMirror is 0-based while the footer displays 1-based
-  getCM(dbg).setCursor({ line: 1, ch: 0 });
-  await waitForCursorPosition(dbg, 2);
+  await setEditorCursorAt(dbg, 1, 0);
   assertCursorPosition(
     dbg,
-    2,
+    1,
     1,
     "when moving the cursor, the position footer updates"
   );
@@ -44,11 +42,10 @@ add_task(async function () {
     "Moving the cursor resets the highlighted line"
   );
 
-  getCM(dbg).setCursor({ line: 2, ch: 0 });
-  await waitForCursorPosition(dbg, 3);
+  await setEditorCursorAt(dbg, 2, 0);
   assertCursorPosition(
     dbg,
-    3,
+    2,
     1,
     "when moving the cursor a second time, the position footer still updates"
   );
@@ -69,19 +66,19 @@ add_task(async function () {
   invokeInTab("main");
   await waitForPaused(dbg);
   await waitForSelectedSource(dbg, "simple1.js");
-  assertPausedAtSourceAndLine(dbg, findSource(dbg, "simple1.js").id, 4);
+  await assertPausedAtSourceAndLine(dbg, findSource(dbg, "simple1.js").id, 4);
   assertCursorPosition(dbg, 4, 16, "on pause, the cursor updates");
 
   info("Step into another file.");
   await stepOver(dbg);
   await stepIn(dbg);
   await waitForSelectedSource(dbg, "simple2.js");
-  assertPausedAtSourceAndLine(dbg, findSource(dbg, "simple2.js").id, 3);
+  await assertPausedAtSourceAndLine(dbg, findSource(dbg, "simple2.js").id, 3);
   assertCursorPosition(dbg, 3, 5, "on step-in, the cursor updates");
 
   info("Step out to the initial file.");
   await stepOut(dbg);
-  assertPausedAtSourceAndLine(dbg, findSource(dbg, "simple1.js").id, 6);
+  await assertPausedAtSourceAndLine(dbg, findSource(dbg, "simple1.js").id, 6);
   assertCursorPosition(dbg, 6, 3, "on step-out, the cursor updates");
   await resume(dbg);
 
@@ -94,7 +91,7 @@ add_task(async function () {
   await waitForPaused(dbg);
   await waitForSelectedSource(dbg, "long.js");
 
-  assertPausedAtSourceAndLine(dbg, findSource(dbg, "long.js").id, 66);
+  await assertPausedAtSourceAndLine(dbg, findSource(dbg, "long.js").id, 66);
   ok(
     isVisibleInEditor(dbg, findElement(dbg, "breakpoint")),
     "Breakpoint is visible"

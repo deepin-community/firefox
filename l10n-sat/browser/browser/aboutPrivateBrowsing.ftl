@@ -68,3 +68,13 @@ about-private-browsing-pin-promo-title = ᱰᱮᱥᱠᱴᱚᱯ ᱠᱷᱚᱱ ᱪ�
 about-private-browsing-cookie-banners-promo-header = ᱠᱩᱠᱤ ᱵᱮᱱᱚᱨ ᱠᱚ ᱪᱟᱞᱟᱣ ᱮᱱᱟ!
 about-private-browsing-cookie-banners-promo-button = ᱠᱩᱠᱤ ᱵᱮᱱᱚᱨ ᱠᱷᱟᱴᱚᱭ ᱢᱮ
 about-private-browsing-cookie-banners-promo-message = { -brand-short-name } ᱫᱚ ᱟᱡ ᱛᱮ ᱟᱢᱟᱜ ᱵᱤᱱ ᱨᱚᱠ ᱴᱷᱚᱠ ᱵᱽᱨᱟᱣᱡᱤᱝ ᱞᱟᱹᱜᱤᱫ ᱴᱟᱴᱠᱟ ᱚᱰᱚᱠ ᱛᱮᱠᱟ ᱮᱢ ᱟᱭ ᱾ { -brand-short-name } ᱡᱟᱦᱟᱸ ᱫᱷᱟᱹᱵᱤᱡ ᱦᱩᱭ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱢᱟᱱᱟ ᱜᱚᱫ ᱠᱟᱜᱼᱟᱭ ᱾
+# Simplified version of the headline if the original text doesn't work
+# in your language: `{ -brand-short-name } will show fewer cookie requests`
+about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } ᱫᱚ ᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱠᱩᱠᱤ ᱵᱮᱱᱟᱨ ᱡᱚᱛᱚᱱ ᱮ ᱦᱟᱛᱟᱣᱟ
+about-private-browsing-cookie-banners-promo-body = ᱟᱞᱮ ᱫᱚ ᱱᱤᱛ ᱟᱡ ᱛᱮ ᱟᱭᱢᱟ ᱠᱩᱠᱤ ᱵᱮᱱᱟᱨ ᱞᱮ ᱵᱟᱝ ᱵᱟᱛᱟᱣᱟ ᱡᱮᱢᱚᱱ ᱟᱢ ᱠᱚᱢ ᱴᱨᱮᱠ ᱧᱟᱢ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ ᱟᱨ ᱵᱷᱤᱲᱠᱟᱹᱣ ᱯᱷᱨᱤ ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱨᱮᱢ ᱨᱩᱣᱟᱹᱲᱚᱜᱼᱟ᱾
+
+## Strings for the info section of about:privatebrowsing
+
+about-private-browsing-felt-privacy-v1-info-header = ᱱᱚᱶᱟ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱡᱟᱦᱟᱱ ᱪᱤᱱᱦᱟᱹ ᱟᱞᱚᱢ ᱫᱚᱦᱚᱭᱟ ᱾
+about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } ᱟᱢᱟᱜ ᱠᱩᱠᱤ, ᱱᱟᱜᱟᱢ, ᱟᱨ ᱥᱟᱭᱤᱴ ᱰᱟᱴᱟ ᱢᱮᱴᱟᱣ ᱟ, ᱡᱟᱦᱟᱸ ᱛᱤᱱ ᱨᱮ ᱟᱢ ᱟᱢᱟᱜ ᱡᱷᱚᱛᱚ ᱯᱨᱟᱭᱣᱮᱴ ᱡᱷᱚᱨᱠᱟ ᱠᱚ ᱵᱚᱸᱫᱚᱭ ᱟ ᱾
+about-private-browsing-felt-privacy-v1-info-link = ᱚᱠᱚᱭ ᱫᱚ ᱤᱧᱟᱜ ᱠᱟᱹᱢᱤ ᱦᱚᱨᱟ ᱠᱚ ᱧᱮᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ?

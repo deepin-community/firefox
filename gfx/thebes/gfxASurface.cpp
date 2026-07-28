@@ -1,13 +1,9 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsIMemoryReporter.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Base64.h"
-#include "mozilla/CheckedInt.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/MemoryReporting.h"
 #include "nsISupportsImpl.h"
 #include "mozilla/gfx/2D.h"
@@ -22,7 +18,6 @@
 #include "gfxRect.h"
 
 #include "cairo.h"
-#include <algorithm>
 
 #ifdef CAIRO_HAS_WIN32_SURFACE
 #  include "gfxWindowsSurface.h"
@@ -340,7 +335,7 @@ static const SurfaceMemoryReporterAttrs sSurfaceMemoryReporterAttrs[] = {
     {"gfx-surface-subsurface", nullptr},
 };
 
-static_assert(MOZ_ARRAY_LENGTH(sSurfaceMemoryReporterAttrs) ==
+static_assert(std::size(sSurfaceMemoryReporterAttrs) ==
                   size_t(gfxSurfaceType::Max),
               "sSurfaceMemoryReporterAttrs exceeds max capacity");
 static_assert(uint32_t(CAIRO_SURFACE_TYPE_SKIA) ==
@@ -375,7 +370,7 @@ class SurfaceMemoryReporter final : public nsIMemoryReporter {
 
   NS_IMETHOD CollectReports(nsIHandleReportCallback* aHandleReport,
                             nsISupports* aData, bool aAnonymize) override {
-    const size_t len = ArrayLength(sSurfaceMemoryReporterAttrs);
+    const size_t len = std::size(sSurfaceMemoryReporterAttrs);
     for (size_t i = 0; i < len; i++) {
       int64_t amount = sSurfaceMemoryUsed[i];
 
@@ -409,7 +404,7 @@ void gfxASurface::RecordMemoryUsedForSurfaceType(gfxSurfaceType aType,
 
   static bool registered = false;
   if (!registered) {
-    RegisterStrongMemoryReporter(new SurfaceMemoryReporter());
+    RegisterStrongMemoryReporter(MakeAndAddRef<SurfaceMemoryReporter>());
     registered = true;
   }
 

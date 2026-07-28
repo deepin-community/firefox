@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Жөндеу - Орындалу орт
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Бұл { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Бұл { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Бұл { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Баптау
+about-debugging-sidebar-setup-title =
+    .title = Баптау
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Push қызметі
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Қайнар көзі
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Service Worker бақылау қазір көппроцестік { -brand-shorter-name } үшін сөндірілген
@@ -325,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Көппроцестік сайма�
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Мақсат браузері үшін басты процесс және мазмұн процестері
+about-debugging-message-error-icon =
+    .alt = Қате таңбашасы
+about-debugging-message-info-icon =
+    .alt = Ақпарат таңбашасы
+about-debugging-message-warning-icon =
+    .alt = Ескерту таңбашасы
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Хабарламаны жабу
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Хабарламаны жабу
@@ -334,3 +354,5 @@ about-debugging-message-details-label-error = Қате ақпараты
 about-debugging-message-details-label-warning = Ескерту ақпараты
 # Label text used for default state of details of message component.
 about-debugging-message-details-label = Ақпараты
+about-debugging-sidebar =
+    .heading = Жөндеу

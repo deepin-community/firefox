@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } oiporuse mar
 autofill-edit-payment-method-os-prompt-macos = eiporu marandu mbyatypyre ñehepyme’ẽrã rehegua
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } ohechaukase marandu ñongatupyre jehepyme’ẽrã rehegua. Emoneĩ Windows mba’etépe jeike oĩva tenondeve.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } ohechaukase marandu mbyatypyre ñehepyme’ẽrã rehegua.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Myanyhẽha ijeheguíva porãvopyrã
 autofill-options-link-osx = Myanyhẽha ijeheguíva jerohoryvéva
 
@@ -81,3 +81,6 @@ autofill-category-name = téra
 autofill-category-organization = Atyguasu
 autofill-category-tel = pumbyry
 autofill-category-email = ñandutiveve
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } ohechakuaa tenda imarãkuaáva. Myanyhẽha ijeheguíva ikangýta sapy’ami.

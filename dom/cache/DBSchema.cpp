@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -344,7 +342,6 @@ static_assert(
         nsIContentPolicy::TYPE_SUBDOCUMENT == 7 &&
         nsIContentPolicy::TYPE_PING == 10 &&
         nsIContentPolicy::TYPE_XMLHTTPREQUEST == 11 &&
-        nsIContentPolicy::TYPE_OBJECT_SUBREQUEST == 12 &&
         nsIContentPolicy::TYPE_DTD == 13 && nsIContentPolicy::TYPE_FONT == 14 &&
         nsIContentPolicy::TYPE_MEDIA == 15 &&
         nsIContentPolicy::TYPE_WEBSOCKET == 16 &&
@@ -391,7 +388,12 @@ static_assert(
         nsIContentPolicy::TYPE_INTERNAL_WORKER_STATIC_MODULE == 58 &&
         nsIContentPolicy::TYPE_WEB_TRANSPORT == 59 &&
         nsIContentPolicy::TYPE_INTERNAL_XMLHTTPREQUEST_SYNC == 60 &&
-        nsIContentPolicy::TYPE_END == 61,
+        nsIContentPolicy::TYPE_INTERNAL_EXTERNAL_RESOURCE == 61 &&
+        nsIContentPolicy::TYPE_JSON == 62 &&
+        nsIContentPolicy::TYPE_INTERNAL_JSON_PRELOAD == 63 &&
+        nsIContentPolicy::TYPE_INTERNAL_IMAGE_NOTIFICATION == 64 &&
+        nsIContentPolicy::TYPE_TEXT == 65 &&
+        nsIContentPolicy::TYPE_INTERNAL_TEXT_PRELOAD == 66,
     "nsContentPolicyType values are as expected");
 
 namespace {
@@ -724,8 +726,27 @@ Result<int64_t, nsresult> GetTotalDiskUsage(mozIStorageConnection& aConn) {
   QM_TRY_RETURN(MOZ_TO_RESULT_INVOKE_MEMBER(*state, GetInt64, 0));
 }
 
-Result<nsTArray<nsID>, nsresult> GetKnownBodyIds(mozIStorageConnection& aConn) {
+Result<nsTHashSet<nsID>, nsresult> GetKnownBodyIds(
+    mozIStorageConnection& aConn) {
   MOZ_ASSERT(!NS_IsMainThread());
+
+  int32_t numEntries = 0;
+  {
+    QM_TRY_INSPECT(const auto& cnt,
+                   MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(
+                       nsCOMPtr<mozIStorageStatement>, aConn, CreateStatement,
+                       "SELECT COUNT(*) FROM entries;"_ns));
+
+    QM_TRY(quota::CollectWhileHasResult(
+        *cnt, [&numEntries](auto& stmt) -> Result<Ok, nsresult> {
+          QM_TRY(MOZ_TO_RESULT(stmt.GetInt32(0, &numEntries)));
+
+          return Ok{};
+        }));
+  }
+
+  // Each row can have 0 to 2 nsID values, prepare for the maximum.
+  nsTHashSet<nsID> idSet(numEntries * 2);
 
   QM_TRY_INSPECT(
       const auto& state,
@@ -733,10 +754,8 @@ Result<nsTArray<nsID>, nsresult> GetKnownBodyIds(mozIStorageConnection& aConn) {
           nsCOMPtr<mozIStorageStatement>, aConn, CreateStatement,
           "SELECT request_body_id, response_body_id FROM entries;"_ns));
 
-  AutoTArray<nsID, 64> idList;
-
   QM_TRY(quota::CollectWhileHasResult(
-      *state, [&idList](auto& stmt) -> Result<Ok, nsresult> {
+      *state, [&idSet](auto& stmt) -> Result<Ok, nsresult> {
         // extract 0 to 2 nsID structs per row
         for (uint32_t i = 0; i < 2; ++i) {
           QM_TRY_INSPECT(const bool& isNull,
@@ -745,14 +764,14 @@ Result<nsTArray<nsID>, nsresult> GetKnownBodyIds(mozIStorageConnection& aConn) {
           if (!isNull) {
             QM_TRY_INSPECT(const auto& id, ExtractId(stmt, i));
 
-            idList.AppendElement(id);
+            idSet.Insert(id);
           }
         }
 
         return Ok{};
       }));
 
-  return std::move(idList);
+  return std::move(idSet);
 }
 
 Result<Maybe<SavedResponse>, nsresult> CacheMatch(
@@ -1924,7 +1943,8 @@ nsresult InsertEntry(mozIStorageConnection& aConn, CacheId aCacheId,
                        ") VALUES (:url, :entry_id)"_ns));
 
     for (const auto& responseUrl : aResponse.urlList()) {
-      QM_TRY(MOZ_TO_RESULT(state->BindUTF8StringByName("url"_ns, responseUrl)));
+      QM_TRY(MOZ_TO_RESULT(state->BindUTF8StringByName(
+          "url"_ns, responseUrl->GetSpecOrDefault())));
       QM_TRY(MOZ_TO_RESULT(state->BindInt32ByName("entry_id"_ns, entryId)));
       QM_TRY(MOZ_TO_RESULT(state->Execute()));
     }
@@ -2112,22 +2132,34 @@ Result<SavedResponse, nsresult> ReadResponse(mozIStorageConnection& aConn,
   }
 
   {
+    // NOTE: We explicitly filter out empty URLs from the response_url_list
+    // table here. While recent versions should never add these to the table,
+    // the migration to version 21 is a bit naive, and would directly copy
+    // response_url into the table, even if it was "". We want to treat this
+    // case as an empty response_url_list.
     QM_TRY_INSPECT(const auto& state,
                    MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(
                        nsCOMPtr<mozIStorageStatement>, aConn, CreateStatement,
                        "SELECT "
                        "url "
                        "FROM response_url_list "
-                       "WHERE entry_id=:entry_id;"_ns));
+                       "WHERE entry_id=:entry_id AND length(url) > 0;"_ns));
 
     QM_TRY(MOZ_TO_RESULT(state->BindInt32ByName("entry_id"_ns, aEntryId)));
 
-    QM_TRY_UNWRAP(savedResponse.mValue.urlList(),
-                  quota::CollectElementsWhileHasResult(
-                      *state, [](auto& stmt) -> Result<nsCString, nsresult> {
-                        QM_TRY_RETURN(MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(
-                            nsCString, stmt, GetUTF8String, 0));
-                      }));
+    QM_TRY_UNWRAP(
+        savedResponse.mValue.urlList(),
+        quota::CollectElementsWhileHasResult(
+            *state,
+            [](auto& stmt) -> Result<NotNull<RefPtr<nsIURI>>, nsresult> {
+              QM_TRY_INSPECT(const auto& spec,
+                             MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(
+                                 nsCString, stmt, GetUTF8String, 0));
+
+              RefPtr<nsIURI> url;
+              QM_TRY(MOZ_TO_RESULT(NS_NewURI(getter_AddRefs(url), spec)));
+              return WrapNotNull(url);
+            }));
   }
 
   return savedResponse;

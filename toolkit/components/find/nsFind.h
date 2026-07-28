@@ -1,26 +1,22 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsFind_h__
-#define nsFind_h__
+#ifndef nsFind_h_
+#define nsFind_h_
 
 #include "nsIFind.h"
 
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsINode.h"
+#include "mozilla/intl/Segmenter.h"
+#include "mozilla/RangeBoundary.h"
 
 #define NS_FIND_CONTRACTID "@mozilla.org/embedcomp/rangefind;1"
 
-#define NS_FIND_CID                                  \
-  {                                                  \
-    0x471f4944, 0x1dd2, 0x11b2, {                    \
-      0x87, 0xac, 0x90, 0xbe, 0x0a, 0x51, 0xd6, 0x09 \
-    }                                                \
-  }
+#define NS_FIND_CID \
+  {0x471f4944, 0x1dd2, 0x11b2, {0x87, 0xac, 0x90, 0xbe, 0x0a, 0x51, 0xd6, 0x09}}
 
 class nsFind : public nsIFind {
  public:
@@ -41,6 +37,14 @@ class nsFind : public nsIFind {
     mWordEndBounded = aWordEndBounded;
   }
 
+  void SetNodeIndexCache(nsContentUtils::NodeIndexCache* aCache) {
+    mNodeIndexCache = aCache;
+  }
+
+  already_AddRefed<nsRange> FindFromRangeBoundaries(
+      const nsAString& aPatText, const mozilla::RangeBoundary& aStartPoint,
+      const mozilla::RangeBoundary& aEndPoint);
+
  protected:
   virtual ~nsFind() = default;
 
@@ -51,7 +55,8 @@ class nsFind : public nsIFind {
 
   bool mWordStartBounded = false;
   bool mWordEndBounded = false;
-
+  mozilla::intl::WordBreakIteratorUtf16 mWordBreakIter{nullptr};
+  nsContentUtils::NodeIndexCache* mNodeIndexCache = nullptr;
   struct State;
   class StateRestorer;
 
@@ -63,7 +68,7 @@ class nsFind : public nsIFind {
   //
   // This could be improved because some languages require more context than two
   // characters to determine where line breaks can occur
-  bool BreakInBetween(char32_t x, char32_t y) const;
+  bool BreakInBetween(char32_t x, char32_t y);
 
   // Get the first character from the next node (last if mFindBackward).
   //
@@ -71,4 +76,4 @@ class nsFind : public nsIFind {
   char32_t PeekNextChar(State&, bool aAlreadyMatching) const;
 };
 
-#endif  // nsFind_h__
+#endif  // nsFind_h_

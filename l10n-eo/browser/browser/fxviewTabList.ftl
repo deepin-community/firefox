@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Movi al fino
     .accesskey = M
 fxviewtabrow-move-tab-window = Movi al nova fenestro
     .accesskey = f
+fxviewtabrow-send-to-device = Sendi al aparato
+    .accesskey = a
+fxviewtabrow-send-to-mobile = Sendi al poŝaparato
+    .accesskey = p
 fxviewtabrow-send-tab = Sendi langeton al aparato
     .accesskey = a
 fxviewtabrow-pin-tab = Alpingli langeton
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Malsilentigi langeton
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Elektebloj por { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Silentigi { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Malsilentigi { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Silentigi langeton
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Malsilentigi langeton
+fxviewtabrow-send-to-mobile-connect-device = Konektu aparaton por sendi langetojn
+fxviewtabrow-send-to-mobile-device-missing2 = Ĉu vi ne vidas vian aparaton?
+fxviewtabrow-send-to-mobile-not-verified = Nekonfirmita konto
+fxviewtabrow-send-to-mobile-verify-account = Konfirmi vian konton
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Komencu seancon por sendi langetojn
+fxviewtabrow-send-to-mobile-turn-on-sync = Ŝaltu speguladon por sendi langetojn

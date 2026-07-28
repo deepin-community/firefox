@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,8 +5,8 @@
 #include "WMFDecoderModule.h"
 
 #include <algorithm>
-#include <vector>
 
+#include "AOMDecoder.h"
 #include "DriverCrashGuard.h"
 #include "GfxDriverInfo.h"
 #include "MFTDecoder.h"
@@ -19,8 +17,6 @@
 #include "WMFAudioMFTManager.h"
 #include "WMFMediaDataDecoder.h"
 #include "WMFVideoMFTManager.h"
-#include "mozilla/DebugOnly.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/ProfilerMarkers.h"
 #include "mozilla/StaticMutex.h"
 #include "mozilla/StaticPrefs_media.h"
@@ -34,10 +30,6 @@
 #include "nsServiceManagerUtils.h"
 #include "nsWindowsHelpers.h"
 #include "prsystem.h"
-
-#ifdef MOZ_AV1
-#  include "AOMDecoder.h"
-#endif
 
 #define LOG(...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, (__VA_ARGS__))
 
@@ -86,7 +78,7 @@ static bool IsRemoteAcceleratedCompositor(
 }
 
 /* static */
-void WMFDecoderModule::Init(Config aConfig) {
+void WMFDecoderModule::Init() {
   // TODO : add an assertion to prevent this from running on main thread.
   if (XRE_IsContentProcess()) {
     // If we're in the content process and the UseGPUDecoder pref is set, it
@@ -96,14 +88,6 @@ void WMFDecoderModule::Init(Config aConfig) {
   } else if (XRE_IsGPUProcess()) {
     // Always allow DXVA in the GPU process.
     sDXVAEnabled = true;
-    if (aConfig == Config::ForceEnableHEVC) {
-      WmfDecoderModuleMarkerAndLog(
-          "ReportHardwareSupport",
-          "Enable HEVC for reporting hardware support telemetry");
-      sForceEnableHEVC = true;
-    } else {
-      sForceEnableHEVC = false;
-    }
   } else if (XRE_IsRDDProcess()) {
     // Hardware accelerated decoding is explicitly only done in the GPU process
     // to avoid copying textures whenever possible. Previously, detecting
@@ -150,10 +134,20 @@ void WMFDecoderModule::Init(Config aConfig) {
         WmfDecoderModuleMarkerAndLog("WMFInit Decoder Failed",
                                      "%s failed with code 0x%lx",
                                      EnumValueToString(type), hr);
-        if (hr == WINCODEC_ERR_COMPONENTNOTFOUND &&
-            type == WMFStreamType::AV1) {
-          WmfDecoderModuleMarkerAndLog("No AV1 extension",
-                                       "Lacking of AV1 extension");
+        if (hr == WINCODEC_ERR_COMPONENTNOTFOUND) {
+          // Only AV1 and HEVC have a LackOfExtension entry in
+          // MediaCodecsSupport; any other codec hitting this arm has lost
+          // a built-in MFT and is plainly unsupported, and would also
+          // trip the corresponding assertion in
+          // MCSInfo::GetDecodeMediaCodecsSupported.
+          MOZ_ASSERT(type == WMFStreamType::AV1 || type == WMFStreamType::HEVC);
+          if (type == WMFStreamType::AV1) {
+            WmfDecoderModuleMarkerAndLog("No AV1 extension",
+                                         "Lacking of AV1 extension");
+          } else if (type == WMFStreamType::HEVC) {
+            WmfDecoderModuleMarkerAndLog("No HEVC extension",
+                                         "Lacking of HEVC extension");
+          }
           sLackOfExtensionTypes += type;
         }
       }
@@ -201,8 +195,15 @@ HRESULT WMFDecoderModule::CreateMFTDecoder(const WMFStreamType& aType,
   }
 
   switch (aType) {
-    case WMFStreamType::H264:
+    case WMFStreamType::H264: {
+      if (XRE_IsGPUProcess() && !sDXVAEnabled) {
+        WmfDecoderModuleMarkerAndLog("CreateMFTDecoder, H264 Failure",
+                                     "SW decoder is not allowed in the GPU "
+                                     "process and the HW H264 requires DXVA");
+        return E_FAIL;
+      }
       return aDecoder->Create(CLSID_CMSH264DecoderMFT);
+    }
     case WMFStreamType::VP8:
       static const uint32_t VP8_USABLE_BUILD = 16287;
       if (!IsWindows10BuildOrLater(VP8_USABLE_BUILD)) {
@@ -236,7 +237,6 @@ HRESULT WMFDecoderModule::CreateMFTDecoder(const WMFStreamType& aType,
         }
         return aDecoder->Create(CLSID_CMSVPXDecMFT);
       }
-#ifdef MOZ_AV1
     case WMFStreamType::AV1:
       // If this process cannot use DXVA, the AV1 decoder will not be used.
       // Also, upon startup, init will be called both before and after
@@ -251,9 +251,8 @@ HRESULT WMFDecoderModule::CreateMFTDecoder(const WMFStreamType& aType,
       // investigating other ways to instantiate the AV1 decoder.
       return aDecoder->Create(MFT_CATEGORY_VIDEO_DECODER, MFVideoFormat_AV1,
                               MFVideoFormat_NV12);
-#endif
     case WMFStreamType::HEVC:
-      if (!WMFDecoderModule::IsHEVCSupported() || !sDXVAEnabled) {
+      if (!StaticPrefs::media_hevc_enabled() || !sDXVAEnabled) {
         return E_FAIL;
       }
       return aDecoder->Create(MFT_CATEGORY_VIDEO_DECODER, MFVideoFormat_HEVC,
@@ -288,16 +287,14 @@ bool WMFDecoderModule::CanCreateMFTDecoder(const WMFStreamType& aType) {
         return false;
       }
       break;
-#ifdef MOZ_AV1
     case WMFStreamType::AV1:
       if (!StaticPrefs::media_av1_enabled() ||
           !StaticPrefs::media_wmf_av1_enabled()) {
         return false;
       }
       break;
-#endif
     case WMFStreamType::HEVC:
-      if (!WMFDecoderModule::IsHEVCSupported()) {
+      if (!StaticPrefs::media_hevc_enabled()) {
         return false;
       }
       break;
@@ -417,7 +414,8 @@ already_AddRefed<MediaDataDecoder> WMFDecoderModule::CreateVideoDecoder(
   }
 
   nsAutoCString hwFailure;
-  if (!manager->IsHardwareAccelerated(hwFailure)) {
+  bool isHardwareAccelerated = manager->IsHardwareAccelerated(hwFailure);
+  if (!isHardwareAccelerated) {
     // The decoder description includes whether it is using software or
     // hardware, but no information about how the hardware acceleration failed.
     WmfDecoderModuleMarkerAndLog(
@@ -431,6 +429,16 @@ already_AddRefed<MediaDataDecoder> WMFDecoderModule::CreateVideoDecoder(
         "WMFDecoderModule::CreateVideoDecoder success for manager with "
         "description %s",
         manager->GetDescriptionName().get());
+  }
+
+  // Ensure that if the GPU process claims to support hardware acceleration but
+  // fails to create a hardware decoder, we do not fall back to a software
+  // decoder. Software decoders are intended to run only in the RDD process.
+  if (XRE_IsGPUProcess() && !isHardwareAccelerated) {
+    WmfDecoderModuleMarkerAndLog("WMFVDecoderCreation Blocked",
+                                 "SW decoder is not allowed in the GPU "
+                                 "process");
+    return nullptr;
   }
 
   RefPtr<MediaDataDecoder> decoder = new WMFMediaDataDecoder(manager.release());
@@ -473,20 +481,12 @@ media::DecodeSupportSet WMFDecoderModule::SupportsMimeType(
     return media::DecodeSupportSet{};
   }
   auto supports = Supports(SupportDecoderParams(*trackInfo), aDiagnostics);
-  MOZ_LOG(
-      sPDMLog, LogLevel::Debug,
-      ("WMF decoder %s requested type '%s'",
-       !supports.isEmpty() ? "supports" : "rejects", aMimeType.BeginReading()));
+  MOZ_LOG(sPDMLog, LogLevel::Debug,
+          ("WMF decoder %s requested type '%s'",
+           !supports.isEmpty() ? "supports" : "rejects",
+           PromiseFlatCString(aMimeType).get()));
   return supports;
 }
-
-/* static */
-bool WMFDecoderModule::IsHEVCSupported() {
-  return sForceEnableHEVC || StaticPrefs::media_wmf_hevc_enabled() == 1;
-}
-
-/* static */
-void WMFDecoderModule::DisableForceEnableHEVC() { sForceEnableHEVC = false; }
 
 }  // namespace mozilla
 

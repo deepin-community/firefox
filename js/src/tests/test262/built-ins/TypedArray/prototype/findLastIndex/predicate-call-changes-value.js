@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Microsoft. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -17,12 +16,12 @@ includes: [compareArray.js, testTypedArray.js]
 features: [TypedArray, array-find-from-last]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var arr = [10, 20, 30];
   var sample;
   var result;
 
-  sample = new TA(3);
+  sample = new TA(makeCtorArg(3));
   sample.findLastIndex(function(val, i) {
     sample[i] = arr[i];
 

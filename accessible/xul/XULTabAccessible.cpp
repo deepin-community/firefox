@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -79,7 +78,19 @@ uint64_t XULTabAccessible::NativeState() const {
 
 uint64_t XULTabAccessible::NativeInteractiveState() const {
   uint64_t state = LocalAccessible::NativeInteractiveState();
-  return (state & states::UNAVAILABLE) ? state : state | states::SELECTABLE;
+  // Bug 1951776: XUL tabs are implemented such that only the selected tab is
+  // programmatically focusable. Unfortunately, Windows Voice Access requires
+  // tabs to be focusable in order for them to be discovered by the "show
+  // numbers" command. Therefore, always expose the focusable state for
+  // accessibility. While this seems strange on the surface, it can be argued
+  // that unselected tabs *can* receive focus at some point in the future (when
+  // they're selected), even if they can't receive focus *now*. There is some
+  // precedent for this: aria-activedescendant requires browsers to expose the
+  // focusable state on all possible descendants even if they aren't the current
+  // active descendant.
+  return (state & states::UNAVAILABLE)
+             ? state
+             : state | states::SELECTABLE | states::FOCUSABLE;
 }
 
 Relation XULTabAccessible::RelationByType(RelationType aType) const {

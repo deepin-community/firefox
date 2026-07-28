@@ -12,7 +12,7 @@ export class SidebarPanelHeader extends MozLitElement {
   };
 
   static queries = {
-    closeButton: ".header-close-button",
+    closeButton: "moz-button",
   };
 
   getWindow() {
@@ -21,24 +21,26 @@ export class SidebarPanelHeader extends MozLitElement {
 
   closeSidebarPanel(e) {
     e.preventDefault();
-    let view = e.target.getAttribute("view");
-    this.getWindow().SidebarController.toggle(view);
+    this.getWindow().SidebarController.hide();
   }
 
   render() {
     return html`
       <link rel="stylesheet" href="chrome://browser/content/sidebar/sidebar-panel-header.css"></link>
-      <div class="sidebar-panel-header">
-      <h4 class="text-truncated-ellipsis">${this.heading}</h4>
-      <moz-button
-        class="header-close-button"
-        @click=${this.closeSidebarPanel}
-        view=${this.view}
-        size="default"
-        type="icon ghost"
-      >
-      </moz-button>
-    </div>
+      <div class="sidebar-panel-heading">
+        <h4 class="text-truncated-ellipsis">${this.heading}</h4>
+        <moz-button
+          iconsrc="chrome://global/skin/icons/close.svg"
+          data-l10n-id="sidebar-panel-header-close-button"
+          @click=${this.closeSidebarPanel}
+          view=${this.view}
+          size="default"
+          type="icon ghost"
+          tabindex="1"
+        >
+        </moz-button>
+      </div>
+      <slot></slot>
     `;
   }
 }

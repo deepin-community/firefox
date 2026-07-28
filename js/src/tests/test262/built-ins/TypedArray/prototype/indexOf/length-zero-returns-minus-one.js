@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -35,6 +34,6 @@ testWithTypedArrayConstructors(function(TA) {
     sample.indexOf(0, fromIndex), -1,
     "length is checked before ToInteger(fromIndex)"
   );
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

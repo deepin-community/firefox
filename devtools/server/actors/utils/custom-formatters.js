@@ -44,7 +44,7 @@ class FormatterError extends Error {
  *
  * @param {ObjectActor} objectActor
  *
- * @returns {Object} Data related to the custom formatter header:
+ * @returns {object} Data related to the custom formatter header:
  *          - {boolean} useCustomFormatter, indicating if a custom formatter is used.
  *          - {Array} header JsonML of the output header.
  *          - {boolean} hasBody True in case the custom formatter has a body.
@@ -52,8 +52,8 @@ class FormatterError extends Error {
  *                               the object.
  */
 function customFormatterHeader(objectActor) {
-  const rawValue = objectActor.rawValue();
-  const globalWrapper = Cu.getGlobalForObject(rawValue);
+  const { rawObj } = objectActor;
+  const globalWrapper = Cu.getGlobalForObject(rawObj);
   const global = globalWrapper?.wrappedJSObject;
 
   // We expect a `devtoolsFormatters` global attribute and it to be an array
@@ -71,7 +71,7 @@ function customFormatterHeader(objectActor) {
     return null;
   }
 
-  const { targetActor } = objectActor.thread;
+  const { targetActor } = objectActor.threadActor;
 
   const {
     customFormatterConfigDbgObj: configDbgObj,
@@ -124,20 +124,21 @@ exports.customFormatterHeader = customFormatterHeader;
  * Handle one precise custom formatter.
  * i.e. one element of the window.customFormatters Array.
  *
- * @param {Object} options
+ * @param {object} options
  * @param {Debugger.Object} options.configDbgObj
  *        The Debugger.Object of the config object.
- * @param {Number} options.customFormatterObjectTagDepth
+ * @param {number} options.customFormatterObjectTagDepth
  *        See buildJsonMlFromCustomFormatterHookResult JSDoc.
- * @param {Object} options.formatter
+ * @param {object} options.formatter
  *        The raw formatter object (coming from "customFormatter" array).
  * @param {BrowsingContextTargetActor} options.targetActor
  *        See buildJsonMlFromCustomFormatterHookResult JSDoc.
  * @param {Debugger.Object} options.valueDbgObj
- *        The Debugger.Object of rawValue.
+ *        The Debugger.Object of rawObj.
  *
- * @returns {Object} See customFormatterHeader jsdoc, it returns the same object.
+ * @returns {object} See customFormatterHeader jsdoc, it returns the same object.
  */
+// eslint-disable-next-line complexity
 function processFormatterForHeader({
   configDbgObj,
   customFormatterObjectTagDepth,
@@ -240,20 +241,20 @@ function processFormatterForHeader({
  * Handle a protocol request to get the custom formatter body for an object
  *
  * @param {ObjectActor} objectActor
- * @param {Object} formatter: The global.devtoolsFormatters entry that was used in customFormatterHeader
+ * @param {object} formatter: The global.devtoolsFormatters entry that was used in customFormatterHeader
  *                            for this object.
  *
- * @returns {Object} Data related to the custom formatter body:
+ * @returns {object} Data related to the custom formatter body:
  *          - {*} customFormatterBody Data of the custom formatter body.
  */
 async function customFormatterBody(objectActor, formatter) {
-  const rawValue = objectActor.rawValue();
-  const globalWrapper = Cu.getGlobalForObject(rawValue);
+  const { rawObj } = objectActor;
+  const globalWrapper = Cu.getGlobalForObject(rawObj);
   const global = globalWrapper?.wrappedJSObject;
 
   const customFormatterIndex = global.devtoolsFormatters.indexOf(formatter);
 
-  const { targetActor } = objectActor.thread;
+  const { targetActor } = objectActor.threadActor;
   try {
     const { customFormatterConfigDbgObj, customFormatterObjectTagDepth } =
       objectActor.hooks;
@@ -377,7 +378,7 @@ function logCustomFormatterError(window, errorMsg, script) {
  *
  * @param {DebuggerObject} jsonMlDbgObj: The debugger object representing a jsonMl object returned
  *                         by a custom formatter hook.
- * @param {Number} customFormatterObjectTagDepth: See `processObjectTag`.
+ * @param {number} customFormatterObjectTagDepth: See `processObjectTag`.
  * @param {BrowsingContextTargetActor} targetActor: The actor that will be managing any
  *                                     created ObjectActor.
  * @returns {Array|null} Returns null if the passed object is a not DebuggerObject representing an Array
@@ -464,12 +465,12 @@ function buildJsonMlFromCustomFormatterHookResult(
  *
  * @param {DebuggerObject} attributesDbgObj: The debugger object representing the "attributes"
  *                         of a jsonMl item (e.g. the second item in the array).
- * @param {Number} customFormatterObjectTagDepth: As "object" tag can reference custom
+ * @param {number} customFormatterObjectTagDepth: As "object" tag can reference custom
  *                 formatted data, we track the number of time we go through this function
  *                 from the "root" object so we don't have an infinite loop.
  * @param {BrowsingContextTargetActor} targetActor: The actor that will be managin any
  *                                     created ObjectActor.
- * @returns {Object} Returns a grip representing the underlying object
+ * @returns {object} Returns a grip representing the underlying object
  */
 function processObjectTag(
   attributesDbgObj,

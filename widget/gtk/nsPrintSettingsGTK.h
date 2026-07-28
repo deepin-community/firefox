@@ -1,5 +1,4 @@
-/* -*- Mode: IDL; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,12 +13,8 @@ extern "C" {
 #include <gtk/gtkunixprint.h>
 }
 
-#define NS_PRINTSETTINGSGTK_IID                      \
-  {                                                  \
-    0x758df520, 0xc7c3, 0x11dc, {                    \
-      0x95, 0xff, 0x08, 0x00, 0x20, 0x0c, 0x9a, 0x66 \
-    }                                                \
-  }
+#define NS_PRINTSETTINGSGTK_IID \
+  {0x758df520, 0xc7c3, 0x11dc, {0x95, 0xff, 0x08, 0x00, 0x20, 0x0c, 0x9a, 0x66}}
 
 //*****************************************************************************
 //***    nsPrintSettingsGTK
@@ -28,7 +23,7 @@ extern "C" {
 class nsPrintSettingsGTK : public nsPrintSettings {
  public:
   NS_DECL_ISUPPORTS_INHERITED
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_PRINTSETTINGSGTK_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_PRINTSETTINGSGTK_IID)
 
   nsPrintSettingsGTK();
   explicit nsPrintSettingsGTK(const PrintSettingsInitializer& aSettings);
@@ -141,7 +136,5 @@ class nsPrintSettingsGTK : public nsPrintSettings {
   GtkPrintSettings* mPrintSettings;
   GtkPrinter* mGTKPrinter;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsPrintSettingsGTK, NS_PRINTSETTINGSGTK_IID)
 
 #endif  // nsPrintSettingsGTK_h_

@@ -12,23 +12,37 @@ update-updateButton =
     .label = הפעלה מחדש לעדכון { -brand-shorter-name }
     .accesskey = מ
 update-checkingForUpdates = בדיקת עדכונים חדשים…
+settings-update-checking-for-updates =
+    .label = בדיקת עדכונים חדשים…
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
 settings-update-downloading = <img data-l10n-name="icon"/>העדכון בהורדה — <label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = העדכון בהורדה — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = העדכון בהורדה — { $transfer }
 
 ##
 
 update-applying = מחיל עדכון…
+settings-update-applying =
+    .label = מחיל עדכון…
 update-failed = העדכון נכשל. <label data-l10n-name="failed-link">הורדת הגרסה האחרונה</label>
 update-failed-main = העדכון נכשל. <a data-l10n-name="failed-link-main">הורדת הגרסה האחרונה</a>
 update-adminDisabled = עדכונים נוטרלו על־ידי מנהל המערכת שלך
 update-policy-disabled = העדכונים הושבתו על־ידי הארגון שלך
+settings-update-policy-disabled =
+    .label = העדכונים הושבתו על־ידי הארגון שלך
 update-noUpdatesFound = { -brand-short-name } עדכני
+settings-update-no-updates-found =
+    .label = { -brand-short-name } עדכני
 aboutdialog-update-checking-failed = בדיקת העדכונים נכשלה.
+settings-update-checking-failed =
+    .label = בדיקת העדכונים נכשלה.
 update-otherInstanceHandlingUpdates = { -brand-short-name } מתעדכן ברגעים אלו באמצעות תהליך אחר
+settings-update-other-instance-handling-updates =
+    .label = { -brand-short-name } מתעדכן ברגעים אלו באמצעות תהליך אחר
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -36,8 +50,12 @@ update-otherInstanceHandlingUpdates = { -brand-short-name } מתעדכן ברג�
 aboutdialog-update-manual-with-link = עדכונים זמינים ב־<label data-l10n-name="manual-link">{ $displayUrl }</label>
 settings-update-manual-with-link = עדכונים זמינים ב־<a data-l10n-name="manual-link">{ $displayUrl }</a>
 update-unsupported = לא ניתן לבצע עדכונים נוספים במערכת זו.<label data-l10n-name="unsupported-link">מידע נוסף</label>
+settings-update-unsupported = לא ניתן לבצע עדכונים נוספים במערכת זו.<a data-l10n-name="unsupported-link">מידע נוסף</a>
 update-restarting = מתבצעת הפעלה מחדש…
+settings-update-restarting =
+    .label = מתבצעת הפעלה מחדש…
 update-internal-error2 = לא ניתן היה לבדוק אחר עדכונים עקב שגיאה פנימית. עדכונים זמינים ב־<label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-internal-error = לא ניתן היה לבדוק אחר עדכונים עקב שגיאה פנימית. עדכונים זמינים ב־<a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 ##
 
@@ -51,6 +69,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } תוכנן על־ידי <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, <label data-l10n-name="community-creditsLink">קהילה עולמית</label> שמשימתה היא להשאיר את הרשת פתוחה, ציבורית ונגישה לכולם.
 helpus = מעוניינים לסייע? <label data-l10n-name="helpus-donateLink">תרמו לנו</label> או <label data-l10n-name="helpus-getInvolvedLink">הצטרפו אלינו!</label>
 bottomLinks-license = מידע רישוי
+bottom-links-terms = תנאי שימוש
+bottom-links-privacy = הצהרת פרטיות
 bottomLinks-rights = זכויות משתמש קצה
 bottomLinks-privacy = מדיניות פרטיות
 # Example of resulting string: 66.0.1 (64-bit)

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,13 +17,15 @@ class GroupInfo;
 class OriginInfo final {
   friend class CanonicalQuotaObject;
   friend class GroupInfo;
+  friend class PersistOp;
   friend class QuotaManager;
 
  public:
   OriginInfo(GroupInfo* aGroupInfo, const nsACString& aOrigin,
              const nsACString& aStorageOrigin, bool aIsPrivate,
              const ClientUsageArray& aClientUsages, uint64_t aUsage,
-             int64_t aAccessTime, bool aPersisted, bool aDirectoryExists);
+             int64_t aAccessTime, int32_t aMaintenanceDate, bool aPersisted,
+             bool aDirectoryExists);
 
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(OriginInfo)
 
@@ -57,13 +57,35 @@ class OriginInfo final {
     return mAccessTime;
   }
 
+  int32_t LockedMaintenanceDate() const {
+    AssertCurrentThreadOwnsQuotaMutex();
+
+    return mMaintenanceDate;
+  }
+
+  bool LockedAccessed() const {
+    AssertCurrentThreadOwnsQuotaMutex();
+
+    return mAccessed;
+  }
+
   bool LockedPersisted() const {
     AssertCurrentThreadOwnsQuotaMutex();
 
     return mPersisted;
   }
 
+  bool IsExtensionOrigin() const { return mIsExtension; }
+
+  bool LockedDirectoryExists() const {
+    AssertCurrentThreadOwnsQuotaMutex();
+
+    return mDirectoryExists;
+  }
+
   OriginMetadata FlattenToOriginMetadata() const;
+
+  OriginStateMetadata LockedFlattenToOriginStateMetadata() const;
 
   FullOriginMetadata LockedFlattenToFullOriginMetadata() const;
 
@@ -92,35 +114,58 @@ class OriginInfo final {
     }
   }
 
+  void LockedUpdateMaintenanceDate(int32_t aMaintenanceDate) {
+    AssertCurrentThreadOwnsQuotaMutex();
+
+    mMaintenanceDate = aMaintenanceDate;
+  }
+
+  void LockedUpdateAccessed() {
+    AssertCurrentThreadOwnsQuotaMutex();
+
+    if (!mAccessed) {
+      mAccessed = true;
+    }
+  }
+
   void LockedPersist();
 
-  bool IsExtensionOrigin() { return mIsExtension; }
+  void LockedDirectoryCreated();
+
+  void LockedTruncateUsages(Client::Type aClientType, uint64_t aDelta);
+
+  Maybe<bool> LockedUpdateUsages(Client::Type aClientType, uint64_t aDelta);
+
+  bool LockedUpdateUsagesForEviction(Client::Type aClientType, uint64_t aDelta);
 
   nsTHashMap<nsStringHashKey, NotNull<CanonicalQuotaObject*>>
       mCanonicalQuotaObjects;
-  ClientUsageArray mClientUsages;
   GroupInfo* mGroupInfo;
   const nsCString mOrigin;
   const nsCString mStorageOrigin;
-  bool mIsExtension;
-  uint64_t mUsage;
   int64_t mAccessTime;
+  int32_t mMaintenanceDate;
   bool mIsPrivate;
   bool mAccessed;
   bool mPersisted;
+  const bool mIsExtension;
   /**
    * In some special cases like the LocalStorage client where it's possible to
    * create a Quota-using representation but not actually write any data, we
    * want to be able to track quota for an origin without creating its origin
    * directory or the per-client files until they are actually needed to store
    * data. In those cases, the OriginInfo will be created by
-   * EnsureQuotaForOrigin and the resulting mDirectoryExists will be false until
+   * InitQuotaForOrigin and the resulting mDirectoryExists will be false until
    * the origin actually needs to be created. It is possible for mUsage to be
    * greater than zero while mDirectoryExists is false, representing a state
    * where a client like LocalStorage has reserved quota for disk writes, but
    * has not yet flushed the data to disk.
    */
   bool mDirectoryExists;
+
+ private:
+  ClientUsageArray mClientUsages;
+  uint64_t mUsage;
 };
 
 class OriginInfoAccessTimeComparator {

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -97,16 +95,11 @@ class UIEvent : public Event {
   ~UIEvent() = default;
 
   // Internal helper functions
-  nsIntPoint GetMovementPoint();
   nsIntPoint GetLayerPoint() const;
 
   nsCOMPtr<nsPIDOMWindowOuter> mView;
   int32_t mDetail;
-  CSSIntPoint mDefaultClientPoint;
-  // Screenpoint is mEvent->mRefPoint.
   nsIntPoint mLayerPoint;
-  CSSIntPoint mPagePoint;
-  nsIntPoint mMovementPoint;
 
   static Modifiers ComputeModifierState(const nsAString& aModifiersList);
   bool GetModifierStateInternal(const nsAString& aKey);

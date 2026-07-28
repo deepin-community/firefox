@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Táto stránka požaduje prístup k vašim zariadeniam MIDI (Musical Instrument Digital Interface). Prístup k zariadeniam je možné povoliť inštaláciou doplnku.
 site-permission-install-first-prompt-midi-message = Tento prístup nie je zaručene bezpečný. Pokračujte len vtedy, ak dôverujete tejto stránke.
+site-permission-install-first-prompt-serial-header = Táto stránka požaduje prístup k vašim sériovým zariadeniam. Prístup k zariadeniam je možné povoliť inštaláciou doplnku.
+site-permission-install-first-prompt-serial-message = Tento prístup nie je zaručene bezpečný. Pokračujte len vtedy, ak dôverujete tejto stránke.
 
 ##
 
@@ -81,6 +83,8 @@ addon-removal-title = Odstrániť { $name }?
 addon-removal-message = Odstrániť { $name } z prehliadača { -brand-shorter-name }?
 addon-removal-button = Odstrániť
 addon-removal-abuse-report-checkbox = Nahlásiť toto rozšírenie spoločnosti { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Ak použijete funkcie alebo rozšírenia, ktoré tento model používajú, bude znova pridaný.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -102,23 +106,23 @@ addon-install-accept-button =
 
 addon-confirm-install-message =
     { $addonCount ->
-        [one] Táto stránka sa pokúša nainštalovať doplnok pre { -brand-short-name }:
-        [few] Táto stránka sa pokúša nainštalovať { $addonCount } doplnky pre { -brand-short-name }:
-       *[other] Táto stránka sa pokúša nainštalovať { $addonCount } doplnkov pre { -brand-short-name }:
+        [one] Táto stránka chce nainštalovať doplnok do { -brand-short-name(case: "gen") }:
+        [few] Táto stránka chce nainštalovať { $addonCount } doplnky do { -brand-short-name(case: "gen") }:
+       *[other] Táto stránka chce nainštalovať { $addonCount } doplnkov do { -brand-short-name(case: "gen") }:
     }
 addon-confirm-install-unsigned-message =
     { $addonCount ->
-        [one] Upozornenie: táto stránka sa do prehliadača { -brand-short-name } pokúša nainštalovať neoverený doplnok. Pokračujete na vlastné riziko.
-        [few] Upozornenie: táto stránka sa do prehliadača { -brand-short-name } pokúša nainštalovať { $addonCount } neoverené doplnky. Pokračujete na vlastné riziko.
-       *[other] Upozornenie: táto stránka sa do prehliadača { -brand-short-name } pokúša nainštalovať { $addonCount } neoverených doplnkov. Pokračujete na vlastné riziko.
+        [one] Upozornenie: táto stránka by chcela nainštalovať do { -brand-short-name(case: "gen") } doplnok, ktorý nie je overený. Pokračujete na vlastné riziko.
+        [few] Upozornenie: táto stránka by chcela nainštalovať { $addonCount } neoverené doplnky do { -brand-short-name(case: "gen") }. Pokračujte na vlastné riziko.
+       *[other] Upozornenie: táto stránka by chcela nainštalovať { $addonCount } neoverených doplnkov do { -brand-short-name(case: "gen") }. Pokračujte na vlastné riziko.
     }
 # Variables:
 #   $addonCount (Number): the number of add-ons being installed (at least 2)
 addon-confirm-install-some-unsigned-message =
     { $addonCount ->
-        [one] Upozornenie: táto stránka sa do prehliadača { -brand-short-name } pokúša nainštalovať doplnok, ktorý nie je overený. Pokračujete na vlastné riziko.
-        [few] Upozornenie: táto stránka sa do prehliadača { -brand-short-name } pokúša nainštalovať { $addonCount } doplnky, niektoré z nich nie sú overené. Pokračujete na vlastné riziko.
-       *[other] Upozornenie: táto stránka sa do prehliadača { -brand-short-name } pokúša nainštalovať { $addonCount } doplnkov, niektoré z nich nie sú overené. Pokračujete na vlastné riziko.
+        [one] Upozornenie: táto stránka by chcela nainštalovať do { -brand-short-name(case: "gen") } doplnok, ktorý nie je overený. Pokračujete na vlastné riziko.
+        [few] Upozornenie: táto stránka by chcela nainštalovať { $addonCount } doplnky do { -brand-short-name(case: "gen") }, pričom niektoré z nich nie sú overené. Pokračujte na vlastné riziko.
+       *[other] Upozornenie: táto stránka by chcela nainštalovať { $addonCount } doplnkov do { -brand-short-name(case: "gen") }, pričom niektoré z nich nie sú overené. Pokračujte na vlastné riziko.
     }
 
 ## Add-on install errors
@@ -131,14 +135,19 @@ addon-install-error-corrupt-file = Doplnok stiahnutý z tejto stránky nemohol b
 addon-install-error-file-access = Doplnok { $addonName } nemohol byť nainštalovaný, pretože { -brand-short-name } nemohol upraviť potrebný súbor.
 addon-install-error-not-signed = { -brand-short-name } zabránil tejto stránke nainštalovať neoverený doplnok.
 addon-install-error-invalid-domain = Doplnok { $addonName } nie je možné nainštalovať z tohto umiestnenia.
+addon-install-error-no-addon-name-file-access = Doplnok nemohol byť nainštalovaný, pretože { -brand-short-name } nemohol upraviť potrebný súbor.
 addon-local-install-error-network-failure = Tento doplnok nemohol byť nainštalovaný kvôli chybe v súborovom systéme.
 addon-local-install-error-incorrect-hash = Tento doplnok nemohol byť nainštalovaný, pretože neodpovedá tomu, čo prehliadač { -brand-short-name } očakával.
 addon-local-install-error-corrupt-file = Tento doplnok nemohol byť nainštalovaný, pretože je zrejme poškodený.
 addon-local-install-error-file-access = Doplnok { $addonName } nemohol byť nainštalovaný, pretože { -brand-short-name } nemohol upraviť potrebný súbor.
 addon-local-install-error-not-signed = Tento doplnok nemohol byť nainštalovaný, pretože nebol overený.
+addon-local-install-no-addon-name-error-file-access = Doplnok nemohol byť nainštalovaný, pretože { -brand-short-name } nemohol upraviť potrebný súbor.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Doplnok { $addonName } nemohol byť nainštalovaný, pretože nie je kompatibilný s prehliadačom { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } porušuje pravidlá Mozilly a nedá sa nainštalovať vo { -brand-short-name(case: "loc") }.
+addon-install-error-soft-blocked2 = Doplnok { $addonName } je obmedzený a nedá sa nainštalovať vo { -brand-short-name(case: "loc") }.
 addon-install-error-blocklisted = Doplnok { $addonName } nebolo možné nainštalovať, pretože je veľké riziko, že spôsobí problémy so stabilitou alebo bezpečnosťou prehliadača.
+addon-install-error-soft-blocked = { $addonName } porušuje pravidlá Mozilly a nedá sa nainštalovať vo { -brand-short-name(case: "loc") }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Doplnok { $addonName } nemôžete nainštalovať ako koncový používateľ, môže ho nainštalovať iba organizácia používajúca podnikové pravidlá.

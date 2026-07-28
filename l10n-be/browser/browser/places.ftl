@@ -100,7 +100,7 @@ places-delete-page =
            *[other] Выдаліць старонкі
         }
     .accesskey = В
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Кіраваныя закладкі
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -271,3 +271,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = Сістэма гісторыі і закладак не дзейнічае, бо адзін з файлаў { -brand-short-name } скарыстоўваецца іншай праграмай. Гэтую праблему могуць выклікаць асобныя праграмы бяспекі.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Падзяліцца папкай
+    .badge = Новае

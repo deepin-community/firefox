@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -27,9 +26,9 @@ var keys = [
   "0.0000001"
 ];
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   keys.forEach(function(key) {
-    var sample = new TA([42, 43]);
+    var sample = new TA(makeCtorArg([42, 43]));
 
     assert.sameValue(
       Object.getOwnPropertyDescriptor(sample, key),
@@ -46,6 +45,6 @@ testWithTypedArrayConstructors(function(TA) {
       "return value from a ordinary property key [" + key + "]"
     );
   });
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

@@ -15,6 +15,10 @@ support-addons-type = 유형
 support-addons-enabled = 사용
 support-addons-version = 버전
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = 위치
 legacy-user-stylesheets-title = 레거시 사용자 스타일시트
 legacy-user-stylesheets-enabled = 활성화
 legacy-user-stylesheets-stylesheet-types = 스타일시트
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = 효율성 (%)
 place-database-stats-sequentiality-perc = 순차 (%)
 place-database-integrity = 무결성
 place-database-verify-integrity = 무결성 확인
+place-database-last-idle-maintenance-data = 마지막 유지 보수 날짜
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = 마지막 Vacuum 날짜
+place-database-last-integrity-corruption-date = 마지막 무결성 손상 날짜
 a11y-title = 접근성
 a11y-activated = 활성화
 a11y-force-disabled = 접근성 끄기
@@ -181,6 +189,8 @@ media-capabilities-enumerate = 데이터베이스 열거
 
 media-codec-support-sw-decoding = 소프트웨어 디코딩
 media-codec-support-hw-decoding = 하드웨어 디코딩
+media-codec-support-sw-encoding = 소프트웨어 인코딩
+media-codec-support-hw-encoding = 하드웨어 인코딩
 media-codec-support-codec-name = 코덱 이름
 media-codec-support-supported = 지원됨
 media-codec-support-unsupported = 지원 안 됨

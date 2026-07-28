@@ -52,14 +52,74 @@ addAccessibleTask(
 
     Assert.deepEqual(attributesList, [
       // string, fg color, bg color, underline, underline color, heading level, font size, link id, misspelled
-      ["hello ", "#000000", "#ffffff", null, null, 1, 32, null, null],
-      ["world", "#0000ee", "#ffffff", 1, "#0000ee", 1, 32, "a1", null],
-      ["this ", "#000000", "#ffffff", null, null, null, 16, null, null],
-      ["is", "#ff0000", "#ffff00", null, null, null, 16, null, 1],
-      [" ", "#000000", "#ffffff", null, null, null, 16, null, null],
-      ["a", "#000000", "#ffffff", 1, "#008000", null, 16, null, null],
-      [" ", "#000000", "#ffffff", null, null, null, 16, null, null],
-      ["test", "#0000ee", "#ffffff", 1, "#0000ee", null, 16, "a2", null],
+      [
+        "hello ",
+        "#000000",
+        "#ffffff",
+        undefined,
+        undefined,
+        1,
+        32,
+        null,
+        undefined,
+      ],
+      ["world", "#0000ee", "#ffffff", 1, "#0000ee", 1, 32, "a1", undefined],
+      [
+        "this ",
+        "#000000",
+        "#ffffff",
+        undefined,
+        undefined,
+        undefined,
+        16,
+        null,
+        undefined,
+      ],
+      [
+        "is",
+        "#ff0000",
+        "#ffff00",
+        undefined,
+        undefined,
+        undefined,
+        16,
+        null,
+        1,
+      ],
+      [
+        " ",
+        "#000000",
+        "#ffffff",
+        undefined,
+        undefined,
+        undefined,
+        16,
+        null,
+        undefined,
+      ],
+      ["a", "#000000", "#ffffff", 1, "#008000", undefined, 16, null, undefined],
+      [
+        " ",
+        "#000000",
+        "#ffffff",
+        undefined,
+        undefined,
+        undefined,
+        16,
+        null,
+        undefined,
+      ],
+      [
+        "test",
+        "#0000ee",
+        "#ffffff",
+        1,
+        "#0000ee",
+        undefined,
+        16,
+        "a2",
+        undefined,
+      ],
     ]);
 
     // Test different NSRange parameters for AXAttributedStringForRange
@@ -189,4 +249,62 @@ addAccessibleTask(
     ok(!attributedText[2].AXHighlight);
   },
   { urlSuffix: "#:~:text=test" }
+);
+
+// Test the <mark> element.
+addAccessibleTask(
+  `This is a <mark>test</mark>.`,
+  async function testMark(browser, accDoc) {
+    const macDoc = accDoc.nativeInterface.QueryInterface(
+      Ci.nsIAccessibleMacInterface
+    );
+    const range = macDoc.getParameterizedAttributeValue(
+      "AXTextMarkerRangeForUnorderedTextMarkers",
+      [
+        macDoc.getAttributeValue("AXStartTextMarker"),
+        macDoc.getAttributeValue("AXEndTextMarker"),
+      ]
+    );
+    const attributedText = macDoc.getParameterizedAttributeValue(
+      "AXAttributedStringForTextMarkerRange",
+      range
+    );
+    is(attributedText.length, 3);
+    ok(!attributedText[0].AXHighlight);
+    ok(attributedText[1].AXHighlight);
+    is(attributedText[1].string, "test");
+    ok(!attributedText[2].AXHighlight);
+  }
+);
+
+// Test the <mark> element, in conjunction with content that will
+// prevent the creation of a text attributes object.
+addAccessibleTask(
+  `<mark>a<button></button>b</mark>`,
+  async function testMarkNoAttributes(browser, accDoc) {
+    const macDoc = accDoc.nativeInterface.QueryInterface(
+      Ci.nsIAccessibleMacInterface
+    );
+    const range = macDoc.getParameterizedAttributeValue(
+      "AXTextMarkerRangeForUnorderedTextMarkers",
+      [
+        macDoc.getAttributeValue("AXStartTextMarker"),
+        macDoc.getAttributeValue("AXEndTextMarker"),
+      ]
+    );
+    const attributedText = macDoc.getParameterizedAttributeValue(
+      "AXAttributedStringForTextMarkerRange",
+      range
+    );
+    ok(attributedText, "Document has attributed text");
+    is(attributedText.length, 3, "3 pieces of attributed text exist");
+
+    ok(attributedText[0].AXHighlight, "0th pos text has highlight");
+    is(attributedText[0].string, "a", "0th pos text is string `a`");
+
+    ok(!attributedText[1].AXHighlight, "1st pos text has no highlight");
+
+    ok(attributedText[2].AXHighlight, "2nd pos text has highlight");
+    is(attributedText[2].string, "b", "2nd pos text is string `b`");
+  }
 );

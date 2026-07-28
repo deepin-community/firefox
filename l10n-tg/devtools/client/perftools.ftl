@@ -8,7 +8,7 @@
 ### file that are used for the profiler popup.
 
 perftools-intro-title = Танзимоти профилсоз
-perftools-intro-description = Сабткунӣ сомонаи «profiler.firefox.com»-ро дар варақаи нав оғоз мекунад. Тамоми маълумот ба таври маҳаллӣ нигоҳ дошта мешавад, аммо шумо метавонед онро интихоб карда, барои мубодила бор кунед.
+perftools-intro-description = Сабтҳо сомонаи «profiler.firefox.com»-ро дар варақаи нав оғоз мекунад. Тамоми маълумот ба таври маҳаллӣ нигоҳ дошта мешавад, аммо шумо метавонед онро интихоб карда, барои мубодила бор кунед.
 
 ## All of the headings for the various sections.
 
@@ -24,18 +24,38 @@ perftools-heading-local-build = Сохти маҳаллӣ
 
 ##
 
-perftools-description-intro =
-    Сабткунӣ сомонаи «<a>profiler.firefox.com</a>»-ро дар варақаи нав оғоз мекунад. Тамоми маълумот ба таври
-    маҳаллӣ нигоҳ дошта мешавад, аммо шумо метавонед онро интихоб карда, барои мубодила бор кунед.
+perftools-description-intro = Сабтҳо сомонаи «<a>profiler.firefox.com</a>»-ро дар варақаи нав оғоз мекунад. Тамоми маълумот ба таври маҳаллӣ нигоҳ дошта мешавад, аммо шумо метавонед онро интихоб карда, барои мубодила бор кунед.
 perftools-description-local-build =
     Агар шумо сохтеро, ки худатон дар ин компютер эҷод кардаед, дар профил созед,
     лутфан, «objdir»-и сохти худро ба рӯйхати зерин илова кунед, то ки он тавонад
     барои ҷустуҷӯи маълумоти рамзӣ истифода бурда шавад.
+perftools-pick-local-build-directory = Интихоб кардани феҳристи сохт
 
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Фосилаи намунагирӣ:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } мс
+
+## Generic memory units that can be used in various places, eg for the buffer size.
+
+# Byte
+perftools-memory-unit-b = { NUMBER($num, maxFractionalUnits: 2) } Б
+# Kibibyte
+perftools-memory-unit-kib = { NUMBER($num, maxFractionalUnits: 2) } КиБ
+# Mebibyte
+perftools-memory-unit-mib = { NUMBER($num, maxFractionalUnits: 2) } МиБ
+# Gibibyte
+perftools-memory-unit-gib = { NUMBER($num, maxFractionalUnits: 2) } ГиБ
+# Tebibyte
+perftools-memory-unit-tib = { NUMBER($num, maxFractionalUnits: 2) } ТиБ
+# Pebibyte
+perftools-memory-unit-pib = { NUMBER($num, maxFractionalUnits: 2) } ПиБ
+# Exbibyte
+perftools-memory-unit-eib = { NUMBER($num, maxFractionalUnits: 2) } ЭиБ
+# Zebibyte
+perftools-memory-unit-zib = { NUMBER($num, maxFractionalUnits: 2) } ЗиБ
+# Yobibyte
+perftools-memory-unit-yib = { NUMBER($num, maxFractionalUnits: 2) } ЙиБ
 
 ##
 
@@ -66,6 +86,14 @@ perftools-button-restart = Аз нав оғоз кардан
 perftools-button-add-directory = Илова кардани ҷузвдон
 perftools-button-remove-directory = Тоза кардани маводи интихобшуда
 perftools-button-edit-settings = Таҳрир кардани танзимот…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Амалҳои бештар
+perftools-menu-more-actions-restart-with-profiling = Аз нав оғоз кардани «{ -brand-shorter-name }» дар якҷоягӣ бо профилсозии оғози кори фаъолшуда
+perftools-menu-more-actions-copy-for-startup = Нусха бардоштани тағйирёбандаҳои муҳит барои профилсозии оғози кор
+perftools-menu-more-actions-copy-for-perf-tests = Нусха бардоштани танзимот барои санҷишҳои самаранокии низом
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -139,6 +167,8 @@ perftools-presets-graphics-label = Графика
 perftools-presets-graphics-description = Танзимот барои тафтиши хатоҳои графикӣ дар { -brand-shorter-name }.
 perftools-presets-media-label = Расона
 perftools-presets-media-description2 = Танзимот барои тафтиши хатоҳои аудио ва видео дар { -brand-shorter-name }.
+perftools-presets-ml-label = Омӯзиши мошинӣ
+perftools-presets-ml-description2 = Танзимот барои тафтиши хатоҳои омӯзиши мошинӣ дар «{ -brand-shorter-name }».
 perftools-presets-networking-label = Шабакасозӣ
 perftools-presets-networking-description = Танзимот барои тафтиши хатоҳои шабакасозӣ дар { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -146,7 +176,6 @@ perftools-presets-power-label = Қувва
 perftools-presets-power-description = Танзимот барои тафтиши хатоҳои истифодаи қувваи барқ дар { -brand-shorter-name }, бо хароҷоти паст.
 perftools-presets-debug-label = Ислоҳ кардани хатоҳо
 perftools-presets-debug-description = Танзими пешбинишуда барои ислоҳ кардани хатоҳо дар «{ -brand-shorter-name }». Ба сабаби хароҷоти изофӣ, аз он барои кори самаранок истифода набаред, аммо аз он барои таваҷҷуҳ ба фаҳмидани рафтори браузер истифода баред.
+perftools-presets-web-compat-label = Мутобиқати веб
+perftools-presets-web-compat-description = Пешниҳоди танзими тавсияшуда барои ислоҳ кардани хатоҳои мутобиқати веб дар сомонаҳо, ба ҷойи пайгирии самаранокӣ.
 perftools-presets-custom-label = Фармоишӣ
-
-##
-

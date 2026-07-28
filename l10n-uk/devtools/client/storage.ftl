@@ -36,6 +36,8 @@ storage-variable-view-search-box =
 # Add Item button title
 storage-add-button =
     .title = Додати елемент
+storage-delete-all-button =
+    .title = Видалити все
 # Refresh button title
 storage-refresh-button =
     .title = Оновити елементи
@@ -71,6 +73,7 @@ storage-table-headers-cookies-expires = Термін дії / Макс. вік
 storage-table-headers-cookies-size = Розмір
 storage-table-headers-cookies-last-accessed = Останній доступ
 storage-table-headers-cookies-creation-time = Створено
+storage-table-headers-cookies-update-time = Оновлено
 storage-table-headers-cache-status = Стан
 storage-table-headers-extension-storage-area = Обсяг сховища
 
@@ -107,3 +110,11 @@ storage-idb-delete-blocked = База даних “{ $dbName }” видали�
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = База даних “{ $dbName }” не може бути видалена.
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = Не вдалося створити файл cookie: “{ $errorString }”.
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = Не вдалося оновити файл cookie: “{ $errorString }”.

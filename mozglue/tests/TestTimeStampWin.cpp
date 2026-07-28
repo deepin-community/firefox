@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -19,7 +17,7 @@ static nsReturnRef<HANDLE> CreateProcessWrapper(const wchar_t* aPath) {
 
   const wchar_t* childArgv[] = {aPath, kChildArg};
   mozilla::UniquePtr<wchar_t[]> cmdLine(
-      mozilla::MakeCommandLine(mozilla::ArrayLength(childArgv), childArgv));
+      mozilla::MakeCommandLine(std::size(childArgv), childArgv));
 
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi;

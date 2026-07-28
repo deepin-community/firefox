@@ -1,19 +1,19 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebGLShaderValidator.h"
 
-#include "GLContext.h"
-#include "mozilla/gfx/Logging.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/StaticPrefs_webgl.h"
-#include "MurmurHash3.h"
-#include "nsPrintfCString.h"
 #include <string>
 #include <vector>
+
+#include "GLContext.h"
+#include "MurmurHash3.h"
 #include "WebGLContext.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/StaticPrefs_webgl.h"
+#include "mozilla/gfx/Logging.h"
+#include "nsPrintfCString.h"
 
 namespace mozilla {
 namespace webgl {
@@ -35,15 +35,11 @@ static ShCompileOptions ChooseValidatorCompileOptions(
   options.initGLPosition = true;
   options.initializeUninitializedLocals = true;
   options.initOutputVariables = true;
-
-#ifdef XP_MACOSX
-  options.removeInvariantAndCentroidForESSL3 = true;
-#else
-  // We want to do this everywhere, but to do this on Mac, we need
-  // to do it only on Mac OSX > 10.6 as this causes the shader
-  // compiler in 10.6 to crash
   options.clampIndirectArrayBounds = true;
-#endif
+
+  if (kIsMacOS) {
+    options.removeInvariantAndCentroidForESSL3 = true;
+  }
 
   if (gl->WorkAroundDriverBugs()) {
     if (kIsMacOS) {
@@ -134,7 +130,6 @@ std::unique_ptr<webgl::ShaderValidator> WebGLContext::CreateShaderValidator(
   const auto outputLanguage = ShaderOutput(gl);
 
   ShBuiltInResources resources;
-  memset(&resources, 0, sizeof(resources));
   sh::InitBuiltInResources(&resources);
 
   resources.HashFunction = webgl::IdentifierHashFunc;
@@ -155,6 +150,8 @@ std::unique_ptr<webgl::ShaderValidator> WebGLContext::CreateShaderValidator(
   if (IsWebGL2()) {
     resources.MinProgramTexelOffset = mGLMinProgramTexelOffset;
     resources.MaxProgramTexelOffset = mGLMaxProgramTexelOffset;
+    resources.MaxVertexUniformBlocks = mGLMaxVertexUniformBlocks;
+    resources.MaxFragmentUniformBlocks = mGLMaxFragmentUniformBlocks;
   }
 
   resources.MaxDrawBuffers = MaxValidDrawBuffers();
@@ -208,10 +205,6 @@ std::unique_ptr<webgl::ShaderValidator> WebGLContext::CreateShaderValidator(
       return static_cast<size_t>(bytes);
     }
 
-    if (gl->IsMesa()) {
-      return 4 * 4 * 1024;  // 4K words
-    }
-
     if (kIsMacOS) {
       return 128 * 1024;  // 8k vec4s
     }
@@ -221,8 +214,12 @@ std::unique_ptr<webgl::ShaderValidator> WebGLContext::CreateShaderValidator(
 
   // -
 
-  const auto compileOptions =
-      webgl::ChooseValidatorCompileOptions(resources, gl);
+  auto compileOptions = webgl::ChooseValidatorCompileOptions(resources, gl);
+
+  if (IsWebGL2()) {
+    compileOptions.validatePerStageMaxUniformBlocks = true;
+  }
+
   auto ret = webgl::ShaderValidator::Create(shaderType, spec, outputLanguage,
                                             resources, compileOptions);
   if (!ret) return ret;
@@ -494,25 +491,30 @@ bool ShaderValidatorResults::CanLinkTo(const ShaderValidatorResults& vert,
 }
 
 size_t ShaderValidatorResults::SizeOfIncludingThis(
-    const MallocSizeOf fnSizeOf) const {
+    const mozilla::MallocSizeOf fnSizeOf) const {
   auto ret = fnSizeOf(this);
-  ret += mInfoLog.size();
-  ret += mObjectCode.size();
 
-  for (const auto& cur : mAttributes) {
-    ret += fnSizeOf(&cur);
+  // std::string heap allocations are not measured here because:
+  // 1. Small String Optimization (SSO) means data() may point to inline
+  //    storage within the std::string object (already counted in
+  //    fnSizeOf(this))
+  // 2. There's no standard way to distinguish SSO from heap-allocated strings
+  // 3. Calling fnSizeOf on a pointer to inline storage is inappropriate
+
+  if (!mAttributes.empty()) {
+    ret += fnSizeOf(mAttributes.data());
   }
-  for (const auto& cur : mInterfaceBlocks) {
-    ret += fnSizeOf(&cur);
+  if (!mInterfaceBlocks.empty()) {
+    ret += fnSizeOf(mInterfaceBlocks.data());
   }
-  for (const auto& cur : mOutputVariables) {
-    ret += fnSizeOf(&cur);
+  if (!mOutputVariables.empty()) {
+    ret += fnSizeOf(mOutputVariables.data());
   }
-  for (const auto& cur : mUniforms) {
-    ret += fnSizeOf(&cur);
+  if (!mUniforms.empty()) {
+    ret += fnSizeOf(mUniforms.data());
   }
-  for (const auto& cur : mVaryings) {
-    ret += fnSizeOf(&cur);
+  if (!mVaryings.empty()) {
+    ret += fnSizeOf(mVaryings.data());
   }
 
   return ret;

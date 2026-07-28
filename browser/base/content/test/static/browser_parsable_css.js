@@ -15,19 +15,14 @@ let ignoreList = [
   // UA-only media features.
   {
     sourceName:
-      /\b(contenteditable|EditorOverride|svg|forms|html|mathml|ua)\.css$/i,
+      /\b(contenteditable|EditorOverride|svg|forms|html|mathml|ua|scrollbars|xul)\.css$/i,
     errorMessage: /Unknown pseudo-class.*-moz-/i,
     isFromDevTools: false,
   },
   {
     sourceName:
-      /\b(scrollbars|xul|html|mathml|ua|forms|svg|manageDialog|formautofill)\.css$/i,
+      /\b(scrollbars|xul|html|mathml|ua|EditorOverride|contenteditable|forms|svg|manageDialog|formautofill)\.css$/i,
     errorMessage: /Unknown property.*-moz-/i,
-    isFromDevTools: false,
-  },
-  {
-    sourceName: /(scrollbars|xul)\.css$/i,
-    errorMessage: /Unknown pseudo-class.*-moz-/i,
     isFromDevTools: false,
   },
   // content: -moz-alt-content is UA-only.
@@ -45,7 +40,6 @@ let ignoreList = [
     errorMessage: /Property contained reference to invalid variable.*color/i,
     isFromDevTools: true,
   },
-  // PDF.js uses a property that is currently only supported in chrome.
   {
     sourceName: /web\/viewer\.css$/i,
     errorMessage:
@@ -57,6 +51,14 @@ let ignoreList = [
 if (AppConstants.platform != "macosx") {
   ignoreList.push({
     errorMessage: /Unknown property.*-moz-osx-font-smoothing/i,
+    isFromDevTools: false,
+  });
+}
+
+if (!Services.prefs.getBoolPref("dom.select.customizable_select.enabled")) {
+  ignoreList.push({
+    sourceName: /\bforms\.css$/i,
+    errorMessage: /Unknown pseudo-class or pseudo-element ‘picker’./i,
     isFromDevTools: false,
   });
 }
@@ -77,20 +79,39 @@ if (!Services.prefs.getBoolPref("layout.css.scroll-anchoring.enabled")) {
   });
 }
 
-if (!Services.prefs.getBoolPref("layout.css.forced-colors.enabled")) {
+if (!Services.prefs.getBoolPref("layout.css.text-decoration-inset.enabled")) {
   ignoreList.push({
-    sourceName: /pdf\.js\/web\/viewer\.css$/,
-    errorMessage: /Expected media feature name but found ‘forced-colors’*/i,
+    sourceName: /html\.css$/i,
+    errorMessage: /Unknown property .*text-decoration-inset/i,
+    isFromDevTools: false,
+  });
+  ignoreList.push({
+    sourceName: /ua\.css$/i,
+    errorMessage: /Unknown property .*text-decoration-inset/i,
     isFromDevTools: false,
   });
 }
 
-if (!Services.prefs.getBoolPref("layout.css.forced-color-adjust.enabled")) {
-  // PDF.js uses a property that is currently not enabled.
+if (!Services.prefs.getBoolPref("dom.viewTransitions.enabled")) {
+  // view-transition selectors
   ignoreList.push({
-    sourceName: /web\/viewer\.css$/i,
-    errorMessage:
-      /Unknown property ‘forced-color-adjust’\. {2}Declaration dropped\./i,
+    sourceName: /\b(ua)\.css$/i,
+    errorMessage: /Unknown pseudo-class.*view-transition/i,
+    isFromDevTools: false,
+  });
+  ignoreList.push({
+    sourceName: /\b(ua)\.css$/i,
+    errorMessage: /Unknown property.*view-transition/i,
+    isFromDevTools: false,
+  });
+}
+
+if (
+  !Services.prefs.getBoolPref("layout.css.scroll-driven-animations.enabled")
+) {
+  ignoreList.push({
+    sourceName: /smartbar\.css$/i,
+    errorMessage: /Unknown property .*animation-timeline/i,
     isFromDevTools: false,
   });
 }
@@ -102,7 +123,6 @@ let propNameAllowlist = [
   { propName: "--clickToPlay-width", isFromDevTools: false },
   { propName: "--playButton-width", isFromDevTools: false },
   { propName: "--muteButton-width", isFromDevTools: false },
-  { propName: "--castingButton-width", isFromDevTools: false },
   { propName: "--closedCaptionButton-width", isFromDevTools: false },
   { propName: "--fullscreenButton-width", isFromDevTools: false },
   { propName: "--durationSpan-width", isFromDevTools: false },
@@ -115,26 +135,141 @@ let propNameAllowlist = [
   { propName: "--bezier-diagonal-color", isFromDevTools: true },
   { propName: "--highlighter-font-family", isFromDevTools: true },
 
-  // This variable is used from CSS embedded in JS in adjustableTitle.js
-  { propName: "--icon-url", isFromDevTools: false },
-
   // These are referenced from devtools files.
   {
     propName: "--browser-stack-z-index-devtools-splitter",
     isFromDevTools: false,
   },
   { propName: "--browser-stack-z-index-rdm-toolbar", isFromDevTools: false },
-  // about:profiling is in devtools even though it uses non-devtools styles.
-  { propName: "--in-content-border-hover", isFromDevTools: false },
 
   // These variables are specified from devtools but read from non-devtools
   // styles, which confuses the test.
   { propName: "--panel-border-radius", isFromDevTools: true },
   { propName: "--panel-padding", isFromDevTools: true },
-  { propName: "--panel-background", isFromDevTools: true },
+  { propName: "--panel-background-color", isFromDevTools: true },
   { propName: "--panel-border-color", isFromDevTools: true },
-  { propName: "--panel-shadow", isFromDevTools: true },
-  { propName: "--panel-shadow-margin", isFromDevTools: true },
+  { propName: "--panel-box-shadow", isFromDevTools: true },
+
+  // These variables are set in host CSS but consumed in shadow DOM CSS
+  // (content-search-handoff-ui component), which confuses the test.
+  { propName: /^--content-search-handoff-ui-/, isFromDevTools: false },
+
+  // These variables are used in JS in viewer.mjs (PDF.js).
+  {
+    propName: "--scale-round-x",
+    isFromDevTools: false,
+  },
+  {
+    propName: "--scale-round-y",
+    isFromDevTools: false,
+  },
+
+  // These variables define accent colors for tab group chrome
+  // and are used in JS in tabgroup.js
+  { propName: "--tab-group-color-blue", isFromDevTools: false },
+  { propName: "--tab-group-color-blue-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-blue-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-color-purple", isFromDevTools: false },
+  { propName: "--tab-group-color-purple-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-purple-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-color-cyan", isFromDevTools: false },
+  { propName: "--tab-group-color-cyan-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-cyan-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-color-orange", isFromDevTools: false },
+  { propName: "--tab-group-color-orange-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-orange-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-color-yellow", isFromDevTools: false },
+  { propName: "--tab-group-color-yellow-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-yellow-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-color-pink", isFromDevTools: false },
+  { propName: "--tab-group-color-pink-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-pink-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-color-green", isFromDevTools: false },
+  { propName: "--tab-group-color-green-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-green-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-color-red", isFromDevTools: false },
+  { propName: "--tab-group-color-red-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-red-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-color-gray", isFromDevTools: false },
+  { propName: "--tab-group-color-gray-invert", isFromDevTools: false },
+  { propName: "--tab-group-color-gray-pale", isFromDevTools: false },
+
+  { propName: "--tab-group-blue", isFromDevTools: false },
+  { propName: "--tab-group-blue-invert", isFromDevTools: false },
+  { propName: "--tab-group-blue-hover", isFromDevTools: false },
+  { propName: "--tab-group-blue-text", isFromDevTools: false },
+  { propName: "--tab-group-blue-text-invert", isFromDevTools: false },
+
+  { propName: "--tab-group-purple", isFromDevTools: false },
+  { propName: "--tab-group-purple-invert", isFromDevTools: false },
+  { propName: "--tab-group-purple-hover", isFromDevTools: false },
+  { propName: "--tab-group-purple-text", isFromDevTools: false },
+  { propName: "--tab-group-purple-text-invert", isFromDevTools: false },
+
+  { propName: "--tab-group-cyan", isFromDevTools: false },
+  { propName: "--tab-group-cyan-invert", isFromDevTools: false },
+  { propName: "--tab-group-cyan-hover", isFromDevTools: false },
+  { propName: "--tab-group-cyan-text", isFromDevTools: false },
+  { propName: "--tab-group-cyan-text-invert", isFromDevTools: false },
+
+  { propName: "--tab-group-orange", isFromDevTools: false },
+  { propName: "--tab-group-orange-invert", isFromDevTools: false },
+  { propName: "--tab-group-orange-hover", isFromDevTools: false },
+  { propName: "--tab-group-orange-text", isFromDevTools: false },
+  { propName: "--tab-group-orange-text-invert", isFromDevTools: false },
+
+  { propName: "--tab-group-yellow", isFromDevTools: false },
+  { propName: "--tab-group-yellow-invert", isFromDevTools: false },
+  { propName: "--tab-group-yellow-hover", isFromDevTools: false },
+  { propName: "--tab-group-yellow-text", isFromDevTools: false },
+  { propName: "--tab-group-yellow-text-invert", isFromDevTools: false },
+
+  { propName: "--tab-group-pink", isFromDevTools: false },
+  { propName: "--tab-group-pink-invert", isFromDevTools: false },
+  { propName: "--tab-group-pink-hover", isFromDevTools: false },
+  { propName: "--tab-group-pink-text", isFromDevTools: false },
+  { propName: "--tab-group-pink-text-invert", isFromDevTools: false },
+
+  { propName: "--tab-group-green", isFromDevTools: false },
+  { propName: "--tab-group-green-invert", isFromDevTools: false },
+  { propName: "--tab-group-green-hover", isFromDevTools: false },
+  { propName: "--tab-group-green-text", isFromDevTools: false },
+  { propName: "--tab-group-green-text-invert", isFromDevTools: false },
+
+  { propName: "--tab-group-red", isFromDevTools: false },
+  { propName: "--tab-group-red-invert", isFromDevTools: false },
+  { propName: "--tab-group-red-hover", isFromDevTools: false },
+  { propName: "--tab-group-red-text", isFromDevTools: false },
+  { propName: "--tab-group-red-text-invert", isFromDevTools: false },
+
+  { propName: "--tab-group-gray", isFromDevTools: false },
+  { propName: "--tab-group-gray-invert", isFromDevTools: false },
+  { propName: "--tab-group-gray-hover", isFromDevTools: false },
+  { propName: "--tab-group-gray-text", isFromDevTools: false },
+  { propName: "--tab-group-gray-text-invert", isFromDevTools: false },
+
+  /* Allow design tokens in devtools without all variables being used there */
+  { sourceName: /\/design-system\/tokens-.*\.css$/, isFromDevTools: true },
+
+  // Ignore token properties that follow the patterns --color-[name], --color-[name]-[number], or --color-[name]-alpha-[number]
+  // This enables us to provide our full color palette for developers.
+  { propName: /--color-[a-z]+(-alpha)?(-\d+)?/, isFromDevTools: false },
+
+  // Ignore token properties that follow the patterns --dimension-[number] or --dimension-relative-[number]
+  // This enables us to provide our full size/spacing system for developers.
+  { propName: /--dimension(-relative)?-\d+/, isFromDevTools: false },
+
+  // This variable is read from JS to determine the column count when handling
+  // keyboard navigation in the New Tab sections grid.
+  { propName: "--sections-col-count", isFromDevTools: false },
 ];
 
 // Add suffix to stylesheets' URI so that we always load them here and
@@ -270,6 +405,7 @@ function messageIsCSSError(msg) {
 
 let imageURIsToReferencesMap = new Map();
 let customPropsToReferencesMap = new Map();
+let customPropsDefinitionFileMap = new Map();
 
 function neverMatches(mediaList) {
   const perPlatformMediaQueryMap = {
@@ -309,51 +445,99 @@ function processCSSRules(container) {
     if (!rule.style) {
       continue; // @layer (statement), @font-feature-values, @counter-style
     }
-    // Extract urls from the css text.
-    // Note: CSSRule.style.cssText always has double quotes around URLs even
-    //       when the original CSS file didn't.
+
+    // We want to extract urls and variables from the css text.
+    // Let's parse the css text so we can iterate through the tokens, which is more
+    // reliable than trying to extract data with regexes.
     let cssText = rule.style.cssText;
-    let urls = cssText.match(/url\("[^"]*"\)/g);
-    // Extract props by searching all "--" preceded by "var(" or a non-word
-    // character.
-    let props = cssText.match(/(var\(\s*|\W|^)(--[\w\-]+)/g);
-    if (!urls && !props) {
-      continue;
-    }
+    {
+      const lexer = new InspectorCSSParser(cssText);
+      let token;
+      let currentDeclarationName;
+      let foundVarFunc = false;
+      let foundUrlFunc = false;
 
-    for (let url of urls || []) {
-      // Remove the url(" prefix and the ") suffix.
-      url = url.replace(/url\("(.*)"\)/, "$1");
-      if (url.startsWith("data:")) {
-        continue;
-      }
+      while ((token = lexer.nextToken())) {
+        // At the beginning, we're looking for the declaration name
+        if (!currentDeclarationName) {
+          // which should be the first Ident token we see
+          if (token.tokenType === "Ident") {
+            currentDeclarationName = token.text;
 
-      // Make the url absolute and remove the ref.
-      let baseURI = Services.io.newURI(rule.parentStyleSheet.href);
-      url = Services.io.newURI(url, null, baseURI).specIgnoringRef;
-
-      // Store the image url along with the css file referencing it.
-      let baseUrl = baseURI.spec.split("?always-parse-css")[0];
-      if (!imageURIsToReferencesMap.has(url)) {
-        imageURIsToReferencesMap.set(url, new Set([baseUrl]));
-      } else {
-        imageURIsToReferencesMap.get(url).add(baseUrl);
-      }
-    }
-
-    for (let prop of props || []) {
-      if (prop.startsWith("var(")) {
-        prop = prop.substring(4).trim();
-        let prevValue = customPropsToReferencesMap.get(prop) || 0;
-        customPropsToReferencesMap.set(prop, prevValue + 1);
-      } else {
-        // Remove the extra non-word character captured by the regular
-        // expression if needed.
-        if (prop[0] != "-") {
-          prop = prop.substring(1);
+            // If it starts with "--", we have a custom property declaration
+            if (token.text.startsWith("--")) {
+              const prop = token.text;
+              if (!customPropsToReferencesMap.has(prop)) {
+                customPropsToReferencesMap.set(prop, undefined);
+                if (!customPropsDefinitionFileMap.has(prop)) {
+                  customPropsDefinitionFileMap.set(prop, new Set());
+                }
+                customPropsDefinitionFileMap
+                  .get(prop)
+                  .add(container.href || container.parentStyleSheet.href);
+              }
+            }
+          }
+          continue;
         }
-        if (!customPropsToReferencesMap.has(prop)) {
-          customPropsToReferencesMap.set(prop, undefined);
+        // At this point, we found the declaration name, so we're parsing the declaration value
+
+        // we're looking for usages of the `var()` function to collect referenced custom property names
+        if (token.tokenType === "Function" && token.value === "var") {
+          foundVarFunc = true;
+          continue;
+        }
+        // If we saw a `var(` token before, then the next Ident should contain a custom
+        // property name
+        if (
+          foundVarFunc &&
+          token.tokenType === "Ident" &&
+          token.text.startsWith("--")
+        ) {
+          foundVarFunc = false;
+          const prop = token.text;
+          let prevValue = customPropsToReferencesMap.get(prop) || 0;
+          customPropsToReferencesMap.set(prop, prevValue + 1);
+          continue;
+        }
+
+        // we're also looking for usages of the `url()` function
+        if (token.tokenType === "Function" && token.value === "url") {
+          foundUrlFunc = true;
+          continue;
+        }
+        // If we saw a `url(` token before, then the next QuotedString should contain
+        // the actual URL (CSSRule.style.cssText always has double quotes around URLs
+        // even when the original CSS file didn't).
+        if (foundUrlFunc && token.tokenType === "QuotedString") {
+          foundUrlFunc = false;
+          let url = token.value;
+          if (url.startsWith("data:")) {
+            continue;
+          }
+
+          // Make the url absolute and remove the ref.
+          let baseURI = Services.io.newURI(rule.parentStyleSheet.href);
+          url = Services.io.newURI(url, null, baseURI).specIgnoringRef;
+
+          // Store the image url along with the css file referencing it.
+          let baseUrl = baseURI.spec.split("?always-parse-css")[0];
+          if (!imageURIsToReferencesMap.has(url)) {
+            imageURIsToReferencesMap.set(url, new Set([baseUrl]));
+          } else {
+            imageURIsToReferencesMap.get(url).add(baseUrl);
+          }
+
+          continue;
+        }
+
+        // When seeing a semi colon, we can reset the work variable so we're ready
+        // to parse the next declaration
+        if (token.tokenType === "Semicolon") {
+          foundVarFunc = false;
+          foundUrlFunc = false;
+          currentDeclarationName = null;
+          continue;
         }
       }
     }
@@ -381,6 +565,23 @@ function chromeFileExists(aURI) {
     }
   }
   return available > 0;
+}
+
+function shouldIgnorePropSource(item, prop) {
+  if (!item.sourceName || !customPropsDefinitionFileMap.has(prop)) {
+    return false;
+  }
+  return customPropsDefinitionFileMap
+    .get(prop)
+    .values()
+    .some(f => item.sourceName.test(f));
+}
+
+function shouldIgnorePropPattern(item, prop) {
+  if (!item.propName || !(item.propName instanceof RegExp)) {
+    return false;
+  }
+  return item.propName.test(prop);
 }
 
 add_task(async function checkAllTheCSS() {
@@ -491,7 +692,7 @@ add_task(async function checkAllTheCSS() {
     if (imageHost == "browser") {
       for (let ref of references) {
         let refHost = ref.split("/")[2];
-        if (!["activity-stream", "browser"].includes(refHost)) {
+        if (!["builtin-addons", "newtab", "browser"].includes(refHost)) {
           ok(
             false,
             "browser file " + image + " referenced outside browser in " + ref
@@ -506,7 +707,12 @@ add_task(async function checkAllTheCSS() {
     if (!refCount) {
       let ignored = false;
       for (let item of propNameAllowlist) {
-        if (item.propName == prop && isDevtools == item.isFromDevTools) {
+        if (
+          isDevtools == item.isFromDevTools &&
+          (item.propName == prop ||
+            shouldIgnorePropPattern(item, prop) ||
+            shouldIgnorePropSource(item, prop))
+        ) {
           item.used = true;
           if (
             !item.platforms ||

@@ -25,7 +25,7 @@ fxaccounts-avatar-button =
 menu =
     .title = Отваря менюто
 # This menuitem is only visible on Windows and macOS
-about-logins-menu-menuitem-import-from-another-browser = Внасяне от друг четец…
+about-logins-menu-menuitem-import-from-another-browser = Внасяне от друг браузър…
 about-logins-menu-menuitem-import-from-a-file = Внасяне от файл…
 about-logins-menu-menuitem-export-logins = Изнасяне на регистрации…
 about-logins-menu-menuitem-remove-all-logins = Премахване на всички регистрации…
@@ -112,8 +112,8 @@ login-intro-description2 = Всички пароли, които запазва�
 login-intro-instructions-fxa2 = Създайте или влезте в профила на устройството, където са запазени вашите данни за вход
 login-intro-instructions-fxa-settings = Отворете "Настройки" > Sync > Вписване за синхронизиране… Изберете отметката за регистрации и пароли.
 login-intro-instructions-fxa-passwords-help = Посетете <a data-l10n-name="passwords-help-link">поддръжка на пароли</a> за помощ.
-about-logins-intro-browser-only-import = Ако вашите регистрации са запазени в друг мрежов четец, можете да ги <a data-l10n-name="import-link">внесете във { -brand-product-name }</a>.
-about-logins-intro-import2 = Ако вашите регистрации се съхраняват извън { -brand-product-name }, можете <a data-l10n-name="import-browser-link">да ги внесете от друг четец</a> или <a data-l10n-name="import-file-link">от файл</a>
+about-logins-intro-browser-only-import = Ако вашите регистрации са запазени в друг браузър, можете да ги <a data-l10n-name="import-link">внесете във { -brand-product-name }</a>.
+about-logins-intro-import2 = Ако вашите регистрации се съхраняват извън { -brand-product-name }, можете <a data-l10n-name="import-browser-link">да ги внесете от друг браузър</a> или <a data-l10n-name="import-file-link">от файл</a>
 about-logins-intro-import3 = За да добавите парола използвайте бутона със знак плюс. Също можете <a data-l10n-name="import-browser-link">да ги внесете от друг четец</a> или <a data-l10n-name="import-file-link">от файл</a>
 
 ## Login
@@ -140,6 +140,8 @@ login-item-copied-username-button-text = Копирано!
 login-item-password-label = Парола
 login-item-password-reveal-checkbox =
     .aria-label = Показване на паролата
+login-item-password-conceal-checkbox =
+    .aria-label = Скриване на паролата
 login-item-copy-password-button-text = Копиране
 login-item-copied-password-button-text = Копирано!
 login-item-save-changes-button = Запазване

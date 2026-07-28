@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -236,22 +236,9 @@ bool av1_use_qmatrix(const CommonQuantParams *quant_params,
   return quant_params->using_qmatrix && !xd->lossless[segment_id];
 }
 
-const qm_val_t *av1_iqmatrix(const CommonQuantParams *quant_params, int qmlevel,
-                             int plane, TX_SIZE tx_size) {
-  assert(quant_params->giqmatrix[qmlevel][plane][tx_size] != NULL ||
-         qmlevel == NUM_QM_LEVELS - 1);
-  return quant_params->giqmatrix[qmlevel][plane][tx_size];
-}
-const qm_val_t *av1_qmatrix(const CommonQuantParams *quant_params, int qmlevel,
-                            int plane, TX_SIZE tx_size) {
-  assert(quant_params->gqmatrix[qmlevel][plane][tx_size] != NULL ||
-         qmlevel == NUM_QM_LEVELS - 1);
-  return quant_params->gqmatrix[qmlevel][plane][tx_size];
-}
-
 // Returns true if the tx_type corresponds to non-identity transform in both
 // horizontal and vertical directions.
-static INLINE bool is_2d_transform(TX_TYPE tx_type) { return (tx_type < IDTX); }
+static inline bool is_2d_transform(TX_TYPE tx_type) { return (tx_type < IDTX); }
 
 const qm_val_t *av1_get_iqmatrix(const CommonQuantParams *quant_params,
                                  const MACROBLOCKD *xd, int plane,
@@ -324,9 +311,7 @@ void av1_qm_init(CommonQuantParams *quant_params, int num_planes) {
    and each TX size. Matrices for different TX sizes are in fact
    sub-sampled from the 32x32 and 16x16 sizes, but explicitly
    defined here for convenience. Intra and inter matrix sets are the
-   same but changing DEFAULT_QM_INTER_OFFSET from zero allows
-   for different matrices for inter and intra blocks in the same
-   frame.
+   same.
    Matrices for different QM levels have been rescaled in the
    frequency domain according to different nominal viewing
    distances. Matrices for QM level 15 are omitted because they are

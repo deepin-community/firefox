@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
 ChromeUtils.defineESModuleGetters(this, {
@@ -42,6 +40,7 @@ add_task(async function test_browser_settings() {
     "browser.display.use_document_fonts": 1,
     "browser.zoom.full": true,
     "browser.zoom.siteSpecific": true,
+    "sidebar.verticalTabs": false,
   };
 
   async function background() {
@@ -317,6 +316,16 @@ add_task(async function test_browser_settings() {
     "gfx.webrender.compositor": true,
   });
 
+  if (AppConstants.platform !== "android") {
+    await testSetting("verticalTabs", false, {
+      "sidebar.verticalTabs": false,
+    });
+
+    await testSetting("verticalTabs", true, {
+      "sidebar.verticalTabs": true,
+    });
+  }
+
   await extension.unload();
   await promiseShutdownManager();
 });
@@ -377,6 +386,18 @@ add_task(async function test_bad_value() {
       "zoomSiteSpecific.set rejects with an invalid value."
     );
 
+    await browser.test.assertRejects(
+      browser.browserSettings.verticalTabs.set({ value: 0 }),
+      /0 is not a valid value for verticalTabs/,
+      "verticalTabs.set rejects with an invalid value."
+    );
+
+    await browser.test.assertRejects(
+      browser.browserSettings.verticalTabs.set({ value: "bad" }),
+      /bad is not a valid value for verticalTabs/,
+      "verticalTabs.set rejects with an invalid value."
+    );
+
     browser.test.sendMessage("done");
   }
 
@@ -414,6 +435,30 @@ add_task(async function test_bad_value_android() {
       browser.browserSettings.closeTabsByDoubleClick.clear({}),
       /android is not a supported platform for the closeTabsByDoubleClick setting/,
       "closeTabsByDoubleClick.clear rejects on Android."
+    );
+
+    await browser.test.assertRejects(
+      browser.browserSettings.verticalTabs.set({ value: "bad" }),
+      /bad is not a valid value for verticalTabs/,
+      "verticalTabs.set rejects with an invalid value on Android."
+    );
+
+    await browser.test.assertRejects(
+      browser.browserSettings.verticalTabs.set({ value: true }),
+      /android is not a supported platform for verticalTabs/,
+      "verticalTabs.set rejects on Android."
+    );
+
+    await browser.test.assertRejects(
+      browser.browserSettings.verticalTabs.get({}),
+      /android is not a supported platform for verticalTabs/,
+      "verticalTabs.get rejects on Android."
+    );
+
+    await browser.test.assertRejects(
+      browser.browserSettings.verticalTabs.clear({}),
+      /android is not a supported platform for verticalTabs/,
+      "verticalTabs.clear rejects on Android."
     );
 
     browser.test.sendMessage("done");

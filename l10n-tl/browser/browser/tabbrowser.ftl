@@ -7,6 +7,15 @@ tabbrowser-menuitem-close-tab =
     .label = Isara ang Tab
 tabbrowser-menuitem-close =
     .label = Isara
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } — { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -76,13 +85,6 @@ tabbrowser-unblock-tab-audio-tooltip =
 
 tabbrowser-confirm-close-tabs-button = Isara ang mga Tab
 
-## Confirmation dialog when quitting using the menu and multiple windows are open.
-
-
-## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
-## Windows does not show a prompt on quit when using the keyboard shortcut by default.
-
-
 ## Confirmation dialog when opening multiple tabs simultaneously
 
 tabbrowser-confirm-open-multiple-tabs-title = Kumpirmahin ang pagbukas
@@ -100,9 +102,6 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Sabihan mo ko tuwing magbubukas
 tabbrowser-confirm-caretbrowsing-title = Caret Browsing
 tabbrowser-confirm-caretbrowsing-message = Ang pagpindot sa F7 ay nagbubukas o nagsasara ng Caret Browsing. Naglalagay ang feature na ito ng isang nagagalaw na cursor sa mga web page, para pwede kang makapili ng text gamit ang keyboard. Gusto mo bang buksan ang Caret Browsing?
 tabbrowser-confirm-caretbrowsing-checkbox = Huwag kailanman ipakita ang dialog box na ito.
-
-## Confirmation dialog for closing all duplicate tabs
-
 
 ##
 
@@ -136,5 +135,14 @@ tabbrowser-context-unmute-selected-tabs =
 tabbrowser-ctrl-tab-list-all-tabs =
     .label = Ilista ang lahat ng { $tabCount } na tab
 
-## Tab manager menu buttons
+##
 
+tab-group-editor-title-create = Gumawa ng tab group
+tab-group-editor-color-selector =
+    .aria-label = Kulay ng tab group
+tab-group-description = { $tabGroupName } — Tab Group
+
+##
+
+tab-context-reopen-tab-group =
+    .label = Buksang muli ang tab group

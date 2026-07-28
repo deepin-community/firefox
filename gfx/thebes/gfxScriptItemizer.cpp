@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -121,23 +120,13 @@ static inline bool SameScript(Script runScript, Script currCharScript,
          UnicodeProperties::HasScript(aCurrCh, runScript);
 }
 
-gfxScriptItemizer::gfxScriptItemizer(const char16_t* src, uint32_t length)
-    : textPtr(src), textLength(length) {
-  reset();
-}
+gfxScriptItemizer::Run gfxScriptItemizer::Next() {
+  MOZ_ASSERT(textLength == 0 || (textIs8bit && textPtr._1b) ||
+             (!textIs8bit && textPtr._2b));
 
-void gfxScriptItemizer::SetText(const char16_t* src, uint32_t length) {
-  textPtr = src;
-  textLength = length;
-
-  reset();
-}
-
-bool gfxScriptItemizer::Next(uint32_t& aRunStart, uint32_t& aRunLimit,
-                             Script& aRunScript) {
   /* if we've fallen off the end of the text, we're done */
   if (scriptLimit >= textLength) {
-    return false;
+    return Run{};
   }
 
   SYNC_FIXUP();
@@ -149,11 +138,11 @@ bool gfxScriptItemizer::Next(uint32_t& aRunStart, uint32_t& aRunLimit,
     Script sc;
     uint32_t startOfChar = scriptLimit;
 
-    ch = textPtr[scriptLimit];
+    ch = textIs8bit ? textPtr._1b[scriptLimit] : textPtr._2b[scriptLimit];
 
     /* decode UTF-16 (may be surrogate pair) */
     if (NS_IS_HIGH_SURROGATE(ch) && scriptLimit < textLength - 1) {
-      uint32_t low = textPtr[scriptLimit + 1];
+      uint32_t low = textPtr._2b[scriptLimit + 1];
       if (NS_IS_LOW_SURROGATE(low)) {
         ch = SURROGATE_TO_UCS4(ch, low);
         scriptLimit += 1;
@@ -243,14 +232,8 @@ bool gfxScriptItemizer::Next(uint32_t& aRunStart, uint32_t& aRunLimit,
     }
   }
 
-  aRunStart = scriptStart;
-  aRunLimit = scriptLimit;
-
-  if (scriptCode == Script::COMMON && fallbackScript != Script::UNKNOWN) {
-    aRunScript = fallbackScript;
-  } else {
-    aRunScript = scriptCode;
-  }
-
-  return true;
+  return Run{scriptStart, scriptLimit - scriptStart,
+             (scriptCode == Script::COMMON && fallbackScript != Script::UNKNOWN)
+                 ? fallbackScript
+                 : scriptCode};
 }

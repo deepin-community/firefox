@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,8 +5,6 @@
 UNIFIED_SOURCES += [
     "AutoMemMap.cpp",
     "ChromeScriptLoader.cpp",
-    "JSMEnvironmentProxy.cpp",
-    "ModuleEnvironmentProxy.cpp",
     "mozJSLoaderUtils.cpp",
     "mozJSSubScriptLoader.cpp",
     "nsImportModule.cpp",
@@ -44,7 +40,6 @@ EXPORTS.mozilla.dom += [
 EXPORTS.mozilla.loader += [
     "AutoMemMap.h",
     "ScriptCacheActors.h",
-    "SkipCheckForBrokenURLOrZeroSized.h",
     "SyncModuleLoader.h",
 ]
 

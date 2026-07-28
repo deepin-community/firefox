@@ -5,26 +5,29 @@
 package org.mozilla.fenix.components
 
 import android.content.Context
-import mozilla.appservices.remotesettings.RemoteSettingsServer
+import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.feature.fxsuggest.FxSuggestIngestionScheduler
 import mozilla.components.feature.fxsuggest.FxSuggestStorage
-import org.mozilla.fenix.ext.settings
+import mozilla.components.support.remotesettings.RemoteSettingsService
 import org.mozilla.fenix.perf.lazyMonitored
 
 /**
  * Component group for Firefox Suggest.
  *
  * @param context The Android application context.
+ * @param remoteSettingsService: Remote settings service to get suggestions from
+ * @param crashReporter The crash reporter to use for reporting caught exceptions.
  */
-class FxSuggest(context: Context) {
+class FxSuggest(
+    context: Context,
+    remoteSettingsService: RemoteSettingsService,
+    crashReporter: CrashReporting,
+) {
     val storage by lazyMonitored {
         FxSuggestStorage(
             context,
-            remoteSettingsServer = if (context.settings().useProductionRemoteSettingsServer) {
-                RemoteSettingsServer.Prod
-            } else {
-                RemoteSettingsServer.Stage
-            },
+            remoteSettingsService,
+            crashReporter,
         )
     }
 

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -17,8 +16,8 @@ includes: [testTypedArray.js]
 features: [Reflect, TypedArray]
 ---*/
 
-testWithTypedArrayConstructors(function(TA) {
-  var sample = new TA(2);
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
+  var sample = new TA(makeCtorArg(2));
 
   assert.sameValue(
     Reflect.defineProperty(sample, "0.1", {
@@ -122,6 +121,6 @@ testWithTypedArrayConstructors(function(TA) {
     "'-Infinity' - does not define a value for ['-Infinity']"
   );
 
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

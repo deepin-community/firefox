@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
 
 import copy
 import json
@@ -26,6 +24,7 @@ from mozharness.mozilla.testing.codecoverage import (
 from mozharness.mozilla.testing.errors import HarnessErrorList, LogcatErrorList
 from mozharness.mozilla.testing.testbase import TestingMixin, testing_config_options
 from mozharness.mozilla.testing.unittest import TestSummaryOutputParserHelper
+from mozharness.mozilla.testing.video_test_recorder import VideoTestRecorder
 
 
 class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageMixin):
@@ -165,7 +164,7 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
                 {
                     "action": "store",
                     "dest": "subsuite",
-                    "default": "marionette",
+                    "default": "marionette-integration",
                     "help": "Selects test paths from test-manifests.active",
                 },
             ],
@@ -177,7 +176,7 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
     repos = []
 
     def __init__(self, require_config_file=False):
-        super(MarionetteTest, self).__init__(
+        super().__init__(
             config_options=self.config_options,
             all_actions=[
                 "clobber",
@@ -210,7 +209,7 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
 
         self.test_suite = self._get_test_suite(c.get("emulator"))
         if self.test_suite not in self.config["suite_definitions"]:
-            self.fatal("{} is not defined in the config!".format(self.test_suite))
+            self.fatal(f"{self.test_suite} is not defined in the config!")
 
         if c.get("structured_output"):
             self.parser_class = StructuredOutputParser
@@ -218,7 +217,7 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
             self.parser_class = TestSummaryOutputParserHelper
 
     def _pre_config_lock(self, rw_config):
-        super(MarionetteTest, self)._pre_config_lock(rw_config)
+        super()._pre_config_lock(rw_config)
         if not self.config.get("emulator") and not self.config.get(
             "marionette_address"
         ):
@@ -236,7 +235,7 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
     def query_abs_dirs(self):
         if self.abs_dirs:
             return self.abs_dirs
-        abs_dirs = super(MarionetteTest, self).query_abs_dirs()
+        abs_dirs = super().query_abs_dirs()
         dirs = {}
         dirs["abs_test_install_dir"] = os.path.join(abs_dirs["abs_work_dir"], "tests")
         dirs["abs_marionette_dir"] = os.path.join(
@@ -272,9 +271,7 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
             dirs["abs_test_install_dir"], "config", "marionette_requirements.txt"
         )
         if not os.path.isfile(requirements):
-            self.fatal(
-                "Could not find marionette requirements file: {}".format(requirements)
-            )
+            self.fatal(f"Could not find marionette requirements file: {requirements}")
 
         self.register_virtualenv_module(requirements=[requirements])
 
@@ -287,10 +284,10 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
         # Currently running marionette on an emulator means webapi
         # tests. This method will need to change if this does.
         testsuite = "webapi" if is_emulator else "marionette"
-        return "{}_{}".format(testsuite, platform)
+        return f"{testsuite}_{platform}"
 
     def download_and_extract(self):
-        super(MarionetteTest, self).download_and_extract()
+        super().download_and_extract()
 
         if self.config.get("emulator"):
             dirs = self.query_abs_dirs()
@@ -309,7 +306,7 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
         if self.config.get("emulator"):
             self.info("Emulator tests; skipping.")
         else:
-            super(MarionetteTest, self).install()
+            super().install()
 
     def run_tests(self):
         """
@@ -358,7 +355,7 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
         if self.config.get("app_arg"):
             config_fmt_args["app_arg"] = self.config["app_arg"]
 
-        cmd.extend(["--setpref={}".format(p) for p in self.config["extra_prefs"]])
+        cmd.extend([f"--setpref={p}" for p in self.config["extra_prefs"]])
 
         cmd.append("--gecko-log=-")
 
@@ -417,16 +414,17 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
         # Causes Firefox to crash when using non-local connections.
         env["MOZ_DISABLE_NONLOCAL_CONNECTIONS"] = "1"
 
+        # Avoid issues when printing messages containing unicode characters on
+        # windows (Bug 1800035).
+        if self._is_windows():
+            env["PYTHONIOENCODING"] = "utf-8"
+
         env = self.query_env(partial_env=env)
 
         try:
             cwd = self._query_tests_dir()
         except Exception as e:
-            self.fatal(
-                "Don't know how to run --test-suite '{0}': {1}!".format(
-                    self.test_suite, e
-                )
-            )
+            self.fatal(f"Don't know how to run --test-suite '{self.test_suite}': {e}!")
 
         marionette_parser = self.parser_class(
             config=self.config,
@@ -434,9 +432,16 @@ class MarionetteTest(TestingMixin, MercurialScript, TransferMixin, CodeCoverageM
             error_list=BaseErrorList + HarnessErrorList,
             strict=False,
         )
-        return_code = self.run_command(
-            cmd, cwd=cwd, output_timeout=1000, output_parser=marionette_parser, env=env
-        )
+
+        with VideoTestRecorder(self.test_suite, self):
+            return_code = self.run_command(
+                cmd,
+                cwd=cwd,
+                output_timeout=1000,
+                output_parser=marionette_parser,
+                env=env,
+            )
+
         level = INFO
         tbpl_status, log_level, summary = marionette_parser.evaluate_parser(
             return_code=return_code

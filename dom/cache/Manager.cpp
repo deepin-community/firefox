@@ -1,47 +1,46 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/cache/Manager.h"
 
+#include "QuotaClientImpl.h"
+#include "Types.h"
+#include "mozStorageHelper.h"
 #include "mozilla/AppShutdown.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/AutoRestore.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/StaticMutex.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/Unused.h"
+#include "mozilla/dom/InternalResponse.h"
+#include "mozilla/dom/cache/CacheTypes.h"
 #include "mozilla/dom/cache/Context.h"
 #include "mozilla/dom/cache/DBAction.h"
 #include "mozilla/dom/cache/DBSchema.h"
 #include "mozilla/dom/cache/FileUtils.h"
 #include "mozilla/dom/cache/ManagerId.h"
-#include "mozilla/dom/cache/CacheTypes.h"
 #include "mozilla/dom/cache/SavedTypes.h"
 #include "mozilla/dom/cache/StreamList.h"
 #include "mozilla/dom/cache/Types.h"
 #include "mozilla/dom/quota/Client.h"
+#include "mozilla/dom/quota/ClientDirectoryLock.h"
 #include "mozilla/dom/quota/ClientImpl.h"
-#include "mozilla/dom/quota/StringifyUtils.h"
 #include "mozilla/dom/quota/QuotaManager.h"
+#include "mozilla/dom/quota/StringifyUtils.h"
 #include "mozilla/ipc/BackgroundParent.h"
-#include "mozStorageHelper.h"
-#include "nsIInputStream.h"
 #include "nsID.h"
 #include "nsIFile.h"
+#include "nsIInputStream.h"
 #include "nsIThread.h"
 #include "nsIUUIDGenerator.h"
-#include "nsThreadUtils.h"
 #include "nsTObserverArray.h"
-#include "QuotaClientImpl.h"
-#include "Types.h"
+#include "nsThreadUtils.h"
 
 namespace mozilla::dom::cache {
 
+using mozilla::dom::quota::ClientDirectoryLock;
 using mozilla::dom::quota::CloneFileAndAppend;
-using mozilla::dom::quota::DirectoryLock;
 
 namespace {
 
@@ -148,11 +147,13 @@ class SetupAction final : public SyncDBAction {
                 return oldValue + deletionInfo.mDeletedPaddingSize;
               }));
 
-      // Clean up orphaned body objects
-      QM_TRY_INSPECT(const auto& knownBodyIdList, db::GetKnownBodyIds(*aConn));
+      // Clean up orphaned body objects.
+      QM_TRY_UNWRAP(auto knownBodyIds, db::GetKnownBodyIds(*aConn));
 
-      QM_TRY(MOZ_TO_RESULT(BodyDeleteOrphanedFiles(aDirectoryMetadata, *aDBDir,
-                                                   knownBodyIdList)));
+      // Note that this causes a scan of all cached files. See bug 1952550 that
+      // wants to reduce the probability to find the marker file above.
+      QM_TRY(MOZ_TO_RESULT(
+          BodyDeleteOrphanedFiles(aDirectoryMetadata, *aDBDir, knownBodyIds)));
 
       // Commit() explicitly here, because we want to ensure the padding file
       // has the correct content.
@@ -367,14 +368,16 @@ class Manager::Factory {
   }
 
 #ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
-  static void RecordMayNotDeleteCSCP(int32_t aCacheStreamControlParentId) {
+  static void RecordMayNotDeleteCSCP(
+      mozilla::ipc::ActorId aCacheStreamControlParentId) {
     if (sFactory) {
       sFactory->mPotentiallyUnreleasedCSCP.AppendElement(
           aCacheStreamControlParentId);
     }
   }
 
-  static void RecordHaveDeletedCSCP(int32_t aCacheStreamControlParentId) {
+  static void RecordHaveDeletedCSCP(
+      mozilla::ipc::ActorId aCacheStreamControlParentId) {
     if (sFactory) {
       sFactory->mPotentiallyUnreleasedCSCP.RemoveElement(
           aCacheStreamControlParentId);
@@ -516,7 +519,7 @@ class Manager::Factory {
   // trigger the deletion of the factory while still executing this loop.
   bool mInSyncAbortOrShutdown;
 
-  nsTArray<int32_t> mPotentiallyUnreleasedCSCP;
+  nsTArray<mozilla::ipc::ActorId> mPotentiallyUnreleasedCSCP;
 };
 
 // static
@@ -653,7 +656,8 @@ class Manager::CacheMatchAction final : public Manager::BaseAction {
 
     // If we entered shutdown on the main thread while we were doing IO,
     // bail out now.
-    if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownQM)) {
+    if (IsCanceled() ||
+        AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownQM)) {
       if (stream) {
         stream->Close();
       }
@@ -729,7 +733,8 @@ class Manager::CacheMatchAllAction final : public Manager::BaseAction {
 
       // If we entered shutdown on the main thread while we were doing IO,
       // bail out now.
-      if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownQM)) {
+      if (IsCanceled() ||
+          AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownQM)) {
         if (stream) {
           stream->Close();
         }
@@ -924,6 +929,14 @@ class Manager::CachePutAllAction final : public DBAction {
         if (e.mResponseStream) {
           // Gerenate padding size for opaque response if needed.
           if (e.mResponse.type() == ResponseType::Opaque) {
+            // Validate padding size from content process.
+            // Valid values: UNKNOWN_PADDING_SIZE (-1) or non-negative.
+            // Reject any other negative values as invalid.
+            QM_TRY(OkIf(e.mResponse.paddingSize() ==
+                            InternalResponse::UNKNOWN_PADDING_SIZE ||
+                        e.mResponse.paddingSize() >= 0),
+                   NS_ERROR_UNEXPECTED);
+
             // It'll generate padding if we've not set it yet.
             QM_TRY(MOZ_TO_RESULT(BodyMaybeUpdatePaddingSize(
                 *mDirectoryMetadata, *mDBDir, e.mResponseBodyId,
@@ -1284,7 +1297,8 @@ class Manager::CacheKeysAction final : public Manager::BaseAction {
 
       // If we entered shutdown on the main thread while we were doing IO,
       // bail out now.
-      if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownQM)) {
+      if (IsCanceled() ||
+          AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownQM)) {
         if (stream) {
           stream->Close();
         }
@@ -1363,7 +1377,8 @@ class Manager::StorageMatchAction final : public Manager::BaseAction {
 
     // If we entered shutdown on the main thread while we were doing IO,
     // bail out now.
-    if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownQM)) {
+    if (IsCanceled() ||
+        AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownQM)) {
       if (stream) {
         stream->Close();
       }
@@ -1688,11 +1703,13 @@ bool Manager::IsShutdownAllComplete() {
 }
 
 #ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
-void Manager::RecordMayNotDeleteCSCP(int32_t aCacheStreamControlParentId) {
+void Manager::RecordMayNotDeleteCSCP(
+    mozilla::ipc::ActorId aCacheStreamControlParentId) {
   Factory::RecordMayNotDeleteCSCP(aCacheStreamControlParentId);
 }
 
-void Manager::RecordHaveDeletedCSCP(int32_t aCacheStreamControlParentId) {
+void Manager::RecordHaveDeletedCSCP(
+    mozilla::ipc::ActorId aCacheStreamControlParentId) {
   Factory::RecordHaveDeletedCSCP(aCacheStreamControlParentId);
 }
 #endif
@@ -2085,7 +2102,7 @@ void Manager::Shutdown() {
   }
 }
 
-Maybe<DirectoryLock&> Manager::MaybeDirectoryLockRef() const {
+Maybe<ClientDirectoryLock&> Manager::MaybeDirectoryLockRef() const {
   NS_ASSERT_OWNINGTHREAD(Manager);
   MOZ_DIAGNOSTIC_ASSERT(mContext);
 
@@ -2183,8 +2200,7 @@ void Manager::NoteOrphanedBodyIdList(const nsTArray<nsID>& aDeletedBodyIdList) {
   deleteNowList.SetCapacity(aDeletedBodyIdList.Length());
 
   std::copy_if(aDeletedBodyIdList.cbegin(), aDeletedBodyIdList.cend(),
-               MakeBackInserter(deleteNowList),
-               [this](const auto& deletedBodyId) {
+               MakeBackInserter(deleteNowList), [&](const auto& deletedBodyId) {
                  return !SetBodyIdOrphanedIfRefed(deletedBodyId);
                });
 

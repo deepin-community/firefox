@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,10 +5,9 @@
 #ifndef mozilla_AnimationCollection_h
 #define mozilla_AnimationCollection_h
 
-#include "mozilla/Assertions.h"
 #include "mozilla/LinkedList.h"
+#include "mozilla/PseudoStyleRequest.h"
 #include "mozilla/RefPtr.h"
-#include "nsCSSPseudoElements.h"
 #include "nsTArrayForwardDeclare.h"
 
 class nsAtom;
@@ -21,7 +18,6 @@ namespace mozilla {
 namespace dom {
 class Element;
 }
-enum class PseudoStyleType : uint8_t;
 
 template <class AnimationType>
 class AnimationCollection
@@ -29,8 +25,9 @@ class AnimationCollection
   typedef AnimationCollection<AnimationType> SelfType;
 
  public:
-  AnimationCollection(dom::Element& aOwner, PseudoStyleType aPseudoType)
-      : mElement(aOwner), mPseudo(aPseudoType) {
+  AnimationCollection(dom::Element& aOwner,
+                      const PseudoStyleRequest& aPseudoRequest)
+      : mElement(aOwner), mPseudo(aPseudoRequest) {
     MOZ_COUNT_CTOR(AnimationCollection);
   }
 
@@ -44,13 +41,13 @@ class AnimationCollection
   // animations.
   static AnimationCollection* Get(const nsIFrame* aFrame);
   static AnimationCollection* Get(const dom::Element* aElement,
-                                  PseudoStyleType aPseudoType);
+                                  const PseudoStyleRequest& aPseudoRequest);
 
   // The element. Weak reference is fine since it owns us.
   // FIXME(emilio): These are only needed for Destroy(), so maybe remove and
   // rely on the caller clearing us properly?
   dom::Element& mElement;
-  const PseudoStyleType mPseudo;
+  const PseudoStyleRequest mPseudo;
 
   nsTArray<RefPtr<AnimationType>> mAnimations;
 

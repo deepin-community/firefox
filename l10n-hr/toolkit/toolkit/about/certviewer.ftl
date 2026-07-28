@@ -36,6 +36,9 @@ certificate-viewer-key-size = Veličina ključa
 certificate-viewer-inc-locality = Mjesto osnivanja
 certificate-viewer-locality = Područje
 certificate-viewer-location = Mjesto
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Ime zapisa
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID zapisnika
 certificate-viewer-method = Metoda
 certificate-viewer-modulus = Modul
@@ -62,7 +65,7 @@ certificate-viewer-signature-algorithm = Algoritam potpisa
 certificate-viewer-signature-scheme = Shema potpisa
 certificate-viewer-timestamp = Vremenska oznaka
 certificate-viewer-value = Vrijednost
-certificate-viewer-version = Inačica
+certificate-viewer-version = Verzija
 certificate-viewer-business-category = Kategorija poslovanja
 certificate-viewer-subject-name = Ime predmeta
 certificate-viewer-issuer-name = Ime izdavača
@@ -110,6 +113,8 @@ certificate-viewer-export = Izvezi
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (nepoznato)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certifikat
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

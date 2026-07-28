@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Verplaatsen naar Einde
     .accesskey = E
 fxviewtabrow-move-tab-window = Verplaatsen naar nieuw venster
     .accesskey = w
+fxviewtabrow-send-to-device = Naar apparaat verzenden
+    .accesskey = z
+fxviewtabrow-send-to-mobile = Naar Mobiel verzenden
+    .accesskey = z
 fxviewtabrow-send-tab = Tabblad naar apparaat verzenden
     .accesskey = z
 fxviewtabrow-pin-tab = Tabblad vastmaken
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Tabblad dempen opheffen
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Opties voor { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = { $tabTitle } dempen
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Dempen { $tabTitle } opheffen
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Tabblad dempen
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Tabblad dempen opheffen
+fxviewtabrow-send-to-mobile-connect-device = Verbind een apparaat om tabbladen te verzenden
+fxviewtabrow-send-to-mobile-device-missing2 = Ziet u uw apparaat niet?
+fxviewtabrow-send-to-mobile-not-verified = Account niet geverifieerd
+fxviewtabrow-send-to-mobile-verify-account = Verifieer uw account
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Meld u aan om tabbladen te verzenden
+fxviewtabrow-send-to-mobile-turn-on-sync = Schakel synchronisatie in om tabbladen te verzenden

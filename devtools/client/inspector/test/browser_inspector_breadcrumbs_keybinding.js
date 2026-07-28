@@ -47,8 +47,17 @@ add_task(async function () {
   info("Clicking on the corresponding breadcrumbs node to focus it");
   const container = inspector.panelDoc.getElementById("inspector-breadcrumbs");
 
-  const button = container.querySelector("button[checked]");
-  button.click();
+  const onFocused = new Promise(res =>
+    container.addEventListener("focus", res, { once: true })
+  );
+  const button = container.querySelector(`button[aria-pressed="true"]`);
+  // Don't use button.click(), as it doesn't cause the focus event to be dispatched, which
+  // we do need here.
+  EventUtils.synthesizeMouseAtCenter(button, {}, inspector.panelWin);
+  info(
+    "Waiting for breadcrumb to be focused, as that's what initialize the keyboard shortcuts"
+  );
+  await onFocused;
 
   let currentSelection = "#id2";
   for (const { desc, key, newSelection } of TEST_DATA) {
@@ -73,7 +82,7 @@ add_task(async function () {
     );
     is(
       container.getAttribute("aria-activedescendant"),
-      container.querySelector("button[checked]").id,
+      container.querySelector(`button[aria-pressed="true"]`).id,
       "aria-activedescendant is set correctly"
     );
 

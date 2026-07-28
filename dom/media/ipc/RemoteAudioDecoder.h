@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,24 +12,26 @@ using mozilla::ipc::IPCResult;
 
 class RemoteAudioDecoderChild final : public RemoteDecoderChild {
  public:
-  explicit RemoteAudioDecoderChild(RemoteDecodeIn aLocation);
+  explicit RemoteAudioDecoderChild(RemoteMediaIn aLocation);
 
   MOZ_IS_CLASS_INIT
   MediaResult InitIPDL(const AudioInfo& aAudioInfo,
                        const CreateDecoderParams::OptionSet& aOptions,
-                       const Maybe<uint64_t>& aMediaEngineId);
+                       const Maybe<uint64_t>& aMediaEngineId,
+                       PRemoteCDMActor* aCDM);
 
   MediaResult ProcessOutput(DecodedOutputIPDL&& aDecodedData) override;
 };
 
 class RemoteAudioDecoderParent final : public RemoteDecoderParent {
  public:
-  RemoteAudioDecoderParent(RemoteDecoderManagerParent* aParent,
+  RemoteAudioDecoderParent(RemoteMediaManagerParent* aParent,
                            const AudioInfo& aAudioInfo,
                            const CreateDecoderParams::OptionSet& aOptions,
                            nsISerialEventTarget* aManagerThread,
                            TaskQueue* aDecodeTaskQueue,
-                           Maybe<uint64_t> aMediaEngineId);
+                           Maybe<uint64_t> aMediaEngineId,
+                           RemoteCDMParent* aCDM);
 
  protected:
   IPCResult RecvConstruct(ConstructResolver&& aResolver) override;

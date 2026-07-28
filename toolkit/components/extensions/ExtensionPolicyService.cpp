@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2; -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,7 +10,6 @@
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/Preferences.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/Services.h"
 #include "mozilla/SimpleEnumerator.h"
 #include "mozilla/StaticPrefs_extensions.h"
@@ -257,8 +255,7 @@ ExtensionPolicyService::CollectReports(nsIHandleReportCallback* aHandleReport,
     name.ReplaceSubstring("\"", "");
     name.ReplaceSubstring("\\", "");
 
-    nsString url;
-    MOZ_TRY_VAR(url, ext->GetURL(u""_ns));
+    nsString url = MOZ_TRY(ext->GetURL(u""_ns));
 
     nsPrintfCString desc("Extension(id=%s, name=\"%s\", baseURL=%s)", id.get(),
                          name.get(), NS_ConvertUTF16toUTF8(url).get());
@@ -340,7 +337,7 @@ nsresult ExtensionPolicyService::Observe(nsISupports* aSubject,
 
 already_AddRefed<Promise> ExtensionPolicyService::ExecuteContentScript(
     nsPIDOMWindowInner* aWindow, WebExtensionContentScript& aScript) {
-  if (!aWindow->IsCurrentInnerWindow()) {
+  if (NS_WARN_IF(!aWindow) || !aWindow->IsCurrentInnerWindow()) {
     return nullptr;
   }
 
@@ -349,7 +346,7 @@ already_AddRefed<Promise> ExtensionPolicyService::ExecuteContentScript(
   return promise.forget();
 }
 
-RefPtr<Promise> ExtensionPolicyService::ExecuteContentScripts(
+already_AddRefed<Promise> ExtensionPolicyService::ExecuteContentScripts(
     JSContext* aCx, nsPIDOMWindowInner* aWindow,
     const nsTArray<RefPtr<WebExtensionContentScript>>& aScripts) {
   AutoTArray<RefPtr<Promise>, 8> promises;
@@ -361,17 +358,19 @@ RefPtr<Promise> ExtensionPolicyService::ExecuteContentScripts(
   }
 
   RefPtr<Promise> promise = Promise::All(aCx, promises, IgnoreErrors());
-  MOZ_RELEASE_ASSERT(promise);
-  return promise;
+  (void)NS_WARN_IF(!promise);
+  return promise.forget();
 }
 
 // Use browser's MessageManagerGroup to decide if we care about it, to inject
-// extension APIs or content scripts.  Tabs use "browsers", and all custom
+// extension APIs or content scripts.  Tabs use "browsers", all custom
 // extension browsers use "webext-browsers", including popups & sidebars,
-// background & options pages, and xpcshell tests.
+// background & options pages, and xpcshell tests, and chatbot sidebar browsers
+// use "chatbot-browser".
 static bool IsTabOrExtensionBrowser(dom::BrowsingContext* aBC) {
   const auto& group = aBC->Top()->GetMessageManagerGroup();
-  bool rv = group == u"browsers"_ns || group == u"webext-browsers"_ns;
+  bool rv = group == u"browsers"_ns || group == u"webext-browsers"_ns ||
+            group == u"chatbot-browser"_ns;
 
 #ifdef MOZ_THUNDERBIRD
   // ...unless it's Thunderbird, which has extra groups for unrelated reasons.
@@ -400,8 +399,8 @@ static nsTArray<RefPtr<dom::BrowsingContext>> GetAllInProcessContentBCs() {
   return contentBCs;
 }
 
-nsresult ExtensionPolicyService::InjectContentScripts(
-    WebExtensionPolicy* aExtension) {
+void ExtensionPolicyService::InjectContentScripts(
+    WebExtensionPolicy* aExtension, ErrorResult& aRv) {
   AutoJSAPI jsapi;
   MOZ_ALWAYS_TRUE(jsapi.Init(xpc::PrivilegedJunkScope()));
 
@@ -432,29 +431,64 @@ nsresult ExtensionPolicyService::InjectContentScripts(
 
     nsCOMPtr<nsPIDOMWindowInner> inner = win->GetCurrentInnerWindow();
 
-    MOZ_TRY(ExecuteContentScripts(jsapi.cx(), inner,
-                                  GetScripts(RunAt::Document_start))
-                ->ThenWithCycleCollectedArgs(
-                    [](JSContext* aCx, JS::Handle<JS::Value> aValue,
-                       ErrorResult& aRv, ExtensionPolicyService* aSelf,
-                       nsPIDOMWindowInner* aInner, Scripts&& aScripts) {
-                      return aSelf->ExecuteContentScripts(aCx, aInner, aScripts)
-                          .forget();
-                    },
-                    this, inner, GetScripts(RunAt::Document_end))
-                .andThen([&](auto aPromise) {
-                  return aPromise->ThenWithCycleCollectedArgs(
-                      [](JSContext* aCx, JS::Handle<JS::Value> aValue,
-                         ErrorResult& aRv, ExtensionPolicyService* aSelf,
-                         nsPIDOMWindowInner* aInner, Scripts&& aScripts) {
-                        return aSelf
-                            ->ExecuteContentScripts(aCx, aInner, aScripts)
-                            .forget();
-                      },
-                      this, inner, GetScripts(RunAt::Document_idle));
-                }));
+    RefPtr<Promise> nextPromise = ExecuteContentScripts(
+        jsapi.cx(), inner, GetScripts(RunAt::Document_start));
+
+    // Throw an UnknownError when the first ExecuteContentScripts call
+    // for document_start content scripts fails to return a non-null Promise,
+    // the other two ExecuteContentScripts calls from the promise chain
+    // that follows will also log a similar execption and the promise chain
+    // rejected right away.
+    // NOTE: ExecuteContentScripts will be returning a nullptr if the call to
+    // Promise::All returned a nullptr, see Bug 1916569).
+    if (!nextPromise) {
+      aRv.ThrowUnknownError(
+          "The execution of document_start content scripts failed for an "
+          "unknown reason");
+      return;
+    }
+
+    auto result =
+        nextPromise
+            ->ThenWithCycleCollectedArgs(
+                [](JSContext* aCx, JS::Handle<JS::Value> aValue,
+                   ErrorResult& aRv, ExtensionPolicyService* aSelf,
+                   nsPIDOMWindowInner* aInner, Scripts&& aScripts) {
+                  RefPtr<Promise> newPromise =
+                      aSelf->ExecuteContentScripts(aCx, aInner, aScripts);
+                  if (NS_WARN_IF(!newPromise)) {
+                    aRv.ThrowUnknownError(
+                        "The execution of document_end content scripts failed "
+                        "for an unknown reason");
+                  }
+                  return newPromise.forget();
+                },
+                this, inner, GetScripts(RunAt::Document_end))
+            .andThen([&](auto aPromise) {
+              return aPromise->ThenWithCycleCollectedArgs(
+                  [](JSContext* aCx, JS::Handle<JS::Value> aValue,
+                     ErrorResult& aRv, ExtensionPolicyService* aSelf,
+                     nsPIDOMWindowInner* aInner, Scripts&& aScripts) {
+                    RefPtr<Promise> newPromise =
+                        aSelf->ExecuteContentScripts(aCx, aInner, aScripts);
+                    if (NS_WARN_IF(!newPromise)) {
+                      aRv.ThrowUnknownError(
+                          "The execution of document_end content scripts "
+                          "failed "
+                          "for an unknown reason");
+                    }
+                    return newPromise.forget();
+                  },
+                  this, inner, GetScripts(RunAt::Document_idle));
+            });
+
+    if (result.isErr()) {
+      aRv.ThrowUnknownError(
+          "The execution of document_end and document_idle content scripts "
+          "failed for an unknown reason");
+      return;
+    }
   }
-  return NS_OK;
 }
 
 // Checks a request for matching content scripts, and begins pre-loading them
@@ -606,7 +640,7 @@ RefPtr<AtomSet> ExtensionPolicyService::QuarantinedDomains() {
 
 void ExtensionPolicyService::UpdateRestrictedDomains() {
   nsAutoCString eltsString;
-  Unused << Preferences::GetCString(RESTRICTED_DOMAINS_PREF, eltsString);
+  (void)Preferences::GetCString(RESTRICTED_DOMAINS_PREF, eltsString);
 
   AutoTArray<nsString, 32> elts;
   for (const nsACString& elt : eltsString.Split(',')) {
@@ -699,7 +733,7 @@ nsresult ExtensionPolicyService::GetGeneratedBackgroundPageUrl(
 
     url.Append(NS_EscapeURL(html, esc_Minimal, escaped));
 
-    aResult = url;
+    aResult = std::move(url);
     return NS_OK;
   }
   return NS_ERROR_INVALID_ARG;

@@ -132,6 +132,14 @@ export var CommonUtils = {
    * Return a timer that is scheduled to call the callback after waiting the
    * provided time or as soon as possible. The timer will be set as a property
    * of the provided object with the given timer name.
+   *
+   * Note that an existing timer with the same name on the same object will be
+   * canceled and rescheduled with the new callback if you call this function
+   * before it fired.
+   * This may race with the imminent firing of the existing timer, so be
+   * prepared to see it firing twice once in a while if called multiple times
+   * for the same timer (the alternative would be to see it firing once right
+   * now and to see nothing happen after the expected delay).
    */
   namedTimer: function namedTimer(callback, wait, thisObj, name) {
     if (!thisObj || !name) {
@@ -140,22 +148,23 @@ export var CommonUtils = {
       );
     }
 
-    // Delay an existing timer if it exists
+    let timer = null;
+    // Take an existing timer if it exists
     if (name in thisObj && thisObj[name] instanceof Ci.nsITimer) {
-      thisObj[name].delay = wait;
-      return thisObj[name];
+      // Setting just the delay on an existing but inactive timer will not
+      // schedule the timer again. Let's go through initWithCallback always.
+      timer = thisObj[name];
+    } else {
+      // Create a special timer that we can add extra properties
+      timer = Object.create(
+        Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer)
+      );
+      // Provide an easy way to clear out the timer
+      timer.clear = function () {
+        thisObj[name] = null;
+        timer.cancel();
+      };
     }
-
-    // Create a special timer that we can add extra properties
-    let timer = Object.create(
-      Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer)
-    );
-
-    // Provide an easy way to clear out the timer
-    timer.clear = function () {
-      thisObj[name] = null;
-      timer.cancel();
-    };
 
     // Initialize the timer with a smart callback
     timer.initWithCallback(
@@ -175,8 +184,7 @@ export var CommonUtils = {
 
   encodeUTF8: function encodeUTF8(str) {
     try {
-      str = this._utf8Converter.ConvertFromUnicode(str);
-      return str + this._utf8Converter.Finish();
+      return this.byteArrayToString(Array.from(new TextEncoder().encode(str)));
     } catch (ex) {
       return null;
     }
@@ -184,8 +192,8 @@ export var CommonUtils = {
 
   decodeUTF8: function decodeUTF8(str) {
     try {
-      str = this._utf8Converter.ConvertToUnicode(str);
-      return str + this._utf8Converter.Finish();
+      const bytes = this.byteStringToArrayBuffer(str);
+      return new TextDecoder().decode(bytes);
     } catch (ex) {
       return null;
     }
@@ -644,7 +652,7 @@ export var CommonUtils = {
     let is = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
       Ci.nsIStringInputStream
     );
-    is.setData(s, s.length);
+    is.setByteStringData(s);
 
     let listener = Cc["@mozilla.org/network/stream-loader;1"].createInstance(
       Ci.nsIStreamLoader
@@ -677,14 +685,6 @@ export var CommonUtils = {
     return result;
   },
 };
-
-ChromeUtils.defineLazyGetter(CommonUtils, "_utf8Converter", function () {
-  let converter = Cc[
-    "@mozilla.org/intl/scriptableunicodeconverter"
-  ].createInstance(Ci.nsIScriptableUnicodeConverter);
-  converter.charset = "UTF-8";
-  return converter;
-});
 
 ChromeUtils.defineLazyGetter(CommonUtils, "_converterService", function () {
   return Cc["@mozilla.org/streamConverters;1"].getService(

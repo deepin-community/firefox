@@ -1,4 +1,3 @@
-//* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,18 +8,21 @@
 #include "nsNetCID.h"
 #include "nsPrintfCString.h"
 #include "nsThreadUtils.h"
+#include "mozilla/ClearOnShutdown.h"
 #include "mozilla/Components.h"
 #include "mozilla/EndianUtils.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/UrlClassifierMetrics.h"
 #include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/LazyIdleThread.h"
 #include "mozilla/Logging.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/Preferences.h"
 #include "mozilla/SyncRunnable.h"
+#include "mozilla/StaticPrefs_browser.h"
 #include "mozilla/Base64.h"
-#include "mozilla/Unused.h"
-#include "mozilla/UniquePtr.h"
 #include "nsUrlClassifierDBService.h"
 #include "nsUrlClassifierUtils.h"
+#include <bit>
 
 // MOZ_LOG=UrlClassifierDbService:5
 extern mozilla::LazyLogModule gUrlClassifierDbServiceLog;
@@ -43,6 +45,26 @@ extern mozilla::LazyLogModule gUrlClassifierDbServiceLog;
 
 namespace mozilla {
 namespace safebrowsing {
+
+// Static table for overriding the storage location of specific tables.
+// This is used for backward compatibility when tables need to be stored
+// in a different directory than their provider name would suggest.
+// For example, google5 tables are stored in "google4" directory because
+// both V4 and V5 share the same file format.
+struct TableLocationOverride {
+  nsLiteralCString mTableName;
+  nsLiteralCString mDirectoryName;
+};
+
+static const TableLocationOverride kTableLocationOverrides[] = {
+    {"goog-badbinurl-proto"_ns, "google4"_ns},
+    {"goog-downloadwhite-proto"_ns, "google4"_ns},
+    {"goog-phish-proto"_ns, "google4"_ns},
+    {"googpub-phish-proto"_ns, "google4"_ns},
+    {"goog-malware-proto"_ns, "google4"_ns},
+    {"goog-unwanted-proto"_ns, "google4"_ns},
+    {"goog-harmful-proto"_ns, "google4"_ns},
+};
 
 bool Classifier::OnUpdateThread() const {
   bool onthread = false;
@@ -86,14 +108,28 @@ nsresult Classifier::GetPrivateStoreDirectory(
     return NS_OK;
   }
 
+  // Determine the provider directory name for this table.
+  nsAutoCString providerDirectoryName;
+  for (const auto& override : kTableLocationOverrides) {
+    if (aTableName.Equals(override.mTableName)) {
+      providerDirectoryName.Assign(override.mDirectoryName);
+      break;
+    }
+  }
+
+  if (providerDirectoryName.IsEmpty()) {
+    // Default: use provider name as directory name
+    providerDirectoryName = aProvider;
+  }
+
   nsCOMPtr<nsIFile> providerDirectory;
 
   // Clone first since we are gonna create a new directory.
   nsresult rv = aRootStoreDirectory->Clone(getter_AddRefs(providerDirectory));
   NS_ENSURE_SUCCESS(rv, rv);
 
-  // Append the provider name to the root store directory.
-  rv = providerDirectory->AppendNative(aProvider);
+  // Append the provider directory name to the root store directory.
+  rv = providerDirectory->AppendNative(providerDirectoryName);
   NS_ENSURE_SUCCESS(rv, rv);
 
   // Ensure existence of the provider directory.
@@ -122,8 +158,38 @@ nsresult Classifier::GetPrivateStoreDirectory(
   return NS_OK;
 }
 
+static constexpr char kSafeBrowsingV5EnabledPrefName[] =
+    "browser.safebrowsing.provider.google5.enabled";
+static Maybe<bool> sIsV5Enabled;
+
+void SafeBrowsingV5EnabledPrefChangedCallback(const char* aPrefName, void*) {
+  MOZ_ASSERT(NS_IsMainThread());
+  MOZ_ASSERT(!strcmp(aPrefName, kSafeBrowsingV5EnabledPrefName));
+
+  sIsV5Enabled = Some(Preferences::GetBool(kSafeBrowsingV5EnabledPrefName));
+}
+
+// static
+bool Classifier::IsRealTimeModeEnabled() {
+  if (sIsV5Enabled.isNothing()) {
+    Preferences::RegisterCallbackAndCall(
+        SafeBrowsingV5EnabledPrefChangedCallback,
+        kSafeBrowsingV5EnabledPrefName);
+
+    RunOnShutdown([]() {
+      Preferences::UnregisterCallback(SafeBrowsingV5EnabledPrefChangedCallback,
+                                      kSafeBrowsingV5EnabledPrefName);
+    });
+  }
+
+  return StaticPrefs::browser_safebrowsing_realTime_enabled() &&
+         StaticPrefs::browser_safebrowsing_globalCache_enabled() &&
+         sIsV5Enabled.valueOr(false);
+}
+
 Classifier::Classifier()
     : mIsTableRequestResultOutdated(true),
+      mAsyncUpdateInProgress(false),
       mUpdateInterrupted(true),
       mIsClosed(false) {
   // Make a lazy thread for any IO
@@ -290,7 +356,7 @@ nsresult Classifier::Open(nsIFile& aCacheDirectory) {
   NS_ENSURE_SUCCESS(rv, rv);
 
   rv = ClearLegacyFiles();
-  Unused << NS_WARN_IF(NS_FAILED(rv));
+  (void)NS_WARN_IF(NS_FAILED(rv));
 
   // Build the list of know urlclassifier lists
   // XXX: Disk IO potentially on the main thread during startup
@@ -471,7 +537,7 @@ nsresult Classifier::CheckURIFragments(
         urlIdx = i;
       }
     }
-    LOG(("Checking table %s, URL is %s", aTable.BeginReading(),
+    LOG(("Checking table %s, URL is %s", PromiseFlatCString(aTable).get(),
          aSpecFragments[urlIdx].get()));
   }
 
@@ -479,6 +545,8 @@ nsresult Classifier::CheckURIFragments(
   if (NS_WARN_IF(!cache)) {
     return NS_ERROR_FAILURE;
   }
+
+  bool hasAnyHit = false;
 
   // Now check each lookup fragment against the entries in the DB.
   for (uint32_t i = 0; i < aSpecFragments.Length(); i++) {
@@ -509,7 +577,15 @@ nsresult Classifier::CheckURIFragments(
       result->mTableName.Assign(cache->TableName());
       result->mPartialHashLength = confirmed ? COMPLETE_SIZE : matchLength;
       result->mProtocolV2 = LookupCache::Cast<LookupCacheV2>(cache);
+
+      hasAnyHit = true;
     }
+  }
+
+  if (hasAnyHit) {
+    glean::urlclassifier::lookup_hit.Get(aTable).Add(1);
+  } else {
+    glean::urlclassifier::lookup_miss.Get(aTable).Add(1);
   }
 
   return NS_OK;
@@ -697,6 +773,8 @@ void Classifier::FlushAndDisableAsyncUpdate() {
 
   mUpdateThread->Shutdown();
   mUpdateThread = nullptr;
+  mPendingUpdates.Clear();
+  mAsyncUpdateInProgress = false;
 }
 
 nsresult Classifier::AsyncApplyUpdates(const TableUpdateArray& aUpdates,
@@ -706,6 +784,22 @@ nsresult Classifier::AsyncApplyUpdates(const TableUpdateArray& aUpdates,
   if (!mUpdateThread) {
     LOG(("Async update has already been disabled."));
     return NS_ERROR_FAILURE;
+  }
+
+  if (mAsyncUpdateInProgress) {
+    mPendingUpdates.AppendElement(NS_NewRunnableFunction(
+        "safebrowsing::Classifier::AsyncApplyUpdates",
+        [self = RefPtr{this}, aUpdates = aUpdates.Clone(),
+         aCallback]() mutable {
+          nsresult rv = self->AsyncApplyUpdates(aUpdates, aCallback);
+
+          // Calling the callback if we got an failure here to notify update
+          // observers.
+          if (NS_FAILED(rv)) {
+            aCallback(rv);
+          }
+        }));
+    return NS_OK;
   }
 
   //         Caller thread      |       Update thread
@@ -718,6 +812,7 @@ nsresult Classifier::AsyncApplyUpdates(const TableUpdateArray& aUpdates,
   MOZ_ASSERT(mNewLookupCaches.IsEmpty(),
              "There should be no leftovers from a previous update.");
 
+  mAsyncUpdateInProgress = true;
   mUpdateInterrupted = false;
   nsresult rv =
       mRootStoreDirectory->Clone(getter_AddRefs(mRootStoreDirectoryForUpdate));
@@ -773,12 +868,30 @@ nsresult Classifier::AsyncApplyUpdates(const TableUpdateArray& aUpdates,
 
               LOG(("Step 3. Updates applied! Fire callback."));
               aCallback(rv);
+
+              classifier->AsyncUpdateFinished();
             });
 
         callerThread->Dispatch(fgRunnable, NS_DISPATCH_NORMAL);
       });
 
   return mUpdateThread->Dispatch(bgRunnable, NS_DISPATCH_NORMAL);
+}
+
+void Classifier::AsyncUpdateFinished() {
+  MOZ_ASSERT(!OnUpdateThread(),
+             "AsyncUpdateFinished() MUST NOT be called on update thread");
+  MOZ_ASSERT(!NS_IsMainThread(),
+             "AsyncUpdateFinished() must be called on the worker thread");
+
+  mAsyncUpdateInProgress = false;
+
+  // If there are pending updates, run the first one.
+  if (!mPendingUpdates.IsEmpty()) {
+    auto& runnable = mPendingUpdates.ElementAt(0);
+    runnable->Run();
+    mPendingUpdates.RemoveElementAt(0);
+  }
 }
 
 nsresult Classifier::ApplyUpdatesBackground(
@@ -801,8 +914,8 @@ nsresult Classifier::ApplyUpdatesBackground(
   // Assume all TableUpdate objects should have the same provider.
   urlUtil->GetTelemetryProvider(aUpdates[0]->TableName(), provider);
 
-  Telemetry::AutoTimer<Telemetry::URLCLASSIFIER_CL_KEYED_UPDATE_TIME>
-      keyedTimer(provider);
+  auto keyedTimer =
+      glean::urlclassifier::cl_keyed_update_time.Get(provider).Measure();
 
   PRIntervalTime clockStart = 0;
   if (LOG_ENABLED()) {
@@ -940,11 +1053,11 @@ nsresult Classifier::RegenActiveTables() {
   nsTArray<nsCString> exts = {".vlpset"_ns, ".pset"_ns};
   nsTArray<nsCString> foundTables;
   nsresult rv = ScanStoreDir(mRootStoreDirectory, exts, foundTables);
-  Unused << NS_WARN_IF(NS_FAILED(rv));
+  (void)NS_WARN_IF(NS_FAILED(rv));
 
   // We don't have test tables on disk, add Moz built-in entries here
   rv = AddMozEntries(foundTables);
-  Unused << NS_WARN_IF(NS_FAILED(rv));
+  (void)NS_WARN_IF(NS_FAILED(rv));
 
   for (const auto& table : foundTables) {
     RefPtr<const LookupCache> lookupCache = GetLookupCache(table);
@@ -1042,80 +1155,6 @@ nsresult Classifier::CleanToDelete() {
 
   return NS_OK;
 }
-
-#ifdef MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
-
-already_AddRefed<nsIFile> Classifier::GetFailedUpdateDirectroy() {
-  nsCString failedUpdatekDirName = STORE_DIRECTORY + nsCString("-failedupdate");
-
-  nsCOMPtr<nsIFile> failedUpdatekDirectory;
-  if (NS_FAILED(
-          mCacheDirectory->Clone(getter_AddRefs(failedUpdatekDirectory))) ||
-      NS_FAILED(failedUpdatekDirectory->AppendNative(failedUpdatekDirName))) {
-    LOG(("Failed to init failedUpdatekDirectory."));
-    return nullptr;
-  }
-
-  return failedUpdatekDirectory.forget();
-}
-
-nsresult Classifier::DumpRawTableUpdates(const nsACString& aRawUpdates) {
-  LOG(("Dumping raw table updates..."));
-
-  DumpFailedUpdate();
-
-  nsCOMPtr<nsIFile> failedUpdatekDirectory = GetFailedUpdateDirectroy();
-
-  // Create tableupdate.bin and dump raw table update data.
-  nsCOMPtr<nsIFile> rawTableUpdatesFile;
-  nsCOMPtr<nsIOutputStream> outputStream;
-  if (NS_FAILED(
-          failedUpdatekDirectory->Clone(getter_AddRefs(rawTableUpdatesFile))) ||
-      NS_FAILED(
-          rawTableUpdatesFile->AppendNative(nsCString("tableupdates.bin"))) ||
-      NS_FAILED(NS_NewLocalFileOutputStream(
-          getter_AddRefs(outputStream), rawTableUpdatesFile,
-          PR_WRONLY | PR_TRUNCATE | PR_CREATE_FILE))) {
-    LOG(("Failed to create file to dump raw table updates."));
-    return NS_ERROR_FAILURE;
-  }
-
-  // Write out the data.
-  uint32_t written;
-  nsresult rv = outputStream->Write(aRawUpdates.BeginReading(),
-                                    aRawUpdates.Length(), &written);
-  NS_ENSURE_SUCCESS(rv, rv);
-  NS_ENSURE_TRUE(written == aRawUpdates.Length(), NS_ERROR_FAILURE);
-
-  return rv;
-}
-
-nsresult Classifier::DumpFailedUpdate() {
-  LOG(("Dumping failed update..."));
-
-  nsCOMPtr<nsIFile> failedUpdatekDirectory = GetFailedUpdateDirectroy();
-
-  // Remove the "failed update" directory no matter it exists or not.
-  // Failure is fine because the directory may not exist.
-  failedUpdatekDirectory->Remove(true);
-
-  nsCString failedUpdatekDirName;
-  nsresult rv = failedUpdatekDirectory->GetNativeLeafName(failedUpdatekDirName);
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  // Copy the in-use directory to a clean "failed update" directory.
-  nsCOMPtr<nsIFile> inUseDirectory;
-  if (NS_FAILED(mRootStoreDirectory->Clone(getter_AddRefs(inUseDirectory))) ||
-      NS_FAILED(inUseDirectory->CopyToNative(nullptr, failedUpdatekDirName))) {
-    LOG(("Failed to move in-use to the \"failed update\" directory %s",
-         failedUpdatekDirName.get()));
-    return NS_ERROR_FAILURE;
-  }
-
-  return rv;
-}
-
-#endif  // MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
 
 /**
  * This function copies the files one by one to the destination folder.
@@ -1264,7 +1303,7 @@ nsCString Classifier::GetProvider(const nsACString& aTableName) {
   nsCString provider;
   nsresult rv = urlUtil->GetProvider(aTableName, provider);
 
-  return NS_SUCCEEDED(rv) ? provider : ""_ns;
+  return NS_SUCCEEDED(rv) ? std::move(provider) : nsCString(""_ns);
 }
 
 /*
@@ -1596,7 +1635,7 @@ RefPtr<LookupCache> Classifier::GetLookupCache(const nsACString& aTable,
   if (rv == NS_ERROR_FILE_CORRUPTED) {
     // Remove all the on-disk data when the table's prefix file is corrupted.
     LOG(("Failed to get prefixes from file for table %s, delete on-disk data!",
-         aTable.BeginReading()));
+         PromiseFlatCString(aTable).get()));
 
     DeleteTables(mRootStoreDirectory, nsTArray<nsCString>{nsCString(aTable)});
   }
@@ -1660,7 +1699,7 @@ nsresult Classifier::ReadNoiseEntries(const Prefix& aPrefix,
     // In the case V4 little endian, we did swapping endian when converting from
     // char* to int, should revert endian to make sure we will send hex string
     // correctly See https://bugzilla.mozilla.org/show_bug.cgi?id=1283007#c23
-    if (!cacheV2 && !bool(MOZ_BIG_ENDIAN())) {
+    if (!cacheV2 && std::endian::native != std::endian::big) {
       hash = NativeEndian::swapFromBigEndian(hash);
     }
 
@@ -1687,10 +1726,12 @@ nsresult Classifier::LoadHashStore(nsIFile* aDirectory, nsACString& aResult,
     HashStore store(table, GetProvider(table), mRootStoreDirectory);
 
     nsresult rv = store.Open();
-    if (NS_FAILED(rv) || !GetLookupCache(table)) {
+    RefPtr<LookupCache> cache = GetLookupCache(table);
+
+    if (NS_FAILED(rv) || !cache || !cache->MaybeVerifyCRC32()) {
       // TableRequest is called right before applying an update.
       // If we cannot retrieve metadata for a given table or we fail to
-      // load the prefixes for a table, reset the table to esnure we
+      // load the prefixes for a table, reset the table to ensure we
       // apply a full update to the table.
       LOG(("Failed to get metadata for v2 table %s", table.get()));
       aFailedTableNames.AppendElement(table);
@@ -1746,15 +1787,17 @@ nsresult Classifier::LoadMetadata(nsIFile* aDirectory, nsACString& aResult,
     RefPtr<LookupCache> c = GetLookupCache(table);
     RefPtr<LookupCacheV4> lookupCacheV4 = LookupCache::Cast<LookupCacheV4>(c);
 
-    if (!lookupCacheV4) {
+    if (!lookupCacheV4 || !lookupCacheV4->MaybeVerifyCRC32()) {
       aFailedTableNames.AppendElement(table);
       continue;
     }
 
     nsCString state, sha256;
     rv = lookupCacheV4->LoadMetadata(state, sha256);
-    Telemetry::Accumulate(Telemetry::URLCLASSIFIER_VLPS_METADATA_CORRUPT,
-                          rv == NS_ERROR_FILE_CORRUPTED);
+    glean::urlclassifier::vlps_metadata_corrupt
+        .EnumGet(static_cast<glean::urlclassifier::VlpsMetadataCorruptLabel>(
+            rv == NS_ERROR_FILE_CORRUPTED))
+        .Add();
     if (NS_FAILED(rv)) {
       LOG(("Failed to get metadata for v4 table %s", table.get()));
       aFailedTableNames.AppendElement(table);

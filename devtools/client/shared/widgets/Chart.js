@@ -31,13 +31,17 @@ var Chart = {
  * Each item in the `slices` property represents a [data, node] pair containing
  * the data used to create the slice and the Node displaying it.
  *
- * @param Node node
- *        The node representing the view for this chart.
  */
-function PieChart(node) {
-  this.node = node;
-  this.slices = new WeakMap();
-  EventEmitter.decorate(this);
+class PieChart extends EventEmitter {
+  /**
+   * @param Node node
+   *        The node representing the view for this chart.
+   */
+  constructor(node) {
+    super();
+    this.node = node;
+    this.slices = new WeakMap();
+  }
 }
 
 /**
@@ -45,30 +49,38 @@ function PieChart(node) {
  * Each item in the `rows` property represents a [data, node] pair containing
  * the data used to create the row and the Node displaying it.
  *
- * @param Node node
- *        The node representing the view for this chart.
  */
-function TableChart(node) {
-  this.node = node;
-  this.rows = new WeakMap();
-  EventEmitter.decorate(this);
+class TableChart extends EventEmitter {
+  /**
+   * @param Node node
+   *        The node representing the view for this chart.
+   */
+  constructor(node) {
+    super();
+    this.node = node;
+    this.rows = new WeakMap();
+  }
 }
 
 /**
  * A simple pie+table chart proxy for the underlying view.
  *
- * @param Node node
- *        The node representing the view for this chart.
- * @param PieChart pie
- *        The pie chart proxy.
- * @param TableChart table
- *        The table chart proxy.
  */
-function PieTableChart(node, pie, table) {
-  this.node = node;
-  this.pie = pie;
-  this.table = table;
-  EventEmitter.decorate(this);
+class PieTableChart extends EventEmitter {
+  /**
+   * @param Node node
+   *        The node representing the view for this chart.
+   * @param PieChart pie
+   *        The pie chart proxy.
+   * @param TableChart table
+   *        The table chart proxy.
+   */
+  constructor(node, pie, table) {
+    super();
+    this.node = node;
+    this.pie = pie;
+    this.table = table;
+  }
 }
 
 /**
@@ -318,9 +330,10 @@ function createPieChart(
 
     const hoverX = translateDistance * Math.sin(midAngle);
     const hoverY = -translateDistance * Math.cos(midAngle);
-    const hoverTransform =
-      "transform: translate(" + hoverX + "px, " + hoverY + "px)";
-    pathNode.setAttribute("style", data.length > 1 ? hoverTransform : "");
+    const hoverTranslate = "translate(" + hoverX + "px, " + hoverY + "px)";
+    if (data.length > 1) {
+      pathNode.style.transform = hoverTranslate;
+    }
 
     proxy.slices.set(sliceInfo, pathNode);
     delegate(
@@ -343,7 +356,9 @@ function createPieChart(
       // to avoid duplicating text.
       label.setAttribute("aria-hidden", "true");
       label.setAttribute("class", "pie-chart-label");
-      label.setAttribute("style", data.length > 1 ? hoverTransform : "");
+      if (data.length > 1) {
+        label.style.transform = hoverTranslate;
+      }
       label.setAttribute("x", data.length > 1 ? textX : centerX);
       label.setAttribute("y", data.length > 1 ? textY : centerY);
       interactiveNode.append(label);

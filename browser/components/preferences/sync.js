@@ -4,6 +4,11 @@
 
 /* import-globals-from preferences.js */
 
+const { SyncHelpers } = ChromeUtils.importESModule(
+  "chrome://browser/content/preferences/config/account-sync.mjs",
+  { global: "current" }
+);
+
 const FXA_PAGE_LOGGED_OUT = 0;
 const FXA_PAGE_LOGGED_IN = 1;
 
@@ -19,6 +24,9 @@ const FXA_LOGIN_FAILED = 2;
 const SYNC_DISCONNECTED = 0;
 const SYNC_CONNECTED = 1;
 
+const BACKUP_ARCHIVE_ENABLED_PREF_NAME = "browser.backup.archive.enabled";
+const BACKUP_RESTORE_ENABLED_PREF_NAME = "browser.backup.restore.enabled";
+
 var gSyncPane = {
   get page() {
     return document.getElementById("weavePrefsDeck").selectedIndex;
@@ -31,6 +39,7 @@ var gSyncPane = {
   init() {
     this._setupEventListeners();
     this.setupEnginesUI();
+    this.updateSyncUI();
 
     document
       .getElementById("weavePrefsDeck")
@@ -89,6 +98,8 @@ var gSyncPane = {
   },
 
   _init() {
+    initSettingGroup("backup");
+
     Weave.Svc.Obs.add(UIState.ON_UPDATE, this.updateWeavePrefs, this);
 
     window.addEventListener("unload", () => {
@@ -96,12 +107,13 @@ var gSyncPane = {
     });
 
     FxAccounts.config
-      .promiseConnectDeviceURI(this._getEntryPoint())
+      .promiseConnectDeviceURI(SyncHelpers.getEntryPoint())
       .then(connectURI => {
         document
           .getElementById("connect-another-device")
           .setAttribute("href", connectURI);
       });
+
     // Links for mobile devices.
     for (let platform of ["android", "ios"]) {
       let url =
@@ -119,16 +131,7 @@ var gSyncPane = {
     // Notify observers that the UI is now ready
     Services.obs.notifyObservers(window, "sync-pane-loaded");
 
-    if (
-      location.hash == "#sync" &&
-      UIState.get().status == UIState.STATUS_SIGNED_IN
-    ) {
-      if (location.href.includes("action=pair")) {
-        gSyncPane.pairAnotherDevice();
-      } else if (location.href.includes("action=choose-what-to-sync")) {
-        gSyncPane._chooseWhatToSync(false);
-      }
-    }
+    SyncHelpers.maybeShowSyncAction();
   },
 
   _toggleComputerNameControls(editMode) {
@@ -203,26 +206,24 @@ var gSyncPane = {
       this._focusAfterComputerNameTextbox();
     });
     setEventListener("noFxaSignIn", "command", function () {
-      gSyncPane.signIn();
+      SyncHelpers.signIn();
       return false;
     });
     setEventListener("fxaUnlinkButton", "command", function () {
-      gSyncPane.unlinkFirefoxAccount(true);
+      SyncHelpers.unlinkFirefoxAccount(true);
     });
-    setEventListener(
-      "verifyFxaAccount",
-      "command",
-      gSyncPane.verifyFirefoxAccount
+    setEventListener("verifyFxaAccount", "command", () =>
+      SyncHelpers.verifyFirefoxAccount()
     );
     setEventListener("unverifiedUnlinkFxaAccount", "command", function () {
       /* no warning as account can't have previously synced */
-      gSyncPane.unlinkFirefoxAccount(false);
+      SyncHelpers.unlinkFirefoxAccount(false);
     });
     setEventListener("rejectReSignIn", "command", function () {
-      gSyncPane.reSignIn(this._getEntryPoint());
+      SyncHelpers.reSignIn(SyncHelpers.getEntryPoint());
     });
     setEventListener("rejectUnlinkFxaAccount", "command", function () {
-      gSyncPane.unlinkFirefoxAccount(true);
+      SyncHelpers.unlinkFirefoxAccount(true);
     });
     setEventListener("fxaSyncComputerName", "keypress", function (e) {
       if (e.keyCode == KeyEvent.DOM_VK_RETURN) {
@@ -231,11 +232,9 @@ var gSyncPane = {
         document.getElementById("fxaCancelChangeDeviceName").click();
       }
     });
-    setEventListener("syncSetup", "command", function () {
-      this._chooseWhatToSync(false);
-    });
+    setEventListener("syncSetup", "command", () => SyncHelpers.setupSync());
     setEventListener("syncChangeOptions", "command", function () {
-      this._chooseWhatToSync(true);
+      SyncHelpers._chooseWhatToSync(true, "manageSyncSettings");
     });
     setEventListener("syncNow", "command", function () {
       // syncing can take a little time to send the "started" notification, so
@@ -258,42 +257,28 @@ var gSyncPane = {
     });
   },
 
-  async _chooseWhatToSync(isAlreadySyncing) {
-    // Assuming another device is syncing and we're not,
-    // we update the engines selection so the correct
-    // checkboxes are pre-filed.
-    if (!isAlreadySyncing) {
-      try {
-        await Weave.Service.updateLocalEnginesState();
-      } catch (err) {
-        console.error("Error updating the local engines state", err);
-      }
-    }
-    let params = {};
-    if (isAlreadySyncing) {
-      // If we are already syncing then we also offer to disconnect.
-      params.disconnectFun = () => this.disconnectSync();
-    }
-    gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/syncChooseWhatToSync.xhtml",
-      {
-        closingCallback: event => {
-          if (!isAlreadySyncing && event.detail.button == "accept") {
-            // We weren't syncing but the user has accepted the dialog - so we
-            // want to start!
-            fxAccounts.telemetry
-              .recordConnection(["sync"], "ui")
-              .then(() => {
-                return Weave.Service.configure();
-              })
-              .catch(err => {
-                console.error("Failed to enable sync", err);
-              });
-          }
-        },
-      },
-      params /* aParams */
+  updateSyncUI() {
+    let syncStatusTitle = document.getElementById("syncStatusTitle");
+    let syncNowButton = document.getElementById("syncNow");
+    let syncNotConfiguredEl = document.getElementById("syncNotConfigured");
+    let syncConfiguredEl = document.getElementById("syncConfigured");
+    let syncConnectAnotherDeviceEl = document.getElementById(
+      "syncConnectAnotherDevice"
     );
+
+    if (SyncHelpers.isSyncEnabled) {
+      syncStatusTitle.setAttribute("data-l10n-id", "prefs-syncing-on");
+      syncNowButton.hidden = false;
+      syncConfiguredEl.hidden = false;
+      syncNotConfiguredEl.hidden = true;
+      syncConnectAnotherDeviceEl.hidden = false;
+    } else {
+      syncStatusTitle.setAttribute("data-l10n-id", "prefs-syncing-off");
+      syncNowButton.hidden = true;
+      syncConfiguredEl.hidden = true;
+      syncNotConfiguredEl.hidden = false;
+      syncConnectAnotherDeviceEl.hidden = true;
+    }
   },
 
   _updateSyncNow(syncing) {
@@ -389,26 +374,17 @@ var gSyncPane = {
     // The "manage account" link embeds the uid, so we need to update this
     // if the account state changes.
     FxAccounts.config
-      .promiseManageURI(this._getEntryPoint())
+      .promiseManageURI(SyncHelpers.getEntryPoint())
       .then(accountsManageURI => {
         document
           .getElementById("verifiedManage")
           .setAttribute("href", accountsManageURI);
       });
     // and the actual sync state.
-    let eltSyncStatus = document.getElementById("syncStatus");
+    let eltSyncStatus = document.getElementById("syncStatusContainer");
     eltSyncStatus.hidden = !syncReady;
-    eltSyncStatus.selectedIndex = state.syncEnabled
-      ? SYNC_CONNECTED
-      : SYNC_DISCONNECTED;
     this._updateSyncNow(state.syncing);
-  },
-
-  _getEntryPoint() {
-    let params = new URLSearchParams(
-      document.URL.split("#")[0].split("?")[1] || ""
-    );
-    return params.get("entrypoint") || "preferences";
+    this.updateSyncUI();
   },
 
   openContentInBrowser(url, options) {
@@ -432,27 +408,6 @@ var gSyncPane = {
     });
   },
 
-  async signIn() {
-    if (!(await FxAccounts.canConnectAccount())) {
-      return;
-    }
-    const url = await FxAccounts.config.promiseConnectAccountURI(
-      this._getEntryPoint()
-    );
-    this.replaceTabWithUrl(url);
-  },
-
-  /**
-   * Attempts to take the user through the sign in flow by opening the web content
-   * with the given entrypoint as a query parameter
-   * @param entrypoint: An string appended to the query parameters, used in telemtry to differentiate
-   * different entrypoints to accounts
-   * */
-  async reSignIn(entrypoint) {
-    const url = await FxAccounts.config.promiseConnectAccountURI(entrypoint);
-    this.replaceTabWithUrl(url);
-  },
-
   clickOrSpaceOrEnterPressed(event) {
     // Note: charCode is deprecated, but 'char' not yet implemented.
     // Replace charCode with char when implemented, see Bug 680830
@@ -467,7 +422,7 @@ var gSyncPane = {
   openChangeProfileImage(event) {
     if (this.clickOrSpaceOrEnterPressed(event)) {
       FxAccounts.config
-        .promiseChangeAvatarURI(this._getEntryPoint())
+        .promiseChangeAvatarURI(SyncHelpers.getEntryPoint())
         .then(url => {
           this.openContentInBrowser(url, {
             replaceQueryString: true,
@@ -478,25 +433,6 @@ var gSyncPane = {
       // Prevent page from scrolling on the space key.
       event.preventDefault();
     }
-  },
-
-  async verifyFirefoxAccount() {
-    return this.reSignIn("preferences-reverify");
-  },
-
-  // Disconnect the account, including everything linked.
-  unlinkFirefoxAccount(confirm) {
-    window.browsingContext.topChromeWindow.gSync.disconnect({
-      confirm,
-    });
-  },
-
-  // Disconnect sync, leaving the account connected.
-  disconnectSync() {
-    return window.browsingContext.topChromeWindow.gSync.disconnect({
-      confirm: true,
-      disconnectAccount: false,
-    });
   },
 
   pairAnotherDevice() {

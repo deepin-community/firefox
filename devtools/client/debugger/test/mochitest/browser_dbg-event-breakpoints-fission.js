@@ -15,17 +15,17 @@ add_task(async function () {
   await selectSource(dbg, "event-breakpoints.js");
   await waitForSelectedSource(dbg, "event-breakpoints.js");
 
-  await dbg.actions.addEventListenerBreakpoints([
+  await dbg.actions.addEventListenerBreakpoints("breakpoint", [
     "event.mouse.click",
     "event.xhr.load",
     "timer.timeout.set",
   ]);
 
   info("Assert early timeout event breakpoint gets hit");
-  const waitForReload = reloadBrowser();
+  const waitForReload = reloadSelectedTab();
 
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(
+  await assertPausedAtSourceAndLine(
     dbg,
     findSource(dbg, "doc-event-breakpoints-fission.html").id,
     17
@@ -48,7 +48,7 @@ add_task(async function () {
 async function invokeAndAssertBreakpoints(dbg) {
   invokeInTabRemoteFrame("clickHandler");
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(
+  await assertPausedAtSourceAndLine(
     dbg,
     findSource(dbg, "event-breakpoints.js").id,
     12
@@ -57,10 +57,10 @@ async function invokeAndAssertBreakpoints(dbg) {
 
   invokeInTabRemoteFrame("xhrHandler");
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(
+  await assertPausedAtSourceAndLine(
     dbg,
     findSource(dbg, "event-breakpoints.js").id,
-    20
+    24
   );
   await resume(dbg);
 }

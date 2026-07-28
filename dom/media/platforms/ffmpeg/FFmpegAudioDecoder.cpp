@@ -1,32 +1,37 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "FFmpegAudioDecoder.h"
-#include "FFmpegUtils.h"
+
 #include "AudioSampleFormat.h"
+#include "BufferReader.h"
 #include "FFmpegLog.h"
+#include "FFmpegUtils.h"
 #include "TimeUnits.h"
 #include "VideoUtils.h"
-#include "BufferReader.h"
 #include "libavutil/dict.h"
 #include "libavutil/samplefmt.h"
 #if defined(FFVPX_VERSION)
 #  include "libavutil/channel_layout.h"
 #endif
 #include "mozilla/StaticPrefs_media.h"
-#include "mozilla/Telemetry.h"
+
+#ifdef MOZ_WIDGET_ANDROID
+#  include "ffvpx/hwcontext_mediacodec.h"
+#  include "ffvpx/mediacodec.h"
+#endif
 
 namespace mozilla {
 
 using TimeUnit = media::TimeUnit;
 
 FFmpegAudioDecoder<LIBAV_VER>::FFmpegAudioDecoder(
-    FFmpegLibWrapper* aLib, const CreateDecoderParams& aDecoderParams)
-    : FFmpegDataDecoder(aLib, GetCodecId(aDecoderParams.AudioConfig().mMimeType,
-                                         aDecoderParams.AudioConfig())),
+    const FFmpegLibWrapper* aLib, const CreateDecoderParams& aDecoderParams)
+    : FFmpegDataDecoder(aLib,
+                        GetCodecId(aDecoderParams.AudioConfig().mMimeType,
+                                   aDecoderParams.AudioConfig()),
+                        aDecoderParams.mCDM),
       mAudioInfo(aDecoderParams.AudioConfig()) {
   MOZ_COUNT_CTOR(FFmpegAudioDecoder);
 
@@ -48,8 +53,6 @@ FFmpegAudioDecoder<LIBAV_VER>::FFmpegAudioDecoder(
   }
 
   if (mCodecID == AV_CODEC_ID_FLAC) {
-    MOZ_DIAGNOSTIC_ASSERT(
-        mAudioInfo.mCodecSpecificConfig.is<FlacCodecSpecificData>());
     // Gracefully handle bad data. If don't hit the preceding assert once this
     // has been shipped for awhile, we can remove it and make the following code
     // non-conditional.
@@ -70,7 +73,8 @@ FFmpegAudioDecoder<LIBAV_VER>::FFmpegAudioDecoder(
     }
   }
 
-  // Vorbis and Opus are handled by this case.
+  // Vorbis, Opus are handled by this case, as well as any codec that has
+  // non-tagged variant, because the data comes from Web Codecs.
   RefPtr<MediaByteBuffer> audioCodecSpecificBinaryBlob =
       GetAudioCodecSpecificBlob(mAudioInfo.mCodecSpecificConfig);
   if (audioCodecSpecificBinaryBlob && audioCodecSpecificBinaryBlob->Length()) {
@@ -87,6 +91,17 @@ FFmpegAudioDecoder<LIBAV_VER>::FFmpegAudioDecoder(
 }
 
 RefPtr<MediaDataDecoder::InitPromise> FFmpegAudioDecoder<LIBAV_VER>::Init() {
+  AUTO_PROFILER_LABEL("FFmpegAudioDecoder::Init", MEDIA_PLAYBACK);
+
+  if (mAudioInfo.mChannels == 0 || mAudioInfo.mRate == 0) {
+    FFMPEG_LOG("Invalid audio configuration: channels=%u, rate=%u",
+               mAudioInfo.mChannels, mAudioInfo.mRate);
+    return InitPromise::CreateAndReject(
+        MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
+                    RESULT_DETAIL("Invalid channel count or sample rate")),
+        __func__);
+  }
+
   AVDictionary* options = nullptr;
   if (mCodecID == AV_CODEC_ID_OPUS) {
     // Opus has a special feature for stereo coding where it represent wide
@@ -98,9 +113,33 @@ RefPtr<MediaDataDecoder::InitPromise> FFmpegAudioDecoder<LIBAV_VER>::Init() {
         DecideAudioPlaybackChannels(mAudioInfo) == 1) {
       mLib->av_dict_set(&options, "apply_phase_inv", "false", 0);
     }
+    // extradata is required for Opus when the number of channels is > 2.
+    // FFmpeg will happily (but incorrectly) initialize a decoder without a
+    // description, but it will have only two channels.
+    if (mAudioInfo.mChannels > 2 &&
+        (!mExtraData || mExtraData->Length() < 10)) {
+      FFMPEG_LOG(
+          "Cannot initialize decoder with %d channels without extradata of at "
+          "least 10 bytes",
+          mAudioInfo.mChannels);
+      return InitPromise::CreateAndReject(NS_ERROR_FAILURE, __func__);
+    }
   }
 
-  MediaResult rv = InitDecoder(&options);
+  MediaResult rv(NS_ERROR_NOT_AVAILABLE);
+#if defined(MOZ_WIDGET_ANDROID) && defined(USING_MOZFFVPX)
+  if (XRE_IsRDDProcess() || XRE_IsUtilityProcess()) {
+    AVCodec* codec = FindHardwareAVCodec(mLib, mCodecID, AV_HWDEVICE_TYPE_NONE);
+    if (codec) {
+      rv = InitDecoder(codec, &options);
+    }
+  }
+
+  if (NS_FAILED(rv))
+#endif
+  {
+    rv = InitSWDecoder(&options);
+  }
 
   mLib->av_dict_free(&options);
 
@@ -153,7 +192,8 @@ static AlignedAudioBuffer CopyAndPackAudio(AVFrame* aFrame,
   } else if (aFrame->format == AV_SAMPLE_FMT_FLTP) {
     // Planar audio data. Pack it into something we can understand.
     AudioDataValue* tmp = audio.get();
-    AudioDataValue** data = reinterpret_cast<AudioDataValue**>(aFrame->data);
+    AudioDataValue** data =
+        reinterpret_cast<AudioDataValue**>(aFrame->extended_data);
     for (uint32_t frame = 0; frame < aNumAFrames; frame++) {
       for (uint32_t channel = 0; channel < aNumChannels; channel++) {
         *tmp++ = data[channel][frame];
@@ -172,7 +212,7 @@ static AlignedAudioBuffer CopyAndPackAudio(AVFrame* aFrame,
     // Planar audio data. Convert it from S16 to 32 bits float
     // and pack it into something we can understand.
     AudioDataValue* tmp = audio.get();
-    int16_t** data = reinterpret_cast<int16_t**>(aFrame->data);
+    int16_t** data = reinterpret_cast<int16_t**>(aFrame->extended_data);
     for (uint32_t frame = 0; frame < aNumAFrames; frame++) {
       for (uint32_t channel = 0; channel < aNumChannels; channel++) {
         *tmp++ = ConvertAudioSample<float>(data[channel][frame]);
@@ -191,7 +231,7 @@ static AlignedAudioBuffer CopyAndPackAudio(AVFrame* aFrame,
     // Planar audio data. Convert it from S32 to 32 bits float
     // and pack it into something we can understand.
     AudioDataValue* tmp = audio.get();
-    int32_t** data = reinterpret_cast<int32_t**>(aFrame->data);
+    int32_t** data = reinterpret_cast<int32_t**>(aFrame->extended_data);
     for (uint32_t frame = 0; frame < aNumAFrames; frame++) {
       for (uint32_t channel = 0; channel < aNumChannels; channel++) {
         *tmp++ = ConvertAudioSample<float>(data[channel][frame]);
@@ -210,7 +250,7 @@ static AlignedAudioBuffer CopyAndPackAudio(AVFrame* aFrame,
     // Planar audio data. Convert it from u8 to the expected sample-format
     // and pack it into something we can understand.
     AudioDataValue* tmp = audio.get();
-    uint8_t** data = reinterpret_cast<uint8_t**>(aFrame->data);
+    uint8_t** data = reinterpret_cast<uint8_t**>(aFrame->extended_data);
     for (uint32_t frame = 0; frame < aNumAFrames; frame++) {
       for (uint32_t channel = 0; channel < aNumChannels; channel++) {
         *tmp++ = ConvertAudioSample<float>(data[channel][frame]);
@@ -259,6 +299,14 @@ MediaResult FFmpegAudioDecoder<LIBAV_VER>::PostProcessOutput(
   if (!samplingRate) {
     samplingRate = mAudioInfo.mRate;
   }
+
+  if (!numChannels || !samplingRate) {
+    FFMPEG_LOG("Invalid audio configuration: channels=%u, rate=%u", numChannels,
+               samplingRate);
+    return MediaResult(NS_ERROR_DOM_MEDIA_DECODE_ERR,
+                       RESULT_DETAIL("Invalid audio configuration"));
+  }
+
   AlignedAudioBuffer audio =
       CopyAndPackAudio(mFrame, numChannels, mFrame->nb_samples);
   if (!audio) {
@@ -406,6 +454,13 @@ MediaResult FFmpegAudioDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample,
   mLib->av_init_packet(packet);
 #endif
 
+#if defined(MOZ_WIDGET_ANDROID) && defined(USING_MOZFFVPX)
+  MediaResult ret = MaybeAttachCryptoInfo(aSample, packet);
+  if (NS_FAILED(ret)) {
+    return ret;
+  }
+#endif
+
   FFMPEG_LOG("FFmpegAudioDecoder::DoDecode: %d bytes, [%s,%s] (Duration: %s)",
              aSize, aSample->mTime.ToString().get(),
              aSample->GetEndTime().ToString().get(),
@@ -413,6 +468,7 @@ MediaResult FFmpegAudioDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample,
 
   packet->data = const_cast<uint8_t*>(aData);
   packet->size = aSize;
+  packet->pts = aSample->mTime.ToMicroseconds();
 
   if (aGotFrame) {
     *aGotFrame = false;

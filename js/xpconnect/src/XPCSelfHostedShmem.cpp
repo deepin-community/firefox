@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,7 @@
 #include "xpcprivate.h"
 
 // static
+bool xpc::SelfHostedShmem::sSelfHostedUseSharedMemory = false;
 mozilla::StaticRefPtr<xpc::SelfHostedShmem>
     xpc::SelfHostedShmem::sSelfHostedXdr;
 
@@ -40,62 +39,45 @@ void xpc::SelfHostedShmem::Shutdown() {
 void xpc::SelfHostedShmem::InitFromParent(ContentType aXdr) {
   MOZ_ASSERT(XRE_IsParentProcess());
   MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(!mLen, "Shouldn't call this more than once");
+  MOZ_ASSERT(!mHandle && !mMem, "Shouldn't call this more than once");
 
   size_t len = aXdr.Length();
-  auto shm = mozilla::MakeUnique<base::SharedMemory>();
-  if (NS_WARN_IF(!shm->CreateFreezeable(len))) {
+  auto handle = mozilla::ipc::shared_memory::CreateFreezable(len);
+  if (NS_WARN_IF(!handle)) {
     return;
   }
 
-  if (NS_WARN_IF(!shm->Map(len))) {
+  auto mapping = std::move(handle).Map();
+  if (NS_WARN_IF(!mapping)) {
     return;
   }
 
-  void* address = shm->memory();
+  void* address = mapping.Address();
   memcpy(address, aXdr.Elements(), aXdr.LengthBytes());
 
-  base::SharedMemory roCopy;
-  if (NS_WARN_IF(!shm->ReadOnlyCopy(&roCopy))) {
-    return;
-  }
-
-  mMem = std::move(shm);
-  mHandle = roCopy.TakeHandle();
-  mLen = len;
+  mHandle = std::move(mapping).Freeze();
+  mMem = mHandle.Map();
 }
 
-bool xpc::SelfHostedShmem::InitFromChild(::base::SharedMemoryHandle aHandle,
-                                         size_t aLen) {
+bool xpc::SelfHostedShmem::InitFromChild(
+    mozilla::ipc::ReadOnlySharedMemoryHandle aHandle) {
   MOZ_ASSERT(!XRE_IsParentProcess());
   MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(!mLen, "Shouldn't call this more than once");
+  MOZ_ASSERT(!mMem, "Shouldn't call this more than once");
 
-  auto shm = mozilla::MakeUnique<base::SharedMemory>();
-  if (NS_WARN_IF(!shm->SetHandle(std::move(aHandle), /* read_only */ true))) {
-    return false;
-  }
-
-  if (NS_WARN_IF(!shm->Map(aLen))) {
-    return false;
-  }
-
-  // Note: mHandle remains empty, as content processes are not spawning more
-  // content processes.
-  mMem = std::move(shm);
-  mLen = aLen;
-  return true;
+  mMem = aHandle.Map();
+  return mMem.IsValid();
 }
 
 xpc::SelfHostedShmem::ContentType xpc::SelfHostedShmem::Content() const {
   if (!mMem) {
-    MOZ_ASSERT(mLen == 0);
     return ContentType();
   }
-  return ContentType(reinterpret_cast<uint8_t*>(mMem->memory()), mLen);
+  return mMem.DataAsSpan<uint8_t>();
 }
 
-const mozilla::UniqueFileHandle& xpc::SelfHostedShmem::Handle() const {
+const mozilla::ipc::ReadOnlySharedMemoryHandle& xpc::SelfHostedShmem::Handle()
+    const {
   return mHandle;
 }
 
@@ -108,7 +90,7 @@ xpc::SelfHostedShmem::CollectReports(nsIHandleReportCallback* aHandleReport,
     // This does not exactly report the amount of data mapped by the system,
     // but the space requested when creating the handle.
     MOZ_COLLECT_REPORT("explicit/js-non-window/shared-memory/self-hosted-xdr",
-                       KIND_NONHEAP, UNITS_BYTES, mLen,
+                       KIND_NONHEAP, UNITS_BYTES, mMem.Size(),
                        "Memory used to initialize the JS engine with the "
                        "self-hosted code encoded by the parent process.");
   }

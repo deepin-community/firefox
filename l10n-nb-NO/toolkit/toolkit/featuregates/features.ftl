@@ -46,25 +46,3 @@ experimental-features-js-warp-description = Aktiver Warp, et prosjekt for å for
 experimental-features-ime-search =
     .label = Adresselinjen: Vis resultater under IME-sammensetning
 experimental-features-ime-search-description = En IME (Input Method Editor) er et verktøy som lar deg skrive inn komplekse symboler, for eksempel de som brukes i østasiatiske eller Indiske skriftspråk, ved hjelp av et standardtastatur. Aktivering av dette eksperimentet holder adresselinjepanelet åpent, viser søkeresultater og forslag mens du bruker IME til å legge inn tekst. Merk at IME kan vise et panel som dekker resultatene i adresselinjen, og derfor er denne preferansen kun anbefalt for IME som ikke bruker denne typen paneler.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Bilde-i-bilde: automatisk åpning når du bytter fane
-experimental-features-auto-pip-description = Aktiver bilde-i-bilde på aktive videoer når du bytter fane.
-genai-settings-chat-title =
-    .label = AI-chatbot
-# Updated sidebar settings
-sidebar-title =
-    .label = Sidestolpe
-sidebar-description = Få enkel tilgang til historikken din, faner fra andre enheter, sidestolpe-utvidelser og mer mens du surfer. <a data-l10n-name="connect">Del tilbakemelding</a>
-vertical-tabs-title =
-    .label = Vertikale faner
-vertical-tabs-description = Flytt fanene fra toppen av nettleseren til siden. Dette krever at du aktiverer sidestolpen. <a data-l10n-name="connect">Del tilbakemelding</a>
-experimental-features-group-browsing =
-    .label = Nettlesing
-experimental-features-group-developer-tools =
-    .label = Utviklerverktøy
-experimental-features-group-webpage-display =
-    .label = Visning av nettside
-experimental-features-group-customize-browsing =
-    .label = Tilpass nettlesingen din
-experimental-features-group-customize-browsing-description = Hvis du prøver disse funksjonene, <a data-l10n-name="connect">del tankene dine om Connect</a>

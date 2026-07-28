@@ -1,5 +1,4 @@
-/* -*- Mode: c++; c-basic-offset: 2; tab-width: 20; indent-tabs-mode: nil; -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -8,19 +7,9 @@
 
 #include "nsMIMEInfoImpl.h"
 #include "nsIMutableArray.h"
-#include "mozilla/java/GeckoAppShellWrappers.h"
 
 class nsMIMEInfoAndroid final : public nsIMIMEInfo {
  public:
-  [[nodiscard]] static bool GetMimeInfoForMimeType(
-      const nsACString& aMimeType, nsMIMEInfoAndroid** aMimeInfo);
-  [[nodiscard]] static bool GetMimeInfoForFileExt(
-      const nsACString& aFileExt, nsMIMEInfoAndroid** aMimeInfo);
-
-  [[nodiscard]] static nsresult GetMimeInfoForURL(const nsACString& aURL,
-                                                  bool* found,
-                                                  nsIHandlerInfo** info);
-
   NS_DECL_ISUPPORTS
   NS_DECL_NSIMIMEINFO
   NS_DECL_NSIHANDLERINFO

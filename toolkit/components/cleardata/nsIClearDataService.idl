@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -47,7 +46,7 @@ interface nsIClearDataService : nsISupports
    * @param aFlags List of flags. See below the accepted values.
    * @param aCallback this callback will be executed when the operation is
    *                  completed.
-   * @deprecated Use deleteDataFromBaseDomain instead.
+   * @deprecated Use deleteDataFromSite instead.
    */
   void deleteDataFromHost(in AUTF8String aHost,
                           in boolean aIsUserRequest,
@@ -55,15 +54,20 @@ interface nsIClearDataService : nsISupports
                           in nsIClearDataCallback aCallback);
 
   /**
-   * Delete data owned by or partitioned under a baseDomain (eTLD+1). For
-   * instance: mozilla.org. Deletes data across all origin attributes. For
-   * partitioned storage we clear both, data of the baseDomain in 1st-party and
-   * 3rd-party context.
+   * Delete data from cookie jars associated with the given schemeless site
+   * aSchemelessSite.
+   * In addition to regular first-party data this includes data of aSchemelessSite in a
+   * third-party context and data from other sites partitioned under aSchemelessSite.
+   * You can use Services.eTLD.getSchemelessSite to extract the site portion of a URI.
+   * See https://html.spec.whatwg.org/#obtain-a-site for details.
+   * If you have an nsIPrincipal object you can simply pass in
+   * principal.baseDomain.
    * When handling user requests for clearing data using this method is
    * preferred over deleteDataFromPrincipal, since origins may share information
    * with their site (e.g. cookies) that are not deleted by principal.
-   * @param aDomainOrHost the domain or host to be used. Will be converted to
-   *        baseDomain if needed.
+   * @param aSchemelessSite the site to be cleared excluding scheme.
+   * @param aOriginAttributesPatternString optional pattern to filter OriginAttributes
+   *        by. If not passed all entries matching aSchemelessSite are cleared.
    * @param aIsUserRequest true if this request comes from a user interaction.
    *        This information is important because if true, it's probably better
    *        to remove more than less, for privacy reason. If false (e.g.
@@ -72,13 +76,23 @@ interface nsIClearDataService : nsISupports
    * @param aFlags List of flags. See below the accepted values.
    * @param aCallback this callback will be executed when the operation is
    *                  completed.
-   * @throws Throws if base domain can't be computed from aDomainOrHost. Callers
-   * may fall back to clearing by principal or host.
    */
-  void deleteDataFromBaseDomain(in AUTF8String aDomainOrHost,
+  void deleteDataFromSite(in AUTF8String aSchemelessSite,
+                                in jsval aOriginAttributesPattern,
                                 in boolean aIsUserRequest,
                                 in uint32_t aFlags,
                                 in nsIClearDataCallback aCallback);
+
+  /**
+   * Variant of deleteDataFromSite that accepts a JSON string for the OriginAttributesPattern.
+   * This is helpful for native callers because they don't have to construct a jsval.
+   * From JS prefer calling deleteDataFromSite directly.
+   */
+  void deleteDataFromSiteAndOriginAttributesPatternString(in AUTF8String aSchemelessSite,
+                              in AString aOriginAttributesPatternString,
+                              in boolean aIsUserRequest,
+                              in uint32_t aFlags,
+                              in nsIClearDataCallback aCallback);
 
   /**
    * Delete data owned by a principal.
@@ -158,6 +172,32 @@ interface nsIClearDataService : nsISupports
    */
   void cleanupAfterDeletionAtShutdown(in uint32_t aFlags, in nsIClearDataCallback aCallback);
 
+  /**
+   * Clear all private browsing data by firing "last-pb-context-exited"
+   * and awaiting async observer completions.
+   *
+   * This is intended to be called by ResetPBMPanel and similar components
+   * that need to ensure PBM cleanup is complete before proceeding.
+   *
+   * Only one cleanup can be in progress at a time. Returns NS_ERROR_ABORT
+   * if called while a previous cleanup is still running.
+   *
+   * @param aCallback callback executed when ALL cleanup completes
+   * @throws NS_ERROR_ABORT if a cleanup is already in progress
+   */
+  void clearPrivateBrowsingData(in nsIClearDataCallback aCallback);
+
+  /**
+   * Match a host and OriginAttributes against a schemeless site and
+   * OriginAttributesPattern.
+   * Also considers partitioned state by inspecting OriginAttributes
+   * partitionKey.
+   * This is a helper method for external callers that need to do
+   * filtering for data clearing.
+   */
+  boolean hostMatchesSite(in AUTF8String aHost, in jsval aOriginAttributes, in AUTF8String aSchemelessSite, [optional] in jsval aOriginAttributesPattern);
+
+
   /**************************************************************************
    * Listed below are the various flags which may be or'd together.
    */
@@ -171,6 +211,14 @@ interface nsIClearDataService : nsISupports
    * Network Cache.
    */
   const uint32_t CLEAR_NETWORK_CACHE = 1 << 1;
+
+  /**
+   * Clear bfcache.
+   * FIXME: We are out of bits in this bitflag. To mitigate this we will merge
+   *        CLEAR_ALL_CACHES into a single bit Bug 1918722. Reuse the
+   *        CLEAR_NETWORK_CACHE bit for now with similar effect.
+   */
+  const uint32_t CLEAR_BFCACHE = 1 << 1;
 
   /**
    * Image cache.
@@ -188,9 +236,14 @@ interface nsIClearDataService : nsISupports
   const uint32_t CLEAR_DOWNLOADS = 1 << 4;
 
   /**
-   * Stored passwords.
+   * TLS session resumption tokens cached by SSLTokensCache.
+   * These are server-issued connection credentials: a server can recognize a
+   * returning client by the same ticket, making them privacy-sensitive state
+   * analogous to auth tokens.  Unlike derived content (HTTP cache), they
+   * cannot be regenerated transparently, so they belong in
+   * CLEAR_COOKIES_AND_SITE_DATA rather than CLEAR_ALL_CACHES.
    */
-  const uint32_t CLEAR_PASSWORDS = 1 << 5;
+  const uint32_t CLEAR_TLS_TOKEN_CACHE = 1 << 5;
 
   /**
    * Media devices.
@@ -203,11 +256,6 @@ interface nsIClearDataService : nsISupports
   const uint32_t CLEAR_DOM_QUOTA = 1 << 7;
 
   /**
-   * Predictor network data
-   */
-  const uint32_t CLEAR_PREDICTOR_NETWORK_DATA = 1 << 8;
-
-  /**
    * DOM Push notifications
    */
   const uint32_t CLEAR_DOM_PUSH_NOTIFICATIONS = 1 << 9;
@@ -218,9 +266,9 @@ interface nsIClearDataService : nsISupports
   const uint32_t CLEAR_HISTORY = 1 << 10;
 
   /**
-   * Session history
+   * Messaging Layer Security state
    */
-  const uint32_t CLEAR_SESSION_HISTORY = 1 << 11;
+  const uint32_t CLEAR_MESSAGING_LAYER_SECURITY_STATE = 1 << 11;
 
   /**
    * Auth tokens
@@ -343,7 +391,7 @@ interface nsIClearDataService : nsISupports
    * Delete all the possible caches.
    */
   const uint32_t CLEAR_ALL_CACHES = CLEAR_NETWORK_CACHE | CLEAR_IMAGE_CACHE |
-    CLEAR_JS_CACHE | CLEAR_CSS_CACHE | CLEAR_PREFLIGHT_CACHE | CLEAR_HSTS;
+    CLEAR_JS_CACHE | CLEAR_CSS_CACHE | CLEAR_PREFLIGHT_CACHE | CLEAR_HSTS | CLEAR_BFCACHE;
 
   /**
    * Delete all DOM storages
@@ -354,14 +402,15 @@ interface nsIClearDataService : nsISupports
    * Helper flag for forget about site
    */
   const uint32_t CLEAR_FORGET_ABOUT_SITE =
-    CLEAR_HISTORY | CLEAR_SESSION_HISTORY | CLEAR_ALL_CACHES |
+    CLEAR_HISTORY | CLEAR_ALL_CACHES |
     CLEAR_COOKIES | CLEAR_EME | CLEAR_DOWNLOADS |
     CLEAR_PERMISSIONS | CLEAR_DOM_STORAGES | CLEAR_CONTENT_PREFERENCES |
-    CLEAR_PREDICTOR_NETWORK_DATA | CLEAR_DOM_PUSH_NOTIFICATIONS |
+    CLEAR_DOM_PUSH_NOTIFICATIONS |
     CLEAR_CLIENT_AUTH_REMEMBER_SERVICE | CLEAR_REPORTS | CLEAR_CERT_EXCEPTIONS |
     CLEAR_CREDENTIAL_MANAGER_STATE | CLEAR_COOKIE_BANNER_EXCEPTION |
     CLEAR_COOKIE_BANNER_EXECUTED_RECORD | CLEAR_FINGERPRINTING_PROTECTION_STATE |
-    CLEAR_BOUNCE_TRACKING_PROTECTION_STATE;
+    CLEAR_BOUNCE_TRACKING_PROTECTION_STATE | CLEAR_MESSAGING_LAYER_SECURITY_STATE |
+    CLEAR_TLS_TOKEN_CACHE;
 
   /**
    * Helper flag for clearing cookies and site data.
@@ -370,11 +419,20 @@ interface nsIClearDataService : nsISupports
    * offers site data clearing this is almost always what you want.
    * If you need more granular control please use more specific
    * flags like CLEAR_COOKIES and CLEAR_DOM_STORAGES.
+   * This flag does not clear caches.
    */
   const uint32_t CLEAR_COOKIES_AND_SITE_DATA =
     CLEAR_COOKIES | CLEAR_COOKIE_BANNER_EXECUTED_RECORD | CLEAR_DOM_STORAGES | CLEAR_HSTS |
     CLEAR_EME | CLEAR_AUTH_TOKENS | CLEAR_AUTH_CACHE | CLEAR_FINGERPRINTING_PROTECTION_STATE |
-    CLEAR_BOUNCE_TRACKING_PROTECTION_STATE | CLEAR_STORAGE_PERMISSIONS;
+    CLEAR_BOUNCE_TRACKING_PROTECTION_STATE | CLEAR_STORAGE_PERMISSIONS | CLEAR_MESSAGING_LAYER_SECURITY_STATE |
+    CLEAR_TLS_TOKEN_CACHE;
+
+  /**
+  * Helper flag for tracker purging
+  */
+  const uint32_t CLEAR_STATE_FOR_TRACKER_PURGING =
+    CLEAR_ALL_CACHES |  CLEAR_COOKIES_AND_SITE_DATA | CLEAR_CLIENT_AUTH_REMEMBER_SERVICE | CLEAR_MEDIA_DEVICES | CLEAR_STORAGE_ACCESS;
+
 };
 
 /**
@@ -390,4 +448,28 @@ interface nsIClearDataCallback : nsISupports
    *                     cleanup. If nothing failed, aFailedFlags will be 0.
    */
   void onDataDeleted(in uint32_t aFailedFlags);
+};
+
+/**
+ * Callback returned by nsIPBMCleanupCollector.addPendingCleanup().
+ * Async observers call complete() when their cleanup finishes.
+ * @param aStatus NS_OK on success, or an error code on failure.
+ */
+[scriptable, function, uuid(20c97fec-c9b5-471b-b37b-b89956bf0402)]
+interface nsIPBMCleanupCallback : nsISupports
+{
+  void complete(in nsresult aStatus);
+};
+
+/**
+ * Passed as aSubject in the "last-pb-context-exited" notification when
+ * cleanup is initiated by ClearDataService.clearPrivateBrowsingData().
+ * Async observers should QI the subject and call addPendingCleanup()
+ * to register their operation. When the subject is null (natural PBM
+ * window close), observers behave as before (fire-and-forget).
+ */
+[scriptable, uuid(1e1c9889-25cd-44fa-bd96-ece29fc3956d)]
+interface nsIPBMCleanupCollector : nsISupports
+{
+  nsIPBMCleanupCallback addPendingCleanup();
 };

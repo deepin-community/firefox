@@ -7,7 +7,7 @@
 import expect from 'expect';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
-import {attachFrame} from './utils.js';
+import {attachFrame, html} from './utils.js';
 
 describe('Evaluation specs', function () {
   setupTestBrowserHooks();
@@ -68,7 +68,7 @@ describe('Evaluation specs', function () {
         a => {
           return a;
         },
-        [1, 2, 3]
+        [1, 2, 3],
       );
       expect(result).toEqual([1, 2, 3]);
     });
@@ -79,9 +79,17 @@ describe('Evaluation specs', function () {
         a => {
           return Array.isArray(a);
         },
-        [1, 2, 3]
+        [1, 2, 3],
       );
       expect(result).toBe(true);
+    });
+    it('should transfer RegEx', async () => {
+      const {page} = await getTestState();
+
+      const result = await page.evaluate(a => {
+        return `Hello World!`.match(a)![1];
+      }, /Hello (.*)/);
+      expect(result).toBe(`World!`);
     });
     it('should modify global environment', async () => {
       const {page} = await getTestState();
@@ -103,7 +111,7 @@ describe('Evaluation specs', function () {
       expect(
         await page.evaluate(() => {
           return [Symbol('foo4'), 'foo'];
-        })
+        }),
       ).toEqual([undefined, 'foo']);
     });
     it('should work with function shorthands', async () => {
@@ -121,6 +129,17 @@ describe('Evaluation specs', function () {
       expect(await page.evaluate(a.sum, 1, 2)).toBe(3);
       expect(await page.evaluate(a.mult, 2, 4)).toBe(8);
     });
+    it('should work with function shorthands and nested arrow functions', async () => {
+      const {page} = await getTestState();
+      const a = {
+        sum(a: number, b: number) {
+          const _arrow = () => {};
+          _arrow();
+          return a + b;
+        },
+      };
+      expect(await page.evaluate(a.sum, 1, 2)).toBe(3);
+    });
     it('should work with unicode chars', async () => {
       const {page} = await getTestState();
 
@@ -130,7 +149,7 @@ describe('Evaluation specs', function () {
         },
         {
           中文字符: 42,
-        }
+        },
       );
       expect(result).toBe(42);
     });
@@ -146,7 +165,10 @@ describe('Evaluation specs', function () {
         .catch(error_ => {
           return (error = error_);
         });
-      expect(error.message).toContain('Protocol error');
+      expect(error.message).atLeastOneToContain([
+        'Execution context was destroyed', // Chrome
+        'no such frame', // Firefox
+      ]);
     });
     it('should await promise', async () => {
       const {page} = await getTestState();
@@ -180,9 +202,9 @@ describe('Evaluation specs', function () {
               return a * b;
             },
             a,
-            b
+            b,
           );
-        }
+        },
       );
       const result = await page.evaluate(async function () {
         return (globalThis as any).callController(9, 3);
@@ -229,6 +251,19 @@ describe('Evaluation specs', function () {
           return (error = error_);
         });
       expect(error).toEqual(100500);
+    });
+    it('should support thrown platform objects as error messages', async () => {
+      const {page} = await getTestState();
+
+      let error!: Error;
+      await page
+        .evaluate(() => {
+          throw new DOMException('some DOMException message');
+        })
+        .catch(error_ => {
+          return (error = error_);
+        });
+      expect(error.message).toContain('some DOMException message');
     });
     it('should return complex objects', async () => {
       const {page} = await getTestState();
@@ -280,6 +315,14 @@ describe('Evaluation specs', function () {
       });
       expect(Object.is(result, -Infinity)).toBe(true);
     });
+    it('should return RegEx', async () => {
+      const {page} = await getTestState();
+
+      const result = await page.evaluate(() => {
+        return /(.*)/;
+      });
+      expect(result instanceof RegExp).toBe(true);
+    });
     it('should accept "null" as one of multiple parameters', async () => {
       const {page} = await getTestState();
 
@@ -288,7 +331,7 @@ describe('Evaluation specs', function () {
           return Object.is(a, null) && Object.is(b, 'foo');
         },
         null,
-        'foo'
+        'foo',
       );
       expect(result).toBe(true);
     });
@@ -298,7 +341,7 @@ describe('Evaluation specs', function () {
       expect(
         await page.evaluate(() => {
           return {a: undefined};
-        })
+        }),
       ).toEqual({});
     });
     it('should return undefined for non-serializable objects', async () => {
@@ -307,7 +350,7 @@ describe('Evaluation specs', function () {
       expect(
         await page.evaluate(() => {
           return window;
-        })
+        }),
       ).toBe(undefined);
     });
     it('should return promise as empty object', async () => {
@@ -369,7 +412,7 @@ describe('Evaluation specs', function () {
     it('should accept element handle as an argument', async () => {
       const {page} = await getTestState();
 
-      await page.setContent('<section>42</section>');
+      await page.setContent(html`<section>42</section>`);
       using element = (await page.$('section'))!;
       const text = await page.evaluate(e => {
         return e.textContent;
@@ -379,7 +422,7 @@ describe('Evaluation specs', function () {
     it('should throw if underlying element was disposed', async () => {
       const {page} = await getTestState();
 
-      await page.setContent('<section>39</section>');
+      await page.setContent(html`<section>39</section>`);
       using element = (await page.$('section'))!;
       expect(element).toBeTruthy();
       // We want to dispose early.
@@ -463,7 +506,9 @@ describe('Evaluation specs', function () {
     it('should return properly serialize objects with unknown type fields', async () => {
       const {page} = await getTestState();
       await page.setContent(
-        "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='>"
+        html`<img
+          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+        />`,
       );
 
       const result = await page.evaluate(async () => {
@@ -494,7 +539,7 @@ describe('Evaluation specs', function () {
       expect(
         await page.evaluate(() => {
           return (globalThis as any).result;
-        })
+        }),
       ).toBe(123);
     });
     it('should work with CSP', async () => {
@@ -508,7 +553,7 @@ describe('Evaluation specs', function () {
       expect(
         await page.evaluate(() => {
           return (globalThis as any).injected;
-        })
+        }),
       ).toBe(123);
 
       // Make sure CSP works.
@@ -518,7 +563,7 @@ describe('Evaluation specs', function () {
       expect(
         await page.evaluate(() => {
           return (window as any).e;
-        })
+        }),
       ).toBe(undefined);
     });
   });
@@ -534,7 +579,7 @@ describe('Evaluation specs', function () {
       expect(
         await page.evaluate(() => {
           return (globalThis as any).result;
-        })
+        }),
       ).toBe(123);
 
       await page.removeScriptToEvaluateOnNewDocument(identifier);
@@ -542,7 +587,7 @@ describe('Evaluation specs', function () {
       expect(
         await page.evaluate(() => {
           return (globalThis as any).result || null;
-        })
+        }),
       ).toBe(null);
     });
   });
@@ -563,12 +608,12 @@ describe('Evaluation specs', function () {
       expect(
         await page.frames()[0]!.evaluate(() => {
           return (globalThis as any).FOO;
-        })
+        }),
       ).toBe('foo');
       expect(
         await page.frames()[1]!.evaluate(() => {
           return (globalThis as any).FOO;
-        })
+        }),
       ).toBe('bar');
     });
     it('should have correct execution contexts', async () => {
@@ -579,12 +624,12 @@ describe('Evaluation specs', function () {
       expect(
         await page.frames()[0]!.evaluate(() => {
           return document.body.textContent!.trim();
-        })
+        }),
       ).toBe('');
       expect(
         await page.frames()[1]!.evaluate(() => {
           return document.body.textContent!.trim();
-        })
+        }),
       ).toBe(`Hi, I'm frame`);
     });
     it('should execute after cross-site navigation', async () => {
@@ -595,13 +640,13 @@ describe('Evaluation specs', function () {
       expect(
         await mainFrame.evaluate(() => {
           return window.location.href;
-        })
+        }),
       ).toContain('localhost');
       await page.goto(server.CROSS_PROCESS_PREFIX + '/empty.html');
       expect(
         await mainFrame.evaluate(() => {
           return window.location.href;
-        })
+        }),
       ).toContain('127');
     });
   });

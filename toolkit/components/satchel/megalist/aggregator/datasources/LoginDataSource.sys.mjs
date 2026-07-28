@@ -7,11 +7,15 @@ import { LoginHelper } from "resource://gre/modules/LoginHelper.sys.mjs";
 import { DataSourceBase } from "resource://gre/modules/megalist/aggregator/datasources/DataSourceBase.sys.mjs";
 import { LoginCSVImport } from "resource://gre/modules/LoginCSVImport.sys.mjs";
 import { LoginExport } from "resource://gre/modules/LoginExport.sys.mjs";
+import { setTimeout, clearTimeout } from "resource://gre/modules/Timer.sys.mjs";
+
+const AUTH_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   LoginBreaches: "resource:///modules/LoginBreaches.sys.mjs",
   MigrationUtils: "resource:///modules/MigrationUtils.sys.mjs",
+  UIState: "resource://services-sync/UIState.sys.mjs",
 });
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -21,18 +25,48 @@ XPCOMUtils.defineLazyPreferenceGetter(
   false
 );
 
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "PASSWORD_SYNC_ENABLED",
+  "services.sync.engine.passwords",
+  false
+);
+
 // Precedence values when sorting logins by alerts.
 const ALERT_VALUES = {
   breached: 0,
   vulnerable: 1,
-  none: 2,
+  noUsername: 2,
+  none: 3,
 };
 
-const SUPPORT_URL =
+export const DISPLAY_MODES = {
+  ALERTS: "DisplayAlerts",
+  ALL: "DisplayAll",
+};
+
+const VIEW_MODES = {
+  LIST: "List",
+  ADD: "Add",
+  EDIT: "Edit",
+};
+
+export const SUPPORT_URL =
   Services.urlFormatter.formatURLPref("app.support.baseURL") +
   "password-manager-remember-delete-edit-logins";
 
-const PREFRENCES_URL = "about:preferences#privacy-logins";
+export const PREFERENCES_URL = "about:preferences#privacy-logins";
+
+const ORIGIN_BREACHED_URL =
+  "https://support.mozilla.org/en-US/kb/firefox-password-manager-alerts-breached-websites";
+
+const VULNERABLE_PASSWORD_URL =
+  "https://support.mozilla.org/en-US/kb/create-secure-passwords-keep-your-identity-safe";
+
+const IMPORT_FILE_SUPPORT_URL =
+  "https://support.mozilla.org/kb/import-login-data-file";
+
+const IMPORT_FILE_REPORT_URL = "about:loginsimportreport";
 
 /**
  * Data source for Logins.
@@ -47,74 +81,92 @@ export class LoginDataSource extends DataSourceBase {
   #originPrototype;
   #usernamePrototype;
   #passwordPrototype;
-  #enabled;
   #header;
+  #initialized;
   #exportPasswordsStrings;
-  #sortId;
+  #displayMode;
 
   constructor(...args) {
     super(...args);
     // Wait for Fluent to provide strings before loading data
     this.localizeStrings({
-      headerLabel: "passwords-section-label",
-      expandSection: "passwords-expand-section-tooltip",
-      collapseSection: "passwords-collapse-section-tooltip",
-      originLabel: "passwords-origin-label",
-      usernameLabel: "passwords-username-label",
-      passwordLabel: "passwords-password-label",
-      passwordsDisabled: "passwords-disabled",
-      passwordOSAuthDialogCaption: "passwords-os-auth-dialog-caption",
-      passwordsImportFilePickerTitle: "passwords-import-file-picker-title",
-      passwordsImportFilePickerImportButton:
-        "passwords-import-file-picker-import-button",
-      passwordsImportFilePickerCsvFilterTitle:
-        "passwords-import-file-picker-csv-filter-title",
-      passwordsImportFilePickerTsvFilterTitle:
-        "passwords-import-file-picker-tsv-filter-title",
-      exportPasswordsOSReauthMessage: this.getPlatformFtl(
-        "passwords-export-os-auth-dialog-message"
-      ),
-      passwordsExportFilePickerTitle: "passwords-export-file-picker-title",
-      passwordsExportFilePickerDefaultFileName:
-        "passwords-export-file-picker-default-filename",
-      passwordsExportFilePickerExportButton:
-        "passwords-export-file-picker-export-button",
-      passwordsExportFilePickerCsvFilterTitle:
-        "passwords-export-file-picker-csv-filter-title",
-      dismissBreachCommandLabel: "passwords-dismiss-breach-alert-command",
+      originLabel: { id: "contextual-manager-passwords-origin-label" },
+      usernameLabel: { id: "contextual-manager-passwords-username-label" },
+      passwordLabel: { id: "contextual-manager-passwords-password-label" },
+      revealPasswordOSAuthDialogPrompt: {
+        id: this.getPlatformFtl(
+          "contextual-manager-passwords-reveal-password-os-auth-dialog-message"
+        ),
+      },
+      copyPasswordOSAuthDialogPrompt: {
+        id: this.getPlatformFtl(
+          "contextual-manager-passwords-copy-password-os-auth-dialog-message"
+        ),
+      },
+      editPasswordOSAuthDialogPrompt: {
+        id: this.getPlatformFtl(
+          "contextual-manager-passwords-edit-password-os-auth-dialog-message"
+        ),
+      },
+      passwordOSAuthDialogCaption: {
+        id: "contextual-manager-passwords-os-auth-dialog-caption",
+      },
+      passwordsImportFilePickerTitle: {
+        id: "contextual-manager-passwords-import-file-picker-title",
+      },
+      passwordsImportFilePickerImportButton: {
+        id: "contextual-manager-passwords-import-file-picker-import-button",
+      },
+      passwordsImportFilePickerCsvFilterTitle: {
+        id: "contextual-manager-passwords-import-file-picker-csv-filter-title",
+      },
+      passwordsImportFilePickerTsvFilterTitle: {
+        id: "contextual-manager-passwords-import-file-picker-tsv-filter-title",
+      },
+      exportPasswordsOSReauthMessage: {
+        id: this.getPlatformFtl(
+          "contextual-manager-passwords-export-os-auth-dialog-message"
+        ),
+      },
+      passwordsExportFilePickerTitle: {
+        id: "contextual-manager-passwords-export-file-picker-title",
+      },
+      passwordsExportFilePickerDefaultFileName: {
+        id: "contextual-manager-passwords-export-file-picker-default-filename",
+      },
+      passwordsExportFilePickerExportButton: {
+        id: "contextual-manager-passwords-export-file-picker-export-button",
+      },
+      passwordsExportFilePickerCsvFilterTitle: {
+        id: "contextual-manager-passwords-export-file-picker-csv-filter-title",
+      },
     }).then(strings => {
-      const copyCommand = { id: "Copy", label: "command-copy" };
-      const editCommand = { id: "Edit", label: "command-edit" };
-      const deleteCommand = { id: "Delete", label: "command-delete" };
+      const copyCommand = { id: "Copy" };
+      const editCommand = { id: "Edit" };
+      const deleteCommand = { id: "Delete" };
       const dismissBreachCommand = {
         id: "DismissBreach",
-        label: strings.dismissBreachCommandLabel,
       };
-      const noOriginSticker = { type: "error", label: "😾 Missing origin" };
-      const noPasswordSticker = { type: "error", label: "😾 Missing password" };
-      const breachedSticker = { type: "warning", label: "BREACH" };
-      const vulnerableSticker = { type: "risk", label: "🤮 Vulnerable" };
-      const tooltip = {
-        expand: strings.expandSection,
-        collapse: strings.collapseSection,
-      };
-      this.#header = this.createHeaderLine(strings.headerLabel, tooltip);
+      this.#header = this.createHeaderLine();
       this.#header.commands.push(
-        { id: "Create", label: "passwords-command-create" },
+        { id: "AddLogin" },
+        { id: "UpdateLogin" },
+        { id: "DeleteLogin" },
+        { id: "DiscardChanges" },
+        { id: "ConfirmDiscardChanges" },
         {
           id: "ImportFromBrowser",
-          label: "passwords-command-import-from-browser",
         },
-        { id: "Import", label: "passwords-command-import" },
-        { id: "Export", label: "passwords-command-export" },
-        { id: "RemoveAll", label: "passwords-command-remove-all" },
-        { id: "Settings", label: "passwords-command-settings" },
-        { id: "Help", label: "passwords-command-help" },
-        { id: "SortByName", label: "passwords-command-sort-name" },
+        { id: "Import" },
+        { id: "Export" },
+        { id: "RemoveAll" },
         {
-          id: "SortByAlerts",
-          label: "passwords-command-sort-alerts",
-        }
+          id: "Settings",
+          url: PREFERENCES_URL,
+        },
+        { id: "Help", url: SUPPORT_URL },
+        { id: "UpdateDisplayMode" },
+        { id: "OpenLink" }
       );
       this.#header.executeImport = async () =>
         this.#importFromFile(
@@ -124,11 +176,17 @@ export class LoginDataSource extends DataSourceBase {
           strings.passwordsImportFilePickerTsvFilterTitle
         );
 
+      this.#header.executeOpenLink = url => this.#openLink(url);
       this.#header.executeImportFromBrowser = () => this.#importFromBrowser();
       this.#header.executeRemoveAll = () => this.#removeAllPasswords();
-      this.#header.executeSettings = () => this.#openMenuLink(PREFRENCES_URL);
-      this.#header.executeHelp = () => this.#openMenuLink(SUPPORT_URL);
-      this.#header.executeExport = async () => this.#exportAllPasswords();
+      this.#header.executeExport = async () => this.#exportLogins();
+      this.#header.executeAddLogin = newLogin => this.#addLogin(newLogin);
+      this.#header.executeUpdateLogin = login => this.#updateLogin(login);
+      this.#header.executeDeleteLogin = login => this.#deleteLogin(login);
+      this.#header.executeDiscardChanges = options => this.#cancelEdit(options);
+      this.#header.executeConfirmDiscardChanges = () =>
+        this.discardChangesConfirmed();
+
       this.#exportPasswordsStrings = {
         OSReauthMessage: strings.exportPasswordsOSReauthMessage,
         OSAuthDialogCaption: strings.passwordOSAuthDialogCaption,
@@ -140,19 +198,15 @@ export class LoginDataSource extends DataSourceBase {
           strings.passwordsExportFilePickerCsvFilterTitle,
       };
 
-      this.#header.executeSortByName = () => {
-        if (this.#sortId !== "name") {
-          this.#sortId = "name";
+      this.#header.executeUpdateDisplayMode = displayMode => {
+        if (this.#displayMode !== displayMode) {
+          this.#displayMode = displayMode;
           this.#reloadDataSource();
+          this.setDisplayMode(this.#displayMode);
         }
       };
 
-      this.#header.executeSortByAlerts = async () => {
-        if (this.#sortId !== "alerts") {
-          this.#sortId = "alerts";
-          this.#reloadDataSource();
-        }
-      };
+      const openOriginInNewTab = origin => this.#openLink(origin);
 
       this.#originPrototype = this.prototypeDataLine({
         field: { value: "origin" },
@@ -173,9 +227,15 @@ export class LoginDataSource extends DataSourceBase {
             return this.record.origin;
           },
         },
+        breachedNotification: {
+          value: {
+            id: "breached-origin-warning",
+            url: ORIGIN_BREACHED_URL,
+          },
+        },
         commands: {
           value: [
-            { id: "Open", label: "command-open" },
+            { id: "Open" },
             copyCommand,
             editCommand,
             deleteCommand,
@@ -199,15 +259,9 @@ export class LoginDataSource extends DataSourceBase {
             this.setLayout({ id: "remove-login" });
           },
         },
-        stickers: {
-          *value() {
-            if (this.isEditing() && !this.editingValue.length) {
-              yield noOriginSticker;
-            }
-
-            if (this.breached) {
-              yield breachedSticker;
-            }
+        executeOpenLink: {
+          value() {
+            openOriginInNewTab(this.record.origin);
           },
         },
       });
@@ -219,24 +273,16 @@ export class LoginDataSource extends DataSourceBase {
             return this.editingValue ?? this.record.username;
           },
         },
+        noUsernameNotification: {
+          value: {
+            id: "no-username-warning",
+          },
+        },
         commands: { value: [copyCommand, editCommand, "-", deleteCommand] },
         executeEdit: {
           value() {
             this.editingValue = this.record.username ?? "";
             this.refreshOnScreen();
-          },
-        },
-        executeSave: {
-          value(value) {
-            try {
-              const modifiedLogin = this.record.clone();
-              modifiedLogin.username = value;
-              Services.logins.modifyLogin(this.record, modifiedLogin);
-            } catch (error) {
-              //todo
-              console.error("failed to modify login", error);
-            }
-            this.executeCancel();
           },
         },
       });
@@ -253,33 +299,45 @@ export class LoginDataSource extends DataSourceBase {
             );
           },
         },
-        stickers: {
-          *value() {
-            if (this.isEditing() && !this.editingValue.length) {
-              yield noPasswordSticker;
-            }
-
-            if (this.vulnerable) {
-              yield vulnerableSticker;
-            }
+        vulnerableNotification: {
+          value: {
+            id: "vulnerable-password-warning",
+            url: VULNERABLE_PASSWORD_URL,
           },
         },
         commands: {
           value: [
-            { ...copyCommand, verify: true },
+            {
+              ...copyCommand,
+              verify: true,
+              OSAuthPromptMessage: strings.copyPasswordOSAuthDialogPrompt,
+              OSAuthCaptionMessage: strings.passwordOSAuthDialogCaption,
+            },
             {
               id: "Reveal",
-              label: "command-reveal",
               verify: true,
+              OSAuthPromptMessage: strings.revealPasswordOSAuthDialogPrompt,
+              OSAuthCaptionMessage: strings.passwordOSAuthDialogCaption,
             },
-            { id: "Conceal", label: "command-conceal" },
-            editCommand,
+            { id: "Conceal" },
+            {
+              ...editCommand,
+              verify: true,
+              OSAuthPromptMessage: strings.editPasswordOSAuthDialogPrompt,
+              OSAuthCaptionMessage: strings.passwordOSAuthDialogCaption,
+            },
             deleteCommand,
+            { id: "Cancel" },
           ],
         },
         executeReveal: {
           value() {
             this.concealed = false;
+            clearTimeout(this.concealPasswordTimeout);
+            this.concealPasswordTimeout = setTimeout(
+              () => this.executeConceal(),
+              AUTH_TIMEOUT_MS
+            );
             this.refreshOnScreen();
           },
         },
@@ -300,38 +358,55 @@ export class LoginDataSource extends DataSourceBase {
             this.refreshOnScreen();
           },
         },
-        executeSave: {
-          value(value) {
-            if (!value) {
-              return;
-            }
-
-            try {
-              const modifiedLogin = this.record.clone();
-              modifiedLogin.password = value;
-              Services.logins.modifyLogin(this.record, modifiedLogin);
-            } catch (error) {
-              //todo
-              console.error("failed to modify login", error);
-            }
-            this.executeCancel();
-          },
-        },
       });
 
       // Sort by origin, then by username, then by GUID
-      this.#sortId = "name";
-      Services.obs.addObserver(this, "passwordmgr-storage-changed");
-      Services.prefs.addObserver("signon.rememberSignons", this);
-      Services.prefs.addObserver(
-        "signon.management.page.breach-alerts.enabled",
-        this
-      );
-      Services.prefs.addObserver(
-        "signon.management.page.vulnerable-passwords.enabled",
-        this
-      );
+      this.#displayMode = DISPLAY_MODES.ALL;
+      this.#addObservers();
       this.#reloadDataSource();
+      this.#initialized = true;
+    });
+  }
+
+  willDestroy() {
+    this.#removeObservers();
+  }
+
+  #addObservers() {
+    Services.obs.addObserver(this, "passwordmgr-storage-changed");
+    Services.obs.addObserver(this, "passwordmgr-crypto-login");
+    Services.obs.addObserver(this, "passwordmgr-crypto-loginCanceled");
+
+    Services.prefs.addObserver("signon.rememberSignons", this);
+    Services.prefs.addObserver(
+      "signon.management.page.breach-alerts.enabled",
+      this
+    );
+    Services.prefs.addObserver(
+      "signon.management.page.vulnerable-passwords.enabled",
+      this
+    );
+  }
+
+  #removeObservers() {
+    Services.obs.removeObserver(this, "passwordmgr-storage-changed");
+    Services.obs.removeObserver(this, "passwordmgr-crypto-login");
+    Services.obs.removeObserver(this, "passwordmgr-crypto-loginCanceled");
+
+    Services.prefs.removeObserver("signon.rememberSignons", this);
+    Services.prefs.removeObserver(
+      "signon.management.page.breach-alerts.enabled",
+      this
+    );
+    Services.prefs.removeObserver(
+      "signon.management.page.vulnerable-passwords.enabled",
+      this
+    );
+  }
+
+  #recordLoginsUpdate(changeType) {
+    Glean.contextualManager.recordsUpdate.record({
+      change_type: changeType,
     });
   }
 
@@ -339,7 +414,9 @@ export class LoginDataSource extends DataSourceBase {
     const { BrowserWindowTracker } = ChromeUtils.importESModule(
       "resource:///modules/BrowserWindowTracker.sys.mjs"
     );
-    const browsingContext = BrowserWindowTracker.getTopWindow().browsingContext;
+    const browsingContext = BrowserWindowTracker.getTopWindow({
+      allowFromInactiveWorkspace: true,
+    }).browsingContext;
     let { result, path } = await this.openFilePickerDialog(
       title,
       buttonLabel,
@@ -362,16 +439,31 @@ export class LoginDataSource extends DataSourceBase {
         const counts = { added: 0, modified: 0, no_change: 0, error: 0 };
 
         for (const item of summary) {
-          counts[item.result] += 1;
+          const type = item.result;
+          if (type.includes("error")) {
+            counts.error++;
+          } else {
+            counts[type]++;
+          }
         }
-        const l10nArgs = Object.values(counts).map(count => ({ count }));
 
-        this.setLayout({
-          id: "import-logins",
-          l10nArgs,
+        this.setNotification({
+          id: "import-success",
+          l10nArgs: counts,
+          url: IMPORT_FILE_REPORT_URL,
         });
+
+        this.#recordLoginsUpdate("import");
       } catch (e) {
-        this.setLayout({ id: "import-error" });
+        if (e.result !== Cr.NS_ERROR_ABORT) {
+          this.setNotification({
+            id: "import-error",
+            url: IMPORT_FILE_SUPPORT_URL,
+            commands: {
+              onRetry: "Import",
+            },
+          });
+        }
       }
     }
   }
@@ -391,7 +483,7 @@ export class LoginDataSource extends DataSourceBase {
       fp.appendFilters(Ci.nsIFilePicker.filterAll);
       fp.okButtonLabel = okButtonLabel;
       fp.open(async result => {
-        resolve({ result, path: fp.file.path });
+        resolve({ result, path: fp.file ? fp.file.path : "" });
       });
     });
   }
@@ -400,9 +492,11 @@ export class LoginDataSource extends DataSourceBase {
     const { BrowserWindowTracker } = ChromeUtils.importESModule(
       "resource:///modules/BrowserWindowTracker.sys.mjs"
     );
-    const browser = BrowserWindowTracker.getTopWindow().gBrowser;
+    const browser = BrowserWindowTracker.getTopWindow({
+      allowFromInactiveWorkspace: true,
+    }).gBrowser;
     try {
-      lazy.MigrationUtils.showMigrationWizard(browser.ownerGlobal, {
+      lazy.MigrationUtils.showMigrationWizard(browser.documentGlobal, {
         entrypoint: lazy.MigrationUtils.MIGRATION_ENTRYPOINTS.PASSWORDS,
       });
     } catch (ex) {
@@ -410,26 +504,47 @@ export class LoginDataSource extends DataSourceBase {
     }
   }
 
-  #removeAllPasswords() {
-    let count = 0;
-    let currentRecord;
-    for (const line of this.lines) {
-      if (line.record != currentRecord) {
-        count += 1;
-        currentRecord = line.record;
+  #isPasswordSyncEnabled() {
+    const state = lazy.UIState.get();
+    return state.syncEnabled && lazy.PASSWORD_SYNC_ENABLED;
+  }
+
+  async #removeAllPasswords() {
+    const { total } = this.#header.value;
+    const messageId = this.#isPasswordSyncEnabled()
+      ? "contextual-manager-passwords-remove-all-message-sync"
+      : "contextual-manager-passwords-remove-all-message";
+
+    const { confirmed, checked } = await this.#showWindowPrompt(
+      { id: "contextual-manager-passwords-remove-all-title", args: { total } },
+      { id: messageId, args: { total } },
+      {
+        id: "contextual-manager-passwords-remove-all-confirm-button",
+        args: { total },
+      },
+      {
+        id: "contextual-manager-passwords-remove-all-passwords-checkbox",
+        args: { total },
       }
+    );
+
+    if (!confirmed || !checked) {
+      return;
     }
 
-    this.setLayout({ id: "remove-logins", l10nArgs: [{ count }] });
+    if (confirmed) {
+      await Services.logins.removeAllLoginsAsync();
+      this.setNotification({
+        id: "delete-login-success",
+        l10nArgs: { total },
+        viewMode: VIEW_MODES.LIST,
+      });
+      this.#recordLoginsUpdate("remove_all");
+    }
   }
 
-  confirmRemoveAll() {
-    Services.logins.removeAllLogins();
-    this.cancelDialog();
-  }
-
-  confirmRemoveLogin([record]) {
-    Services.logins.removeLogin(record);
+  async confirmRemoveLogin([record]) {
+    await Services.logins.removeLoginAsync(record);
     this.cancelDialog();
   }
 
@@ -438,51 +553,55 @@ export class LoginDataSource extends DataSourceBase {
     this.cancelDialog();
   }
 
-  #exportAllPasswords() {
-    this.setLayout({ id: "export-logins" });
-  }
-
-  async confirmExportLogins() {
+  async #exportLogins() {
     const { BrowserWindowTracker } = ChromeUtils.importESModule(
       "resource:///modules/BrowserWindowTracker.sys.mjs"
     );
-    const browsingContext = BrowserWindowTracker.getTopWindow().browsingContext;
+    const browsingContext = BrowserWindowTracker.getTopWindow({
+      allowFromInactiveWorkspace: true,
+    }).browsingContext;
 
-    const isOSAuthEnabled = LoginHelper.getOSAuthEnabled(
-      LoginHelper.OS_AUTH_FOR_PASSWORDS_PREF
-    );
-
+    const reason = "export_cpm";
     let { isAuthorized, telemetryEvent } = await LoginHelper.requestReauth(
       browsingContext,
-      isOSAuthEnabled,
       null, // Prompt regardless of a recent prompt
       this.#exportPasswordsStrings.OSReauthMessage,
-      this.#exportPasswordsStrings.OSAuthDialogCaption
+      this.#exportPasswordsStrings.OSAuthDialogCaption,
+      reason
     );
 
-    let { method, object, extra = {}, value = null } = telemetryEvent;
-    Services.telemetry.recordEvent("pwmgr", method, object, value, extra);
+    let { name, extra = {}, value = null } = telemetryEvent;
+    if (value) {
+      extra.value = value;
+    }
+    Glean.pwmgr[name].record(extra);
 
     if (!isAuthorized) {
-      this.cancelDialog();
       return;
     }
-    this.exportFilePickerDialog(browsingContext);
-    this.cancelDialog();
+
+    const { confirmed } = await this.#showWindowPrompt(
+      { id: "contextual-manager-export-passwords-dialog-title" },
+      { id: "contextual-manager-export-passwords-dialog-message" },
+      { id: "contextual-manager-export-passwords-dialog-confirm-button" }
+    );
+
+    if (confirmed) {
+      this.exportFilePickerDialog(browsingContext);
+    }
   }
 
   exportFilePickerDialog(browsingContext) {
     let fp = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
-    function fpCallback(aResult) {
+    const fpCallback = aResult => {
       if (aResult != Ci.nsIFilePicker.returnCancel) {
         LoginExport.exportAsCSV(fp.file.path);
-        Services.telemetry.recordEvent(
-          "pwmgr",
-          "mgmt_menu_item_used",
-          "export_complete"
-        );
+        Glean.pwmgr.mgmtMenuItemUsedExportComplete.record();
+        this.setNotification({
+          id: "export-passwords-success",
+        });
       }
-    }
+    };
     fp.init(
       browsingContext,
       this.#exportPasswordsStrings.ExportFilePickerTitle,
@@ -499,14 +618,168 @@ export class LoginDataSource extends DataSourceBase {
     fp.open(fpCallback);
   }
 
-  #openMenuLink(url) {
+  #openLink(url) {
     const { BrowserWindowTracker } = ChromeUtils.importESModule(
       "resource:///modules/BrowserWindowTracker.sys.mjs"
     );
-    const browser = BrowserWindowTracker.getTopWindow().gBrowser;
-    browser.ownerGlobal.switchToTabHavingURI(url, true, {
+    const browser = BrowserWindowTracker.getTopWindow({
+      allowFromInactiveWorkspace: true,
+    }).gBrowser;
+    browser.documentGlobal.switchToTabHavingURI(url, true, {
       ignoreFragment: "whenComparingAndReplace",
     });
+  }
+
+  async #showWindowPrompt(
+    titleL10n,
+    messageL10n,
+    confirmButtonL10n,
+    checkboxL10n = null
+  ) {
+    const { BrowserWindowTracker } = ChromeUtils.importESModule(
+      "resource:///modules/BrowserWindowTracker.sys.mjs"
+    );
+    const win = BrowserWindowTracker.getTopWindow({
+      allowFromInactiveWorkspace: true,
+    });
+
+    const { title, message, confirmButton } = await this.localizeStrings({
+      title: titleL10n,
+      message: messageL10n,
+      confirmButton: confirmButtonL10n,
+    });
+
+    let checkbox = null;
+    if (checkboxL10n) {
+      const { checkboxArg } = await this.localizeStrings({
+        checkboxArg: checkboxL10n,
+      });
+      checkbox = checkboxArg;
+    }
+
+    // For more context on what these flags mean:
+    // https://firefox-source-docs.mozilla.org/toolkit/components/prompts/prompts/nsIPromptService-reference.html#Prompter.confirmEx
+    const flags =
+      Services.prompt.BUTTON_TITLE_IS_STRING * Services.prompt.BUTTON_POS_0 +
+      Services.prompt.BUTTON_TITLE_CANCEL * Services.prompt.BUTTON_POS_1;
+
+    const result = await Services.prompt.asyncConfirmEx(
+      win.browsingContext,
+      Services.prompt.MODAL_TYPE_INTERNAL_WINDOW,
+      title,
+      message,
+      flags,
+      confirmButton,
+      null,
+      null,
+      checkbox,
+      false,
+      {}
+    );
+
+    const propBag = result.QueryInterface(Ci.nsIPropertyBag2);
+    const options = {
+      // buttonNumClicked will be:
+      //  - 0 for confirm
+      //  - 1 for cancelling/declining.
+      confirmed: propBag.get("buttonNumClicked") == 0,
+      checked: propBag.get("checked"),
+    };
+
+    return options;
+  }
+
+  async #addLogin(newLogin) {
+    const origin = LoginHelper.getLoginOrigin(newLogin.origin);
+    newLogin.origin = origin;
+    Object.assign(newLogin, {
+      formActionOrigin: "",
+      usernameField: "",
+      passwordField: "",
+    });
+    newLogin = LoginHelper.vanillaObjectToLogin(newLogin);
+    try {
+      newLogin = await Services.logins.addLoginAsync(newLogin);
+      this.setNotification({
+        id: "add-login-success",
+        l10nArgs: { url: origin },
+        guid: newLogin.guid,
+        viewMode: VIEW_MODES.LIST,
+      });
+      this.#recordLoginsUpdate("add");
+    } catch (error) {
+      this.#handleLoginStorageErrors(origin, error);
+    }
+  }
+
+  async #updateLogin(login) {
+    const logins = await Services.logins.searchLoginsAsync({
+      origin: login.origin,
+      guid: login.guid,
+    });
+    if (logins.length != 1) {
+      return;
+    }
+
+    let notificationId = "update-login-success";
+    const modifiedLogin = logins[0].clone();
+
+    if (login.hasOwnProperty("username")) {
+      const passwordModified = modifiedLogin.password !== login.password;
+      const usernameModified = modifiedLogin.username !== login.username;
+
+      if (!passwordModified && usernameModified) {
+        notificationId = "update-username-success";
+      }
+      modifiedLogin.username = login.username;
+    }
+
+    if (login.hasOwnProperty("password")) {
+      modifiedLogin.password = login.password;
+    }
+
+    try {
+      await Services.logins.modifyLoginAsync(logins[0], modifiedLogin);
+      this.setNotification({
+        id: notificationId,
+        viewMode: VIEW_MODES.LIST,
+      });
+      this.#recordLoginsUpdate("edit");
+    } catch (error) {
+      this.#handleLoginStorageErrors(modifiedLogin.origin, error);
+    }
+  }
+
+  #cancelEdit() {
+    this.setNotification({ id: "discard-changes" });
+  }
+
+  #handleLoginStorageErrors(origin, error) {
+    if (error.message.includes("This login already exists")) {
+      const existingLoginGuid = error.data.toString();
+      this.setNotification({
+        id: "login-already-exists-warning",
+        l10nArgs: { url: origin },
+        guid: existingLoginGuid,
+      });
+    }
+  }
+
+  async #deleteLogin(login) {
+    const logins = await Services.logins.searchLoginsAsync({
+      origin: login.origin,
+      guid: login.guid,
+    });
+    if (logins.length != 1) {
+      return;
+    }
+    await Services.logins.removeLoginAsync(logins[0]);
+    this.setNotification({
+      id: "delete-login-success",
+      l10nArgs: { total: 1 },
+      viewMode: VIEW_MODES.LIST,
+    });
+    this.#recordLoginsUpdate("remove");
   }
 
   /**
@@ -515,16 +788,13 @@ export class LoginDataSource extends DataSourceBase {
    * @param {string} searchText used to filter data
    */
   *enumerateLines(searchText) {
-    if (this.#enabled === undefined) {
+    if (!this.#initialized) {
       // Async Fluent API makes it possible to have data source waiting
       // for the localized strings, which can be detected by undefined in #enabled.
       return;
     }
 
     yield this.#header;
-    if (this.#header.collapsed || !this.#enabled) {
-      return;
-    }
 
     const stats = { count: 0, total: 0 };
     searchText = searchText.toUpperCase();
@@ -532,12 +802,12 @@ export class LoginDataSource extends DataSourceBase {
       searchText,
       stats,
       login =>
-        login.displayOrigin.toUpperCase().includes(searchText) ||
+        login.origin.toUpperCase().includes(searchText) ||
         login.username.toUpperCase().includes(searchText) ||
         login.password.toUpperCase().includes(searchText)
     );
 
-    this.#header.value.statsTotal = stats.total;
+    this.#header.value.count = stats.count;
   }
 
   /**
@@ -547,28 +817,38 @@ export class LoginDataSource extends DataSourceBase {
    */
   async #reloadDataSource() {
     this.doneReloadDataSource = false;
-    this.#enabled = Services.prefs.getBoolPref("signon.rememberSignons");
-    if (!this.#enabled) {
-      this.#reloadEmptyDataSource();
-      this.doneReloadDataSource = true;
-      return;
-    }
 
     const logins = await LoginHelper.getAllUserFacingLogins();
-    this.beforeReloadingDataSource();
-
     const breachesMap = lazy.BREACH_ALERTS_ENABLED
       ? await lazy.LoginBreaches.getPotentialBreachesByLoginGUID(logins)
       : new Map();
+    const vulnerableMap =
+      await lazy.LoginBreaches.getPotentiallyVulnerablePasswordsByLoginGUID(
+        logins
+      );
 
-    const breachedOrVulnerableLogins = logins.filter(
+    this.#syncReloadDataSource(logins, breachesMap, vulnerableMap);
+
+    this.doneReloadDataSource = true;
+  }
+
+  /**
+   * Implementation between `beforeReloadingDataSource` and `afterReloadingDataSource`
+   * should be synchronous because the two functions operates on member variable
+   * #linesToForget and they don't expect it to be changed in the middle of reloading.
+   */
+  #syncReloadDataSource(logins, breachesMap, vulnerableMap) {
+    this.beforeReloadingDataSource();
+
+    const loginsWithAlerts = logins.filter(
       login =>
         breachesMap.has(login.guid) ||
-        lazy.LoginBreaches.isVulnerablePassword(login)
+        vulnerableMap.has(login.guid) ||
+        !login.username.length
     );
 
     const filteredLogins =
-      this.#sortId === "alerts" ? breachedOrVulnerableLogins : logins;
+      this.#displayMode === DISPLAY_MODES.ALERTS ? loginsWithAlerts : logins;
 
     filteredLogins.forEach(login => {
       // Similar domains will be grouped together
@@ -581,20 +861,23 @@ export class LoginDataSource extends DataSourceBase {
         parts.length -= 1;
       }
       const isLoginBreached = breachesMap.has(login.guid);
-      const isLoginVulnerable = lazy.LoginBreaches.isVulnerablePassword(login);
+      const isLoginVulnerable = vulnerableMap.has(login.guid);
+      const loginNoUsername = !login.username.length;
 
       let alertValue;
       if (isLoginBreached) {
         alertValue = ALERT_VALUES.breached;
       } else if (isLoginVulnerable) {
         alertValue = ALERT_VALUES.vulnerable;
+      } else if (loginNoUsername) {
+        alertValue = ALERT_VALUES.noUsername;
       } else {
         alertValue = ALERT_VALUES.none;
       }
 
       const domain = parts.reverse().join(".");
       const lineId =
-        this.#sortId === "alerts"
+        this.#displayMode === DISPLAY_MODES.ALERTS
           ? `${alertValue}:${domain}:${login.username}:${login.guid}`
           : `${domain}:${login.username}:${login.guid}`;
 
@@ -615,27 +898,29 @@ export class LoginDataSource extends DataSourceBase {
     });
 
     this.#header.value.total = logins.length;
-    this.#header.value.alerts = breachedOrVulnerableLogins.length;
+    this.#header.value.alerts = loginsWithAlerts.length;
     this.afterReloadingDataSource();
-    this.doneReloadDataSource = true;
   }
 
-  #reloadEmptyDataSource() {
-    this.lines.length = 0;
-    //todo: user can enable passwords by activating Passwords header line
-    this.#header.value.total = 0;
-    this.#header.value.alerts = 0;
-    this.refreshAllLinesOnScreen();
+  getAuthTimeoutMs() {
+    return AUTH_TIMEOUT_MS;
   }
 
   observe(_subj, topic, message) {
     if (
       topic == "passwordmgr-storage-changed" ||
+      topic == "passwordmgr-crypto-login" ||
       message == "signon.rememberSignons" ||
       message == "signon.management.page.breach-alerts.enabled" ||
       message == "signon.management.page.vulnerable-passwords.enabled"
     ) {
       this.#reloadDataSource();
+
+      if (topic === "passwordmgr-crypto-login") {
+        this.setPrimaryPasswordAuthenticated(true);
+      }
+    } else if (topic == "passwordmgr-crypto-loginCanceled") {
+      this.setPrimaryPasswordAuthenticated(false);
     }
   }
 }

@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2018 Valerie Young. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -18,17 +17,17 @@ info: |
     c. If one of srcType and elementType contains the substring "Big" and the other
        does not, throw a TypeError exception.
 
-includes: [testBigIntTypedArray.js, testTypedArray.js]
+includes: [testTypedArray.js, testTypedArray.js]
 features: [BigInt, TypedArray]
 ---*/
 
 var notBigTypedArray;
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
 
-  notBigTypedArray = new TA(16);
+  notBigTypedArray = new TA(makeCtorArg(16));
 
-  testWithBigIntTypedArrayConstructors(function(BTA) {
+  testWithBigIntTypedArrayConstructors(function(BTA, makeCtorArg) {
     assert.throws(TypeError, function() {
       new BTA(notBigTypedArray);
     });

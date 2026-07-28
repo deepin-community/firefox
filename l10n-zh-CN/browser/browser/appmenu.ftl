@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = 无法更新 — 系统不兼容
 appmenuitem-banner-update-restart =
     .label = 有可用更新 — 立即重启
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = 更新 { -brand-short-name }（保留所有标签页）
+appmenu-nova-update-link = 重启以更新
+appmenu-nova-fxa-sign-in = 登录
+appmenu-nova-switch-device-promo =
+    .message = 即将换用新设备？别忘了带上 { -brand-short-name }！
+appmenu-nova-switch-device-link = 如何迁移您的数据
 appmenuitem-new-tab =
     .label = 新建标签页
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = 新建隐私窗口
 appmenuitem-history =
     .label = 历史
+appmenuitem-tab-groups =
+    .label = 标签页群组
 appmenuitem-downloads =
     .label = 下载
 appmenuitem-passwords =
     .label = 密码
+appmenuitem-extensions-and-themes =
+    .label = 扩展和主题
+appmenuitem-extensions =
+    .label = 扩展
 appmenuitem-addons-and-themes =
     .label = 扩展和主题
 appmenuitem-print =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = 同步并保存数据
 appmenu-fxa-signed-in-label = 登录
 appmenu-fxa-setup-sync =
     .label = 开启同步...
+appmenu-fxa-setup-sync-new = 开启
 appmenuitem-save-page =
     .label = 另存页面为…
+appmenuitem-fxa-sync-off-title = 同步已关闭
+appmenuitem-fxa-sync-off-description = 保护书签、密码等数据，并可在所有设备上使用。
 
 ## What's New panel in App menu.
 
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = 打开性能分析器面板
+    .tooltiptext = 打开性能分析器面板
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +209,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = 排查 { -brand-shorter-name } 音视频 Bug 时使用。
 profiler-popup-presets-media-label =
     .label = 媒体
+profiler-popup-presets-ml-description = 排查 { -brand-shorter-name } 机器学习 Bug 时使用。
+profiler-popup-presets-ml-label =
+    .label = 机器学习
 profiler-popup-presets-networking-description = 排查 { -brand-shorter-name } 网络 Bug 时使用。
 profiler-popup-presets-networking-label =
     .label = 网络
@@ -199,6 +222,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = 在 { -brand-shorter-name } 中调试时使用。开销较高，请勿用于性能用途，仅应用于了解浏览器行为。
 profiler-popup-presets-debug-label =
     .label = 调试
+profiler-popup-presets-web-compat-description = 适合用于在网站中调试 Web 兼容性问题（非性能跟踪用途）。
+profiler-popup-presets-web-compat-label =
+    .label = Web Compat
 profiler-popup-presets-custom-label =
     .label = 自定义
 
@@ -264,6 +290,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = 定制工具栏…
+appmenu-abouttranslations =
+    .label = 翻译…
+appmenu-edit-pdf =
+    .label = 编辑 PDF…
 appmenu-developer-tools-subheader = 浏览器工具
 appmenu-developer-tools-extensions =
     .label = 面向开发者的扩展
@@ -277,5 +307,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = 接收数据外泄警报
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = 掩藏真实邮箱地址和电话号码
+appmenuitem-services-relay-description = 打开马甲邮箱面板
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = 获取全方位设备保护
 appmenuitem-vpn-description = 保护在线活动
+appmenu-services-header = 我的服务
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = 尝试 Mozilla 的其他保护工具：
+appmenu-other-protection-header = 试用 { -vendor-short-name } 提供的其他保护工具：
+
+## Profiles panel
+
+appmenu-other-profiles = 其他配置文件
+appmenu-manage-profiles =
+    .label = 管理配置文件
+appmenu-copy-profile =
+    .label = 复制此配置文件
+appmenu-create-profile =
+    .label = 新建配置文件
+appmenu-edit-profile =
+    .aria-label = 编辑配置文件
+appmenu-profiles-2 =
+    .label = 配置文件

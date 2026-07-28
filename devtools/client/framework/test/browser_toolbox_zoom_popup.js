@@ -12,11 +12,8 @@ const { Toolbox } = require("resource://devtools/client/framework/toolbox.js");
 const TEST_URL = "data:text/html;charset=utf-8,<iframe/>";
 
 add_task(async function () {
-  registerCleanupFunction(async function () {
-    Services.prefs.clearUserPref("devtools.toolbox.zoomValue");
-  });
   const zoom = 1.4;
-  Services.prefs.setCharPref("devtools.toolbox.zoomValue", zoom.toString(10));
+  await pushPref("devtools.toolbox.zoomValue", zoom.toString(10));
 
   info("Load iframe page for checking the frame menu with x1.4 zoom.");
   await addTab(TEST_URL);
@@ -122,7 +119,7 @@ function convertScreenToDoc(popup, doc) {
   const screenX = doc.defaultView.mozInnerScreenX;
   const screenY = doc.defaultView.mozInnerScreenY;
   const scale =
-    popup.ownerGlobal.devicePixelRatio / doc.ownerGlobal.devicePixelRatio;
+    popup.documentGlobal.devicePixelRatio / doc.documentGlobal.devicePixelRatio;
   return new DOMRect(
     rect.x * scale - screenX,
     rect.y * scale - screenY,
@@ -136,11 +133,11 @@ function convertScreenToDoc(popup, doc) {
  * measured by clicking the menu button and looking for its panel (and then
  * hiding it again).
  *
- * @param {Object} doc
+ * @param {object} doc
  *        The toolbox document to query.
- * @param {Object} menuButton
+ * @param {object} menuButton
  *        The button whose size and popup size we should measure.
- * @return {Object}
+ * @return {object}
  *         An object with the following properties:
  *         - buttonBounds {DOMRect} Bounds of the button.
  *         - menuType {string} Type of the menu, "native" or "doorhanger".

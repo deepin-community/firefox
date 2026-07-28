@@ -9,6 +9,7 @@
 #include "mozilla/layers/ScrollableLayerGuid.h"
 
 class nsIFrame;
+class nsIContent;
 class nsPresContext;
 
 namespace mozilla {
@@ -37,7 +38,7 @@ class ViewportUtils {
        documentation for additional details. */
   template <typename Units = CSSPixel>
   static gfx::Matrix4x4TypedFlagged<Units, Units> GetVisualToLayoutTransform(
-      layers::ScrollableLayerGuid::ViewID aScrollId);
+      nsIContent* aContent);
 
   /* The functions below apply GetVisualToLayoutTransform() or its inverse
    * to various quantities.
@@ -74,10 +75,9 @@ class ViewportUtils {
    * presContexts, transforming the point along, until it gets to the
    * RelativeTo{aCtx->GetRootPresContext()->PresShell()->GetRootFrame(),
    * ViewportType::Visual} space. Then it further transforms it into a
-   * screen-relative space. Unlike the GetTransformToAncestor family of helper
-   * methods, this transformation does NOT include CSS transforms. Also, unlike
-   * other ViewportUtils methods, the input is relative to `aCtx` which might be
-   * a sub-shell of the presShell with the resolution.
+   * screen-relative space. Unlike other ViewportUtils methods, the input is
+   * relative to `aCtx` which might be a sub-shell of the presShell with the
+   * resolution.
    */
   static LayoutDevicePoint ToScreenRelativeVisual(const LayoutDevicePoint& aPt,
                                                   nsPresContext* aCtx);
@@ -118,11 +118,9 @@ class ViewportUtils {
 // definitions of these instantiations. This allows us to keep the definition
 // out-of-line in the source.
 extern template CSSToCSSMatrix4x4Flagged
-    ViewportUtils::GetVisualToLayoutTransform<CSSPixel>(
-        layers::ScrollableLayerGuid::ViewID);
+ViewportUtils::GetVisualToLayoutTransform<CSSPixel>(nsIContent*);
 extern template LayoutDeviceToLayoutDeviceMatrix4x4Flagged
-    ViewportUtils::GetVisualToLayoutTransform<LayoutDevicePixel>(
-        layers::ScrollableLayerGuid::ViewID);
+ViewportUtils::GetVisualToLayoutTransform<LayoutDevicePixel>(nsIContent*);
 
 }  // namespace mozilla
 

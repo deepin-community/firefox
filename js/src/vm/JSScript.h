@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -51,8 +49,10 @@ class SourceText;
 
 namespace js {
 
+class Compressor;
 class FrontendContext;
 class ScriptSource;
+class SourceLocationIterator;
 
 class VarScope;
 class LexicalScope;
@@ -77,7 +77,7 @@ class JitScript;
 
 class ModuleObject;
 class RegExpObject;
-class SourceCompressionTask;
+class SourceCompressionTaskEntry;
 class Shape;
 class SrcNote;
 class DebugScript;
@@ -86,6 +86,7 @@ namespace frontend {
 struct CompilationStencil;
 struct ExtensibleCompilationStencil;
 struct CompilationGCOutput;
+struct InitialStencilAndDelazifications;
 struct CompilationStencilMerger;
 class StencilXDR;
 }  // namespace frontend
@@ -191,29 +192,6 @@ using ScriptFinalWarmUpCountMap =
                        DefaultHasher<HeapPtr<BaseScript*>>, SystemAllocPolicy>;
 #endif
 
-// As we execute JS sources that used lazy parsing, we may generate additional
-// bytecode that we would like to include in caches if they are being used.
-// There is a dependency cycle between JSScript / ScriptSource /
-// CompilationStencil for this scenario so introduce this smart-ptr wrapper to
-// avoid needing the full details of the stencil-merger in this file.
-class StencilIncrementalEncoderPtr {
- public:
-  frontend::CompilationStencilMerger* merger_ = nullptr;
-
-  StencilIncrementalEncoderPtr() = default;
-  ~StencilIncrementalEncoderPtr() { reset(); }
-
-  bool hasEncoder() const { return bool(merger_); }
-
-  void reset();
-
-  bool setInitial(JSContext* cx,
-                  UniquePtr<frontend::ExtensibleCompilationStencil>&& initial);
-
-  bool addDelazification(JSContext* cx,
-                         const frontend::CompilationStencil& delazification);
-};
-
 struct ScriptSourceChunk {
   ScriptSource* ss = nullptr;
   uint32_t chunk = 0;
@@ -254,8 +232,8 @@ using SourceData = mozilla::UniquePtr<void, JS::FreePolicy>;
 
 template <typename Unit>
 inline SourceData ToSourceData(EntryUnits<Unit> chars) {
-  static_assert(std::is_same_v<SourceData::DeleterType,
-                               typename EntryUnits<Unit>::DeleterType>,
+  static_assert(std::is_same_v<SourceData::deleter_type,
+                               typename EntryUnits<Unit>::deleter_type>,
                 "EntryUnits and SourceData must share the same deleter "
                 "type, that need not know the type of the data being freed, "
                 "for the upcast below to be safe");
@@ -396,6 +374,11 @@ struct SourceTypeTraits<char16_t> {
 [[nodiscard]] extern bool SynchronouslyCompressSource(
     JSContext* cx, JS::Handle<BaseScript*> script);
 
+// Variant return type for ScriptSource::substringChars to support both UTF-8
+// and UTF-16.
+using SubstringCharsResult =
+    mozilla::Variant<JS::UniqueChars, JS::UniqueTwoByteChars>;
+
 // [SMDOC] ScriptSource
 //
 // This class abstracts over the source we used to compile from. The current
@@ -409,7 +392,8 @@ class ScriptSource {
   // modified by the main thread, and all members are always safe to access
   // on the main thread.
 
-  friend class SourceCompressionTask;
+  friend class PendingSourceCompressionEntry;
+  friend class SourceCompressionTaskEntry;
   friend bool SynchronouslyCompressSource(JSContext* cx,
                                           JS::Handle<BaseScript*> script);
 
@@ -440,7 +424,10 @@ class ScriptSource {
     const Unit* units_;
 
    public:
-    PinnedUnits(JSContext* cx, ScriptSource* source,
+    // If maybeCx is nullptr, compressed sources will still be decompressed but
+    // the result will not be cached. This allows off-main-thread use without
+    // a JSContext.
+    PinnedUnits(JSContext* maybeCx, ScriptSource* source,
                 UncompressedSourceCache::AutoHoldEntry& holder, size_t begin,
                 size_t len);
 
@@ -467,6 +454,13 @@ class ScriptSource {
     const typename SourceTypeTraits<Unit>::CharT* asChars() const {
       return SourceTypeTraits<Unit>::toString(get());
     }
+  };
+
+  class GenericReader : public PinnedUnitsBase {
+   public:
+    explicit GenericReader(ScriptSource* source);
+
+    ~GenericReader();
   };
 
  private:
@@ -597,11 +591,6 @@ class ScriptSource {
   SharedImmutableTwoByteString displayURL_;
   SharedImmutableTwoByteString sourceMapURL_;
 
-  // The bytecode cache encoder is used to encode only the content of function
-  // which are delazified.  If this value is not nullptr, then each delazified
-  // function should be recorded before their first execution.
-  StencilIncrementalEncoderPtr xdrEncoder_;
-
   // A string indicating how this source code was introduced into the system.
   // This is a constant, statically allocated C string, so does not need memory
   // management.
@@ -642,8 +631,13 @@ class ScriptSource {
   // How many ids have been handed out to sources.
   static mozilla::Atomic<uint32_t, mozilla::SequentiallyConsistent> idCount_;
 
+  // Decompress and return the specified chunk of source code.
+  // If maybeCx is nullptr, decompression still works but the uncompressed
+  // result will not be cached. This allows off-main-thread callers to
+  // decompress source without a JSContext, at the cost of potentially
+  // decompressing the same chunk multiple times.
   template <typename Unit>
-  const Unit* chunkUnits(JSContext* cx,
+  const Unit* chunkUnits(JSContext* maybeCx,
                          UncompressedSourceCache::AutoHoldEntry& holder,
                          size_t chunk);
 
@@ -652,9 +646,13 @@ class ScriptSource {
   //
   // Warning: this is *not* GC-safe! Any chars to be handed out must use
   // PinnedUnits. See comment below.
+  //
+  // If maybeCx is nullptr, compressed sources will still be decompressed but
+  // the result will not be cached. See chunkUnits comment above.
   template <typename Unit>
-  const Unit* units(JSContext* cx, UncompressedSourceCache::AutoHoldEntry& asp,
-                    size_t begin, size_t len);
+  const Unit* units(JSContext* maybeCx,
+                    UncompressedSourceCache::AutoHoldEntry& asp, size_t begin,
+                    size_t len);
 
   template <typename Unit>
   const Unit* uncompressedUnits(size_t begin, size_t len);
@@ -690,7 +688,9 @@ class ScriptSource {
                                                   UniqueTwoByteChars&& str);
 
  private:
+  class LoadSourceMatcherBase;
   class LoadSourceMatcher;
+  class SourcePropertiesGetter;
 
  public:
   // Attempt to load usable source for |ss| -- source text on which substring
@@ -698,6 +698,16 @@ class ScriptSource {
   // |*loaded| to indicate whether usable source could be loaded; otherwise
   // return false.
   static bool loadSource(JSContext* cx, ScriptSource* ss, bool* loaded);
+
+  // This is similar to loadSource, but it is designed to be used outside of the
+  // main thread. This is done by removing the need of JSContext for the
+  // Retrievable sources that require sourceHook. For retrievable cases, it
+  // sets retrievable to true and sets the isUT16 depending on the encoding.
+  //
+  // *loaded indicates whether source text is available, *retrievable indicates
+  // whether the source can be retrieved later via source hook.
+  static void getSourceProperties(ScriptSource* ss, bool* hasSourceText,
+                                  bool* retrievable);
 
   // Assign source data from |srcBuf| to this recently-created |ScriptSource|.
   template <typename Unit>
@@ -908,6 +918,18 @@ class ScriptSource {
   JSLinearString* substring(JSContext* cx, size_t start, size_t stop);
   JSLinearString* substringDontDeflate(JSContext* cx, size_t start,
                                        size_t stop);
+  // Get substring characters without creating a JSString. Returns a variant
+  // containing either UniqueChars (UTF-8) or UniqueTwoByteChars (UTF-16).
+  //
+  // IMPORTANT: The returned buffer is NOT null-terminated. Callers must track
+  // the length separately (stop - start). This is designed for consumers that
+  // store length explicitly (e.g., ProfilerJSSourceData).
+  //
+  // Callers must handle empty sources before calling this (the function asserts
+  // non-empty length). Returns nullptr only on allocation failures. Designed
+  // for off-main-thread use where JSContext is not available for error
+  // reporting.
+  SubstringCharsResult substringChars(size_t start, size_t stop);
 
   [[nodiscard]] bool appendSubstring(JSContext* cx, js::StringBuilder& buf,
                                      size_t start, size_t stop);
@@ -916,8 +938,26 @@ class ScriptSource {
     parameterListEnd_ = parameterListEnd;
   }
 
-  bool isFunctionBody() { return parameterListEnd_ != 0; }
+  bool isFunctionBody() const { return parameterListEnd_ != 0; }
   JSLinearString* functionBodyString(JSContext* cx);
+
+  // Returns the function body substring. Unlike substringChars, this can return
+  // an empty result (nullptr with *outLength == 0) for empty function bodies.
+  // The caller doesn't need to check the length before calling.
+  SubstringCharsResult functionBodyStringChars(size_t* outLength);
+
+  // Returns true if this source should display only the function body.
+  // In case of DOM event handler like <div onclick="foo()" the JS code is
+  // wrapped into
+  //   function onclick() {foo()}
+  // We want to only return `foo()` here.
+  // But only for event handlers, for `new Function("foo()")`, we want to
+  // return:
+  //   function anonymous() {foo()}
+  bool shouldUnwrapEventHandlerBody() const {
+    return hasIntroductionType() &&
+           strcmp(introductionType(), "eventHandler") == 0 && isFunctionBody();
+  }
 
   void addSizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf,
                               JS::ScriptSourceInfo* info) const;
@@ -974,7 +1014,7 @@ class ScriptSource {
       size_t sourceLength);
 
  private:
-  void performTaskWork(SourceCompressionTask* task);
+  void performTaskWork(SourceCompressionTaskEntry* task, Compressor& comp);
 
   struct TriggerConvertToCompressedSourceFromTask {
     ScriptSource* const source_;
@@ -1079,27 +1119,6 @@ class ScriptSource {
     MOZ_ASSERT(offset <= (uint32_t)INT32_MAX);
     introductionOffset_.emplace(offset);
   }
-
-  // Return wether an XDR encoder is present or not.
-  bool hasEncoder() const { return xdrEncoder_.hasEncoder(); }
-
-  [[nodiscard]] bool startIncrementalEncoding(
-      JSContext* cx,
-      UniquePtr<frontend::ExtensibleCompilationStencil>&& initial,
-      bool& alreadyStarted);
-
-  [[nodiscard]] bool addDelazificationToIncrementalEncoding(
-      JSContext* cx, const frontend::CompilationStencil& stencil);
-
-  // Linearize the encoded content in the |buffer| provided as argument to
-  // |xdrEncodeTopLevel|, and free the XDR encoder.  In case of errors, the
-  // |buffer| is considered undefined.
-  bool xdrFinalizeEncoder(JSContext* cx, JS::TranscodeBuffer& buffer);
-
-  bool xdrFinalizeEncoder(JSContext* cx, JS::Stencil** stencilOut);
-
-  // Discard the incremental encoding data and free the XDR encoder.
-  void xdrAbortEncoder();
 };
 
 // [SMDOC] ScriptSourceObject
@@ -1115,6 +1134,8 @@ class ScriptSourceObject : public NativeObject {
 
   static ScriptSourceObject* create(JSContext* cx, ScriptSource* source);
 
+  static ScriptSourceObject* createForWasmModule(JSContext* cx);
+
   // Initialize those properties of this ScriptSourceObject whose values
   // are provided by |options|, re-wrapping as necessary.
   static bool initFromOptions(JSContext* cx,
@@ -1127,6 +1148,7 @@ class ScriptSourceObject : public NativeObject {
 
   bool hasSource() const { return !getReservedSlot(SOURCE_SLOT).isUndefined(); }
   ScriptSource* source() const {
+    MOZ_RELEASE_ASSERT(hasSource());
     return static_cast<ScriptSource*>(getReservedSlot(SOURCE_SLOT).toPrivate());
   }
 
@@ -1172,12 +1194,75 @@ class ScriptSourceObject : public NativeObject {
 #endif
 
   enum {
-    SOURCE_SLOT = 0,
+    PRIVATE_SLOT = 0,  // Must be first slot for JSCLASS_SLOT0_IS_NSISUPPORTS.
+    SOURCE_SLOT,
     ELEMENT_PROPERTY_SLOT,
     INTRODUCTION_SCRIPT_SLOT,
-    PRIVATE_SLOT,
+    STENCILS_SLOT,
     RESERVED_SLOTS
   };
+
+  // Delazification stencils can be aggregated in
+  // InitialStencilAndDelazification, this structure might be used for
+  // different purposes.
+  //  - Collecting: The goal is to aggregate all delazified functions in order
+  //    to aggregate them for serialization.
+  //  - Sharing: The goal is to use the InitialStencilAndDelazification as a way
+  //    to share multiple threads efforts towards parsing a Script Source
+  //    content.
+  //
+  // See setCollectingDelazifications and setSharingDelazifications for details.
+  static constexpr uintptr_t STENCILS_COLLECTING_DELAZIFICATIONS_FLAG = 0x1;
+  static constexpr uintptr_t STENCILS_SHARING_DELAZIFICATIONS_FLAG = 0x2;
+  static constexpr uintptr_t STENCILS_MASK = 0x3;
+
+  void clearStencils();
+
+  template <uintptr_t flag>
+  void setStencilsFlag();
+
+  template <uintptr_t flag>
+  void unsetStencilsFlag();
+
+  template <uintptr_t flag>
+  bool isStencilsFlagSet() const;
+
+ public:
+  // Associate stencils to this ScriptSourceObject.
+  // The consumer should call setCollectingDelazifications or
+  // setSharingDelazifications after this.
+  void setStencils(
+      already_AddRefed<frontend::InitialStencilAndDelazifications> stencils);
+
+  // Start collecting delazifications.
+  // This is a temporary state until unsetCollectingDelazifications is called,
+  // and this expects a pair of set/unset call.
+  //
+  // The caller should check isCollectingDelazifications before calling this.
+  void setCollectingDelazifications();
+
+  // Clear the flag for collecting delazifications.
+  //
+  // If setSharingDelazifications wasn't called, this clears the association
+  // with the stencils.
+  void unsetCollectingDelazifications();
+
+  // Returns true if setCollectingDelazifications was called and
+  // unsetCollectingDelazifications is not yet called.
+  bool isCollectingDelazifications() const;
+
+  // Start sharing delazifications with others.
+  // This is a permanent state.
+  //
+  // The flag is orthogonal to setCollectingDelazifications.
+  void setSharingDelazifications();
+
+  // Returns true if setSharingDelazifications was called.
+  bool isSharingDelazifications() const;
+
+  // Return the associated stencils if any.
+  // Returns nullptr if stencils is not associated
+  frontend::InitialStencilAndDelazifications* maybeGetStencils();
 };
 
 // ScriptWarmUpData represents a pointer-sized field in BaseScript that stores
@@ -1303,13 +1388,8 @@ static_assert(sizeof(ScriptWarmUpData) == sizeof(uintptr_t),
 //
 // Accessing this array just requires calling the appropriate public
 // Span-computing function.
-//
-// This class doesn't use the GC barrier wrapper classes. BaseScript::swapData
-// performs a manual pre-write barrier when detaching PrivateScriptData from a
-// script.
 class alignas(uintptr_t) PrivateScriptData final
     : public TrailingArray<PrivateScriptData> {
- private:
   uint32_t ngcthings = 0;
 
   // Note: This is only defined for scripts with an enclosing scope. This
@@ -1319,7 +1399,6 @@ class alignas(uintptr_t) PrivateScriptData final
 
   // End of fields.
 
- private:
   // Layout helpers
   Offset gcThingsOffset() { return offsetOfGCThings(); }
   Offset endOffset() const {
@@ -1327,10 +1406,10 @@ class alignas(uintptr_t) PrivateScriptData final
     return offsetOfGCThings() + size;
   }
 
+ public:
   // Initialize header and PackedSpans
   explicit PrivateScriptData(uint32_t ngcthings);
 
- public:
   static constexpr size_t offsetOfGCThings() {
     return sizeof(PrivateScriptData);
   }
@@ -1367,6 +1446,37 @@ class alignas(uintptr_t) PrivateScriptData final
   // PrivateScriptData has trailing data so isn't copyable or movable.
   PrivateScriptData(const PrivateScriptData&) = delete;
   PrivateScriptData& operator=(const PrivateScriptData&) = delete;
+};
+
+// An entry in the runtime's pendingCompressions_ list for a single
+// ScriptSource.
+//
+// It is not desirable to eagerly compress: if lazy functions that are tied to
+// the ScriptSource were to be executed relatively soon after parsing, they
+// would need to block on decompression, which hurts responsiveness.
+//
+// To this end, script sources are enqueued in a pending list by
+// ScriptSource::tryCompressOffThread. When a major GC occurs, we allocate and
+// submit SourceCompressionTasks for them. Currently, a script source is
+// considered ready 2 major GCs after being enqueued.
+class PendingSourceCompressionEntry {
+  // The major GC number of the runtime when the entry was enqueued.
+  uint64_t majorGCNumber_;
+
+  // The source to be compressed.
+  RefPtr<ScriptSource> source_;
+
+ public:
+  PendingSourceCompressionEntry(JSRuntime* rt, ScriptSource* source);
+
+  ScriptSource* source() const { return source_.get(); }
+  uint64_t majorGCNumber() const { return majorGCNumber_; }
+  bool shouldCancel() const {
+    // If the refcount is exactly 1, then nothing else is holding on to the
+    // ScriptSource, so no reason to compress it and we should cancel the
+    // compression.
+    return source_->refs == 1;
+  }
 };
 
 // [SMDOC] Script Representation (js::BaseScript)
@@ -1596,8 +1706,10 @@ class BaseScript : public gc::TenuredCellWithNonGCPointer<uint8_t> {
 
   bool hasPrivateScriptData() const { return data_ != nullptr; }
 
-  // Update data_ pointer while also informing GC MemoryUse tracking.
-  void swapData(UniquePtr<PrivateScriptData>& other);
+  // Update data_ pointer and trigger barriers.
+  void swapData(MutableHandleBuffer<PrivateScriptData> other);
+
+  void freeData();
 
   mozilla::Span<const JS::GCCellPtr> gcthings() const {
     return data_ ? data_->gcthings() : mozilla::Span<JS::GCCellPtr>();
@@ -1643,9 +1755,7 @@ class BaseScript : public gc::TenuredCellWithNonGCPointer<uint8_t> {
   void traceChildren(JSTracer* trc);
   void finalize(JS::GCContext* gcx);
 
-  size_t sizeOfExcludingThis(mozilla::MallocSizeOf mallocSizeOf) {
-    return mallocSizeOf(data_);
-  }
+  size_t sizeOfExcludingThis();
 
   inline JSScript* asJSScript();
 
@@ -1899,6 +2009,7 @@ class JSScript : public js::BaseScript {
   inline bool canIonCompile() const;
   inline void disableIon();
 
+  inline bool isBaselineCompilingOffThread() const;
   inline bool canBaselineCompile() const;
   inline void disableBaselineCompile();
 
@@ -2032,6 +2143,8 @@ class JSScript : public js::BaseScript {
     MOZ_ASSERT(sharedData_);
     return immutableScriptData()->notes() + numNotes();
   }
+
+  js::SourceLocationIterator sourceLocationIter() const;
 
   JSString* getString(js::GCThingIndex index) const {
     return &gcthings()[index].as<JSString>();
@@ -2245,7 +2358,8 @@ extern JS::UniqueChars FormatIntroducedFilename(const char* filename,
 
 extern jsbytecode* LineNumberToPC(JSScript* script, unsigned lineno);
 
-extern JS_PUBLIC_API unsigned GetScriptLineExtent(JSScript* script);
+extern JS_PUBLIC_API unsigned GetScriptLineExtent(
+    JSScript* script, JS::LimitedColumnNumberOneOrigin* columnp = nullptr);
 
 #ifdef JS_CACHEIR_SPEW
 void maybeUpdateWarmUpCount(JSScript* script);
@@ -2264,6 +2378,27 @@ extern unsigned PCToLineNumber(
     unsigned startLine, JS::LimitedColumnNumberOneOrigin startCol,
     SrcNote* notes, SrcNote* notesEnd, jsbytecode* code, jsbytecode* pc,
     JS::LimitedColumnNumberOneOrigin* columnp = nullptr);
+
+// Iterator over SrcNote array that tracks bytecode offset and line/column.
+class SourceLocationIterator {
+  SrcNoteIterator iter_;
+  ptrdiff_t offset_;
+  unsigned line_;
+  JS::LimitedColumnNumberOneOrigin column_;
+  unsigned startLine_;
+  jsbytecode* code_;
+
+ public:
+  SourceLocationIterator(unsigned startLine,
+                         JS::LimitedColumnNumberOneOrigin startCol,
+                         SrcNote* notes, SrcNote* notesEnd, jsbytecode* code);
+
+  // Advance the iterator to the given PC, updating line and column.
+  void advanceToPC(const jsbytecode* pc);
+
+  unsigned line() const { return line_; }
+  JS::LimitedColumnNumberOneOrigin column() const { return column_; }
+};
 
 /*
  * This function returns the file and line number of the script currently

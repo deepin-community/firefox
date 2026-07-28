@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +8,7 @@
 #include "nsString.h"
 #include "nsCOMPtr.h"
 #include "nsIFile.h"
-#include "FileUtils.h"
+#include "mozilla/FileUtils.h"
 
 class nsZipArchive;
 class nsZipItem;
@@ -47,23 +45,23 @@ class FileLocation {
    * Constructors for path within an archive. The archive can be given either
    * as nsIFile or nsZipArchive.
    */
-  FileLocation(nsIFile* aZip, const char* aPath);
+  FileLocation(nsIFile* aZip, const nsACString& aPath);
 
-  FileLocation(nsZipArchive* aZip, const char* aPath);
+  FileLocation(nsZipArchive* aZip, const nsACString& aPath);
 
   /**
    * Creates a new file location relative to another one.
    */
-  FileLocation(const FileLocation& aFile, const char* aPath);
+  FileLocation(const FileLocation& aFile, const nsACString& aPath);
 
   /**
    * Initialization functions corresponding to constructors
    */
   void Init(nsIFile* aFile);
 
-  void Init(nsIFile* aZip, const char* aPath);
+  void Init(nsIFile* aZip, const nsACString& aPath);
 
-  void Init(nsZipArchive* aZip, const char* aPath);
+  void Init(nsZipArchive* aZip, const nsACString& aPath);
 
   /**
    * Returns an URI string corresponding to the file location

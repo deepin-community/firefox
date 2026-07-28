@@ -1,5 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -29,9 +27,9 @@ add_task(function test_toplevel_parent_is_null() {
 
     // not required by API, but a property on which the implementation of
     // parent == null relies for correctness
-    Assert.ok(lf.path.length == 2);
+    Assert.equal(lf.path.length, 2);
 
-    Assert.ok(lf.parent === null);
+    Assert.strictEqual(lf.parent, null);
   } catch (e) {
     // not Windows
     Assert.equal(e.result, Cr.NS_ERROR_FILE_UNRECOGNIZED_PATH);
@@ -67,13 +65,13 @@ add_task(async function test_file_modification_time() {
   // Modification time may be out by up to 2 seconds on FAT filesystems. Test
   // with a bit of leeway, close enough probably means it is correct.
   let diff = Math.abs(file.lastModifiedTime - now);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   const yesterday = now - MILLIS_PER_DAY;
   file.lastModifiedTime = yesterday;
 
   diff = Math.abs(file.lastModifiedTime - yesterday);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
   Assert.equal(
     file.lastAccessedTime,
     atime,
@@ -84,13 +82,13 @@ add_task(async function test_file_modification_time() {
   file.lastModifiedTime = tomorrow;
 
   diff = Math.abs(file.lastModifiedTime - tomorrow);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   const bug377307 = 1172950238000;
   file.lastModifiedTime = bug377307;
 
   diff = Math.abs(file.lastModifiedTime - bug377307);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   await sleep(1000);
 
@@ -121,13 +119,13 @@ add_task(async function test_lastAccessedTime() {
   // Modification time may be out by up to 2 seconds on FAT filesystems. Test
   // with a bit of leeway, close enough probably means it is correct.
   let diff = Math.abs(file.lastModifiedTime - now);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   const yesterday = now - MILLIS_PER_DAY;
   file.lastAccessedTime = yesterday;
 
   diff = Math.abs(file.lastAccessedTime - yesterday);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE, `${diff} < ${MAX_TIME_DIFFERENCE}`);
+  Assert.less(diff, MAX_TIME_DIFFERENCE, `${diff} < ${MAX_TIME_DIFFERENCE}`);
   Assert.equal(
     file.lastModifiedTime,
     mtime,
@@ -138,13 +136,13 @@ add_task(async function test_lastAccessedTime() {
   file.lastAccessedTime = tomorrow;
 
   diff = Math.abs(file.lastAccessedTime - tomorrow);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   const bug377307 = 1172950238000;
   file.lastAccessedTime = bug377307;
 
   diff = Math.abs(file.lastAccessedTime - bug377307);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   await sleep(1000);
 
@@ -173,19 +171,19 @@ add_task(function test_directory_modification_time() {
   // Modification time may be out by up to 2 seconds on FAT filesystems. Test
   // with a bit of leeway, close enough probably means it is correct.
   var diff = Math.abs(dir.lastModifiedTime - now);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   var yesterday = now - MILLIS_PER_DAY;
   dir.lastModifiedTime = yesterday;
 
   diff = Math.abs(dir.lastModifiedTime - yesterday);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   var tomorrow = now - MILLIS_PER_DAY;
   dir.lastModifiedTime = tomorrow;
 
   diff = Math.abs(dir.lastModifiedTime - tomorrow);
-  Assert.ok(diff < MAX_TIME_DIFFERENCE);
+  Assert.less(diff, MAX_TIME_DIFFERENCE);
 
   dir.remove(true);
 });
@@ -195,7 +193,7 @@ add_task(function test_diskSpaceAvailable() {
   file.QueryInterface(Ci.nsIFile);
 
   let bytes = file.diskSpaceAvailable;
-  Assert.ok(bytes > 0);
+  Assert.greater(bytes, 0);
 
   file.append("testfile");
   if (file.exists()) {
@@ -204,7 +202,7 @@ add_task(function test_diskSpaceAvailable() {
   file.create(Ci.nsIFile.NORMAL_FILE_TYPE, 0o644);
 
   bytes = file.diskSpaceAvailable;
-  Assert.ok(bytes > 0);
+  Assert.greater(bytes, 0);
 
   file.remove(true);
 });
@@ -224,7 +222,7 @@ add_task(function test_diskCapacity() {
 
   const endBytes = file.diskCapacity;
   Assert.ok(!!endBytes); // Not 0, undefined etc.
-  Assert.ok(startBytes === endBytes);
+  Assert.strictEqual(startBytes, endBytes);
 
   file.remove(true);
 });
@@ -252,14 +250,80 @@ add_task(
     Assert.ok(file.exists());
 
     const creationTime = file.creationTime;
-    Assert.ok(creationTime === file.lastModifiedTime);
+    Assert.strictEqual(creationTime, file.lastModifiedTime);
 
     file.lastModifiedTime = now + MILLIS_PER_DAY;
 
-    Assert.ok(creationTime !== file.lastModifiedTime);
-    Assert.ok(creationTime === file.creationTime);
+    Assert.notStrictEqual(creationTime, file.lastModifiedTime);
+    Assert.strictEqual(creationTime, file.creationTime);
 
     file.remove(true);
+  }
+);
+
+// Setup a symlink for creation time tests. Creates a target file, sleeps so
+// the symlink gets a distinct birth time, then creates a symlink to the target.
+// Returns { dir, target, link, targetCreationTime }.
+async function setupCreationTimeLink() {
+  const dir = do_get_profile();
+  dir.append("test-creation-time-link");
+  if (dir.exists()) {
+    dir.remove(true);
+  }
+  dir.create(Ci.nsIFile.DIRECTORY_TYPE, 0o755);
+
+  const target = dir.clone();
+  target.append("target.txt");
+  target.create(Ci.nsIFile.NORMAL_FILE_TYPE, 0o644);
+
+  const targetCreationTime = target.creationTime;
+
+  await sleep(1100);
+
+  const link = dir.clone();
+  link.append("link.txt");
+  const process = Cc["@mozilla.org/process/util;1"].createInstance(
+    Ci.nsIProcess
+  );
+  const ln = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+  ln.initWithPath("/bin/ln");
+  process.init(ln);
+  const args = ["-s", target.path, link.path];
+  process.run(true, args, args.length);
+  Assert.equal(process.exitValue, 0);
+  Assert.ok(link.isSymlink());
+
+  return { dir, target, link, targetCreationTime };
+}
+
+add_task(
+  {
+    // creationTime is only supported on macOS and Windows, and creating
+    // symlinks requires admin on Windows.
+    skip_if: () => AppConstants.platform !== "macosx",
+  },
+  async function test_symlink_creation_time_follows_target() {
+    const { dir, link, targetCreationTime } = await setupCreationTimeLink();
+
+    // creationTime should follow the symlink and return the target's time.
+    Assert.strictEqual(link.creationTime, targetCreationTime);
+
+    dir.remove(true);
+  }
+);
+
+add_task(
+  {
+    skip_if: () => AppConstants.platform !== "macosx",
+  },
+  async function test_symlink_creation_time_of_link_is_own_time() {
+    const { dir, link, targetCreationTime } = await setupCreationTimeLink();
+
+    // creationTimeOfLink should return the symlink's own creation time,
+    // which is later than the target's.
+    Assert.greater(link.creationTimeOfLink, targetCreationTime);
+
+    dir.remove(true);
   }
 );
 

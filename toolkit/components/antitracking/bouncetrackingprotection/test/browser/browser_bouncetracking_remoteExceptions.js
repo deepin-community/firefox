@@ -7,6 +7,10 @@ const { RemoteSettings } = ChromeUtils.importESModule(
   "resource://services-settings/remote-settings.sys.mjs"
 );
 
+let bounceTrackingProtection = Cc[
+  "@mozilla.org/bounce-tracking-protection;1"
+].getService(Ci.nsIBounceTrackingProtection);
+
 // Name of the RemoteSettings collection containing exceptions.
 const COLLECTION_NAME = "bounce-tracking-protection-exceptions";
 
@@ -15,6 +19,7 @@ let db;
 
 /**
  * Compare two string arrays ignoring order.
+ *
  * @param {string[]} arr1
  * @param {string[]} arr2
  * @returns {boolean} - Whether the arrays match.
@@ -26,7 +31,10 @@ const strArrayMatches = (arr1, arr2) =>
 add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
     set: [
-      ["privacy.bounceTrackingProtection.requireStatefulBounces", true],
+      [
+        "privacy.bounceTrackingProtection.mode",
+        Ci.nsIBounceTrackingProtection.MODE_ENABLED,
+      ],
       ["privacy.bounceTrackingProtection.bounceTrackingGracePeriodSec", 0],
     ],
   });
@@ -39,6 +47,7 @@ add_setup(async function () {
 
 /**
  * Run a bounce test.
+ *
  * @param {boolean} expectTrackerPurged - Whether the bounce tracker is expected
  * to be purged.
  */
@@ -74,6 +83,7 @@ async function runPurgeTest(expectTrackerPurged) {
 
 /**
  * Wait until the BTP allow-list matches the expected state.
+ *
  * @param {string[]} allowedSiteHosts - (Unordered) host list to match.
  */
 async function waitForAllowListState(allowedSiteHosts) {
@@ -93,10 +103,11 @@ async function waitForAllowListState(allowedSiteHosts) {
 
 /**
  * Dispatch a RemoteSettings "sync" event.
- * @param {Object} data - The event's data payload.
- * @param {Object} [data.created] - Records that were created.
- * @param {Object} [data.updated] - Records that were updated.
- * @param {Object} [data.deleted] - Records that were removed.
+ *
+ * @param {object} data - The event's data payload.
+ * @param {object} [data.created] - Records that were created.
+ * @param {object} [data.updated] - Records that were updated.
+ * @param {object} [data.deleted] - Records that were removed.
  */
 async function remoteSettingsSync({ created, updated, deleted }) {
   await RemoteSettings(COLLECTION_NAME).emit("sync", {

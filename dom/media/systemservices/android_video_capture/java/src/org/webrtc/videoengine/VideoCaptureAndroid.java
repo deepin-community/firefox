@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import java.util.concurrent.CountDownLatch;
 
 import org.mozilla.gecko.annotation.WebRTCJNITarget;
+import org.mozilla.gecko.GeckoAppShell;
 
 import org.webrtc.CameraEnumerator;
 import org.webrtc.Camera1Enumerator;
@@ -74,12 +75,14 @@ public class VideoCaptureAndroid implements CameraVideoCapturer.CameraEventsHand
       cameraVideoCapturer.initialize(surfaceTextureHelper, context, this);
     } catch (java.lang.RuntimeException e) {
       Log.e(TAG, "VideoCaptureAndroid: Exception while creating capturer: " + e);
+      cameraVideoCapturer = null;
     }
   }
 
   // Return the global application context.
-  @WebRTCJNITarget
-  private static native Context GetContext();
+  private static Context GetContext() {
+    return GeckoAppShell.getApplicationContext();
+  }
 
   public boolean canCapture() {
     return cameraVideoCapturer != null;
@@ -102,6 +105,16 @@ public class VideoCaptureAndroid implements CameraVideoCapturer.CameraEventsHand
       return false;
     }
 
+    if (native_capturer == 0) {
+      Log.d(TAG, "startCapture: invalid native capturer pointer");
+      return false;
+    }
+
+    if (this.native_capturer != 0) {
+      Log.d(TAG, "startCapture: already started");
+      return true;
+    }
+
     cameraVideoCapturer.startCapture(width, height, max_mfps);
     try {
       capturerStarted.await();
@@ -120,6 +133,11 @@ public class VideoCaptureAndroid implements CameraVideoCapturer.CameraEventsHand
     Log.d(TAG, "stopCapture");
     if (cameraVideoCapturer == null) {
       return false;
+    }
+
+    if (native_capturer == 0) {
+      Log.d(TAG, "stopCapture: wasn't started");
+      return true;
     }
 
     native_capturer = 0;
@@ -206,16 +224,22 @@ public class VideoCaptureAndroid implements CameraVideoCapturer.CameraEventsHand
 
   // Delivers a captured frame.
   public void onFrameCaptured(VideoFrame frame) {
-    if (native_capturer != 0) {
-      I420Buffer i420Buffer = frame.getBuffer().toI420();
-      ProvideCameraFrame(i420Buffer.getWidth(), i420Buffer.getHeight(),
-          i420Buffer.getDataY(), i420Buffer.getStrideY(),
-          i420Buffer.getDataU(), i420Buffer.getStrideU(),
-          i420Buffer.getDataV(), i420Buffer.getStrideV(),
-          frame.getRotation(),
-          frame.getTimestampNs() / 1000000, native_capturer);
-
-      i420Buffer.release();
+    if (native_capturer == 0) {
+      return;
     }
+
+    I420Buffer i420Buffer = frame.getBuffer().toI420();
+    if (i420Buffer == null) {
+      return;
+    }
+
+    ProvideCameraFrame(i420Buffer.getWidth(), i420Buffer.getHeight(),
+        i420Buffer.getDataY(), i420Buffer.getStrideY(),
+        i420Buffer.getDataU(), i420Buffer.getStrideU(),
+        i420Buffer.getDataV(), i420Buffer.getStrideV(),
+        frame.getRotation(),
+        frame.getTimestampNs() / 1000000, native_capturer);
+
+    i420Buffer.release();
   }
 }

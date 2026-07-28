@@ -1,40 +1,38 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsFileControlFrame.h"
 
-#include "nsGkAtoms.h"
-#include "nsCOMPtr.h"
-#include "mozilla/dom/BlobImpl.h"
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/NodeInfo.h"
-#include "mozilla/dom/Element.h"
-#include "mozilla/dom/DOMStringList.h"
-#include "mozilla/dom/DataTransfer.h"
-#include "mozilla/dom/Directory.h"
-#include "mozilla/dom/DragEvent.h"
-#include "mozilla/dom/Event.h"
-#include "mozilla/dom/FileList.h"
-#include "mozilla/dom/HTMLButtonElement.h"
-#include "mozilla/dom/HTMLInputElement.h"
-#include "mozilla/dom/MutationEventBinding.h"
+#include "MiddleCroppingBlockFrame.h"
+#include "gfxContext.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/TextEditor.h"
-#include "MiddleCroppingBlockFrame.h"
-#include "nsIFrame.h"
-#include "nsNodeInfoManager.h"
+#include "mozilla/dom/BlobImpl.h"
+#include "mozilla/dom/DOMStringList.h"
+#include "mozilla/dom/DataTransfer.h"
+#include "mozilla/dom/Directory.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/DragEvent.h"
+#include "mozilla/dom/Element.h"
+#include "mozilla/dom/Event.h"
+#include "mozilla/dom/FileList.h"
+#include "mozilla/dom/HTMLButtonElement.h"
+#include "mozilla/dom/HTMLInputElement.h"
+#include "mozilla/dom/NodeInfo.h"
+#include "mozilla/dom/UnionTypes.h"
+#include "nsCOMPtr.h"
 #include "nsContentCreatorFunctions.h"
 #include "nsContentUtils.h"
+#include "nsGkAtoms.h"
 #include "nsIFile.h"
+#include "nsIFrame.h"
 #include "nsLayoutUtils.h"
-#include "nsTextNode.h"
+#include "nsNodeInfoManager.h"
 #include "nsTextFrame.h"
-#include "gfxContext.h"
+#include "nsTextNode.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -90,11 +88,11 @@ static already_AddRefed<Element> MakeAnonButton(
   // NOTE: SetIsNativeAnonymousRoot() has to be called before setting any
   // attribute.
   button->SetIsNativeAnonymousRoot();
-  button->SetPseudoElementType(PseudoStyleType::fileSelectorButton);
+  button->SetPseudoElementType(PseudoStyleType::FileSelectorButton);
 
   // Set the file picking button text depending on the current locale.
   nsAutoString buttonTxt;
-  nsContentUtils::GetMaybeLocalizedString(nsContentUtils::eFORMS_PROPERTIES,
+  nsContentUtils::GetMaybeLocalizedString(PropertiesFile::FORMS_PROPERTIES,
                                           labelKey, aDoc, buttonTxt);
 
   auto* nim = aDoc->NodeInfoManager();
@@ -133,8 +131,8 @@ nsresult nsFileControlFrame::CreateAnonymousContent(
   // NOTE: SetIsNativeAnonymousRoot() has to be called before setting any
   // attribute.
   mTextContent->SetIsNativeAnonymousRoot();
-  RefPtr<nsTextNode> text =
-      new (doc->NodeInfoManager()) nsTextNode(doc->NodeInfoManager());
+  mTextContent->SetPseudoElementType(PseudoStyleType::MozFileContent);
+  RefPtr<nsTextNode> text = doc->CreateEmptyTextNode();
   mTextContent->AppendChildTo(text, false, IgnoreErrors());
 
   aElements.AppendElement(mTextContent);
@@ -179,7 +177,7 @@ static void AppendBlobImplAsDirectory(nsTArray<OwningFileOrDirectory>& aArray,
   }
 
   nsCOMPtr<nsIFile> file;
-  nsresult rv = NS_NewLocalFile(fullpath, true, getter_AddRefs(file));
+  nsresult rv = NS_NewLocalFile(fullpath, getter_AddRefs(file));
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return;
   }
@@ -372,7 +370,8 @@ void nsFileControlFrame::SyncDisabledState() {
 
 void nsFileControlFrame::ElementStateChanged(ElementState aStates) {
   if (aStates.HasState(ElementState::DISABLED)) {
-    nsContentUtils::AddScriptRunner(new SyncDisabledStateEvent(this));
+    nsContentUtils::AddScriptRunner(
+        MakeAndAddRef<SyncDisabledStateEvent>(this));
   }
 }
 

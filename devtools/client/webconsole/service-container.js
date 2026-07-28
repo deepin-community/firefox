@@ -51,12 +51,17 @@ function setupServiceContainer({
     requestData: (id, type) =>
       webConsoleUI.networkDataProvider.requestData(id, type),
     createElement: nodename => webConsoleWrapper.createElement(nodename),
+    getToolboxStore: () => null,
+
+    isBrowserConsoleOrBrowserToolbox:
+      webConsoleUI.isBrowserConsole || webConsoleUI.isBrowserToolboxConsole,
   };
 
   if (toolbox) {
     const { highlight, unhighlight } = toolbox.getHighlighter();
 
     Object.assign(serviceContainer, {
+      getToolboxStore: () => toolbox.store,
       sourceMapURLService: toolbox.sourceMapURLService,
       highlightDomElement: highlight,
       unHighlightDomElement: unhighlight,

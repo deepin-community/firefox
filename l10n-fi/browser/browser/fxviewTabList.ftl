@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Siirrä loppuun
     .accesskey = u
 fxviewtabrow-move-tab-window = Siirrä uuteen ikkunaan
     .accesskey = i
+fxviewtabrow-send-to-device = Lähetä laitteeseen
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Lähetä mobiililaitteeseen
+    .accesskey = n
 fxviewtabrow-send-tab = Lähetä välilehti laitteeseen
     .accesskey = h
 fxviewtabrow-pin-tab = Kiinnitä välilehti
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Palauta ääni
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Välilehden { $tabTitle } valinnat
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Mykistä { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Poista mykistys { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Vaimenna välilehti
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Palauta ääni
+fxviewtabrow-send-to-mobile-connect-device = Yhdistä laite lähettääksesi välilehtiä
+fxviewtabrow-send-to-mobile-device-missing2 = Etkö näe laitettasi?
+fxviewtabrow-send-to-mobile-not-verified = Tiliä ei vahvistettu
+fxviewtabrow-send-to-mobile-verify-account = Vahvista tilisi
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Kirjaudu sisään lähettääksesi välilehtiä
+fxviewtabrow-send-to-mobile-turn-on-sync = Ota synkronointi käyttöön lähettääksesi välilehtiä

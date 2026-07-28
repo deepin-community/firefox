@@ -29,7 +29,7 @@ Where You Can Use It
 The server is written primarily for use from ``xpcshell``-based
 tests, and it can be used as an inline script or as an XPCOM component. The
 Mochitest framework also uses it to serve its tests, and
-`reftests <https://searchfox.org/mozilla-central/source/layout/tools/reftest/README.txt>`__
+:searchfox:`reftests <layout/tools/reftest/README.txt>`
 can optionally use it when their behavior is dependent upon specific
 HTTP header values.
 
@@ -60,7 +60,7 @@ The best and first place you should look for documentation is
 comprehensive and detailed, and it should be enough to figure out how to
 make the server do what you want. I also suggest taking a look at the
 less-comprehensive server
-`README <https://searchfox.org/mozilla-central/source/netwerk/test/httpserver/README>`__,
+:searchfox:`README <netwerk/test/httpserver/README>`,
 although the IDL should usually be sufficient.
 
 Running the Server
@@ -71,13 +71,13 @@ module:
 
 .. code:: JavaScript
 
-   ChromeUtils.import("resource://testing-common/httpd.js");
+   ChromeUtils.importESModule("resource://testing-common/httpd.sys.mjs");
 
 Once you've done that, you can create a new server as follows:
 
 .. code:: JavaScript
 
-   let server = new HttpServer(); // Or nsHttpServer() if you don't use ChromeUtils.import.
+   let server = new HttpServer(); // Or nsHttpServer() if you don't use ChromeUtils.importESModule.
 
    server.registerDirectory("/", nsILocalFileForBasePath);
 
@@ -112,7 +112,7 @@ because the error-dispatch mechanism doesn't currently accommodate doing
 so and partly because exposing errors in a real server could make it
 easier to exploit them. If you don't know why the server is acting a
 particular way, edit
-`httpd.js <https://searchfox.org/mozilla-central/source/netwerk/test/httpserver/httpd.js>`__
+:searchfox:`httpd.sys.mjs <netwerk/test/httpserver/httpd.sys.mjs>`
 and change the value of ``DEBUG`` to ``true``. This will cause the
 server to print information about the processing of requests (and errors
 encountered doing so) to the console, and it's usually not difficult to
@@ -186,7 +186,7 @@ tree <https://searchfox.org/mozilla-central/search?q=&path=.sjs>`__
 in existing tests. The request object is an instance of
 ``nsIHttpRequest`` and the response is a ``nsIHttpResponse``.
 Please refer to the `IDL
-documentation <https://searchfox.org/mozilla-central/source/netwerk/test/httpserver/nsIHttpServer.idl>`
+documentation <https://searchfox.org/firefox-main/source/netwerk/test/httpserver/nsIHttpServer.idl>`
 for more details.
 
 Storing Information Across Requests

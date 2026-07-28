@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -105,6 +103,21 @@ class ShaderProgramOGL {
 
   void SetLayerTransformInverse(const gfx::Matrix4x4& aMatrix) {
     SetMatrixUniform(KnownUniform::LayerTransformInverse, aMatrix);
+  }
+
+  void SetRoundedClipRect(const gfx::Rect& aRect) {
+    float vals[4] = {aRect.x, aRect.y, aRect.width, aRect.height};
+    SetUniform(KnownUniform::RoundedClipRect, 4, vals);
+  }
+
+  void SetRoundedClipRadii(const gfx::RectCornerRadii& aRadii) {
+    float vals[4] = {
+        aRadii.radii[eCornerTopLeft].width,
+        aRadii.radii[eCornerBottomLeft].width,
+        aRadii.radii[eCornerTopRight].width,
+        aRadii.radii[eCornerBottomRight].width,
+    };
+    SetUniform(KnownUniform::RoundedClipRadii, 4, vals);
   }
 
   void SetDEAAEdges(const gfx::Point3D* aEdges) {

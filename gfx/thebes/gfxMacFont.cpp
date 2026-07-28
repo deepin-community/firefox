@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -143,10 +142,9 @@ gfxMacFont::~gfxMacFont() {
   }
 }
 
-bool gfxMacFont::ShapeText(DrawTarget* aDrawTarget, const char16_t* aText,
-                           uint32_t aOffset, uint32_t aLength, Script aScript,
-                           nsAtom* aLanguage, bool aVertical,
-                           RoundingFlags aRounding,
+bool gfxMacFont::ShapeText(const char16_t* aText, uint32_t aOffset,
+                           uint32_t aLength, Script aScript, nsAtom* aLanguage,
+                           bool aVertical, RoundingFlags aRounding,
                            gfxShapedText* aShapedText) {
   if (!mIsValid) {
     NS_WARNING("invalid font! expect incorrect text rendering");
@@ -161,11 +159,9 @@ bool gfxMacFont::ShapeText(DrawTarget* aDrawTarget, const char16_t* aText,
     if (!mCoreTextShaper) {
       mCoreTextShaper = MakeUnique<gfxCoreTextShaper>(this);
     }
-    if (mCoreTextShaper->ShapeText(aDrawTarget, aText, aOffset, aLength,
-                                   aScript, aLanguage, aVertical, aRounding,
-                                   aShapedText)) {
-      PostShapingFixup(aDrawTarget, aText, aOffset, aLength, aVertical,
-                       aShapedText);
+    if (mCoreTextShaper->ShapeText(aText, aOffset, aLength, aScript, aLanguage,
+                                   aVertical, aRounding, aShapedText)) {
+      PostShapingFixup(aText, aOffset, aLength, aVertical, aShapedText);
       if (ctFontEntry->HasTrackingTable()) {
         // Convert font size from device pixels back to CSS px
         // to use in selecting tracking value
@@ -184,8 +180,8 @@ bool gfxMacFont::ShapeText(DrawTarget* aDrawTarget, const char16_t* aText,
     }
   }
 
-  return gfxFont::ShapeText(aDrawTarget, aText, aOffset, aLength, aScript,
-                            aLanguage, aVertical, aRounding, aShapedText);
+  return gfxFont::ShapeText(aText, aOffset, aLength, aScript, aLanguage,
+                            aVertical, aRounding, aShapedText);
 }
 
 gfxFont::RunMetrics gfxMacFont::Measure(const gfxTextRun* aTextRun,
@@ -221,8 +217,8 @@ void gfxMacFont::InitMetrics() {
   // return the true value for OpenType/CFF fonts (it normalizes to 1000,
   // which then leads to metrics errors when we read the 'hmtx' table to
   // get glyph advances for HarfBuzz, see bug 580863)
-  AutoCFRelease<CFDataRef> headData =
-      ::CGFontCopyTableForTag(mCGFont, TRUETYPE_TAG('h', 'e', 'a', 'd'));
+  AutoCFTypeRef<CFDataRef> headData(
+      ::CGFontCopyTableForTag(mCGFont, TRUETYPE_TAG('h', 'e', 'a', 'd')));
   if (headData) {
     if (size_t(::CFDataGetLength(headData)) >= sizeof(HeadTable)) {
       const HeadTable* head =
@@ -278,8 +274,8 @@ void gfxMacFont::InitMetrics() {
     mMetrics.capHeight = ::CGFontGetCapHeight(mCGFont) * cgConvFactor;
   }
 
-  AutoCFRelease<CFDataRef> cmap =
-      ::CGFontCopyTableForTag(mCGFont, TRUETYPE_TAG('c', 'm', 'a', 'p'));
+  AutoCFTypeRef<CFDataRef> cmap(
+      ::CGFontCopyTableForTag(mCGFont, TRUETYPE_TAG('c', 'm', 'a', 'p')));
 
   uint32_t glyphID;
   mMetrics.zeroWidth = GetCharWidth(cmap, '0', &glyphID, cgConvFactor);
@@ -505,8 +501,8 @@ bool gfxMacFont::GetGlyphBounds(uint16_t aGID, gfxRect* aBounds, bool aTight) {
 // for sfnts, including ALL downloadable fonts, we prefer to use
 // InitMetricsFromSfntTables and avoid platform APIs.
 void gfxMacFont::InitMetricsFromPlatform() {
-  AutoCFRelease<CTFontRef> ctFont =
-      ::CTFontCreateWithGraphicsFont(mCGFont, mAdjustedSize, nullptr, nullptr);
+  AutoCFTypeRef<CTFontRef> ctFont(
+      ::CTFontCreateWithGraphicsFont(mCGFont, mAdjustedSize, nullptr, nullptr));
   if (!ctFont) {
     return;
   }
@@ -557,7 +553,7 @@ already_AddRefed<ScaledFont> gfxMacFont::GetScaledFont(
   InitializeScaledFont(newScaledFont);
 
   if (mAzureScaledFont.compareExchange(nullptr, newScaledFont.get())) {
-    Unused << newScaledFont.forget();
+    newScaledFont.forget().leak();
   }
   ScaledFont* scaledFont = mAzureScaledFont;
   return do_AddRef(scaledFont);

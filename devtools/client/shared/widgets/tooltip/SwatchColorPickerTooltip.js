@@ -22,20 +22,18 @@ loader.lazyRequireGetter(
   true
 );
 
-loader.lazyRequireGetter(
-  this,
-  ["getFocusableElements", "wrapMoveFocus"],
-  "resource://devtools/client/shared/focus.js",
-  true
-);
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  getFocusableElements: "resource://devtools/client/shared/focus.mjs",
+  wrapMoveFocus: "resource://devtools/client/shared/focus.mjs",
+});
+
 loader.lazyRequireGetter(
   this,
   "PICKER_TYPES",
   "resource://devtools/shared/picker-constants.js"
 );
 
-const TELEMETRY_PICKER_EYEDROPPER_OPEN_COUNT =
-  "DEVTOOLS_PICKER_EYEDROPPER_OPENED_COUNT";
 const XHTML_NS = "http://www.w3.org/1999/xhtml";
 
 /**
@@ -102,6 +100,20 @@ class SwatchColorPickerTooltip extends SwatchBasedEditorTooltip {
     this.tooltip.container.addEventListener("keydown", this._onTooltipKeydown);
   }
 
+  static COLOR_MODIFYING_FUNCTIONS = new Set([
+    "color-mix",
+    "contrast-color",
+    // color functions can take a relative color after `from`
+    "color",
+    "hsl",
+    "hwb",
+    "lab",
+    "lch",
+    "oklab",
+    "oklch",
+    "rgb",
+  ]);
+
   /**
    * Fill the tooltip with a new instance of the spectrum color picker widget
    * initialized with the given color, and return the instance of spectrum
@@ -145,7 +157,8 @@ class SwatchColorPickerTooltip extends SwatchBasedEditorTooltip {
     // Only enable contrast if the type of property is color
     // and its value isn't inside a color-modifying function (e.g. color-mix()).
     this.spectrum.contrastEnabled =
-      name === "color" && colorFunction !== "color-mix";
+      name === "color" &&
+      !SwatchColorPickerTooltip.COLOR_MODIFYING_FUNCTIONS.has(colorFunction);
     if (this.spectrum.contrastEnabled) {
       const { nodeFront } = this.inspector.selection;
       const { pageStyle } = nodeFront.inspectorFront;
@@ -188,9 +201,6 @@ class SwatchColorPickerTooltip extends SwatchBasedEditorTooltip {
       learnMoreButton.addEventListener("keydown", e => e.stopPropagation());
     }
 
-    // Add focus to the first focusable element in the tooltip and attach keydown
-    // event listener to tooltip
-    this.focusableElements[0].focus();
     this.tooltip.container.addEventListener(
       "keydown",
       this._onTooltipKeydown,
@@ -207,7 +217,7 @@ class SwatchColorPickerTooltip extends SwatchBasedEditorTooltip {
       return;
     }
 
-    const focusMoved = !!wrapMoveFocus(
+    const focusMoved = !!lazy.wrapMoveFocus(
       this.focusableElements,
       target,
       shiftKey
@@ -269,11 +279,9 @@ class SwatchColorPickerTooltip extends SwatchBasedEditorTooltip {
   }
 
   _openEyeDropper() {
-    const { inspectorFront, toolbox, telemetry } = this.inspector;
+    const { inspectorFront, toolbox } = this.inspector;
 
-    telemetry
-      .getHistogramById(TELEMETRY_PICKER_EYEDROPPER_OPEN_COUNT)
-      .add(true);
+    Glean.devtools.pickerEyedropperOpenedCount.add(1);
 
     // cancelling picker(if it is already selected) on opening eye-dropper
     toolbox.nodePicker.stop({ canceled: true });
@@ -347,9 +355,9 @@ class SwatchColorPickerTooltip extends SwatchBasedEditorTooltip {
   }
 
   get focusableElements() {
-    return getFocusableElements(this.tooltip.container).filter(
-      el => !!el.offsetParent
-    );
+    return lazy
+      .getFocusableElements(this.tooltip.container)
+      .filter(el => !!el.offsetParent);
   }
 
   destroy() {

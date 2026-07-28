@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -245,7 +243,7 @@ bool IsFirstPartialResponse(nsHttpResponseHead& aResponseHead) {
   MOZ_ASSERT(aResponseHead.Status() == 206);
 
   nsAutoCString contentRange;
-  Unused << aResponseHead.GetHeader(nsHttp::Content_Range, contentRange);
+  (void)aResponseHead.GetHeader(nsHttp::Content_Range, contentRange);
 
   auto rangeOrErr = ParseContentRangeHeaderString(contentRange);
   if (rangeOrErr.isErr()) {
@@ -276,7 +274,8 @@ OpaqueResponseFilter::OnStartRequest(nsIRequest* aRequest) {
     responseHead->ClearHeaders();
   }
 
-  mNext->OnStartRequest(aRequest);
+  nsCOMPtr<nsIStreamListener> next = mNext;
+  next->OnStartRequest(aRequest);
   return NS_OK;
 }
 
@@ -296,7 +295,8 @@ NS_IMETHODIMP
 OpaqueResponseFilter::OnStopRequest(nsIRequest* aRequest,
                                     nsresult aStatusCode) {
   LOGORB();
-  mNext->OnStopRequest(aRequest, aStatusCode);
+  nsCOMPtr<nsIStreamListener> next = mNext;
+  next->OnStopRequest(aRequest, aStatusCode);
   return NS_OK;
 }
 
@@ -330,7 +330,7 @@ OpaqueResponseBlocker::OnStartRequest(nsIRequest* aRequest) {
   LOGORB();
 
   if (mState == State::Sniffing) {
-    Unused << EnsureOpaqueResponseIsAllowedAfterSniff(aRequest);
+    (void)EnsureOpaqueResponseIsAllowedAfterSniff(aRequest);
   }
 
   // mState will remain State::Sniffing if we need to wait
@@ -341,7 +341,8 @@ OpaqueResponseBlocker::OnStartRequest(nsIRequest* aRequest) {
   // before its FetchDriver::OnStartRequest is called, otherwise it'll
   // resolve the promise regardless the decision of JS validator.
   if (mState != State::Sniffing) {
-    nsresult rv = mNext->OnStartRequest(aRequest);
+    nsCOMPtr<nsIStreamListener> next = mNext;
+    nsresult rv = next->OnStartRequest(aRequest);
     return NS_SUCCEEDED(mStatus) ? rv : mStatus;
   }
 
@@ -370,7 +371,8 @@ OpaqueResponseBlocker::OnStopRequest(nsIRequest* aRequest,
     return NS_OK;
   }
 
-  return mNext->OnStopRequest(aRequest, statusForStop);
+  nsCOMPtr<nsIStreamListener> next = mNext;
+  return next->OnStopRequest(aRequest, statusForStop);
 }
 
 NS_IMETHODIMP
@@ -380,7 +382,8 @@ OpaqueResponseBlocker::OnDataAvailable(nsIRequest* aRequest,
   LOGORB();
 
   if (mState == State::Allowed) {
-    return mNext->OnDataAvailable(aRequest, aInputStream, aOffset, aCount);
+    nsCOMPtr<nsIStreamListener> next = mNext;
+    return next->OnDataAvailable(aRequest, aInputStream, aOffset, aCount);
   }
 
   if (mState == State::Blocked) {
@@ -464,7 +467,7 @@ OpaqueResponseBlocker::EnsureOpaqueResponseIsAllowedAfterJavaScriptValidation(
 
   return aChannel->BlockOrFilterOpaqueResponse(
       this, u"Javascript validation failed"_ns,
-      OpaqueResponseBlockedTelemetryReason::JS_VALIDATION_FAILED,
+      OpaqueResponseBlockedTelemetryReason::eJsValidationFailed,
       "Javascript validation failed");
 }
 
@@ -500,12 +503,11 @@ static void RecordTelemetry(const TimeStamp& aStartOfValidation,
       MarkerTiming::Interval(aStartOfJavaScriptValidation, now),
       nsPrintfCString("JS Validation (%s)", key.get()));
 
-  Telemetry::AccumulateTimeDelta(Telemetry::ORB_RECEIVE_DATA_FOR_VALIDATION_MS,
-                                 key, aStartOfValidation,
-                                 aStartOfJavaScriptValidation);
+  glean::orb::receive_data_for_validation.Get(key).AccumulateRawDuration(
+      aStartOfJavaScriptValidation - aStartOfValidation);
 
-  Telemetry::AccumulateTimeDelta(Telemetry::ORB_JAVASCRIPT_VALIDATION_MS, key,
-                                 aStartOfJavaScriptValidation, now);
+  glean::orb::javascript_validation.Get(key).AccumulateRawDuration(
+      now - aStartOfJavaScriptValidation);
 }
 
 // The specification for ORB is currently being written:
@@ -535,9 +537,7 @@ nsresult OpaqueResponseBlocker::ValidateJavaScript(HttpBaseChannel* aChannel,
     return rv;
   }
 
-  Telemetry::ScalarAdd(
-      Telemetry::ScalarID::OPAQUE_RESPONSE_BLOCKING_JAVASCRIPT_VALIDATION_COUNT,
-      1);
+  glean::opaque_response_blocking::javascript_validation_count.Add(1);
 
   LOGORB("Send %s to the validator", aURI->GetSpecOrDefault().get());
   // https://whatpr.org/fetch/1442.html#orb-algorithm, step 15
@@ -562,8 +562,7 @@ nsresult OpaqueResponseBlocker::ValidateJavaScript(HttpBaseChannel* aChannel,
             self->AllowResponse();
             break;
           case OpaqueResponse::Block:
-            // We'll filter the data out later
-            self->AllowResponse();
+            self->BlockResponse(channel, NS_ERROR_FAILURE);
             break;
           default:
             MOZ_ASSERT_UNREACHABLE(
@@ -581,7 +580,7 @@ nsresult OpaqueResponseBlocker::ValidateJavaScript(HttpBaseChannel* aChannel,
         RecordTelemetry(startOfValidation, self->mStartOfJavaScriptValidation,
                         aResult);
 
-        Unused << dom::PJSValidatorParent::Send__delete__(self->mJSValidator);
+        (void)dom::PJSValidatorParent::Send__delete__(self->mJSValidator);
         self->mJSValidator = nullptr;
       });
 
@@ -623,19 +622,11 @@ void OpaqueResponseBlocker::FilterResponse() {
 
 void OpaqueResponseBlocker::ResolveAndProcessData(
     HttpBaseChannel* aChannel, bool aAllowed, Maybe<ipc::Shmem>& aSharedData) {
-  if (!aAllowed) {
-    // OpaqueResponseFilter allows us to filter the headers
-    mNext = new OpaqueResponseFilter(mNext);
-  }
-
   nsresult rv = OnStartRequest(aChannel);
 
   if (!aAllowed || NS_FAILED(rv)) {
-    MOZ_ASSERT_IF(!aAllowed, mState == State::Allowed);
-    // No need to call OnDataAvailable because
-    //   1. The input stream is consumed by
-    //     OpaqueResponseBlocker::OnDataAvailable already
-    //   2. We don't want to pass any data over
+    MOZ_ASSERT_IF(!aAllowed, mState == State::Blocked);
+    // We decided to block, so nothing more to do.
     MaybeRunOnStopRequest(aChannel);
     return;
   }
@@ -677,3 +668,4 @@ void OpaqueResponseBlocker::MaybeRunOnStopRequest(HttpBaseChannel* aChannel) {
 NS_IMPL_ISUPPORTS(OpaqueResponseBlocker, nsIStreamListener, nsIRequestObserver)
 
 }  // namespace mozilla::net
+#undef LOGORB

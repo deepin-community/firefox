@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = «{ -brand-short-name }» кӯши
 autofill-edit-payment-method-os-prompt-macos = маълумоти тарзи пардохти нигоҳдошташударо нишон диҳад
 autofill-edit-payment-method-os-prompt-windows = «{ -brand-short-name }» кӯшиш мекунад, ки маълумоти тарзи пардохти нигоҳдошташударо нишон диҳад. Дастрасиро ба ин ҳисоби «Windows» дар зер тасдиқ намоед.
 autofill-edit-payment-method-os-prompt-other = «{ -brand-short-name }» кӯшиш мекунад, ки маълумоти тарзи пардохти нигоҳдошташударо нишон диҳад.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Имконоти пуркунии шакл ба таври худкор
 autofill-options-link-osx = Хусусиятҳои пуркунии шакл ба таври худкор
 
@@ -81,3 +81,6 @@ autofill-category-name = ном
 autofill-category-organization = ташкилот
 autofill-category-tel = телефон
 autofill-category-email = почтаи электронӣ
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } сомонаи хатарнокро муайян кард. «Пуркунии шакл ба таври худкор» муваққатан ғайрифаъол карда шуд.

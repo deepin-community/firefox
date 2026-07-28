@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +7,7 @@
 
 namespace mozilla {
 
-enum class RemoteDecodeIn;
+enum class RemoteMediaIn;
 
 // A decoder module that proxies decoding to either GPU or RDD process.
 class RemoteDecoderModule : public PlatformDecoderModule {
@@ -17,8 +15,9 @@ class RemoteDecoderModule : public PlatformDecoderModule {
   friend already_AddRefed<T> MakeAndAddRef(Args&&...);
 
  public:
+  const char* Name() const override;
   static already_AddRefed<PlatformDecoderModule> Create(
-      RemoteDecodeIn aLocation);
+      RemoteMediaIn aLocation);
 
   media::DecodeSupportSet SupportsMimeType(
       const nsACString& aMimeType,
@@ -42,9 +41,9 @@ class RemoteDecoderModule : public PlatformDecoderModule {
   }
 
  private:
-  explicit RemoteDecoderModule(RemoteDecodeIn aLocation);
+  explicit RemoteDecoderModule(RemoteMediaIn aLocation);
 
-  const RemoteDecodeIn mLocation;
+  const RemoteMediaIn mLocation;
 };
 
 }  // namespace mozilla

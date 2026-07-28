@@ -1,10 +1,10 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "Common.h"
 #include "LookupCacheV4.h"
+#include "nsICryptoHash.h"
 
 #define EXPIRED_TIME_SEC (PR_Now() / PR_USEC_PER_SEC - 3600)
 #define NOTEXPIRED_TIME_SEC (PR_Now() / PR_USEC_PER_SEC + 3600)
@@ -215,10 +215,14 @@ void TestInvalidateExpiredCacheEntry() {
 }
 
 TEST(UrlClassifierCaching, InvalidateExpiredCacheEntryV2)
-{ TestInvalidateExpiredCacheEntry<LookupCacheV2>(); }
+{
+  TestInvalidateExpiredCacheEntry<LookupCacheV2>();
+}
 
 TEST(UrlClassifierCaching, InvalidateExpiredCacheEntryV4)
-{ TestInvalidateExpiredCacheEntry<LookupCacheV4>(); }
+{
+  TestInvalidateExpiredCacheEntry<LookupCacheV4>();
+}
 
 // This testcase check if an cache entry whose negative cache time is expired
 // and it doesn't have any postive cache entries in it, it should be removed

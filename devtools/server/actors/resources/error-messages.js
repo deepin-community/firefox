@@ -5,7 +5,6 @@
 "use strict";
 
 const nsIConsoleListenerWatcher = require("resource://devtools/server/actors/resources/utils/nsi-console-listener-watcher.js");
-const ErrorDocs = require("resource://devtools/server/actors/errordocs.js");
 const {
   createStringGrip,
   makeDebuggeeValue,
@@ -21,6 +20,12 @@ const {
 const Targets = require("resource://devtools/server/actors/targets/index.js");
 
 const { MESSAGE_CATEGORY } = require("resource://devtools/shared/constants.js");
+
+loader.lazyRequireGetter(
+  this,
+  "ErrorDocs",
+  "resource://devtools/server/actors/errordocs.js"
+);
 
 const PLATFORM_SPECIFIC_CATEGORIES = [
   "XPConnect JavaScript",
@@ -130,7 +135,9 @@ class ErrorMessageWatcher extends nsIConsoleListenerWatcher {
     if (!sourceName && !sourceId && !lineNumber && !columnNumber && stack) {
       sourceName = stack[0].filename;
       sourceId = stack[0].sourceId;
+      // The line is 1-based.
       lineNumber = stack[0].lineNumber;
+      // The column is also 1-based as it ultimately derivates from SavedFrame's 1-based column
       columnNumber = stack[0].columnNumber;
     }
 

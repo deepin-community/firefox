@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,9 +5,10 @@
 #ifndef mozilla_dom_PerformanceMainThread_h
 #define mozilla_dom_PerformanceMainThread_h
 
-#include "Performance.h"
-#include "PerformanceStorage.h"
 #include "LargestContentfulPaint.h"
+#include "Performance.h"
+#include "PerformanceInteractionMetrics.h"
+#include "PerformanceStorage.h"
 #include "nsTextFrame.h"
 
 namespace mozilla::dom {
@@ -54,6 +53,11 @@ class PerformanceMainThread final : public Performance,
   void InsertEventTimingEntry(PerformanceEventTiming*) override;
   void BufferEventTimingEntryIfNeeded(PerformanceEventTiming*) override;
   void DispatchPendingEventTimingEntries() override;
+
+  PerformanceInteractionMetrics& GetPerformanceInteractionMetrics() override;
+
+  void SetInteractionId(PerformanceEventTiming* aEventTiming,
+                        const WidgetEvent* aEvent) override;
 
   void BufferLargestContentfulPaintEntryIfNeeded(LargestContentfulPaint*);
 
@@ -106,7 +110,17 @@ class PerformanceMainThread final : public Performance,
 
   class EventCounts* EventCounts() override;
 
+  uint64_t InteractionCount() override;
+
   bool IsGlobalObjectWindow() const override { return true; };
+
+  void RecordModalFallbackTime() override;
+  DOMHighResTimeStamp GetLastModalFallbackTime() const override {
+    return mLastModalFallbackTime;
+  }
+
+  void SetCurrentEventTimingEntry(PerformanceEventTiming* aEntry);
+  PerformanceEventTiming* GetCurrentEventTimingEntry() const;
 
   bool HasDispatchedInputEvent() const { return mHasDispatchedInputEvent; }
 
@@ -145,7 +159,7 @@ class PerformanceMainThread final : public Performance,
   DOMHighResTimeStamp GetPerformanceTimingFromString(
       const nsAString& aTimingName) override;
 
-  void DispatchBufferFullEvent() override;
+  void DispatchResourceTimingBufferFullEvent() override;
 
   RefPtr<PerformanceNavigationTiming> mDocEntry;
   RefPtr<nsDOMNavigationTiming> mDOMTiming;
@@ -166,10 +180,18 @@ class PerformanceMainThread final : public Performance,
   RefPtr<PerformanceEventTiming> mFirstInputEvent;
   RefPtr<PerformanceEventTiming> mPendingPointerDown;
 
+  PerformanceInteractionMetrics mInteractionMetrics;
+
  private:
   void SetHasDispatchedInputEvent();
 
   bool mHasQueuedRefreshdriverObserver = false;
+  DOMHighResTimeStamp mLastModalFallbackTime = 0;
+
+  // The event timing entry currently being dispatched. Managed by
+  // EventDispatcher via SetCurrentEventTimingEntry to support
+  // RecordModalFallbackTime being called from modal dialog code.
+  RefPtr<PerformanceEventTiming> mCurrentEventTimingEntry;
 
   RefPtr<class EventCounts> mEventCounts;
   void IncEventCount(const nsAtom* aType);
@@ -191,12 +213,12 @@ class PerformanceMainThread final : public Performance,
 };
 
 inline void ImplCycleCollectionTraverse(
-    nsCycleCollectionTraversalCallback& aCallback, TextFrameUnions& aField,
-    const char* aName, uint32_t aFlags = 0) {
-  for (auto& entry : aField) {
-    ImplCycleCollectionTraverse(
-        aCallback, entry, "TextFrameUnions's key (nsRefPtrHashKey<Element>)",
-        aFlags);
+    nsCycleCollectionTraversalCallback& aCallback,
+    const TextFrameUnions& aField, const char* aName, uint32_t aFlags = 0) {
+  for (const auto& entry : aField) {
+    CycleCollectionNoteChild(aCallback, entry.GetKey(),
+                             "TextFrameUnions's key (nsRefPtrHashKey<Element>)",
+                             aFlags);
   }
 }
 

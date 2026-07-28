@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,16 +11,17 @@
 #  include "MediaEventSource.h"
 #  include "MediaInfo.h"
 #  include "MediaResult.h"
+#  include "PerformanceRecorder.h"
 #  include "mozilla/EnumSet.h"
 #  include "mozilla/EnumTypeTraits.h"
 #  include "mozilla/MozPromise.h"
+#  include "mozilla/PRemoteCDMActor.h"
 #  include "mozilla/RefPtr.h"
 #  include "mozilla/TaskQueue.h"
+#  include "mozilla/ipc/UtilityMediaService.h"
 #  include "mozilla/layers/KnowsCompositor.h"
 #  include "mozilla/layers/LayersTypes.h"
-#  include "mozilla/ipc/UtilityAudioDecoder.h"
 #  include "nsTArray.h"
-#  include "PerformanceRecorder.h"
 
 namespace mozilla {
 class TrackInfo;
@@ -43,22 +42,40 @@ static LazyLogModule sPDMLog("PlatformDecoderModule");
 
 namespace media {
 
-enum class Option {
-  Default,
-  LowLatency,
-  HardwareDecoderNotAllowed,
-  FullH264Parsing,
-  ErrorIfNoInitializationData,  // By default frames delivered before
-                                // initialization data are dropped. Pass this
-                                // option to raise an error if frames are
-                                // delivered before initialization data.
-  DefaultPlaybackDeviceMono,    // Currently only used by Opus on RDD to avoid
-                                // initialization of audio backends on RDD
-  KeepOriginalPts,  // It can be that the decoder mangles the pts of decoded
-                    // frames, this forces using the input PTS.
+template <typename T>
+static nsCString EnumSetToString(const EnumSet<T>& aSet) {
+  nsCString str;
+  for (const auto e : aSet) {
+    if (!str.IsEmpty()) {
+      str.AppendLiteral("|");
+    }
+    str.AppendPrintf("%s", EnumValueToString(e));
+  }
+  if (str.IsEmpty()) {
+    str.AppendLiteral("Empty");
+  }
+  return str;
+}
 
-  SENTINEL  // one past the last valid value
-};
+MOZ_DEFINE_ENUM_CLASS_WITH_TOSTRING(
+    Option,
+    (Default, LowLatency, HardwareDecoderNotAllowed, FullH264Parsing,
+     ErrorIfNoInitializationData,  // By default frames delivered before
+                                   // initialization data are dropped. Pass this
+                                   // option to raise an error if frames are
+                                   // delivered before initialization data.
+     DefaultPlaybackDeviceMono,  // Currently only used by Opus on RDD to avoid
+                                 // initialization of audio backends on RDD
+     KeepOriginalPts,  // It can be that the decoder mangles the pts of decoded
+                       // frames, this forces using the input PTS.
+     Output8BitPerChannel,  // Convert decoded data to 8-bit per channel format.
+                            // Useful when the consumer (webrender, WebGL, ...)
+                            // doesn't support inputs higher than 8-bit. ONLY
+                            // SUPPORTED BY DAV1DDecoder and FFmpegVideoDecoder.
+
+     SENTINEL  // one past the last valid value
+     ));
+
 using OptionSet = EnumSet<Option>;
 
 struct UseNullDecoder {
@@ -68,11 +85,22 @@ struct UseNullDecoder {
 };
 
 // Do not wrap H264 decoder in a H264Converter.
-struct NoWrapper {
-  NoWrapper() = default;
-  explicit NoWrapper(bool aDontUseWrapper) : mDontUseWrapper(aDontUseWrapper) {}
-  bool mDontUseWrapper = false;
-};
+MOZ_DEFINE_ENUM_CLASS_WITH_BASE_AND_TOSTRING(Wrapper, uint8_t,
+                                             (AudioTrimmer,
+                                              MediaChangeMonitor));
+using WrapperSet = EnumSet<Wrapper>;
+static WrapperSet GetDefaultWrapperSet(const TrackInfo& aInfo) {
+  // MediaChangeMonitor can work with some audio codecs like AAC but only
+  // WebCodecs needs it, so it's only enabled for video by default.
+  WrapperSet set;
+  if (aInfo.IsVideo()) {
+    set += Wrapper::MediaChangeMonitor;
+  }
+  if (aInfo.IsAudio()) {
+    set += Wrapper::AudioTrimmer;
+  }
+  return set;
+}
 
 struct VideoFrameRate {
   VideoFrameRate() = default;
@@ -103,8 +131,9 @@ struct CreateDecoderParamsForAsync {
   const RefPtr<layers::ImageContainer> mImageContainer;
   const RefPtr<layers::KnowsCompositor> mKnowsCompositor;
   const RefPtr<GMPCrashHelper> mCrashHelper;
+  const RefPtr<PRemoteCDMActor> mCDM;
   const media::UseNullDecoder mUseNullDecoder;
-  const media::NoWrapper mNoWrapper;
+  const media::WrapperSet mWrappers;
   const TrackInfo::TrackType mType = TrackInfo::kUndefinedTrack;
   std::function<MediaEventProducer<TrackInfo::TrackType>*()>
       mOnWaitingForKeyEvent;
@@ -118,14 +147,15 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
   using Option = media::Option;
   using OptionSet = media::OptionSet;
   using UseNullDecoder = media::UseNullDecoder;
-  using NoWrapper = media::NoWrapper;
+  using WrapperSet = media::WrapperSet;
   using VideoFrameRate = media::VideoFrameRate;
   enum class EncryptedCustomIdent : bool {
     False,
     True,
   };
 
-  explicit CreateDecoderParams(const TrackInfo& aConfig) : mConfig(aConfig) {}
+  explicit CreateDecoderParams(const TrackInfo& aConfig)
+      : mConfig(aConfig), mWrappers(media::GetDefaultWrapperSet(aConfig)) {}
   CreateDecoderParams(const CreateDecoderParams& aParams) = default;
 
   MOZ_IMPLICIT CreateDecoderParams(const CreateDecoderParamsForAsync& aParams)
@@ -133,8 +163,9 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
         mImageContainer(aParams.mImageContainer),
         mKnowsCompositor(aParams.mKnowsCompositor),
         mCrashHelper(aParams.mCrashHelper),
+        mCDM(aParams.mCDM),
         mUseNullDecoder(aParams.mUseNullDecoder),
-        mNoWrapper(aParams.mNoWrapper),
+        mWrappers(aParams.mWrappers),
         mType(aParams.mType),
         mOnWaitingForKeyEvent(aParams.mOnWaitingForKeyEvent),
         mOptions(aParams.mOptions),
@@ -144,7 +175,7 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
 
   template <typename T1, typename... Ts>
   CreateDecoderParams(const TrackInfo& aConfig, T1&& a1, Ts&&... args)
-      : mConfig(aConfig) {
+      : mConfig(aConfig), mWrappers(media::GetDefaultWrapperSet(aConfig)) {
     Set(std::forward<T1>(a1), std::forward<Ts>(args)...);
   }
 
@@ -164,11 +195,43 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
     return *mConfig.GetAsAudioInfo();
   }
 
+  bool IsVideo() const { return mConfig.IsVideo(); }
+
+  bool IsAudio() const { return mConfig.IsAudio(); }
+
   layers::LayersBackend GetLayersBackend() const {
     if (mKnowsCompositor) {
       return mKnowsCompositor->GetCompositorBackendType();
     }
     return layers::LayersBackend::LAYERS_NONE;
+  }
+
+  nsCString ToString() const {
+    nsPrintfCString str("CreateDecoderParams @ %p: ", this);
+    str.AppendPrintf("mConfig = %s", mConfig.ToString().get());
+    str.AppendPrintf(", mImageContainer = %p", mImageContainer);
+    str.AppendPrintf(", mError = %s",
+                     mError ? mError->Description().get() : "null");
+    str.AppendPrintf(", mKnowsCompositor = %p", mKnowsCompositor);
+    str.AppendPrintf(", mCrashHelper = %p", mCrashHelper);
+    str.AppendPrintf(", mCDM = %p", mCDM);
+    str.AppendPrintf(", mUseNullDecoder = %s",
+                     mUseNullDecoder.mUse ? "yes" : "no");
+    str.AppendPrintf(", mWrappers = %s", EnumSetToString(mWrappers).get());
+    str.AppendPrintf(", mType = %d", static_cast<int32_t>(mType));
+    str.AppendPrintf(", mOnWaitingForKeyEvent = %s",
+                     mOnWaitingForKeyEvent ? "yes" : "no");
+    str.AppendPrintf(", mOptions = %s", EnumSetToString(mOptions).get());
+    str.AppendPrintf(", mRate = %f", mRate.mValue);
+    str.AppendPrintf(
+        ", mMediaEngineId = %s",
+        mMediaEngineId ? std::to_string(*mMediaEngineId).c_str() : "None");
+    str.AppendPrintf(", mTrackingId = %s",
+                     mTrackingId ? mTrackingId->ToString().get() : "None");
+    str.AppendPrintf(
+        ", mEncryptedCustomIdent = %s",
+        mEncryptedCustomIdent == EncryptedCustomIdent::True ? "true" : "false");
+    return {std::move(str)};
   }
 
   // CreateDecoderParams is a MOZ_STACK_CLASS, it is only used to
@@ -179,8 +242,9 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
   MediaResult* mError = nullptr;
   layers::KnowsCompositor* mKnowsCompositor = nullptr;
   GMPCrashHelper* mCrashHelper = nullptr;
+  PRemoteCDMActor* mCDM = nullptr;
   media::UseNullDecoder mUseNullDecoder;
-  media::NoWrapper mNoWrapper;
+  WrapperSet mWrappers;
   TrackInfo::TrackType mType = TrackInfo::kUndefinedTrack;
   std::function<MediaEventProducer<TrackInfo::TrackType>*()>
       mOnWaitingForKeyEvent;
@@ -189,7 +253,7 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
   // Used on Windows when the MF media engine playback is enabled.
   Maybe<uint64_t> mMediaEngineId;
   Maybe<TrackingId> mTrackingId;
-  EncryptedCustomIdent mEncryptedCustomIdent;
+  EncryptedCustomIdent mEncryptedCustomIdent = EncryptedCustomIdent::False;
 
  private:
   void Set(layers::ImageContainer* aImageContainer) {
@@ -197,10 +261,11 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
   }
   void Set(MediaResult* aError) { mError = aError; }
   void Set(GMPCrashHelper* aCrashHelper) { mCrashHelper = aCrashHelper; }
+  void Set(PRemoteCDMActor* aCDM) { mCDM = aCDM; }
   void Set(UseNullDecoder aUseNullDecoder) {
     mUseNullDecoder = aUseNullDecoder;
   }
-  void Set(NoWrapper aNoWrapper) { mNoWrapper = aNoWrapper; }
+  void Set(const WrapperSet& aWrappers) { mWrappers = aWrappers; }
   void Set(const OptionSet& aOptions) { mOptions = aOptions; }
   void Set(VideoFrameRate aRate) { mRate = aRate; }
   void Set(layers::KnowsCompositor* aKnowsCompositor) {
@@ -231,8 +296,9 @@ struct MOZ_STACK_CLASS CreateDecoderParams final {
     mError = aParams.mError;
     mKnowsCompositor = aParams.mKnowsCompositor;
     mCrashHelper = aParams.mCrashHelper;
+    mCDM = aParams.mCDM;
     mUseNullDecoder = aParams.mUseNullDecoder;
-    mNoWrapper = aParams.mNoWrapper;
+    mWrappers = aParams.mWrappers;
     mType = aParams.mType;
     mOnWaitingForKeyEvent = aParams.mOnWaitingForKeyEvent;
     mOptions = aParams.mOptions;
@@ -251,24 +317,26 @@ struct MOZ_STACK_CLASS SupportDecoderParams final {
   using Option = media::Option;
   using OptionSet = media::OptionSet;
   using UseNullDecoder = media::UseNullDecoder;
-  using NoWrapper = media::NoWrapper;
+  using WrapperSet = media::WrapperSet;
   using VideoFrameRate = media::VideoFrameRate;
 
-  explicit SupportDecoderParams(const TrackInfo& aConfig) : mConfig(aConfig) {}
+  explicit SupportDecoderParams(const TrackInfo& aConfig)
+      : mConfig(aConfig), mWrappers(media::GetDefaultWrapperSet(aConfig)) {}
 
   explicit SupportDecoderParams(const CreateDecoderParams& aParams)
       : mConfig(aParams.mConfig),
         mError(aParams.mError),
         mKnowsCompositor(aParams.mKnowsCompositor),
+        mCDM(aParams.mCDM),
         mUseNullDecoder(aParams.mUseNullDecoder),
-        mNoWrapper(aParams.mNoWrapper),
+        mWrappers(aParams.mWrappers),
         mOptions(aParams.mOptions),
         mRate(aParams.mRate),
         mMediaEngineId(aParams.mMediaEngineId) {}
 
   template <typename T1, typename... Ts>
   SupportDecoderParams(const TrackInfo& aConfig, T1&& a1, Ts&&... args)
-      : mConfig(aConfig) {
+      : mConfig(aConfig), mWrappers(media::GetDefaultWrapperSet(aConfig)) {
     Set(std::forward<T1>(a1), std::forward<Ts>(args)...);
   }
 
@@ -278,8 +346,9 @@ struct MOZ_STACK_CLASS SupportDecoderParams final {
   DecoderDoctorDiagnostics* mDiagnostics = nullptr;
   MediaResult* mError = nullptr;
   RefPtr<layers::KnowsCompositor> mKnowsCompositor;
+  PRemoteCDMActor* mCDM = nullptr;
   UseNullDecoder mUseNullDecoder;
-  NoWrapper mNoWrapper;
+  WrapperSet mWrappers;
   OptionSet mOptions = OptionSet(Option::Default);
   VideoFrameRate mRate;
   Maybe<uint64_t> mMediaEngineId;
@@ -289,10 +358,11 @@ struct MOZ_STACK_CLASS SupportDecoderParams final {
     mDiagnostics = aDiagnostics;
   }
   void Set(MediaResult* aError) { mError = aError; }
+  void Set(PRemoteCDMActor* aCDM) { mCDM = aCDM; }
   void Set(media::UseNullDecoder aUseNullDecoder) {
     mUseNullDecoder = aUseNullDecoder;
   }
-  void Set(media::NoWrapper aNoWrapper) { mNoWrapper = aNoWrapper; }
+  void Set(const WrapperSet& aWrappers) { mWrappers = aWrappers; }
   void Set(const media::OptionSet& aOptions) { mOptions = aOptions; }
   void Set(media::VideoFrameRate aRate) { mRate = aRate; }
   void Set(layers::KnowsCompositor* aKnowsCompositor) {
@@ -337,6 +407,8 @@ struct MaxEnumValue<::mozilla::CreateDecoderParams::Option> {
 class PlatformDecoderModule {
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(PlatformDecoderModule)
+
+  virtual const char* Name() const = 0;
 
   // Perform any per-instance initialization.
   // This is called on the decode task queue.
@@ -563,6 +635,7 @@ class MediaDataDecoder : public DecoderDoctorLifeLogger<MediaDataDecoder> {
     kNeedNone = 0,
     kNeedAVCC = 1,
     kNeedAnnexB = 2,
+    kNeedHVCC = 3,
   };
 
   // Indicates that the decoder requires a specific format.
@@ -570,6 +643,31 @@ class MediaDataDecoder : public DecoderDoctorLifeLogger<MediaDataDecoder> {
   // Decode().
   virtual ConversionRequired NeedsConversion() const {
     return ConversionRequired::kNeedNone;
+  }
+
+  // Properties specific to platform decoders. They can be consulted by the
+  // client to improve playback smoothness. When not defined by the decoder, the
+  // client can choose its own.
+  // MaxNumVideoBuffers: some platform decoders have limited output buffers.
+  // This specifies how many (output) video buffers can be held at most by the
+  // client. Holding more will exhaust the deocder buffer pool and block further
+  // decoding.
+  // MinNumVideoBuffers: some platform decoders have decoding time longer than
+  // frame duration. To avoid frame dropping in this case, the client queues
+  // frames before starting to play. This value tells the client the least
+  // amount of frames it should queue.
+  // MaxNumCurrentImages: specifies how many (output) video buffers are current
+  // (renderable) at a time.
+  // The result is not accurated until Init() is resolved.
+  MOZ_DEFINE_ENUM_CLASS_WITH_TOSTRING_AT_CLASS_SCOPE(PropertyName,
+                                                     (MaxNumVideoBuffers,
+                                                      MinNumVideoBuffers,
+                                                      MaxNumCurrentImages));
+  // Generic type for property values to avoid breaking existing client code in
+  // the future.
+  using PropertyValue = Variant<uint32_t>;
+  virtual Maybe<PropertyValue> GetDecodeProperty(PropertyName aName) const {
+    return Nothing();
   }
 };
 

@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Chest sît ti domande l'acès ai tiei dispositîfs MIDI (Musical Instrument Digital Interface, vâl a dî interface digjitâl di struments musicâi). Al è pussibil abilitâ l'acès al dispositîf instalant un component adizionâl.
 site-permission-install-first-prompt-midi-message = Nol è garantît che chest acès al sedi sigûr. Continue dome se tu ti fidis di chest sît.
+site-permission-install-first-prompt-serial-header = Chest sît al domande l’acès ai tiei dispositîfs seriâi. Se tu instalis un component adizionâl tu puedis garantî l’acès.
+site-permission-install-first-prompt-serial-message = Nol è garantît che chest acès al sedi sigûr. Continue dome se tu ti fidis di chest sît.
 
 ##
 
@@ -81,6 +83,8 @@ addon-removal-title = Gjavâ { $name }?
 addon-removal-message = Gjavâ { $name } di { -brand-shorter-name }?
 addon-removal-button = Gjave
 addon-removal-abuse-report-checkbox = Segnale cheste estension a { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Se tu dopris funzions o estensions che a doprin chest model, al vignarà zontât di gnûf.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +127,19 @@ addon-install-error-corrupt-file = Impussibil instalâ il component adizionâl d
 addon-install-error-file-access = No si à podût instalâ { $addonName } parcè che { -brand-short-name } nol pues modificâ il file necessari.
 addon-install-error-not-signed = { -brand-short-name } al à impedît a chest sît di instalâ un component adizionâl no verificât.
 addon-install-error-invalid-domain = Nol è pussibil instalâ il component adizionâl { $addonName } di cheste direzion.
+addon-install-error-no-addon-name-file-access = Nol è stât pussibil instalâ il component adizionâl parcè che { -brand-short-name } nol rive a modificâ il file necessari.
 addon-local-install-error-network-failure = Impussibil instalâ chest component adizionâl par vie di un erôr tal filesystem.
 addon-local-install-error-incorrect-hash = Impussibil instalâ chest component adizionâl parcè che nol corispuint al component adizionâl { -brand-short-name } spietât.
 addon-local-install-error-corrupt-file = Impussibil instalâ chest component adizionâl parcè che al somee ruvinât.
 addon-local-install-error-file-access = No si à podût instalâ { $addonName } parcè che { -brand-short-name } nol pues modificâ il file necessari.
 addon-local-install-error-not-signed = Impussibil instalâ chest component adizionâl parcè che nol è stât verificât.
+addon-local-install-no-addon-name-error-file-access = Nol è stât pussibil instalâ il component adizionâl parcè che { -brand-short-name } nol rive a modificâ il file necessari.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Nol è stât pussibil instalâ { $addonName } parcè che no je compatibile cun { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } al viole lis politichis di Mozilla e nol è pussibil instalâlu in { -brand-short-name }.
+addon-install-error-soft-blocked2 = { $addonName } al è sometût a limitazions e nol è pussibil instalâlu in { -brand-short-name }.
 addon-install-error-blocklisted = Nol è stât pussibil instalâ { $addonName } parcè che al à un risi elevât di causâ problemis di stabilitât o di sigurece.
+addon-install-error-soft-blocked = { $addonName } al viole lis politichis di Mozilla e nol è pussibil instalâlu in { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = No tu puedis instalâ { $addonName } come utent finâl, dome une organizazion che e dopre politichis di imprese e pues instalâlu.

@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -54,11 +52,11 @@ if CONFIG["MOZ_WASM_SANDBOXING_OGG"]:
     LOCAL_INCLUDES += ["/media/libogg"]
 
 if CONFIG["MOZ_WASM_SANDBOXING_EXPAT"]:
-    include("/parser/expat/lib/sources.mozbuild")
-    WASM_SOURCES += ["/parser/expat/lib/" + s for s in expat_sources]
+    include("/parser/expat/sources.mozbuild")
+    WASM_SOURCES += ["/parser/expat/" + s for s in expat_sources]
     for k, v in expat_defines:
         WASM_DEFINES[k] = v
-    LOCAL_INCLUDES += ["/parser/expat/lib/"]
+    LOCAL_INCLUDES += ["/parser/expat/expat/lib/"]
 
 if CONFIG["MOZ_WASM_SANDBOXING_WOFF2"]:
     include("/modules/woff2/sources.mozbuild")

@@ -1,11 +1,8 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "DeviceAttachmentsD3D11.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/layers/Compositor.h"
 #include "CompositorD3D11Shaders.h"
@@ -202,13 +199,18 @@ bool DeviceAttachmentsD3D11::InitSyncObject() {
 }
 
 bool DeviceAttachmentsD3D11::CreateShaders() {
-  InitVertexShader(sLayerQuadVS, mVSQuadShader);
+  InitVertexShader(sLayerQuadVS, mVSQuadShader, ClipType::ClipNone);
+  InitVertexShader(sLayerQuadClipVS, mVSQuadShader, ClipType::RoundedRect);
 
-  InitPixelShader(sSolidColorShader, mSolidColorShader);
-  InitPixelShader(sRGBShader, mRGBShader);
-  InitPixelShader(sRGBAShader, mRGBAShader);
-  InitPixelShader(sYCbCrShader, mYCbCrShader);
-  InitPixelShader(sNV12Shader, mNV12Shader);
+  InitPixelShader(sSolidColorShader, getter_AddRefs(mSolidColorShader));
+  InitPixelShader(sRGBShader, mRGBShader, ClipType::ClipNone);
+  InitPixelShader(sRGBClipShader, mRGBShader, ClipType::RoundedRect);
+  InitPixelShader(sRGBAShader, mRGBAShader, ClipType::ClipNone);
+  InitPixelShader(sRGBAClipShader, mRGBAShader, ClipType::RoundedRect);
+  InitPixelShader(sYCbCrShader, mYCbCrShader, ClipType::ClipNone);
+  InitPixelShader(sYCbCrClipShader, mYCbCrShader, ClipType::RoundedRect);
+  InitPixelShader(sNV12Shader, mNV12Shader, ClipType::ClipNone);
+  InitPixelShader(sNV12ClipShader, mNV12Shader, ClipType::RoundedRect);
   return mContinueInit;
 }
 

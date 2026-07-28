@@ -14,11 +14,14 @@ var { XPCOMUtils } = ChromeUtils.importESModule(
 );
 
 ChromeUtils.defineESModuleGetters(this, {
-  CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
+  CustomizableUI:
+    "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
   PlacesTransactions: "resource://gre/modules/PlacesTransactions.sys.mjs",
-  PlacesUIUtils: "resource:///modules/PlacesUIUtils.sys.mjs",
+  PlacesUIUtils: "moz-src:///browser/components/places/PlacesUIUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
 });
+
+const STATIC_MENUITEM_COUNT = 7;
 
 var gEditItemOverlay = {
   // Array of PlacesTransactions accumulated by internal changes. It can be used
@@ -322,6 +325,22 @@ var gEditItemOverlay = {
         this._autoshowBookmarksToolbar();
       }
 
+      // Observe changes.
+      if (!this._observersAdded) {
+        this.handlePlacesEvents = this.handlePlacesEvents.bind(this);
+        PlacesUtils.observers.addListener(
+          ["bookmark-title-changed"],
+          this.handlePlacesEvents
+        );
+        window.addEventListener("unload", this);
+
+        let panel = document.getElementById("editBookmarkPanelContent");
+        panel.addEventListener("change", this);
+        panel.addEventListener("command", this);
+
+        this._observersAdded = true;
+      }
+
       let showOrCollapse = (
         rowId,
         isAppropriateForInput,
@@ -395,17 +414,6 @@ var gEditItemOverlay = {
           "places-details-pane-items-count",
           { count: uris.length }
         );
-      }
-
-      // Observe changes.
-      if (!this._observersAdded) {
-        this.handlePlacesEvents = this.handlePlacesEvents.bind(this);
-        PlacesUtils.observers.addListener(
-          ["bookmark-title-changed"],
-          this.handlePlacesEvents
-        );
-        window.addEventListener("unload", this);
-        this._observersAdded = true;
       }
 
       let focusElement = () => {
@@ -538,12 +546,18 @@ var gEditItemOverlay = {
   async _initFolderMenuList(aSelectedFolderGuid) {
     // clean up first
     var menupopup = this._folderMenuList.menupopup;
-    while (menupopup.children.length > 6) {
+    while (menupopup.children.length > STATIC_MENUITEM_COUNT) {
       menupopup.removeChild(menupopup.lastElementChild);
     }
 
+    // The mobile root should always be hidden unless it is selected.
+    let mobileItem = this._element("mobileRootItem");
+    mobileItem.hidden = true;
+
     // Build the static list
     if (!this._staticFoldersListBuilt) {
+      mobileItem.label = PlacesUtils.getString("MobileBookmarksFolderTitle");
+      mobileItem.folderGuid = PlacesUtils.bookmarks.mobileGuid;
       let unfiledItem = this._element("unfiledRootItem");
       unfiledItem.label = PlacesUtils.getString("OtherBookmarksFolderTitle");
       unfiledItem.folderGuid = PlacesUtils.bookmarks.unfiledGuid;
@@ -599,10 +613,12 @@ var gEditItemOverlay = {
     this._onFolderListSelected();
 
     this._folderMenuList.addEventListener("select", this);
+    this._folderMenuList.addEventListener("command", this);
     this._folderMenuListListenerAdded = true;
 
     // Hide the folders-separator if no folder is annotated as recently-used
-    this._element("foldersSeparator").hidden = menupopup.children.length <= 6;
+    this._element("foldersSeparator").hidden =
+      menupopup.children.length <= STATIC_MENUITEM_COUNT;
     this._folderMenuList.disabled = this.readOnly;
   },
 
@@ -641,11 +657,15 @@ var gEditItemOverlay = {
         this.handlePlacesEvents
       );
       window.removeEventListener("unload", this);
+      let panel = document.getElementById("editBookmarkPanelContent");
+      panel.removeEventListener("change", this);
+      panel.removeEventListener("command", this);
       this._observersAdded = false;
     }
 
     if (this._folderMenuListListenerAdded) {
       this._folderMenuList.removeEventListener("select", this);
+      this._folderMenuList.removeEventListener("command", this);
       this._folderMenuListListenerAdded = false;
     }
 
@@ -895,11 +915,14 @@ var gEditItemOverlay = {
       item => item.folderGuid === aFolderGuid
     );
     if (menuItem !== undefined) {
+      menuItem.hidden = false;
       return menuItem;
     }
 
-    // 3 special folders + separator + folder-items-count limit
-    if (menupopup.children.length == 4 + PlacesUIUtils.maxRecentFolders) {
+    if (
+      menupopup.children.length ==
+      STATIC_MENUITEM_COUNT + PlacesUIUtils.maxRecentFolders
+    ) {
       menupopup.removeChild(menupopup.lastElementChild);
     }
 
@@ -1066,15 +1089,13 @@ var gEditItemOverlay = {
       await this._rebuildTagsSelectorList();
 
       // This is a no-op if we've added the listener.
-      tagsSelector.addEventListener("mousedown", this);
-      tagsSelector.addEventListener("keypress", this);
+      tagsSelector.addEventListener("command", this);
     } else {
       document.l10n.setAttributes(expander, "bookmark-overlay-tags-expander2");
       tagsSelectorRow.hidden = true;
 
       // This is a no-op if we've removed the listener.
-      tagsSelector.removeEventListener("mousedown", this);
-      tagsSelector.removeEventListener("keypress", this);
+      tagsSelector.removeEventListener("command", this);
     }
   },
 
@@ -1125,28 +1146,51 @@ var gEditItemOverlay = {
   // EventListener
   handleEvent(event) {
     switch (event.type) {
-      case "mousedown":
-        if (event.button == 0) {
-          // Make sure the event is triggered on an item and not the empty space.
-          let item = event.target.closest("richlistbox,richlistitem");
-          if (item.localName == "richlistitem") {
-            this.toggleItemCheckbox(item);
-          }
-        }
-        break;
-      case "keypress":
-        if (event.key == " ") {
-          let item = event.target.currentItem;
-          if (item) {
-            this.toggleItemCheckbox(item);
-          }
-        }
-        break;
       case "unload":
         this.uninitPanel(false);
         break;
       case "select":
         this._onFolderListSelected();
+        break;
+      case "change":
+        switch (event.target.id) {
+          case "editBMPanel_namePicker":
+            this.onNamePickerChange().catch(console.error);
+            break;
+
+          case "editBMPanel_locationField":
+            this.onLocationFieldChange();
+            break;
+
+          case "editBMPanel_tagsField":
+            this.onTagsFieldChange();
+            break;
+
+          case "editBMPanel_keywordField":
+            this.onKeywordFieldChange();
+            break;
+        }
+        break;
+      case "command":
+        switch (event.currentTarget.id) {
+          case "editBMPanel_folderMenuList":
+            this.onFolderMenuListCommand(event).catch(console.error);
+            return;
+          case "editBMPanel_tagsSelector":
+            this.toggleTagsSelectorItem(event.target);
+            return;
+        }
+        switch (event.target.id) {
+          case "editBMPanel_foldersExpander":
+            this.toggleFolderTreeVisibility();
+            break;
+          case "editBMPanel_newFolderButton":
+            this.newFolder().catch(console.error);
+            break;
+          case "editBMPanel_tagsSelectorExpander":
+            this.toggleTagsSelector().catch(console.error);
+            break;
+        }
         break;
     }
   },
@@ -1164,24 +1208,16 @@ var gEditItemOverlay = {
     }
   },
 
-  toggleItemCheckbox(item) {
+  toggleTagsSelectorItem(item) {
     // Update the tags field when items are checked/unchecked in the listbox
     let tags = this._getTagsArrayFromTagsInputField();
-
     let curTagIndex = tags.indexOf(item.label);
-    let tagsSelector = this._element("tagsSelector");
-    tagsSelector.selectedItem = item;
-
-    if (!item.hasAttribute("checked")) {
-      item.setAttribute("checked", "true");
+    if (item.toggleAttribute("checked")) {
       if (curTagIndex == -1) {
         tags.push(item.label);
       }
-    } else {
-      item.removeAttribute("checked");
-      if (curTagIndex != -1) {
-        tags.splice(curTagIndex, 1);
-      }
+    } else if (curTagIndex != -1) {
+      tags.splice(curTagIndex, 1);
     }
     this._element("tagsField").value = tags.join(", ");
     this._updateTags();
@@ -1248,7 +1284,6 @@ ChromeUtils.defineLazyGetter(gEditItemOverlay, "_folderTree", () => {
           is="places-tree"
           data-l10n-id="bookmark-overlay-folders-tree"
           editable="true"
-          onselect="gEditItemOverlay.onFolderTreeSelect();"
           disableUserActions="true"
           hidecolumnpicker="true">
       <treecols>
@@ -1258,7 +1293,11 @@ ChromeUtils.defineLazyGetter(gEditItemOverlay, "_folderTree", () => {
     </tree>
   `)
   );
-  return gEditItemOverlay._element("folderTree");
+  const folderTree = gEditItemOverlay._element("folderTree");
+  folderTree.addEventListener("select", () =>
+    gEditItemOverlay.onFolderTreeSelect()
+  );
+  return folderTree;
 });
 
 for (let elt of [

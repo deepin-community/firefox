@@ -1,5 +1,3 @@
-/* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
-/* vim: set sts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -106,6 +104,15 @@ let requests = {
     return { data: { processId, fds, pid: process.pid } };
   },
 
+  connectRunning(options) {
+    let process = new ManagedProcess(options);
+    let processId = process.id;
+
+    io.addProcess(process);
+
+    return { data: { processId, fds: process.pipes.map(pipe => pipe.id) } };
+  },
+
   kill(processId, force = false) {
     let process = io.getProcess(processId);
 
@@ -144,10 +151,17 @@ let requests = {
     });
   },
 
+  // For testing.
+  getIsPolling() {
+    return { data: io.polling };
+  },
+
+  // For testing.
   getOpenFiles() {
     return { data: new Set(io.pipes.keys()) };
   },
 
+  // For testing.
   getProcesses() {
     let data = new Map(
       Array.from(io.processes.values())
@@ -157,10 +171,23 @@ let requests = {
     return { data };
   },
 
+  // For testing.
   waitForNoProcesses() {
     return Promise.all(
       Array.from(io.processes.values(), proc => proc.awaitFinished())
     );
+  },
+
+  // It is the caller's responsability to make sure dup() is called on the FDs
+  // returned here.
+  getFds(processId) {
+    // fd is a unix.Fd aka CDataFinalizer that wraps the actual integer. We can
+    // retrieve its value via .toString(), if it has not been closed yet.
+    let process = io.getProcess(processId);
+    let pipes = process.pipes.map(p => parseInt(p.fd.toString(), 10));
+    return {
+      data: [pipes[0], pipes[1], pipes[2]],
+    };
   },
 };
 
@@ -182,21 +209,13 @@ onmessage = event => {
       self.postMessage(response, result.transfer || []);
     })
     .catch(error => {
-      if (error instanceof Error) {
-        error = {
-          message: error.message,
-          fileName: error.fileName,
-          lineNumber: error.lineNumber,
-          column: error.column,
-          stack: error.stack,
-          errorCode: error.errorCode,
-        };
-      }
-
       self.postMessage({
         msg: "failure",
         msgId,
         error,
+        // We sometimes attach an extra property to the error, which is not
+        // copied when the error passes through structuredClone.
+        errorCode: error.errorCode,
       });
     })
     .catch(error => {

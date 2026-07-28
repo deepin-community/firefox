@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,8 +7,8 @@ import { RemotePageChild } from "resource://gre/actors/RemotePageChild.sys.mjs";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  EnrollmentType: "resource://nimbus/ExperimentAPI.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
-  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
 });
 
 export class AboutPrivateBrowsingChild extends RemotePageChild {
@@ -38,13 +37,13 @@ export class AboutPrivateBrowsingChild extends RemotePageChild {
   }
 
   PrivateBrowsingRecordClick(source) {
-    const experiment = lazy.ExperimentAPI.getExperimentMetaData({
-      featureId: "pbNewtab",
-    });
-    if (experiment) {
-      Services.telemetry.recordEvent("aboutprivatebrowsing", "click", source);
+    const metadata = lazy.NimbusFeatures.pbNewtab.getEnrollmentMetadata(
+      lazy.EnrollmentType.EXPERIMENT
+    );
+    if (metadata) {
+      Glean.aboutprivatebrowsing["click" + source].record();
     }
-    return experiment;
+    return !!metadata;
   }
 
   PrivateBrowsingShouldHideDefault() {

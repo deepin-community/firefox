@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Permeteu que el { -brand-s
 about-private-browsing-cookie-banners-promo-heading = El { -brand-short-name } s'encarrega dels bàners de galetes
 about-private-browsing-cookie-banners-promo-body = Per a ser menys rastrejats i navegar amb menys distraccions, ara rebutgem automàticament molts bàners de galetes.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = No deixeu rastre en aquest dispositiu
 about-private-browsing-felt-privacy-v1-info-body = El { -brand-short-name } suprimeix les galetes, l'historial i les dades dels llocs en tancar totes les finestres privades.
 about-private-browsing-felt-privacy-v1-info-link = Qui podria veure la meva activitat?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Tancar totes les finestres privades suprimeix les galetes, l'historial i les dades del lloc.
+about-private-browsing-nova-info-link = Qui podria veure la meva activitat?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = No s'està registrant res
+about-private-browsing-nova-info-subheader = Esborrarem totes les cerques i els inicis de sessió quan tanqueu aquesta finestra. Les proteccions integrades del { -brand-short-name } també estan activades, com ara el bloqueig dels elements de seguiment.

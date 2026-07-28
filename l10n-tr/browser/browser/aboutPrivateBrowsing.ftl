@@ -27,7 +27,7 @@ about-private-browsing-get-privacy = Gezindiğiniz her yerde gizliliğinizi koru
 about-private-browsing-hide-activity-1 = { -mozilla-vpn-brand-name } ile gezdiğiniz sayfaları ve konumunuzu gizleyebilirsiniz. Tek bir tıklamayla halka açık Wi-Fi ağlarında bile güvenli bir bağlantı kurabilirsiniz.
 about-private-browsing-prominent-cta = { -mozilla-vpn-brand-name } ile gizli kalın
 about-private-browsing-focus-promo-cta = { -focus-brand-name }’u indir
-about-private-browsing-focus-promo-header = { -focus-brand-name }: Yolda gizli gezinti
+about-private-browsing-focus-promo-header = { -focus-brand-name }: Her yerde gizli gezinti
 about-private-browsing-focus-promo-text = Mobil gizlilik tarayıcımız her seferinde geçmişinizi ve çerezlerinizi temizler.
 
 ## The following strings will be used for experiments in Fx99 and Fx100
@@ -73,8 +73,18 @@ about-private-browsing-cookie-banners-promo-message = Dikkatiniz dağılmadan ge
 about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } karşınıza daha az çerez bildirimi çıkarır
 about-private-browsing-cookie-banners-promo-body = Artık birçok çerez bildirimini otomatik olarak reddediyoruz, böylece daha az takip edilecek ve dikkatiniz dağılmadan gezinebileceksiniz.
 
-## Strings for Felt Privacy v1 experiments in 119
+## Strings for the info section of about:privatebrowsing
 
 about-private-browsing-felt-privacy-v1-info-header = Bu cihazda iz bırakmayın
 about-private-browsing-felt-privacy-v1-info-body = Tüm gizli pencerelerinizi kapattığınızda { -brand-short-name } çerezlerinizi, gezinti geçmişinizi ve site verilerinizi siler.
 about-private-browsing-felt-privacy-v1-info-link = Etkinliğimi kimler görebilir?
+
+## Strings for the Nova redesign of about:privatebrowsing
+
+about-private-browsing-nova-info-body = Tüm gizli pencerelerinizi kapattığınızda çerezleriniz, geçmişiniz ve site verileriniz silinir.
+about-private-browsing-nova-info-link = Yaptıklarımı kimler hâlâ görebilir?
+# "You're off the record" is an English idiom meant to communicate that you
+# are not being recorded. If there is not a comparable phrase in the locale,
+# fall back to "Your browsing will be deleted"
+about-private-browsing-nova-info-header = Gezinti geçmişiniz kaydedilmiyor
+about-private-browsing-nova-info-subheader = Bu pencereyi kapattığınızda tüm aramalarınız ve oturumlarınız silinecektir. { -brand-short-name } tarayıcısının yerleşik korumaları (örn. takip kodu engelleme) burada da açıktır.

@@ -2,12 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Ny flik
     .accesskey = N
 reload-tab =
     .label = Uppdatera flik
     .accesskey = U
+reload-tab2 =
+    .label = Ladda om
+    .accesskey = L
 select-all-tabs =
     .label = Välj alla flikar
     .accesskey = V
@@ -20,19 +27,31 @@ tab-context-play-tabs =
 duplicate-tab =
     .label = Duplicera flik
     .accesskey = D
+duplicate-tab2 =
+    .label = Duplicera
+    .accesskey = D
 duplicate-tabs =
     .label = Duplicera flikar
+    .accesskey = D
+duplicate-tabs2 =
+    .label = Duplicera
     .accesskey = D
 # The following string is displayed on a menuitem that will close the tabs from the start of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Left" and in right-to-left languages this should use "Right".
 close-tabs-to-the-start =
     .label = Stäng flikar till vänster
     .accesskey = v
+close-tabs-to-the-start-vertical =
+    .label = Stäng flikar ovan
+    .accesskey = o
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Stäng flikar till höger
     .accesskey = h
+close-tabs-to-the-end-vertical =
+    .label = Stäng flikar nedan
+    .accesskey = n
 close-other-tabs =
     .label = Stäng alla andra flikar
     .accesskey = ä
@@ -42,8 +61,14 @@ reload-tabs =
 pin-tab =
     .label = Fäst flik
     .accesskey = F
+tab-context-pin-tab2 =
+    .label = Fäst
+    .accesskey = F
 unpin-tab =
     .label = Lösgör flik
+    .accesskey = L
+tab-context-unpin-tab2 =
+    .label = Lösgör
     .accesskey = L
 pin-selected-tabs =
     .label = Fäst flikar
@@ -57,9 +82,16 @@ bookmark-selected-tabs =
 tab-context-bookmark-tab =
     .label = Bokmärk flik…
     .accesskey = B
+# Context menu item used to bookmark 1 or more selected tabs
+tab-context-bookmark-tab2 =
+    .label = Bokmärk
+    .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Öppna i ny innehållsflik
     .accesskey = n
+tab-context-open-in-new-container-tab2 =
+    .label = Öppna i en ny behållarflik
+    .accesskey = b
 move-to-start =
     .label = Flytta till början
     .accesskey = b
@@ -69,15 +101,36 @@ move-to-end =
 move-to-new-window =
     .label = Flytta till nytt fönster
     .accesskey = t
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Flytta till { $profileName }
 tab-context-close-multiple-tabs =
     .label = Stäng flera flikar
+    .accesskey = f
+# Sub-menu label in context menu with different options to close multiple tabs (e.g. close to right, left, etc.).
+tab-context-close-multiple-tabs2 =
+    .label = Stäng flera
     .accesskey = f
 tab-context-close-duplicate-tabs =
     .label = Stäng dubbletter av flikar
     .accesskey = d
+tab-context-close-duplicate-tabs2 =
+    .label = Stäng dubbletter av denna flik
+    .accesskey = d
 tab-context-share-url =
     .label = Dela
     .accesskey = D
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Ny flik till höger
+    .accesskey = h
+tab-context-new-tab-open-vertical =
+    .label = Ny flik nedan
+    .accesskey = n
+tab-context-new-group =
+    .label = Ny grupp
+    .accesskey = N
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -96,6 +149,13 @@ tab-context-close-n-tabs =
            *[other] Stäng { $tabCount } flikar
         }
     .accesskey = S
+tab-context-close-n-tabs2 =
+    .label =
+        { $tabCount ->
+            [1] Stäng
+           *[other] Stäng { $tabCount } flikar
+        }
+    .accesskey = S
 tab-context-move-tabs =
     .label =
         { $tabCount ->
@@ -104,6 +164,42 @@ tab-context-move-tabs =
            *[other] Flytta flikar
         }
     .accesskey = t
+# Context menu option, highlighting this shows a submenu of potential destinations to move one or more tabs to (tab groups, windows, profiles, start, end, etc.)
+tab-context-move-tabs2 =
+    .label =
+        { $tabCount ->
+            [1] Flytta flik till
+           *[other] Flytta { $tabCount } flikat till
+        }
+    .accesskey = F
+# Context menu option, highlighting this shows a submenu of potential destinations to move two tabs of a split view together to (tab groups, windows, profiles, start, end, etc.)
+tab-context-move-split-view =
+    .label = Flytta delad vy till
+    .accesskey = d
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Skicka till enhet
+           *[other] Skicka { $tabCount } flikar till enhet
+        }
+    .accesskey = S
+tab-context-send-to-device2 =
+    .label = Skicka till dina enheter
+    .accesskey = e
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-mobile =
+    .label =
+        { $tabCount ->
+            [1] Skicka till mobil
+            [one] Skicka { $tabCount } flik till mobilen
+           *[other] Skicka { $tabCount } flikar till mobilen
+        }
+    .accesskey = S
+# Verb: share a collection of selected tabs as a link
+tab-context-share-selected-tabs =
+    .label = Skapa delbar länk
+    .accesskey = d
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -111,3 +207,14 @@ tab-context-send-tabs-to-device =
            *[other] Skicka { $tabCount } flikar till enhet
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Frigör flik
+           *[other] Frigör { $tabCount } flikar
+        }
+    .accesskey = F
+# Context menu option, alternate label for unloading the content of 1 or more tabs to reduce memory usage
+tab-context-unload-tabs =
+    .label = Frigör
+    .accesskey = F

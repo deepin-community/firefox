@@ -15,6 +15,11 @@ appmenuitem-banner-update-unsupported =
     .label = No se puede actualizar — sistema incompatible
 appmenuitem-banner-update-restart =
     .label = Actualización disponible — reiniciar ahora
+appmenu-nova-update-link = Reiniciar para actualizar
+appmenu-nova-fxa-sign-in = Iniciar sesión
+appmenu-nova-switch-device-promo =
+    .message = ¿Nuevo dispositivo pronto? ¡Llevate { -brand-short-name } con vos!
+appmenu-nova-switch-device-link = Cómo migrar los datos
 appmenuitem-new-tab =
     .label = Nueva pestaña
 appmenuitem-new-window =
@@ -23,10 +28,16 @@ appmenuitem-new-private-window =
     .label = Nueva ventana privada
 appmenuitem-history =
     .label = Historial
+appmenuitem-tab-groups =
+    .label = Grupos de pestañas
 appmenuitem-downloads =
     .label = Descargas
 appmenuitem-passwords =
     .label = Contraseñas
+appmenuitem-extensions-and-themes =
+    .label = Extensiones y temas
+appmenuitem-extensions =
+    .label = Extensiones
 appmenuitem-addons-and-themes =
     .label = Complementos y temas
 appmenuitem-print =
@@ -108,8 +119,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronizar y guardar datos
 appmenu-fxa-signed-in-label = Iniciar sesión
 appmenu-fxa-setup-sync =
     .label = Activar sincronización…
+appmenu-fxa-setup-sync-new = Activar
 appmenuitem-save-page =
     .label = Guardar página como…
+appmenuitem-fxa-sync-off-title = La sincronización está desactivada
+appmenuitem-fxa-sync-off-description = Proteja y acceda a sus marcadores, contraseñas y más en cualquier lugar.
 
 ## What's New panel in App menu.
 
@@ -163,6 +177,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Mayús+2
     }
+profiler-button-dropmarker =
+    .label = Abrir el panel del perfilador
+    .tooltiptext = Abrir el panel del perfilador
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -180,7 +197,7 @@ profiler-popup-capture-shortcut =
 profiler-popup-presets-web-developer-description = Configuración recomendada para depuración de la mayoría de aplicaciones web, con poca sobrecarga.
 profiler-popup-presets-web-developer-label =
     .label = Desarrollador web
-profiler-popup-presets-firefox-description = Valor predeterminado recomendado para la creación de perfiles { -brand-shorter-name }
+profiler-popup-presets-firefox-description = Valor predeterminado recomendado para el perfilado de { -brand-shorter-name }
 profiler-popup-presets-firefox-label =
     .label = { -brand-shorter-name }
 profiler-popup-presets-graphics-description = Preestablecido para investigar errores gráficos en { -brand-shorter-name }.
@@ -189,9 +206,15 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Preestablecido para investigar errores de audio y video en { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Medios
+profiler-popup-presets-ml-description = Preestablecido para investigar problemas de machine learning en { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Machine Learning
 profiler-popup-presets-networking-description = Preestablecido para investigar problemas de red en { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Red
+profiler-popup-presets-networking-with-logs-description = Preestablecido para investigar errores de red en { -brand-shorter-name }, incluidos los registros de red. Estos registros pueden contener información confidencial, como las URL visitadas.
+profiler-popup-presets-networking-with-logs-label =
+    .label = Redes con registros
 profiler-popup-presets-power-description = Preestablecido para investigar errores de uso de energía en { -brand-shorter-name }, con poco consumo.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
@@ -199,6 +222,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Preestablecido para depuración en { -brand-shorter-name } Alta sobrecarga, no la use para mejorar el rendimiento sino para enfocarse en comprender el comportamiento del navegador.
 profiler-popup-presets-debug-label =
     .label = Depurar
+profiler-popup-presets-web-compat-description = Ajuste preestablecido recomendado para depurar problemas de compatibilidad web en sitios, en lugar de rastrear el rendimiento.
+profiler-popup-presets-web-compat-label =
+    .label = Compatibilidad web
 profiler-popup-presets-custom-label =
     .label = Personalizado
 
@@ -264,6 +290,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Personalizar barra de herramientas…
+appmenu-abouttranslations =
+    .label = Traducir…
+appmenu-edit-pdf =
+    .label = Editar PDF…
 appmenu-developer-tools-subheader = Herramientas del navegador
 appmenu-developer-tools-extensions =
     .label = Extensiones para desarrolladores
@@ -273,9 +303,50 @@ appmenuitem-report-broken-site =
 ## Panel for privacy and security products
 
 appmenuitem-sign-in-account = Ingresar a tu cuenta
+appmenuitem-monitor-title2 = Vaya un paso adelante del robo de identidad
+appmenuitem-monitor-description2 = Recibir alertas sobre filtraciones de datos
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Obtener alertas de filtración de datos
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = Mantener el correo electrónico privado
+appmenuitem-relay-description2 = Ayuda a evitar el spam en la bandeja de entrada
 appmenuitem-relay-description = Enmascarar correo electrónico y teléfono reales
+appmenuitem-services-relay-description = Iniciar panel de máscaras de correo electrónico
+appmenuitem-vpn-title2 = Oculta la ubicación con { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description3 = Hace quetla navegación sea más difícil de rastrear
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Obtener protección para todo el dispositivo
 appmenuitem-vpn-description = Proteger la actividad en línea
+appmenu-services-header = Mis servicios
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = Herramientas de privacidad
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Pruebe otras herramientas de protección de Mozilla:
+appmenu-other-protection-header = Pruebe otras herramientas de protección de { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Otros perfiles
+appmenu-manage-profiles =
+    .label = Administrar los perfiles
+appmenu-copy-profile =
+    .label = Copiar este perfil
+appmenu-create-profile2 =
+    .label = Crear un nuevo perfil
+appmenu-create-profile =
+    .label = Nuevo perfil
+appmenu-edit-profile =
+    .aria-label = Editar el perfil
+appmenu-edit-this-profile =
+    .label = Editar este perfil
+appmenu-profile-current-in-use = Perfil actual en uso
+appmenu-profiles-2 =
+    .label = Perfiles
+appmenu-profiles-header = Perfiles
+appmenu-all-profiles =
+    .label = Todos los perfiles
+appmenu-secure-sync-header = Sincronización segura

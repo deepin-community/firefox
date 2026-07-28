@@ -18,6 +18,10 @@ support-addons-type = Typ
 support-addons-enabled = Povolené
 support-addons-version = Verzia
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Umiestnenie
 legacy-user-stylesheets-title = Staré šablóny so štýlmi používateľa
 legacy-user-stylesheets-enabled = Aktívne
 legacy-user-stylesheets-stylesheet-types = Šablóny so štýlmi
@@ -132,6 +136,10 @@ place-database-stats-efficiency-perc = Efektivita (%)
 place-database-stats-sequentiality-perc = Následnosť (%)
 place-database-integrity = Integrita
 place-database-verify-integrity = Skontrolovať integritu
+place-database-last-idle-maintenance-data = Dátum poslednej údržby počas nečinnosti
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Dátum posledného vysávania
+place-database-last-integrity-corruption-date = Dátum posledného poškodenia integrity
 a11y-title = Zjednodušenie ovládania
 a11y-activated = Aktivované
 a11y-force-disabled = Zabrániť zapnutiu funkcie Zjednodušenie ovládania
@@ -153,7 +161,7 @@ troubleshoot-mode-title = Diagnostika problémov
 restart-in-troubleshoot-mode-label = Režim riešenia problémov…
 clear-startup-cache-title = Skúste vyčistiť vyrovnávaciu pamäť spustenia
 clear-startup-cache-label = Vymazať vyrovnávaciu pamäť spustenia…
-startup-cache-dialog-title2 = Reštartovať { -brand-short-name } a vyčistiť vyrovnávaciu pamäť spustenia?
+startup-cache-dialog-title2 = Reštartovať { -brand-short-name(case: "acc") } a vyčistiť vyrovnávaciu pamäť spustenia?
 startup-cache-dialog-body2 = Vaše nastavenia a nainštalované rozšírenia to nijako neovplyvní.
 restart-button-label = Reštartovať
 
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Vypísanie databázy
 
 media-codec-support-sw-decoding = Softvérové dekódovanie
 media-codec-support-hw-decoding = Hardvérové dekódovanie
+media-codec-support-sw-encoding = Softvérové kódovanie
+media-codec-support-hw-encoding = Hardvérové kódovanie
 media-codec-support-codec-name = Názov kodeku
 media-codec-support-supported = Podporované
 media-codec-support-unsupported = Nepodporované

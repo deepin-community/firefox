@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -116,17 +114,25 @@ void HTMLOutputElement::CharacterDataChanged(nsIContent* aContent,
   DescendantsChanged();
 }
 
-void HTMLOutputElement::ContentAppended(nsIContent* aFirstNewContent) {
+void HTMLOutputElement::ContentAppended(nsIContent* aFirstNewContent,
+                                        const ContentAppendInfo&) {
   DescendantsChanged();
 }
 
-void HTMLOutputElement::ContentInserted(nsIContent* aChild) {
+void HTMLOutputElement::ContentInserted(nsIContent* aChild,
+                                        const ContentInsertInfo&) {
   DescendantsChanged();
 }
 
-void HTMLOutputElement::ContentRemoved(nsIContent* aChild,
-                                       nsIContent* aPreviousSibling) {
-  DescendantsChanged();
+void HTMLOutputElement::ContentWillBeRemoved(nsIContent* aChild,
+                                             const ContentRemoveInfo& aInfo) {
+  if (aInfo.mBatchRemovalState && !aInfo.mBatchRemovalState->mIsFirst) {
+    return;
+  }
+  // Make sure to run this once the removal has taken place.
+  nsContentUtils::AddScriptRunner(
+      NewRunnableMethod("HTMLOutputElement::DescendantsChanged", this,
+                        &HTMLOutputElement::DescendantsChanged));
 }
 
 JSObject* HTMLOutputElement::WrapNode(JSContext* aCx,

@@ -62,16 +62,38 @@ add_setup(async function () {
   let oldCanRecord = Services.telemetry.canRecordExtended;
   Services.telemetry.canRecordExtended = true;
 
-  await SearchTestUtils.installSearchExtension(
+  const CONFIG_V2 = [
     {
-      search_url: getPageUrl(true),
-      search_url_get_params: "s={searchTerms}&abc=ff",
-      suggest_url:
-        "https://example.com/browser/browser/components/search/test/browser/searchSuggestionEngine.sjs",
-      suggest_url_get_params: "query={searchTerms}",
+      recordType: "engine",
+      identifier: "Example",
+      base: {
+        name: "Example",
+        urls: {
+          search: {
+            base: getPageUrl(true),
+            searchTermParamName: "s",
+            params: [
+              {
+                name: "abc",
+                value: "ff",
+              },
+            ],
+          },
+          suggestions: {
+            base: "https://example.com/browser/browser/components/search/test/browser/searchSuggestionEngine.sjs",
+            method: "GET",
+            searchTermParamName: "query",
+          },
+        },
+      },
     },
-    { setAsDefault: true }
-  );
+    {
+      recordType: "defaultEngines",
+      globalDefault: "Example",
+      specificDefaults: [],
+    },
+  ];
+  await SearchTestUtils.updateRemoteSettingsConfig(CONFIG_V2);
 
   tab = await BrowserTestUtils.openNewForegroundTab(gBrowser);
 
@@ -109,7 +131,7 @@ add_task(async function test_search() {
 
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
+      "Example.urlbar": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -120,14 +142,7 @@ add_task(async function test_search() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -150,7 +165,7 @@ add_task(async function test_reload() {
 
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
+      "Example.urlbar": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -163,14 +178,7 @@ add_task(async function test_reload() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -186,14 +194,7 @@ add_task(async function test_reload() {
     },
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "reload",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -212,7 +213,7 @@ add_task(async function test_reload() {
 
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
+      "Example.urlbar": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -226,14 +227,7 @@ add_task(async function test_reload() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -249,14 +243,7 @@ add_task(async function test_reload() {
     },
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "reload",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       engagements: [
         {
@@ -290,7 +277,7 @@ add_task(async function test_fresh_search() {
 
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
+      "Example.urlbar": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -301,14 +288,7 @@ add_task(async function test_fresh_search() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -329,7 +309,7 @@ add_task(async function test_click_ad() {
 
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
+      "Example.urlbar": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -341,14 +321,7 @@ add_task(async function test_click_ad() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       engagements: [
         {
@@ -377,7 +350,7 @@ add_task(async function test_go_back() {
 
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
+      "Example.urlbar": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -391,14 +364,7 @@ add_task(async function test_go_back() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       engagements: [
         {
@@ -417,14 +383,7 @@ add_task(async function test_go_back() {
     },
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "tabhistory",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -443,7 +402,7 @@ add_task(async function test_go_back() {
 
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
+      "Example.urlbar": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -458,14 +417,7 @@ add_task(async function test_go_back() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       engagements: [
         {
@@ -484,14 +436,7 @@ add_task(async function test_go_back() {
     },
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "tabhistory",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       engagements: [
         {
@@ -525,7 +470,7 @@ add_task(async function test_fresh_search_with_urlbar_persisted() {
   await adImpressionPromise;
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
+      "Example.urlbar": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -536,14 +481,7 @@ add_task(async function test_fresh_search_with_urlbar_persisted() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -562,8 +500,8 @@ add_task(async function test_fresh_search_with_urlbar_persisted() {
   await adImpressionPromise;
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
-      "other-Example.urlbar-persisted": 1,
+      "Example.urlbar": 1,
+      "Example.urlbar-persisted": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -576,14 +514,7 @@ add_task(async function test_fresh_search_with_urlbar_persisted() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -599,14 +530,7 @@ add_task(async function test_fresh_search_with_urlbar_persisted() {
     },
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar_persisted",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -626,8 +550,8 @@ add_task(async function test_fresh_search_with_urlbar_persisted() {
   await pageLoadPromise;
   await assertSearchSourcesTelemetry(
     {
-      "other-Example.urlbar": 1,
-      "other-Example.urlbar-persisted": 1,
+      "Example.urlbar": 1,
+      "Example.urlbar-persisted": 1,
     },
     {
       "browser.search.content.urlbar": { "example:tagged:ff": 1 },
@@ -641,14 +565,7 @@ add_task(async function test_fresh_search_with_urlbar_persisted() {
   assertSERPTelemetry([
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       adImpressions: [
         {
@@ -664,14 +581,7 @@ add_task(async function test_fresh_search_with_urlbar_persisted() {
     },
     {
       impression: {
-        provider: "example",
-        tagged: "true",
-        partner_code: "ff",
         source: "urlbar_persisted",
-        shopping_tab_displayed: "false",
-        is_shopping_page: "false",
-        is_private: "false",
-        is_signed_in: "false",
       },
       engagements: [
         {

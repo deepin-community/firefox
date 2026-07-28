@@ -4,6 +4,8 @@
 
 package mozilla.components.browser.state.state.extension
 
+import mozilla.components.concept.engine.webextension.InstallationMethod
+import mozilla.components.concept.engine.webextension.PermissionPromptResponse
 import mozilla.components.concept.engine.webextension.WebExtension
 import mozilla.components.concept.engine.webextension.WebExtensionInstallException
 
@@ -13,6 +15,21 @@ import mozilla.components.concept.engine.webextension.WebExtensionInstallExcepti
  * @param extension The [WebExtension] that requested the dialog to be shown.
  */
 sealed class WebExtensionPromptRequest {
+    /**
+     * Installing a specific addon from a specific [url] is requested
+     *
+     * @property url The url from where to download the addon to install.
+     * @property name Optional name of the addon.
+     * @property iconUrl Optional url of the icon of the addon to install.
+     * @property installationMethod What feature triggered installing the addon.
+     * Defaults to [InstallationMethod.MANAGER].
+     */
+    data class InstallationRequested(
+        val url: String,
+        val name: String?,
+        val iconUrl: String?,
+        val installationMethod: InstallationMethod = InstallationMethod.MANAGER,
+    ) : WebExtensionPromptRequest()
 
     /**
      * Value type that represents a request for showing a native dialog from a [WebExtension] before
@@ -43,31 +60,39 @@ sealed class WebExtensionPromptRequest {
          */
         sealed class Permissions(
             override val extension: WebExtension,
-            open val onConfirm: (Boolean) -> Unit,
         ) : AfterInstallation(extension) {
             /**
              * Value type that represents a request for a required permissions prompt.
              * @property extension The [WebExtension] that requested the dialog to be shown.
              * @property permissions The permissions to list in the dialog.
-             * @property onConfirm A callback indicating whether the permissions were granted or not.
+             * @property origins The origins to list in the dialog.
+             * @property dataCollectionPermissions The data collection permissions to list in the dialog.
+             * @property onConfirm A callback indicating the prompt has been confirmed and pass
+             * [PermissionPromptResponse] result.
              */
             data class Required(
                 override val extension: WebExtension,
                 val permissions: List<String>,
-                override val onConfirm: (Boolean) -> Unit,
-            ) : Permissions(extension, onConfirm)
+                val origins: List<String>,
+                val dataCollectionPermissions: List<String>,
+                val onConfirm: (PermissionPromptResponse) -> Unit,
+            ) : Permissions(extension)
 
             /**
              * Value type that represents a request for an optional permissions prompt.
              * @property extension The [WebExtension] that requested the dialog to be shown.
              * @property permissions The optional permissions to list in the dialog.
+             * @property origins The optional host permissions to list in the dialog.
+             * @property dataCollectionPermissions The optional data collection permissions to list in the dialog.
              * @property onConfirm A callback indicating whether the permissions were granted or not.
              */
             data class Optional(
                 override val extension: WebExtension,
                 val permissions: List<String>,
-                override val onConfirm: (Boolean) -> Unit,
-            ) : Permissions(extension, onConfirm)
+                val origins: List<String>,
+                val dataCollectionPermissions: List<String>,
+                val onConfirm: (Boolean) -> Unit,
+            ) : Permissions(extension)
         }
 
         /**

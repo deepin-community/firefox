@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -200,6 +199,95 @@ add_task(async function test_removal() {
   await removeCertsByHashes(["vZn7GwDSabB/AVo0T+N26nUsfSXIIx4NgQtSi7/0p/w="]);
 });
 
+function base64ToArray(base64String) {
+  let binaryString = atob(base64String);
+  return stringToArray(binaryString);
+}
+
+add_task(async function test_lookup_by_hash_succeed() {
+  let someCert1 = new CertInfo("some certificate bytes 1", "common subject 1");
+  let someCert2 = new CertInfo(
+    "some certificate bytes 2",
+    "some common subject 2"
+  );
+  let someCert3 = new CertInfo(
+    "some certificate bytes 3",
+    "some common subject 3"
+  );
+  await addCerts([someCert1, someCert2, someCert3]);
+  // echo -n "some certificate bytes 2" | sha256sum | xxd -r -p | base64
+  let foundCert = certStorage.findCertByHash(
+    base64ToArray("j1vIqpiU0HMmx3zPNujlfGs/pY1vFBJCKpJEeVseeW0=")
+  );
+
+  Assert.deepEqual(
+    arrayToString(foundCert),
+    atob(someCert2.cert),
+    "should find expected cert"
+  );
+});
+
+add_task(async function test_lookup_by_hash_fail() {
+  let someCert1 = new CertInfo("some certificate bytes 1", "common subject 1");
+  let someCert2 = new CertInfo(
+    "some certificate bytes 2",
+    "some common subject 2"
+  );
+  let someCert3 = new CertInfo(
+    "some certificate bytes 3",
+    "some common subject 3"
+  );
+  await addCerts([someCert1, someCert2, someCert3]);
+  Assert.throws(
+    () =>
+      certStorage.findCertByHash(
+        base64ToArray("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=")
+      ),
+    /NS_ERROR_FAILURE/
+  );
+});
+
+add_task(async function test_lookup_by_hashes_succeed() {
+  let someCert1 = new CertInfo("some certificate bytes 1", "common subject 1");
+  let someCert2 = new CertInfo(
+    "some certificate bytes 2",
+    "some common subject 2"
+  );
+  let someCert3 = new CertInfo(
+    "some certificate bytes 3",
+    "some common subject 3"
+  );
+  await addCerts([someCert1, someCert2, someCert3]);
+  // echo -n "some certificate bytes 2" | sha256sum | xxd -r -p | base64
+  // echo -n "some certificate bytes 1" | sha256sum | xxd -r -p | base64
+  let foundCerts = certStorage.hasAllCertsByHash([
+    base64ToArray("j1vIqpiU0HMmx3zPNujlfGs/pY1vFBJCKpJEeVseeW0="),
+    base64ToArray("c0iy21PfFlGAqqLnQYeSYYUoaF/JEc41lICBdZ7VFtk="),
+  ]);
+  Assert.equal(foundCerts, true);
+});
+
+add_task(async function test_lookup_by_hashes_fail() {
+  let someCert1 = new CertInfo("some certificate bytes 1", "common subject 1");
+  let someCert2 = new CertInfo(
+    "some certificate bytes 2",
+    "some common subject 2"
+  );
+  let someCert3 = new CertInfo(
+    "some certificate bytes 3",
+    "some common subject 3"
+  );
+  await addCerts([someCert1, someCert2, someCert3]);
+  // echo -n "some certificate bytes 2" | sha256sum | xxd -r -p | base64
+  // echo -n "some certificate bytes 1" | sha256sum | xxd -r -p | base64
+  let foundCerts = certStorage.hasAllCertsByHash([
+    base64ToArray("j1vIqpiU0HMmx3zPNujlfGs/pY1vFBJCKpJEeVseeW0="),
+    base64ToArray("c0iy21PfFlGAqqLnQYeSYYUoaF/JEc41lICBdZ7VFtk="),
+    base64ToArray("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa="),
+  ]);
+  Assert.equal(foundCerts, false);
+});
+
 add_task(async function test_batched_removal() {
   let removalCert1 = new CertInfo(
     "batch removal certificate bytes 1",
@@ -240,178 +328,4 @@ add_task(async function test_batched_removal() {
     stringToArray("batch subject to remove")
   );
   Assert.equal(storedCerts.length, 0, "shouldn't have any certificates now");
-});
-
-class CRLiteCoverage {
-  constructor(ctLogID, minTimestamp, maxTimestamp) {
-    this.b64LogID = ctLogID;
-    this.minTimestamp = minTimestamp;
-    this.maxTimestamp = maxTimestamp;
-  }
-}
-CRLiteCoverage.prototype.QueryInterface = ChromeUtils.generateQI([
-  "nsICRLiteCoverage",
-]);
-
-add_task(async function test_crlite_filter() {
-  let certdb = Cc["@mozilla.org/security/x509certdb;1"].getService(
-    Ci.nsIX509CertDB
-  );
-  addCertFromFile(
-    certdb,
-    "test_cert_storage_direct/valid-cert-issuer.pem",
-    ",,"
-  );
-  let validCert = constructCertFromFile(
-    "test_cert_storage_direct/valid-cert.pem"
-  );
-  addCertFromFile(
-    certdb,
-    "test_cert_storage_direct/revoked-cert-issuer.pem",
-    ",,"
-  );
-  let revokedCert = constructCertFromFile(
-    "test_cert_storage_direct/revoked-cert.pem"
-  );
-  let filterFile = do_get_file(
-    "test_cert_storage_direct/test-filter.crlite",
-    false
-  );
-  ok(filterFile.exists(), "test filter file should exist");
-  let enrollment = [];
-  let coverage = [];
-  let filterBytes = stringToArray(readFile(filterFile));
-  // First simualte a filter that does not cover any certificates. With CRLite
-  // enabled, none of the certificates should appear to be revoked.
-  let setFullCRLiteFilterResult = await new Promise(resolve => {
-    certStorage.setFullCRLiteFilter(filterBytes, enrollment, coverage, resolve);
-  });
-  Assert.equal(
-    setFullCRLiteFilterResult,
-    Cr.NS_OK,
-    "setFullCRLiteFilter should succeed"
-  );
-
-  Services.prefs.setIntPref(
-    "security.pki.crlite_mode",
-    CRLiteModeEnforcePrefValue
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    validCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2019-11-04T00:00:00Z").getTime() / 1000,
-    false,
-    "skynew.jp",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    revokedCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2019-11-04T00:00:00Z").getTime() / 1000,
-    false,
-    "schunk-group.com",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
-
-  // Now replace the filter with one that covers the "valid" and "revoked"
-  // certificates. CRLite should flag the revoked certificate.
-  coverage.push(
-    new CRLiteCoverage(
-      "pLkJkLQYWBSHuxOizGdwCjw1mAT5G9+443fNDsgN3BA=",
-      0,
-      1641612275000
-    )
-  );
-
-  // crlite_enrollment_id.py test_crlite_filters/issuer.pem
-  enrollment.push("UbH9/ZAnjuqf79Xhah1mFOWo6ZvgQCgsdheWfjvVUM8=");
-  // crlite_enrollment_id.py test_crlite_filters/no-sct-issuer.pem
-  enrollment.push("Myn7EasO1QikOtNmo/UZdh6snCAw0BOY6wgU8OsUeeY=");
-  // crlite_enrollment_id.py test_cert_storage_direct/revoked-cert-issuer.pem
-  enrollment.push("HTvSp2263dqBYtgYA2fldKAoTYcEVLPVTlRia9XaoCQ=");
-
-  setFullCRLiteFilterResult = await new Promise(resolve => {
-    certStorage.setFullCRLiteFilter(filterBytes, enrollment, coverage, resolve);
-  });
-  Assert.equal(
-    setFullCRLiteFilterResult,
-    Cr.NS_OK,
-    "setFullCRLiteFilter should succeed"
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    validCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2019-11-04T00:00:00Z").getTime() / 1000,
-    false,
-    "skynew.jp",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    revokedCert,
-    SEC_ERROR_REVOKED_CERTIFICATE,
-    certificateUsageSSLServer,
-    new Date("2019-11-04T00:00:00Z").getTime() / 1000,
-    false,
-    "schunk-group.com",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
-
-  // If we're only collecting telemetry, none of the certificates should appear to be revoked.
-  Services.prefs.setIntPref(
-    "security.pki.crlite_mode",
-    CRLiteModeTelemetryOnlyPrefValue
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    validCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2019-11-04T00:00:00Z").getTime() / 1000,
-    false,
-    "skynew.jp",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    revokedCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2019-11-04T00:00:00Z").getTime() / 1000,
-    false,
-    "schunk-group.com",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
-
-  // If CRLite is disabled, none of the certificates should appear to be revoked.
-  Services.prefs.setIntPref(
-    "security.pki.crlite_mode",
-    CRLiteModeDisabledPrefValue
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    validCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2019-11-04T00:00:00Z").getTime() / 1000,
-    false,
-    "skynew.jp",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    revokedCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2019-11-04T00:00:00Z").getTime() / 1000,
-    false,
-    "schunk-group.com",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
 });

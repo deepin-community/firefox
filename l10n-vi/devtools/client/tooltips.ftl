@@ -10,14 +10,6 @@ learn-more = <span data-l10n-name="link">Tìm hiểu thêm</span>
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain why
 ## the property is not applied.
-## Variables:
-##   $property (string) - A CSS property name e.g. "color".
-##   $display (string) - A CSS display value e.g. "inline-block".
-
-
-## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain why
-## the property is not applied.
 ## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
 ## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
 ## Variables:
@@ -28,6 +20,7 @@ inactive-css-not-grid-or-flex-container = <strong>{ $property }</strong> không 
 inactive-css-not-grid-or-flex-container-or-multicol-container = <strong>{ $property }</strong> không có tác dụng đối với phần tử này vì nó không phải là ngăn chứa flex, ngăn chứa lưới hoặc ngăn chứa nhiều cột.
 inactive-css-not-multicol-container = <strong>{ $property }</strong> không có tác dụng trên phần tử này vì nó không phải là một ngăn chứa nhiều cột.
 inactive-css-not-grid-or-flex-item = <strong>{ $property }</strong> không có tác dụng đối với phần tử này vì nó không phải là một mục lưới hoặc flex.
+inactive-css-no-default-anchor = <strong>{ $property }</strong> không có tác dụng gì đến phần tử này vì nó không có phần tử anchor mặc định.
 inactive-css-not-grid-item = <strong>{ $property }</strong> không có tác dụng đối với thành phần này vì nó không phải là một mục lưới.
 inactive-css-not-grid-container = <strong>{ $property }</strong> không có tác dụng đối với phần tử này vì nó không phải là ngăn chứa lưới.
 inactive-css-not-flex-item = <strong>{ $property }</strong> không có tác dụng đối với phần tử này vì nó không phải là một mục flex.
@@ -38,6 +31,7 @@ inactive-css-first-letter-pseudo-element-not-supported = <strong>{ $property }</
 inactive-css-placeholder-pseudo-element-not-supported = <strong>{ $property }</strong> không được hỗ trợ trên ::placeholder pseudo-elements.
 inactive-css-property-because-of-display = <strong>{ $property }</strong> không ảnh hưởng đến yếu tố này vì nó có hiển thị của <strong>{ $display }</strong>.
 inactive-css-not-display-block-on-floated = Giá trị <strong>display</strong> đã được thay đổi bởi máy thành <strong>block</strong> vì phần tử là <strong>floated</strong>.
+inactive-css-not-block-flex-grid-container = <strong>{ $property }</strong> không có tác dụng đối với phần tử này vì thuộc tính chỉ áp dụng cho các phần tử dạng block, flex hoặc grid container.
 inactive-css-property-is-impossible-to-override-in-visited = Nó không thể ghi đè <strong>{ $property }</strong> do hạn chế <strong>:visited</strong>.
 inactive-css-position-property-on-unpositioned-box = <strong>{ $property }</strong> không có tác dụng đối với phần tử này vì nó không phải là phần tử được định vị.
 inactive-text-overflow-when-no-overflow = <strong>{ $property }</strong> không ảnh hưởng đến phần tử này vì <strong>overflow:hidden</strong> không được đặt.
@@ -50,11 +44,17 @@ inactive-css-border-image = <strong>{ $property }</strong> không ảnh hưởng
 inactive-css-ruby-element = <strong>{ $property }</strong> không ảnh hưởng đến phần tử này vì nó là phần tử ruby. Kích thước của nó được xác định bởi kích thước phông chữ của văn bản ruby.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
+## an icon. When this icon is hovered this message is displayed to explain why
+## the property is not applied.
+## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
+## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
+## Variables:
+##   $property (string) - A CSS property name e.g. "color".
+##   $display (string) - A CSS display value e.g. "inline-block".
 
 inactive-css-highlight-pseudo-elements-not-supported = <strong>{ $property }</strong> không được hỗ trợ trên pseudo-elements được tô sáng.
 inactive-css-cue-pseudo-element-not-supported = <strong>{ $property }</strong> không được hỗ trợ trên ::cue pseudo-elements.
+inactive-css-at-position-try-not-supported = <strong>{ $property }</strong> không được hỗ trợ trong rule <strong>@position-try</strong>.
 # Variables:
 #   $lineCount (integer) - The number of lines the element has.
 inactive-css-text-wrap-balance-lines-exceeded = <strong>{ $property }</strong> không có tác dụng lên phần tử này vì nó có nhiều hơn { $lineCount } dòng.
@@ -69,6 +69,8 @@ inactive-css-not-grid-or-flex-container-fix = Hãy thử thêm <strong>display:g
 inactive-css-not-grid-or-flex-or-block-container-fix = Hãy thử thêm <strong>display:grid</strong>, <strong>display:flex</strong> hoặc <strong>display:block</strong>. { learn-more }
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = Hãy thử thêm <strong>display:grid</strong>, <strong>display:flex</strong> hoặc <strong>columns:2</strong>. { learn-more }
 inactive-css-not-multicol-container-fix = Hãy thử thêm <strong>column-count</strong> hoặc <strong>column-width</strong>. { learn-more }
+inactive-css-not-absolutely-positioned-item-fix = Hãy thử thêm <strong>position:absolute</strong> vào phần tử. { learn-more }
+inactive-css-no-default-anchor-fix = Hãy thử thêm <strong>position-anchor</strong> với một tên anchor hợp lệ. { learn-more }
 inactive-css-not-grid-or-flex-item-fix-3 = Hãy thử thêm <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong>, hoặc <strong>display:inline-flex</strong> vào parent của phần tử. { learn-more }
 inactive-css-not-grid-item-fix-2 = Hãy thử thêm <strong>display:grid</strong> hoặc <strong>display:inline-grid</strong> vào phần tử mẹ. { learn-more }
 inactive-css-not-grid-container-fix = Hãy thử thêm <strong>display:grid</strong> hoặc <strong>display:inline-grid</strong>. { learn-more }
@@ -79,6 +81,8 @@ inactive-css-non-replaced-inline-or-table-row-or-row-group-fix = Hãy thử thê
 inactive-css-non-replaced-inline-or-table-column-or-column-group-fix = Hãy thử thêm <strong>display:inline-block</strong>. { learn-more }
 inactive-css-not-display-block-on-floated-fix = Hãy thử xóa <strong>float</strong> hoặc thêm <strong>display:block</strong>. { learn-more }
 inactive-css-not-block-fix = Hãy thử thêm thuộc tính <strong>display:grid</strong> hoặc <strong>display:flex</strong>. { learn-more }
+inactive-css-not-block-container-fix = Hãy thử thêm <strong>display:block</strong>, <strong>display:inline-block</strong> hoặc <strong>display:flow-root</strong>. { learn-more }
+inactive-css-not-block-flex-grid-container-fix = Hãy thử thêm <strong>display:block</strong>, <strong>display:inline-block</strong>, <strong>display:flex</strong>, <strong>display:inline-flex</strong>, <strong>display:grid</strong>, <strong>display:inline-grid</strong> hoặc <strong>display:flow-root</strong>. { learn-more }
 inactive-css-not-floated-fix = Hãy thử thêm thuộc tính <strong>float</strong> có giá trị khác <strong>none</strong>. { learn-more }
 inactive-css-position-property-on-unpositioned-box-fix = Hãy thử đặt thuộc tính <strong>position</strong> của nó thành một thứ khác ngoài <strong>static</strong>. { learn-more }
 inactive-css-only-replaced-elements-fix = Đảm bảo bạn đang thêm thuộc tính vào phần tử được thay thế. { learn-more }
@@ -90,6 +94,7 @@ inactive-css-collapsed-table-borders-fix = Hãy thử thêm <strong>border-colla
 inactive-css-not-table-cell-fix = Hãy thử thêm <strong>display:table-cell</strong>. { learn-more }
 inactive-scroll-padding-when-not-scroll-container-fix = Hãy thử thêm <strong>overflow:auto</strong>, <strong>overflow:scroll</strong>, hoặc <strong>overflow:hidden</strong>. { learn-more }
 inactive-css-border-image-fix = Trên bảng phần tử mẹ, hãy xóa thuộc tính hoặc thay đổi giá trị của <strong>border-collapse</strong> sang một giá trị khác <strong>collapse</strong>. { learn-more }
+inactive-css-resize-fix = Hãy thử đặt <strong>overflow</strong> vào giá trị khác ngoài <strong>visible</strong> hoặc chọn một phần tử thay thế có hỗ trợ nó. { learn-more }
 inactive-css-ruby-element-fix = Hãy thử thay đổi <strong>font-size</strong> của văn bản ruby. { learn-more }
 inactive-css-text-wrap-balance-lines-exceeded-fix = Hãy thử giảm số lượng dòng. { learn-more }
 inactive-css-text-wrap-balance-fragmented-fix = Tránh phân chia nội dung của phần tử, ví dụ bằng cách xóa các cột hoặc bằng cách sử dụng <strong>page-break-inside:avoid</strong>. { learn-more }
@@ -116,3 +121,11 @@ css-compatibility-learn-more-message = <span data-l10n-name="link">Tìm hiểu t
 
 # :has() should not be translated
 css-selector-warning-unconstrained-has = Selector này sử dụng <strong>:has()</strong> không bị ràng buộc, có thể khiến bị chậm
+
+## In the Rule View we display a tooltip when a @container condition is hovered.
+## We want to show a specific message if the condition doesn't match a container for the
+## currently selected element
+## Variables:
+##   $name (string) - The condition name.
+
+css-selector-container-query-condition-no-container = Không tìm thấy container ‘{ $name }’

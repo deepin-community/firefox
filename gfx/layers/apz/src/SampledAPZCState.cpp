@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +8,7 @@
 namespace mozilla {
 namespace layers {
 
-SampledAPZCState::SampledAPZCState() {}
+SampledAPZCState::SampledAPZCState() = default;
 
 SampledAPZCState::SampledAPZCState(const FrameMetrics& aMetrics)
     : mLayoutViewport(aMetrics.GetLayoutViewport()),
@@ -19,20 +17,27 @@ SampledAPZCState::SampledAPZCState(const FrameMetrics& aMetrics)
   RemoveFractionalAsyncDelta();
 }
 
-SampledAPZCState::SampledAPZCState(const FrameMetrics& aMetrics,
-                                   Maybe<CompositionPayload>&& aPayload,
-                                   APZScrollGeneration aGeneration)
+SampledAPZCState::SampledAPZCState(
+    const FrameMetrics& aMetrics, Maybe<CompositionPayload>&& aPayload,
+    APZScrollGeneration aGeneration,
+    std::vector<CompositorScrollUpdate>&& aUpdates)
     : mLayoutViewport(aMetrics.GetLayoutViewport()),
       mVisualScrollOffset(aMetrics.GetVisualScrollOffset()),
       mZoom(aMetrics.GetZoom()),
       mScrollPayload(std::move(aPayload)),
-      mGeneration(aGeneration) {
+      mGeneration(aGeneration),
+      mUpdates(std::move(aUpdates)) {
   RemoveFractionalAsyncDelta();
 }
 
 bool SampledAPZCState::operator==(const SampledAPZCState& aOther) const {
   // The payload doesn't factor into equality, that just comes along for
   // the ride.
+  // The compositor scroll updates also do not factor into equality.
+  // We can think of those as not describing the current state, but the
+  // process by which we got from the previous state to this one.
+  // The FrameMetrics constructor of SampledAPZCState does not initialize
+  // mUpdates, so we can't rely on them always being present.
   return mLayoutViewport.IsEqualEdges(aOther.mLayoutViewport) &&
          mVisualScrollOffset == aOther.mVisualScrollOffset &&
          mZoom == aOther.mZoom;

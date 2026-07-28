@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-arraybuffer-resizable) skip-if(!ArrayBuffer.prototype.resize||!xulRuntime.shell) -- resizable-arraybuffer is not enabled unconditionally, requires shell-options
 // Copyright (C) 2021 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -6,7 +5,7 @@ esid: sec-%typedarray%.prototype.set-typedarray-offset
 description: >
   Set values from different instances using the same buffer and same
   constructor when underlying ArrayBuffer has been resized
-includes: [testBigIntTypedArray.js, compareArray.js]
+includes: [testTypedArray.js, compareArray.js]
 features: [BigInt, TypedArray, resizable-arraybuffer]
 ---*/
 
@@ -43,6 +42,6 @@ testWithBigIntTypedArrayConstructors(function(TA) {
 
   target.set(source);
   assert(compareArray(target, expected), 'following shrink');
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

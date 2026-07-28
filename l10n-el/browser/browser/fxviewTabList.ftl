@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Μετακίνηση στο τέλος
     .accesskey = α
 fxviewtabrow-move-tab-window = Μετακίνηση σε νέο παράθυρο
     .accesskey = π
+fxviewtabrow-send-to-device = Αποστολή σε συσκευή
+    .accesskey = π
+fxviewtabrow-send-to-mobile = Αποστολή σε κινητή συσκευή
+    .accesskey = π
 fxviewtabrow-send-tab = Αποστολή καρτέλας σε συσκευή
     .accesskey = λ
 fxviewtabrow-pin-tab = Καρφίτσωμα καρτέλας
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Άρση σίγασης καρτέλας
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Επιλογές για «{ $tabTitle }»
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Σίγαση του { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Άρση σίγασης του { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Σίγαση καρτέλας
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Άρση σίγασης καρτέλας
+fxviewtabrow-send-to-mobile-connect-device = Συνδέστε μια συσκευή για αποστολή καρτελών
+fxviewtabrow-send-to-mobile-device-missing2 = Δεν βλέπετε τη συσκευή σας;
+fxviewtabrow-send-to-mobile-not-verified = Μη επαληθευμένος λογαριασμός
+fxviewtabrow-send-to-mobile-verify-account = Επαλήθευση λογαριασμού
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Συνδεθείτε για αποστολή καρτελών
+fxviewtabrow-send-to-mobile-turn-on-sync = Ενεργοποιήστε τον συγχρονισμό για αποστολή καρτελών

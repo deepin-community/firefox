@@ -77,7 +77,6 @@ server.registerPathHandler("/setcookie", (req, res) => {
 server.registerPathHandler("/empty", () => {});
 
 add_setup(() => {
-  Services.prefs.setBoolPref("extensions.manifestV3.enabled", true);
   Services.prefs.setBoolPref("extensions.dnr.enabled", true);
 
   // The restrictedDomains pref should be set early, because the pref is read
@@ -987,9 +986,8 @@ add_task(async function modifyHeaders_multiple_extensions() {
     unloadTestAtEnd: false,
   });
 
-  let contentPage = await ExtensionTestUtils.loadContentPage(
-    "http://dummy/empty"
-  );
+  let contentPage =
+    await ExtensionTestUtils.loadContentPage("http://dummy/empty");
   async function checkHeaderActionResult(query, expectedHeaders, description) {
     const url = `/responseheadersFixture?${query}`;
     const result = await contentPage.spawn([url], async url => {

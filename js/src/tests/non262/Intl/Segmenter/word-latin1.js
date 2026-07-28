@@ -1,5 +1,3 @@
-// |reftest| skip-if(!this.hasOwnProperty('Intl')||!this.Intl.Segmenter)
-
 // https://www.unicode.org/reports/tr29/#Word_Boundary_Rules
 
 const strings = {
@@ -29,7 +27,8 @@ const strings = {
   "ab": ["ab"],
 
   // WB6, WB7
-  "a:b": ["a:b"],
+  // Colon might be different rules per locale. (https://unicode-org.atlassian.net/browse/ICU-22112)
+  // "a:b": ["a:b"],
   "a·b": ["a·b"],
   "a.b": ["a.b"],
   "a'b": ["a'b"],
@@ -108,7 +107,8 @@ for (let string of [
   "a", "ab",
 
   // WB6, WB7
-  "a:b",
+  // Colon might be different rules per locale. (https://unicode-org.atlassian.net/browse/ICU-22112)
+  // "a:b",
   "a·b",
   "a.b",
   "a'b",
@@ -203,6 +203,21 @@ assertSegments("_'_", ["_", "'", "_"]);
 // changes.
 assertEq(new Intl.Segmenter("en-posix").resolvedOptions().locale, "en");
 assertEq(new Intl.Segmenter("en-u-va-posix").resolvedOptions().locale, "en");
+
+// Locale-dependent word segmentation.
+{
+  // https://en.wikipedia.org/wiki/Colon_(punctuation)#Abbreviation_mark
+  let string = "Word:with:colon";
+
+  let english = new Intl.Segmenter("en", {granularity: "word"});
+  let svenska = new Intl.Segmenter("sv", {granularity: "word"});
+
+  // Three words with two separators in English.
+  assertEq([...english.segment(string)].length, 5);
+
+  // A single word in Swedish.
+  assertEq([...svenska.segment(string)].length, 1);
+}
 
 if (typeof reportCompare === "function")
   reportCompare(0, 0);

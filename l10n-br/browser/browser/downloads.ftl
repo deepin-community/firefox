@@ -42,7 +42,7 @@ downloads-cmd-show-menuitem-2 =
 ##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
-    .label = Digeriñ e gwelerez ar sistem
+    .label = Digeriñ e gweler ar reizhiad
     .accesskey = D
 # This version is shown when the download's mime type has a valid file handler.
 downloads-cmd-use-system-default-named =
@@ -51,7 +51,7 @@ downloads-cmd-use-system-default-named =
 # We can use the same accesskey as downloads-cmd-always-open-similar-files.
 # Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
-    .label = Digeriñ bewech e gwelerez ar sistem
+    .label = Digeriñ bewech e gweler ar reizhiad
     .accesskey = b
 # We can use the same accesskey as downloads-cmd-always-open-similar-files.
 # Both should not be visible in the downloads context menu at the same time.
@@ -158,7 +158,7 @@ downloading-file-opens-in-minutes-and-seconds-2 =
 downloading-file-opens-in-seconds-2 =
     .value = Digeriñ a raio a-benn { $seconds }eil…
 downloading-file-opens-in-some-time-2 =
-    .value = Digeriñ pa va leuniet…
+    .value = Digeriñ pa vo leuniet…
 downloading-file-click-to-open =
     .value = Digeriñ pa vo echuet
 
@@ -182,6 +182,12 @@ downloads-history =
 # that we are showing the details of a single download.
 downloads-details =
     .title = Munudoù ar bellgargardenn
+
+## These strings are displayed in the private browsing view of the downloads panel
+
+downloads-private-browsing-accept-button =
+    .label = Komprenet am eus
+    .accesskey = K
 
 ## Displayed when a site attempts to automatically download many files.
 ## Variables:

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
-/* vim:set ts=4 sw=4 sts=4 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -17,14 +15,17 @@
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "nsInputStreamPump.h"
+#include "nsISocketTransport.h"
 #include "nsITransportSecurityInfo.h"
 #include "nsHttpHandler.h"
+#include "nsHttpTransaction.h"
 #include "nsNetUtil.h"
 #include "nsProxyInfo.h"
 #include "nsProxyRelease.h"
 #include "nsQueryObject.h"
 #include "nsSerializationHelper.h"
 #include "OpaqueResponseUtils.h"
+#include "nsIRequestContext.h"
 
 namespace mozilla::net {
 
@@ -65,32 +66,17 @@ nsresult HttpTransactionChild::InitInternal(
     uint32_t caps, const HttpConnectionInfoCloneArgs& infoArgs,
     nsHttpRequestHead* requestHead, nsIInputStream* requestBody,
     uint64_t requestContentLength, bool requestBodyHasHeaders,
-    uint64_t browserId, uint8_t httpTrafficCategory, uint64_t requestContextID,
-    ClassOfService classOfService, uint32_t initialRwin,
-    bool responseTimeoutEnabled, uint64_t channelId,
+    uint64_t browserId, HttpTrafficCategory httpTrafficCategory,
+    uint64_t requestContextID, ClassOfService classOfService,
+    uint32_t initialRwin, bool responseTimeoutEnabled, uint64_t channelId,
     bool aHasTransactionObserver,
-    const Maybe<H2PushedStreamArg>& aPushedStreamArg) {
+    const nsILoadInfo::IPAddressSpace& aParentIPAddressSpace,
+    const LNAPerms& aLnaPermissionStatus) {
   LOG(("HttpTransactionChild::InitInternal [this=%p caps=%x]\n", this, caps));
 
   RefPtr<nsHttpConnectionInfo> cinfo =
       nsHttpConnectionInfo::DeserializeHttpConnectionInfoCloneArgs(infoArgs);
   nsCOMPtr<nsIRequestContext> rc = CreateRequestContext(requestContextID);
-
-  HttpTransactionShell::OnPushCallback pushCallback = nullptr;
-  if (caps & NS_HTTP_ONPUSH_LISTENER) {
-    RefPtr<HttpTransactionChild> self = this;
-    pushCallback = [self](uint32_t aPushedStreamId, const nsACString& aUrl,
-                          const nsACString& aRequestString,
-                          HttpTransactionShell* aTransaction) {
-      bool res = false;
-      if (self->CanSend()) {
-        res =
-            self->SendOnH2PushStream(aPushedStreamId, PromiseFlatCString(aUrl),
-                                     PromiseFlatCString(aRequestString));
-      }
-      return res ? NS_OK : NS_ERROR_FAILURE;
-    };
-  }
 
   std::function<void(TransactionObserverResult&&)> observer;
   if (aHasTransactionObserver) {
@@ -102,29 +88,19 @@ nsresult HttpTransactionChild::InitInternal(
     };
   }
 
-  RefPtr<nsHttpTransaction> transWithPushedStream;
-  uint32_t pushedStreamId = 0;
-  if (aPushedStreamArg) {
-    HttpTransactionChild* transChild = static_cast<HttpTransactionChild*>(
-        aPushedStreamArg.ref().transWithPushedStream().AsChild().get());
-    transWithPushedStream = transChild->GetHttpTransaction();
-    pushedStreamId = aPushedStreamArg.ref().pushedStreamId();
-  }
-
   nsresult rv = mTransaction->Init(
       caps, cinfo, requestHead, requestBody, requestContentLength,
       requestBodyHasHeaders, GetCurrentSerialEventTarget(),
       nullptr,  // TODO: security callback, fix in bug 1512479.
-      this, browserId, static_cast<HttpTrafficCategory>(httpTrafficCategory),
-      rc, classOfService, initialRwin, responseTimeoutEnabled, channelId,
-      std::move(observer), std::move(pushCallback), transWithPushedStream,
-      pushedStreamId);
+      this, browserId, httpTrafficCategory, rc, classOfService, initialRwin,
+      responseTimeoutEnabled, channelId, std::move(observer),
+      aParentIPAddressSpace, aLnaPermissionStatus);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     mTransaction = nullptr;
     return rv;
   }
 
-  Unused << mTransaction->AsyncRead(this, getter_AddRefs(mTransactionPump));
+  (void)mTransaction->AsyncRead(this, getter_AddRefs(mTransactionPump));
   return rv;
 }
 
@@ -168,13 +144,14 @@ mozilla::ipc::IPCResult HttpTransactionChild::RecvInit(
     const nsHttpRequestHead& aReqHeaders, const Maybe<IPCStream>& aRequestBody,
     const uint64_t& aReqContentLength, const bool& aReqBodyIncludesHeaders,
     const uint64_t& aTopLevelOuterContentWindowId,
-    const uint8_t& aHttpTrafficCategory, const uint64_t& aRequestContextID,
-    const ClassOfService& aClassOfService, const uint32_t& aInitialRwin,
-    const bool& aResponseTimeoutEnabled, const uint64_t& aChannelId,
-    const bool& aHasTransactionObserver,
-    const Maybe<H2PushedStreamArg>& aPushedStreamArg,
+    const HttpTrafficCategory& aHttpTrafficCategory,
+    const uint64_t& aRequestContextID, const ClassOfService& aClassOfService,
+    const uint32_t& aInitialRwin, const bool& aResponseTimeoutEnabled,
+    const uint64_t& aChannelId, const bool& aHasTransactionObserver,
     const mozilla::Maybe<PInputChannelThrottleQueueChild*>& aThrottleQueue,
-    const bool& aIsDocumentLoad, const TimeStamp& aRedirectStart,
+    const bool& aIsDocumentLoad,
+    const nsILoadInfo::IPAddressSpace& aParentIPAddressSpace,
+    const LNAPerms& aLnaPermissionStatus, const TimeStamp& aRedirectStart,
     const TimeStamp& aRedirectEnd) {
   mRequestHead = aReqHeaders;
   if (aRequestBody) {
@@ -197,7 +174,7 @@ mozilla::ipc::IPCResult HttpTransactionChild::RecvInit(
       aReqBodyIncludesHeaders, aTopLevelOuterContentWindowId,
       aHttpTrafficCategory, aRequestContextID, aClassOfService, aInitialRwin,
       aResponseTimeoutEnabled, aChannelId, aHasTransactionObserver,
-      aPushedStreamArg);
+      aParentIPAddressSpace, aLnaPermissionStatus);
   if (NS_FAILED(rv)) {
     LOG(("HttpTransactionChild::RecvInit: [this=%p] InitInternal failed!\n",
          this));
@@ -275,8 +252,7 @@ HttpTransactionChild::OnDataAvailable(nsIRequest* aRequest,
     nsHttp::SendFunc<nsCString> sendFunc =
         [self = UnsafePtr<HttpTransactionChild>(this)](
             const nsCString& aData, uint64_t aOffset, uint32_t aCount) {
-          return self->SendOnDataAvailable(aData, aOffset, aCount,
-                                           TimeStamp::Now());
+          return self->SendOnDataAvailable(aData, aOffset, TimeStamp::Now());
         };
 
     LOG(("  ODA to parent process"));
@@ -297,7 +273,7 @@ HttpTransactionChild::OnDataAvailable(nsIRequest* aRequest,
           const nsDependentCSubstring& aData, uint64_t aOffset,
           uint32_t aCount) {
         return self->mDataBridgeParent->SendOnTransportAndData(
-            aOffset, aCount, aData, TimeStamp::Now());
+            aOffset, aData, TimeStamp::Now());
       };
 
   LOG(("  ODA to content process"));
@@ -317,7 +293,7 @@ HttpTransactionChild::OnDataAvailable(nsIRequest* aRequest,
             nsHttp::SendFunc<nsCString> sendFunc =
                 [self](const nsCString& aData, uint64_t aOffset,
                        uint32_t aCount) {
-                  return self->SendOnDataAvailable(aData, aOffset, aCount,
+                  return self->SendOnDataAvailable(aData, aOffset,
                                                    TimeStamp::Now());
                 };
 
@@ -383,6 +359,26 @@ bool HttpTransactionChild::CanSendODAToContentProcessDirectly(
     return false;
   }
 
+  nsAutoCString contentEncoding;
+  if (NS_SUCCEEDED(
+          aHead->GetHeader(nsHttp::Content_Encoding, contentEncoding)) &&
+      !contentEncoding.IsEmpty()) {
+    // Content-Encoding is "encoding[,encoding]*" roughly.  Searching for the
+    // string dcb or dcz could match things that aren't strictly dcb or dcz --
+    // but there aren't any other valid encodings that would trigger this,
+    // and at worst we'd just avoid sending it directly
+    if (contentEncoding.LowerCaseFindASCII("dcb") != -1 ||
+        contentEncoding.LowerCaseFindASCII("dcz") != -1) {
+      return false;
+    }
+  }
+
+  nsAutoCString useAsDict;
+  if (NS_SUCCEEDED(aHead->GetHeader(nsHttp::Use_As_Dictionary, useAsDict)) &&
+      !useAsDict.IsEmpty()) {
+    return false;
+  }
+
   return true;
 }
 
@@ -416,7 +412,9 @@ HttpTransactionChild::OnStartRequest(nsIRequest* aRequest) {
     }
   }
 
-  UniquePtr<nsHttpResponseHead> head(mTransaction->TakeResponseHead());
+  RefPtr<nsHttpConnectionInfo> connInfo;
+  UniquePtr<nsHttpResponseHead> head(
+      mTransaction->TakeResponseHeadAndConnInfo(getter_AddRefs(connInfo)));
   Maybe<nsHttpResponseHead> optionalHead;
   nsTArray<uint8_t> dataForSniffer;
   if (head) {
@@ -482,13 +480,17 @@ HttpTransactionChild::OnStartRequest(nsIRequest* aRequest) {
     }
   }
 
-  Unused << SendOnStartRequest(
-      status, optionalHead, securityInfo, mTransaction->ProxyConnectFailed(),
+  HttpConnectionInfoCloneArgs infoArgs;
+  nsHttpConnectionInfo::SerializeHttpConnectionInfo(connInfo, infoArgs);
+
+  (void)SendOnStartRequest(
+      status, std::move(optionalHead), securityInfo,
+      mTransaction->ProxyConnectFailed(),
       ToTimingStructArgs(mTransaction->Timings()), proxyConnectResponseCode,
       dataForSniffer, optionalAltSvcUsed, !!mDataBridgeParent,
       mTransaction->TakeRestartedState(), mTransaction->HTTPSSVCReceivedStage(),
       mTransaction->GetSupportsHTTP3(), mode, reason, mTransaction->Caps(),
-      TimeStamp::Now());
+      TimeStamp::Now(), infoArgs, mTransaction->GetTargetIPAddressSpace());
   return NS_OK;
 }
 
@@ -507,6 +509,7 @@ ResourceTimingStructArgs HttpTransactionChild::GetTimingAttributes() {
   args.responseEnd() = mTransaction->GetResponseEnd();
   args.transferSize() = mTransaction->GetTransferSize();
   args.encodedBodySize() = mLogicalOffset;
+  args.decodedBodySize() = 0;
   args.redirectStart() = mRedirectStart;
   args.redirectEnd() = mRedirectEnd;
   args.transferSize() = mTransaction->GetTransferSize();
@@ -563,14 +566,11 @@ HttpTransactionChild::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
     mDataBridgeParent = nullptr;
   }
 
-  RefPtr<nsHttpConnectionInfo> connInfo = mTransaction->GetConnInfo();
-  HttpConnectionInfoCloneArgs infoArgs;
-  nsHttpConnectionInfo::SerializeHttpConnectionInfo(connInfo, infoArgs);
-  Unused << SendOnStopRequest(aStatus, mTransaction->ResponseIsComplete(),
-                              mTransaction->GetTransferSize(),
-                              ToTimingStructArgs(mTransaction->Timings()),
-                              responseTrailers, mTransactionObserverResult,
-                              lastActTabOpt, infoArgs, TimeStamp::Now());
+  (void)SendOnStopRequest(aStatus, mTransaction->ResponseIsComplete(),
+                          mTransaction->GetTransferSize(),
+                          ToTimingStructArgs(mTransaction->Timings()),
+                          responseTrailers, mTransactionObserverResult,
+                          lastActTabOpt, TimeStamp::Now());
 
   return NS_OK;
 }
@@ -618,7 +618,7 @@ HttpTransactionChild::OnTransportStatus(nsITransport* aTransport,
     arg.emplace(selfAddr, peerAddr, isTrr, mode, reason, echConfigUsed);
   }
 
-  Unused << SendOnTransportStatus(aStatus, aProgress, aProgressMax, arg);
+  (void)SendOnTransportStatus(aStatus, aProgress, aProgressMax, arg);
   return NS_OK;
 }
 
@@ -657,7 +657,7 @@ HttpTransactionChild::EarlyHint(const nsACString& aValue,
                                 const nsACString& aCSPHeader) {
   LOG(("HttpTransactionChild::EarlyHint"));
   if (CanSend()) {
-    Unused << SendEarlyHint(aValue, aReferrerPolicy, aCSPHeader);
+    (void)SendEarlyHint(aValue, aReferrerPolicy, aCSPHeader);
   }
   return NS_OK;
 }

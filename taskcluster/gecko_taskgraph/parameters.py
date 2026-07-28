@@ -18,10 +18,11 @@ gecko_parameters_schema = {
     Required("android_perftest_backstop"): bool,
     Required("app_version"): str,
     Required("backstop"): bool,
+    Required("dontbuild"): bool,
     Required("build_number"): int,
     Required("enable_always_target"): Any(bool, [str]),
     Required("files_changed"): [str],
-    Required("hg_branch"): str,
+    Required("hg_branch"): Any(None, str),
     Required("message"): str,
     Required("next_version"): Any(None, str),
     Required("optimize_strategies"): Any(None, str),
@@ -36,15 +37,11 @@ gecko_parameters_schema = {
     Required("release_partner_build_number"): int,
     Required("release_type"): str,
     Required("release_product"): Any(None, str),
-    Required("required_signoffs"): [str],
-    Required("signoff_urls"): dict,
     Required("test_manifest_loader"): str,
     Required("try_mode"): Any(None, str),
-    Required("try_options"): Any(None, dict),
     Required("try_task_config"): {
         Optional("tasks"): [str],
         Optional("browsertime"): bool,
-        Optional("chemspill-prio"): bool,
         Optional("disable-pgo"): bool,
         Optional("env"): {str: str},
         Optional("gecko-profile"): bool,
@@ -52,6 +49,26 @@ gecko_parameters_schema = {
         Optional("gecko-profile-entries"): int,
         Optional("gecko-profile-features"): str,
         Optional("gecko-profile-threads"): str,
+        Optional(
+            "native-profiling",
+            description="Use OS-native profilers (Simpleperf for Android and xperf for Windows)"
+            "when running tests. Only available in raptor-browsertime tests at the moment.",
+        ): bool,
+        Optional(
+            "github",
+            description="Github pull request triggering a code-review analysis",
+        ): {
+            Required("branch", description="Pull request branch name"): str,
+            Required(
+                "pull_head_sha", description="Pull request head commit identifier"
+            ): str,
+            Required(
+                "pull_number", description="Pull request public numerical ID"
+            ): int,
+            Required(
+                "repo_url", description="Targeted Mozilla repository on Github"
+            ): str,
+        },
         Optional(
             "new-test-config",
             description="adjust parameters, chunks, etc. to speed up the process "
@@ -72,6 +89,7 @@ gecko_parameters_schema = {
             description="Record an rr trace on supported tasks using the Pernosco debugging "
             "service.",
         ): bool,
+        Optional("priority"): Any("lowest", "very-low", "low"),
         Optional("rebuild"): int,
         Optional("tasks-regex"): {
             "include": Any(None, [str]),
@@ -89,11 +107,13 @@ gecko_parameters_schema = {
         Optional("routes"): [str],
     },
     Required("version"): str,
+    Optional("head_git_rev"): str,
+    Optional("pull_request_number"): int,
 }
 
 
 def get_contents(path):
-    with open(path, "r") as fh:
+    with open(path) as fh:
         contents = fh.readline().rstrip()
     return contents
 
@@ -113,10 +133,11 @@ def get_defaults(repo_root=None):
         "android_perftest_backstop": False,
         "app_version": get_app_version(),
         "backstop": False,
+        "dontbuild": False,
         "base_repository": "https://hg.mozilla.org/mozilla-unified",
         "build_number": 1,
         "enable_always_target": ["docker-image"],
-        "files_changed": sorted(get_locally_changed_files(repo_root)),
+        "files_changed": lambda: sorted(get_locally_changed_files(repo_root)),
         "head_repository": "https://hg.mozilla.org/mozilla-central",
         "hg_branch": "default",
         "message": "",
@@ -137,11 +158,8 @@ def get_defaults(repo_root=None):
         # This refers to the upstream repo rather than the local checkout, so
         # should be hardcoded to 'hg' even with git-cinnabar.
         "repository_type": "hg",
-        "required_signoffs": [],
-        "signoff_urls": {},
         "test_manifest_loader": "default",
         "try_mode": None,
-        "try_options": None,
         "try_task_config": {},
         "version": get_version(),
     }
@@ -149,3 +167,8 @@ def get_defaults(repo_root=None):
 
 def register_parameters():
     extend_parameters_schema(gecko_parameters_schema, defaults_fn=get_defaults)
+
+
+def get_decision_parameters(graph_config, parameters):
+    if pr_number := os.environ.get("GECKO_PULL_REQUEST_NUMBER", None):
+        parameters["pull_request_number"] = int(pr_number)

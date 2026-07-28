@@ -36,6 +36,8 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = Den här webbplatsen begär åtkomst till dina MIDI-enheter (Musical Instrument Digital Interface). Enhetsåtkomst kan aktiveras genom att installera ett tillägg.
 site-permission-install-first-prompt-midi-message = Denna åtkomst är inte garanterad säker. Fortsätt bara om du litar på den här webbplatsen.
+site-permission-install-first-prompt-serial-header = Den här webbplatsen begär åtkomst till dina seriella enheter. Enhetsåtkomst kan aktiveras genom att installera ett tillägg.
+site-permission-install-first-prompt-serial-message = Denna åtkomst är inte garanterad säker. Fortsätt bara om du litar på den här sidan.
 
 ##
 
@@ -81,6 +83,8 @@ addon-removal-title = Ta bort { $name }?
 addon-removal-message = Ta bort { $name } från { -brand-shorter-name }?
 addon-removal-button = Ta bort
 addon-removal-abuse-report-checkbox = Rapportera detta tillägg till { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Om du använder de funktioner eller tillägg som använder den här modellen, kommer de att läggas till igen.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +127,19 @@ addon-install-error-corrupt-file = Tillägget som hämtades från denna sida kun
 addon-install-error-file-access = { $addonName } kunde inte installeras eftersom { -brand-short-name } inte kan modifiera den nödvändiga filen.
 addon-install-error-not-signed = { -brand-short-name } har hindrat den här webbplatsen från att installera ett overifierat tillägg.
 addon-install-error-invalid-domain = Tillägget { $addonName } kan inte installeras från den här platsen.
+addon-install-error-no-addon-name-file-access = Tillägget kunde inte installeras eftersom { -brand-short-name } inte kan ändra den nödvändiga filen.
 addon-local-install-error-network-failure = Tillägget kunde inte installeras på grund av ett fel i filsystemet.
 addon-local-install-error-incorrect-hash = Tillägget kunde inte installeras eftersom det inte matchar tillägget som { -brand-short-name } förväntade sig.
 addon-local-install-error-corrupt-file = Tillägget kunde inte installeras eftersom det verkar vara trasigt.
 addon-local-install-error-file-access = { $addonName } kunde inte installeras eftersom { -brand-short-name } inte kan modifiera den nödvändiga filen.
 addon-local-install-error-not-signed = Detta tillägg kunde inte installeras eftersom det inte har verifierats.
+addon-local-install-no-addon-name-error-file-access = Tillägget kunde inte installeras eftersom { -brand-short-name } inte kan ändra den nödvändiga filen.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } kunde inte installeras eftersom det inte är kompatibelt med { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } bryter mot Mozillas policyer och kan inte installeras på { -brand-short-name }.
+addon-install-error-soft-blocked2 = { $addonName } är begränsad och kan inte installeras på { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } kunde inte installeras eftersom det finns en stor risk för att stabilitets- eller säkerhetsproblem uppstår.
+addon-install-error-soft-blocked = { $addonName } bryter mot Mozillas policyer och kan inte installeras på { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Du kan inte installera { $addonName } som slutanvändare, det kan bara installeras av en organisation som använder företagspolicyer.

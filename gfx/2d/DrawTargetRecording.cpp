@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -18,7 +16,6 @@
 #include "mozilla/layers/RecordedCanvasEventImpl.h"
 #include "mozilla/layers/SourceSurfaceSharedData.h"
 #include "mozilla/layers/TextureRecorded.h"
-#include "mozilla/UniquePtr.h"
 #include "nsXULAppAPI.h"  // for XRE_IsContentProcess()
 #include "RecordingTypes.h"
 #include "RecordedEventImpl.h"
@@ -195,14 +192,14 @@ class FilterNodeRecording : public FilterNode {
 };
 
 DrawTargetRecording::DrawTargetRecording(
-    layers::CanvasDrawEventRecorder* aRecorder, int64_t aTextureId,
+    layers::CanvasDrawEventRecorder* aRecorder,
     const layers::RemoteTextureOwnerId& aTextureOwnerId, DrawTarget* aDT,
     const IntSize& aSize)
     : mRecorder(static_cast<DrawEventRecorderPrivate*>(aRecorder)),
       mFinalDT(aDT),
       mRect(IntPoint(0, 0), aSize) {
   RecordEventSkipFlushTransform(layers::RecordedCanvasDrawTargetCreation(
-      this, aTextureId, aTextureOwnerId, mFinalDT->GetBackendType(), aSize,
+      this, aTextureOwnerId, mFinalDT->GetBackendType(), aSize,
       mFinalDT->GetFormat()));
   mFormat = mFinalDT->GetFormat();
   DrawTarget::SetPermitSubpixelAA(IsOpaque(mFormat));
@@ -486,6 +483,24 @@ already_AddRefed<SourceSurface> DrawTargetRecording::Snapshot() {
   return retSurf.forget();
 }
 
+already_AddRefed<SourceSurface>
+DrawTargetRecording::CreateExternalSourceSurface(const IntSize& aSize,
+                                                 SurfaceFormat aFormat) {
+  RefPtr<SourceSurface> retSurf =
+      new SourceSurfaceRecording(aSize, aFormat, mRecorder);
+
+  return retSurf.forget();
+}
+
+already_AddRefed<SourceSurface> DrawTargetRecording::SnapshotExternalCanvas(
+    nsICanvasRenderingContextInternal* aCanvas,
+    mozilla::ipc::IProtocol* aActor) {
+  if (RefPtr<layers::CanvasChild> canvasChild = mRecorder->GetCanvasChild()) {
+    return canvasChild->SnapshotExternalCanvas(this, aCanvas, aActor);
+  }
+  return nullptr;
+}
+
 already_AddRefed<SourceSurface> DrawTargetRecording::IntoLuminanceSource(
     LuminanceType aLuminanceType, float aOpacity) {
   RefPtr<SourceSurface> retSurf =
@@ -593,6 +608,22 @@ already_AddRefed<FilterNode> DrawTargetRecording::CreateFilter(
   return retNode.forget();
 }
 
+already_AddRefed<FilterNode> DrawTargetRecording::DeferFilterInput(
+    const Path* aPath, const Pattern& aPattern, const IntRect& aSourceRect,
+    const IntPoint& aDestOffset, const DrawOptions& aOptions,
+    const StrokeOptions* aStrokeOptions) {
+  RefPtr<FilterNode> retNode = new FilterNodeRecording(mRecorder);
+
+  RefPtr<PathRecording> pathRecording = EnsurePathStored(aPath);
+  EnsurePatternDependenciesStored(aPattern);
+
+  RecordEventSelf(RecordedDeferFilterInput(retNode, pathRecording, aPattern,
+                                           aSourceRect, aDestOffset, aOptions,
+                                           aStrokeOptions));
+
+  return retNode.forget();
+}
+
 void DrawTargetRecording::ClearRect(const Rect& aRect) {
   MarkChanged();
 
@@ -638,6 +669,11 @@ void DrawTargetRecording::PushClipRect(const Rect& aRect) {
 
 void DrawTargetRecording::PopClip() {
   RecordEventSelfSkipFlushTransform(RecordedPopClip());
+}
+
+bool DrawTargetRecording::RemoveAllClips() {
+  RecordEventSelfSkipFlushTransform(RecordedRemoveAllClips());
+  return true;
 }
 
 void DrawTargetRecording::PushLayer(bool aOpaque, Float aOpacity,
@@ -950,6 +986,12 @@ void DrawTargetRecording::EnsurePatternDependenciesStored(
       return;
     }
   }
+}
+
+void DrawTargetRecording::AccessibleId(uint64_t aBrowsingContextId,
+                                       uint64_t aAccId) {
+  MarkChanged();
+  RecordEventSelf(RecordedAccessibleId(aBrowsingContextId, aAccId));
 }
 
 }  // namespace gfx

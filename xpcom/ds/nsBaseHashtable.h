@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsBaseHashtable_h__
-#define nsBaseHashtable_h__
+#ifndef nsBaseHashtable_h_
+#define nsBaseHashtable_h_
 
 #include <functional>
 #include <utility>
@@ -175,7 +173,8 @@ class nsBaseHashtableValueRange {
 };
 
 template <typename EntryType>
-auto RangeSize(const detail::nsBaseHashtableValueRange<EntryType>& aRange) {
+size_t RangeSizeEstimate(
+    const detail::nsBaseHashtableValueRange<EntryType>& aRange) {
   return aRange.Count();
 }
 
@@ -192,6 +191,7 @@ class nsDefaultConverter {
    * Maps the storage DataType to the exposed UserDataType.
    */
   static UserDataType Unwrap(DataType& src) { return UserDataType(src); }
+  static UserDataType Unwrap(const DataType& src) { return UserDataType(src); }
 
   /**
    * Const ref variant used for example with nsCOMPtr wrappers.
@@ -280,6 +280,17 @@ class nsBaseHashtable
     : protected nsTHashtable<nsBaseHashtableET<KeyClass, DataType>> {
   using Base = nsTHashtable<nsBaseHashtableET<KeyClass, DataType>>;
   typedef mozilla::fallible_t fallible_t;
+  template <typename KC, typename DT, typename UDT, typename C>
+  friend inline void ::ImplCycleCollectionTraverse(
+      nsCycleCollectionTraversalCallback&,
+      const nsBaseHashtable<KC, DT, UDT, C>&, const char* aName,
+      uint32_t aFlags);
+
+  template <typename KC, typename DT, typename UDT, typename C>
+  friend inline void ImplCycleCollectionTrace(const TraceCallbacks& aCallbacks,
+                                              nsBaseHashtable<KC, DT, UDT, C>&,
+                                              const char* aName,
+                                              void* aClosure);
 
  public:
   typedef typename KeyClass::KeyType KeyType;
@@ -866,16 +877,12 @@ class nsBaseHashtable
         : mBaseIterator(&aTable->mTable) {}
     ~ConstIterator() = default;
 
-    KeyType Key() const {
-      return static_cast<EntryType*>(mBaseIterator.Get())->GetKey();
+    const EntryType* Entry() const {
+      return static_cast<EntryType*>(mBaseIterator.Get());
     }
-    UserDataType UserData() const {
-      return Converter::Unwrap(
-          static_cast<EntryType*>(mBaseIterator.Get())->mData);
-    }
-    const DataType& Data() const {
-      return static_cast<EntryType*>(mBaseIterator.Get())->mData;
-    }
+    KeyType Key() const { return Entry()->GetKey(); }
+    UserDataType UserData() const { return Converter::Unwrap(Entry()->mData); }
+    const DataType& Data() const { return Entry()->mData; }
 
     bool Done() const { return mBaseIterator.Done(); }
     void Next() { mBaseIterator.Next(); }
@@ -1026,4 +1033,69 @@ nsBaseHashtableET<KeyClass, DataType>::nsBaseHashtableET(KeyTypePointer aKey,
                                                          Args&&... aArgs)
     : KeyClass(aKey), mData(std::forward<Args>(aArgs)...) {}
 
-#endif  // nsBaseHashtable_h__
+template <class KeyClass, class DataType, class UserDataType, class Converter>
+inline void ImplCycleCollectionUnlink(
+    nsBaseHashtable<KeyClass, DataType, UserDataType, Converter>& aField) {
+  aField.Clear();
+}
+
+template <class KeyClass, class DataType, class UserDataType, class Converter>
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsBaseHashtable<KeyClass, DataType, UserDataType, Converter>& aField,
+    const char* aName, uint32_t aFlags = 0) {
+  ImplCycleCollectionTraverse(
+      aCallback,
+      static_cast<const nsTHashtable<nsBaseHashtableET<KeyClass, DataType>>&>(
+          aField),
+      aName, aFlags);
+}
+
+template <typename KeyClass, typename DataType>
+inline void ImplCycleCollectionTraverse(
+    nsCycleCollectionTraversalCallback& aCallback,
+    const nsBaseHashtableET<KeyClass, DataType>& aField, const char* aName,
+    uint32_t aFlags = 0) {
+  ImplCycleCollectionTraverse(aCallback, static_cast<const KeyClass&>(aField),
+                              aName, aFlags);
+  ImplCycleCollectionTraverse(aCallback, aField.GetData(), aName, aFlags);
+}
+
+template <class KeyClass, class DataType, class UserDataType, class Converter>
+inline void ImplCycleCollectionTrace(
+    const TraceCallbacks& aCallbacks,
+    nsBaseHashtable<KeyClass, DataType, UserDataType, Converter>& aField,
+    const char* aName, void* aClosure) {
+  ImplCycleCollectionTrace(
+      aCallbacks,
+      static_cast<nsTHashtable<nsBaseHashtableET<KeyClass, DataType>>&>(aField),
+      aName, aClosure);
+}
+
+namespace mozilla::detail {
+template <typename T, typename = void>
+constexpr bool kCanTrace = false;
+
+template <typename T>
+constexpr bool
+    kCanTrace<T, std::void_t<decltype(ImplCycleCollectionTrace(
+                     std::declval<TraceCallbacks>(), std::declval<T&>(),
+                     std::declval<const char*>(), std::declval<void*>()))>> =
+        true;
+}  // namespace mozilla::detail
+
+template <typename KeyClass, typename DataType>
+inline void ImplCycleCollectionTrace(
+    const TraceCallbacks& aCallbacks,
+    nsBaseHashtableET<KeyClass, DataType>& aField, const char* aName,
+    void* aClosure) {
+  static_assert(!mozilla::detail::kCanTrace<KeyClass&>,
+                "Don't use traceable values as KeyClass");
+  static_assert(mozilla::detail::kCanTrace<DataType&>,
+                "Can't trace values of type DataType");
+
+  ImplCycleCollectionTrace(aCallbacks, *aField.GetModifiableData(), aName,
+                           aClosure);
+}
+
+#endif  // nsBaseHashtable_h_

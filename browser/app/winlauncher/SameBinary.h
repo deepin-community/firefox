@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -24,7 +22,7 @@ class ProcessImagePath final {
   // Initialize with an NT path string of a given process handle
   explicit ProcessImagePath(const nsAutoHandle& aProcess)
       : mType(PathType::eNtPath), mLastError(Ok()) {
-    DWORD len = mozilla::ArrayLength(mPathBuffer);
+    DWORD len = std::size(mPathBuffer);
     if (!::QueryFullProcessImageNameW(aProcess.get(), PROCESS_NAME_NATIVE,
                                       mPathBuffer, &len)) {
       mLastError = LAUNCHER_ERROR_FROM_LAST();
@@ -35,9 +33,9 @@ class ProcessImagePath final {
   // Initizlize with a DOS path string of a given imagebase address
   explicit ProcessImagePath(HMODULE aImageBase)
       : mType(PathType::eDosPath), mLastError(Ok()) {
-    DWORD len = ::GetModuleFileNameW(aImageBase, mPathBuffer,
-                                     mozilla::ArrayLength(mPathBuffer));
-    if (!len || len == mozilla::ArrayLength(mPathBuffer)) {
+    DWORD len =
+        ::GetModuleFileNameW(aImageBase, mPathBuffer, std::size(mPathBuffer));
+    if (!len || len == std::size(mPathBuffer)) {
       mLastError = LAUNCHER_ERROR_FROM_LAST();
       return;
     }

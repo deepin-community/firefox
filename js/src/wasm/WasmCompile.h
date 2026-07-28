@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- *
+/*
  * Copyright 2015 Mozilla Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,20 +47,22 @@ double EstimateCompiledCodeSize(Tier tier, size_t bytecodeSize);
 //  - *error is null and the caller should report out-of-memory.
 
 SharedModule CompileBuffer(const CompileArgs& args,
-                           const ShareableBytes& bytecode, UniqueChars* error,
-                           UniqueCharsVector* warnings,
+                           const BytecodeBufferOrSource& bytecode,
+                           UniqueChars* error, UniqueCharsVector* warnings,
                            JS::OptimizedEncodingListener* listener = nullptr);
 
 // Attempt to compile the second tier of the given wasm::Module.
 
-bool CompileCompleteTier2(const Bytes& bytecode, const Module& module,
-                          UniqueChars* error, UniqueCharsVector* warnings,
+bool CompileCompleteTier2(const ShareableBytes* codeSection,
+                          const Module& module, UniqueChars* error,
+                          UniqueCharsVector* warnings,
                           mozilla::Atomic<bool>* cancelled);
 
 // Attempt to compile the second tier for the given functions of a wasm::Module.
 
 bool CompilePartialTier2(const Code& code, uint32_t funcIndex,
-                         UniqueChars* error);
+                         UniqueChars* error, UniqueCharsVector* warnings,
+                         mozilla::Atomic<bool>* cancelled);
 
 // Compile the given WebAssembly module which has been broken into three
 // partitions:
@@ -86,32 +86,24 @@ using ExclusiveBytesPtr = ExclusiveWaitableData<const uint8_t*>;
 
 struct StreamEndData {
   bool reached;
-  const Bytes* tailBytes;
+  const ShareableBytes* tailBytes;
   CompleteTier2Listener completeTier2Listener;
 
-  StreamEndData() : reached(false) {}
+  StreamEndData() : reached(false), tailBytes(nullptr) {}
 };
 using ExclusiveStreamEndData = ExclusiveWaitableData<StreamEndData>;
 
-SharedModule CompileStreaming(const CompileArgs& args, const Bytes& envBytes,
-                              const Bytes& codeBytes,
+SharedModule CompileStreaming(const CompileArgs& args,
+                              const ShareableBytes& envBytes,
+                              const ShareableBytes& codeBytes,
                               const ExclusiveBytesPtr& codeBytesEnd,
                               const ExclusiveStreamEndData& streamEnd,
                               const mozilla::Atomic<bool>& cancelled,
                               UniqueChars* error, UniqueCharsVector* warnings);
 
-// What to print out from dumping a function from Ion.
-enum class IonDumpContents {
-  UnoptimizedMIR,
-  OptimizedMIR,
-  LIR,
-
-  Default = UnoptimizedMIR,
-};
-
 bool DumpIonFunctionInModule(const ShareableBytes& bytecode,
-                             uint32_t targetFuncIndex, IonDumpContents contents,
-                             GenericPrinter& out, UniqueChars* error);
+                             uint32_t targetFuncIndex, GenericPrinter& out,
+                             UniqueChars* error);
 
 }  // namespace wasm
 }  // namespace js

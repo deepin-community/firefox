@@ -7,8 +7,3 @@ default-browser-notification-message = <strong>{ -brand-short-name } brauzerini 
 default-browser-notification-button =
     .label = Asosiy sifatida oʻrnatish
     .accesskey = s
-
-## These strings are used for the default browser prompt. There are 2 variations
-## depending on the operating system (Windows vs other). The checkbox label and
-## secondary button are shared between the variants.
-

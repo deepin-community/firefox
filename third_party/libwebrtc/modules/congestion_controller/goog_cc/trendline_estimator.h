@@ -29,7 +29,7 @@ struct TrendlineEstimatorSettings {
   static constexpr unsigned kDefaultTrendlineWindowSize = 20;
 
   TrendlineEstimatorSettings() = delete;
-  explicit TrendlineEstimatorSettings(const FieldTrialsView* key_value_config);
+  explicit TrendlineEstimatorSettings(const FieldTrialsView& key_value_config);
 
   // Sort the packets in the window. Should be redundant,
   // but then almost no cost.
@@ -50,7 +50,7 @@ struct TrendlineEstimatorSettings {
 
 class TrendlineEstimator : public DelayIncreaseDetectorInterface {
  public:
-  TrendlineEstimator(const FieldTrialsView* key_value_config,
+  TrendlineEstimator(const FieldTrialsView& key_value_config,
                      NetworkStatePredictor* network_state_predictor);
 
   ~TrendlineEstimator() override;
@@ -91,7 +91,7 @@ class TrendlineEstimator : public DelayIncreaseDetectorInterface {
   friend class GoogCcStatePrinter;
   void Detect(double trend, double ts_delta, int64_t now_ms);
 
-  void UpdateThreshold(double modified_offset, int64_t now_ms);
+  void UpdateThreshold(double modified_trend, int64_t now_ms);
 
   // Parameters.
   TrendlineEstimatorSettings settings_;

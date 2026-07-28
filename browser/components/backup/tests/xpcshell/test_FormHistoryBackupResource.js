@@ -109,6 +109,100 @@ add_task(async function test_backup() {
 });
 
 /**
+ * Tests that the backup method does not copy the form history database if the
+ * browser is configured to not save history - either while running, or to
+ * clear it at shutdown.
+ */
+add_task(async function test_backup_no_saved_history() {
+  let formHistoryBackupResource = new FormHistoryBackupResource();
+  let sourcePath = await IOUtils.createUniqueDirectory(
+    PathUtils.tempDir,
+    "FormHistoryBackupResource-source-test"
+  );
+  let stagingPath = await IOUtils.createUniqueDirectory(
+    PathUtils.tempDir,
+    "FormHistoryBackupResource-staging-test"
+  );
+
+  let sandbox = sinon.createSandbox();
+  let fakeConnection = {
+    backup: sandbox.stub().resolves(true),
+    close: sandbox.stub().resolves(true),
+  };
+  sandbox.stub(Sqlite, "openConnection").returns(fakeConnection);
+
+  Services.prefs.setBoolPref(FORM_HISTORY_CLEARED_ON_SHUTDOWN_PREF, true);
+  Services.prefs.setBoolPref(SANITIZE_ON_SHUTDOWN_PREF, true);
+
+  Assert.ok(
+    !FormHistoryBackupResource.canBackupResource,
+    "Cannot backup form history since it is being cleared on shutdown"
+  );
+
+  Services.prefs.setBoolPref(SANITIZE_ON_SHUTDOWN_PREF, false);
+  Services.prefs.setBoolPref(FORM_HISTORY_CLEARED_ON_SHUTDOWN_PREF, false);
+
+  // We'll try with browsing history in general being disabled.
+  Services.prefs.setBoolPref(HISTORY_ENABLED_PREF, false);
+
+  Assert.ok(
+    !FormHistoryBackupResource.canBackupResource,
+    "Cannot backup form history since it is being cleared on shutdown"
+  );
+
+  Assert.ok(
+    fakeConnection.backup.notCalled,
+    "No sqlite connections should have been made with remember history disabled"
+  );
+
+  Services.prefs.setBoolPref(HISTORY_ENABLED_PREF, true);
+
+  Assert.ok(
+    FormHistoryBackupResource.canBackupResource,
+    "We should be allowed to backup this resource now"
+  );
+
+  fakeConnection.backup.resetHistory();
+  let manifestEntry = await formHistoryBackupResource.backup(
+    stagingPath,
+    sourcePath
+  );
+  Assert.deepEqual(
+    manifestEntry,
+    null,
+    "Should have gotten back a null ManifestEntry"
+  );
+
+  Assert.ok(
+    fakeConnection.backup.notCalled,
+    "No sqlite connections should have been made with sanitize shutdown enabled"
+  );
+
+  await maybeRemovePath(stagingPath);
+  await maybeRemovePath(sourcePath);
+
+  sandbox.restore();
+  Services.prefs.clearUserPref(HISTORY_ENABLED_PREF);
+  Services.prefs.clearUserPref(SANITIZE_ON_SHUTDOWN_PREF);
+});
+
+/**
+ * Tests that the backup method correctly skips backing up form history when
+ * permanent private browsing mode is enabled.
+ */
+add_task(async function test_backup_private_browsing() {
+  let sandbox = sinon.createSandbox();
+  sandbox.stub(PrivateBrowsingUtils, "permanentPrivateBrowsing").value(true);
+
+  Assert.ok(
+    !FormHistoryBackupResource.canBackupResource,
+    "Cannot backup form history since Private Browsing is enabled"
+  );
+
+  sandbox.restore();
+});
+
+/**
  * Test that the recover method correctly copies items from the recovery
  * directory into the destination profile directory.
  */

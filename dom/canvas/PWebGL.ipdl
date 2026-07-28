@@ -1,6 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: sw=2 ts=8 et :
- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -95,8 +92,6 @@ parent:
   sync GetQueryParameter(uint64_t id, uint32_t pname) returns (double? ret);
   sync GetRenderbufferParameter(uint64_t id, uint32_t pname) returns (double? ret);
   sync GetSamplerParameter(uint64_t id, uint32_t pname) returns (double? ret);
-  sync GetShaderPrecisionFormat(
-      uint32_t shaderType, uint32_t precisionType) returns (ShaderPrecisionFormat? ret);
   sync GetString(uint32_t pname) returns (string? ret);
   sync GetTexParameter(uint64_t id, uint32_t pname) returns (double? ret);
   sync GetUniform(uint64_t id, uint32_t loc) returns (GetUniformData ret);

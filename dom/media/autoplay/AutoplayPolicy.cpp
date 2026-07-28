@@ -1,11 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "AutoplayPolicy.h"
 
+#include "mozilla/Components.h"
+#include "mozilla/Logging.h"
+#include "mozilla/MediaManager.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/dom/AudioContext.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/FeaturePolicyUtils.h"
@@ -14,10 +16,6 @@
 #include "mozilla/dom/NavigatorBinding.h"
 #include "mozilla/dom/UserActivation.h"
 #include "mozilla/dom/WindowContext.h"
-#include "mozilla/Logging.h"
-#include "mozilla/MediaManager.h"
-#include "mozilla/Components.h"
-#include "mozilla/StaticPrefs_media.h"
 #include "nsContentUtils.h"
 #include "nsGlobalWindowInner.h"
 #include "nsIAutoplay.h"
@@ -101,12 +99,15 @@ static bool IsWindowAllowedToPlayByTraits(nsPIDOMWindowInner* aWindow) {
     return false;
   }
 
+#ifndef MOZ_WIDGET_ANDROID
+  // On Android, we'd like to prevent top level video document from autoplaying.
   bool isTopLevelContent = !aWindow->GetBrowsingContext()->GetParent();
   if (currentDoc->MediaDocumentKind() == Document::MediaDocumentKind::Video &&
       isTopLevelContent) {
     AUTOPLAY_LOG("Allow top-level video document to autoplay.");
     return true;
   }
+#endif
 
   if (StaticPrefs::media_autoplay_allow_extension_background_pages() &&
       currentDoc->IsExtensionPage()) {

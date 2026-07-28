@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,9 +11,9 @@
 #include "Intervals.h"
 #include "mozilla/CheckedInt.h"
 #include "mozilla/FloatingPoint.h"
+#include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/IntegerPrintfMacros.h"
 #include "nsPrintfCString.h"
 
 namespace mozilla::media {
@@ -94,8 +92,13 @@ class TimeUnit final {
     return std::numeric_limits<int64_t>::max() - 1;
   }
 
-  // This is only precise up to a point, which is aValue * aBase <= 2^53 - 1
+  // These are only precise up to a point, which is aValue * aBase <= 2^53 - 1
   static TimeUnit FromSeconds(double aValue, int64_t aBase = USECS_PER_S);
+  static TimeUnit FromSecondsWithBaseOf(double aSeconds,
+                                        const TimeUnit& aOtherForBase) {
+    return FromSeconds(aSeconds, aOtherForBase.mBase);
+  }
+
   static constexpr TimeUnit FromMicroseconds(int64_t aValue) {
     return TimeUnit(aValue, USECS_PER_S);
   }
@@ -214,6 +217,10 @@ class TimeUnit final {
   template <class RoundingPolicy = TruncatePolicy>
   TimeUnit ToBase(int64_t aTargetBase, double& aOutError) const {
     aOutError = 0.0;
+    if (mTicks.value() == INT64_MAX || mTicks.value() == INT64_MIN) {
+      // -ve or +ve infinity
+      return TimeUnit(mTicks, aTargetBase);
+    }
     CheckedInt<int64_t> ticks = mTicks * aTargetBase;
     if (ticks.isValid()) {
       imaxdiv_t rv = imaxdiv(ticks.value(), mBase);
@@ -224,10 +231,15 @@ class TimeUnit final {
     double approx = static_cast<double>(mTicks.value()) *
                     static_cast<double>(aTargetBase) /
                     static_cast<double>(mBase);
+    if (approx < static_cast<double>(INT64_MIN) ||
+        approx > static_cast<double>(INT64_MAX)) {
+      aOutError = 1.0;
+      return TimeUnit::Invalid();
+    }
+    double rounded = RoundingPolicy::policy(approx);
     double integer;
     aOutError = modf(approx, &integer);
-    return TimeUnit(AssertedCast<int64_t>(RoundingPolicy::policy(approx)),
-                    aTargetBase);
+    return TimeUnit(mozilla::AssertedCast<int64_t>(rounded), aTargetBase);
   }
 
   bool IsValid() const;

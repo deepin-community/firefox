@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Tercihler
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Ayarlar…
+menu-application-set-as-default =
+    .label = { -brand-shorter-name } tarayıcısını saptanmış tarayıcı yap
 menu-application-services =
     .label = Servisler
 menu-application-hide-this =
@@ -98,6 +91,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Paylaş
     .accesskey = a
+menu-file-share-qrcode =
+    .label = QR kodu oluştur…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = QR kodu oluştur
+    .accesskey = Q
 menu-file-print-setup =
     .label = Sayfa düzeni…
     .accesskey = ü
@@ -146,8 +145,6 @@ menu-view-history-button =
     .label = Geçmiş
 menu-view-synced-tabs-sidebar =
     .label = Eşitlenmiş sekmeler
-menu-view-megalist-sidebar =
-    .label = Parolalar
 menu-view-full-zoom =
     .label = Yakınlaştırma
     .accesskey = Y
@@ -255,6 +252,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobil yer imleri
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profiller
+menu-profiles-manage-profiles =
+    .label = Profilleri yönet
+menu-profiles-new-profile =
+    .label = Yeni profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (geçerli)
+menu-profiles-menu =
+    .label = Profiller
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +276,9 @@ menu-tools =
 menu-tools-downloads =
     .label = İndirilenler
     .accesskey = d
+menu-tools-extensions-and-themes =
+    .label = Uzantılar ve temalar
+    .accesskey = U
 menu-tools-addons-and-themes =
     .label = Eklentiler ve temalar
     .accesskey = a
@@ -290,6 +306,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Sayfa bilgileri
     .accesskey = b
+menu-tools-edit-pdf =
+    .label = PDF düzenle…
+    .accesskey = P
 menu-settings =
     .label = Ayarlar
     .accesskey =

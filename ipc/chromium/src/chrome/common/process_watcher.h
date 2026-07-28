@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -9,9 +7,18 @@
 
 #include "base/basictypes.h"
 #include "base/process_util.h"
+#ifdef XP_UNIX
+#  include "mozilla/UniquePtrExtensions.h"
+#endif
 
 class ProcessWatcher {
  public:
+#ifdef NS_FREE_PERMANENT_DATA
+  static constexpr bool kDefaultForce = false;
+#else
+  static constexpr bool kDefaultForce = true;
+#endif
+
   // This method ensures that the specified process eventually terminates, and
   // then it closes the given process handle.
   //
@@ -26,7 +33,11 @@ class ProcessWatcher {
   // and SYNCHRONIZE permissions.
   //
   static void EnsureProcessTerminated(base::ProcessHandle process_handle,
-                                      bool force = true);
+                                      bool force = kDefaultForce);
+
+#ifdef XP_UNIX
+  static mozilla::UniqueFileHandle GetSignalPipe();
+#endif
 
  private:
   // Do not instantiate this class.

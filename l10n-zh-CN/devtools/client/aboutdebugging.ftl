@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = 调试 - 运行时 / { $selectedRuntim
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = 此 { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = 此 { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = 此 { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = 设置
+about-debugging-sidebar-setup-title =
+    .title = 设置
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -315,6 +323,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = 推送服务
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = 来源
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Service Worker 检查功能目前在多进程 { -brand-shorter-name } 下暂时无法使用
@@ -327,6 +338,15 @@ about-debugging-multiprocess-toolbox-name = 多进程工具箱
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = 目标浏览器的主进程和内容进程
+about-debugging-message-error-icon =
+    .alt = 错误图标
+about-debugging-message-info-icon =
+    .alt = 信息图标
+about-debugging-message-warning-icon =
+    .alt = 警告图标
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = 关闭消息
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = 关闭消息

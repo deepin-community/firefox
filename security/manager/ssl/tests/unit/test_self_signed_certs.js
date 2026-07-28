@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil; js-indent-level: 2 -*-
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -59,7 +58,7 @@ add_task(async function test_no_overlong_path_building() {
       certDB,
       certToVerify,
       SEC_ERROR_UNKNOWN_ISSUER,
-      certificateUsageSSLCA,
+      Ci.nsIX509CertDB.verifyUsageTLSServerCA,
       date.getTime() / 1000
     );
   }
@@ -82,7 +81,7 @@ add_task(async function test_no_bad_signature() {
     certDB,
     selfSignedCert,
     MOZILLA_PKIX_ERROR_SELF_SIGNED_CERT,
-    certificateUsageSSLServer,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
     false,
     "example.com"
   );
@@ -102,7 +101,7 @@ add_task(async function test_no_inadequate_key_usage() {
     certDB,
     selfSignedCert,
     MOZILLA_PKIX_ERROR_SELF_SIGNED_CERT,
-    certificateUsageSSLServer,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
     false,
     "example.com"
   );

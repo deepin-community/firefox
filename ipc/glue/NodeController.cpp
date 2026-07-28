@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -16,7 +14,7 @@
 #include "mozilla/StaticPtr.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/ToString.h"
-#include "mozilla/ipc/BrowserProcessSubThread.h"
+#include "mozilla/ipc/IOThread.h"
 #include "mozilla/ipc/ProtocolUtils.h"
 #include "mozilla/mozalloc.h"
 #include "nsISerialEventTarget.h"
@@ -53,8 +51,11 @@ static LazyLogModule gNodeControllerLog{"NodeController"};
     NODECONTROLLER_LOG(LogLevel::Warning, fmt_, ##__VA_ARGS__)
 #endif
 
-NodeController::NodeController(const NodeName& aName)
-    : mName(aName), mNode(MakeUnique<Node>(aName, this)) {}
+NodeController::NodeController(const NodeName& aName,
+                               const IPC::Channel::ChannelKind* aChannelKind)
+    : mName(aName),
+      mNode(MakeUnique<Node>(aName, this)),
+      mChannelKind(aChannelKind) {}
 
 NodeController::~NodeController() {
   auto state = mState.Lock();
@@ -162,9 +163,10 @@ bool NodeController::SendUserMessage(const PortRef& aPort,
   return false;
 }
 
-auto NodeController::SerializeEventMessage(
-    UniquePtr<Event> aEvent, const NodeName* aRelayTarget,
-    uint32_t aType) -> UniquePtr<IPC::Message> {
+auto NodeController::SerializeEventMessage(UniquePtr<Event> aEvent,
+                                           const NodeName* aRelayTarget,
+                                           uint32_t aType)
+    -> UniquePtr<IPC::Message> {
   UniquePtr<IPC::Message> message;
   if (aEvent->type() == Event::kUserMessage) {
     MOZ_DIAGNOSTIC_ASSERT(
@@ -274,6 +276,11 @@ void NodeController::DropPeer(NodeName aNodeName) {
   MOZ_FUZZING_IPC_DROP_PEER("NodeController::DropPeer");
 #endif
 
+  // This may cause many error tasks to be dispatched.
+  // We batch them together to reduce locking contention when destroying a large
+  // number of actors due to a peer disconnecting.
+  MessageChannel::ErrorNotifyBatcher autoBatchNotify;
+
   Invite invite;
   RefPtr<NodeChannel> channel;
   nsTArray<PortRef> pendingMerges;
@@ -315,9 +322,9 @@ void NodeController::ContactRemotePeer(const NodeName& aNode,
   if (aEvent && !IsBroker() && aNode != kBrokerNodeName &&
       aEvent->type() == Event::kUserMessage) {
     auto* userEvent = static_cast<UserMessageEvent*>(aEvent.get());
-    needsRelay =
-        userEvent->HasMessage() &&
-        userEvent->GetMessage<IPC::Message>()->num_relayed_attachments() > 0;
+    needsRelay = userEvent->HasMessage() &&
+                 mChannelKind->num_relayed_attachments(
+                     *userEvent->GetMessage<IPC::Message>()) > 0;
   }
 #endif
 
@@ -365,7 +372,7 @@ void NodeController::ContactRemotePeer(const NodeName& aNode,
     if (needsIntroduction) {
       // We have no broker and will never be able to be introduced to this node.
       // Queue a task to clean up any ports connected to it.
-      XRE_GetIOMessageLoop()->PostTask(NewRunnableMethod<NodeName>(
+      XRE_GetAsyncIOEventTarget()->Dispatch(NewRunnableMethod<NodeName>(
           "NodeController::DropPeer", this, &NodeController::DropPeer, aNode));
     }
     return;
@@ -383,8 +390,8 @@ void NodeController::ContactRemotePeer(const NodeName& aNode,
                          "Relaying message '%s' for peer %s due to %" PRIu32
                          " attachments",
                          message->name(), ToString(aNode).c_str(),
-                         message->num_relayed_attachments());
-      MOZ_ASSERT(message->num_relayed_attachments() > 0 && broker);
+                         mChannelKind->num_relayed_attachments(*message));
+      MOZ_ASSERT(mChannelKind->num_relayed_attachments(*message) > 0 && broker);
       broker->SendEventMessage(std::move(message));
     } else if (peer) {
       peer->SendEventMessage(std::move(message));
@@ -442,7 +449,7 @@ void NodeController::OnEventMessage(const NodeName& aFromNode,
   AssertIOThread();
 
   bool isRelay = aMessage->is_relay();
-  if (isRelay && aMessage->num_relayed_attachments() == 0) {
+  if (isRelay && mChannelKind->num_relayed_attachments(*aMessage) == 0) {
     NODECONTROLLER_WARNING(
         "Invalid relay message without relayed attachments from peer %s!",
         ToString(aFromNode).c_str());
@@ -485,7 +492,7 @@ void NodeController::OnEventMessage(const NodeName& aFromNode,
         return;
       }
       MOZ_ASSERT(message->is_relay(), "Message stopped being a relay message?");
-      MOZ_ASSERT(message->num_relayed_attachments() > 0,
+      MOZ_ASSERT(mChannelKind->num_relayed_attachments(*message) > 0,
                  "Message doesn't have relayed attachments?");
 
       NODECONTROLLER_LOG(
@@ -493,7 +500,8 @@ void NodeController::OnEventMessage(const NodeName& aFromNode,
           "Relaying message '%s' from peer %s to peer %s (%" PRIu32
           " attachments)",
           message->name(), ToString(aFromNode).c_str(),
-          ToString(relayTarget).c_str(), message->num_relayed_attachments());
+          ToString(relayTarget).c_str(),
+          mChannelKind->num_relayed_attachments(*message));
 
       RefPtr<NodeChannel> peer;
       {
@@ -623,7 +631,7 @@ void NodeController::OnIntroduce(const NodeName& aFromNode,
   MOZ_ASSERT(aIntroduction.mMyPid == base::GetCurrentProcId(),
              "We're the wrong process to receive this?");
 
-  if (!aIntroduction.mHandle) {
+  if (!mChannelKind->is_valid_handle(aIntroduction.mHandle)) {
     NODECONTROLLER_WARNING("Could not be introduced to peer %s",
                            ToString(aIntroduction.mName).c_str());
     mNode->LostConnectionToNode(aIntroduction.mName);
@@ -633,11 +641,13 @@ void NodeController::OnIntroduce(const NodeName& aFromNode,
     return;
   }
 
-  auto channel =
-      MakeUnique<IPC::Channel>(std::move(aIntroduction.mHandle),
-                               aIntroduction.mMode, aIntroduction.mOtherPid);
-  auto nodeChannel = MakeRefPtr<NodeChannel>(
-      aIntroduction.mName, std::move(channel), this, aIntroduction.mOtherPid);
+  RefPtr<IPC::Channel> channel =
+      IPC::Channel::Create(std::move(aIntroduction.mHandle),
+                           IPC::Channel::MODE_PEER, aIntroduction.mOtherPid);
+  MOZ_ASSERT(channel->GetKind() == mChannelKind);
+
+  auto nodeChannel = MakeRefPtr<NodeChannel>(aIntroduction.mName, channel, this,
+                                             aIntroduction.mOtherPid);
 
   {
     auto state = mState.Lock();
@@ -693,7 +703,7 @@ void NodeController::OnRequestIntroduction(const NodeName& aFromNode,
 
   RefPtr<NodeChannel> peerB = GetNodeChannel(aName);
   IPC::Channel::ChannelHandle handleA, handleB;
-  if (!peerB || !IPC::Channel::CreateRawPipe(&handleA, &handleB)) {
+  if (!peerB || !mChannelKind->create_raw_pipe(&handleA, &handleB)) {
     NODECONTROLLER_WARNING(
         "Rejecting introduction request from '%s' for unknown peer '%s'",
         ToString(aFromNode).c_str(), ToString(aName).c_str());
@@ -701,18 +711,16 @@ void NodeController::OnRequestIntroduction(const NodeName& aFromNode,
     // We don't know this peer, or ran into issues creating the descriptor! Send
     // an invalid introduction to content to clean up any pending outbound
     // messages.
-    NodeChannel::Introduction intro{aName, nullptr, IPC::Channel::MODE_SERVER,
+    NodeChannel::Introduction intro{aName, IPC::Channel::ChannelHandle{},
                                     peerA->OtherPid(), base::kInvalidProcessId};
     peerA->Introduce(std::move(intro));
     return;
   }
 
-  NodeChannel::Introduction introA{aName, std::move(handleA),
-                                   IPC::Channel::MODE_SERVER, peerA->OtherPid(),
+  NodeChannel::Introduction introA{aName, std::move(handleA), peerA->OtherPid(),
                                    peerB->OtherPid()};
   NodeChannel::Introduction introB{aFromNode, std::move(handleB),
-                                   IPC::Channel::MODE_CLIENT, peerB->OtherPid(),
-                                   peerA->OtherPid()};
+                                   peerB->OtherPid(), peerA->OtherPid()};
   peerA->Introduce(std::move(introA));
   peerB->Introduce(std::move(introB));
 }
@@ -726,7 +734,8 @@ void NodeController::OnAcceptInvite(const NodeName& aFromNode,
     return;
   }
 
-  if (aRealName == mojo::core::ports::kInvalidNodeName ||
+  if (aRealName == kBrokerNodeName ||
+      aRealName == mojo::core::ports::kInvalidNodeName ||
       aInitialPort == mojo::core::ports::kInvalidPortName) {
     NODECONTROLLER_WARNING("Invalid name in AcceptInvite message");
     DropPeer(aFromNode);
@@ -773,20 +782,30 @@ static mojo::core::ports::NodeName RandomNodeName() {
   return {RandomUint64OrDie(), RandomUint64OrDie()};
 }
 
-std::tuple<ScopedPort, RefPtr<NodeChannel>> NodeController::InviteChildProcess(
-    UniquePtr<IPC::Channel> aChannel,
-    GeckoChildProcessHost* aChildProcessHost) {
+bool NodeController::InviteChildProcess(
+    GeckoChildProcessHost* aChildProcessHost,
+    IPC::Channel::ChannelHandle* aClientHandle, ScopedPort* aInitialPort,
+    NodeChannel** aNodeChannel) {
   MOZ_ASSERT(IsBroker());
   AssertIOThread();
+
+  IPC::Channel::ChannelHandle serverHandle;
+  if (!mChannelKind->create_raw_pipe(&serverHandle, aClientHandle)) {
+    return false;
+  }
+
+  RefPtr<IPC::Channel> channel = IPC::Channel::Create(
+      std::move(serverHandle), IPC::Channel::MODE_BROKER_SERVER,
+      base::kInvalidProcessId);
+  MOZ_ASSERT(channel->GetKind() == mChannelKind);
 
   // Create the peer with a randomly generated name, and store it in `mInvites`.
   // This channel and name will be used for communication with the node until it
   // sends us its' real name in an `AcceptInvite` message.
   auto ports = CreatePortPair();
   auto inviteName = RandomNodeName();
-  auto nodeChannel =
-      MakeRefPtr<NodeChannel>(inviteName, std::move(aChannel), this,
-                              base::kInvalidProcessId, aChildProcessHost);
+  auto nodeChannel = MakeRefPtr<NodeChannel>(
+      inviteName, channel, this, base::kInvalidProcessId, aChildProcessHost);
   {
     auto state = mState.Lock();
     MOZ_DIAGNOSTIC_ASSERT(!state->mPeers.Contains(inviteName),
@@ -798,22 +817,29 @@ std::tuple<ScopedPort, RefPtr<NodeChannel>> NodeController::InviteChildProcess(
   }
 
   nodeChannel->Start();
-  return std::tuple{std::move(ports.first), std::move(nodeChannel)};
+
+  *aInitialPort = std::move(ports.first);
+  nodeChannel.forget(aNodeChannel);
+  return true;
 }
 
-void NodeController::InitBrokerProcess() {
+void NodeController::InitBrokerProcess(
+    const IPC::Channel::ChannelKind* aChannelKind) {
   AssertIOThread();
   MOZ_ASSERT(!gNodeController);
-  gNodeController = new NodeController(kBrokerNodeName);
+  gNodeController = new NodeController(kBrokerNodeName, aChannelKind);
 }
 
-ScopedPort NodeController::InitChildProcess(UniquePtr<IPC::Channel> aChannel,
-                                            base::ProcessId aParentPid) {
+ScopedPort NodeController::InitChildProcess(
+    IPC::Channel::ChannelHandle&& aChannelHandle, base::ProcessId aParentPid) {
   AssertIOThread();
   MOZ_ASSERT(!gNodeController);
+
+  RefPtr<IPC::Channel> channel = IPC::Channel::Create(
+      std::move(aChannelHandle), IPC::Channel::MODE_BROKER_CLIENT, aParentPid);
 
   auto nodeName = RandomNodeName();
-  gNodeController = new NodeController(nodeName);
+  gNodeController = new NodeController(nodeName, channel->GetKind());
 
   auto ports = gNodeController->CreatePortPair();
   PortRef toMerge = ports.second.Release();
@@ -827,8 +853,8 @@ ScopedPort NodeController::InitChildProcess(UniquePtr<IPC::Channel> aChannel,
     locker.port()->pending_merge_peer = true;
   }
 
-  auto nodeChannel = MakeRefPtr<NodeChannel>(
-      kBrokerNodeName, std::move(aChannel), gNodeController, aParentPid);
+  auto nodeChannel = MakeRefPtr<NodeChannel>(kBrokerNodeName, channel,
+                                             gNodeController, aParentPid);
   {
     auto state = gNodeController->mState.Lock();
     MOZ_DIAGNOSTIC_ASSERT(!state->mPeers.Contains(kBrokerNodeName));
@@ -849,6 +875,8 @@ void NodeController::CleanUp() {
 
   RefPtr<NodeController> nodeController = gNodeController;
   gNodeController = nullptr;
+
+  MessageChannel::ErrorNotifyBatcher autoBatchNotify;
 
   // Collect all objects from our state which need to be cleaned up.
   nsTArray<NodeName> lostConnections;

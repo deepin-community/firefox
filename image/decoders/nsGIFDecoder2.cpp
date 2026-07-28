@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -51,7 +50,6 @@ mailing address.
 #include "gfxPlatform.h"
 #include "qcms.h"
 #include <algorithm>
-#include "mozilla/Telemetry.h"
 
 using namespace mozilla::gfx;
 
@@ -211,6 +209,8 @@ nsresult nsGIFDecoder2::BeginImageFrame(const OrientedIntRect& aFrameRect,
                                         uint16_t aDepth, bool aIsInterlaced) {
   MOZ_ASSERT(HasSize());
 
+  bool hasTransparency = CheckForTransparency(aFrameRect);
+
   // If we are just counting frames for a metadata decode, there is no actual
   // decoding done. We are just iterating over the blocks to find when a frame
   // begins and ends.
@@ -218,8 +218,6 @@ nsresult nsGIFDecoder2::BeginImageFrame(const OrientedIntRect& aFrameRect,
     mCurrentFrameIndex = mGIFStruct.images_decoded;
     return NS_OK;
   }
-
-  bool hasTransparency = CheckForTransparency(aFrameRect);
 
   // Make sure there's no animation if we're downscaling.
   MOZ_ASSERT_IF(Size() != OutputSize(), !GetImageMetadata().HasAnimation());
@@ -300,10 +298,6 @@ void nsGIFDecoder2::EndImageFrame() {
   // even if some of them weren't decoded properly and thus are blank.
   mGIFStruct.images_decoded++;
 
-  // Reset graphic control extension parameters that we shouldn't reuse
-  // between frames.
-  mGIFStruct.delay_time = 0;
-
   // Tell the superclass we finished a frame
   PostFrameStop(opacity);
 
@@ -312,6 +306,13 @@ void nsGIFDecoder2::EndImageFrame() {
     mColormap[mGIFStruct.tpixel] = mOldColor;
     mOldColor = 0;
   }
+
+  // Reset graphic control extension parameters that we shouldn't reuse
+  // between frames.
+  mGIFStruct.delay_time = 0;
+  mGIFStruct.is_transparent = 0;
+  mGIFStruct.tpixel = 0;
+  mGIFStruct.disposal_method = 0;
 
   mColormap = nullptr;
   mColormapSize = 0;
@@ -494,7 +495,7 @@ LexerResult nsGIFDecoder2::DoDecode(SourceBufferIterator& aIterator,
 
   return mLexer.Lex(
       aIterator, aOnResume,
-      [=](State aState, const char* aData, size_t aLength) {
+      [this](State aState, const char* aData, size_t aLength) {
         switch (aState) {
           case State::GIF_HEADER:
             return ReadGIFHeader(aData);
@@ -1125,8 +1126,9 @@ LexerTransition<nsGIFDecoder2::State> nsGIFDecoder2::SkipSubBlocks(
                                   nextSubBlockLength);
 }
 
-Maybe<Telemetry::HistogramID> nsGIFDecoder2::SpeedHistogram() const {
-  return Some(Telemetry::IMAGE_DECODE_SPEED_GIF);
+Maybe<glean::impl::MemoryDistributionMetric> nsGIFDecoder2::SpeedMetric()
+    const {
+  return Some(glean::image_decode::speed_gif);
 }
 
 }  // namespace image

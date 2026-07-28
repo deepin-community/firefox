@@ -11,6 +11,7 @@ shift
 CONFIG=$(echo $* | tr -d "'")
 
 # Android build flag
+IS_ANDROID=false
 if [[ "$ARTIFACT_NAME" == *"android"* ]]; then
   IS_ANDROID=true
 fi
@@ -59,12 +60,13 @@ fi
 # Logic for macosx64
 if [[ $(uname -s) == "Darwin" ]]; then
   # Modify the config with fetched sdk path
-  export MACOS_SYSROOT="$MOZ_FETCHES_DIR/MacOSX14.4.sdk"
-
-  # Avoid mixing up the system python and toolchain python in the
-  # python path configuration
-  # https://bugs.python.org/issue22490
-  unset __PYVENV_LAUNCHER__
+  export MACOS_SYSROOT="$MOZ_FETCHES_DIR/MacOSX26.4.sdk"
+  # Bug 1990712 & 1989676
+  # HACK: Create a stub DarwinBasic.modulemap to satisfy Ninja’s dependency graph.
+  # This file does not exist in Command Line Tools SDKs. It seems only the full
+  # Xcode SDK includes DarwinBasic/DarwinFoundation modulemaps.
+  mkdir -p "$MACOS_SYSROOT/usr/include"
+  touch "$MACOS_SYSROOT/usr/include/DarwinFoundation.modulemap"
 
   # Set the SDK path for build, which is technically a higher version
   # than what is associated with the current OS version (10.15).
@@ -93,8 +95,8 @@ if [[ $(uname -o) == "Msys" ]]; then
   # Setup some environment variables for chromium build scripts
   export DEPOT_TOOLS_WIN_TOOLCHAIN=0
   export GYP_MSVS_OVERRIDE_PATH="$MOZ_FETCHES_DIR/VS"
-  export GYP_MSVS_VERSION=2022
-  export vs2022_install="$MOZ_FETCHES_DIR/VS"
+  export GYP_MSVS_VERSION=2026
+  export vs2026_install="$MOZ_FETCHES_DIR/VS"
   export WINDOWSSDKDIR="$MOZ_FETCHES_DIR/VS/Windows Kits/10"
   export DEPOT_TOOLS_UPDATE=1
   export GCLIENT_PY3=1
@@ -110,7 +112,9 @@ if [[ $(uname -o) == "Msys" ]]; then
   pushd "$WINDOWSSDKDIR"
   mkdir -p Debuggers/x64/
   popd
-  mv $MOZ_FETCHES_DIR/VS/VC/Redist/MSVC/14.38.33135/x64/Microsoft.VC143.CRT/* chrome_dll/system32/
+  MSVC_REDIST_VERSION=$(ls "$MOZ_FETCHES_DIR/VS/VC/Redist/MSVC" | grep -E '^[0-9]' | sort -V | tail -1)
+  [[ -n "$MSVC_REDIST_VERSION" ]] || { echo "ERROR: no numeric MSVC redist version found"; exit 1; }
+  mv "$MOZ_FETCHES_DIR/VS/VC/Redist/MSVC/$MSVC_REDIST_VERSION/x64"/Microsoft.VC*.CRT/* chrome_dll/system32/
   mv "$WINDOWSSDKDIR/App Certification Kit/"* "$WINDOWSSDKDIR"/Debuggers/x64/
   export WINDIR="$PWD/chrome_dll"
 
@@ -149,6 +153,11 @@ if [[ $(uname -o) == "Msys" ]]; then
   # This is ok because we are not doing any development here and don't need
   # the development history, but this file is still needed to proceed.
   python3 build/util/lastchange.py -o build/util/LASTCHANGE
+
+  # Override the SDK version hardcoded upstream to match our fetched Windows SDK.
+  echo "Using Windows SDK version: ${SDK_VERSION}"
+  sed -i "s/SDK_VERSION = '[0-9.]*'/SDK_VERSION = '${SDK_VERSION}'/" build/vs_toolchain.py
+  sed -i "s/SDK_VERSION = '[0-9.]*'/SDK_VERSION = '${SDK_VERSION}'/" build/toolchain/win/setup_toolchain.py
 fi
 
 if [[ $(uname -s) == "Linux" ]] || [[ $(uname -s) == "Darwin" ]]; then
@@ -168,7 +177,7 @@ fi
 # Now we can run hooks and fetch PGO + everything else
 gclient runhooks
 
-# PGO data should be in src/chrome/build/pgo_profiles/ 
+# PGO data should be in src/chrome/build/pgo_profiles/
 # with a name like "chrome-{OS}-<some unique identifier>"
 export PGO_DATA_DIR="$CUSTOM_CAR_DIR/chromium/src/chrome/build/pgo_profiles"
 for entry in "$PGO_DATA_DIR"/*
@@ -196,6 +205,19 @@ CONFIG=$(echo $CONFIG pgo_data_path='"'$PGO_FILE'"')
 gn gen out/Default --args="$CONFIG"
 autoninja -C out/Default $FINAL_BIN
 
+# Make artifact smaller for win/linux
+if [[ $(uname -s) == "Linux" ]] || [[ $(uname -o) == "Msys" ]]; then
+  if [ "$IS_ANDROID" = false ]; then
+    rm -rf out/Default/.ninjadeps
+    rm -rf out/Default/*_deps
+    rm -rf out/Default/gen/*
+    rm -rf out/Default/obj/*
+    rm -rf out/Default/thinlto-cache
+    rm -rf out/Default/*/gen/*
+    rm -rf out/Default/*/obj/*
+  fi
+fi
+
 # Gather binary and related files into a zip, and upload it
 cd ..
 mkdir chromium
@@ -207,3 +229,12 @@ tar -c chromium | python3 $GECKO_PATH/taskcluster/scripts/misc/zstdpy > $ARTIFAC
 
 mkdir -p $UPLOAD_DIR
 mv "$ARTIFACT_NAME" "$UPLOAD_DIR"
+
+if [ "$IS_ANDROID" = true ]; then
+  # Package up symbols (lib.unstripped) from android build separately.
+  SYM_ARTIFACT="car_android_symbols.tar.zst"
+  SYM_DIR="src/out/Default/lib.unstripped"
+  tar -C "$(dirname "$SYM_DIR")" -c "$(basename "$SYM_DIR")" \
+    | python3 "$GECKO_PATH/taskcluster/scripts/misc/zstdpy" > "$SYM_ARTIFACT"
+  mv "$SYM_ARTIFACT" "$UPLOAD_DIR"
+fi

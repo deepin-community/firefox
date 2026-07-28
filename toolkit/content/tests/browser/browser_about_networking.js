@@ -3,6 +3,12 @@
 
 "use strict";
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function test_first() {
   registerCleanupFunction(() => {
     // Must clear mode first, otherwise we'll have non-local connections to
@@ -15,7 +21,7 @@ add_task(async function test_first() {
     "about:networking#dns",
     async function (browser) {
       ok(!browser.isRemoteBrowser, "Browser should not be remote.");
-      await ContentTask.spawn(browser, null, async function () {
+      await SpecialPowers.spawn(browser, [], async function () {
         let url_tbody = content.document.getElementById("dns_trr_url");
         info(url_tbody);
         is(
@@ -33,7 +39,7 @@ add_task(async function test_first() {
     "about:networking#dns",
     async function (browser) {
       ok(!browser.isRemoteBrowser, "Browser should not be remote.");
-      await ContentTask.spawn(browser, null, async function () {
+      await SpecialPowers.spawn(browser, [], async function () {
         let url_tbody = content.document.getElementById("dns_trr_url");
         info(url_tbody);
         is(

@@ -1,19 +1,16 @@
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
 
-const { RemoteSettings } = ChromeUtils.importESModule(
-  "resource://services-settings/remote-settings.sys.mjs"
-);
+const isAndroid = AppConstants.platform == "android";
 
 XPCOMUtils.defineLazyServiceGetter(
   this,
   "peuService",
   "@mozilla.org/partitioning/exception-list-service;1",
-  "nsIPartitioningExceptionListService"
+  Ci.nsIPartitioningExceptionListService
 );
 
 const TEST_REDIRECT_TOP_PAGE =
@@ -56,6 +53,7 @@ add_setup(async function () {
       ["privacy.trackingprotection.annotate_channels", true],
       // Bug 1617611: Fix all the tests broken by "cookies SameSite=lax by default"
       ["network.cookie.sameSite.laxByDefault", false],
+      ["security.allow_eval_with_system_principal", true],
     ],
   });
   registerCleanupFunction(cleanup);
@@ -89,8 +87,8 @@ function executeContentScript(browser, callback, options = {}) {
             once: true,
           });
 
-          content.document.body.appendChild(ifr);
           ifr.src = obj.page;
+          content.document.body.appendChild(ifr);
         } else {
           // first-party
           let runnableStr = `(() => {return (${obj.callback});})();`;
@@ -125,7 +123,7 @@ function getDataFromFirstParty(browser) {
 function createDataInThirdParty(browser, value) {
   return executeContentScript(browser, writeNetworkCookie, {
     page: TEST_3RD_PARTY_PARTITIONED_PAGE,
-    value,
+    value: value + ";SameSite=None;Secure;Partitioned;",
   });
 }
 function getDataFromThirdParty(browser) {
@@ -139,7 +137,25 @@ async function redirectWithUserInteraction(browser, url, wait = null) {
     browser,
     (content, value) => {
       content.document.userInteractionForTesting();
+      content.document.notifyUserGestureActivation();
 
+      let link = content.document.createElement("a");
+      link.appendChild(content.document.createTextNode("click me!"));
+      link.href = value;
+      content.document.body.appendChild(link);
+      link.click();
+    },
+    {
+      value: url,
+    }
+  );
+  await BrowserTestUtils.browserLoaded(browser, false, wait || url);
+}
+
+async function redirectWithoutUserInteraction(browser, url, wait = null) {
+  await executeContentScript(
+    browser,
+    (content, value) => {
       let link = content.document.createElement("a");
       link.appendChild(content.document.createTextNode("click me!"));
       link.href = value;
@@ -174,7 +190,14 @@ async function runTestRedirectHeuristic(disableHeuristics) {
 
   await SpecialPowers.pushPrefEnv({
     set: [
-      ["privacy.restrict3rdpartystorage.heuristic.recently_visited", true],
+      [
+        "privacy.restrict3rdpartystorage.heuristic.opened_window_after_interaction",
+        false,
+      ],
+      ["privacy.restrict3rdpartystorage.heuristic.window_open", false],
+      ["privacy.restrict3rdpartystorage.heuristic.recently_visited", isAndroid],
+      ["privacy.restrict3rdpartystorage.heuristic.navigation", !isAndroid],
+      ["privacy.restrict3rdpartystorage.heuristic.redirect", false],
       ["privacy.antitracking.enableWebcompat", !disableHeuristics],
     ],
   });
@@ -265,6 +288,106 @@ async function runTestRedirectHeuristic(disableHeuristics) {
   await cleanup();
 }
 
+async function runTestRedirectHeuristicWithoutInteraction() {
+  info("Starting Dynamic FPI Redirect Heuristic test without interaction...");
+
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["privacy.restrict3rdpartystorage.heuristic.recently_visited", isAndroid],
+      ["privacy.restrict3rdpartystorage.heuristic.navigation", !isAndroid],
+      ["privacy.antitracking.enableWebcompat", true],
+    ],
+  });
+
+  // mark third-party as tracker
+  await UrlClassifierTestUtils.addTestTrackers();
+
+  info("Creating a new tab");
+  let tab = BrowserTestUtils.addTab(gBrowser, TEST_TOP_PAGE);
+  gBrowser.selectedTab = tab;
+
+  let browser = gBrowser.getBrowserForTab(tab);
+  await BrowserTestUtils.browserLoaded(browser);
+
+  info("initializing...");
+  await checkData(browser, { firstParty: "", thirdParty: "" });
+
+  await Promise.all([
+    createDataInFirstParty(browser, "firstParty"),
+    createDataInThirdParty(browser, "thirdParty"),
+  ]);
+
+  await checkData(browser, {
+    firstParty: "firstParty",
+    thirdParty: "",
+  });
+
+  info("load third-party content as first-party");
+  await redirectWithoutUserInteraction(
+    browser,
+    TEST_REDIRECT_3RD_PARTY_PAGE,
+    TEST_3RD_PARTY_PARTITIONED_PAGE
+  );
+
+  await checkData(browser, { firstParty: "" });
+  await createDataInFirstParty(browser, "heuristicFirstParty");
+  await checkData(browser, { firstParty: "heuristicFirstParty" });
+
+  info("redirect back to first-party page");
+  await redirectWithoutUserInteraction(
+    browser,
+    TEST_REDIRECT_TOP_PAGE,
+    TEST_TOP_PAGE
+  );
+
+  info("third-party tracker should NOT able to access first-party data");
+  await checkData(browser, {
+    firstParty: "firstParty",
+    thirdParty: "",
+  });
+
+  // remove third-party from tracker
+  await UrlClassifierTestUtils.cleanupTestTrackers();
+
+  info("load third-party content as first-party");
+  await redirectWithoutUserInteraction(
+    browser,
+    TEST_REDIRECT_3RD_PARTY_PAGE,
+    TEST_3RD_PARTY_PARTITIONED_PAGE
+  );
+
+  await checkData(browser, {
+    firstParty: "heuristicFirstParty",
+  });
+
+  info("redirect back to first-party page");
+  await redirectWithoutUserInteraction(
+    browser,
+    TEST_REDIRECT_TOP_PAGE,
+    TEST_TOP_PAGE
+  );
+
+  // This heuristic doesn't work in Android because
+  // it doesn't have the session history in the parent
+  // process (yet).
+  info(
+    `third-party page should ${
+      isAndroid ? "" : "not "
+    }be able to access first-party data`
+  );
+  await checkData(browser, {
+    firstParty: "firstParty",
+    thirdParty: isAndroid ? "heuristicFirstParty" : "",
+  });
+
+  info("Removing the tab");
+  BrowserTestUtils.removeTab(tab);
+
+  await SpecialPowers.popPrefEnv();
+
+  await cleanup();
+}
+
 async function runTestRedirectHeuristicWithSameSite() {
   info("Starting Dynamic FPI Redirect Between Same Site Heuristic test...");
 
@@ -312,6 +435,8 @@ add_task(runTestRedirectHeuristicWithSameSite);
 add_task(async function testRedirectHeuristicDisabled() {
   await runTestRedirectHeuristic(true);
 });
+
+add_task(runTestRedirectHeuristicWithoutInteraction);
 
 class UpdateEvent extends EventTarget {}
 function waitForEvent(element, eventName) {

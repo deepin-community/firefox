@@ -13,4 +13,3 @@ webext-default-search-yes =
 webext-default-search-no =
     .label = Не
     .accesskey = Н
-

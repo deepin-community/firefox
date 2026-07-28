@@ -5,10 +5,9 @@
 package org.mozilla.fenix.settings.advanced
 
 import android.content.Context
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkObject
 import mozilla.components.support.locale.LocaleManager
+import mozilla.components.support.test.robolectric.testContext
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -16,19 +15,24 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.BuildConfig
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.Locale
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class LocaleManagerExtensionTest {
 
     private lateinit var context: Context
 
     @Before
     fun setup() {
-        context = mockk()
-        mockkObject(LocaleManager)
+        context = testContext
+        LocaleManager.clear(context)
+    }
+
+    @After
+    fun tearDown() {
+        LocaleManager.clear(context)
     }
 
     @Test
@@ -46,41 +50,31 @@ class LocaleManagerExtensionTest {
     @Test
     @Config(qualifiers = "en-rUS")
     fun `default locale selected`() {
-        every { LocaleManager.getCurrentLocale(context) } returns null
-
         assertTrue(LocaleManager.isDefaultLocaleSelected(context))
     }
 
     @Test
     @Config(qualifiers = "en-rUS")
     fun `custom locale selected`() {
-        val selectedLocale = Locale("en", "UK")
-        every { LocaleManager.getCurrentLocale(context) } returns selectedLocale
+        val selectedLocale = Locale.Builder().setLanguage("en").setRegion("UK").build()
+        LocaleManager.setNewLocale(context, locale = selectedLocale)
 
         assertFalse(LocaleManager.isDefaultLocaleSelected(context))
     }
 
     @Test
     @Config(qualifiers = "en-rUS")
-    fun `match current stored locale string with a Locale from our list`() {
-        val otherLocale = Locale("fr")
-        val selectedLocale = Locale("en", "UK")
-        val localeList = listOf(otherLocale, selectedLocale)
+    fun `match current stored locale string with a supported Locale`() {
+        val selectedLocale = Locale.forLanguageTag("fr")
 
-        every { LocaleManager.getCurrentLocale(context) } returns selectedLocale
+        LocaleManager.setNewLocale(context, locale = selectedLocale)
 
-        assertEquals(selectedLocale, LocaleManager.getSelectedLocale(context, localeList))
+        assertEquals(selectedLocale, LocaleManager.getSelectedLocale(context))
     }
 
     @Test
     @Config(qualifiers = "en-rUS")
-    fun `match null stored locale with the default Locale from our list`() {
-        val firstLocale = Locale("fr")
-        val secondLocale = Locale("en", "UK")
-        val localeList = listOf(firstLocale, secondLocale)
-
-        every { LocaleManager.getCurrentLocale(context) } returns null
-
-        assertEquals("en-US", LocaleManager.getSelectedLocale(context, localeList).toLanguageTag())
+    fun `match null stored locale with the system default Locale`() {
+        assertEquals("en-US", LocaleManager.getSelectedLocale(context).toLanguageTag())
     }
 }

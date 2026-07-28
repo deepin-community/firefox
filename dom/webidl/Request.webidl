@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 1; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,6 +8,7 @@
 
 
 interface Principal;
+interface nsICookieJarSettings;
 
 typedef (Request or UTF8String) RequestInfo;
 typedef unsigned long nsContentPolicyType;
@@ -80,8 +80,28 @@ dictionary RequestInit {
   [ChromeOnly]
   boolean mozErrors;
 
+  // This allows the Chrome process to send Fetch requests as if they were
+  // triggered by another origin. It is up to the Chrome process to use
+  // this responsibly to represent that a Fetch is _really_ being triggered
+  // by some content even though it is occurring in a system context.
   [ChromeOnly]
   Principal triggeringPrincipal;
+
+  // This allows fetches made by the system using the triggeringPrincipal
+  // to ensure that the response can be read by the system. This forces
+  // the request to never be tainted, so that the response remains Basic.
+  // It is then up to the Chrome process to not share the contents to other
+  // processes.
+  [ChromeOnly]
+  boolean neverTaint;
+
+  // This allows setting the cookieJarSettings for the request. We might not
+  // be able to acquire the cookieJarSettings from the global object if the
+  // global object is not a window global nor a worker global. This can happen
+  // if the request is made from the reporting API. In this case, we can this
+  // field to set the cookieJarSettings for the request.
+  [ChromeOnly]
+  nsICookieJarSettings cookieJarSettings;
 
   AbortSignal? signal;
 
@@ -95,8 +115,8 @@ dictionary RequestInit {
 enum RequestDestination {
   "",
   "audio", "audioworklet", "document", "embed", "font", "frame", "iframe",
-  "image", "manifest", "object", "paintworklet", "report", "script",
-  "sharedworker", "style",  "track", "video", "worker", "xslt"
+  "image", "json", "manifest", "object", "paintworklet", "report", "script",
+  "sharedworker", "style", "text", "track", "video", "worker", "xslt"
 };
 
 enum RequestMode { "same-origin", "no-cors", "cors", "navigate" };

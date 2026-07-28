@@ -4,10 +4,6 @@
 
 xpinstall-prompt = { -brand-short-name } ನಿಮ್ಮ ಗಣಕದಲ್ಲಿ ಈ ತಾಣದಲ್ಲಿ ತಂತ್ರಾಂಶವನ್ನು ಅನುಸ್ಥಾಪಿಸಲು ನಿಮ್ಮ ಅನುಮತಿಯನ್ನು ಕೇಳುವುದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.
 
-## Variables:
-##   $host (String): The hostname of the site the add-on is being installed from.
-
-
 ##
 
 xpinstall-prompt-dont-allow =
@@ -24,7 +20,6 @@ xpinstall-disabled = ತಂತ್ರಾಂಶ ಅನುಸ್ಥಾಪನೆಯ�
 xpinstall-disabled-button =
     .label = ಶಕ್ತಗೊಳಿಸು
     .accesskey = n
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } ಅನ್ನು { -brand-short-name } ಗೆ ಸೇರಿಸಲಾಗಿದೆ
@@ -42,7 +37,6 @@ addon-downloading-and-verifying =
        *[other] ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ ಮತ್ತು ದೃಢಪಡಿಸುಲಾಗುತ್ತಿದೆ { $addonCount } ಆಡ್-ಆನ್‌ಗಳು…
     }
 addon-download-verifying = ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ
-
 addon-install-cancel-button =
     .label = ರದ್ದುಗೊಳಿಸು
     .accesskey = C

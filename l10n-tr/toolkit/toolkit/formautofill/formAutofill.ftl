@@ -15,7 +15,7 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } depolanan ö
 autofill-edit-payment-method-os-prompt-macos = depolanan ödeme yöntemi bilgilerini gösterme
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } depolanan ödeme yöntemi bilgilerini göstermeye çalışıyor. Bu Windows hesabına erişimi onaylayın.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } depolanan ödeme yöntemi bilgilerini göstermeye çalışıyor.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Otomatik form doldurma seçenekleri
 autofill-options-link-osx = Otomatik form doldurma tercihleri
 
@@ -81,3 +81,6 @@ autofill-category-name = ad
 autofill-category-organization = şirket
 autofill-category-tel = telefon
 autofill-category-email = e-posta
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } güvensiz bir site tespit etti. Otomatik form doldurma geçici olarak kapatıldı

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,15 +5,15 @@
 #ifndef DOM_SVG_DOMSVGTRANSFORM_H_
 #define DOM_SVG_DOMSVGTRANSFORM_H_
 
+#include <memory>
+
 #include "DOMSVGTransformList.h"
+#include "SVGTransform.h"
 #include "gfxMatrix.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsDebug.h"
 #include "nsID.h"
-#include "SVGTransform.h"
 #include "nsWrapperCache.h"
-#include "mozilla/Attributes.h"
-#include "mozilla/UniquePtr.h"
 
 #define MOZ_SVG_LIST_INDEX_BIT_COUNT 31  // supports > 2 billion list items
 
@@ -51,7 +49,7 @@ class DOMSVGTransform final : public nsWrapperCache {
    */
   DOMSVGTransform();
   explicit DOMSVGTransform(const gfxMatrix& aMatrix);
-  DOMSVGTransform(const DOMMatrix2DInit& aMatrix, ErrorResult& rv);
+  DOMSVGTransform(const DOMMatrix2DInit& aMatrix, ErrorResult& aRv);
 
   /**
    * Ctor for creating an unowned copy. Used with Clone().
@@ -99,7 +97,10 @@ class DOMSVGTransform final : public nsWrapperCache {
   }
 
   /// This method is called to notify this object that its list index changed.
-  void UpdateListIndex(uint32_t aListIndex) { mListIndex = aListIndex; }
+  void UpdateListIndex(uint32_t aListIndex) {
+    MOZ_RELEASE_ASSERT(aListIndex <= MaxListIndex());
+    mListIndex = aListIndex;
+  }
 
   /**
    * This method is called to notify this DOM object that it is about to be
@@ -118,12 +119,12 @@ class DOMSVGTransform final : public nsWrapperCache {
   uint16_t Type() const;
   dom::SVGMatrix* GetMatrix();
   float Angle() const;
-  void SetMatrix(const DOMMatrix2DInit& matrix, ErrorResult& rv);
-  void SetTranslate(float tx, float ty, ErrorResult& rv);
-  void SetScale(float sx, float sy, ErrorResult& rv);
-  void SetRotate(float angle, float cx, float cy, ErrorResult& rv);
-  void SetSkewX(float angle, ErrorResult& rv);
-  void SetSkewY(float angle, ErrorResult& rv);
+  void SetMatrix(const DOMMatrix2DInit& matrix, ErrorResult& aRv);
+  void SetTranslate(float tx, float ty, ErrorResult& aRv);
+  void SetScale(float sx, float sy, ErrorResult& aRv);
+  void SetRotate(float angle, float cx, float cy, ErrorResult& aRv);
+  void SetSkewX(float angle, ErrorResult& aRv);
+  void SetSkewY(float angle, ErrorResult& aRv);
 
  protected:
   ~DOMSVGTransform();
@@ -170,7 +171,7 @@ class DOMSVGTransform final : public nsWrapperCache {
   // with any particular list and thus, no internal SVGTransform object. In
   // that case we allocate an SVGTransform object on the heap to store the
   // data.
-  UniquePtr<SVGTransform> mTransform;
+  std::unique_ptr<SVGTransform> mTransform;
 };
 
 }  // namespace mozilla::dom

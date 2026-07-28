@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -40,6 +38,8 @@ class nsTDependentString;
 template <typename T>
 class nsTDependentSubstring;
 template <typename T>
+class nsTFmtString;
+template <typename T>
 class nsTPromiseFlatString;
 template <typename T>
 class nsTLiteralString;
@@ -69,6 +69,7 @@ template <size_t N>
 using nsAutoStringN = nsTAutoStringN<char16_t, N>;
 using nsDependentString = nsTDependentString<char16_t>;
 using nsDependentSubstring = nsTDependentSubstring<char16_t>;
+using nsFmtString = nsTFmtString<char16_t>;
 using nsPromiseFlatString = nsTPromiseFlatString<char16_t>;
 using nsStringComparator = nsTStringComparator<char16_t>;
 using nsLiteralString = nsTLiteralString<char16_t>;
@@ -84,6 +85,7 @@ template <size_t N>
 using nsAutoCStringN = nsTAutoStringN<char, N>;
 using nsDependentCString = nsTDependentString<char>;
 using nsDependentCSubstring = nsTDependentSubstring<char>;
+using nsFmtCString = nsTFmtString<char>;
 using nsPromiseFlatCString = nsTPromiseFlatString<char>;
 using nsCStringComparator = nsTStringComparator<char>;
 using nsLiteralCString = nsTLiteralString<char>;

@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -30,25 +28,18 @@ class PChannelDiverterParent;
 
 namespace dom {
 
-#define NS_IEXTERNALHELPERAPPPARENT_IID              \
-  {                                                  \
-    0x127a01bc, 0x2a49, 0x46a8, {                    \
-      0x8c, 0x63, 0x4b, 0x5d, 0x3c, 0xa4, 0x07, 0x9c \
-    }                                                \
-  }
+#define NS_IEXTERNALHELPERAPPPARENT_IID \
+  {0x127a01bc, 0x2a49, 0x46a8, {0x8c, 0x63, 0x4b, 0x5d, 0x3c, 0xa4, 0x07, 0x9c}}
 
 class nsIExternalHelperAppParent : public nsISupports {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IEXTERNALHELPERAPPPARENT_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_IEXTERNALHELPERAPPPARENT_IID)
 
   /**
    * Returns true if this fake channel represented a file channel in the child.
    */
   virtual bool WasFileChannel() = 0;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsIExternalHelperAppParent,
-                              NS_IEXTERNALHELPERAPPPARENT_IID)
 
 class ContentParent;
 class PBrowserParent;
@@ -74,8 +65,7 @@ class ExternalHelperAppParent
   mozilla::ipc::IPCResult RecvOnStartRequest(
       const nsACString& entityID) override;
   mozilla::ipc::IPCResult RecvOnDataAvailable(const nsACString& data,
-                                              const uint64_t& offset,
-                                              const uint32_t& count) override;
+                                              const uint64_t& offset) override;
   mozilla::ipc::IPCResult RecvOnStopRequest(const nsresult& code) override;
 
   bool WasFileChannel() override { return mWasFileChannel; }

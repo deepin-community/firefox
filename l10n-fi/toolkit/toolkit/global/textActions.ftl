@@ -22,22 +22,34 @@ text-action-copy =
     .accesskey = K
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Kopioi ilman sivustoseurantaa
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Kopioi puhdas linkki
     .accesskey = n
 text-action-paste =
-    .label = Liitä
+    .label =
+        { PLATFORM() ->
+            [macos] Sijoita
+           *[other] Liitä
+        }
     .accesskey = i
 text-action-paste-no-formatting =
-    .label = Liitä ilman muotoilua
-    .accesskey = i
+    .label =
+        { PLATFORM() ->
+            [macos] Sijoita ilman muotoilua
+           *[other] Liitä ilman muotoilua
+        }
+    .accesskey = m
 text-action-paste-shortcut =
     .key = V
 text-action-delete =
     .label = Poista
     .accesskey = o
+text-action-reveal-password =
+    .label = Paljasta salasana
+    .accesskey = j
 text-action-select-all =
     .label = Valitse kaikki
     .accesskey = V
@@ -64,3 +76,26 @@ text-action-search-text-box-clear =
     .title = Tyhjennä
 text-action-highlight-selection =
     .label = Korosta valinta
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = Lisää kommentti valintaan
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Kopioi linkki korostukseen
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Kopioi puhdistettu linkki korostukseen
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = Poista korostus
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = Poista kaikki korostukset
+profile-window-menu-edit =
+    .label = Muokkaa
+    .accesskey = M

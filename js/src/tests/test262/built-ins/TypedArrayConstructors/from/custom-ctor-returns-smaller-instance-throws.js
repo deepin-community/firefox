@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2016 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -27,9 +26,9 @@ var sourceObj = {
   length: 2
 };
 
-testWithTypedArrayConstructors(function(TA) {
+testWithTypedArrayConstructors(function(TA, makeCtorArg) {
   var ctor = function() {
-    return new TA(1);
+    return new TA(makeCtorArg(1));
   };
   assert.throws(TypeError, function() {
     TA.from.call(ctor, sourceItor);

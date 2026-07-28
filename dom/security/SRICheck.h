@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,10 +5,11 @@
 #ifndef mozilla_dom_SRICheck_h
 #define mozilla_dom_SRICheck_h
 
-#include "nsTString.h"
-#include "nsStringFwd.h"
+#include "mozilla/LoadTainting.h"
 #include "nsCOMPtr.h"
 #include "nsICryptoHash.h"
+#include "nsStringFwd.h"
+#include "nsTString.h"
 
 class nsIChannel;
 class nsIConsoleReportCollector;
@@ -47,20 +46,26 @@ class SRICheck final {
 //    metadata.
 class SRICheckDataVerifier final {
  public:
-  SRICheckDataVerifier(const SRIMetadata& aMetadata,
-                       const nsACString& aSourceFileURI,
+  SRICheckDataVerifier(const SRIMetadata& aMetadata, nsIChannel* aChannel,
                        nsIConsoleReportCollector* aReporter);
 
   // Append the following bytes to the content used to compute the hash. Once
   // all bytes are streamed, use the Verify function to check the integrity.
   nsresult Update(uint32_t aStringLen, const uint8_t* aString);
+  nsresult Update(Span<const uint8_t>);
 
   // Verify that the computed hash corresponds to the metadata.
   nsresult Verify(const SRIMetadata& aMetadata, nsIChannel* aChannel,
-                  const nsACString& aSourceFileURI,
+                  LoadTainting aLoadTainting,
+                  nsIConsoleReportCollector* aReporter);
+
+  // Like Verify(), but takes the load tainting from the channel's load info
+  // (which is main-thread only).
+  nsresult Verify(const SRIMetadata& aMetadata, nsIChannel* aChannel,
                   nsIConsoleReportCollector* aReporter);
 
   bool IsComplete() const { return mComplete; }
+  bool IsInvalid() const { return mInvalidMetadata; }
 
   // Report the length of the computed hash and its type, such that we can
   // reserve the space for encoding it in a vector.
@@ -92,8 +97,8 @@ class SRICheckDataVerifier final {
 
   nsresult EnsureCryptoHash();
   nsresult Finish();
-  nsresult VerifyHash(const SRIMetadata& aMetadata, uint32_t aHashIndex,
-                      const nsACString& aSourceFileURI,
+  nsresult VerifyHash(nsIChannel* aChannel, const SRIMetadata& aMetadata,
+                      uint32_t aHashIndex,
                       nsIConsoleReportCollector* aReporter);
 };
 

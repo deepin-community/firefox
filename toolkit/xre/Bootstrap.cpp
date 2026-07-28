@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,6 +12,7 @@
 #endif  // XP_WIN && _M_X64 && MOZ_DIAGNOSTIC_ASSERT_ENABLED
 
 #ifdef MOZ_WIDGET_ANDROID
+#  include "mozilla/jni/Utils.h"
 #  ifdef MOZ_PROFILE_GENERATE
 extern "C" int __llvm_profile_dump(void);
 #  endif
@@ -34,10 +34,6 @@ class BootstrapImpl final : public Bootstrap {
   virtual void NS_LogInit() override { ::NS_LogInit(); }
 
   virtual void NS_LogTerm() override { ::NS_LogTerm(); }
-
-  virtual void XRE_TelemetryAccumulate(int aID, uint32_t aSample) override {
-    ::XRE_TelemetryAccumulate(aID, aSample);
-  }
 
   virtual void XRE_StartupTimelineRecord(int aEvent,
                                          mozilla::TimeStamp aWhen) override {
@@ -68,14 +64,11 @@ class BootstrapImpl final : public Bootstrap {
   }
 
 #ifdef MOZ_WIDGET_ANDROID
-  virtual void GeckoStart(JNIEnv* aEnv, char** argv, int argc,
-                          const StaticXREAppData& aAppData, bool xpcshell,
-                          const char* outFilePath) override {
-    ::GeckoStart(aEnv, argv, argc, aAppData, xpcshell, outFilePath);
+  virtual void XRE_SetGeckoThreadEnv(JNIEnv* aEnv) override {
+    mozilla::jni::SetGeckoThreadEnv(aEnv);
   }
 
-  virtual void XRE_SetAndroidChildFds(
-      JNIEnv* aEnv, const XRE_AndroidChildFds& aFds) override {
+  virtual void XRE_SetAndroidChildFds(JNIEnv* aEnv, jintArray aFds) override {
     ::XRE_SetAndroidChildFds(aEnv, aFds);
   }
 

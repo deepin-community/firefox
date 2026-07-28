@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,6 +17,7 @@ namespace mozilla::dom {
 
 class RemoteWorkerController;
 class RemoteWorkerServiceParent;
+class RemoteWorkerNonLifeCycleOpControllerParent;
 
 /**
  * PBackground instance that keeps tracks of RemoteWorkerServiceParent actors
@@ -47,13 +46,8 @@ class RemoteWorkerManager final {
    * launched.
    */
   static Result<nsCString, nsresult> GetRemoteType(
-      const nsCOMPtr<nsIPrincipal>& aPrincipal, WorkerKind aWorkerKind);
-
-  /**
-   * Verify if a remote worker should be allowed to run in the current
-   * child process remoteType.
-   */
-  static bool IsRemoteTypeAllowed(const RemoteWorkerData& aData);
+      const nsCOMPtr<nsIPrincipal>& aPrincipal, WorkerKind aWorkerKind,
+      const nsACString& aCurrentRemoteType);
 
   static bool HasExtensionPrincipal(const RemoteWorkerData& aData);
 
@@ -74,7 +68,7 @@ class RemoteWorkerManager final {
 
   void LaunchInternal(RemoteWorkerController* aController,
                       RemoteWorkerServiceParent* aTargetActor,
-                      UniqueThreadsafeContentParentKeepAlive aKeepAlive,
+                      UniqueThreadsafeContentParentKeepAlive&& aKeepAlive,
                       const RemoteWorkerData& aData);
 
   using LaunchProcessPromise =

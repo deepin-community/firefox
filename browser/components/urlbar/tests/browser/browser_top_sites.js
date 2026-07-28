@@ -6,7 +6,7 @@
 ChromeUtils.defineESModuleGetters(this, {
   AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
   NewTabUtils: "resource://gre/modules/NewTabUtils.sys.mjs",
-  TopSites: "resource:///modules/TopSites.sys.mjs",
+  TopSites: "resource:///modules/topsites/TopSites.sys.mjs",
 });
 
 const EN_US_TOPSITES =
@@ -503,6 +503,10 @@ add_task(async function tabSwitchBehavior() {
   });
 
   await BrowserTestUtils.switchTab(gBrowser, exampleTab);
+  await TestUtils.waitForCondition(
+    async () => (await getTopSites()).length == 6,
+    "Waiting for Top Sites to settle after the previous test"
+  );
 
   let sites = AboutNewTab.getTopSites();
   Assert.equal(

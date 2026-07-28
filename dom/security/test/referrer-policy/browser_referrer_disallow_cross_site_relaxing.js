@@ -32,10 +32,11 @@ function getExpectedReferrer(referrer, type) {
     case REFERRER_FULL:
       res = referrer;
       break;
-    case REFERRER_ORIGIN:
+    case REFERRER_ORIGIN: {
       let url = new URL(referrer);
       res = `${url.origin}/`;
       break;
+    }
     case REFERRER_NONE:
       res = "";
       break;
@@ -193,6 +194,7 @@ add_setup(async function () {
       ["security.mixed_content.block_active_content", false],
       // Disable https-first since we are testing http and https referrers
       ["dom.security.https_first", false],
+      ["browser.safebrowsing.only_top_level", false],
     ],
   });
 });

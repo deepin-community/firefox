@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -20,7 +19,7 @@
 
 class nsPrintSettingsX : public nsPrintSettings {
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_PRINTSETTINGSX_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_PRINTSETTINGSX_IID)
   NS_DECL_ISUPPORTS_INHERITED
 
   nsPrintSettingsX();
@@ -100,7 +99,5 @@ class nsPrintSettingsX : public nsPrintSettings {
   // it was originally passed.
   NSPrintInfo* mSystemPrintInfo = nullptr;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsPrintSettingsX, NS_PRINTSETTINGSX_IID)
 
 #endif  // nsPrintSettingsX_h_

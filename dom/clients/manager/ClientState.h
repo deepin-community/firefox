@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,15 +5,26 @@
 #ifndef _mozilla_dom_ClientState_h
 #define _mozilla_dom_ClientState_h
 
-#include "mozilla/dom/DocumentBinding.h"
 #include "mozilla/Maybe.h"
-#include "mozilla/StorageAccess.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Variant.h"
 #include "nsContentUtils.h"
 
+namespace mozilla {
+// We forward-declare this because including StorageAccess.h causes cbindgen to
+// have problems due to StorageAccess.h's include of BrowsingContext.h which
+// includes SyncedContext.h.
+enum class StorageAccess;
+}  // namespace mozilla
+
 namespace mozilla::dom {
+
+// We forward-declare this because otherwise we get an include cycle through
+// DocumentBinding.h including ShadowRoot.h including DOMEventTargetHelper.h
+// including GlobalTeardownObserver.h including nsIGlobalObject.h which needs
+// to include this file.
+enum class VisibilityState : uint8_t;
 
 class IPCClientState;
 class IPCClientWindowState;

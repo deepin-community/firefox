@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-xpinstall-prompt = { -brand-short-name } უკრძალავს საიტს თქვენს კომპიუტერში პროგრამის დაყენების მოთხოვნას.
+xpinstall-prompt = { -brand-short-name } უზღუდავს საიტს თქვენს კომპიუტერში პროგრამის დაყენების მოთხოვნას.
 
 ## Variables:
 ##   $host (String): The hostname of the site the add-on is being installed from.
 
-xpinstall-prompt-header = ნებას რთავთ { $host }-ს ჩადგას დამატება?
+xpinstall-prompt-header = ნებას რთავთ, რომ { $host } შეძლებს ჩადგას დამატება?
 xpinstall-prompt-message = თქვენ ცდილობთ დამატების ჩადგმას საიტიდან { $host }. დარწმუნდით, რომ სანდო საიტია, სანამ განაგრძობთ.
 
 ##
@@ -36,10 +36,13 @@ xpinstall-prompt-install =
 
 site-permission-install-first-prompt-midi-header = საიტი ითხოვს წვდომას თქვენს MIDI-მოწყობილობებთან (მუსიკალური საკრავის ციფრული მაკავშირებელი). მოწყობილობასთან წვდომის მიღება შესაძლებელია დამატების ჩადგმით.
 site-permission-install-first-prompt-midi-message = წვდომის მიღებისას უსაფრთხოების საწინდარი არ არსებობს. განაგრძეთ მხოლოდ იმ შემთხვევაში, თუ ენდობით ამ საიტს.
+site-permission-install-first-prompt-serial-header = საიტი ითხოვს თქვენს მიმდევრობითი შეერთების მოწყობილობასთან წვდომას. წვდომის მიღება მოხერხდება დამატების ჩადგმით.
+site-permission-install-first-prompt-serial-message = წვდომის მიღებისას უსაფრთხოების საწინდარი არ არსებობს. განაგრძეთ მხოლოდ იმ შემთხვევაში, თუ ენდობით ამ საიტს.
 
 ##
 
 xpinstall-disabled-locked = პროგრამების ჩადგმა ამჟამად გამორთულია თქვენი სისტემის ზედამხედველის მიერ.
+xpinstall-disabled-by-policy = პროგრამების ჩადგმა გამორთულია დაწესებულების დებულებით.
 xpinstall-disabled = პროგრამების ჩადგმა შეჩერებულია. დააწკაპეთ ჩართვაზე და ხელახლა სცადეთ.
 xpinstall-disabled-button =
     .label = ჩართვა
@@ -51,6 +54,13 @@ xpinstall-disabled-button =
 addon-install-blocked-by-policy = { $addonName } ({ $addonId }) შეზღუდულია თქვენი სისტემის ზედამხედველის მიერ.
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-domain-blocked-by-policy = თქვენი სისტემის ზედამხედველი უკრძალავს ამ საიტს თქვენს კომპიუტერში პროგრამის დაყენების მოთხოვნას.
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) შეზღუდულია დაწესებულების დებულებით.
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = დაწესებულების დებულება უკრძალავს საიტს თქვენს კომპიუტერში პროგრამის დაყენების მოთხოვნას.
 addon-install-full-screen-blocked = დამატების ჩადგმა დაუშვებელია სრული ეკრანის რეჟიმში ყოფნის ან შესვლის დროს.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
@@ -72,7 +82,9 @@ addon-removal-title = მოცილდეს { $name }?
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = { $name } გაფართოებას ამოშლის { -brand-shorter-name }, გნებავთ?
 addon-removal-button = ამოშლა
-addon-removal-abuse-report-checkbox = გაფართოებაზე საჩივარი { -vendor-short-name }-სთვის
+addon-removal-abuse-report-checkbox = გაფართოების შესახებ საჩივარი { -vendor-short-name }-ს
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = თუ იყენებთ შესაძლებლობას ან გაფართოებას, რომელიც ამ მოდელით სარგებლობს, ხელახლა დაემატება.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -115,12 +127,19 @@ addon-install-error-corrupt-file = ამ საიტიდან ჩამო�
 addon-install-error-file-access = { $addonName } ვერ ჩაიდგმება, რადგან { -brand-short-name } ვერ ახერხებს საჭირო ფაილის ცვლილებას.
 addon-install-error-not-signed = { -brand-short-name } უზღუდავს ამ საიტს დაუმოწმებელი დამატებების ჩადგმას.
 addon-install-error-invalid-domain = დამატება { $addonName } ვერ ჩაიდგმება ამ მისამართიდან.
+addon-install-error-no-addon-name-file-access = დამატება ვერ ჩაიდგმება, რადგან { -brand-short-name } ვერ ახერხებს საჭირო ფაილის ცვლილებას.
 addon-local-install-error-network-failure = დამატების ჩადგმა ვერ მოხერხდა, ფაილური სისტემის შეცდომის გამო.
 addon-local-install-error-incorrect-hash = დამატების ჩადგმა ვერ მოხერხდა, რადგან განსხვავდება იმ დამატებისგან, რომელსაც { -brand-short-name } მოელოდა.
 addon-local-install-error-corrupt-file = ეს დამატება ვერ ჩაიდგმება, ვინაიდან როგორც ჩანს, დაზიანებულია.
 addon-local-install-error-file-access = { $addonName } ვერ ჩაიდგმება, რადგან { -brand-short-name } ვერ ახერხებს საჭირო ფაილის ცვლილებას.
 addon-local-install-error-not-signed = ამ დამატების დაყენება ვერ მოხერხდა, რადგან დაუმოწმებელია.
+addon-local-install-no-addon-name-error-file-access = დამატება ვერ ჩაიდგმება, რადგან { -brand-short-name } ვერ ახერხებს საჭირო ფაილის ცვლილებას.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } ვერ ჩაიდგმება, რადგან არათავსებადია { -brand-short-name } { $appVersion } ვერსიასთან.
+addon-install-error-hard-blocked = { $addonName } არღვევს Mozilla-ს დებულებებს და { -brand-short-name } ვერ დააყენებს.
+addon-install-error-soft-blocked2 = { $addonName } შეზღუდულია და ვერ ჩადგამს { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } ვერ ჩაიდგმება, რადგან დიდი ალბათობით საფრთხეს შეუქმნის მდგრადობას და უსაფრთხოებას.
+addon-install-error-soft-blocked = { $addonName } არღვევს Mozilla-ს დებულებებს და { -brand-short-name } ვერ დააყენებს.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = თქვენ არ შეგიძლიათ { $addonName } დააყენოთ, როგორც მომხმარებელმა, მისი დაყენება შეუძლია მხოლოდ დაწესებულებას შესაბამისი დებულებებით.

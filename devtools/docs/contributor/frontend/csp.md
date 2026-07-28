@@ -1,5 +1,5 @@
 
-The DevTools toolbox is loaded in an iframe pointing to about:devtools-toolbox. This iframe has a [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) (CSP) applied, which will mitigate potential attacks. However this may limit the resources that can be loaded in the toolbox documenth.
+The DevTools toolbox is loaded in an iframe pointing to about:devtools-toolbox. This iframe has a [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP) (CSP) applied, which will mitigate potential attacks. However this may limit the resources that can be loaded in the toolbox documenth.
 
 # Current DevTools CSP
 
@@ -12,7 +12,7 @@ This means:
 - `chrome://` and `resource://` are allowed for any resource
 - `chrome://` and `resource://` and `data://` are allowed for images
 
-For more information about which resources and requests are in scope of the CSP, you can read the [default-src documentation on MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/default-src).
+For more information about which resources and requests are in scope of the CSP, you can read the [default-src documentation on MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/default-src).
 
 # Scope of the DevTools CSP
 
@@ -44,7 +44,7 @@ In general once a support file is added you can access it via:
 - `https://example.com/browser/[path_to_file]`
 - or `chrome://mochitests/content/browser/[path_to_file]`
 
-For instance [devtools/client/aboutdebugging/test/browser/resources/service-workers/controlled-sw.html](https://searchfox.org/mozilla-central/source/devtools/client/aboutdebugging/test/browser/resources/service-workers/controlled-sw.html) is accessed in tests via `http://example.com/browser/devtools/client/aboutdebugging/test/browser/resources/service-workers/controlled-sw.html`.
+For instance [devtools/client/aboutdebugging/test/browser/resources/service-workers/controlled-sw.html](https://searchfox.org/firefox-main/source/devtools/client/aboutdebugging/test/browser/resources/service-workers/controlled-sw.html) is accessed in tests via `http://example.com/browser/devtools/client/aboutdebugging/test/browser/resources/service-workers/controlled-sw.html`.
 
 If you absolutely have to use an unsupported scheme, you can turn off CSPs for the test only. To do so, you need to temporarily update two preferences:
 

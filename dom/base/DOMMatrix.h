@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,11 +5,10 @@
 #ifndef MOZILLA_DOM_DOMMATRIX_H_
 #define MOZILLA_DOM_DOMMATRIX_H_
 
-#include <cstring>
 #include <utility>
+
 #include "js/RootingAPI.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/Assertions.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/TypedArray.h"
 #include "mozilla/gfx/Matrix.h"
@@ -65,6 +62,10 @@ class DOMMatrixReadOnly : public nsWrapperCache {
       : mParent(aParent) {
     mMatrix2D = MakeUnique<gfx::MatrixDouble>(aMatrix);
   }
+
+  DOMMatrixReadOnly() = delete;
+  DOMMatrixReadOnly(const DOMMatrixReadOnly&) = delete;
+  DOMMatrixReadOnly& operator=(const DOMMatrixReadOnly&) = delete;
 
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(DOMMatrixReadOnly)
   NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(DOMMatrixReadOnly)
@@ -236,6 +237,9 @@ class DOMMatrixReadOnly : public nsWrapperCache {
     return nullptr;
   }
 
+  static gfx::MatrixDouble ToValidatedMatrixDouble(
+      const DOMMatrix2DInit& aMatrixInit, ErrorResult& aRv);
+
  protected:
   nsCOMPtr<nsISupports> mParent;
   UniquePtr<gfx::MatrixDouble> mMatrix2D;
@@ -249,6 +253,7 @@ class DOMMatrixReadOnly : public nsWrapperCache {
    * The init dictionary's dimension must match the matrix one.
    */
   void SetDataFromMatrix2DInit(const DOMMatrix2DInit& aMatrixInit);
+  static gfx::MatrixDouble ToMatrixDouble(const DOMMatrix2DInit& aMatrixInit);
   void SetDataFromMatrixInit(const DOMMatrixInit& aMatrixInit);
 
   DOMMatrixReadOnly* SetMatrixValue(const nsACString&, ErrorResult&);
@@ -267,11 +272,6 @@ class DOMMatrixReadOnly : public nsWrapperCache {
 
   static bool ReadStructuredCloneElements(JSStructuredCloneReader* aReader,
                                           DOMMatrixReadOnly* matrix);
-
- private:
-  DOMMatrixReadOnly() = delete;
-  DOMMatrixReadOnly(const DOMMatrixReadOnly&) = delete;
-  DOMMatrixReadOnly& operator=(const DOMMatrixReadOnly&) = delete;
 };
 
 class DOMMatrix : public DOMMatrixReadOnly {

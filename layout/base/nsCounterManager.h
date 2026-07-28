@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-// vim:cindent:ai:sw=4:ts=4:et:
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,11 +7,10 @@
 #ifndef nsCounterManager_h_
 #define nsCounterManager_h_
 
-#include "mozilla/Attributes.h"
-#include "nsGenConList.h"
-#include "nsClassHashtable.h"
-#include "mozilla/Likely.h"
 #include "CounterStyleManager.h"
+#include "mozilla/Likely.h"
+#include "nsClassHashtable.h"
+#include "nsGenConList.h"
 
 class nsCounterList;
 struct nsCounterUseNode;
@@ -191,10 +188,11 @@ inline nsCounterChangeNode* nsCounterNode::ChangeNode() {
 }
 
 inline void nsCounterNode::Calc(nsCounterList* aList, bool aNotify) {
-  if (mType == USE)
+  if (mType == USE) {
     UseNode()->Calc(aList, aNotify);
-  else
+  } else {
     ChangeNode()->Calc(aList);
+  }
 }
 
 inline bool nsCounterNode::IsContentBasedReset() {
@@ -217,6 +215,10 @@ class nsCounterList : public nsGenConList {
       : mCounterName(aCounterName), mScope(aScope) {
     MOZ_ASSERT(aScope);
   }
+
+#if defined(DEBUG) || defined(MOZ_LAYOUT_DEBUGGER)
+  void Dump();
+#endif
 
   // Return the first node for aFrame on this list, or nullptr.
   nsCounterNode* GetFirstNodeFor(nsIFrame* aFrame) const {

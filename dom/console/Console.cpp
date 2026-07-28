@@ -1,18 +1,26 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/Console.h"
-#include "mozilla/dom/ConsoleInstance.h"
-#include "mozilla/dom/ConsoleBinding.h"
-#include "ConsoleCommon.h"
 
+#include "ConsoleCommon.h"
 #include "js/Array.h"               // JS::GetArrayLength, JS::NewArrayObject
 #include "js/PropertyAndElement.h"  // JS_DefineElement, JS_DefineProperty, JS_GetElement
+#include "mozilla/AutoRestore.h"
+#include "mozilla/BasePrincipal.h"
+#include "mozilla/HoldDropJSObjects.h"
+#include "mozilla/JSObjectHolder.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/Mutex.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/ProfilerMarkers.h"
+#include "mozilla/StaticPrefs_devtools.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/BlobBinding.h"
 #include "mozilla/dom/BlobImpl.h"
+#include "mozilla/dom/ConsoleBinding.h"
+#include "mozilla/dom/ConsoleInstance.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/ElementBinding.h"
 #include "mozilla/dom/Exceptions.h"
@@ -20,6 +28,7 @@
 #include "mozilla/dom/FunctionBinding.h"
 #include "mozilla/dom/Performance.h"
 #include "mozilla/dom/PromiseBinding.h"
+#include "mozilla/dom/RootedDictionary.h"
 #include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/dom/StructuredCloneHolder.h"
 #include "mozilla/dom/ToJSValue.h"
@@ -28,25 +37,11 @@
 #include "mozilla/dom/WorkletGlobalScope.h"
 #include "mozilla/dom/WorkletImpl.h"
 #include "mozilla/dom/WorkletThread.h"
-#include "mozilla/dom/RootedDictionary.h"
-#include "mozilla/BasePrincipal.h"
-#include "mozilla/HoldDropJSObjects.h"
-#include "mozilla/JSObjectHolder.h"
-#include "mozilla/Maybe.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/StaticPrefs_devtools.h"
-#include "mozilla/StaticPrefs_dom.h"
+#include "nsContentUtils.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsDOMNavigationTiming.h"
-#include "nsGlobalWindowInner.h"
-#include "nsJSUtils.h"
-#include "nsNetUtil.h"
-#include "xpcpublic.h"
-#include "nsContentUtils.h"
 #include "nsDocShell.h"
-#include "nsProxyRelease.h"
-#include "nsReadableUtils.h"
-
+#include "nsGlobalWindowInner.h"
 #include "nsIConsoleAPIStorage.h"
 #include "nsIException.h"  // for nsIStackFrame
 #include "nsIInterfaceRequestorUtils.h"
@@ -55,6 +50,11 @@
 #include "nsISupportsPrimitives.h"
 #include "nsIWebNavigation.h"
 #include "nsIXPConnect.h"
+#include "nsJSUtils.h"
+#include "nsNetUtil.h"
+#include "nsProxyRelease.h"
+#include "nsReadableUtils.h"
+#include "xpcpublic.h"
 
 // The maximum allowed number of concurrent timers per page.
 #define MAX_PAGE_TIMERS 10000
@@ -109,7 +109,8 @@ class ConsoleCallData final {
 
   ConsoleCallData(Console::MethodName aName, const nsAString& aString,
                   Console* aConsole)
-      : mConsoleID(aConsole->mConsoleID),
+      : mMutex("ConsoleCallData"),
+        mConsoleID(aConsole->mConsoleID),
         mPrefix(aConsole->mPrefix),
         mMethodName(aName),
         mMicroSecondTimeStamp(JS_Now()),
@@ -123,7 +124,7 @@ class ConsoleCallData final {
         mInnerIDNumber(0),
         mMethodString(aString) {}
 
-  void SetIDs(uint64_t aOuterID, uint64_t aInnerID) {
+  void SetIDs(uint64_t aOuterID, uint64_t aInnerID) MOZ_REQUIRES(mMutex) {
     MOZ_ASSERT(mIDType == eUnknown);
 
     mOuterIDNumber = aOuterID;
@@ -131,7 +132,8 @@ class ConsoleCallData final {
     mIDType = eNumber;
   }
 
-  void SetIDs(const nsAString& aOuterID, const nsAString& aInnerID) {
+  void SetIDs(const nsAString& aOuterID, const nsAString& aInnerID)
+      MOZ_REQUIRES(mMutex) {
     MOZ_ASSERT(mIDType == eUnknown);
 
     mOuterIDString = aOuterID;
@@ -139,11 +141,12 @@ class ConsoleCallData final {
     mIDType = eString;
   }
 
-  void SetOriginAttributes(const OriginAttributes& aOriginAttributes) {
+  void SetOriginAttributes(const OriginAttributes& aOriginAttributes)
+      MOZ_REQUIRES(mMutex) {
     mOriginAttributes = aOriginAttributes;
   }
 
-  void SetAddonId(nsIPrincipal* aPrincipal) {
+  void SetAddonId(nsIPrincipal* aPrincipal) MOZ_REQUIRES(mMutex) {
     nsAutoString addonId;
     aPrincipal->GetAddonId(addonId);
 
@@ -154,11 +157,13 @@ class ConsoleCallData final {
     NS_ASSERT_OWNINGTHREAD(ConsoleCallData);
   }
 
-  const nsString mConsoleID;
-  const nsString mPrefix;
+  Mutex mMutex;
 
-  const Console::MethodName mMethodName;
-  int64_t mMicroSecondTimeStamp;
+  const nsString mConsoleID MOZ_GUARDED_BY(mMutex);
+  const nsString mPrefix MOZ_GUARDED_BY(mMutex);
+
+  const Console::MethodName mMethodName MOZ_GUARDED_BY(mMutex);
+  int64_t mMicroSecondTimeStamp MOZ_GUARDED_BY(mMutex);
 
   // These values are set in the owning thread and they contain the timestamp of
   // when the new timer has started, the name of it and the status of the
@@ -168,9 +173,9 @@ class ConsoleCallData final {
   // They will be set on the owning thread and never touched again on that
   // thread. They will be used in order to create a ConsoleTimerStart dictionary
   // when console.time() is used.
-  DOMHighResTimeStamp mStartTimerValue;
-  nsString mStartTimerLabel;
-  Console::TimerStatus mStartTimerStatus;
+  DOMHighResTimeStamp mStartTimerValue MOZ_GUARDED_BY(mMutex);
+  nsString mStartTimerLabel MOZ_GUARDED_BY(mMutex);
+  Console::TimerStatus mStartTimerStatus MOZ_GUARDED_BY(mMutex);
 
   // These values are set in the owning thread and they contain the duration,
   // the name and the status of the LogTimer method. If status is false,
@@ -178,16 +183,16 @@ class ConsoleCallData final {
   // touched again on that thread. They will be used in order to create a
   // ConsoleTimerLogOrEnd dictionary. This members are set when
   // console.timeEnd() or console.timeLog() are called.
-  double mLogTimerDuration;
-  nsString mLogTimerLabel;
-  Console::TimerStatus mLogTimerStatus;
+  double mLogTimerDuration MOZ_GUARDED_BY(mMutex);
+  nsString mLogTimerLabel MOZ_GUARDED_BY(mMutex);
+  Console::TimerStatus mLogTimerStatus MOZ_GUARDED_BY(mMutex);
 
   // These 2 values are set by IncreaseCounter or ResetCounter on the owning
   // thread and they are used by CreateCounterOrResetCounterValue.
   // These members are set when console.count() or console.countReset() are
   // called.
-  nsString mCountLabel;
-  uint32_t mCountValue;
+  nsString mCountLabel MOZ_GUARDED_BY(mMutex);
+  uint32_t mCountValue MOZ_GUARDED_BY(mMutex);
 
   // The concept of outerID and innerID is misleading because when a
   // ConsoleCallData is created from a window, these are the window IDs, but
@@ -195,19 +200,19 @@ class ConsoleCallData final {
   // subworker of a ChromeWorker these IDs are the type of worker and the
   // filename of the callee.
   // In Console.sys.mjs the ID is 'jsm'.
-  enum { eString, eNumber, eUnknown } mIDType;
+  enum { eString, eNumber, eUnknown } mIDType MOZ_GUARDED_BY(mMutex);
 
-  uint64_t mOuterIDNumber;
-  nsString mOuterIDString;
+  uint64_t mOuterIDNumber MOZ_GUARDED_BY(mMutex);
+  nsString mOuterIDString MOZ_GUARDED_BY(mMutex);
 
-  uint64_t mInnerIDNumber;
-  nsString mInnerIDString;
+  uint64_t mInnerIDNumber MOZ_GUARDED_BY(mMutex);
+  nsString mInnerIDString MOZ_GUARDED_BY(mMutex);
 
-  OriginAttributes mOriginAttributes;
+  OriginAttributes mOriginAttributes MOZ_GUARDED_BY(mMutex);
 
-  nsString mAddonId;
+  nsString mAddonId MOZ_GUARDED_BY(mMutex);
 
-  const nsString mMethodString;
+  const nsString mMethodString MOZ_GUARDED_BY(mMutex);
 
   // Stack management is complicated, because we want to do it as
   // lazily as possible.  Therefore, we have the following behavior:
@@ -215,9 +220,9 @@ class ConsoleCallData final {
   // 2)  mReifiedStack is initialized if we're created in a worker.
   // 3)  mStack is set (possibly to null if there is no JS on the stack) if
   //     we're created on main thread.
-  Maybe<ConsoleStackEntry> mTopStackFrame;
-  Maybe<nsTArray<ConsoleStackEntry>> mReifiedStack;
-  nsCOMPtr<nsIStackFrame> mStack;
+  Maybe<ConsoleStackEntry> mTopStackFrame MOZ_GUARDED_BY(mMutex);
+  Maybe<nsTArray<ConsoleStackEntry>> mReifiedStack MOZ_GUARDED_BY(mMutex);
+  nsCOMPtr<nsIStackFrame> mStack MOZ_GUARDED_BY(mMutex);
 
  private:
   ~ConsoleCallData() = default;
@@ -334,8 +339,10 @@ class ConsoleRunnable : public StructuredCloneHolderBase {
     cloneDataPolicy.allowIntraClusterClonableSharedObjects();
     cloneDataPolicy.allowSharedMemoryObjects();
 
+    ErrorResult error;
     JS::Rooted<JS::Value> argumentsValue(aCx);
-    if (!Read(aCx, &argumentsValue, cloneDataPolicy)) {
+    Read(aCx, &argumentsValue, cloneDataPolicy, error);
+    if (error.MaybeSetPendingException(aCx)) {
       return;
     }
 
@@ -398,11 +405,12 @@ class ConsoleRunnable : public StructuredCloneHolderBase {
 
     ConsoleCommon::ClearException ce(aCx);
 
+    IgnoredErrorResult error;
     JS::Rooted<JS::Value> argumentsValue(aCx);
-    bool ok = Read(aCx, &argumentsValue);
+    Read(aCx, &argumentsValue, error);
     mClonedData.mGlobal = nullptr;
 
-    if (!ok) {
+    if (error.Failed()) {
       return;
     }
 
@@ -418,6 +426,7 @@ class ConsoleRunnable : public StructuredCloneHolderBase {
     }
 
     Sequence<JS::Value> arguments;
+    SequenceRooter<JS::Value> rooter(aCx, &arguments);
 
     for (uint32_t i = 0; i < length; ++i) {
       JS::Rooted<JS::Value> value(aCx);
@@ -443,8 +452,9 @@ class ConsoleRunnable : public StructuredCloneHolderBase {
     cloneDataPolicy.allowIntraClusterClonableSharedObjects();
     cloneDataPolicy.allowSharedMemoryObjects();
 
-    if (NS_WARN_IF(
-            !Write(aCx, aValue, JS::UndefinedHandleValue, cloneDataPolicy))) {
+    ErrorResult error;
+    Write(aCx, aValue, JS::UndefinedHandleValue, cloneDataPolicy, error);
+    if (NS_WARN_IF(error.MaybeSetPendingException(aCx))) {
       // Ignore the message.
       return false;
     }
@@ -513,23 +523,26 @@ class ConsoleCallDataWorkletRunnable final : public ConsoleWorkletRunnable {
     jsapi.Init();
     JSContext* cx = jsapi.cx();
 
-    JSObject* sandbox =
-        mConsoleData->GetOrCreateSandbox(cx, mWorkletImpl->Principal());
-    JS::Rooted<JSObject*> global(cx, sandbox);
-    if (NS_WARN_IF(!global)) {
-      return NS_ERROR_FAILURE;
+    {
+      MutexAutoLock lock(mCallData->mMutex);
+
+      JSObject* sandbox =
+          mConsoleData->GetOrCreateSandbox(cx, mWorkletImpl->Principal());
+      JS::Rooted<JSObject*> global(cx, sandbox);
+      if (NS_WARN_IF(!global)) {
+        return NS_ERROR_FAILURE;
+      }
+
+      // The CreateSandbox call returns a proxy to the actual sandbox object. We
+      // don't need a proxy here.
+      global = js::UncheckedUnwrap(global);
+      JSAutoRealm ar(cx, global);
+
+      // We don't need to set a parent object in mCallData bacause there are not
+      // DOM objects exposed to worklet.
+
+      ProcessCallData(cx, mConsoleData, mCallData);
     }
-
-    // The CreateSandbox call returns a proxy to the actual sandbox object. We
-    // don't need a proxy here.
-    global = js::UncheckedUnwrap(global);
-
-    JSAutoRealm ar(cx, global);
-
-    // We don't need to set a parent object in mCallData bacause there are not
-    // DOM objects exposed to worklet.
-
-    ProcessCallData(cx, mConsoleData, mCallData);
 
     return NS_OK;
   }
@@ -674,35 +687,38 @@ class ConsoleCallDataWorkerRunnable final : public ConsoleWorkerRunnable {
     // The windows have to run in parallel.
     MOZ_ASSERT(!!aOuterWindow == !!aInnerWindow);
 
-    if (aOuterWindow) {
-      mCallData->SetIDs(aOuterWindow->WindowID(), aInnerWindow->WindowID());
-    } else {
-      ConsoleStackEntry frame;
-      if (mCallData->mTopStackFrame) {
-        frame = *mCallData->mTopStackFrame;
-      }
-
-      nsCString id = frame.mFilename;
-      nsString innerID;
-      if (aWorkerPrivate->IsSharedWorker()) {
-        innerID = u"SharedWorker"_ns;
-      } else if (aWorkerPrivate->IsServiceWorker()) {
-        innerID = u"ServiceWorker"_ns;
-        // Use scope as ID so the webconsole can decide if the message should
-        // show up per tab
-        id = aWorkerPrivate->ServiceWorkerScope();
+    {
+      MutexAutoLock lock(mCallData->mMutex);
+      if (aOuterWindow) {
+        mCallData->SetIDs(aOuterWindow->WindowID(), aInnerWindow->WindowID());
       } else {
-        innerID = u"Worker"_ns;
+        ConsoleStackEntry frame;
+        if (mCallData->mTopStackFrame) {
+          frame = *mCallData->mTopStackFrame;
+        }
+
+        nsCString id = frame.mFilename;
+        nsString innerID;
+        if (aWorkerPrivate->IsSharedWorker()) {
+          innerID = u"SharedWorker"_ns;
+        } else if (aWorkerPrivate->IsServiceWorker()) {
+          innerID = u"ServiceWorker"_ns;
+          // Use scope as ID so the webconsole can decide if the message should
+          // show up per tab
+          id = aWorkerPrivate->ServiceWorkerScope();
+        } else {
+          innerID = u"Worker"_ns;
+        }
+
+        mCallData->SetIDs(NS_ConvertUTF8toUTF16(id), innerID);
       }
 
-      mCallData->SetIDs(NS_ConvertUTF8toUTF16(id), innerID);
+      mClonedData.mGlobal = aGlobal;
+
+      ProcessCallData(aCx, mConsoleData, mCallData);
+
+      mClonedData.mGlobal = nullptr;
     }
-
-    mClonedData.mGlobal = aGlobal;
-
-    ProcessCallData(aCx, mConsoleData, mCallData);
-
-    mClonedData.mGlobal = nullptr;
   }
 
   RefPtr<ConsoleCallData> mCallData;
@@ -800,6 +816,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(Console)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mDumpFunction)
   NS_IMPL_CYCLE_COLLECTION_UNLINK_WEAK_REFERENCE
   tmp->Shutdown();
+  tmp->mArgumentStorage.clearAndFree();
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(Console)
@@ -873,11 +890,14 @@ already_AddRefed<Console> Console::CreateForWorklet(JSContext* aCx,
 }
 
 Console::Console(JSContext* aCx, nsIGlobalObject* aGlobal,
-                 uint64_t aOuterWindowID, uint64_t aInnerWindowID)
+                 uint64_t aOuterWindowID, uint64_t aInnerWindowID,
+                 const nsAString& aPrefix)
     : mGlobal(aGlobal),
       mOuterID(aOuterWindowID),
       mInnerID(aInnerWindowID),
       mDumpToStdout(false),
+      mLogModule(nullptr),
+      mPrefix(aPrefix),
       mChromeInstance(false),
       mCurrentLogLevel(WebIDLLogLevelToInteger(ConsoleLogLevel::All)),
       mStatus(eUnknown),
@@ -888,6 +908,13 @@ Console::Console(JSContext* aCx, nsIGlobalObject* aGlobal,
   } else {
     mDumpToStdout = StaticPrefs::devtools_console_stdout_content();
   }
+
+  // By default, the console uses "console" MOZ_LOG module name,
+  // but ConsoleInstance may pass a custom prefix which we will use a module
+  // name.
+  mLogModule = mPrefix.IsEmpty()
+                   ? LogModule::Get("console")
+                   : LogModule::Get(NS_ConvertUTF16toUTF8(mPrefix).get());
 
   mozilla::HoldJSObjects(this);
 }
@@ -1121,11 +1148,16 @@ void Console::ProfileMethod(const GlobalObject& aGlobal, MethodName aName,
 void Console::ProfileMethodInternal(JSContext* aCx, MethodName aMethodName,
                                     const nsAString& aAction,
                                     const Sequence<JS::Value>& aData) {
+  if (ShouldLogToMozLog(aMethodName)) {
+    LogToMozLog(aCx, aMethodName, aAction, aData, nullptr,
+                DOMHighResTimeStamp(0.0));
+  }
+
   if (!ShouldProceed(aMethodName)) {
     return;
   }
-
-  MaybeExecuteDumpFunction(aCx, aAction, aData, nullptr);
+  MaybeExecuteDumpFunction(aCx, aMethodName, aAction, aData, nullptr,
+                           DOMHighResTimeStamp(0.0));
 
   if (WorkletThread::IsOnWorkletThread()) {
     RefPtr<ConsoleProfileWorkletRunnable> runnable =
@@ -1269,10 +1301,30 @@ void Console::Method(const GlobalObject& aGlobal, MethodName aMethodName,
   console->MethodInternal(aGlobal.Context(), aMethodName, aMethodString, aData);
 }
 
+struct ConsoleTimingMarker : public BaseMarkerType<ConsoleTimingMarker> {
+  static constexpr const char* Name = "ConsoleTiming";
+  static constexpr const char* Description =
+      "Console timing timeStampers created using the Console API methods "
+      "console.time(), console.timeEnd(), and console.timeStamp().";
+
+  using MS = MarkerSchema;
+  static constexpr MS::PayloadField PayloadFields[] = {
+      {"label", MS::InputType::CString, "Label", MS::Format::String},
+      {"entryType", MS::InputType::CString, "Entry Type", MS::Format::String}};
+
+  static constexpr MS::Location Locations[] = {MS::Location::MarkerChart,
+                                               MS::Location::MarkerTable};
+  static constexpr const char* AllLabels = "{timeStamper.data.label}";
+
+  static constexpr MS::ETWMarkerGroup Group = MS::ETWMarkerGroup::UserMarkers;
+};
+
 void Console::MethodInternal(JSContext* aCx, MethodName aMethodName,
                              const nsAString& aMethodString,
                              const Sequence<JS::Value>& aData) {
-  if (!ShouldProceed(aMethodName)) {
+  // Drop any further computation if the console **and* moz_log levels
+  // are not matching the current call's level.
+  if (!ShouldProceed(aMethodName) && !ShouldLogToMozLog(aMethodName)) {
     return;
   }
 
@@ -1282,6 +1334,9 @@ void Console::MethodInternal(JSContext* aCx, MethodName aMethodName,
 
   RefPtr<ConsoleCallData> callData =
       new ConsoleCallData(aMethodName, aMethodString, this);
+
+  MutexAutoLock lock(callData->mMutex);
+
   if (!StoreCallData(aCx, callData, aData)) {
     return;
   }
@@ -1352,12 +1407,21 @@ void Console::MethodInternal(JSContext* aCx, MethodName aMethodName,
     ReifyStack(aCx, stack, *callData->mReifiedStack);
   }
 
-  DOMHighResTimeStamp monotonicTimer;
+  DOMHighResTimeStamp monotonicTimer = 0.0;
 
   // Monotonic timer for 'time', 'timeLog' and 'timeEnd'
   if ((aMethodName == MethodTime || aMethodName == MethodTimeLog ||
        aMethodName == MethodTimeEnd || aMethodName == MethodTimeStamp) &&
       !MonotonicTimer(aCx, aMethodName, aData, &monotonicTimer)) {
+    return;
+  }
+
+  if (ShouldLogToMozLog(aMethodName)) {
+    LogToMozLog(aCx, aMethodName, aMethodString, aData, stack, monotonicTimer);
+  }
+
+  // Stop any further computation if we only had to log to moz_log
+  if (!ShouldProceed(aMethodName)) {
     return;
   }
 
@@ -1379,6 +1443,21 @@ void Console::MethodInternal(JSContext* aCx, MethodName aMethodName,
                  &callData->mLogTimerDuration, false /* Cancel timer */);
   }
 
+  else if (aMethodName == MethodTimeStamp &&
+           profiler_thread_is_being_profiled_for_markers()) {
+    nsAutoJSString label;
+    if (!aData.IsEmpty()) {
+      JS::Rooted<JS::Value> name(aCx, aData[0]);
+      JS::Rooted<JSString*> jsString(aCx, JS::ToString(aCx, name));
+      if (!NS_WARN_IF(!jsString)) {
+        (void)NS_WARN_IF(!label.init(aCx, jsString));
+      }
+    }
+    profiler_add_marker("ConsoleTiming", geckoprofiler::category::DOM, {},
+                        ConsoleTimingMarker{}, NS_ConvertUTF16toUTF8(label),
+                        "timeStamp");
+  }
+
   else if (aMethodName == MethodCount) {
     callData->mCountValue = IncreaseCounter(aCx, aData, callData->mCountLabel);
     if (!callData->mCountValue) {
@@ -1395,14 +1474,14 @@ void Console::MethodInternal(JSContext* aCx, MethodName aMethodName,
 
   // Before processing this CallData differently, it's time to call the dump
   // function.
+  //
+  // Only log the stack trace for console.trace() and console.assert()
   if (aMethodName == MethodTrace || aMethodName == MethodAssert) {
-    MaybeExecuteDumpFunction(aCx, aMethodString, aData, stack);
-  } else if ((aMethodName == MethodTime || aMethodName == MethodTimeEnd) &&
-             !aData.IsEmpty()) {
-    MaybeExecuteDumpFunctionForTime(aCx, aMethodName, aMethodString,
-                                    monotonicTimer, aData[0]);
+    MaybeExecuteDumpFunction(aCx, aMethodName, aMethodString, aData, stack,
+                             monotonicTimer);
   } else {
-    MaybeExecuteDumpFunction(aCx, aMethodString, aData, nullptr);
+    MaybeExecuteDumpFunction(aCx, aMethodName, aMethodString, aData, nullptr,
+                             monotonicTimer);
   }
 
   if (NS_IsMainThread()) {
@@ -1411,12 +1490,58 @@ void Console::MethodInternal(JSContext* aCx, MethodName aMethodName,
     } else if (!mPassedInnerID.IsEmpty()) {
       callData->SetIDs(u"jsm"_ns, mPassedInnerID);
     } else {
-      nsAutoCString filename;
-      if (callData->mTopStackFrame.isSome()) {
-        filename = callData->mTopStackFrame->mFilename;
-      }
+      // Derive a window ID so inner-window-destroyed can clean up
+      // this message. Check the stack first (a SavedFrame whose global
+      // is a window), then fall back to scanning arguments.
 
-      callData->SetIDs(u"jsm"_ns, NS_ConvertUTF8toUTF16(filename));
+      // Returns the inner window ID for an object whose global is a
+      // window or a sandbox whose prototype is a window, or 0.
+      auto WindowIDFromObject = [aCx](JSObject* aObj) -> uint64_t {
+        JSObject* obj = js::UncheckedUnwrap(aObj);
+        if (nsGlobalWindowInner* win = xpc::WindowGlobalOrNull(obj)) {
+          return win->WindowID();
+        }
+        JSObject* global = JS::GetNonCCWObjectGlobal(obj);
+        if (nsGlobalWindowInner* win = xpc::SandboxWindowOrNull(global, aCx)) {
+          return win->WindowID();
+        }
+        return 0;
+      };
+
+      uint64_t innerID = 0;
+      nsCOMPtr<nsIStackFrame> frame = callData->mStack;
+      while (frame) {
+        JS::Rooted<JS::Value> savedFrame(aCx);
+        frame->GetNativeSavedFrame(&savedFrame);
+        if (savedFrame.isObject()) {
+          innerID = WindowIDFromObject(&savedFrame.toObject());
+          if (innerID) {
+            break;
+          }
+        }
+        frame = frame->GetCaller(aCx);
+      }
+      if (!innerID) {
+        for (const auto& arg : aData) {
+          if (arg.isObject()) {
+            innerID = WindowIDFromObject(&arg.toObject());
+            if (innerID) {
+              break;
+            }
+          }
+        }
+      }
+      if (innerID) {
+        nsAutoString idStr;
+        idStr.AppendInt(innerID);
+        callData->SetIDs(u"jsm"_ns, idStr);
+      } else {
+        nsAutoCString filename;
+        if (callData->mTopStackFrame.isSome()) {
+          filename = callData->mTopStackFrame->mFilename;
+        }
+        callData->SetIDs(u"jsm"_ns, NS_ConvertUTF8toUTF16(filename));
+      }
     }
 
     GetOrCreateMainThreadData()->ProcessCallData(aCx, callData, aData);
@@ -1445,7 +1570,7 @@ void Console::MethodInternal(JSContext* aCx, MethodName aMethodName,
   if (StaticPrefs::dom_worker_console_dispatch_events_to_main_thread()) {
     RefPtr<ConsoleCallDataWorkerRunnable> runnable =
         new ConsoleCallDataWorkerRunnable(this, callData);
-    Unused << NS_WARN_IF(!runnable->Dispatch(aCx, aData));
+    (void)NS_WARN_IF(!runnable->Dispatch(aCx, aData));
   }
 }
 
@@ -1500,6 +1625,7 @@ void MainThreadConsoleData::ProcessCallData(
     const Sequence<JS::Value>& aArguments) {
   AssertIsOnMainThread();
   MOZ_ASSERT(aData);
+  aData->mMutex.AssertCurrentThreadOwns();
 
   JS::Rooted<JS::Value> eventValue(aCx);
 
@@ -1560,6 +1686,8 @@ bool Console::PopulateConsoleNotificationInTheTargetScope(
   MOZ_ASSERT(aData);
   MOZ_ASSERT(aTargetScope);
   MOZ_ASSERT(JS_IsGlobalObject(aTargetScope));
+
+  aData->mMutex.AssertCurrentThreadOwns();
 
   ConsoleStackEntry frame;
   if (aData->mTopStackFrame) {
@@ -2017,7 +2145,7 @@ static bool ProcessArguments(JSContext* aCx, const Sequence<JS::Value>& aData,
             output.AppendFloat(v);
           } else {
             nsCString format;
-            MakeFormatString(format, integer, mantissa, 'f');
+            MakeFormatString(format, integer, std::min(mantissa, 15), 'f');
             output.AppendPrintf(format.get(), v);
           }
         }
@@ -2185,6 +2313,21 @@ Console::TimerStatus Console::LogTimer(JSContext* aCx, const JS::Value& aName,
   }
 
   *aTimerDuration = aTimestamp - value;
+
+  if (aCancelTimer && profiler_thread_is_being_profiled_for_markers()) {
+    mozilla::TimeStamp creationTimeStamp = GetCreationTimeStamp();
+    if (!creationTimeStamp.IsNull()) {
+      mozilla::TimeStamp startTimeStamp =
+          creationTimeStamp + TimeDuration::FromMilliseconds(value);
+      mozilla::TimeStamp endTimeStamp =
+          creationTimeStamp + TimeDuration::FromMilliseconds(aTimestamp);
+      profiler_add_marker("ConsoleTiming", geckoprofiler::category::DOM,
+                          MarkerTiming::Interval(startTimeStamp, endTimeStamp),
+                          ConsoleTimingMarker{},
+                          NS_ConvertUTF16toUTF8(aTimerLabel), "time");
+    }
+  }
+
   return eTimerDone;
 }
 
@@ -2389,6 +2532,10 @@ bool Console::StoreCallData(JSContext* aCx, ConsoleCallData* aCallData,
                             const Sequence<JS::Value>& aArguments) {
   AssertIsOnOwningThread();
 
+  if (mIsRetrievingConsoleEvent) {
+    return false;
+  }
+
   if (NS_WARN_IF(!mArgumentStorage.growBy(1))) {
     return false;
   }
@@ -2416,6 +2563,10 @@ void Console::UnstoreCallData(ConsoleCallData* aCallData) {
 
   MOZ_ASSERT(aCallData);
   MOZ_ASSERT(mCallDataStorage.Length() == mArgumentStorage.length());
+
+  if (mIsRetrievingConsoleEvent) {
+    return;
+  }
 
   size_t index = mCallDataStorage.IndexOf(aCallData);
   // It can be that mCallDataStorage has been already cleaned in case the
@@ -2472,6 +2623,9 @@ void Console::RetrieveConsoleEvents(JSContext* aCx,
 
   JS::Rooted<JSObject*> targetScope(aCx, JS::CurrentGlobalOrNull(aCx));
 
+  AutoRestore<bool> retrievingGuard(mIsRetrievingConsoleEvent);
+  mIsRetrievingConsoleEvent = true;
+
   for (uint32_t i = 0; i < mArgumentStorage.length(); ++i) {
     JS::Rooted<JS::Value> value(aCx);
 
@@ -2489,11 +2643,14 @@ void Console::RetrieveConsoleEvents(JSContext* aCx,
     // Here we have aCx and sequence in the same compartment.
     // targetScope is the destination scope and value will be populated in its
     // compartment.
-    if (NS_WARN_IF(!PopulateConsoleNotificationInTheTargetScope(
-            aCx, sequence, targetScope, &value, mCallDataStorage[i],
-            &mGroupStack))) {
-      aRv.Throw(NS_ERROR_FAILURE);
-      return;
+    {
+      RefPtr<ConsoleCallData> callData = mCallDataStorage[i];
+      MutexAutoLock lock(callData->mMutex);
+      if (NS_WARN_IF(!PopulateConsoleNotificationInTheTargetScope(
+              aCx, sequence, targetScope, &value, callData, &mGroupStack))) {
+        aRv.Throw(NS_ERROR_FAILURE);
+        return;
+      }
     }
 
     aEvents.AppendElement(value);
@@ -2630,6 +2787,34 @@ bool Console::MonotonicTimer(JSContext* aCx, MethodName aMethodName,
   return true;
 }
 
+mozilla::TimeStamp Console::GetCreationTimeStamp() const {
+  if (nsCOMPtr<nsPIDOMWindowInner> innerWindow = do_QueryInterface(mGlobal)) {
+    nsGlobalWindowInner* win = nsGlobalWindowInner::Cast(innerWindow);
+    MOZ_ASSERT(win);
+
+    RefPtr<Performance> performance = win->GetPerformance();
+    if (performance) {
+      return performance->CreationTimeStamp();
+    }
+    return mozilla::TimeStamp();
+  }
+
+  if (NS_IsMainThread()) {
+    return mCreationTimeStamp;
+  }
+
+  if (nsCOMPtr<WorkletGlobalScope> workletGlobal = do_QueryInterface(mGlobal)) {
+    return workletGlobal->CreationTimeStamp();
+  }
+
+  WorkerPrivate* workerPrivate = GetCurrentThreadWorkerPrivate();
+  if (workerPrivate) {
+    return workerPrivate->CreationTimeStamp();
+  }
+
+  return mozilla::TimeStamp();
+}
+
 /* static */
 already_AddRefed<ConsoleInstance> Console::CreateInstance(
     const GlobalObject& aGlobal, const ConsoleInstanceOptions& aOptions) {
@@ -2689,20 +2874,49 @@ void Console::StringifyElement(Element* aElement, nsAString& aOut) {
   aOut.AppendLiteral(">");
 }
 
-void Console::MaybeExecuteDumpFunction(JSContext* aCx,
-                                       const nsAString& aMethodName,
+void Console::LogToMozLog(JSContext* aCx, MethodName aMethodName,
+                          const nsAString& aMethodString,
+                          const Sequence<JS::Value>& aData,
+                          nsIStackFrame* aStack,
+                          DOMHighResTimeStamp aMonotonicTimer) {
+  nsString message = GetDumpMessage(aCx, aMethodName, aMethodString, aData,
+                                    aStack, aMonotonicTimer, true);
+
+  MOZ_LOG(mLogModule, ConsoleMethodNameToMozLog(aMethodName),
+          ("%s", NS_ConvertUTF16toUTF8(message).get()));
+}
+
+void Console::MaybeExecuteDumpFunction(JSContext* aCx, MethodName aMethodName,
+                                       const nsAString& aMethodString,
                                        const Sequence<JS::Value>& aData,
-                                       nsIStackFrame* aStack) {
+                                       nsIStackFrame* aStack,
+                                       DOMHighResTimeStamp aMonotonicTimer) {
   if (!mDumpFunction && !mDumpToStdout) {
     return;
   }
+  nsString message = GetDumpMessage(aCx, aMethodName, aMethodString, aData,
+                                    aStack, aMonotonicTimer, false);
 
-  nsAutoString message;
-  message.AssignLiteral("console.");
-  message.Append(aMethodName);
+  ExecuteDumpFunction(message);
+}
+
+nsString Console::GetDumpMessage(JSContext* aCx, MethodName aMethodName,
+                                 const nsAString& aMethodString,
+                                 const Sequence<JS::Value>& aData,
+                                 nsIStackFrame* aStack,
+                                 DOMHighResTimeStamp aMonotonicTimer,
+                                 bool aIsForMozLog) {
+  nsString message;
+  // MOZ_LOG already logs either console or the prefix
+  if (!aIsForMozLog) {
+    message.AssignLiteral("console.");
+  } else {
+    message.AssignLiteral("");
+  }
+  message.Append(aMethodString);
   message.AppendLiteral(": ");
 
-  if (!mPrefix.IsEmpty()) {
+  if (!aIsForMozLog && !mPrefix.IsEmpty()) {
     message.Append(mPrefix);
     message.AppendLiteral(": ");
   }
@@ -2727,86 +2941,68 @@ void Console::MaybeExecuteDumpFunction(JSContext* aCx,
 
     nsAutoJSString string;
     if (NS_WARN_IF(!string.init(aCx, jsString))) {
-      return;
+      return message;
     }
 
     if (i != 0) {
       message.AppendLiteral(" ");
     }
 
+    if (string.EqualsLiteral("({})")) {
+      // ({}) is a generic serialization, possibly from XPC_WN_Shared_ToSource.
+      // Such a serialization is rather unhelpful, so try .toString() instead.
+      // When the input is a Components.Exception instance, the result will
+      // contain the error message, code and stack, which eases debugging.
+      JS::Rooted<JSString*> jsString2(aCx, JS::ToString(aCx, v));
+      nsAutoJSString string2;
+      if (jsString2 && string2.init(aCx, jsString2)) {
+        message.Append(string2);
+        continue;
+      }
+    }
     message.Append(string);
   }
 
+  if (aMethodName == MethodTime || aMethodName == MethodTimeEnd) {
+    message.AppendLiteral(" @ ");
+    message.AppendFloat(aMonotonicTimer);
+  }
+
   message.AppendLiteral("\n");
 
-  // aStack can be null.
+  // When logging to MOZ_LOG, only dump stack willingly when MOZ_LOG includes
+  // "jsstacks".
+  if (!aIsForMozLog || mLogModule->GetLogJSStacks()) {
+    // aStack can be null.
+    nsCOMPtr<nsIStackFrame> stack(aStack);
 
-  nsCOMPtr<nsIStackFrame> stack(aStack);
+    while (stack) {
+      nsAutoCString filename;
+      stack->GetFilename(aCx, filename);
 
-  while (stack) {
-    nsAutoCString filename;
-    stack->GetFilename(aCx, filename);
+      AppendUTF8toUTF16(filename, message);
+      message.AppendLiteral(" ");
 
-    AppendUTF8toUTF16(filename, message);
-    message.AppendLiteral(" ");
+      message.AppendInt(stack->GetLineNumber(aCx));
+      message.AppendLiteral(" ");
 
-    message.AppendInt(stack->GetLineNumber(aCx));
-    message.AppendLiteral(" ");
+      nsAutoString functionName;
+      stack->GetName(aCx, functionName);
 
-    nsAutoString functionName;
-    stack->GetName(aCx, functionName);
+      message.Append(functionName);
+      message.AppendLiteral("\n");
 
-    message.Append(functionName);
-    message.AppendLiteral("\n");
+      nsCOMPtr<nsIStackFrame> caller = stack->GetCaller(aCx);
 
-    nsCOMPtr<nsIStackFrame> caller = stack->GetCaller(aCx);
+      if (!caller) {
+        caller = stack->GetAsyncCaller(aCx);
+      }
 
-    if (!caller) {
-      caller = stack->GetAsyncCaller(aCx);
+      stack.swap(caller);
     }
-
-    stack.swap(caller);
   }
 
-  ExecuteDumpFunction(message);
-}
-
-void Console::MaybeExecuteDumpFunctionForTime(JSContext* aCx,
-                                              MethodName aMethodName,
-                                              const nsAString& aMethodString,
-                                              uint64_t aMonotonicTimer,
-                                              const JS::Value& aData) {
-  if (!mDumpFunction && !mDumpToStdout) {
-    return;
-  }
-
-  nsAutoString message;
-  message.AssignLiteral("console.");
-  message.Append(aMethodString);
-  message.AppendLiteral(": ");
-
-  if (!mPrefix.IsEmpty()) {
-    message.Append(mPrefix);
-    message.AppendLiteral(": ");
-  }
-
-  JS::Rooted<JS::Value> v(aCx, aData);
-  JS::Rooted<JSString*> jsString(aCx, JS_ValueToSource(aCx, v));
-  if (!jsString) {
-    return;
-  }
-
-  nsAutoJSString string;
-  if (NS_WARN_IF(!string.init(aCx, jsString))) {
-    return;
-  }
-
-  message.Append(string);
-  message.AppendLiteral(" @ ");
-  message.AppendInt(aMonotonicTimer);
-
-  message.AppendLiteral("\n");
-  ExecuteDumpFunction(message);
+  return message;
 }
 
 void Console::ExecuteDumpFunction(const nsAString& aMessage) {
@@ -2825,41 +3021,46 @@ void Console::ExecuteDumpFunction(const nsAString& aMessage) {
   fflush(stdout);
 }
 
-bool Console::ShouldProceed(MethodName aName) const {
-  return mCurrentLogLevel <= InternalLogLevelToInteger(aName);
+bool Console::ShouldLogToMozLog(MethodName aName) const {
+  return mLogModule->ShouldLog(ConsoleMethodNameToMozLog(aName));
 }
+
+bool Console::ShouldLogToMozLog(ConsoleLogLevel aLevel) const {
+  return mLogModule->ShouldLog(
+      ConsoleLevelIntegerToMozLog(WebIDLLogLevelToInteger(aLevel)));
+}
+
+bool Console::ShouldProceed(MethodName aName) const {
+  return mCurrentLogLevel <= ConsoleMethodNameToInteger(aName);
+}
+
+// Maps between log level systems:
+// - WebIDLLogLevel (ConsoleInstance.webidl): defines levels for most (not all)
+//   console method names, plus "All" and "Off"
+// - Console integer level: 1 (verbose) to 5 (critical), used internally
+// - MOZ_LOG levels: LogLevel::Verbose (5) to LogLevel::Error (1), reverse order
+// Some duplication exists across mapping methods for performance on hot paths.
 
 uint32_t Console::WebIDLLogLevelToInteger(ConsoleLogLevel aLevel) const {
   switch (aLevel) {
     case ConsoleLogLevel::All:
       return 0;
+    case ConsoleLogLevel::Trace:
+      return 1;
     case ConsoleLogLevel::Debug:
       return 2;
-    case ConsoleLogLevel::Log:
-      return 3;
-    case ConsoleLogLevel::Info:
-      return 3;
     case ConsoleLogLevel::Clear:
-      return 3;
-    case ConsoleLogLevel::Trace:
-      return 3;
-    case ConsoleLogLevel::TimeLog:
-      return 3;
-    case ConsoleLogLevel::TimeEnd:
-      return 3;
-    case ConsoleLogLevel::Time:
-      return 3;
-    case ConsoleLogLevel::Group:
-      return 3;
-    case ConsoleLogLevel::GroupEnd:
-      return 3;
-    case ConsoleLogLevel::Profile:
-      return 3;
-    case ConsoleLogLevel::ProfileEnd:
-      return 3;
     case ConsoleLogLevel::Dir:
-      return 3;
     case ConsoleLogLevel::Dirxml:
+    case ConsoleLogLevel::Group:
+    case ConsoleLogLevel::GroupEnd:
+    case ConsoleLogLevel::Info:
+    case ConsoleLogLevel::Log:
+    case ConsoleLogLevel::Profile:
+    case ConsoleLogLevel::ProfileEnd:
+    case ConsoleLogLevel::Time:
+    case ConsoleLogLevel::TimeEnd:
+    case ConsoleLogLevel::TimeLog:
       return 3;
     case ConsoleLogLevel::Warn:
       return 4;
@@ -2874,57 +3075,98 @@ uint32_t Console::WebIDLLogLevelToInteger(ConsoleLogLevel aLevel) const {
   }
 }
 
-uint32_t Console::InternalLogLevelToInteger(MethodName aName) const {
+uint32_t Console::ConsoleMethodNameToInteger(MethodName aName) const {
   switch (aName) {
-    case MethodLog:
-      return 3;
+    case MethodTrace:
+      return 1;
+    case MethodDebug:
+      return 2;
+    case MethodClear:
+    case MethodCount:
+    case MethodCountReset:
+    case MethodDir:
+    case MethodDirxml:
+    case MethodGroup:
+    case MethodGroupCollapsed:
+    case MethodGroupEnd:
     case MethodInfo:
+    case MethodLog:
+    case MethodProfile:
+    case MethodProfileEnd:
+    case MethodTable:
+    case MethodTime:
+    case MethodTimeEnd:
+    case MethodTimeLog:
+    case MethodTimeStamp:
       return 3;
     case MethodWarn:
       return 4;
+    case MethodAssert:
     case MethodError:
-      return 5;
     case MethodException:
       return 5;
-    case MethodDebug:
-      return 2;
-    case MethodTable:
-      return 3;
-    case MethodTrace:
-      return 3;
-    case MethodDir:
-      return 3;
-    case MethodDirxml:
-      return 3;
-    case MethodGroup:
-      return 3;
-    case MethodGroupCollapsed:
-      return 3;
-    case MethodGroupEnd:
-      return 3;
-    case MethodTime:
-      return 3;
-    case MethodTimeLog:
-      return 3;
-    case MethodTimeEnd:
-      return 3;
-    case MethodTimeStamp:
-      return 3;
-    case MethodAssert:
-      return 3;
-    case MethodCount:
-      return 3;
-    case MethodCountReset:
-      return 3;
-    case MethodClear:
-      return 3;
-    case MethodProfile:
-      return 3;
-    case MethodProfileEnd:
-      return 3;
     default:
       MOZ_CRASH("MethodName is out of sync with the Console implementation!");
       return 0;
+  }
+}
+
+LogLevel Console::ConsoleMethodNameToMozLog(MethodName aName) const {
+  switch (aName) {
+    case MethodTrace:
+      return LogLevel::Verbose;
+    case MethodDebug:
+      return LogLevel::Debug;
+    case MethodClear:
+    case MethodCount:
+    case MethodCountReset:
+    case MethodDir:
+    case MethodDirxml:
+    case MethodGroup:
+    case MethodGroupCollapsed:
+    case MethodGroupEnd:
+    case MethodInfo:
+    case MethodLog:
+    case MethodProfile:
+    case MethodProfileEnd:
+    case MethodTable:
+    case MethodTime:
+    case MethodTimeEnd:
+    case MethodTimeLog:
+    case MethodTimeStamp:
+      return LogLevel::Info;
+    case MethodWarn:
+      return LogLevel::Warning;
+    case MethodAssert:
+    case MethodError:
+    case MethodException:
+      return LogLevel::Error;
+    default:
+      MOZ_CRASH("MethodName is out of sync with the Console implementation!");
+      return LogLevel::Disabled;
+  }
+}
+
+LogLevel Console::ConsoleLevelIntegerToMozLog(uint32_t aLevel) const {
+  switch (aLevel) {
+    case 5:
+      return LogLevel::Error;
+    case 4:
+      return LogLevel::Warning;
+    case 3:
+      return LogLevel::Info;
+    case 2:
+      return LogLevel::Debug;
+    case 1:
+      return LogLevel::Verbose;
+    case 0:
+      return LogLevel::Verbose;
+    case UINT32_MAX:
+      return LogLevel::Disabled;
+    default:
+      MOZ_CRASH(
+          "Unexpected console integer level in the Console implementation!");
+      return LogLevel::Disabled;
   }
 }
 

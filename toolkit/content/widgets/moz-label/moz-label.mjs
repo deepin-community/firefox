@@ -42,27 +42,32 @@ class MozTextLabel extends HTMLLabelElement {
       );
       if (MozTextLabel.#underlineAccesskey) {
         try {
-          const nsIPrefLocalizedString = Ci.nsIPrefLocalizedString;
-          const prefNameInsertSeparator =
-            "intl.menuitems.insertseparatorbeforeaccesskeys";
-          const prefNameAlwaysAppendAccessKey =
-            "intl.menuitems.alwaysappendaccesskeys";
-
-          let val = Services.prefs.getComplexValue(
-            prefNameInsertSeparator,
-            nsIPrefLocalizedString
-          ).data;
-          this.#insertSeparator = val == "true";
-          val = Services.prefs.getComplexValue(
-            prefNameAlwaysAppendAccessKey,
-            nsIPrefLocalizedString
-          ).data;
-          this.#alwaysAppendAccessKey = val == "true";
-        } catch (e) {
+          this.#insertSeparator =
+            Services.locale.insertSeparatorBeforeAccesskeys;
+          this.#alwaysAppendAccessKey = Services.locale.alwaysAppendAccesskeys;
+        } catch {
           this.#insertSeparator = this.#alwaysAppendAccessKey = true;
         }
       }
     }
+  }
+
+  #startMutationObserver() {
+    if (!this.#observer) {
+      return;
+    }
+    this.#observer.observe(this, {
+      characterData: true,
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  #stopMutationObserver() {
+    if (!this.#observer) {
+      return;
+    }
+    this.#observer.disconnect();
   }
 
   connectedCallback() {
@@ -70,14 +75,16 @@ class MozTextLabel extends HTMLLabelElement {
     this.formatAccessKey();
     if (!this.#observer) {
       this.#observer = new MutationObserver(() => {
+        this.#lastFormattedAccessKey = null;
         this.formatAccessKey();
-      }).observe(this, { characterData: true, childList: true, subtree: true });
+      });
+      this.#startMutationObserver();
     }
   }
 
   disconnectedCallback() {
     if (this.#observer) {
-      this.#observer.disconnect();
+      this.#stopMutationObserver();
       this.#observer = null;
     }
   }
@@ -86,6 +93,10 @@ class MozTextLabel extends HTMLLabelElement {
   // MozHTMLElement.insertCssIfNeeded(style)
   #setStyles() {
     let root = this.getRootNode();
+    if (root.__mozLabelCssAdded) {
+      return;
+    }
+
     let container = root.head ?? root;
 
     for (let link of container.querySelectorAll("link")) {
@@ -98,6 +109,7 @@ class MozTextLabel extends HTMLLabelElement {
     style.rel = "stylesheet";
     style.href = this.constructor.stylesheetUrl;
     container.appendChild(style);
+    root.__mozLabelCssAdded = true;
   }
 
   set textContent(val) {
@@ -129,7 +141,7 @@ class MozTextLabel extends HTMLLabelElement {
     if (
       (controlElement.localName == "checkbox" ||
         controlElement.localName == "radio") &&
-      controlElement.getAttribute("disabled") == "true"
+      controlElement.hasAttribute("disabled")
     ) {
       return;
     }
@@ -180,6 +192,15 @@ class MozTextLabel extends HTMLLabelElement {
     ) {
       return;
     }
+    this.#stopMutationObserver();
+    try {
+      this.#formatAccessKey(accessKey);
+    } finally {
+      queueMicrotask(() => this.#startMutationObserver());
+    }
+  }
+
+  #formatAccessKey(accessKey) {
     this.#lastFormattedAccessKey = accessKey;
     if (this.accessKeySpan) {
       // Clear old accesskey

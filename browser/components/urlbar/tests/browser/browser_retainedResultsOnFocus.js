@@ -71,7 +71,10 @@ async function checkDoesNotOpenOnFocus(win) {
 
 add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
-    set: [["browser.urlbar.autoFill", true]],
+    set: [
+      ["browser.urlbar.autoFill", true],
+      ["browser.urlbar.scotchBonnet.enableOverride", false],
+    ],
   });
   // Add some history for the empty panel and autofill.
   await PlacesTestUtils.addVisits([
@@ -386,7 +389,7 @@ add_task(async function test_allowAutofill() {
   let win = await BrowserTestUtils.openNewBrowserWindow();
 
   await UrlbarTestUtils.promisePopupOpen(win, async () => {
-    await selectAndPaste("e", win);
+    await UrlbarTestUtils.selectAndPaste("e", win);
   });
   Assert.equal(win.gURLBar.value, "e", "Should not autofill");
   let context = await win.gURLBar.lastQueryContextPromise;
@@ -400,6 +403,106 @@ add_task(async function test_allowAutofill() {
   Assert.equal(win.gURLBar.value, "e", "Should not autofill");
   context = await win.gURLBar.lastQueryContextPromise;
   Assert.equal(context.allowAutofill, false, "Check reopened allowAutofill");
+
+  await BrowserTestUtils.closeWindow(win);
+});
+
+add_task(async function test_rowReuse() {
+  info("Result rows from the last query should be reused after refocus.");
+  let win = await BrowserTestUtils.openNewBrowserWindow();
+
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window: win,
+    value: "ex",
+    fireInputEvent: true,
+  });
+
+  let rowsContainer = win.gURLBar.view.panel.querySelector(
+    ".urlbarView-results"
+  );
+  let initialRows = Array.from(rowsContainer.children);
+  Assert.greater(initialRows.length, 0, "Initial query produced rows");
+
+  await UrlbarTestUtils.promisePopupClose(win, () => {
+    win.gURLBar.blur();
+  });
+
+  // Wait until breakout-extend stops.
+  // This will test if row caching based on the urlbar width works
+  // even when the width changes due to breakout-extend (bug 2037933).
+  await TestUtils.waitForCondition(
+    () => !win.gURLBar.hasAttribute("breakout-extend"),
+    "Wait for breakout-extend to finish"
+  );
+
+  // Don't use promiseAutocompleteResultPopup.
+  // Check the rows before the new query completes.
+  EventUtils.synthesizeMouseAtCenter(win.gURLBar.inputField, {}, win);
+
+  let newRows = Array.from(rowsContainer.children);
+  Assert.equal(
+    newRows.length,
+    initialRows.length,
+    "Same number of rows after refocus"
+  );
+  for (let i = 0; i < initialRows.length; i++) {
+    Assert.equal(newRows[i], initialRows[i], `Row ${i} was reused`);
+  }
+
+  await BrowserTestUtils.closeWindow(win);
+});
+
+add_task(async function test_rowReuseChangedWidth() {
+  info(
+    "Result rows should not be reused when the urlbar container width " +
+      "changed between close and refocus."
+  );
+  let win = await BrowserTestUtils.openNewBrowserWindow();
+
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window: win,
+    value: "ex",
+    fireInputEvent: true,
+  });
+
+  let rowsContainer = win.gURLBar.view.panel.querySelector(
+    ".urlbarView-results"
+  );
+  let initialRows = Array.from(rowsContainer.children);
+  Assert.greater(initialRows.length, 0, "Initial query produced rows");
+
+  await UrlbarTestUtils.promisePopupClose(win, () => {
+    win.gURLBar.blur();
+  });
+
+  // Resize the window to change the urlbar's width. This invalidates
+  // the rows and they should be rebuilt from the cached query context.
+  let urlbarContainer = win.gURLBar.parentElement;
+  let originalContainerWidth = urlbarContainer.getBoundingClientRect().width;
+  win.resizeTo(win.innerWidth + 100, win.outerHeight);
+  await TestUtils.waitForCondition(
+    () =>
+      urlbarContainer.getBoundingClientRect().width != originalContainerWidth,
+    "Wait for the urlbar container to resize"
+  );
+
+  // Don't use promiseAutocompleteResultPopup.
+  // Check the rows before the new query completes.
+  EventUtils.synthesizeMouseAtCenter(win.gURLBar.inputField, {}, win);
+
+  let newRows = Array.from(rowsContainer.children);
+  Assert.equal(
+    newRows.length,
+    initialRows.length,
+    "Same number of rows after refocus"
+  );
+  for (let i = 0; i < initialRows.length; i++) {
+    Assert.notEqual(
+      newRows[i],
+      initialRows[i],
+      `Row ${i} was rebuilt from cached query context (not reused)`
+    );
+  }
 
   await BrowserTestUtils.closeWindow(win);
 });
@@ -423,7 +526,7 @@ add_task(async function test_clicks_after_autofill() {
   // Wait a bit, in case of a mistake this would run a query, otherwise not.
   // eslint-disable-next-line mozilla/no-arbitrary-setTimeout
   await new Promise(resolve => setTimeout(resolve, 300));
-  Assert.ok(win.gURLBar.selectionStart < win.gURLBar.value.length);
+  Assert.less(win.gURLBar.selectionStart, win.gURLBar.value.length);
   Assert.equal(win.gURLBar.selectionStart, win.gURLBar.selectionEnd);
 
   // Check double click.
@@ -431,8 +534,8 @@ add_task(async function test_clicks_after_autofill() {
   // Wait a bit, in case of a mistake this would run a query, otherwise not.
   // eslint-disable-next-line mozilla/no-arbitrary-setTimeout
   await new Promise(resolve => setTimeout(resolve, 300));
-  Assert.ok(win.gURLBar.selectionStart < win.gURLBar.value.length);
-  Assert.ok(win.gURLBar.selectionEnd > win.gURLBar.selectionStart);
+  Assert.less(win.gURLBar.selectionStart, win.gURLBar.value.length);
+  Assert.greater(win.gURLBar.selectionEnd, win.gURLBar.selectionStart);
 
   await BrowserTestUtils.closeWindow(win);
 });

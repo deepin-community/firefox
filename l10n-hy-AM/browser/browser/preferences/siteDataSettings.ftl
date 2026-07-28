@@ -14,18 +14,18 @@ site-data-search-textbox =
 site-data-column-host =
     .label = Կայքը
 site-data-column-cookies =
-    .label = Cookie-ներ
+    .label = Թխուկներ
 site-data-column-storage =
     .label = Պահեստը
 site-data-column-last-used =
     .label = Վերջինը
 # This label is used in the "Host" column for local files, which have no host.
-site-data-local-file-host = (տեղային նիշք)
+site-data-local-file-host = (տեղային ֆայլ)
 site-data-remove-selected =
     .label = Հեռացնել ընտրվածը
     .accesskey = Հ
 site-data-settings-dialog =
-    .buttonlabelaccept = Պահպանել փոփոխությունները
+    .buttonlabelaccept = Պահել փոփոխությունները
     .buttonaccesskeyaccept = ա
 # Variables:
 #   $value (Number) - Value of the unit (for example: 4.6, 500)
@@ -46,8 +46,8 @@ site-data-remove-shown =
 site-data-removing-dialog =
     .title = { site-data-removing-header }
     .buttonlabelaccept = Հեռացնել
-site-data-removing-header = Cookie-ների և կայքի տվյալների ջնջում
-site-data-removing-desc = Cookie-ների և կայքի տվյալների ջնջումը կարող է ձեզ դուրս բերել կայքերից: Կատարե՞լ:
+site-data-removing-header = Թխուկների և կայքի տվյալների ջնջում
+site-data-removing-desc = Թխուկների և կայքի տվյալների ջնջումը կարող է ձեզ դուրս բերել կայքերից: Կատարե՞լ:
 # Variables:
 #   $baseDomain (String) - The single domain for which data is being removed
 site-data-removing-single-desc = Թխուկների և կայքի տվյալների ջնջումը կարող է ձեզ դուրս բերել կայքերից: Համոզվա՞ծ եք,որ ցանկանում եք հեռացնել թխուկները և կայքի տվյալները <strong>{ $baseDomain }</strong>-ի համար:

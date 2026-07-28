@@ -5,7 +5,8 @@
 #include "MFMediaEngineChild.h"
 
 #include "MFMediaEngineUtils.h"
-#include "RemoteDecoderManagerChild.h"
+#include "RemoteMediaManagerChild.h"
+#include "mozilla/SyncRunnable.h"
 
 #ifdef MOZ_WMF_CDM
 #  include "WMFCDMProxy.h"
@@ -33,7 +34,7 @@ using media::TimeUnit;
 MFMediaEngineChild::MFMediaEngineChild(MFMediaEngineWrapper* aOwner,
                                        FrameStatistics* aFrameStats)
     : mOwner(aOwner),
-      mManagerThread(RemoteDecoderManagerChild::GetManagerThread()),
+      mManagerThread(RemoteMediaManagerChild::GetManagerThread()),
       mMediaEngineId(0 /* invalid id, will be initialized later */),
       mFrameStats(WrapNotNull(aFrameStats)) {
   if (mFrameStats->GetPresentedFrames() > 0) {
@@ -58,14 +59,14 @@ RefPtr<GenericNonExclusivePromise> MFMediaEngineChild::Init(
 
   MOZ_ASSERT(mMediaEngineId == 0);
   RefPtr<MFMediaEngineChild> self = this;
-  RemoteDecoderManagerChild::LaunchUtilityProcessIfNeeded(
-      RemoteDecodeIn::UtilityProcess_MFMediaEngineCDM)
+  RemoteMediaManagerChild::LaunchUtilityProcessIfNeeded(
+      RemoteMediaIn::UtilityProcess_MFMediaEngineCDM)
       ->Then(
           mManagerThread, __func__,
           [self, this, flag = aFlags, info = aInfo](bool) {
-            RefPtr<RemoteDecoderManagerChild> manager =
-                RemoteDecoderManagerChild::GetSingleton(
-                    RemoteDecodeIn::UtilityProcess_MFMediaEngineCDM);
+            RefPtr<RemoteMediaManagerChild> manager =
+                RemoteMediaManagerChild::GetSingleton(
+                    RemoteMediaIn::UtilityProcess_MFMediaEngineCDM);
             if (!manager || !manager->CanSend()) {
               CLOG("Manager not exists or can't send");
               mInitPromiseHolder.RejectIfExists(NS_ERROR_FAILURE, __func__);
@@ -73,7 +74,7 @@ RefPtr<GenericNonExclusivePromise> MFMediaEngineChild::Init(
             }
 
             mIPDLSelfRef = this;
-            Unused << manager->SendPMFMediaEngineConstructor(this);
+            (void)manager->SendPMFMediaEngineConstructor(this);
 
             MediaInfoIPDL mediaInfo(
                 info.HasAudio() ? Some(info.mAudio) : Nothing(),
@@ -149,7 +150,7 @@ mozilla::ipc::IPCResult MFMediaEngineChild::RecvUpdateCurrentTime(
 mozilla::ipc::IPCResult MFMediaEngineChild::RecvNotifyEvent(
     MFMediaEngineEvent aEvent) {
   AssertOnManagerThread();
-  if (mShutdown) {
+  if (mShutdown || !mOwner) {
     return IPC_OK();
   }
   switch (aEvent) {
@@ -189,10 +190,28 @@ mozilla::ipc::IPCResult MFMediaEngineChild::RecvNotifyEvent(
 mozilla::ipc::IPCResult MFMediaEngineChild::RecvNotifyError(
     const MediaResult& aError) {
   AssertOnManagerThread();
-  if (mShutdown) {
+  if (mShutdown || !mOwner) {
     return IPC_OK();
   }
   mOwner->NotifyError(aError);
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult MFMediaEngineChild::RecvNotifyHardwareReset() {
+  AssertOnManagerThread();
+  if (mShutdown || !mOwner) {
+    return IPC_OK();
+  }
+  mOwner->NotifyHardwareReset();
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult MFMediaEngineChild::RecvNotifyWaitingForKey() {
+  AssertOnManagerThread();
+  if (mShutdown || !mOwner) {
+    return IPC_OK();
+  }
+  mOwner->NotifyWaitingForKey();
   return IPC_OK();
 }
 
@@ -219,10 +238,21 @@ mozilla::ipc::IPCResult MFMediaEngineChild::RecvUpdateStatisticData(
 mozilla::ipc::IPCResult MFMediaEngineChild::RecvNotifyResizing(
     uint32_t aWidth, uint32_t aHeight) {
   AssertOnManagerThread();
-  if (mShutdown) {
+  if (mShutdown || !mOwner) {
     return IPC_OK();
   }
   mOwner->NotifyResizing(aWidth, aHeight);
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult MFMediaEngineChild::RecvNotifyFrameServerMode() {
+  AssertOnManagerThread();
+  if (mShutdown) {
+    return IPC_OK();
+  }
+#ifdef MOZ_WMF_CDM
+  mOwner->NotifyFrameServerMode();
+#endif
   return IPC_OK();
 }
 
@@ -243,21 +273,29 @@ uint64_t MFMediaEngineChild::GetUpdatedDroppedFrames(
 }
 
 void MFMediaEngineChild::OwnerDestroyed() {
-  Unused << ManagerThread()->Dispatch(NS_NewRunnableFunction(
-      "MFMediaEngineChild::OwnerDestroy", [self = RefPtr{this}, this] {
-        self->mOwner = nullptr;
-        // Ask to destroy IPDL.
-        if (CanSend()) {
-          MFMediaEngineChild::Send__delete__(this);
-        }
-      }));
+  if (mManagerThread->IsOnCurrentThread()) {
+    mOwner = nullptr;
+    if (CanSend()) {
+      MFMediaEngineChild::Send__delete__(this);
+    }
+    return;
+  }
+  SyncRunnable::DispatchToThread(
+      mManagerThread,
+      NS_NewRunnableFunction("MFMediaEngineChild::OwnerDestroyed",
+                             [self = RefPtr{this}, this] {
+                               mOwner = nullptr;
+                               if (CanSend()) {
+                                 MFMediaEngineChild::Send__delete__(this);
+                               }
+                             }));
 }
 
 void MFMediaEngineChild::IPDLActorDestroyed() {
   AssertOnManagerThread();
-  if (!mShutdown) {
+  if (!mShutdown && mOwner) {
     CLOG("Destroyed actor without shutdown, remote process has crashed!");
-    mOwner->NotifyError(NS_ERROR_DOM_MEDIA_REMOTE_DECODER_CRASHED_MF_CDM_ERR);
+    mOwner->NotifyError(NS_ERROR_DOM_MEDIA_REMOTE_CRASHED_MF_CDM_ERR);
   }
   mIPDLSelfRef = nullptr;
 }
@@ -290,7 +328,7 @@ MFMediaEngineWrapper::~MFMediaEngineWrapper() { mEngine->OwnerDestroyed(); }
 void MFMediaEngineWrapper::Play() {
   WLOG("Play");
   MOZ_ASSERT(IsInited());
-  Unused << ManagerThread()->Dispatch(
+  (void)ManagerThread()->Dispatch(
       NS_NewRunnableFunction("MFMediaEngineWrapper::Play",
                              [engine = mEngine] { engine->SendPlay(); }));
 }
@@ -298,7 +336,7 @@ void MFMediaEngineWrapper::Play() {
 void MFMediaEngineWrapper::Pause() {
   WLOG("Pause");
   MOZ_ASSERT(IsInited());
-  Unused << ManagerThread()->Dispatch(
+  (void)ManagerThread()->Dispatch(
       NS_NewRunnableFunction("MFMediaEngineWrapper::Pause",
                              [engine = mEngine] { engine->SendPause(); }));
 }
@@ -308,7 +346,7 @@ void MFMediaEngineWrapper::Seek(const TimeUnit& aTargetTime) {
   mCurrentTimeInSecond = currentTimeInSecond;
   WLOG("Seek to %f", currentTimeInSecond);
   MOZ_ASSERT(IsInited());
-  Unused << ManagerThread()->Dispatch(NS_NewRunnableFunction(
+  (void)ManagerThread()->Dispatch(NS_NewRunnableFunction(
       "MFMediaEngineWrapper::Seek", [engine = mEngine, currentTimeInSecond] {
         engine->SendSeek(currentTimeInSecond);
       }));
@@ -316,7 +354,7 @@ void MFMediaEngineWrapper::Seek(const TimeUnit& aTargetTime) {
 
 void MFMediaEngineWrapper::Shutdown() {
   WLOG("Shutdown");
-  Unused << ManagerThread()->Dispatch(
+  (void)ManagerThread()->Dispatch(
       NS_NewRunnableFunction("MFMediaEngineWrapper::Shutdown",
                              [engine = mEngine] { engine->Shutdown(); }));
 }
@@ -324,7 +362,7 @@ void MFMediaEngineWrapper::Shutdown() {
 void MFMediaEngineWrapper::SetPlaybackRate(double aPlaybackRate) {
   WLOG("Set playback rate %f", aPlaybackRate);
   MOZ_ASSERT(IsInited());
-  Unused << ManagerThread()->Dispatch(
+  (void)ManagerThread()->Dispatch(
       NS_NewRunnableFunction("MFMediaEngineWrapper::SetPlaybackRate",
                              [engine = mEngine, aPlaybackRate] {
                                engine->SendSetPlaybackRate(aPlaybackRate);
@@ -334,7 +372,7 @@ void MFMediaEngineWrapper::SetPlaybackRate(double aPlaybackRate) {
 void MFMediaEngineWrapper::SetVolume(double aVolume) {
   WLOG("Set volume %f", aVolume);
   MOZ_ASSERT(IsInited());
-  Unused << ManagerThread()->Dispatch(NS_NewRunnableFunction(
+  (void)ManagerThread()->Dispatch(NS_NewRunnableFunction(
       "MFMediaEngineWrapper::SetVolume",
       [engine = mEngine, aVolume] { engine->SendSetVolume(aVolume); }));
 }
@@ -342,7 +380,7 @@ void MFMediaEngineWrapper::SetVolume(double aVolume) {
 void MFMediaEngineWrapper::SetLooping(bool aLooping) {
   WLOG("Set looping %d", aLooping);
   MOZ_ASSERT(IsInited());
-  Unused << ManagerThread()->Dispatch(NS_NewRunnableFunction(
+  (void)ManagerThread()->Dispatch(NS_NewRunnableFunction(
       "MFMediaEngineWrapper::SetLooping",
       [engine = mEngine, aLooping] { engine->SendSetLooping(aLooping); }));
 }
@@ -354,7 +392,7 @@ void MFMediaEngineWrapper::SetPreservesPitch(bool aPreservesPitch) {
 void MFMediaEngineWrapper::NotifyEndOfStream(TrackInfo::TrackType aType) {
   WLOG("NotifyEndOfStream, type=%s", TrackTypeToStr(aType));
   MOZ_ASSERT(IsInited());
-  Unused << ManagerThread()->Dispatch(NS_NewRunnableFunction(
+  (void)ManagerThread()->Dispatch(NS_NewRunnableFunction(
       "MFMediaEngineWrapper::NotifyEndOfStream",
       [engine = mEngine, aType] { engine->SendNotifyEndOfStream(aType); }));
 }
@@ -370,9 +408,11 @@ bool MFMediaEngineWrapper::SetCDMProxy(CDMProxy* aProxy) {
   const uint64_t proxyId = proxy->GetCDMProxyId();
   WLOG("SetCDMProxy, CDM-Id=%" PRIu64, proxyId);
   MOZ_ASSERT(IsInited());
-  Unused << ManagerThread()->Dispatch(NS_NewRunnableFunction(
+  (void)ManagerThread()->Dispatch(NS_NewRunnableFunction(
       "MFMediaEngineWrapper::SetCDMProxy",
-      [engine = mEngine, proxyId] { engine->SendSetCDMProxyId(proxyId); }));
+      [engine = mEngine, proxy = RefPtr{aProxy}, proxyId] {
+        engine->SendSetCDMProxyId(proxyId);
+      }));
   return true;
 #else
   return false;
@@ -402,11 +442,33 @@ void MFMediaEngineWrapper::NotifyError(const MediaResult& aError) {
   mOwner->NotifyError(aError);
 }
 
+void MFMediaEngineWrapper::NotifyHardwareReset() {
+  AssertOnManagerThread();
+  WLOG("Received hardware reset");
+  mOwner->NotifyHardwareReset();
+}
+
+void MFMediaEngineWrapper::NotifyWaitingForKey() {
+  AssertOnManagerThread();
+  WLOG("Received waiting for key");
+#ifdef MOZ_WMF_CDM
+  mOwner->NotifyWaitingForKey();
+#endif
+}
+
 void MFMediaEngineWrapper::NotifyResizing(uint32_t aWidth, uint32_t aHeight) {
   AssertOnManagerThread();
   WLOG("Video resizing, new size [%u,%u]", aWidth, aHeight);
   mOwner->NotifyResizing(aWidth, aHeight);
 }
+
+#ifdef MOZ_WMF_CDM
+void MFMediaEngineWrapper::NotifyFrameServerMode() {
+  AssertOnManagerThread();
+  WLOG("Engine switched to frame server mode");
+  mOwner->NotifyFrameServerMode();
+}
+#endif
 
 #undef CLOG
 #undef WLOG

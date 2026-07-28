@@ -2,7 +2,7 @@
 ; License, v. 2.0. If a copy of the MPL was not distributed with this
 ; file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-; Package file for the Fennec build.
+; Package file for the GeckoView build.
 ;
 ; File format:
 ;
@@ -15,12 +15,7 @@
 #filter substitution
 
 [@AB_CD@]
-@BINPATH@/@PREF_DIR@/mobile-l10n.js
-@BINPATH@/update.locale
-#ifdef MOZ_UPDATER
-@BINPATH@/updater.ini
-#endif
-@BINPATH@/dictionaries/*
+@BINPATH@/default.locale
 @BINPATH@/hyphenation/*
 @BINPATH@/localization/*
 
@@ -51,7 +46,6 @@
 #endif
 @BINPATH@/@DLL_PREFIX@xul@DLL_SUFFIX@
 
-@BINPATH@/@DLL_PREFIX@nssckbi@DLL_SUFFIX@
 @BINPATH@/@DLL_PREFIX@nss3@DLL_SUFFIX@
 #ifndef MOZ_FOLD_LIBS
 @BINPATH@/@DLL_PREFIX@nssutil3@DLL_SUFFIX@
@@ -65,8 +59,6 @@
 @BINPATH@/@DLL_PREFIX@softokn3.chk
 #endif
 
-@BINPATH@/@DLL_PREFIX@ipcclientcerts@DLL_SUFFIX@
-
 #ifndef MOZ_FOLD_LIBS
 @BINPATH@/@DLL_PREFIX@mozsqlite3@DLL_SUFFIX@
 #endif
@@ -75,12 +67,24 @@
 # This should be MOZ_CHILD_PROCESS_NAME, but that has a "lib/" prefix.
 @BINPATH@/@MOZ_CHILD_PROCESS_NAME@
 
+#ifdef MOZ_APPSERVICES_IN_TREE
+; This is mis-placed as it will cause the megazord to be shipped with geckoview, which
+; isn't what we want in general, but seems fine for now.
+; TODO: work out a better way of shipping the megazord where we need it, but not where we do not.
+@BINPATH@/@DLL_PREFIX@megazord@DLL_SUFFIX@
+#endif
+
 #ifdef MOZ_ANDROID_GOOGLE_VR
 @BINPATH@/@DLL_PREFIX@gvr@DLL_SUFFIX@
 #endif
 
-[xpcom]
-@BINPATH@/package-name.txt
+#ifdef MOZ_CRASHREPORTER
+@BINPATH@/@DLL_PREFIX@crashhelper@DLL_SUFFIX@
+@BINPATH@/@DLL_PREFIX@crashtools@DLL_SUFFIX@
+#endif
+
+; GMP clearkey plugin
+@BINPATH@/@DLL_PREFIX@clearkey@DLL_SUFFIX@
 
 [browser]
 ; [Base Browser Files]
@@ -88,12 +92,7 @@
 @BINPATH@/platform.ini
 @BINPATH@/defaults/settings
 
-; [Components]
-@BINPATH@/components/components.manifest
-
 ; JavaScript components
-@BINPATH@/components/toolkitsearch.manifest
-
 @BINPATH@/components/extensions.manifest
 
 @BINPATH@/components/antitracking.manifest
@@ -105,20 +104,19 @@
 
 ; Modules
 @BINPATH@/modules/*
+@BINPATH@/moz-src/*
 @BINPATH@/actors/*
 
 ; [Browser Chrome Files]
 @BINPATH@/chrome/pdfjs.manifest
 @BINPATH@/chrome/pdfjs/*
+@BINPATH@/defaults/pref/PdfJsDefaultPrefs.js
 @BINPATH@/chrome/toolkit@JAREXT@
 @BINPATH@/chrome/toolkit.manifest
 
 ; [Extensions]
 @BINPATH@/components/extensions-toolkit.manifest
 @BINPATH@/components/extensions-mobile.manifest
-
-; Features
-@BINPATH@/features/*
 
 ; DevTools
 @BINPATH@/chrome/devtools@JAREXT@
@@ -133,14 +131,15 @@
 @BINPATH@/*/greprefs.js
 @BINPATH@/@PREF_DIR@/*/geckoview-prefs.js
 #endif # !MOZ_ANDROID_FAT_AAR_ARCHITECTURES
-@BINPATH@/@PREF_DIR@/channel-prefs.js
+
+#ifdef MOZ_PREF_EXTENSIONS
 @BINPATH@/defaults/autoconfig/prefcalls.js
+#endif
 
 ; [Layout Engine Resources]
 ; Style Sheets, Graphics and other Resources used by the layout engine.
 @BINPATH@/res/EditorOverride.css
 @BINPATH@/res/contenteditable.css
-@BINPATH@/res/designmode.css
 @BINPATH@/res/table-add-column-after-active.gif
 @BINPATH@/res/table-add-column-after-hover.gif
 @BINPATH@/res/table-add-column-after.gif
@@ -166,6 +165,7 @@
 @BINPATH@/res/locale/layout/MediaDocument.properties
 @BINPATH@/res/locale/layout/xmlparser.properties
 @BINPATH@/res/locale/dom/dom.properties
+@BINPATH@/res/locale/necko/necko.properties
 
 #ifndef MOZ_ANDROID_EXCLUDE_FONTS
 @BINPATH@/res/fonts/*

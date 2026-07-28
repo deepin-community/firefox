@@ -24,7 +24,7 @@ datetime-day =
 datetime-hour =
     .aria-label = Sati
 datetime-minute =
-    .aria-label = Minuta
+    .aria-label = Minute
 datetime-second =
     .aria-label = Sekunde
 datetime-millisecond =
@@ -32,7 +32,7 @@ datetime-millisecond =
 datetime-dayperiod =
     .aria-label = AM/PM
 
-## Calendar button for input type=date
+## Date/time picker buttons
 
 
 # This label is used by screenreaders and other assistive technology

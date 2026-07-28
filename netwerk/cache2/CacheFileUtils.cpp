@@ -7,13 +7,12 @@
 #include "CacheFileUtils.h"
 #include "CacheObserver.h"
 #include "LoadContextInfo.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 #include "mozilla/Tokenizer.h"
 #include "mozilla/Telemetry.h"
 #include "nsCOMPtr.h"
 #include "nsString.h"
 #include <algorithm>
-#include "mozilla/Unused.h"
 
 namespace mozilla::net::CacheFileUtils {
 
@@ -354,10 +353,8 @@ ValidityPair& ValidityMap::operator[](uint32_t aIdx) {
 
 StaticMutex DetailedCacheHitTelemetry::sLock;
 uint32_t DetailedCacheHitTelemetry::sRecordCnt = 0;
-DetailedCacheHitTelemetry::HitRate
+constinit DetailedCacheHitTelemetry::HitRate
     DetailedCacheHitTelemetry::sHRStats[kNumOfRanges];
-
-DetailedCacheHitTelemetry::HitRate::HitRate() { Reset(); }
 
 void DetailedCacheHitTelemetry::HitRate::AddRecord(ERecType aType) {
   if (aType == HIT) {
@@ -367,15 +364,11 @@ void DetailedCacheHitTelemetry::HitRate::AddRecord(ERecType aType) {
   }
 }
 
-uint32_t DetailedCacheHitTelemetry::HitRate::GetHitRateBucket(
-    uint32_t aNumOfBuckets) const {
-  uint32_t bucketIdx = (aNumOfBuckets * mHitCnt) / (mHitCnt + mMissCnt);
-  if (bucketIdx ==
-      aNumOfBuckets) {  // make sure 100% falls into the last bucket
-    --bucketIdx;
+uint32_t DetailedCacheHitTelemetry::HitRate::GetHitRateBucket() const {
+  if (mHitCnt + mMissCnt == 0) {
+    return 0;
   }
-
-  return bucketIdx;
+  return (100 * mHitCnt) / (mHitCnt + mMissCnt);
 }
 
 uint32_t DetailedCacheHitTelemetry::HitRate::Count() {
@@ -408,23 +401,40 @@ void DetailedCacheHitTelemetry::AddRecord(ERecType aType,
     rangeIdx = kNumOfRanges - 1;
   }
 
-  uint32_t hitMissValue = 2 * rangeIdx;  // 2 values per range
-  if (aType == MISS) {                   // The order is HIT, MISS
-    ++hitMissValue;
+#ifndef ANDROID
+  nsAutoCString hitMissValue;
+  if (aType == HIT) {
+    hitMissValue.AppendLiteral("Hit ");
+  } else {
+    hitMissValue.AppendLiteral("Miss ");
   }
+
+  uint32_t lowerBound = rangeIdx * kRangeSize;
+  if (rangeIdx < kNumOfRanges - 1) {
+    uint32_t upperBound = (rangeIdx + 1) * kRangeSize - 1;
+    hitMissValue.AppendInt(lowerBound);
+    hitMissValue.AppendLiteral("-");
+    hitMissValue.AppendInt(upperBound);
+  } else {
+    // Since no upper limit
+    hitMissValue.AppendInt(lowerBound);
+    hitMissValue.AppendLiteral("+");
+  }
+#endif
 
   StaticMutexAutoLock lock(sLock);
 
   if (aType == MISS) {
-    mozilla::Telemetry::AccumulateTimeDelta(
-        mozilla::Telemetry::NETWORK_CACHE_V2_MISS_TIME_MS, aLoadStart);
+    mozilla::glean::network::cache_miss_time.AccumulateRawDuration(
+        TimeStamp::Now() - aLoadStart);
   } else {
     mozilla::glean::network::cache_hit_time.AccumulateRawDuration(
         TimeStamp::Now() - aLoadStart);
   }
-
-  Telemetry::Accumulate(Telemetry::NETWORK_CACHE_HIT_MISS_STAT_PER_CACHE_SIZE,
-                        hitMissValue);
+#ifndef ANDROID
+  mozilla::glean::network::cache_hit_miss_stat_per_cache_size.Get(hitMissValue)
+      .Add(1);
+#endif
 
   sHRStats[rangeIdx].AddRecord(aType);
   ++sRecordCnt;
@@ -437,173 +447,17 @@ void DetailedCacheHitTelemetry::AddRecord(ERecType aType,
 
   for (uint32_t i = 0; i < kNumOfRanges; ++i) {
     if (sHRStats[i].Count() >= kHitRateSamplesReportLimit) {
-      // The telemetry enums are grouped by buckets as follows:
-      // Telemetry value : 0,1,2,3, ... ,19,20,21,22, ... ,398,399
-      // Hit rate bucket : 0,0,0,0, ... , 0, 1, 1, 1, ... , 19, 19
-      // Cache size range: 0,1,2,3, ... ,19, 0, 1, 2, ... , 18, 19
-      uint32_t bucketOffset =
-          sHRStats[i].GetHitRateBucket(kHitRateBuckets) * kNumOfRanges;
+#ifndef ANDROID
+      nsAutoCString cacheSizeIdx;
+      cacheSizeIdx.AppendInt(i);
+      uint32_t hitRateBucket = sHRStats[i].GetHitRateBucket();
 
-      Telemetry::Accumulate(Telemetry::NETWORK_CACHE_HIT_RATE_PER_CACHE_SIZE,
-                            bucketOffset + i);
+      mozilla::glean::network::cache_hit_rate_per_cache_size.Get(cacheSizeIdx)
+          .AccumulateSingleSample(hitRateBucket);
+#endif
       sHRStats[i].Reset();
     }
   }
-}
-
-StaticMutex CachePerfStats::sLock;
-CachePerfStats::PerfData CachePerfStats::sData[CachePerfStats::LAST];
-uint32_t CachePerfStats::sCacheSlowCnt = 0;
-uint32_t CachePerfStats::sCacheNotSlowCnt = 0;
-
-CachePerfStats::MMA::MMA(uint32_t aTotalWeight, bool aFilter)
-    : mSum(0), mSumSq(0), mCnt(0), mWeight(aTotalWeight), mFilter(aFilter) {}
-
-void CachePerfStats::MMA::AddValue(uint32_t aValue) {
-  if (mFilter) {
-    // Filter high spikes
-    uint32_t avg = GetAverage();
-    uint32_t stddev = GetStdDev();
-    uint32_t maxdiff = avg + (3 * stddev);
-    if (avg && aValue > avg + maxdiff) {
-      return;
-    }
-  }
-
-  if (mCnt < mWeight) {
-    // Compute arithmetic average until we have at least mWeight values
-    CheckedInt<uint64_t> newSumSq = CheckedInt<uint64_t>(aValue) * aValue;
-    newSumSq += mSumSq;
-    if (!newSumSq.isValid()) {
-      return;  // ignore this value
-    }
-    mSumSq = newSumSq.value();
-    mSum += aValue;
-    ++mCnt;
-  } else {
-    CheckedInt<uint64_t> newSumSq = mSumSq - mSumSq / mCnt;
-    newSumSq += static_cast<uint64_t>(aValue) * aValue;
-    if (!newSumSq.isValid()) {
-      return;  // ignore this value
-    }
-    mSumSq = newSumSq.value();
-
-    // Compute modified moving average for more values:
-    // newAvg = ((weight - 1) * oldAvg + newValue) / weight
-    mSum -= GetAverage();
-    mSum += aValue;
-  }
-}
-
-uint32_t CachePerfStats::MMA::GetAverage() {
-  if (mCnt == 0) {
-    return 0;
-  }
-
-  return mSum / mCnt;
-}
-
-uint32_t CachePerfStats::MMA::GetStdDev() {
-  if (mCnt == 0) {
-    return 0;
-  }
-
-  uint32_t avg = GetAverage();
-  uint64_t avgSq = static_cast<uint64_t>(avg) * avg;
-  uint64_t variance = mSumSq / mCnt;
-  if (variance < avgSq) {
-    // Due to rounding error when using integer data type, it can happen that
-    // average of squares of the values is smaller than square of the average
-    // of the values. In this case fix mSumSq.
-    variance = avgSq;
-    mSumSq = variance * mCnt;
-  }
-
-  variance -= avgSq;
-  return sqrt(static_cast<double>(variance));
-}
-
-CachePerfStats::PerfData::PerfData()
-    : mFilteredAvg(50, true), mShortAvg(3, false) {}
-
-void CachePerfStats::PerfData::AddValue(uint32_t aValue, bool aShortOnly) {
-  if (!aShortOnly) {
-    mFilteredAvg.AddValue(aValue);
-  }
-  mShortAvg.AddValue(aValue);
-}
-
-uint32_t CachePerfStats::PerfData::GetAverage(bool aFiltered) {
-  return aFiltered ? mFilteredAvg.GetAverage() : mShortAvg.GetAverage();
-}
-
-uint32_t CachePerfStats::PerfData::GetStdDev(bool aFiltered) {
-  return aFiltered ? mFilteredAvg.GetStdDev() : mShortAvg.GetStdDev();
-}
-
-// static
-void CachePerfStats::AddValue(EDataType aType, uint32_t aValue,
-                              bool aShortOnly) {
-  StaticMutexAutoLock lock(sLock);
-  sData[aType].AddValue(aValue, aShortOnly);
-}
-
-// static
-uint32_t CachePerfStats::GetAverage(EDataType aType, bool aFiltered) {
-  StaticMutexAutoLock lock(sLock);
-  return sData[aType].GetAverage(aFiltered);
-}
-
-// static
-uint32_t CachePerfStats::GetStdDev(EDataType aType, bool aFiltered) {
-  StaticMutexAutoLock lock(sLock);
-  return sData[aType].GetStdDev(aFiltered);
-}
-
-// static
-bool CachePerfStats::IsCacheSlow() {
-  StaticMutexAutoLock lock(sLock);
-
-  // Compare mShortAvg with mFilteredAvg to find out whether cache is getting
-  // slower. Use only data about single IO operations because ENTRY_OPEN can be
-  // affected by more factors than a slow disk.
-  for (uint32_t i = 0; i < ENTRY_OPEN; ++i) {
-    if (i == IO_WRITE) {
-      // Skip this data type. IsCacheSlow is used for determining cache slowness
-      // when opening entries. Writes have low priority and it's normal that
-      // they are delayed a lot, but this doesn't necessarily affect opening
-      // cache entries.
-      continue;
-    }
-
-    uint32_t avgLong = sData[i].GetAverage(true);
-    if (avgLong == 0) {
-      // We have no perf data yet, skip this data type.
-      continue;
-    }
-    uint32_t avgShort = sData[i].GetAverage(false);
-    uint32_t stddevLong = sData[i].GetStdDev(true);
-    uint32_t maxdiff = avgLong + (3 * stddevLong);
-
-    if (avgShort > avgLong + maxdiff) {
-      LOG(
-          ("CachePerfStats::IsCacheSlow() - result is slow based on perf "
-           "type %u [avgShort=%u, avgLong=%u, stddevLong=%u]",
-           i, avgShort, avgLong, stddevLong));
-      ++sCacheSlowCnt;
-      return true;
-    }
-  }
-
-  ++sCacheNotSlowCnt;
-  return false;
-}
-
-// static
-void CachePerfStats::GetSlowStats(uint32_t* aSlow, uint32_t* aNotSlow) {
-  StaticMutexAutoLock lock(sLock);
-  *aSlow = sCacheSlowCnt;
-  *aNotSlow = sCacheNotSlowCnt;
 }
 
 void FreeBuffer(void* aBuf) {
@@ -648,7 +502,7 @@ nsresult ParseAlternativeDataInfo(const char* aInfo, int64_t* _offset,
   }
 
   if (_type) {
-    mozilla::Unused << p.ReadUntil(Tokenizer::Token::EndOfFile(), *_type);
+    (void)p.ReadUntil(Tokenizer::Token::EndOfFile(), *_type);
   }
 
   return NS_OK;

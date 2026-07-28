@@ -98,7 +98,7 @@ places-delete-page =
            *[other] Διαγραφή σελίδων
         }
     .accesskey = Δ
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Διαχειριζόμενοι σελιδοδείκτες
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -213,7 +213,7 @@ places-view-sort-col-visit-count =
 places-view-sort-col-date-added =
     .label = Προσθήκη
 places-view-sort-col-last-modified =
-    .label = Τελευταία τροποποίηση
+    .label = Τελευταία αλλαγή
 places-view-sortby-name =
     .label = Ταξινόμηση κατά όνομα
     .accesskey = ν
@@ -266,3 +266,8 @@ places-search-downloads =
 ##
 
 places-locked-prompt = Το σύστημα σελιδοδεικτών και ιστορικού δεν θα λειτουργεί επειδή ένα από τα αρχεία του { -brand-short-name } χρησιμοποιείται από μια άλλη εφαρμογή. Αυτό το πρόβλημα μπορεί να οφείλεται σε κάποιο λογισμικό ασφάλειας.
+# Share is a verb here. Meaning to "Share" the bookmark "Folder"
+# .badge used to promote the sharing menu item; keep it as short as possible.
+places-share-folder2 =
+    .label = Κοινή χρήση φακέλου
+    .badge = Νέο

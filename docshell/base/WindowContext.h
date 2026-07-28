@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -23,6 +21,7 @@ class nsGlobalWindowInner;
 
 namespace mozilla {
 class LogModule;
+class nsRFPTargetSetIDL;
 
 namespace dom {
 
@@ -55,18 +54,19 @@ class BrowsingContextGroup;
    * the Storage Access API */                                           \
   FIELD(UsingStorageAccess, bool)                                        \
   FIELD(ShouldResistFingerprinting, bool)                                \
-  FIELD(OverriddenFingerprintingSettings, Maybe<RFPTarget>)              \
+  FIELD(OverriddenFingerprintingSettings, Maybe<RFPTargetSet>)           \
   FIELD(IsSecureContext, bool)                                           \
   FIELD(IsOriginalFrameSource, bool)                                     \
   /* Mixed-Content: If the corresponding documentURI is https,           \
    * then this flag is true. */                                          \
   FIELD(IsSecure, bool)                                                  \
-  /* Whether the user has overriden the mixed content blocker to allow   \
-   * mixed content loads to happen */                                    \
-  FIELD(AllowMixedContent, bool)                                         \
   /* Whether this window has registered a "beforeunload" event           \
    * handler */                                                          \
-  FIELD(HasBeforeUnload, bool)                                           \
+  FIELD(NeedsBeforeUnload, bool)                                         \
+  /* Whether this window's navigation object has registered any          \
+   * event handlers or has ongoing or upcoming method trackers. Only     \
+   * valid for the top-level context. */                                 \
+  FIELD(NeedsTraverse, bool)                                             \
   /* Controls whether the WindowContext is currently considered to be    \
    * activated by a gesture */                                           \
   FIELD(UserActivationStateAndModifiers,                                 \
@@ -98,9 +98,12 @@ class BrowsingContextGroup;
    * unless scripts are also allowed in the BrowsingContext. */          \
   FIELD(AllowJavascript, bool)                                           \
   /* If this field is `true`, it means that this WindowContext's         \
-   * WindowState was saved to be stored in the legacy (non-SHIP) BFCache \
-   * implementation. Always false for SHIP */                            \
-  FIELD(WindowStateSaved, bool)
+   * CloseWatcherManager has active CloseWatchers, which some UIs may    \
+   * want to dismiss (for example the Android "back button"). */         \
+  FIELD(HasActiveCloseWatcher, bool)                                     \
+  /* Whether this window is allowed to navigate the top-level            \
+   * without user interaction. */                                        \
+  FIELD(IsFramebustingAllowed, bool)
 
 class WindowContext : public nsISupports, public nsWrapperCache {
   MOZ_DECL_SYNCED_CONTEXT(WindowContext, MOZ_EACH_WC_FIELD)
@@ -129,7 +132,9 @@ class WindowContext : public nsISupports, public nsWrapperCache {
 
   bool IsInProcess() const { return mIsInProcess; }
 
-  bool HasBeforeUnload() const { return GetHasBeforeUnload(); }
+  bool NeedsBeforeUnload() const { return GetNeedsBeforeUnload(); }
+
+  bool HasBeforeUnload() const { return NeedsBeforeUnload(); }
 
   bool IsLocalIP() const { return GetIsLocalIP(); }
 
@@ -137,15 +142,10 @@ class WindowContext : public nsISupports, public nsWrapperCache {
     return GetShouldResistFingerprinting();
   }
 
-  Nullable<uint64_t> GetOverriddenFingerprintingSettingsWebIDL() const {
-    Maybe<RFPTarget> overriddenFingerprintingSettings =
-        GetOverriddenFingerprintingSettings();
+  bool UsingStorageAccess() const { return GetUsingStorageAccess(); }
 
-    return overriddenFingerprintingSettings.isSome()
-               ? Nullable<uint64_t>(
-                     uint64_t(overriddenFingerprintingSettings.ref()))
-               : Nullable<uint64_t>();
-  }
+  already_AddRefed<nsIRFPTargetSetIDL>
+  GetOverriddenFingerprintingSettingsWebIDL() const;
 
   nsGlobalWindowInner* GetInnerWindow() const;
   Document* GetDocument() const;
@@ -169,6 +169,9 @@ class WindowContext : public nsISupports, public nsWrapperCache {
   Span<RefPtr<BrowsingContext>> NonSyntheticChildren() {
     return mNonSyntheticChildren;
   }
+
+  BrowsingContext* NonSyntheticLightDOMChildAt(uint32_t aIndex);
+  uint32_t NonSyntheticLightDOMChildrenCount();
 
   // Cast this object to it's parent-process canonical form.
   WindowGlobalParent* Canonical();
@@ -219,7 +222,7 @@ class WindowContext : public nsISupports, public nsWrapperCache {
   // out.
   bool HasValidTransientUserGestureActivation();
 
-  // See `mUserGestureStart`.
+  // See `mLastActivationTimestamp`.
   const TimeStamp& GetUserGestureStart() const;
 
   // Return true if the corresponding window has valid transient user gesture
@@ -227,15 +230,29 @@ class WindowContext : public nsISupports, public nsWrapperCache {
   // successfully.
   bool ConsumeTransientUserGestureActivation();
 
+  // Return true if its corresponding window has history activation.
+  bool HasValidHistoryActivation() const;
+
+  // Consume the history-action user activation.
+  void ConsumeHistoryActivation();
+
+  // Update the history-action user activation for this window context
+  void UpdateLastHistoryActivation();
+
   bool GetTransientUserGestureActivationModifiers(
       UserActivation::Modifiers* aModifiers);
 
   bool CanShowPopup();
+  bool CanFramebust();
 
   bool AllowJavascript() const { return GetAllowJavascript(); }
   bool CanExecuteScripts() const { return mCanExecuteScripts; }
 
   void TransientSetHasActivePeerConnections();
+
+  bool HasActiveCloseWatcher() const { return GetHasActiveCloseWatcher(); }
+
+  void ProcessCloseRequest();
 
  protected:
   WindowContext(BrowsingContext* aBrowsingContext, uint64_t aInnerWindowId,
@@ -269,10 +286,11 @@ class WindowContext : public nsISupports, public nsWrapperCache {
   // Overload `CanSet` to get notifications for a particular field being set.
   bool CanSet(FieldIndex<IDX_IsSecure>, const bool& aIsSecure,
               ContentParent* aSource);
-  bool CanSet(FieldIndex<IDX_AllowMixedContent>, const bool& aAllowMixedContent,
+
+  bool CanSet(FieldIndex<IDX_NeedsBeforeUnload>, const bool& aHasBeforeUnload,
               ContentParent* aSource);
 
-  bool CanSet(FieldIndex<IDX_HasBeforeUnload>, const bool& aHasBeforeUnload,
+  bool CanSet(FieldIndex<IDX_NeedsTraverse>, const bool& aNeedsTraverse,
               ContentParent* aSource);
 
   bool CanSet(FieldIndex<IDX_CookieBehavior>, const Maybe<uint32_t>& aValue,
@@ -296,7 +314,7 @@ class WindowContext : public nsISupports, public nsWrapperCache {
   bool CanSet(FieldIndex<IDX_ShouldResistFingerprinting>,
               const bool& aShouldResistFingerprinting, ContentParent* aSource);
   bool CanSet(FieldIndex<IDX_OverriddenFingerprintingSettings>,
-              const Maybe<RFPTarget>& aValue, ContentParent* aSource);
+              const Maybe<RFPTargetSet>& aValue, ContentParent* aSource);
   bool CanSet(FieldIndex<IDX_IsSecureContext>, const bool& aIsSecureContext,
               ContentParent* aSource);
   bool CanSet(FieldIndex<IDX_IsOriginalFrameSource>,
@@ -346,7 +364,13 @@ class WindowContext : public nsISupports, public nsWrapperCache {
 
   void DidSet(FieldIndex<IDX_SHEntryHasUserInteraction>, bool aOldValue);
 
-  bool CanSet(FieldIndex<IDX_WindowStateSaved>, bool aValue,
+  void DidSet(FieldIndex<IDX_HasActivePeerConnections>, bool aOldValue);
+
+  bool CanSet(FieldIndex<IDX_HasActiveCloseWatcher>, bool, ContentParent*) {
+    return true;
+  }
+
+  bool CanSet(FieldIndex<IDX_IsFramebustingAllowed>, const bool& aValue,
               ContentParent* aSource);
 
   // Overload `DidSet` to get notifications for a particular field being set.
@@ -362,6 +386,10 @@ class WindowContext : public nsISupports, public nsWrapperCache {
   // the value of AllowJavascript() and whether scripts are allowed in the
   // BrowsingContext.
   void RecomputeCanExecuteScripts(bool aApplyChanges = true);
+
+  void ClearLightDOMChildren();
+
+  void EnsureLightDOMChildren();
 
   const uint64_t mInnerWindowId;
   const uint64_t mOuterWindowId;
@@ -383,6 +411,12 @@ class WindowContext : public nsISupports, public nsWrapperCache {
   // from named targeting, `Window.frames` etc.
   nsTArray<RefPtr<BrowsingContext>> mNonSyntheticChildren;
 
+  // mNonSyntheticLightDOMChildren is otherwise the same as
+  // mNonSyntheticChildren, but it contains only those BrowsingContexts where
+  // embedder is in light DOM. The contents of the array are computed lazily and
+  // cleared if there are changes to mChildren.
+  Maybe<nsTArray<RefPtr<BrowsingContext>>> mNonSyntheticLightDOMChildren;
+
   bool mIsDiscarded = false;
   bool mIsInProcess = false;
 
@@ -391,9 +425,15 @@ class WindowContext : public nsISupports, public nsWrapperCache {
   // BrowsingContext.
   bool mCanExecuteScripts = true;
 
+  // https://html.spec.whatwg.org/multipage/interaction.html#last-activation-timestamp
   // The start time of user gesture, this is only available if the window
   // context is in process.
-  TimeStamp mUserGestureStart;
+  TimeStamp mLastActivationTimestamp;
+
+  // https://html.spec.whatwg.org/#history-action-activation
+  // This is set to mLastActivationTimestamp every time ConsumeHistoryActivation
+  // is called.
+  TimeStamp mHistoryActivation;
 };
 
 using WindowContextTransaction = WindowContext::BaseTransaction;
@@ -405,25 +445,22 @@ using MaybeDiscardedWindowContext = MaybeDiscarded<WindowContext>;
 extern template class syncedcontext::Transaction<WindowContext>;
 
 }  // namespace dom
-
-namespace ipc {
-template <>
-struct IPDLParamTraits<dom::MaybeDiscarded<dom::WindowContext>> {
-  static void Write(IPC::MessageWriter* aWriter, IProtocol* aActor,
-                    const dom::MaybeDiscarded<dom::WindowContext>& aParam);
-  static bool Read(IPC::MessageReader* aReader, IProtocol* aActor,
-                   dom::MaybeDiscarded<dom::WindowContext>* aResult);
-};
-
-template <>
-struct IPDLParamTraits<dom::WindowContext::IPCInitializer> {
-  static void Write(IPC::MessageWriter* aWriter, IProtocol* aActor,
-                    const dom::WindowContext::IPCInitializer& aInitializer);
-
-  static bool Read(IPC::MessageReader* aReader, IProtocol* aActor,
-                   dom::WindowContext::IPCInitializer* aInitializer);
-};
-}  // namespace ipc
 }  // namespace mozilla
+
+namespace IPC {
+template <>
+struct ParamTraits<mozilla::dom::MaybeDiscarded<mozilla::dom::WindowContext>> {
+  using paramType = mozilla::dom::MaybeDiscarded<mozilla::dom::WindowContext>;
+  static void Write(MessageWriter* aWriter, const paramType& aParam);
+  static bool Read(MessageReader* aReader, paramType* aResult);
+};
+
+template <>
+struct ParamTraits<mozilla::dom::WindowContext::IPCInitializer> {
+  using paramType = mozilla::dom::WindowContext::IPCInitializer;
+  static void Write(MessageWriter* aWriter, const paramType& aInitializer);
+  static bool Read(MessageReader* aReader, paramType* aInitializer);
+};
+}  // namespace IPC
 
 #endif  // !defined(mozilla_dom_WindowContext_h)

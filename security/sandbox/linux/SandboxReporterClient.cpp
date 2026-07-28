@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -34,11 +32,6 @@ SandboxReporterClient::SandboxReporterClient(SandboxReport::ProcType aProcType,
   // of in-band handshake.  However, the crash reporter (which also
   // uses a "magic number" fd) doesn't do any kind of checking either,
   // so it's probably okay to skip it here.
-}
-
-SandboxReporterClient::SandboxReporterClient(SandboxReport::ProcType aProcType)
-    : SandboxReporterClient(aProcType, kSandboxReporterFileDesc) {
-  MOZ_RELEASE_ASSERT(PR_GetEnv("MOZ_SANDBOXED") != nullptr);
 }
 
 SandboxReport SandboxReporterClient::MakeReport(const void* aContext) {

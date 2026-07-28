@@ -86,14 +86,23 @@ var tests = [
     },
     async onShown() {
       this.complete = false;
-      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.org/");
-      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.com/");
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.org/",
+      });
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.com/",
+      });
       // Next load will remove the notification
       this.complete = true;
-      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.org/");
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.org/",
+      });
     },
     onHidden() {
       ok(
@@ -124,15 +133,24 @@ var tests = [
     },
     async onShown() {
       this.complete = false;
-      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.org/");
-      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.com/");
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.org/",
+      });
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.com/",
+      });
       // Next load will hide the notification
       this.notification.options.timeout = Date.now() - 1;
       this.complete = true;
-      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.org/");
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.org/",
+      });
     },
     onHidden() {
       ok(
@@ -164,10 +182,16 @@ var tests = [
     async onShown(popup) {
       this.complete = false;
 
-      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.org/");
-      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.com/");
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.org/",
+      });
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.com/",
+      });
       // Notification should persist across location changes
       this.complete = true;
       dismissNotification(popup);
@@ -204,9 +228,8 @@ var tests = [
       // This test places a normal button in the notification area, which has
       // standard GTK styling and dimensions. Due to the clip-path, this button
       // gets clipped off, which makes it necessary to synthesize the mouse click
-      // a little bit downward. To be safe, I adjusted the x-offset with the same
-      // amount.
-      EventUtils.synthesizeMouse(button, 4, 4, {});
+      // a little bit downward. To be safe, we click at center.
+      EventUtils.synthesizeMouseAtCenter(button, {});
     },
     onShown(popup) {
       checkPopup(popup, this.notifyObj);

@@ -12,6 +12,13 @@ about-networking-dns-trr-url = DoH URL
 about-networking-dns-trr-mode = DoH режимі
 about-networking-dns-suffix = DNS жұрнағы
 about-networking-websockets = WebSockets
+about-networking-alt-svc = Alt-Svc
+about-networking-alt-svc-origin = Шыққан жері
+about-networking-alt-svc-alternate = Балама
+about-networking-alt-svc-alpn = ALPN
+about-networking-alt-svc-validated = Расталған
+about-networking-alt-svc-ttl = TTL
+about-networking-alt-svc-origin-attributes-suffix = Оқшаулау кілті
 about-networking-refresh = Жаңарту
 about-networking-auto-refresh = Әр 3 секунд сайын жаңарту
 about-networking-hostname = Хост аты
@@ -39,6 +46,7 @@ about-networking-dns-lookup = DNS іздеуі
 about-networking-dns-lookup-button = Шешу
 about-networking-dns-domain = Домен:
 about-networking-dns-lookup-table-column = IP адрестері
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = RCWN статистикасы
 about-networking-rcwn-status = RCWN қалып-күйі
@@ -64,6 +72,3 @@ about-networking-moved-about-logging = Бұл бет <a data-l10n-name="about-lo
 
 about-networking-networkid-is-up = Байланыс орнатылды
 about-networking-networkid-status-known = Байланыс қалып-күйі белгісіз
-
-##
-

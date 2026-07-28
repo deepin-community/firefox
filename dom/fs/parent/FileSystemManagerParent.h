@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +8,7 @@
 #include "ErrorList.h"
 #include "mozilla/dom/FlippedOnce.h"
 #include "mozilla/dom/PFileSystemManagerParent.h"
-#include "mozilla/dom/quota/DebugOnlyMacro.h"
+#include "mozilla/dom/quota/ConditionalCompilation.h"
 #include "nsISupports.h"
 
 namespace mozilla::dom {
@@ -28,12 +26,12 @@ class FileSystemManagerParent : public PFileSystemManagerParent {
 
   void AssertIsOnIOTarget() const;
 
-#ifdef DEBUG
-  void SetRegistered(bool aRegistered) { mRegistered = aRegistered; }
-#endif
+  bool IsAlive() const;
 
   // Safe to call while the actor is live.
   const RefPtr<fs::data::FileSystemDataManager>& DataManagerStrongRef() const;
+
+  void SetRegistered(bool aRegistered) { mRegistered = aRegistered; }
 
   mozilla::ipc::IPCResult RecvGetRootHandle(GetRootHandleResolver&& aResolver);
 
@@ -83,7 +81,7 @@ class FileSystemManagerParent : public PFileSystemManagerParent {
 
   FlippedOnce<false> mRequestedAllowToClose;
 
-  DEBUGONLY(bool mRegistered = false);
+  bool mRegistered = false;
 
   DEBUGONLY(bool mActorDestroyed = false);
 };

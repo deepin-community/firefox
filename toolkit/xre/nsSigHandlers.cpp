@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -39,6 +38,11 @@
 
 #  ifdef MOZ_WIDGET_GTK
 #    include <dlfcn.h>
+#    include "WidgetUtilsGtk.h"
+#  endif
+
+#  ifdef MOZ_WAYLAND
+#    include "wayland-proxy.h"
 #  endif
 
 // Note: some tests manipulate this value.
@@ -175,7 +179,16 @@ static bool IsCrashyGtkMessage(const nsACString& aMessage) {
 static void HandleGLibMessage(GLogLevelFlags aLogLevel,
                               const nsDependentCString& aMessage) {
   if (MOZ_UNLIKELY(IsCrashyGtkMessage(aMessage))) {
-    MOZ_CRASH_UNSAFE(strdup(aMessage.get()));
+#    ifdef MOZ_WAYLAND
+    MOZ_CRASH_UNSAFE_PRINTF(
+        "(%s) %s Proxy: %s",
+        mozilla::widget::GetDesktopEnvironmentIdentifier().get(),
+        strdup(aMessage.get()), WaylandProxy::GetState());
+#    else
+    MOZ_CRASH_UNSAFE_PRINTF(
+        "(%s) %s", mozilla::widget::GetDesktopEnvironmentIdentifier().get(),
+        strdup(aMessage.get()));
+#    endif
   }
 
   if (aLogLevel &

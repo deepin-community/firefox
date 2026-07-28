@@ -1,15 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ProfilerParent.h"
 
-#ifdef MOZ_GECKO_PROFILER
-#  include "nsProfiler.h"
-#  include "platform.h"
-#endif
+#include "nsProfiler.h"
+#include "platform.h"
 
 #include "GeckoProfiler.h"
 #include "ProfilerControl.h"
@@ -23,7 +19,6 @@
 #include "mozilla/ProfileBufferControlledChunkManager.h"
 #include "mozilla/ProfilerBufferSize.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/Unused.h"
 #include "nsTArray.h"
 #include "nsThreadUtils.h"
 
@@ -38,7 +33,6 @@ Endpoint<PProfilerChild> ProfilerParent::CreateForProcess(
     base::ProcessId aOtherPid) {
   MOZ_RELEASE_ASSERT(NS_IsMainThread());
   Endpoint<PProfilerChild> child;
-#ifdef MOZ_GECKO_PROFILER
   Endpoint<PProfilerParent> parent;
   nsresult rv = PProfiler::CreateEndpoints(&parent, &child);
 
@@ -52,12 +46,9 @@ Endpoint<PProfilerChild> ProfilerParent::CreateForProcess(
   }
 
   actor->Init();
-#endif
 
   return child;
 }
-
-#ifdef MOZ_GECKO_PROFILER
 
 class ProfilerParentTracker;
 
@@ -154,8 +145,9 @@ class ProfileBufferGlobalController final {
 };
 
 /* static */
-DataMutexBase<ProfileBufferGlobalController::ParentChunkManagerAndPendingUpdate,
-              baseprofiler::detail::BaseProfilerMutex>
+MOZ_RUNINIT DataMutexBase<
+    ProfileBufferGlobalController::ParentChunkManagerAndPendingUpdate,
+    baseprofiler::detail::BaseProfilerMutex>
     ProfileBufferGlobalController::sParentChunkManagerAndPendingUpdate{
         "ProfileBufferGlobalController::sParentChunkManagerAndPendingUpdate"};
 
@@ -206,12 +198,10 @@ class ProfilerParentTracker final {
   Maybe<ProfileBufferGlobalController> mMaybeController;
 };
 
-static const Json::StaticString logRoot{"bufferGlobalController"};
-
 template <typename F>
 void ProfileBufferGlobalController::Log(F&& aF) {
   ProfilingLog::Access([&](Json::Value& aLog) {
-    Json::Value& root = aLog[logRoot];
+    Json::Value& root = aLog[Json::StaticString{"bufferGlobalController"}];
     if (!root.isObject()) {
       root = Json::Value(Json::objectValue);
       root[Json::StaticString{"logBegin" TIMESTAMP_JSON_SUFFIX}] =
@@ -471,13 +461,13 @@ void ProfileBufferGlobalController::HandleChunkManagerNonFinalUpdate(
 
   mReleasedTotalBytes = mReleasedTotalBytes - destroyedReleased + newlyReleased;
 
-#  ifdef DEBUG
+#ifdef DEBUG
   size_t totalReleased = 0;
   for (const TimeStampAndBytesAndPid& item : mReleasedChunksByTime) {
     totalReleased += item.mBytes;
   }
   MOZ_ASSERT(mReleasedTotalBytes == totalReleased);
-#  endif  // DEBUG
+#endif  // DEBUG
 
   std::vector<ProfileBufferControlledChunkManager::ChunkMetadata> toDestroy;
   while (mUnreleasedTotalBytes + mReleasedTotalBytes > mMaximumBytes &&
@@ -493,7 +483,7 @@ void ProfileBufferGlobalController::HandleChunkManagerNonFinalUpdate(
       ProfilerParentTracker::ForChild(
           oldest.mProcessId,
           [timestamp = oldest.mTimeStamp](ProfilerParent* profilerParent) {
-            Unused << profilerParent->SendDestroyReleasedChunksAtOrBefore(
+            (void)profilerParent->SendDestroyReleasedChunksAtOrBefore(
                 timestamp);
           });
     }
@@ -507,13 +497,13 @@ ProfilerParentTracker* ProfilerParentTracker::GetInstance() {
 
   // The main instance pointer, it will be initialized at most once, before
   // XPCOMShutdownThreads.
-  static UniquePtr<ProfilerParentTracker> instance = nullptr;
+  static StaticAutoPtr<ProfilerParentTracker> instance;
   if (MOZ_UNLIKELY(!instance)) {
     if (PastShutdownPhase(ShutdownPhase::XPCOMShutdownThreads)) {
       return nullptr;
     }
 
-    instance = MakeUnique<ProfilerParentTracker>();
+    instance = new ProfilerParentTracker();
 
     // The tracker should get destroyed before threads are shutdown, because its
     // destruction closes extant channels, which could trigger promise
@@ -719,26 +709,22 @@ void ProfilerParent::Init() {
         ipcParams.filters().AppendElement(filter);
       }
 
-      Unused << SendEnsureStarted(ipcParams);
+      (void)SendEnsureStarted(ipcParams);
       RequestChunkManagerUpdate();
       return;
     }
   }
 
-  Unused << SendStop();
+  (void)SendStop();
 }
-#endif  // MOZ_GECKO_PROFILER
 
 ProfilerParent::~ProfilerParent() {
   MOZ_COUNT_DTOR(ProfilerParent);
 
   MOZ_RELEASE_ASSERT(NS_IsMainThread());
-#ifdef MOZ_GECKO_PROFILER
   ProfilerParentTracker::StopTracking(this);
-#endif
 }
 
-#ifdef MOZ_GECKO_PROFILER
 /* static */
 nsTArray<ProfilerParent::SingleProcessProfilePromiseAndChildPid>
 ProfilerParent::GatherProfiles() {
@@ -913,7 +899,7 @@ RefPtr<GenericPromise> ProfilerParent::ProfilerStarted(
   // We need filters as a Span<const char*> to test pids in the lambda below.
   auto filtersCStrings = nsTArray<const char*>{aParams->GetFilters().Length()};
   for (const auto& filter : aParams->GetFilters()) {
-    filtersCStrings.AppendElement(filter.Data());
+    filtersCStrings.AppendElement(filter.get());
   }
   aParams->GetActiveTabID(&ipcParams.activeTabID());
 
@@ -984,7 +970,7 @@ void ProfilerParent::ClearAllPages() {
   }
 
   ProfilerParentTracker::Enumerate([](ProfilerParent* profilerParent) {
-    Unused << profilerParent->SendClearAllPages();
+    (void)profilerParent->SendClearAllPages();
   });
 }
 
@@ -999,7 +985,5 @@ void ProfilerParent::ActorDestroy(ActorDestroyReason aActorDestroyReason) {
   MOZ_RELEASE_ASSERT(NS_IsMainThread());
   mDestroyed = true;
 }
-
-#endif
 
 }  // namespace mozilla

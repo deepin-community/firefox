@@ -5,30 +5,36 @@
 #include "CCGCScheduler.h"
 
 #include "js/GCAPI.h"
-#include "mozilla/StaticPrefs_javascript.h"
 #include "mozilla/CycleCollectedJSRuntime.h"
-#include "mozilla/ProfilerMarkers.h"
-#include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/PerfStats.h"
+#include "mozilla/ProfilerMarkers.h"
+#include "mozilla/StaticPrefs_javascript.h"
+#include "mozilla/dom/ScriptSettings.h"
+#include "mozilla/glean/DomMetrics.h"
 #include "nsRefreshDriver.h"
 
 /* Globally initialized constants
  */
 namespace mozilla {
-const TimeDuration kOneMinute = TimeDuration::FromSeconds(60.0f);
-const TimeDuration kCCDelay = TimeDuration::FromSeconds(6);
-const TimeDuration kCCSkippableDelay = TimeDuration::FromMilliseconds(250);
-const TimeDuration kTimeBetweenForgetSkippableCycles =
+MOZ_RUNINIT const TimeDuration kOneMinute = TimeDuration::FromSeconds(60.0f);
+MOZ_RUNINIT const TimeDuration kCCDelay = TimeDuration::FromSeconds(6);
+MOZ_RUNINIT const TimeDuration kCCSkippableDelay =
+    TimeDuration::FromMilliseconds(250);
+MOZ_RUNINIT const TimeDuration kTimeBetweenForgetSkippableCycles =
     TimeDuration::FromSeconds(2);
-const TimeDuration kForgetSkippableSliceDuration =
+MOZ_RUNINIT const TimeDuration kForgetSkippableSliceDuration =
     TimeDuration::FromMilliseconds(2);
-const TimeDuration kICCIntersliceDelay = TimeDuration::FromMilliseconds(250);
-const TimeDuration kICCSliceBudget = TimeDuration::FromMilliseconds(3);
-const TimeDuration kIdleICCSliceBudget = TimeDuration::FromMilliseconds(2);
-const TimeDuration kMaxICCDuration = TimeDuration::FromSeconds(2);
+MOZ_RUNINIT const TimeDuration kICCIntersliceDelay =
+    TimeDuration::FromMilliseconds(250);
+MOZ_RUNINIT const TimeDuration kICCSliceBudget =
+    TimeDuration::FromMilliseconds(3);
+MOZ_RUNINIT const TimeDuration kIdleICCSliceBudget =
+    TimeDuration::FromMilliseconds(2);
+MOZ_RUNINIT const TimeDuration kMaxICCDuration = TimeDuration::FromSeconds(2);
 
-const TimeDuration kCCForced = kOneMinute * 2;
-const TimeDuration kMaxCCLockedoutTime = TimeDuration::FromSeconds(30);
+MOZ_RUNINIT const TimeDuration kCCForced = kOneMinute * 2;
+MOZ_RUNINIT const TimeDuration kMaxCCLockedoutTime =
+    TimeDuration::FromSeconds(30);
 }  // namespace mozilla
 
 /*
@@ -36,7 +42,7 @@ const TimeDuration kMaxCCLockedoutTime = TimeDuration::FromSeconds(30);
  * ==========================
  *
  * See also GC Scheduling from SpiderMonkey's perspective here:
- * https://searchfox.org/mozilla-central/source/js/src/gc/Scheduling.h
+ * https://searchfox.org/firefox-main/source/js/src/gc/Scheduling.h
  *
  * From Firefox's perspective GCs can start in 5 different ways:
  *
@@ -222,7 +228,7 @@ void CCGCScheduler::NoteGCSliceEnd(TimeStamp aStart, TimeStamp aEnd) {
   TimeDuration idleDuration = sliceDuration - nonIdleDuration;
   uint32_t percent =
       uint32_t(idleDuration.ToSeconds() / sliceDuration.ToSeconds() * 100);
-  Telemetry::Accumulate(Telemetry::GC_SLICE_DURING_IDLE, percent);
+  glean::dom::gc_slice_during_idle.AccumulateSingleSample(percent);
 
   mTriggeredGCDeadline.reset();
 }
@@ -236,6 +242,10 @@ void CCGCScheduler::NoteCCEnd(const CycleCollectorResults& aResults,
   mIsCollectingCycles = false;
   mLastCCEndTime = aWhen;
   mNeedsFullCC = CCReason::NO_REASON;
+  mPreferFasterCollection =
+      mCurrentCollectionHasSeenNonIdle &&
+      (aResults.mFreedGCed > 10000 || aResults.mFreedRefCounted > 10000);
+  mCurrentCollectionHasSeenNonIdle = false;
 }
 
 void CCGCScheduler::NoteWontGC() {
@@ -249,6 +259,14 @@ void CCGCScheduler::NoteWontGC() {
 
 bool CCGCScheduler::GCRunnerFired(TimeStamp aDeadline) {
   MOZ_ASSERT(!mDidShutdown, "GCRunner still alive during shutdown");
+
+  if (!aDeadline) {
+    mCurrentCollectionHasSeenNonIdle = true;
+  } else if (mPreferFasterCollection) {
+    // We found some idle time, try to utilize that a bit more given that
+    // we're in a mode where idle time is rare.
+    aDeadline = aDeadline + TimeDuration::FromMilliseconds(5.0);
+  }
 
   GCRunnerStep step = GetNextGCRunnerAction(aDeadline);
   switch (step.mAction) {
@@ -442,7 +460,7 @@ void CCGCScheduler::PokeShrinkingGC() {
         }
       },
       this, StaticPrefs::javascript_options_compact_on_user_inactive_delay(),
-      nsITimer::TYPE_ONE_SHOT_LOW_PRIORITY, "ShrinkingGCTimerFired");
+      nsITimer::TYPE_ONE_SHOT_LOW_PRIORITY, "ShrinkingGCTimerFired"_ns);
 }
 
 void CCGCScheduler::PokeFullGC() {
@@ -457,12 +475,14 @@ void CCGCScheduler::PokeFullGC() {
           // set that we want a full GC we will get one eventually.
           s->SetNeedsFullGC();
           s->SetWantMajorGC(JS::GCReason::FULL_GC_TIMER);
-          if (!s->mHaveAskedParent) {
+          if (s->mCCRunner) {
+            s->EnsureCCThenGC(CCReason::GC_WAITING);
+          } else if (!s->mHaveAskedParent) {
             s->EnsureGCRunner(0);
           }
         },
         this, StaticPrefs::javascript_options_gc_delay_full(),
-        nsITimer::TYPE_ONE_SHOT_LOW_PRIORITY, "FullGCTimerFired");
+        nsITimer::TYPE_ONE_SHOT_LOW_PRIORITY, "FullGCTimerFired"_ns);
   }
 }
 
@@ -539,20 +559,29 @@ void CCGCScheduler::EnsureOrResetGCRunner() {
       StaticPrefs::javascript_options_gc_delay_interslice()));
 }
 
+TimeDuration CCGCScheduler::ComputeMinimumBudgetForRunner(
+    TimeDuration aBaseValue) {
+  // If the main thread was too busy to find idle for the whole last collection,
+  // allow a very short budget this time.
+  return mPreferFasterCollection ? TimeDuration::FromMilliseconds(1.0)
+                                 : TimeDuration::FromMilliseconds(std::max(
+                                       nsRefreshDriver::HighRateMultiplier() *
+                                           aBaseValue.ToMilliseconds(),
+                                       1.0));
+}
+
 void CCGCScheduler::EnsureGCRunner(TimeDuration aDelay) {
   if (mGCRunner) {
     return;
   }
 
-  TimeDuration minimumBudget = TimeDuration::FromMilliseconds(
-      std::max(nsRefreshDriver::HighRateMultiplier() *
-                   mActiveIntersliceGCBudget.ToMilliseconds(),
-               1.0));
+  TimeDuration minimumBudget =
+      ComputeMinimumBudgetForRunner(mActiveIntersliceGCBudget);
 
   // Wait at most the interslice GC delay before forcing a run.
   mGCRunner = IdleTaskRunner::Create(
       [this](TimeStamp aDeadline) { return GCRunnerFired(aDeadline); },
-      "CCGCScheduler::EnsureGCRunner", aDelay,
+      "CCGCScheduler::EnsureGCRunner"_ns, aDelay,
       TimeDuration::FromMilliseconds(
           StaticPrefs::javascript_options_gc_delay_interslice()),
       minimumBudget, true, [this] { return mDidShutdown; },
@@ -610,13 +639,13 @@ void CCGCScheduler::KillGCRunner() {
 void CCGCScheduler::EnsureCCRunner(TimeDuration aDelay, TimeDuration aBudget) {
   MOZ_ASSERT(!mDidShutdown);
 
-  TimeDuration minimumBudget = TimeDuration::FromMilliseconds(std::max(
-      nsRefreshDriver::HighRateMultiplier() * aBudget.ToMilliseconds(), 1.0));
+  TimeDuration minimumBudget = ComputeMinimumBudgetForRunner(aBudget);
 
   if (!mCCRunner) {
     mCCRunner = IdleTaskRunner::Create(
-        CCRunnerFired, "EnsureCCRunner::CCRunnerFired", 0, aDelay,
-        minimumBudget, true, [this] { return mDidShutdown; });
+        [this](TimeStamp aDeadline) { return CCRunnerFired(aDeadline); },
+        "EnsureCCRunner::CCRunnerFired"_ns, 0, aDelay, minimumBudget, true,
+        [this] { return mDidShutdown; });
   } else {
     mCCRunner->SetMinimumUsefulBudget(minimumBudget.ToMilliseconds());
     nsIEventTarget* target = mozilla::GetCurrentSerialEventTarget();
@@ -782,9 +811,8 @@ CCRunnerStep CCGCScheduler::AdvanceCCRunner(TimeStamp aDeadline, TimeStamp aNow,
       {false, false},  /* CCRunnerState::StartCycleCollection */
       {false, false},  /* CCRunnerState::CycleCollecting */
       {false, false}}; /* CCRunnerState::Canceled */
-  static_assert(
-      ArrayLength(stateDescriptors) == size_t(CCRunnerState::NumStates),
-      "need one state descriptor per state");
+  static_assert(std::size(stateDescriptors) == size_t(CCRunnerState::NumStates),
+                "need one state descriptor per state");
   const StateDescriptor& desc = stateDescriptors[int(mCCRunnerState)];
 
   // Make sure we initialized the state machine.
@@ -997,8 +1025,8 @@ JS::SliceBudget CCGCScheduler::ComputeForgetSkippableBudget(
     double duration =
         (endPoint - mForgetSkippableFrequencyStartTime).ToSeconds() / 60;
     uint32_t frequencyPerMinute = uint32_t(mForgetSkippableCounter / duration);
-    Telemetry::Accumulate(Telemetry::FORGET_SKIPPABLE_FREQUENCY,
-                          frequencyPerMinute);
+    glean::dom::forget_skippable_frequency.AccumulateSingleSample(
+        frequencyPerMinute);
     mForgetSkippableCounter = 0;
     mForgetSkippableFrequencyStartTime = aStartTimeStamp;
   }

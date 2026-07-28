@@ -4,10 +4,6 @@
 
 addons-page-title = கூடுதல் இணைப்பு மேலாளர்
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -160,29 +156,6 @@ addon-install-from-file-filter-name = கூடுதல் இணைப்ப�
 addon-open-about-debugging = கூடுதல் இணைப்புளை வழுநீக்கு
     .accesskey = b
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addon-page-options-button =
@@ -193,7 +166,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } ஆனது { -brand-short-name } { $version }-உடன் ஒத்தியல்பாக இல்லை.
 # Variables:
 #   $version (string) - Application version.
@@ -208,12 +181,8 @@ details-notification-unsigned2 =
     .message = { $name } ஐ { -brand-short-name } என்பதில் பயன்படுத்துவதற்குச் சரிபார்க்க இயலவில்லை. எச்சரிக்கையுடன் தொடரவும்.
 details-notification-unsigned-link = கூடுதல் தகவல்
 details-notification-blocked = { $name } பாதுகாப்பு அல்லது நிலைப்புத்தன்மை சிக்கல்களால் செயல்நீக்கப்பட்டது.
-details-notification-blocked2 =
-    .message = { $name } பாதுகாப்பு அல்லது நிலைப்புத்தன்மை சிக்கல்களால் செயல்நீக்கப்பட்டது.
 details-notification-blocked-link = கூடுதல் தகவல்
 details-notification-softblocked = { $name } பாதுகாப்பு அல்லது நிலைப்புத்தன்மை சிக்கல்களை உருவாக்குவதாகும்.
-details-notification-softblocked2 =
-    .message = { $name } பாதுகாப்பு அல்லது நிலைப்புத்தன்மை சிக்கல்களை உருவாக்குவதாகும்.
 details-notification-softblocked-link = கூடுதல் தகவல்
 details-notification-gmp-pending = { $name } விரைவில் நிறுவப்படும்.
 details-notification-gmp-pending2 =

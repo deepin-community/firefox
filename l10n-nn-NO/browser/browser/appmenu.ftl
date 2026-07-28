@@ -15,6 +15,14 @@ appmenuitem-banner-update-unsupported =
     .label = Kan ikkje oppdatere — systemet er inkompatibelt
 appmenuitem-banner-update-restart =
     .label = Oppdatering tilgjengeleg — start på nytt
+# Fresh Firefox refers to the new updated UI
+appmenu-nova-update-promo =
+    .message = Få ein ny { -brand-short-name }. Behald alle fanene dine.
+appmenu-nova-update-link = Start om for å oppdatere
+appmenu-nova-fxa-sign-in = Logg inn
+appmenu-nova-switch-device-promo =
+    .message = Får du deg ei ny eining snart? Ta { -brand-short-name } med deg!
+appmenu-nova-switch-device-link = Slik migrerer du dataa dine
 appmenuitem-new-tab =
     .label = Ny fane
 appmenuitem-new-window =
@@ -23,10 +31,16 @@ appmenuitem-new-private-window =
     .label = Nytt privat vindauge
 appmenuitem-history =
     .label = Historikk
+appmenuitem-tab-groups =
+    .label = Fanegrupper
 appmenuitem-downloads =
     .label = Nedlastingar
 appmenuitem-passwords =
     .label = Passord
+appmenuitem-extensions-and-themes =
+    .label = Utvidingar og tema
+appmenuitem-extensions =
+    .label = Utvidingar
 appmenuitem-addons-and-themes =
     .label = Tillegg og tema
 appmenuitem-print =
@@ -108,8 +122,11 @@ appmenu-fxa-sync-and-save-data2 = Synkroniser og lagre data
 appmenu-fxa-signed-in-label = Logg inn
 appmenu-fxa-setup-sync =
     .label = Slå på synkronisering…
+appmenu-fxa-setup-sync-new = Slå på
 appmenuitem-save-page =
     .label = Lagre sida som…
+appmenuitem-fxa-sync-off-title = Synkronisering er av
+appmenuitem-fxa-sync-off-description = Vern og få tilgang til bokmerke, passord, med meir, kvar som helst.
 
 ## What's New panel in App menu.
 
@@ -163,6 +180,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Opne profileringsverktøy-panelet
+    .tooltiptext = Opne profileringsverktøy-panelet
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -180,7 +200,7 @@ profiler-popup-capture-shortcut =
 profiler-popup-presets-web-developer-description = Tilrådd førehandsinnstilling for dei fleste feilsøkingar i nettappar, med lite tillegg.
 profiler-popup-presets-web-developer-label =
     .label = Nettsideutvikling
-profiler-popup-presets-firefox-description = Tilrådd førehandsinnstilling for profilering { -brand-shorter-name }.
+profiler-popup-presets-firefox-description = Tilrådd førehandsinnstilling for profilering av { -brand-shorter-name }.
 profiler-popup-presets-firefox-label =
     .label = { -brand-shorter-name }
 profiler-popup-presets-graphics-description = Førehandsinnstilt for å undersøke grafikk-problem i { -brand-shorter-name }.
@@ -189,9 +209,15 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Førehandsinnstilt for å undersøke lyd- og videoproblem i { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-ml-description = Førehandsinnstilling for å undersøkje maskinlæringsfeil i { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Maskinlæring
 profiler-popup-presets-networking-description = Førehandsinnstilt for å undersøke nettverksfeil i { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Nettverk
+profiler-popup-presets-networking-with-logs-description = Førehandsinnstilt for å undersøkje nettverksfeil i { -brand-shorter-name }, inkludert nettverksloggar. Desse loggane kan innehalde sensitiv informasjon, til dømes nettadressene du besøkjer.
+profiler-popup-presets-networking-with-logs-label =
+    .label = Nettverk med loggar
 profiler-popup-presets-power-description = Førehandsinnstilt til å undersøke straumforbruksfeil i { -brand-shorter-name }, med låg overhead.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
@@ -199,6 +225,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Førehandsinnstilt for feilsøking i { -brand-shorter-name }. Høg overhead, ikkje bruk for ytingsarbeid, men bruk for å fokusere på å forstå åtferda til nettlesaren.
 profiler-popup-presets-debug-label =
     .label = Feilsøk
+profiler-popup-presets-web-compat-description = Tilrådd førehandsinnstilling for feilsøking av problem med nettkompatibilitet på nettstadar, i staden for å spore yting.
+profiler-popup-presets-web-compat-label =
+    .label = Webbkompatibilitet
 profiler-popup-presets-custom-label =
     .label = Tilpassa
 
@@ -217,7 +246,7 @@ appmenu-recently-closed-windows =
     .label = Nyleg attlatne vindauge
 # This allows to search through the browser's history.
 appmenu-search-history =
-    .label = Søkjehistorikk
+    .label = Søk i historikken
 
 ## Help panel
 
@@ -264,6 +293,10 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Tilpass verktøylinje…
+appmenu-abouttranslations =
+    .label = Omset…
+appmenu-edit-pdf =
+    .label = Rediger PDF…
 appmenu-developer-tools-subheader = Nettlesarverktøy
 appmenu-developer-tools-extensions =
     .label = Extensions for Developers
@@ -273,9 +306,50 @@ appmenuitem-report-broken-site =
 ## Panel for privacy and security products
 
 appmenuitem-sign-in-account = Logg inn på kontoen din
+appmenuitem-monitor-title2 = Ver eitt steg framom identitetstjuveri
+appmenuitem-monitor-description2 = Få varsel om datalekkasjar
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Få varsel om datalekkasjar
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-title2 = Hald e-posten din privat
+appmenuitem-relay-description2 = Hjelper med å hindre søppelpost (spam) i innboksen din
 appmenuitem-relay-description = Skjul ekte e-postadresse og telefonnummer
+appmenuitem-services-relay-description = Start oversikta for e-postalias
+appmenuitem-vpn-title2 = Skjul plasseringa di med { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description3 = Gjer surfinga di vanskelegare å spore
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Få vern for heile eininga
 appmenuitem-vpn-description = Vern nettaktiviteten din
+appmenu-services-header = Mine tenester
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header3 = Personvernverktøy
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Prøv andre verneverktøy frå Mozilla:
+appmenu-other-protection-header = Prøv andre verneverktøy frå { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Andre profilar
+appmenu-manage-profiles =
+    .label = Handsam profilar
+appmenu-copy-profile =
+    .label = Kopier denne profilen
+appmenu-create-profile2 =
+    .label = Opprett ein ny profil
+appmenu-create-profile =
+    .label = Ny profil
+appmenu-edit-profile =
+    .aria-label = Rediger profil
+appmenu-edit-this-profile =
+    .label = Rediger denne profilen
+appmenu-profile-current-in-use = Gjeldande profil i bruk
+appmenu-profiles-2 =
+    .label = Profilar
+appmenu-profiles-header = Profilar
+appmenu-all-profiles =
+    .label = Alle profilar
+appmenu-secure-sync-header = Sikker synkronisering

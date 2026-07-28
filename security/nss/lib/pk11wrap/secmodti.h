@@ -10,7 +10,6 @@
 #define _SECMODTI_H_ 1
 #include "prmon.h"
 #include "prtypes.h"
-#include "nssilckt.h"
 #include "secmodt.h"
 #include "pkcs11t.h"
 
@@ -51,7 +50,7 @@ struct PK11SlotInfoStr {
     CK_FLAGS flags; /* flags from PKCS #11 token Info */
     /* a default session handle to do quick and dirty functions */
     CK_SESSION_HANDLE session;
-    PZLock *sessionLock; /* lock for this session */
+    PRLock *sessionLock; /* lock for this session */
     /* our ID */
     CK_SLOT_ID slotID;
     /* persistant flags saved from startup to startup */
@@ -59,11 +58,15 @@ struct PK11SlotInfoStr {
     /* keep track of who is using us so we don't accidently get freed while
      * still in use */
     PRInt32 refCount; /* to be in/decremented by atomic calls ONLY! */
-    PZLock *freeListLock;
+
+    // freeListLock protects freeSymKeysWithSessionHead, freeSymKeysHead,
+    // keyCount, and maxKeyCount.
+    PRLock *freeListLock;
     PK11SymKey *freeSymKeysWithSessionHead;
     PK11SymKey *freeSymKeysHead;
     int keyCount;
     int maxKeyCount;
+
     /* Password control functions for this slot. many of these are only
      * active if the appropriate flag is on in defaultFlags */
     int askpw;           /* what our password options are */
@@ -107,13 +110,14 @@ struct PK11SlotInfoStr {
     unsigned int lastState;
     /* for Stan */
     NSSToken *nssToken;
-    PZLock *nssTokenLock;
+    PRLock *nssTokenLock;
     /* the tokeninfo struct */
     CK_TOKEN_INFO tokenInfo;
     /* fast mechanism lookup */
     char mechanismBits[256];
     CK_PROFILE_ID *profileList;
     int profileCount;
+    CK_FLAGS validationFIPSFlags;
 };
 
 /* Symetric Key structure. Reference Counted */
@@ -153,31 +157,31 @@ struct PK11ContextStr {
     CK_OBJECT_HANDLE objectID;            /* object handle to key */
     PK11SlotInfo *slot;                   /* slot this context is using */
     CK_SESSION_HANDLE session;            /* session this context is using */
-    PZLock *sessionLock;                  /* lock before accessing a PKCS #11
+    PRLock *sessionLock;                  /* lock before accessing a PKCS #11
                                            * session */
     PRBool ownSession;                    /* do we own the session? */
     void *pwArg;                          /* applicaton specific passwd arg */
-    void *savedData;                      /* save data when we are 
+    void *savedData;                      /* save data when we are
                                            * multiplexing on a single context */
     unsigned long savedLength;            /* length of the saved context */
     SECItem *param;                       /* mechanism parameters used to
                                            * build this context */
     PRBool init;                          /* this contexted been initialized? */
     CK_MECHANISM_TYPE type;               /* what is the PKCS #11 this context
-                                           * is representing (usually what 
-                                           * algorithm is being used 
+                                           * is representing (usually what
+                                           * algorithm is being used
                                            * (CKM_RSA_PKCS, CKM_DES, CKM_SHA,
                                            * etc. */
     PRBool fortezzaHack;                  /* Fortezza SSL has some special
                                            * non-standard semantics*/
     PRBool simulate_message;              /* We are initializing a message
-                                           * interface but the underlying 
+                                           * interface but the underlying
                                            * PKCS #11 module does not support
                                            * it. We simulate the interface with
                                            * the PCKS #11 v2 interface */
     CK_MECHANISM_TYPE simulate_mechanism; /* The mechanism we are simulating */
     PRUint64 ivCounter;                   /* iv counter for simulated message */
-    PRUint64 ivMaxCount;                  /* total number of IVs valid for 
+    PRUint64 ivMaxCount;                  /* total number of IVs valid for
                                            * this key */
     unsigned long ivLen;                  /* length of the iv in bytes */
     unsigned int ivFixedBits;             /* number of bits not generated

@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Spremeni izvorni jezik
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Prevajanja iz jezika { $language } žal še ne podpiramo.
+translations-panel-error-unsupported-hint-unknown-2 = Prevajanja iz tega jezika žal še ne podpiramo.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,13 +134,6 @@ translations-manage-description = Prenesite jezike za prevajanje brez povezave.
 translations-manage-all-language = Vsi jeziki
 translations-manage-download-button = Prenesi
 translations-manage-delete-button = Izbriši
-translations-manage-intro = Upravljajte nastavitve prevajanja spletnih strani in jezike, nameščene za prevajanje brez povezave.
-translations-manage-install-description = Namestitev jezikov za prevajanje brez povezave
-translations-manage-language-install-button =
-    .label = Namesti
-translations-manage-language-install-all-button =
-    .label = Namesti vse
-    .accesskey = m
 translations-manage-intro-2 = Upravljajte nastavitve prevajanja spletnih strani in jezike, prenesene za prevajanje brez povezave.
 translations-manage-download-description = Prenos jezikov za prevajanje brez povezave
 translations-manage-language-download-button =
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Odstrani vse
     .accesskey = d
-translations-manage-error-install = Pri nameščanju datoteke z jezikom je prišlo do težave. Poskusite znova.
 translations-manage-error-download = Pri prenašanju datoteke z jezikom je prišlo do težave. Poskusite znova.
 translations-manage-error-delete = Pri brisanju datoteke z jezikom je prišlo do napake. Poskusite znova.
 translations-manage-error-remove = Pri odstranjevanju datoteke z jezikom je prišlo do napake. Poskusite znova.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Pri prevajanju je prišlo do težave. Poskusite znova.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Prevajanja iz jezika { $language } žal še ne podpiramo.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Prevajanja iz tega jezika žal še ne podpiramo.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

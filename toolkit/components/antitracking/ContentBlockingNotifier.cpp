@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -65,8 +63,8 @@ void ReportUnblockingToConsole(
 
   RefPtr<Runnable> runnable = NS_NewRunnableFunction(
       "ReportUnblockingToConsoleDelayed",
-      [aWindowID, loc = std::move(location), principal, trackingOrigin,
-       aReason]() {
+      [aWindowID, loc = std::move(location), principal = std::move(principal),
+       trackingOrigin = std::move(trackingOrigin), aReason]() {
         const char* messageWithSameOrigin = nullptr;
 
         switch (aReason) {
@@ -94,7 +92,7 @@ void ReportUnblockingToConsole(
 
         nsAutoString errorText;
         rv = nsContentUtils::FormatLocalizedString(
-            nsContentUtils::eNECKO_PROPERTIES, messageWithSameOrigin, params,
+            PropertiesFile::NECKO_PROPERTIES, messageWithSameOrigin, params,
             errorText);
         NS_ENSURE_SUCCESS_VOID(rv);
 
@@ -124,6 +122,9 @@ void ReportBlockingToConsole(uint64_t aWindowID, nsIURI* aURI,
       aRejectedReason ==
           static_cast<uint32_t>(
               nsIWebProgressListener::STATE_COOKIES_PARTITIONED_FOREIGN) ||
+      aRejectedReason ==
+          static_cast<uint32_t>(
+              nsIWebProgressListener::STATE_COOKIES_PARTITIONED_TRACKER) ||
       aRejectedReason ==
           static_cast<uint32_t>(
               nsIWebProgressListener::STATE_COOKIES_BLOCKED_ALL) ||
@@ -164,7 +165,7 @@ void ReportBlockingToConsole(uint64_t aWindowID, nsIURI* aURI,
             break;
 
           case uint32_t(nsIWebProgressListener::STATE_COOKIES_BLOCKED_TRACKER):
-            message = "CookieBlockedTracker";
+            message = "CookieBlockedTrackerByETP";
             category = "cookieBlockedTracker"_ns;
             break;
 
@@ -174,12 +175,14 @@ void ReportBlockingToConsole(uint64_t aWindowID, nsIURI* aURI,
             break;
 
           case uint32_t(nsIWebProgressListener::STATE_COOKIES_BLOCKED_FOREIGN):
-            message = "CookieBlockedForeign";
+            message = "CookieBlockedForeignByETP";
             category = "cookieBlockedForeign"_ns;
             break;
 
           case uint32_t(
               nsIWebProgressListener::STATE_COOKIES_PARTITIONED_FOREIGN):
+          case uint32_t(
+              nsIWebProgressListener::STATE_COOKIES_PARTITIONED_TRACKER):
             message = "CookiePartitionedForeign2";
             category = "cookiePartitionedForeign"_ns;
             break;
@@ -200,7 +203,7 @@ void ReportBlockingToConsole(uint64_t aWindowID, nsIURI* aURI,
 
         nsAutoString errorText;
         nsresult rv = nsContentUtils::FormatLocalizedString(
-            nsContentUtils::eNECKO_PROPERTIES, message, params, errorText);
+            PropertiesFile::NECKO_PROPERTIES, message, params, errorText);
         NS_ENSURE_SUCCESS_VOID(rv);
 
         nsContentUtils::ReportToConsoleByWindowID(
@@ -212,26 +215,20 @@ void ReportBlockingToConsole(uint64_t aWindowID, nsIURI* aURI,
 
 void ReportBlockingToConsole(nsIChannel* aChannel, nsIURI* aURI,
                              uint32_t aRejectedReason) {
-  MOZ_ASSERT(aChannel && aURI);
+  MOZ_ASSERT(aChannel);
+  MOZ_ASSERT(aURI);
   uint64_t windowID = nsContentUtils::GetInnerWindowID(aChannel);
-  if (!windowID) {
-    // Get the window ID from the target BrowsingContext
-    nsCOMPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
-
-    RefPtr<dom::BrowsingContext> targetBrowsingContext;
-    loadInfo->GetTargetBrowsingContext(getter_AddRefs(targetBrowsingContext));
-
-    if (!targetBrowsingContext) {
-      return;
+  // Get the window ID from the target BrowsingContext, if appropriate, since
+  // we're blocking the navigation.
+  nsCOMPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
+  if (RefPtr targetBrowsingContext = loadInfo->GetTargetBrowsingContext()) {
+    if (auto* windowContext =
+            targetBrowsingContext->GetCurrentWindowContext()) {
+      windowID = windowContext->InnerWindowId();
     }
-
-    WindowContext* windowContext =
-        targetBrowsingContext->GetCurrentWindowContext();
-    if (!windowContext) {
-      return;
-    }
-
-    windowID = windowContext->InnerWindowId();
+  }
+  if (NS_WARN_IF(!windowID)) {
+    return;
   }
   ReportBlockingToConsole(windowID, aURI, aRejectedReason);
 }
@@ -300,6 +297,16 @@ void NotifyBlockingDecision(nsIChannel* aTrackingChannel,
     return;
   }
 
+  if (aRejectedReason ==
+      nsIWebProgressListener::STATE_COOKIES_PARTITIONED_TRACKER) {
+    ContentBlockingNotifier::OnEvent(
+        aTrackingChannel, true,
+        nsIWebProgressListener::STATE_COOKIES_PARTITIONED_TRACKER,
+        trackingOrigin);
+    // Stop notifying the tracker cookie loaded events if they are partitioned.
+    return;
+  }
+
   uint32_t classificationFlags =
       classifiedChannel->GetThirdPartyClassificationFlags();
   if (classificationFlags &
@@ -325,9 +332,7 @@ void NotifyEventInChild(
     const nsACString& aTrackingOrigin,
     const Maybe<ContentBlockingNotifier::StorageAccessPermissionGrantedReason>&
         aReason,
-    const Maybe<ContentBlockingNotifier::CanvasFingerprinter>
-        aCanvasFingerprinter,
-    const Maybe<bool> aCanvasFingerprinterKnownText) {
+    const Maybe<CanvasFingerprintingEvent>& aCanvasFingerprintingEvent) {
   MOZ_ASSERT(XRE_IsContentProcess());
 
   // We don't need to find the top-level window here because the
@@ -352,14 +357,12 @@ void NotifyEventInChild(
       do_QueryInterface(aTrackingChannel);
 
   if (classifiedChannel) {
-    Unused << classifiedChannel->GetMatchedTrackingFullHashes(
-        trackingFullHashes);
+    (void)classifiedChannel->GetMatchedTrackingFullHashes(trackingFullHashes);
   }
 
   browserChild->NotifyContentBlockingEvent(
       aRejectedReason, aTrackingChannel, aBlocked, aTrackingOrigin,
-      trackingFullHashes, aReason, aCanvasFingerprinter,
-      aCanvasFingerprinterKnownText);
+      trackingFullHashes, aReason, aCanvasFingerprintingEvent);
 }
 
 // Update the ContentBlockingLog of the top-level WindowGlobalParent of
@@ -369,9 +372,7 @@ void NotifyEventInParent(
     const nsACString& aTrackingOrigin,
     const Maybe<ContentBlockingNotifier::StorageAccessPermissionGrantedReason>&
         aReason,
-    const Maybe<ContentBlockingNotifier::CanvasFingerprinter>
-        aCanvasFingerprinter,
-    const Maybe<bool> aCanvasFingerprinterKnownText) {
+    const Maybe<CanvasFingerprintingEvent>& aCanvasFingerprintingEvent) {
   MOZ_ASSERT(XRE_IsParentProcess());
 
   nsCOMPtr<nsILoadInfo> loadInfo = aTrackingChannel->LoadInfo();
@@ -392,14 +393,12 @@ void NotifyEventInParent(
       do_QueryInterface(aTrackingChannel);
 
   if (classifiedChannel) {
-    Unused << classifiedChannel->GetMatchedTrackingFullHashes(
-        trackingFullHashes);
+    (void)classifiedChannel->GetMatchedTrackingFullHashes(trackingFullHashes);
   }
 
   wgp->NotifyContentBlockingEvent(aRejectedReason, aTrackingChannel, aBlocked,
                                   aTrackingOrigin, trackingFullHashes, aReason,
-                                  aCanvasFingerprinter,
-                                  aCanvasFingerprinterKnownText);
+                                  aCanvasFingerprintingEvent);
 }
 
 }  // namespace
@@ -443,6 +442,9 @@ void ContentBlockingNotifier::OnDecision(nsIChannel* aChannel,
               nsIWebProgressListener::STATE_COOKIES_PARTITIONED_FOREIGN) ||
       aRejectedReason ==
           static_cast<uint32_t>(
+              nsIWebProgressListener::STATE_COOKIES_PARTITIONED_TRACKER) ||
+      aRejectedReason ==
+          static_cast<uint32_t>(
               nsIWebProgressListener::STATE_COOKIES_BLOCKED_ALL) ||
       aRejectedReason ==
           static_cast<uint32_t>(
@@ -480,6 +482,9 @@ void ContentBlockingNotifier::OnDecision(nsPIDOMWindowInner* aWindow,
       aRejectedReason ==
           static_cast<uint32_t>(
               nsIWebProgressListener::STATE_COOKIES_PARTITIONED_FOREIGN) ||
+      aRejectedReason ==
+          static_cast<uint32_t>(
+              nsIWebProgressListener::STATE_COOKIES_PARTITIONED_TRACKER) ||
       aRejectedReason ==
           static_cast<uint32_t>(
               nsIWebProgressListener::STATE_COOKIES_BLOCKED_ALL) ||
@@ -532,8 +537,8 @@ void ContentBlockingNotifier::OnDecision(BrowsingContext* aBrowsingContext,
     MOZ_ASSERT(XRE_IsParentProcess());
 
     ContentParent* cp = aBrowsingContext->Canonical()->GetContentParent();
-    Unused << cp->SendOnContentBlockingDecision(aBrowsingContext, aDecision,
-                                                aRejectedReason);
+    (void)cp->SendOnContentBlockingDecision(aBrowsingContext, aDecision,
+                                            aRejectedReason);
   }
 }
 
@@ -563,15 +568,12 @@ void ContentBlockingNotifier::OnEvent(
     nsIChannel* aTrackingChannel, bool aBlocked, uint32_t aRejectedReason,
     const nsACString& aTrackingOrigin,
     const Maybe<StorageAccessPermissionGrantedReason>& aReason,
-    const Maybe<CanvasFingerprinter>& aCanvasFingerprinter,
-    const Maybe<bool> aCanvasFingerprinterKnownText) {
+    const Maybe<CanvasFingerprintingEvent>& aCanvasFingerprintingEvent) {
   if (XRE_IsParentProcess()) {
     NotifyEventInParent(aTrackingChannel, aBlocked, aRejectedReason,
-                        aTrackingOrigin, aReason, aCanvasFingerprinter,
-                        aCanvasFingerprinterKnownText);
+                        aTrackingOrigin, aReason, aCanvasFingerprintingEvent);
   } else {
     NotifyEventInChild(aTrackingChannel, aBlocked, aRejectedReason,
-                       aTrackingOrigin, aReason, aCanvasFingerprinter,
-                       aCanvasFingerprinterKnownText);
+                       aTrackingOrigin, aReason, aCanvasFingerprintingEvent);
   }
 }

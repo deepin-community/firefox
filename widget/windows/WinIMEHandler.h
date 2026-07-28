@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -42,7 +41,7 @@ class IMEHandler final {
   static void Terminate();
 
   /**
-   * Returns TSF related native data or native IME context.
+   * Returns raw native IME context.
    */
   static void* GetNativeData(nsWindow* aWindow, uint32_t aDataType);
 
@@ -200,16 +199,18 @@ class IMEHandler final {
   static bool MaybeCreateNativeCaret(nsWindow* aWindow);
 
   static decltype(SetInputScopes)* sSetInputScopes;
+  enum class InPrivateBrowsing : bool { No, Yes };
+  enum class ForCleanUp : bool { No, Yes };
   static void SetInputScopeForIMM32(nsWindow* aWindow,
                                     const nsAString& aHTMLInputType,
                                     const nsAString& aHTMLInputMode,
-                                    bool aInPrivateBrowsing);
-  static bool sIsInTSFMode;
+                                    InPrivateBrowsing aInPrivateBrowsing,
+                                    ForCleanUp aForCleanUp);
   // If sIMMEnabled is false, any IME messages are not handled in TSF mode.
   // Additionally, IME context is always disassociated from focused window.
   static bool sIsIMMEnabled;
 
-  static bool IsTSFAvailable() { return sIsInTSFMode; }
+  static bool IsTSFAvailable();
   static bool IsIMMActive();
 
   static bool IsOnScreenKeyboardSupported();
@@ -223,7 +224,7 @@ class IMEHandler final {
                                                const std::wstring& aNeedle);
   static bool NeedOnScreenKeyboard();
   static bool IsKeyboardPresentOnSlate();
-  static bool IsInTabletMode();
+  static bool IsInWin10TabletMode();
   static bool AutoInvokeOnScreenKeyboardInDesktopMode();
   static bool NeedsToAssociateIMC();
   static bool NeedsSearchInputScope();

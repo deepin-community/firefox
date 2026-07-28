@@ -33,6 +33,9 @@ const DELETE_TIMEOUT_MS = 60000;
 // The folder inside the profile folder where to store previews.
 const PREVIEWS_DIRECTORY = "places-previews";
 
+// 64 = SHA-256 hex digest length (32 bytes * 2 hex chars per byte).
+const PREVIEW_FILENAME_RE = /^[a-f0-9]{64}\.webp$/;
+
 // How old a preview file should be before we replace it.
 const DAYS_BEFORE_REPLACEMENT = 30;
 
@@ -52,6 +55,7 @@ class LimitedSet extends Set {
         this.delete(entry);
       }
     }
+    return this;
   }
 }
 
@@ -237,6 +241,7 @@ export const PlacesPreviews = new (class extends EventEmitter {
 
   /**
    * Returns the path to the previews folder.
+   *
    * @returns {string} The path to the previews folder.
    */
   getPath() {
@@ -249,6 +254,7 @@ export const PlacesPreviews = new (class extends EventEmitter {
   /**
    * Returns the file path of the preview for the given url.
    * This doesn't guarantee the file exists.
+   *
    * @param {string} url Address of the page.
    * @returns {string} File path of the preview for the given url.
    */
@@ -261,6 +267,7 @@ export const PlacesPreviews = new (class extends EventEmitter {
 
   /**
    * Returns the file path of the preview having the given hash.
+   *
    * @param {string} hash SHA256 hash in hex format.
    * @returns {string } File path of the preview having the given hash.
    */
@@ -270,6 +277,7 @@ export const PlacesPreviews = new (class extends EventEmitter {
 
   /**
    * Returns the moz-page-thumb: url to show the preview for the given url.
+   *
    * @param {string} url Address of the page.
    * @returns {string} Preview url for the given page url.
    */
@@ -291,12 +299,15 @@ export const PlacesPreviews = new (class extends EventEmitter {
    * is normally facing when logged in. See BackgroundPageThumbs.sys.mjs for
    * additional details.
    * Unless `forceUpdate` is set, the preview is not updated if:
-   *  - It was already fetched recently
-   *  - The stored preview is younger than DAYS_BEFORE_REPLACEMENT
+   * - It was already fetched recently
+   * - The stored preview is younger than DAYS_BEFORE_REPLACEMENT
    * The previem image is encoded using WebP.
+   *
    * @param {string} url The address of the page.
-   * @param {boolean} [forceUpdate] Whether to update the preview regardless.
-   * @returns {boolean} Whether a preview is available and ready.
+   * @param {object} options
+   * @param {boolean} [options.forceUpdate]
+   *   Whether to update the preview regardless.
+   * @returns {Promise<boolean>} Whether a preview is available and ready.
    */
   async update(url, { forceUpdate = false } = {}) {
     if (!this.enabled) {
@@ -368,7 +379,8 @@ export const PlacesPreviews = new (class extends EventEmitter {
    * it.
    * This method is slow, because it has to go through all the Places stored
    * pages, thus it's suggested to only run it as periodic maintenance.
-   * @returns {boolean} Whether orphans deletion ran.
+   *
+   * @returns {Promise<boolean>} Whether orphans deletion ran.
    */
   async deleteOrphans() {
     if (!this.enabled) {
@@ -381,23 +393,41 @@ export const PlacesPreviews = new (class extends EventEmitter {
     let files = await IOUtils.getChildren(this.getPath());
     let hashes = files
       .map(f => PathUtils.filename(f))
-      .filter(() => /^[a-f0-9]{32}\.webp$/)
+      .filter(f => PREVIEW_FILENAME_RE.test(f))
       .map(n => n.substring(0, n.lastIndexOf(".")));
+
+    if (!hashes.length) {
+      return true;
+    }
 
     await lazy.PlacesUtils.withConnectionWrapper(
       "PlacesPreviews.sys.mjs::deleteOrphans",
       async db => {
-        await db.execute(
-          `
-          WITH files(hash) AS (
-            VALUES ${hashes.map(h => `('${h}')`).join(", ")}
-          )
-          INSERT OR IGNORE INTO moz_previews_tombstones
-            SELECT hash FROM files
-            EXCEPT
-            SELECT sha256hex(url) FROM moz_places
-          `
-        );
+        await db.executeTransaction(async () => {
+          for (let chunk of lazy.PlacesUtils.chunkArray(
+            hashes,
+            db.variableLimit
+          )) {
+            let params = chunk.reduce((p, h, i) => {
+              p["hash" + i] = h;
+              return p;
+            }, {});
+            await db.execute(
+              `
+              WITH files(hash) AS (
+                VALUES ${Object.keys(params)
+                  .map(p => `(:${p})`)
+                  .join(", ")}
+              )
+              INSERT OR IGNORE INTO moz_previews_tombstones
+                SELECT hash FROM files
+                EXCEPT
+                SELECT sha256hex(url) FROM moz_places
+              `,
+              params
+            );
+          }
+        });
       }
     );
     this.#deletionHandler.ensureRunning();
@@ -406,6 +436,7 @@ export const PlacesPreviews = new (class extends EventEmitter {
 
   /**
    * This is invoked by #deletionHandler every time a preview file is removed.
+   *
    * @param {string} filePath The path of the deleted file.
    */
   onDelete(filePath) {
@@ -415,7 +446,8 @@ export const PlacesPreviews = new (class extends EventEmitter {
 
   /**
    * Used by tests to change the deletion timeout between chunks.
-   * @param {integer} timeout New timeout in milliseconds.
+   *
+   * @param {number} timeout New timeout in milliseconds.
    */
   testSetDeletionTimeout(timeout) {
     if (timeout === null) {

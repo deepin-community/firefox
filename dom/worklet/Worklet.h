@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,10 +5,9 @@
 #ifndef mozilla_dom_Worklet_h
 #define mozilla_dom_Worklet_h
 
-#include "mozilla/Attributes.h"
+#include "nsCOMPtr.h"
 #include "nsRefPtrHashtable.h"
 #include "nsWrapperCache.h"
-#include "nsCOMPtr.h"
 
 class nsPIDOMWindowInner;
 
@@ -27,7 +24,7 @@ class WorkletScriptHandler;
 struct WorkletOptions;
 enum class CallerType : uint32_t;
 
-class Worklet final : public nsISupports, public nsWrapperCache {
+class Worklet : public nsISupports, public nsWrapperCache {
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(Worklet)
@@ -54,9 +51,10 @@ class Worklet final : public nsISupports, public nsWrapperCache {
     return mLocalizedStrings;
   }
 
- private:
-  ~Worklet();
+ protected:
+  virtual ~Worklet();
 
+ private:
   WorkletFetchHandler* GetImportFetchHandler(const nsACString& aURI);
 
   void AddImportFetchHandler(const nsACString& aURI,

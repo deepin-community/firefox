@@ -1,10 +1,11 @@
-use std::ops::Range;
+use alloc::{boxed::Box, vec::Vec};
+use core::ops::Range;
 
 use crate::{
     AccelerationStructureBarrier, Api, Attachment, BufferBarrier, BufferBinding, BufferCopy,
     BufferTextureCopy, BuildAccelerationStructureDescriptor, ColorAttachment, CommandEncoder,
     ComputePassDescriptor, DepthStencilAttachment, DeviceError, Label, MemoryRange,
-    PassTimestampWrites, Rect, RenderPassDescriptor, TextureBarrier, TextureCopy, TextureUses,
+    PassTimestampWrites, Rect, RenderPassDescriptor, TextureBarrier, TextureCopy,
 };
 
 use super::{
@@ -13,7 +14,7 @@ use super::{
     DynTexture, DynTextureView,
 };
 
-pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
+pub trait DynCommandEncoder: DynResource + core::fmt::Debug {
     unsafe fn begin_encoding(&mut self, label: Label) -> Result<(), DeviceError>;
 
     unsafe fn discard_encoding(&mut self);
@@ -37,7 +38,7 @@ pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
     unsafe fn copy_texture_to_texture(
         &mut self,
         src: &dyn DynTexture,
-        src_usage: TextureUses,
+        src_usage: wgt::TextureUses,
         dst: &dyn DynTexture,
         regions: &[TextureCopy],
     );
@@ -52,7 +53,7 @@ pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
     unsafe fn copy_texture_to_buffer(
         &mut self,
         src: &dyn DynTexture,
-        src_usage: TextureUses,
+        src_usage: wgt::TextureUses,
         dst: &dyn DynBuffer,
         regions: &[BufferTextureCopy],
     );
@@ -65,10 +66,9 @@ pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
         dynamic_offsets: &[wgt::DynamicOffset],
     );
 
-    unsafe fn set_push_constants(
+    unsafe fn set_immediates(
         &mut self,
         layout: &dyn DynPipelineLayout,
-        stages: wgt::ShaderStages,
         offset_bytes: u32,
         data: &[u32],
     );
@@ -93,7 +93,7 @@ pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
     unsafe fn begin_render_pass(
         &mut self,
         desc: &RenderPassDescriptor<dyn DynQuerySet, dyn DynTextureView>,
-    );
+    ) -> Result<(), DeviceError>;
     unsafe fn end_render_pass(&mut self);
 
     unsafe fn set_render_pipeline(&mut self, pipeline: &dyn DynRenderPipeline);
@@ -129,6 +129,12 @@ pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
         first_instance: u32,
         instance_count: u32,
     );
+    unsafe fn draw_mesh_tasks(
+        &mut self,
+        group_count_x: u32,
+        group_count_y: u32,
+        group_count_z: u32,
+    );
     unsafe fn draw_indirect(
         &mut self,
         buffer: &dyn DynBuffer,
@@ -136,6 +142,12 @@ pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
         draw_count: u32,
     );
     unsafe fn draw_indexed_indirect(
+        &mut self,
+        buffer: &dyn DynBuffer,
+        offset: wgt::BufferAddress,
+        draw_count: u32,
+    );
+    unsafe fn draw_mesh_tasks_indirect(
         &mut self,
         buffer: &dyn DynBuffer,
         offset: wgt::BufferAddress,
@@ -157,14 +169,26 @@ pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
         count_offset: wgt::BufferAddress,
         max_count: u32,
     );
+    unsafe fn draw_mesh_tasks_indirect_count(
+        &mut self,
+        buffer: &dyn DynBuffer,
+        offset: wgt::BufferAddress,
+        count_buffer: &dyn DynBuffer,
+        count_offset: wgt::BufferAddress,
+        max_count: u32,
+    );
 
     unsafe fn begin_compute_pass(&mut self, desc: &ComputePassDescriptor<dyn DynQuerySet>);
     unsafe fn end_compute_pass(&mut self);
 
     unsafe fn set_compute_pipeline(&mut self, pipeline: &dyn DynComputePipeline);
 
-    unsafe fn dispatch(&mut self, count: [u32; 3]);
-    unsafe fn dispatch_indirect(&mut self, buffer: &dyn DynBuffer, offset: wgt::BufferAddress);
+    unsafe fn dispatch_workgroups(&mut self, count: [u32; 3]);
+    unsafe fn dispatch_workgroups_indirect(
+        &mut self,
+        buffer: &dyn DynBuffer,
+        offset: wgt::BufferAddress,
+    );
 
     unsafe fn build_acceleration_structures<'a>(
         &mut self,
@@ -174,10 +198,25 @@ pub trait DynCommandEncoder: DynResource + std::fmt::Debug {
             dyn DynAccelerationStructure,
         >],
     );
-
     unsafe fn place_acceleration_structure_barrier(
         &mut self,
         barrier: AccelerationStructureBarrier,
+    );
+    unsafe fn copy_acceleration_structure_to_acceleration_structure(
+        &mut self,
+        src: &dyn DynAccelerationStructure,
+        dst: &dyn DynAccelerationStructure,
+        copy: wgt::AccelerationStructureCopy,
+    );
+    unsafe fn read_acceleration_structure_compact_size(
+        &mut self,
+        acceleration_structure: &dyn DynAccelerationStructure,
+        buf: &dyn DynBuffer,
+    );
+    unsafe fn set_acceleration_structure_dependencies(
+        &self,
+        command_buffers: &[Box<dyn DynCommandBuffer>],
+        dependencies: &[&dyn DynAccelerationStructure],
     );
 }
 
@@ -240,7 +279,7 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
     unsafe fn copy_texture_to_texture(
         &mut self,
         src: &dyn DynTexture,
-        src_usage: TextureUses,
+        src_usage: wgt::TextureUses,
         dst: &dyn DynTexture,
         regions: &[TextureCopy],
     ) {
@@ -267,7 +306,7 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
     unsafe fn copy_texture_to_buffer(
         &mut self,
         src: &dyn DynTexture,
-        src_usage: TextureUses,
+        src_usage: wgt::TextureUses,
         dst: &dyn DynBuffer,
         regions: &[BufferTextureCopy],
     ) {
@@ -290,15 +329,14 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
         unsafe { C::set_bind_group(self, layout, index, group, dynamic_offsets) };
     }
 
-    unsafe fn set_push_constants(
+    unsafe fn set_immediates(
         &mut self,
         layout: &dyn DynPipelineLayout,
-        stages: wgt::ShaderStages,
         offset_bytes: u32,
         data: &[u32],
     ) {
         let layout = layout.expect_downcast_ref();
-        unsafe { C::set_push_constants(self, layout, stages, offset_bytes, data) };
+        unsafe { C::set_immediates(self, layout, offset_bytes, data) };
     }
 
     unsafe fn insert_debug_marker(&mut self, label: &str) {
@@ -355,7 +393,7 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
     unsafe fn begin_render_pass(
         &mut self,
         desc: &RenderPassDescriptor<dyn DynQuerySet, dyn DynTextureView>,
-    ) {
+    ) -> Result<(), DeviceError> {
         let color_attachments = desc
             .color_attachments
             .iter()
@@ -376,7 +414,7 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
                     .depth_stencil_attachment
                     .as_ref()
                     .map(|ds| ds.expect_downcast()),
-                multiview: desc.multiview,
+                multiview_mask: desc.multiview_mask,
                 timestamp_writes: desc
                     .timestamp_writes
                     .as_ref()
@@ -385,7 +423,7 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
                     .occlusion_query_set
                     .map(|set| set.expect_downcast_ref()),
             };
-        unsafe { C::begin_render_pass(self, &desc) };
+        unsafe { C::begin_render_pass(self, &desc) }
     }
 
     unsafe fn end_render_pass(&mut self) {
@@ -454,6 +492,15 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
         };
     }
 
+    unsafe fn draw_mesh_tasks(
+        &mut self,
+        group_count_x: u32,
+        group_count_y: u32,
+        group_count_z: u32,
+    ) {
+        unsafe { C::draw_mesh_tasks(self, group_count_x, group_count_y, group_count_z) };
+    }
+
     unsafe fn draw_indirect(
         &mut self,
         buffer: &dyn DynBuffer,
@@ -472,6 +519,16 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
     ) {
         let buffer = buffer.expect_downcast_ref();
         unsafe { C::draw_indexed_indirect(self, buffer, offset, draw_count) };
+    }
+
+    unsafe fn draw_mesh_tasks_indirect(
+        &mut self,
+        buffer: &dyn DynBuffer,
+        offset: wgt::BufferAddress,
+        draw_count: u32,
+    ) {
+        let buffer = buffer.expect_downcast_ref();
+        unsafe { C::draw_mesh_tasks_indirect(self, buffer, offset, draw_count) };
     }
 
     unsafe fn draw_indirect_count(
@@ -511,6 +568,28 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
         };
     }
 
+    unsafe fn draw_mesh_tasks_indirect_count(
+        &mut self,
+        buffer: &dyn DynBuffer,
+        offset: wgt::BufferAddress,
+        count_buffer: &dyn DynBuffer,
+        count_offset: wgt::BufferAddress,
+        max_count: u32,
+    ) {
+        let buffer = buffer.expect_downcast_ref();
+        let count_buffer = count_buffer.expect_downcast_ref();
+        unsafe {
+            C::draw_mesh_tasks_indirect_count(
+                self,
+                buffer,
+                offset,
+                count_buffer,
+                count_offset,
+                max_count,
+            )
+        };
+    }
+
     unsafe fn begin_compute_pass(&mut self, desc: &ComputePassDescriptor<dyn DynQuerySet>) {
         let desc = ComputePassDescriptor {
             label: desc.label,
@@ -531,13 +610,17 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
         unsafe { C::set_compute_pipeline(self, pipeline) };
     }
 
-    unsafe fn dispatch(&mut self, count: [u32; 3]) {
-        unsafe { C::dispatch(self, count) };
+    unsafe fn dispatch_workgroups(&mut self, count: [u32; 3]) {
+        unsafe { C::dispatch_workgroups(self, count) };
     }
 
-    unsafe fn dispatch_indirect(&mut self, buffer: &dyn DynBuffer, offset: wgt::BufferAddress) {
+    unsafe fn dispatch_workgroups_indirect(
+        &mut self,
+        buffer: &dyn DynBuffer,
+        offset: wgt::BufferAddress,
+    ) {
         let buffer = buffer.expect_downcast_ref();
-        unsafe { C::dispatch_indirect(self, buffer, offset) };
+        unsafe { C::dispatch_workgroups_indirect(self, buffer, offset) };
     }
 
     unsafe fn set_render_pipeline(&mut self, pipeline: &dyn DynRenderPipeline) {
@@ -605,6 +688,42 @@ impl<C: CommandEncoder + DynResource> DynCommandEncoder for C {
     ) {
         unsafe { C::place_acceleration_structure_barrier(self, barrier) };
     }
+
+    unsafe fn copy_acceleration_structure_to_acceleration_structure(
+        &mut self,
+        src: &dyn DynAccelerationStructure,
+        dst: &dyn DynAccelerationStructure,
+        copy: wgt::AccelerationStructureCopy,
+    ) {
+        let src = src.expect_downcast_ref();
+        let dst = dst.expect_downcast_ref();
+        unsafe { C::copy_acceleration_structure_to_acceleration_structure(self, src, dst, copy) };
+    }
+    unsafe fn read_acceleration_structure_compact_size(
+        &mut self,
+        acceleration_structure: &dyn DynAccelerationStructure,
+        buf: &dyn DynBuffer,
+    ) {
+        let acceleration_structure = acceleration_structure.expect_downcast_ref();
+        let buf = buf.expect_downcast_ref();
+        unsafe { C::read_acceleration_structure_compact_size(self, acceleration_structure, buf) }
+    }
+
+    unsafe fn set_acceleration_structure_dependencies(
+        &self,
+        command_buffers: &[Box<dyn DynCommandBuffer>],
+        dependencies: &[&dyn DynAccelerationStructure],
+    ) {
+        let command_buffers: Vec<&<C::A as Api>::CommandBuffer> = command_buffers
+            .iter()
+            .map(|command_buffer| command_buffer.expect_downcast_ref())
+            .collect();
+        let dependencies: Vec<&<C::A as Api>::AccelerationStructure> = dependencies
+            .iter()
+            .map(|dependency| dependency.expect_downcast_ref())
+            .collect();
+        unsafe { C::set_acceleration_structure_dependencies(&command_buffers, &dependencies) }
+    }
 }
 
 impl<'a> PassTimestampWrites<'a, dyn DynQuerySet> {
@@ -630,6 +749,7 @@ impl<'a> ColorAttachment<'a, dyn DynTextureView> {
     pub fn expect_downcast<B: DynTextureView>(&self) -> ColorAttachment<'a, B> {
         ColorAttachment {
             target: self.target.expect_downcast(),
+            depth_slice: self.depth_slice,
             resolve_target: self.resolve_target.as_ref().map(|rt| rt.expect_downcast()),
             ops: self.ops,
             clear_value: self.clear_value,

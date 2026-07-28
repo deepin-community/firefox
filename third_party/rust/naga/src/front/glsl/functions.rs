@@ -1,3 +1,11 @@
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
+use core::iter;
+
 use super::{
     ast::*,
     builtins::{inject_builtin, sampled_to_depth},
@@ -11,7 +19,6 @@ use crate::{
     Expression, Function, FunctionArgument, FunctionResult, Handle, Literal, LocalVariable, Scalar,
     ScalarKind, Span, Statement, StructMember, Type, TypeInner,
 };
-use std::iter;
 
 /// Struct detailing a store operation that must happen after a function call
 struct ProxyWrite {
@@ -140,7 +147,7 @@ impl Frontend {
                 )?
             }
             TypeInner::Vector { size, scalar } => {
-                if vector_size.map_or(true, |s| s != size) {
+                if vector_size != Some(size) {
                     value = ctx.vector_resize(size, value, expr_meta)?;
                 }
 
@@ -282,7 +289,7 @@ impl Frontend {
 
                 for i in 0..columns as u32 {
                     if i < ori_cols as u32 {
-                        use std::cmp::Ordering;
+                        use core::cmp::Ordering;
 
                         let vector = ctx.add_expression(
                             Expression::AccessIndex {
@@ -341,14 +348,13 @@ impl Frontend {
                 }
             }
             _ => {
-                components = iter::repeat(value).take(columns as usize).collect();
+                components = iter::repeat_n(value, columns as usize).collect();
             }
         }
 
         ctx.add_expression(Expression::Compose { ty, components }, meta)
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn vector_constructor(
         &mut self,
         ctx: &mut Context,
@@ -506,7 +512,6 @@ impl Frontend {
         ctx.add_expression(Expression::Compose { ty, components }, meta)
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn function_call(
         &mut self,
         ctx: &mut Context,
@@ -553,7 +558,7 @@ impl Frontend {
                 continue;
             }
 
-            log::trace!("Testing overload {}", overload_idx);
+            log::trace!("Testing overload {overload_idx}");
 
             // Stores whether the current overload matches exactly the function call
             let mut exact = true;
@@ -585,10 +590,7 @@ impl Frontend {
                 let call_arg_ty = ctx.get_type(call_argument.0);
 
                 log::trace!(
-                    "Testing parameter {}\n\tOverload = {:?}\n\tCall = {:?}",
-                    i,
-                    overload_param_ty,
-                    call_arg_ty
+                    "Testing parameter {i}\n\tOverload = {overload_param_ty:?}\n\tCall = {call_arg_ty:?}"
                 );
 
                 // Storage images cannot be directly compared since while the access is part of the
@@ -622,7 +624,7 @@ impl Frontend {
                     // check that the format scalar kind matches
                     let good_format = overload_format == call_format
                         || (overload.internal
-                            && ScalarKind::from(overload_format) == ScalarKind::from(call_format));
+                            && Scalar::from(overload_format) == Scalar::from(call_format));
                     if !(good_size && good_format) {
                         continue 'outer;
                     }
@@ -784,10 +786,10 @@ impl Frontend {
             .zip(raw_args)
             .zip(&parameters)
         {
-            let (mut handle, meta) =
-                ctx.lower_expect_inner(stmt, self, *expr, parameter_info.qualifier.as_pos())?;
-
             if parameter_info.qualifier.is_lhs() {
+                // Reprocess argument in LHS position
+                let (handle, meta) = ctx.lower_expect_inner(stmt, self, *expr, ExprPos::Lhs)?;
+
                 self.process_lhs_argument(
                     ctx,
                     meta,
@@ -801,6 +803,8 @@ impl Frontend {
 
                 continue;
             }
+
+            let (mut handle, meta) = *call_argument;
 
             let scalar_comps = scalar_components(&ctx.module.types[*parameter].inner);
 
@@ -1065,6 +1069,7 @@ impl Frontend {
             expressions,
             named_expressions: crate::NamedExpressions::default(),
             body,
+            diagnostic_filter_leaf: None,
         };
 
         'outer: for decl in declaration.overloads.iter_mut() {
@@ -1226,7 +1231,7 @@ impl Frontend {
             + 3,
         );
 
-        let global_init_body = std::mem::replace(&mut ctx.body, body);
+        let global_init_body = core::mem::replace(&mut ctx.body, body);
 
         for arg in self.entry_args.iter() {
             if arg.storage != StorageQualifier::Input {
@@ -1359,9 +1364,10 @@ impl Frontend {
         ctx.module.entry_points.push(EntryPoint {
             name: "main".to_string(),
             stage: self.meta.stage,
-            early_depth_test: Some(crate::EarlyDepthTest { conservative: None })
+            early_depth_test: Some(crate::EarlyDepthTest::Force)
                 .filter(|_| self.meta.early_fragment_tests),
             workgroup_size: self.meta.workgroup_size,
+            workgroup_size_overrides: None,
             function: Function {
                 arguments,
                 expressions,
@@ -1369,6 +1375,9 @@ impl Frontend {
                 result: ty.map(|ty| FunctionResult { ty, binding: None }),
                 ..Default::default()
             },
+            mesh_info: None,
+            task_payload: None,
+            incoming_ray_payload: None,
         });
 
         Ok(())
@@ -1437,7 +1446,8 @@ impl Context<'_> {
                         location,
                         interpolation,
                         sampling: None,
-                        second_blend_source: false,
+                        blend_src: None,
+                        per_primitive: false,
                     };
                     location += 1;
 
@@ -1473,7 +1483,8 @@ impl Context<'_> {
                                 location,
                                 interpolation,
                                 sampling: None,
-                                second_blend_source: false,
+                                blend_src: None,
+                                per_primitive: false,
                             };
                             location += 1;
                             binding

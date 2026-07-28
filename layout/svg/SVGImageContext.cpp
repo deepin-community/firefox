@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,9 +8,11 @@
 // Keep others in (case-insensitive) order:
 #include "gfxUtils.h"
 #include "mozilla/LookAndFeel.h"
+#include "mozilla/ServoCSSParser.h"
 #include "mozilla/StaticPrefs_svg.h"
 #include "mozilla/dom/Document.h"
 #include "nsIFrame.h"
+#include "nsISVGPaintContext.h"
 #include "nsPresContext.h"
 #include "nsStyleStruct.h"
 
@@ -36,8 +36,7 @@ void SVGImageContext::MaybeStoreContextPaint(SVGImageContext& aContext,
     return;
   }
 
-  if (StaticPrefs::svg_embedder_prefers_color_scheme_content_enabled() ||
-      aPresContext.Document()->ChromeRulesEnabled()) {
+  {
     auto scheme = LookAndFeel::ColorSchemeForStyle(
         *aPresContext.Document(), aStyle.StyleUI()->mColorScheme.bits,
         ColorSchemeMode::Preferred);
@@ -78,6 +77,52 @@ void SVGImageContext::MaybeStoreContextPaint(SVGImageContext& aContext,
     contextPaint->SetStrokeOpacity(style->mStrokeOpacity.IsOpacity()
                                        ? style->mStrokeOpacity.AsOpacity()
                                        : 1.0f);
+  }
+
+  if (haveContextPaint) {
+    aContext.mContextPaint = std::move(contextPaint);
+  }
+}
+
+/* static */
+void SVGImageContext::MaybeStoreContextPaint(SVGImageContext& aContext,
+                                             nsISVGPaintContext* aPaintContext,
+                                             imgIContainer* aImgContainer) {
+  if (aImgContainer->GetType() != imgIContainer::TYPE_VECTOR ||
+      !aPaintContext) {
+    // Avoid this overhead for raster images.
+    return;
+  }
+
+  bool haveContextPaint = false;
+  auto contextPaint = MakeRefPtr<SVGEmbeddingContextPaint>();
+  nsCString value;
+  float opacity;
+
+  if (NS_SUCCEEDED(aPaintContext->GetStrokeColor(value)) && !value.IsEmpty()) {
+    nscolor color;
+    if (ServoCSSParser::ComputeColor(nullptr, NS_RGB(0, 0, 0), value, &color)) {
+      haveContextPaint = true;
+      contextPaint->SetStroke(color);
+    }
+  }
+
+  if (NS_SUCCEEDED(aPaintContext->GetFillColor(value)) && !value.IsEmpty()) {
+    nscolor color;
+    if (ServoCSSParser::ComputeColor(nullptr, NS_RGB(0, 0, 0), value, &color)) {
+      haveContextPaint = true;
+      contextPaint->SetFill(color);
+    }
+  }
+
+  if (NS_SUCCEEDED(aPaintContext->GetStrokeOpacity(&opacity))) {
+    haveContextPaint = true;
+    contextPaint->SetStrokeOpacity(opacity);
+  }
+
+  if (NS_SUCCEEDED(aPaintContext->GetFillOpacity(&opacity))) {
+    haveContextPaint = true;
+    contextPaint->SetFillOpacity(opacity);
   }
 
   if (haveContextPaint) {

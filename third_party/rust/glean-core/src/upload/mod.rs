@@ -14,17 +14,20 @@
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
+use std::mem;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
-use std::thread;
 use std::time::{Duration, Instant};
 
 use chrono::Utc;
+use malloc_size_of::MallocSizeOf;
+use malloc_size_of_derive::MallocSizeOf;
 
 use crate::error::ErrorKind;
 use crate::TimerId;
 use crate::{internal_metrics::UploadMetrics, Glean};
+pub use directory::process_metadata;
 use directory::{PingDirectoryManager, PingPayloadsByDirectory};
 use policy::Policy;
 use request::create_date_header_value;
@@ -40,7 +43,7 @@ mod result;
 
 const WAIT_TIME_FOR_PING_PROCESSING: u64 = 1000; // in milliseconds
 
-#[derive(Debug)]
+#[derive(Debug, MallocSizeOf)]
 struct RateLimiter {
     /// The instant the current interval has started.
     started: Option<Instant>,
@@ -215,6 +218,46 @@ pub struct PingUploadManager {
     in_flight: RwLock<HashMap<String, (TimerId, TimerId)>>,
 }
 
+impl MallocSizeOf for PingUploadManager {
+    fn size_of(&self, ops: &mut malloc_size_of::MallocSizeOfOps) -> usize {
+        let shallow_size = {
+            let queue = self.queue.read().unwrap();
+            if ops.has_malloc_enclosing_size_of() {
+                if let Some(front) = queue.front() {
+                    // SAFETY: The front element is a valid interior pointer and thus valid to pass
+                    // to an external function.
+                    unsafe { ops.malloc_enclosing_size_of(front) }
+                } else {
+                    // This assumes that no memory is allocated when the VecDeque is empty.
+                    0
+                }
+            } else {
+                // If `ops` can't estimate the size of a pointer,
+                // we can estimate the allocation size by the size of each element and the
+                // allocated capacity.
+                queue.capacity() * mem::size_of::<PingRequest>()
+            }
+        };
+
+        let mut n = shallow_size
+            + self.directory_manager.size_of(ops)
+            + mem::size_of::<AtomicBool>() // Allocated inside the `self.processed_pending_pings` `Arc`.
+            + self.cached_pings.read().unwrap().size_of(ops)
+            + self.rate_limiter.as_ref().map(|rl| {
+                let lock = rl.read().unwrap();
+                (*lock).size_of(ops)
+            }).unwrap_or(0)
+            + self.language_binding_name.size_of(ops)
+            + self.upload_metrics.size_of(ops)
+            + self.policy.size_of(ops);
+
+        let in_flight = self.in_flight.read().unwrap();
+        n += in_flight.size_of(ops);
+
+        n
+    }
+}
+
 impl PingUploadManager {
     /// Creates a new PingUploadManager.
     ///
@@ -255,32 +298,29 @@ impl PingUploadManager {
         let local_manager = self.directory_manager.clone();
         let local_cached_pings = self.cached_pings.clone();
         let local_flag = self.processed_pending_pings.clone();
-        thread::Builder::new()
-            .name("glean.ping_directory_manager.process_dir".to_string())
-            .spawn(move || {
-                {
-                    // Be sure to drop local_cached_pings lock before triggering upload.
-                    let mut local_cached_pings = local_cached_pings
-                        .write()
-                        .expect("Can't write to pending pings cache.");
-                    local_cached_pings.extend(local_manager.process_dirs());
-                    local_flag.store(true, Ordering::SeqCst);
-                }
-                if trigger_upload {
-                    crate::dispatcher::launch(|| {
-                        if let Some(state) = crate::maybe_global_state().and_then(|s| s.lock().ok())
-                        {
-                            if let Err(e) = state.callbacks.trigger_upload() {
-                                log::error!(
-                                    "Triggering upload after pending ping scan failed. Error: {}",
-                                    e
-                                );
-                            }
+        crate::thread::spawn("glean.ping_directory_manager.process_dir", move || {
+            {
+                // Be sure to drop local_cached_pings lock before triggering upload.
+                let mut local_cached_pings = local_cached_pings
+                    .write()
+                    .expect("Can't write to pending pings cache.");
+                local_cached_pings.extend(local_manager.process_dirs());
+                local_flag.store(true, Ordering::SeqCst);
+            }
+            if trigger_upload {
+                crate::dispatcher::launch(|| {
+                    if let Some(state) = crate::maybe_global_state().and_then(|s| s.lock().ok()) {
+                        if let Err(e) = state.callbacks.trigger_upload() {
+                            log::error!(
+                                "Triggering upload after pending ping scan failed. Error: {}",
+                                e
+                            );
                         }
-                    });
-                }
-            })
-            .expect("Unable to spawn thread to process pings directories.")
+                    }
+                });
+            }
+        })
+        .expect("Unable to spawn thread to process pings directories.")
     }
 
     /// Creates a new upload manager with no limitations, for tests.
@@ -330,6 +370,7 @@ impl PingUploadManager {
             headers,
             body_has_info_sections,
             ping_name,
+            uploader_capabilities,
         } = ping;
         let mut request = PingRequest::builder(
             &self.language_binding_name,
@@ -339,7 +380,8 @@ impl PingUploadManager {
         .path(path)
         .body(body)
         .body_has_info_sections(body_has_info_sections)
-        .ping_name(ping_name);
+        .ping_name(ping_name)
+        .uploader_capabilities(uploader_capabilities);
 
         if let Some(headers) = headers {
             request = request.headers(headers);
@@ -713,7 +755,7 @@ impl PingUploadManager {
     ) -> UploadTaskAction {
         use UploadResult::*;
 
-        let stop_time = time::precise_time_ns();
+        let stop_time = zeitstempel::now_awake();
 
         if let Some(label) = status.get_label() {
             let metric = self.upload_metrics.ping_upload_failure.get(label);
@@ -741,7 +783,7 @@ impl PingUploadManager {
                 self.directory_manager.delete_file(document_id);
             }
 
-            UnrecoverableFailure { .. } | HttpStatus { code: 400..=499 } => {
+            UnrecoverableFailure { .. } | HttpStatus { code: 400..=499 } | Incapable { .. } => {
                 log::warn!(
                     "Unrecoverable upload failure while attempting to send ping {}. Error was {:?}",
                     document_id,
@@ -855,6 +897,7 @@ pub fn chunked_log_info(_path: &str, payload: &str) {
 
 #[cfg(test)]
 mod test {
+    use std::thread;
     use uuid::Uuid;
 
     use super::*;
@@ -888,6 +931,7 @@ mod test {
                 headers: None,
                 body_has_info_sections: true,
                 ping_name: "ping-name".into(),
+                uploader_capabilities: vec![],
             },
         );
 
@@ -915,6 +959,7 @@ mod test {
                     headers: None,
                     body_has_info_sections: true,
                     ping_name: "ping-name".into(),
+                    uploader_capabilities: vec![],
                 },
             );
         }
@@ -953,6 +998,7 @@ mod test {
                     headers: None,
                     body_has_info_sections: true,
                     ping_name: "ping-name".into(),
+                    uploader_capabilities: vec![],
                 },
             );
         }
@@ -973,6 +1019,7 @@ mod test {
                 headers: None,
                 body_has_info_sections: true,
                 ping_name: "ping-name".into(),
+                uploader_capabilities: vec![],
             },
         );
 
@@ -1006,6 +1053,7 @@ mod test {
                     headers: None,
                     body_has_info_sections: true,
                     ping_name: "ping-name".into(),
+                    uploader_capabilities: vec![],
                 },
             );
         }
@@ -1033,6 +1081,8 @@ mod test {
             true,
             true,
             vec![],
+            vec![],
+            true,
             vec![],
         );
         glean.register_ping_type(&ping_type);
@@ -1075,6 +1125,8 @@ mod test {
             true,
             vec![],
             vec![],
+            true,
+            vec![],
         );
         glean.register_ping_type(&ping_type);
 
@@ -1113,6 +1165,8 @@ mod test {
             true,
             true,
             vec![],
+            vec![],
+            true,
             vec![],
         );
         glean.register_ping_type(&ping_type);
@@ -1153,6 +1207,8 @@ mod test {
             true,
             vec![],
             vec![],
+            true,
+            vec![],
         );
         glean.register_ping_type(&ping_type);
 
@@ -1191,6 +1247,8 @@ mod test {
             true,
             true,
             vec![],
+            vec![],
+            true,
             vec![],
         );
         glean.register_ping_type(&ping_type);
@@ -1232,6 +1290,8 @@ mod test {
             true,
             true,
             vec![],
+            vec![],
+            true,
             vec![],
         );
         glean.register_ping_type(&ping_type);
@@ -1283,6 +1343,7 @@ mod test {
                 headers: None,
                 body_has_info_sections: true,
                 ping_name: "test-ping".into(),
+                uploader_capabilities: vec![],
             },
         );
 
@@ -1303,6 +1364,7 @@ mod test {
                 headers: None,
                 body_has_info_sections: true,
                 ping_name: "test-ping".into(),
+                uploader_capabilities: vec![],
             },
         );
 
@@ -1350,6 +1412,8 @@ mod test {
             true,
             vec![],
             vec![],
+            true,
+            vec![],
         );
         glean.register_ping_type(&ping_type);
 
@@ -1386,6 +1450,7 @@ mod test {
                 headers: None,
                 body_has_info_sections: true,
                 ping_name: "test-ping".into(),
+                uploader_capabilities: vec![],
             },
         );
         upload_manager.enqueue_ping(
@@ -1397,6 +1462,7 @@ mod test {
                 headers: None,
                 body_has_info_sections: true,
                 ping_name: "test-ping".into(),
+                uploader_capabilities: vec![],
             },
         );
 
@@ -1424,6 +1490,8 @@ mod test {
             true,
             true,
             vec![],
+            vec![],
+            true,
             vec![],
         );
         glean.register_ping_type(&ping_type);
@@ -1483,6 +1551,8 @@ mod test {
             true,
             true,
             vec![],
+            vec![],
+            true,
             vec![],
         );
         glean.register_ping_type(&ping_type);
@@ -1564,6 +1634,8 @@ mod test {
             true,
             vec![],
             vec![],
+            true,
+            vec![],
         );
         glean.register_ping_type(&ping_type);
 
@@ -1644,6 +1716,8 @@ mod test {
             true,
             true,
             vec![],
+            vec![],
+            true,
             vec![],
         );
         glean.register_ping_type(&ping_type);
@@ -1727,6 +1801,8 @@ mod test {
             true,
             true,
             vec![],
+            vec![],
+            true,
             vec![],
         );
         glean.register_ping_type(&ping_type);
@@ -1828,6 +1904,7 @@ mod test {
                 headers: None,
                 body_has_info_sections: true,
                 ping_name: "ping-name".into(),
+                uploader_capabilities: vec![],
             },
         );
         upload_manager.enqueue_ping(
@@ -1839,6 +1916,7 @@ mod test {
                 headers: None,
                 body_has_info_sections: true,
                 ping_name: "ping-name".into(),
+                uploader_capabilities: vec![],
             },
         );
 
@@ -1904,6 +1982,7 @@ mod test {
             headers: None,
             body_has_info_sections: true,
             ping_name: "ping-name".into(),
+            uploader_capabilities: vec![],
         };
         upload_manager.enqueue_ping(&glean, ping);
         assert!(upload_manager.get_upload_task(&glean, false).is_upload());
@@ -1916,6 +1995,7 @@ mod test {
             headers: None,
             body_has_info_sections: true,
             ping_name: "ping-name".into(),
+            uploader_capabilities: vec![],
         };
         upload_manager.enqueue_ping(&glean, ping);
 

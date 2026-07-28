@@ -1,30 +1,33 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ContainStyleScopeManager.h"
 
-#include "mozilla/ServoStyleSet.h"
-#include "nsIContentInlines.h"
 #include "CounterStyleManager.h"
+#include "mozilla/ServoStyleSet.h"
+#include "nsContentUtils.h"
 #include "nsCounterManager.h"
 #include "nsIContent.h"
+#include "nsIContentInlines.h"
 #include "nsIFrame.h"
-#include "nsContentUtils.h"
 #include "nsQuoteList.h"
 
 namespace mozilla {
 
 nsGenConNode* ContainStyleScope::GetPrecedingElementInGenConList(
     nsGenConList* aList) {
-  auto IsAfter = [this](nsGenConNode* aNode) {
+  nsContentUtils::NodeIndexCache cache;
+  auto IsAfter = [this, &cache](nsGenConNode* aNode) {
     return nsContentUtils::CompareTreePosition<TreeKind::Flat>(
                mContent, aNode->mPseudoFrame->GetContent(),
-               /* aCommonAncestor = */ nullptr) > 0;
+               /* aCommonAncestor = */ nullptr, &cache) >= 0;
   };
-  return aList->BinarySearch(IsAfter);
+  auto* last = aList->GetLast();
+  if (!last || IsAfter(last)) {
+    return last;
+  }
+  return aList->BinarySearch(IsAfter)->getPrevious();
 }
 
 void ContainStyleScope::RecalcAllCounters() {

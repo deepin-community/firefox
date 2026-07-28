@@ -43,7 +43,7 @@ synced-tabs-context-open-in-private-window =
 # string is located in tabContextMenu.ftl. So, this string should be translated
 # consistently with the "Bookmark Tab…" string there.
 synced-tabs-context-bookmark =
-    .label = Додати вкладку до закладок
+    .label = Додати вкладку до закладок…
     .accesskey = л
 synced-tabs-context-copy =
     .label = Копіювати
@@ -54,6 +54,12 @@ synced-tabs-context-open-all-in-tabs =
 synced-tabs-context-manage-devices =
     .label = Керувати пристроями…
     .accesskey = К
+synced-tabs-context-manage-this-device =
+    .label = Керувати цим пристроєм
+    .accesskey = К
+synced-tabs-context-connect-another-device =
+    .label = Під'єднати інший пристрій
+    .accesskey = П
 synced-tabs-context-sync-now =
     .label = Синхронізувати зараз
     .accesskey = С

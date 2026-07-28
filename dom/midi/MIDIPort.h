@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -28,8 +26,7 @@ class MIDIMessage;
  * and communication.
  *
  */
-class MIDIPort : public DOMEventTargetHelper,
-                 public MIDIAccessDestructionObserver {
+class MIDIPort : public DOMEventTargetHelper {
  public:
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS_INHERITED(MIDIPort,
@@ -41,7 +38,7 @@ class MIDIPort : public DOMEventTargetHelper,
   virtual ~MIDIPort();
 
  public:
-  nsIGlobalObject* GetParentObject() const { return GetOwnerGlobal(); }
+  nsIGlobalObject* GetParentObject() const { return GetRelevantGlobal(); }
 
   // Getters
   void GetId(nsString& aRetVal) const;
@@ -55,10 +52,6 @@ class MIDIPort : public DOMEventTargetHelper,
 
   already_AddRefed<Promise> Open(ErrorResult& aError);
   already_AddRefed<Promise> Close(ErrorResult& aError);
-
-  // MIDIPorts observe the death of their parent MIDIAccess object, and delete
-  // their reference accordingly.
-  virtual void Notify(const void_t& aVoid) override;
 
   void FireStateChangeEvent();
 
@@ -105,12 +98,8 @@ class MIDIPort : public DOMEventTargetHelper,
   void DontKeepAliveOnStatechange();
 
   // MIDIAccess object that created this MIDIPort object, which we need for
-  // firing port connection events. There is a chance this MIDIPort object can
-  // outlive its parent MIDIAccess object, so this is a weak reference that must
-  // be handled properly. It is set on construction of the MIDIPort object, and
-  // set to null when the parent MIDIAccess object is destroyed, which fires an
-  // notification we observe.
-  MIDIAccess* mMIDIAccessParent;
+  // firing port connection events.
+  RefPtr<MIDIAccess> mMIDIAccessParent;
   // Promise object generated on Open() call, that needs to be resolved once the
   // platform specific Open() function has completed.
   RefPtr<Promise> mOpeningPromise;

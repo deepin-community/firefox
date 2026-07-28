@@ -1,5 +1,4 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
- *
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -26,12 +25,6 @@ interface nsICookieBannerRule : nsISupports {
     readonly attribute Array<nsICookieRule> cookiesOptOut;
     // Cookies that reflect the opt-in or "accept all" state for the cookie banner.
     readonly attribute Array<nsICookieRule> cookiesOptIn;
-
-    /**
-     * Indicates whether this rule is a global rule according to the domains
-     * field. We say this rule is global if the domains field is an empty array.
-     */
-    [infallible] readonly attribute boolean isGlobalRule;
 
     /**
      * Get the list of cookies associated with this rule.

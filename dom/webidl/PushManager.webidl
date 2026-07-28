@@ -1,4 +1,3 @@
-/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this file,
 * You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -30,6 +29,14 @@ interface PushManagerImpl {
 interface PushManager {
   [Throws, ChromeOnly]
   constructor(DOMString scope);
+
+  // TODO: Use FrozenArray once available. (Bug 1236777)
+  // [SameObject] static readonly attribute FrozenArray<DOMString> supportedContentEncodings;
+  // XXX: We can't use sequence here either:
+  // 1. [Cached] is not supported for static members (Bug 1363870)
+  // 2. [Cached] is required for sequence typed attributes
+  // [Frozen, Cached, Pure] static readonly attribute sequence<DOMString> supportedContentEncodings;
+  [Throws] static readonly attribute object supportedContentEncodings;
 
   [Throws, UseCounter]
   Promise<PushSubscription>    subscribe(optional PushSubscriptionOptionsInit options = {});

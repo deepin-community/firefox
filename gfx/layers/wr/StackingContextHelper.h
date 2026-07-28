@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -66,13 +64,10 @@ class MOZ_RAII StackingContextHelper {
   bool AffectsClipPositioning() const { return mAffectsClipPositioning; }
   Maybe<wr::WrSpatialId> ReferenceFrameId() const { return mReferenceFrameId; }
 
-  const LayoutDevicePoint& GetOrigin() const { return mOrigin; }
-
  private:
   wr::DisplayListBuilder* mBuilder;
   gfx::MatrixScales mScale;
   gfx::Matrix mInheritedTransform;
-  LayoutDevicePoint mOrigin;
 
   // The "snapping surface" defines the space that we want to snap in.
   // You can think of it as the nearest physical surface.

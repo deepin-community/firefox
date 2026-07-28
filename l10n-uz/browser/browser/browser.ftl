@@ -2,14 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } Maxfiy koʻrish
 
 ##
@@ -119,8 +118,11 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = Sahifani xatcho‘pga qo‘shish ({ $shortcut })
 
-## Page Action Context Menu
+## Searchbar context menu
 
+clear-search-history =
+    .label = Izlash tarixini tozalash
+    .accesskey = H
 
 ## Auto-hide Context Menu
 
@@ -184,7 +186,7 @@ search-one-offs-actions =
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
-## the action.
+## the action. English commas should be used, i.e. ,
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Qoʻshimchalarni koʻrish
@@ -271,14 +273,6 @@ browser-window-minimize-button =
 browser-window-close-button =
     .tooltiptext = Yopish
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
 ## Bookmarks toolbar items
 
 browser-import-button2 =
@@ -293,9 +287,6 @@ popup-all-windows-shared = Ekraningizdagi barcha ko‘rinadigan oynalar bo‘lis
 
 sharing-warning-window = { -brand-short-name }ni ulashyapsiz. Boshqa odamlar yangi varaqqa oʻtganingizda koʻra olishadi.
 sharing-warning-screen = Toʻliq ekranni ulashyapsiz. Boshqa odamlar yangi varaqqa oʻtganingizda koʻra olishadi.
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
@@ -337,13 +328,16 @@ urlbar-switch-to-tab =
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Kengaytma:
+urlbar-go-button2 =
+    .title = Manzil panelidagi manzilga o‘tish
 urlbar-go-button =
     .tooltiptext = Manzil panelidagi manzilga o‘tish
 urlbar-page-action-button =
     .tooltiptext = Sahifa amallari
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
+## "Last visited" and "bookmarked" explanation strings. For bookmarks and urlbar
+## results with last-visited dates like history and top sites, these strings
+## explain why the result is shown.
 
 # Used when the private browsing engine differs from the default engine.
 # The "with" format was chosen because the search engine name can end with
@@ -374,13 +368,25 @@ urlbar-result-action-tabtosearch-web = { $engine } yordamida toʻgʻridan-toʻg�
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
-## In these actions "Search" is a verb, followed by where the search is performed.
+## Strings used for buttons in the urlbar
 
-
-## Labels shown above groups of urlbar results
-
+urlbar-searchmode-bookmarks =
+    .label = Xatchoʻplar
+urlbar-searchmode-tabs =
+    .label = Varaqlar
+urlbar-searchmode-history =
+    .label = Tarix
+urlbar-searchmode-actions =
+    .label = Amallar
+urlbar-searchmode-bookmarks2 = Xatchoʻplar
+urlbar-searchmode-tabs2 = Varaqlar
+urlbar-searchmode-history2 = Tarix
+urlbar-searchmode-actions2 = Amallar
+# Shown when adding new search engines from the search mode switcher.
+# Variables:
+#  $engineName (String): The name of the search engine.
+urlbar-searchmode-popup-add-engine = { $engineName } qoʻshish
+    .title = { $engineName } qidiruv tizimini qoʻshish
 
 ## Reader View toolbar buttons
 
@@ -390,11 +396,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = O‘qish ko‘rinishini yopish
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -493,7 +494,7 @@ repair-text-encoding-button =
     .label = Matn shifrini tuzatish
     .tooltiptext = Sahifa tarkibidan toʻgʻri matn shifrini taxmin qiling
 
-## Customize Toolbar Buttons
+##
 
 # Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
@@ -538,6 +539,10 @@ eme-notifications-drm-content-playing-manage = Sozlamalarni boshqarish
 
 panel-save-update-username = Foydalanuvchi nomi
 panel-save-update-password = Parol
+panel-save-update-username-2 =
+    .label = Foydalanuvchi nomi
+panel-save-update-password-2 =
+    .label = Parol
 
 ##
 
@@ -565,10 +570,6 @@ edit-popup-settings =
 picture-in-picture-hide-toggle =
     .label = Rasm ichida rasm rejimini yashirish
     .accesskey = H
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -608,29 +609,12 @@ tabs-toolbar-list-all-tabs =
     .label = Barcha varaqlar roʻyxati
     .tooltiptext = Barcha varaqlar roʻyxati
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } automatik tarzda bir qancha ma`lumotlarni { -vendor-short-name }`ga  sizning tajribangizni ochirishimiz uchun jo'natdi.
 data-reporting-notification-button =
     .label = Bo‘lishish kerak bo‘lganlarni tanlash
     .accesskey = t
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -639,9 +623,6 @@ refresh-blocked-redirect-label = { -brand-short-name } ushbu sahifani avtomatik 
 refresh-blocked-allow =
     .label = Ruxsat berish
     .accesskey = A
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

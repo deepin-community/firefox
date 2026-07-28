@@ -5,81 +5,68 @@
 permissions-window2 =
     .title = Изузеци
     .style = min-width: 46em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Адреса веб-сајта:
     .accesskey = А
-
 permissions-block =
     .label = Блокирај
     .accesskey = Б
-
 permissions-disable-etp =
     .label = Додај изузетак
     .accesskey = и
-
 permissions-session =
     .label = Дозволи док траје сесија
     .accesskey = о
-
 permissions-allow =
     .label = Дозволи
     .accesskey = Д
-
+permissions-add =
+    .label = Додај
+    .accesskey = Д
 permissions-button-off =
     .label = Искључи
     .accesskey = И
-
 permissions-button-off-temporarily =
     .label = Привремено искључи
     .accesskey = П
-
 permissions-site-name =
     .label = Веб-сајт
-
 permissions-status =
     .label = Статус
-
 permissions-remove =
     .label = Уклони
     .accesskey = У
-
 permissions-remove-all =
     .label = Уклони све
     .accesskey = с
-
+permissions-save-changes-2 =
+    .buttonlabelaccept = Сачувај
+    .buttonaccesskeyaccept = С
 permission-dialog =
     .buttonlabelaccept = Сачувај
     .buttonaccesskeyaccept = С
-
 permissions-autoplay-menu = Подразумевано за све веб-сајтове:
-
 permissions-searchbox =
     .placeholder = Претражите
-
 permissions-capabilities-autoplay-allow =
     .label = Дозволи звук и видео
 permissions-capabilities-autoplay-block =
     .label = Блокирај звук
 permissions-capabilities-autoplay-blockall =
     .label = Блокирај звук и видео
-
 permissions-capabilities-allow =
     .label = Дозволи
 permissions-capabilities-block =
     .label = Блокирај
 permissions-capabilities-prompt =
     .label = Увек питај
-
 permissions-capabilities-listitem-allow =
     .value = Дозволи
 permissions-capabilities-listitem-block =
     .value = Блокирај
 permissions-capabilities-listitem-allow-session =
     .value = Дозволи док траје сесија
-
 permissions-capabilities-listitem-off =
     .value = Искључено
 permissions-capabilities-listitem-off-temporarily =
@@ -104,12 +91,27 @@ permissions-exceptions-cookie-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Овде можете да наведете којим веб-сајтовима је дозвољено или забрањено да користе колачиће и податке о сајтовима. Унесите адресу сајта и кликните на „Блокирај”, „Дозволи док траје сесија” или „Дозволи”.
 
+## Exceptions - Clear on Shutdown
+
+permissions-exceptions-shutdown-clearing-window =
+    .title = Изузеци - очисти историју при гашењу
+    .style = { permissions-window2.style }
+permissions-exceptions-shutdown-clearing-desc = Можете да одредите које веб странице ће чувати своје податке када { -brand-short-name } обрише историју при затварању. Унесите тачну адресу странице којом желите да управљате, а затим кликните на Дозволи.
+
 ## Exceptions - HTTPS-Only Mode
 
 permissions-exceptions-https-only-window2 =
     .title = Изузеци – режим „Само HTTPS”
     .style = { permissions-window2.style }
-permissions-exceptions-https-only-desc = Можете искључити само HTTPS мод за одређене сајтове. { -brand-short-name } неће покушавати да пребаци на безбедну HTTPS везу за ове сајтове. Ово правило се не примењује на приватне прозоре.
+permissions-exceptions-https-only-desc = Можете искључити „Само HTTPS” режим за одређене сајтове. { -brand-short-name } неће покушавати да пребаци на безбедну HTTPS везу за ове сајтове. Ово правило се не примењује на приватне прозоре.
+permissions-exceptions-https-only-desc2 = Можете искључити „Само HTTPS” режим за одређене сајтове. { -brand-short-name } неће покушавати да пребаци на безбедну HTTPS везу за ове сајтове.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Дозвољене веб странице - искачући прозори и преусмеравања трећих страна
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Можете одредити којим веб страницама је дозвољено да отварају искачуће прозоре и да буду преусмерене од стране оквира трећих страна.
 
 ## Exceptions - Pop-ups
 
@@ -124,6 +126,13 @@ permissions-exceptions-saved-logins-window2 =
     .title = Сачуване лозинке – изузеци
     .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = Пријаве за следеће сајтове неће бити сачуване
+
+## Exceptions - Saved Passwords
+
+permissions-exceptions-saved-passwords-window =
+    .title = Изузеци - Сачуване лозинке
+    .style = { permissions-window2.style }
+permissions-exceptions-saved-passwords-desc = { -brand-short-name } неће сачувати лозинке за сајтове наведене овде.
 
 ## Exceptions - Add-ons
 
@@ -179,6 +188,26 @@ permissions-site-camera-disable-label =
     .label = Блокирај нове захтеве за приступ вашој камери
 permissions-site-camera-disable-desc = Овим ћете онемогућити свим веб-сајтовима ван листе да захтевају дозволу за приступ камери. Блокирањем приступа камери неке функције веб-сајтова могу да престану с радом.
 
+## Site Permissions - Loopback network
+
+permissions-site-localhost-window =
+    .title = Подешавања - апликације и услуге уређаја
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Ове веб странице су захтевале приступ апликацијама и услугама на овом уређају. Можете изабрати да дозволите или блокирате сајтове у томе.
+permissions-site-localhost-disable-label =
+    .label = Блокирај нове захтеве за приступ апликацијама и услугама на овом уређају
+permissions-site-localhost-disable-desc = Ово ће спречити било коју веб страницу која није наведена изнад да захтева приступ апликацијама и услугама на овом уређају. То може покварити неке функције веб страница.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Подешавања - уређаји на локалној мрежи
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Ове веб странице су захтевале приступ апликацијама и услугама на уређајима повезаним на вашу бежичну или локалну мрежу. Можете изабрати да дозволите или блокирате сајтове у томе.
+permissions-site-local-network-disable-label =
+    .label = Блокирај нове захтеве за приступ апликацијама и услугама на уређајима повезаним на вашу бежичну или локалну мрежу.
+permissions-site-local-network-disable-desc = Ово ће спречити било коју веб страницу која није наведена изнад да захтева приступ апликацијама и услугама на уређајима повезаним на вашу бежичну или локалну мрежу. То може покварити неке функције веб страница.
+
 ## Site Permissions - Microphone
 
 permissions-site-microphone-window2 =
@@ -197,26 +226,20 @@ permissions-site-speaker-window =
     .title = Подешавања - дозволе за звучнике
     .style = { permissions-window2.style }
 permissions-site-speaker-desc = Следећи веб-сајтови су затражили дозволу да изаберу аудио излазни уређај. Можете да подесите којим веб-сајтовима је дозвољено да бирају уређај за аудио излаз.
-
 permissions-exceptions-doh-window =
     .title = Изузеци веб-сајтова за DNS преко HTTPS-а
     .style = { permissions-window2.style }
 permissions-exceptions-manage-doh-desc = { -brand-short-name } неће користити безбедни DNS на овим веб-сајтовима и њиховим поддоменима.
-
 permissions-doh-entry-field = Унеси доменско име веб-сајта
     .accesskey = д
-
 permissions-doh-add-exception =
     .label = Додај
     .accesskey = Д
-
 permissions-doh-col =
     .label = Домен
-
 permissions-doh-remove =
     .label = Уклони
     .accesskey = У
-
 permissions-doh-remove-all =
     .label = Уклони све
     .accesskey = с

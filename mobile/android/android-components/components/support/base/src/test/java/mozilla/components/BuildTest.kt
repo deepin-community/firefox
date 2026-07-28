@@ -4,19 +4,19 @@
 
 package mozilla.components
 
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.test.assertNotNull
 
 class BuildTest {
     @Test
     fun `Sanity check Build class`() {
-        assertNotNull(Build.version)
-        assertNotNull(Build.applicationServicesVersion)
-        assertNotNull(Build.gitHash)
+        assertNotNull(Build.VERSION)
+        assertNotNull(Build.APPLICATION_SERVICES_VERSION)
+        assertNotNull(Build.GIT_HASH)
 
-        assertTrue(Build.version.isNotBlank())
-        assertTrue(Build.applicationServicesVersion.isNotBlank())
-        assertTrue(Build.gitHash.isNotBlank())
+        assertTrue(Build.VERSION.isNotBlank())
+        assertTrue(Build.APPLICATION_SERVICES_VERSION.isNotBlank())
+        assertTrue(Build.GIT_HASH.isNotBlank())
     }
 }

@@ -47,7 +47,8 @@
  * Overrides can be registered at startup or at any later time, so each call to
  * "getCombined" may return a different object. The simplest way to create a
  * reference to the combined object that stays updated to the latest version is
- * to define the root object in a JSM and use the "defineModuleGetter" method.
+ * to define the root object in an ESM and use the "defineESModuleGetter"
+ * method.
  *
  * *** Registration ***
  *
@@ -187,7 +188,7 @@ IntegrationPoint.prototype = {
    *        overridden. Its only parameter is an object that contains the base
    *        implementation of all the available methods.
    *
-   * @note The override function is called every time the list of registered
+   * Note: The override function is called every time the list of registered
    *       override functions changes. Thus, it should not have any side
    *       effects or do any other initialization.
    */
@@ -256,7 +257,7 @@ IntegrationPoint.prototype = {
    * the integration methods, loading the root implementation lazily from the
    * specified sys.mjs module. For example:
    *
-   *   Integration.test.defineModuleGetter(this, "TestIntegration",
+   *   Integration.test.defineESModuleGetter(this, "TestIntegration",
    *                    "resource://testing-common/TestIntegration.sys.mjs");
    *
    * @param targetObject

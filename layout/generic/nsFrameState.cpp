@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,6 +6,8 @@
 
 #include "nsFrameState.h"
 
+#include "mozilla/ISVGDisplayableFrame.h"
+#include "mozilla/SVGContainerFrame.h"
 #include "nsBlockFrame.h"
 #include "nsFlexContainerFrame.h"
 #include "nsGridContainerFrame.h"
@@ -16,14 +16,12 @@
 #include "nsInlineFrame.h"
 #include "nsPageFrame.h"
 #include "nsPlaceholderFrame.h"
-#include "nsRubyTextFrame.h"
 #include "nsRubyTextContainerFrame.h"
+#include "nsRubyTextFrame.h"
 #include "nsTableCellFrame.h"
 #include "nsTableRowFrame.h"
 #include "nsTableRowGroupFrame.h"
 #include "nsTextFrame.h"
-#include "mozilla/ISVGDisplayableFrame.h"
-#include "mozilla/SVGContainerFrame.h"
 
 namespace mozilla {
 

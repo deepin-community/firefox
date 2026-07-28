@@ -25,11 +25,12 @@ async function loadSettingsFile(settingsFile, name) {
  *   The engine name that should be default and is being removed.
  */
 async function checkLoadSettingProperties(settingsFile, engineName) {
+  SearchService.reset();
+
   await loadSettingsFile(settingsFile, engineName);
 
   const settingsFileWritten = promiseAfterSettings();
-  let ss = new SearchService();
-  let result = await ss.init();
+  let result = await SearchService.init();
 
   Assert.ok(
     Components.isSuccessCode(result),
@@ -38,7 +39,7 @@ async function checkLoadSettingProperties(settingsFile, engineName) {
 
   await settingsFileWritten;
 
-  let engines = await ss.getEngines();
+  let engines = await SearchService.getEngines();
 
   Assert.deepEqual(
     engines.map(e => e.name),
@@ -47,13 +48,12 @@ async function checkLoadSettingProperties(settingsFile, engineName) {
   );
 
   Assert.equal(
-    (await Services.search.getDefault()).name,
+    (await SearchService.getDefault()).name,
     "engine1",
     "Should have used the configured default engine"
   );
 
   removeSettingsFile();
-  ss._removeObservers();
 }
 
 /**
@@ -68,18 +68,18 @@ add_setup(async function () {
 
 add_task(async function test_obsolete_distribution_engine() {
   await checkLoadSettingProperties(
-    "data/search-obsolete-distribution.json",
+    "settings/v1-obsolete-distribution.json",
     "Distribution"
   );
 });
 
 add_task(async function test_obsolete_langpack_engine() {
   await checkLoadSettingProperties(
-    "data/search-obsolete-langpack.json",
+    "settings/v1-obsolete-langpack.json",
     "Langpack"
   );
 });
 
 add_task(async function test_obsolete_app_engine() {
-  await checkLoadSettingProperties("data/search-obsolete-app.json", "App");
+  await checkLoadSettingProperties("settings/v1-obsolete-app.json", "App");
 });

@@ -1,6 +1,4 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*-
- * vim: set ts=8 sts=2 et sw=2 tw=80:
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -14,8 +12,9 @@ namespace jit {
 
 class CodeGeneratorNone : public CodeGeneratorShared {
  protected:
-  CodeGeneratorNone(MIRGenerator* gen, LIRGraph* graph, MacroAssembler* masm)
-      : CodeGeneratorShared(gen, graph, masm) {
+  CodeGeneratorNone(MIRGenerator* gen, LIRGraph* graph, MacroAssembler* masm,
+                    const wasm::CodeMetadata* wasmCodeMeta)
+      : CodeGeneratorShared(gen, graph, masm, wasmCodeMeta) {
     MOZ_CRASH();
   }
 
@@ -32,9 +31,6 @@ class CodeGeneratorNone : public CodeGeneratorShared {
   void bailoutCmpPtr(Assembler::Condition, T1, T2, LSnapshot*) {
     MOZ_CRASH();
   }
-  void bailoutTestPtr(Assembler::Condition, Register, Register, LSnapshot*) {
-    MOZ_CRASH();
-  }
   void bailoutIfFalseBool(Register, LSnapshot*) { MOZ_CRASH(); }
   void bailoutFrom(Label*, LSnapshot*) { MOZ_CRASH(); }
   void bailout(LSnapshot*) { MOZ_CRASH(); }
@@ -43,14 +39,12 @@ class CodeGeneratorNone : public CodeGeneratorShared {
   void emitTableSwitchDispatch(MTableSwitch*, Register, Register) {
     MOZ_CRASH();
   }
-  void emitBigIntDiv(LBigIntDiv*, Register, Register, Register, Label*) {
+  void emitBigIntPtrDiv(LBigIntPtrDiv*, Register, Register, Register) {
     MOZ_CRASH();
   }
-  void emitBigIntMod(LBigIntMod*, Register, Register, Register, Label*) {
+  void emitBigIntPtrMod(LBigIntPtrMod*, Register, Register, Register) {
     MOZ_CRASH();
   }
-  ValueOperand ToValue(LInstruction*, size_t) { MOZ_CRASH(); }
-  ValueOperand ToTempValue(LInstruction*, size_t) { MOZ_CRASH(); }
   void generateInvalidateEpilogue() { MOZ_CRASH(); }
 };
 

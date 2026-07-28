@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -78,11 +77,10 @@ ImageMemoryCounter::ImageMemoryCounter(imgRequest* aRequest, Image* aImage,
     imageURL->GetSpec(mURI);
   }
 
-  int32_t width = 0;
-  int32_t height = 0;
-  aImage->GetWidth(&width);
-  aImage->GetHeight(&height);
-  mIntrinsicSize.SizeTo(width, height);
+  ImageIntrinsicSize size;
+  if (NS_SUCCEEDED(aImage->GetIntrinsicSize(&size))) {
+    mIntrinsicSize.SizeTo(size.mWidth.valueOr(0), size.mHeight.valueOr(0));
+  }  // else, leave mIntrinsicSize default-initialized as IntSize(0,0).
 
   mType = aImage->GetType();
   mHasError = aImage->HasError();

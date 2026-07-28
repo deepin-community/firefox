@@ -44,7 +44,7 @@ fxviewtabrow-save-to-pocket = Cadw i { -pocket-brand-name }
 fxviewtabrow-copy-link = Copïo'r Ddolen
     .accesskey = D
 fxviewtabrow-close-tab = Cau Tab
-    .accesskey = C
+    .accesskey = a
 fxviewtabrow-move-tab = Symud Tab
     .accesskey = S
 fxviewtabrow-move-tab-start = Symud i'r Cychwyn
@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Symud i'r Diwedd
     .accesskey = D
 fxviewtabrow-move-tab-window = Symud i Ffenestr Newydd
     .accesskey = N
+fxviewtabrow-send-to-device = Anfon i Ddyfais
+    .accesskey = D
+fxviewtabrow-send-to-mobile = Anfon i'r Symudol
+    .accesskey = S
 fxviewtabrow-send-tab = Anfon Tab i Ddyfais
     .accesskey = D
 fxviewtabrow-pin-tab = Pinio Tab
@@ -67,18 +71,19 @@ fxviewtabrow-unmute-tab = Dad-dewi Tab
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Dewisiadau ar gyfer { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Tewi { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Dad-dewi { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Tewi tab
 fxviewtabrow-unmute-tab-button-no-context =
     .title = Dad-dewi tab
+fxviewtabrow-send-to-mobile-connect-device = Cysylltwch Ddyfais i Anfon Tabiau
+fxviewtabrow-send-to-mobile-device-missing2 = Ddim yn gweld eich dyfais?
+fxviewtabrow-send-to-mobile-not-verified = Cyfrif Heb ei Wirio
+fxviewtabrow-send-to-mobile-verify-account = Gwirio eich Cyfrif
+
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
+
+fxviewtabrow-send-to-mobile-sign-in = Mewngofnodwch i Anfon Tabiau
+fxviewtabrow-send-to-mobile-turn-on-sync = Trowch Sync ymlaen i Anfon Tabiau

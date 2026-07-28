@@ -4,10 +4,6 @@
 
 addons-page-title = Add-ons Manager
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -22,6 +18,8 @@ list-empty-button =
     .label = အက်အွန်တွေ အကြောင်း လေ့လာကြမယ်
 show-unsigned-extensions-button =
     .label = အချို့သော ထပ်တိုးအပို သည် အတည်မပြုနိုင်ပါ
+show-all-extensions-button =
+    .label = ထပ်တိုးအပို အားလုံးကို ရန်
 detail-version =
     .label = မူအဆင့်
 detail-last-updated =
@@ -39,7 +37,7 @@ detail-update-manual =
     .label = ပိတ်ပါ
     .tooltiptext = အဆင့်မြင်တင်မှုများအား အလိုအလျောက် မသွင်းပါနှင့်
 detail-home =
-    .label = မူလအစ
+    .label = အဖွင့်စာမျက်နှာ
 detail-home-value =
     .value = { detail-home.label }
 detail-repository =
@@ -151,28 +149,9 @@ addon-install-from-file-filter-name = ပေါင်းထည့် ဆော�
 addon-open-about-debugging = အတ်အွန်များကို အမှားရှာရန်
     .accesskey = b
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
 ## Add-on actions
 
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
+addon-detail-homepage-label = အဖွင့်စာမျက်နှာ
 
 ## Page headings
 
@@ -199,12 +178,8 @@ details-notification-unsigned2 =
     .message = { -brand-short-name } တွင် အသုံးပြုရန်အတွက် { $name } ကို အတည်မပြုနိုင်ပါ။ သတိထားပြီး ဆက်လက်ဆောင်ရွက်ပါ။
 details-notification-unsigned-link = အချက်အလက် ပိုမိုကြည့်ရန်
 details-notification-blocked = { $name } has been disabled due to security or stability issues.
-details-notification-blocked2 =
-    .message = { $name } has been disabled due to security or stability issues.
 details-notification-blocked-link = နောက်ထပ်အချက်အလက်များ
 details-notification-softblocked = { $name } is known to cause security or stability issues.
-details-notification-softblocked2 =
-    .message = { $name } is known to cause security or stability issues.
 details-notification-softblocked-link = နောက်ထပ်အချက်အလက်များ
 details-notification-gmp-pending = { $name } ကို အချိန်တိုအတွင်း ထည့်သွင်းတပ်ဆင်ပါမည်။
 details-notification-gmp-pending2 =

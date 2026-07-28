@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -36,10 +34,11 @@ void FileSystemParentTest::TearDown() {
 }
 
 // static
-void FileSystemParentTest::InitializeTemporaryOrigin() {
+void FileSystemParentTest::InitializeTemporaryOrigin(
+    bool aCreateIfNonExistent) {
   ASSERT_NO_FATAL_FAILURE(
       QuotaManagerDependencyFixture::InitializeTemporaryOrigin(
-          GetTestOriginMetadata()));
+          GetTestOriginMetadata(), aCreateIfNonExistent));
 }
 
 //  static
@@ -58,7 +57,7 @@ void FileSystemParentTest::GetCachedOriginUsage(quota::UsageInfo& aResult) {
 void FileSystemParentTest::InitializeTemporaryClient() {
   ASSERT_NO_FATAL_FAILURE(
       QuotaManagerDependencyFixture::InitializeTemporaryClient(
-          GetTestClientMetadata()));
+          GetTestClientMetadata(), /* aCreateIfNonExistent */ true));
 }
 
 // static
@@ -80,7 +79,7 @@ void FileSystemParentTest::GetStaticDatabaseUsage(
                 conn, GetTestOriginMetadata());
           }));
 
-  aDatabaseUsage = databaseUsage;
+  aDatabaseUsage = std::move(databaseUsage);
 }
 
 void FileSystemParentTest::EnsureDataManager() {
@@ -186,7 +185,7 @@ void FileSystemParentTest::GetDatabaseUsage(quota::UsageInfo& aDatabaseUsage) {
         QM_TRY_RETURN(databaseManager->GetUsage());
       }));
 
-  aDatabaseUsage = databaseUsage;
+  aDatabaseUsage = std::move(databaseUsage);
 }
 
 void FileSystemParentTest::UpdateDatabaseUsage(const FileId& aFileId) {

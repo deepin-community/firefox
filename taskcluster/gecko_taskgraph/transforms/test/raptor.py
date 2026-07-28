@@ -3,68 +3,100 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+from typing import Optional
+
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.copy import deepcopy
 from taskgraph.util.schema import Schema, optionally_keyed_by, resolve_keyed_by
 from taskgraph.util.treeherder import join_symbol, split_symbol
-from voluptuous import Extra, Optional, Required
 
-from gecko_taskgraph.transforms.test import test_description_schema
+from gecko_taskgraph.transforms.test import TestDescriptionSchema
 from gecko_taskgraph.util.perftest import is_external_browser
 
 transforms = TransformSequence()
 task_transforms = TransformSequence()
 
-raptor_description_schema = Schema(
-    {
-        # Raptor specific configs.
-        Optional("raptor"): {
-            Optional("activity"): optionally_keyed_by("app", str),
-            Optional("apps"): optionally_keyed_by("test-platform", "subtest", [str]),
-            Optional("binary-path"): optionally_keyed_by("app", str),
-            Optional("run-visual-metrics"): optionally_keyed_by(
-                "app", "test-platform", bool
-            ),
-            Optional("subtests"): optionally_keyed_by("app", "test-platform", list),
-            Optional("test"): str,
-            Optional("test-url-param"): optionally_keyed_by(
-                "subtest", "test-platform", str
-            ),
-            Optional("lull-schedule"): optionally_keyed_by(
-                "subtest", "test-platform", str
-            ),
-        },
-        # Configs defined in the 'test_description_schema'.
-        Optional("max-run-time"): optionally_keyed_by(
-            "app", "subtest", "test-platform", test_description_schema["max-run-time"]
-        ),
-        Optional("run-on-projects"): optionally_keyed_by(
+SP3_CRITICAL_TESTS = [
+    "test-windows11-64-24h2-shippable/opt-browsertime-benchmark-firefox-speedometer3",
+    "test-linux2404-64-shippable/opt-browsertime-benchmark-firefox-speedometer3",
+    "test-macosx1500-aarch64-shippable/opt-browsertime-benchmark-firefox-speedometer3",
+    "test-android-hw-a55-14-0-aarch64-shippable/opt-browsertime-benchmark-speedometer3-mobile-fenix",
+]
+
+
+class RaptorSchema(Schema, kw_only=True):
+    activity: Optional[optionally_keyed_by("app", str, use_msgspec=True)] = None  # type: ignore
+    apps: Optional[  # type: ignore
+        optionally_keyed_by("test-platform", "subtest", list[str], use_msgspec=True)
+    ] = None
+    binary_path: Optional[optionally_keyed_by("app", str, use_msgspec=True)] = None  # type: ignore
+    run_visual_metrics: Optional[  # type: ignore
+        optionally_keyed_by("app", "test-platform", bool, use_msgspec=True)
+    ] = None
+    subtests: Optional[  # type: ignore
+        optionally_keyed_by("app", "test-platform", list[object], use_msgspec=True)
+    ] = None
+    test: Optional[str] = None
+    test_url_param: Optional[  # type: ignore
+        optionally_keyed_by("subtest", "test-platform", str, use_msgspec=True)
+    ] = None
+    lull_schedule: Optional[  # type: ignore
+        optionally_keyed_by("subtest", "test-platform", str, use_msgspec=True)
+    ] = None
+    network_conditions: Optional[  # type: ignore
+        optionally_keyed_by("subtest", list[object], use_msgspec=True)
+    ] = None
+
+
+class RaptorDescriptionSchema(Schema, forbid_unknown_fields=False, kw_only=True):
+    # Raptor specific configs.
+    raptor: Optional[RaptorSchema] = None
+    # Configs defined in the 'test_description_schema'.
+    max_run_time: Optional[  # type: ignore
+        optionally_keyed_by(
+            "app",
+            "subtest",
+            "test-platform",
+            TestDescriptionSchema.__annotations__["max_run_time"],
+            use_msgspec=True,
+        )
+    ] = None
+    run_on_projects: Optional[  # type: ignore
+        optionally_keyed_by(
             "app",
             "test-name",
             "raptor.test",
             "subtest",
             "variant",
-            test_description_schema["run-on-projects"],
-        ),
-        Optional("variants"): test_description_schema["variants"],
-        Optional("target"): optionally_keyed_by(
-            "app", test_description_schema["target"]
-        ),
-        Optional("tier"): optionally_keyed_by(
-            "app", "raptor.test", "subtest", "variant", test_description_schema["tier"]
-        ),
-        Required("test-name"): test_description_schema["test-name"],
-        Required("test-platform"): test_description_schema["test-platform"],
-        Required("require-signed-extensions"): test_description_schema[
-            "require-signed-extensions"
-        ],
-        Required("treeherder-symbol"): test_description_schema["treeherder-symbol"],
-        # Any unrecognized keys will be validated against the test_description_schema.
-        Extra: object,
-    }
-)
+            TestDescriptionSchema.__annotations__["run_on_projects"],
+            use_msgspec=True,
+        )
+    ] = None
+    variants: TestDescriptionSchema.__annotations__["variants"] = None
+    target: Optional[  # type: ignore
+        optionally_keyed_by(
+            "app", TestDescriptionSchema.__annotations__["target"], use_msgspec=True
+        )
+    ] = None
+    tier: Optional[  # type: ignore
+        optionally_keyed_by(
+            "app",
+            "raptor.test",
+            "subtest",
+            "variant",
+            TestDescriptionSchema.__annotations__["tier"],
+            use_msgspec=True,
+        )
+    ] = None
+    test_name: TestDescriptionSchema.__annotations__["test_name"]  # noqa: F821
+    test_platform: TestDescriptionSchema.__annotations__["test_platform"]  # noqa: F821
+    require_signed_extensions: TestDescriptionSchema.__annotations__[
+        "require_signed_extensions"  # noqa: F821
+    ]
+    treeherder_symbol: TestDescriptionSchema.__annotations__["treeherder_symbol"]  # noqa: F821
 
-transforms.add_validate(raptor_description_schema)
+
+transforms.add_validate(RaptorDescriptionSchema)
 
 
 @transforms.add
@@ -140,7 +172,9 @@ def split_raptor_subtests(config, tests):
         # test job for every subtest (i.e. split out each page-load URL into its own job)
         subtests = test["raptor"].pop("subtests", None)
         if not subtests:
-            if "macosx1400" not in test["test-platform"]:
+            if all(
+                p not in test["test-platform"] for p in ("macosx1400", "macosx1500")
+            ):
                 yield test
             continue
 
@@ -167,18 +201,61 @@ def handle_keyed_by(config, tests):
         "raptor.activity",
         "raptor.binary-path",
         "raptor.lull-schedule",
+        "raptor.network-conditions",
         "limit-platforms",
         "fetches.fetch",
         "max-run-time",
         "run-on-projects",
         "target",
         "tier",
+        "mozharness.extra-options",
     ]
     for test in tests:
         for field in fields:
             resolve_keyed_by(
                 test, field, item_name=test["test-name"], defer=["variant"]
             )
+        yield test
+
+
+@transforms.add
+def handle_network_conditions(config, tests):
+    for test in tests:
+        conditions = test["raptor"].pop("network-conditions", None)
+        if not conditions:
+            yield test
+            continue
+
+        for condition in conditions:
+            new_test = deepcopy(test)
+            network_type, packet_loss_rate = condition
+
+            new_test.pop("chunk-number")
+            subtest = new_test.pop("subtest")
+            new_test["raptor"]["test"] = subtest
+
+            group, _ = split_symbol(new_test["treeherder-symbol"])
+            new_group = f"{group}-{network_type}"
+            subtest_symbol = f"{new_test['subtest-symbol']}-{packet_loss_rate}"
+            new_test["treeherder-symbol"] = join_symbol(new_group, subtest_symbol)
+
+            mozharness = new_test.setdefault("mozharness", {})
+            extra_options = mozharness.setdefault("extra-options", [])
+
+            extra_options.extend([
+                f"--browsertime-arg=network_type={network_type}",
+                f"--browsertime-arg=pkt_loss_rate={packet_loss_rate}",
+            ])
+
+            new_test["test-name"] += f"-{subtest}-{network_type}-{packet_loss_rate}"
+            new_test["try-name"] += f"-{subtest}-{network_type}-{packet_loss_rate}"
+            new_test["description"] += (
+                f" on {subtest} with {network_type} network type and "
+                f" {packet_loss_rate} loss rate"
+            )
+
+            yield new_test
+
         yield test
 
 
@@ -262,6 +339,16 @@ def modify_extra_options(config, tests):
                         extra_options.pop(i)
                     break
 
+        if "jetstream" in test_name and test.get("app", "") in ("chrome", "custom-car"):
+            # Bug 1996836 - Disable jetstream 2/3 extra profile runs
+            extra_options = test.setdefault("mozharness", {}).setdefault(
+                "extra-options", []
+            )
+            for i, opt in enumerate(extra_options):
+                if "extra-profiler-run" in opt:
+                    extra_options.pop(i)
+                    break
+
         yield test
 
 
@@ -276,16 +363,10 @@ def add_extra_options(config, tests):
 
         # Adding device name if we're on android
         test_platform = test["test-platform"]
-        if test_platform.startswith("android-hw-a51"):
-            extra_options.append("--device-name=a51")
-        elif test_platform.startswith("android-hw-a55"):
+        if test_platform.startswith("android-hw-a55"):
             extra_options.append("--device-name=a55")
-        elif test_platform.startswith("android-hw-p5"):
-            extra_options.append("--device-name=p5_aarch64")
         elif test_platform.startswith("android-hw-p6"):
             extra_options.append("--device-name=p6_aarch64")
-        elif test_platform.startswith("android-hw-s21"):
-            extra_options.append("--device-name=s21_aarch64")
         elif test_platform.startswith("android-hw-s24"):
             extra_options.append("--device-name=s24_aarch64")
 
@@ -320,6 +401,19 @@ def add_extra_options(config, tests):
                     "--test-url-params={}".format(param.replace(" ", ""))
                 )
 
+        if (
+            ("android-hw-p6" in test_platform or "android-hw-s24" in test_platform)
+            and "speedometer2-" not in test["test-name"]
+            # Bug 1943674 resolve why --power-test causes permafails on certain mobile platforms and browsers
+        ):
+            # Bug 2037511 Temporarily disable power-test option for tp6m on a55s
+            if "--power-test" not in extra_options:
+                extra_options.append("--power-test")
+        elif "windows" in test_platform and any(
+            t in test["test-name"] for t in ("speedometer3", "tp6")
+        ):
+            extra_options.append("--power-test")
+
         extra_options.append("--project={}".format(config.params.get("project")))
 
         yield test
@@ -341,7 +435,7 @@ def modify_mozharness_configs(config, tests):
         elif "linux" in test_platform:
             mozharness["config"] = ["raptor/linux_external_browser_config.py"]
         elif "android" in test_platform:
-            test["target"] = "target.tar.bz2"
+            test["target"] = "target.tar.xz"
             mozharness["config"] = ["raptor/android_hw_external_browser_config.py"]
 
         yield test
@@ -356,6 +450,16 @@ def handle_lull_schedule(config, tests):
             lull_schedule = test["raptor"].pop("lull-schedule")
             if lull_schedule:
                 test.setdefault("attributes", {})["lull-schedule"] = lull_schedule
+        yield test
+
+
+@transforms.add
+def apply_raptor_device_optimization(config, tests):
+    # Bug 1919389
+    # For now, only change the back stop optimization strategy for A55 devices
+    for test in tests:
+        if test["test-platform"].startswith("android-hw-a55"):
+            test["optimization"] = {"skip-unless-backstop": None}
         yield test
 
 
@@ -379,3 +483,174 @@ def setup_lull_schedule(config, tasks):
             lull_schedule = attrs.pop("lull-schedule")
             task.setdefault("extra", {})["lull-schedule"] = lull_schedule
         yield task
+
+
+@task_transforms.add
+def setup_autoland_retriggers(config, tasks):
+
+    def _allow_task_duplicates(label):
+        if "android" in label:
+            return False
+        if any(sp3_test in label for sp3_test in SP3_CRITICAL_TESTS):
+            return True
+        return False
+
+    for task in tasks:
+        attrs = task.setdefault("attributes", {})
+        if config.params["project"] == "autoland" and _allow_task_duplicates(
+            task["label"]
+        ):
+            attrs["task_duplicates"] = 12
+        yield task
+
+
+@task_transforms.add
+def setup_internal_artifacts(config, tasks):
+    for task in tasks:
+        if (
+            task["worker"]["os"] == "linux-bitbar"
+            or task["worker"]["os"] == "linux-lambda"
+        ):
+            task["worker"].setdefault("artifacts", []).append({
+                "name": "perftest",
+                "path": "workspace/build/perftest",
+                "type": "directory",
+            })
+        else:
+            task["worker"].setdefault("artifacts", []).append({
+                "name": "perftest",
+                "path": "build/perftest",
+                "type": "directory",
+            })
+        yield task
+
+
+@task_transforms.add
+def select_tasks_to_lambda(config, tasks):
+    """
+    all motionmark tests
+    speedometer3 test
+    unity-webgl test
+    all non-power-testing youtube-playback tests
+    all vpl (video-playback-latency) tests
+    all pageload tests (ideally fenix/CaR/ChR)
+
+    """
+    tests_to_run_at_lambdatest = [
+        "motionmark-1-3",
+        "motionmark-htmlsuite-1-3",
+        "speedometer3",
+        "unity-webgl",
+        "video-playback-latency",
+        "youtube-playback-av1-sfr",
+        "youtube-playback-hfr",
+        "youtube-playback-vp9-sfr",
+        "tp6m",
+    ]
+
+    def redirect_to_lt(task):
+        task["tags"]["os"] = "linux-lambda"
+        task["worker"]["os"] = "linux-lambda"
+        task["worker-type"] = "t-lambda-perf-a55"
+        task["worker"]["env"]["TASKCLUSTER_WORKER_TYPE"] = "t-lambda-perf-a55"
+        cmds = []
+        for cmd in task["worker"]["command"]:
+            # Bug 1981862 - issues with condprof setup @ lambdatest
+            cmds.append([
+                c.replace(
+                    "/builds/taskcluster/script.py",
+                    "/home/ltuser/taskcluster/script.py",
+                )
+                for c in cmd
+                if not c.startswith("--conditioned-profile")
+            ])
+        task["worker"]["command"] = cmds
+        task["worker"]["env"]["DISABLE_USB_POWER_METER_RESET"] = "1"
+        return task
+
+    def make_sp3_lt_copy(task):
+        lt_task = deepcopy(task)
+        lt_task["label"] = lt_task["label"].replace("-a55-", "-a55-lt-")
+        if "treeherder" in lt_task:
+            group, symbol = split_symbol(lt_task["treeherder"]["symbol"])
+            lt_task["treeherder"]["symbol"] = join_symbol(group, f"{symbol}-LT")
+            lt_task["treeherder"]["platform"] = lt_task["treeherder"][
+                "platform"
+            ].replace("-a55-", "-a55-lt-")
+        return redirect_to_lt(lt_task)
+
+    for task in tasks:
+        if not ("android" in task["label"] and "a55" in task["label"]):
+            yield task
+            continue
+        if not any(t in task["label"] for t in tests_to_run_at_lambdatest):
+            yield task
+            continue
+        if task["worker-type"] != "t-bitbar-gw-perf-a55":
+            yield task
+            continue
+        if "speedometer3" in task["label"]:
+            # Bug 2017152 - temporary: run SP3 on both BitBar and LT for comparison
+            # deepcopy must happen before yielding task, as downstream transforms
+            # mutate task["routes"] in-place.
+            # Copying after yield picks up those mutations.
+            lt_task = make_sp3_lt_copy(task)
+            yield task
+            yield lt_task
+        else:
+            yield redirect_to_lt(task)
+
+
+@transforms.add
+def add_simpleperf(config, tests):
+    is_simpleperf = config.params.get("try_task_config", {}).get(
+        "native-profiling", False
+    )
+    app_packages = {
+        "fenix": "org.mozilla.fenix",
+        "geckoview": "org.mozilla.geckoview_example",
+    }
+    for test in tests:
+        test_name = test.get("test-name", None)
+        app = test.get("app")
+        if is_simpleperf and app in app_packages and "speedometer3-mobile" in test_name:
+            extra_options = test.setdefault("mozharness", {}).setdefault(
+                "extra-options", []
+            )
+            extra_options.extend([
+                "--add-option=--simpleperf",
+                "--browsertime-arg=androidSimpleperf=$MOZ_FETCHES_DIR/android-simpleperf",
+            ])
+
+            app_data_dir = f"/storage/emulated/0/Android/data/{app_packages[app]}/files"
+            extra_options.extend([
+                "--setenv MOZ_USE_PERFORMANCE_MARKER_FILE=1",
+                f"--setenv MOZ_PERFORMANCE_MARKER_DIR={app_data_dir}",
+                f"--setenv PERF_SPEW_DIR={app_data_dir}",
+                "--setenv IONPERF=func",
+                "--setenv JIT_OPTION_onlyInlineSelfHosted=true",
+            ])
+
+            fetches = test.setdefault("fetches", {})
+            fetches.setdefault("build", []).append({
+                "artifact": "target.crashreporter-symbols.zip",
+                "extract": False,
+            })
+
+            toolchains = [
+                "linux64-android-simpleperf-linux-repack",
+                "linux64-samply",
+            ]
+            by_app = fetches.setdefault("toolchain", {}).setdefault("by-app", {})
+            by_app.setdefault("default", []).extend(toolchains)
+        yield test
+
+
+@transforms.add
+def handle_simpleperf_symbol(config, tests):
+    for test in tests:
+        extra_options = test.get("mozharness", {}).get("extra-options", [])
+        if "--add-option=--simpleperf" in extra_options:
+            group, symbol = split_symbol(test["treeherder-symbol"])
+            test["treeherder-symbol"] = join_symbol(group, f"{symbol}-simpleperf")
+        yield test

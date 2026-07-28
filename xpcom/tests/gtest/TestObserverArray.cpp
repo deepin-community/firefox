@@ -1,12 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-// vim:cindent:ts=4:et:sw=4:
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsTObserverArray.h"
 #include "gtest/gtest.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/UniquePtr.h"
 
 using namespace mozilla;
@@ -18,7 +15,7 @@ typedef nsTObserverArray<int> IntArray;
     ++testNum;                                                           \
     count = 0;                                                           \
     IntArray::_type iter(arr);                                           \
-    while (iter.HasMore() && count != ArrayLength(_exp)) {               \
+    while (iter.HasMore() && count != std::size(_exp)) {                 \
       _code int next = iter.GetNext();                                   \
       int expected = _exp[count++];                                      \
       ASSERT_EQ(next, expected)                                          \
@@ -26,7 +23,7 @@ typedef nsTObserverArray<int> IntArray;
     }                                                                    \
     ASSERT_FALSE(iter.HasMore())                                         \
     << "During test " << testNum << ", iterator ran over";               \
-    ASSERT_EQ(count, ArrayLength(_exp))                                  \
+    ASSERT_EQ(count, std::size(_exp))                                    \
         << "During test " << testNum << ", iterator finished too early"; \
   } while (0)
 

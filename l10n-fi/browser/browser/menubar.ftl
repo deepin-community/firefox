@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = Asetukset
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = Asetukset…
+menu-application-set-as-default =
+    .label = Aseta { -brand-shorter-name } oletusselaimeksi
 menu-application-services =
     .label = Palvelut
 menu-application-hide-this =
@@ -36,17 +29,17 @@ menu-application-touch-bar =
 menu-quit =
     .label =
         { PLATFORM() ->
-            [windows] Sulje selain
-           *[other] Sulje selain
+            [windows] Lopeta
+           *[other] Lopeta
         }
     .accesskey =
         { PLATFORM() ->
-            [windows] S
-           *[other] S
+            [windows] L
+           *[other] L
         }
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
-    .label = Sulje { -brand-shorter-name }
+    .label = Lopeta { -brand-shorter-name }
 menu-about =
     .label = Tietoja: { -brand-shorter-name }
     .accesskey = T
@@ -54,7 +47,11 @@ menu-about =
 ## File Menu
 
 menu-file =
-    .label = Tiedosto
+    .label =
+        { PLATFORM() ->
+            [macos] Arkisto
+           *[other] Tiedosto
+        }
     .accesskey = T
 menu-file-new-tab =
     .label = Uusi välilehti
@@ -97,6 +94,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = Jaa
     .accesskey = J
+menu-file-share-qrcode =
+    .label = Luo QR-koodi…
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = Luo QR-koodi
+    .accesskey = Q
 menu-file-print-setup =
     .label = Sivun asetukset…
     .accesskey = e
@@ -145,8 +148,6 @@ menu-view-history-button =
     .label = Sivuhistoria
 menu-view-synced-tabs-sidebar =
     .label = Synkronoidut välilehdet
-menu-view-megalist-sidebar =
-    .label = Salasanat
 menu-view-full-zoom =
     .label = Sivun suurennus
     .accesskey = S
@@ -254,6 +255,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Kannettavan laitteen kirjanmerkit
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profiilit
+menu-profiles-manage-profiles =
+    .label = Hallitse profiileja
+menu-profiles-new-profile =
+    .label = Uusi profiili
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (nykyinen)
+menu-profiles-menu =
+    .label = Profiilit
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +279,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Lataukset
     .accesskey = L
+menu-tools-extensions-and-themes =
+    .label = Laajennukset ja teemat
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Lisäosat ja teemat
     .accesskey = L
@@ -289,6 +309,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Tietoja sivusta
     .accesskey = T
+menu-tools-edit-pdf =
+    .label = Muokkaa PDF-tiedostoa…
+    .accesskey = P
 menu-settings =
     .label = Asetukset
     .accesskey =

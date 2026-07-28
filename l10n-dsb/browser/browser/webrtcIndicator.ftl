@@ -78,7 +78,7 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
@@ -112,7 +112,7 @@ webrtc-indicator-menuitem-sharing-application-with-n-tabs =
         { $tabCount ->
             [one] Nałoženje źěli se z { $tabCount } rejtarikom
             [two] Nałoženja źěle se z { $tabCount } rejtarikoma
-            [few] Nałoženja źěla se z { $tabCount } rejtarikami
+            [few] Nałoženja źěle se z { $tabCount } rejtarikami
            *[other] Nałoženja źěle se z { $tabCount } rejtarikami
         }
 webrtc-indicator-menuitem-sharing-screen-with =
@@ -165,7 +165,7 @@ webrtc-allow-share-screen-and-audio-capture = Cośo { $origin } dowóliś, na aw
 
 ## Special phrasing for sharing devices when the origin is a file url.
 
-webrtc-allow-share-audio-capture-with-file = Cośo %toś tej lokalnej dowóliś, na awdio toś togo rejtarika słuchaś?
+webrtc-allow-share-audio-capture-with-file = Cośo toś tej lokalnej dowóliś, na awdio toś togo rejtarika słuchaś?
 webrtc-allow-share-camera-with-file = Cośo toś tej lokalnej dataji dowóliś, wašu kameru wužywaś?
 webrtc-allow-share-microphone-with-file = Cośo toś tej lokalnej dataji dowóliś, waš mikrofon wužywaś?
 webrtc-allow-share-screen-with-file = Cośo toś tej lokalnej dataji dowóliś, wašu wobrazowku wiźeś?
@@ -173,7 +173,7 @@ webrtc-allow-share-screen-with-file = Cośo toś tej lokalnej dataji dowóliś, 
 # another audio output connection.
 webrtc-allow-share-speaker-with-file = Cośo toś tej lokalnej dataji dowóliś, druge głosniki wužywaś?
 webrtc-allow-share-camera-and-microphone-with-file = Cośo toś tej lokalnej dataji dowóliś, wašu kameru a waš mikrofon wužywaś?
-webrtc-allow-share-camera-and-audio-capture-with-file = Cośo toś tej lokalnej dataji dowóliś, swóju kameru wužywaś a na awdio toś togo rejtaroka słuchaś?
+webrtc-allow-share-camera-and-audio-capture-with-file = Cośo toś tej lokalnej dataji dowóliś, swóju kameru wužywaś a na awdio toś togo rejtarika słuchaś?
 webrtc-allow-share-screen-and-microphone-with-file = Cośo toś tej lokalnej dataji dowóliś, swój mikrofon wužywaś a swóju wobrazowku wiźeś?
 webrtc-allow-share-screen-and-audio-capture-with-file = Cośo toś tej lokalnej dataji dowóliś, na awdio toś togo rejtarika słuchaś a swóju wobrazowku wiźeś?
 
@@ -195,8 +195,8 @@ webrtc-allow-share-screen-and-audio-capture-unsafe-delegation = Cośo { $origin 
 
 ##
 
-webrtc-share-screen-warning = Źělśo jano wobrazowki ze sedłami, kótarymž dowěriśo. Źělenje móžo wobšudnym sedłam zmóžniś, ako wy pśeglědowaś a waše priwatne daty kšadnuś.
-webrtc-share-browser-warning = Źělśo { -brand-short-name } jano ze sedłami, kótarymž dowěriśo. Źělenje móžo wobšudnym sedłam zmóžniś, ako wy pśeglědowaś a waše priwatne daty kšadnuś.
+webrtc-share-screen-warning = Źělśo jano wobrazowki ze sedłami, kótarymž dowěriśo. Źělenje móžo wobšudnym sedłam zmóžniś, ako wy, pśeglědowaś a waše priwatne daty kšadnuś.
+webrtc-share-browser-warning = Źělśo { -brand-short-name } jano ze sedłami, kótarymž dowěriśo. Źělenje móžo wobšudnym sedłam zmóžniś, ako wy, pśeglědowaś a waše priwatne daty kšadnuś.
 webrtc-share-screen-learn-more = Dalšne informacije
 webrtc-pick-window-or-screen = Wubjeŕśo wokno abo wobrazowku
 webrtc-share-entire-screen = Ceła wobrazowka

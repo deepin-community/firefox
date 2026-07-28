@@ -9,7 +9,7 @@ const TEST_URLS = [
   "https://www.example.com/",
   "https://example.net/",
   "https://example.org/",
-  "about:logo",
+  "about:mozilla",
   "about:robots",
 ];
 const TOPIC_CLOSED_OBJECTS_CHANGED = "sessionstore-closed-objects-changed";
@@ -90,8 +90,9 @@ async function prepareClosedData() {
 
   closedIds.testWindow3 = SessionStore.getClosedWindowData()[0].closedId;
   await BrowserTestUtils.closeWindow(privateWin);
-  Assert.ok(
-    closedIds.testWindow2 > closedIds.testWindow1,
+  Assert.greater(
+    closedIds.testWindow2,
+    closedIds.testWindow1,
     "We got the closedIds in the expected order"
   );
 
@@ -135,7 +136,7 @@ add_task(async function get_closed_tabs_from_closed_windows() {
       td => td.state.entries[0].url
     ),
     [
-      "about:logo",
+      "about:mozilla",
       "https://example.org/",
       "https://example.net/",
       "https://www.example.com/",
@@ -163,7 +164,7 @@ add_task(async function forget_closed_tabs_from_closed_windows() {
       td => td.state.entries[0].url
     ),
     [
-      "about:logo",
+      "about:mozilla",
       "https://example.org/",
       "https://example.net/",
       // "https://www.example.com/" from testWindow1 was forgotten and should be removed

@@ -1,6 +1,8 @@
-// Tracks a set of bookmark guids and their syncChangeCounter field and
-// provides a simple way for the test to check the correct fields had the
-// counter incremented.
+/**
+ * Tracks a set of bookmark guids and their syncChangeCounter field and
+ * provides a simple way for the test to check the correct fields had the
+ * counter incremented.
+ */
 class CounterTracker {
   constructor() {
     this.tracked = new Map();
@@ -39,8 +41,9 @@ class CounterTracker {
       if (expectedToIncrement.includes(guid)) {
         // Note we don't check specifically for +1, as some changes will
         // increment the counter by more than 1 (which is OK).
-        Assert.ok(
-          newValue > value,
+        Assert.greater(
+          newValue,
+          value,
           `${desc} was expected to increment - was ${value}, now ${newValue}`
         );
         this.tracked.set(guid, { name, value: newValue });
@@ -66,7 +69,9 @@ async function checkSyncFields(guid, expected) {
   }
 }
 
-// Common test cases for sync field changes.
+/**
+ * Common test cases for sync field changes.
+ */
 class TestCases {
   async run() {
     info("Test 1: inserts, updates, tags, and keywords");
@@ -99,7 +104,7 @@ class TestCases {
   }
 
   async testChanges() {
-    let testUri = NetUtil.newURI("http://test.mozilla.org");
+    let testUri = Services.io.newURI("http://test.mozilla.org");
 
     let guid = await this.insertBookmark(
       PlacesUtils.bookmarks.unfiledGuid,
@@ -153,7 +158,7 @@ class TestCases {
     let insertSyncedBookmark = uri => {
       return this.insertBookmark(
         PlacesUtils.bookmarks.unfiledGuid,
-        NetUtil.newURI(uri),
+        Services.io.newURI(uri),
         PlacesUtils.bookmarks.DEFAULT_INDEX,
         "A bookmark name"
       );
@@ -190,7 +195,7 @@ class TestCases {
     await counterTracker.track(folder1, "folder 1");
 
     // Put a new bookmark in the folder.
-    let testUri = NetUtil.newURI("http://test2.mozilla.org");
+    let testUri = Services.io.newURI("http://test2.mozilla.org");
     let child1 = await this.insertBookmark(
       folder1,
       testUri,
@@ -282,8 +287,10 @@ class TestCases {
   }
 }
 
-// Exercises the legacy, synchronous `nsINavBookmarksService` calls implemented
-// in C++.
+/**
+ * Exercises the legacy, synchronous `nsINavBookmarksService` calls implemented
+ *  in C++.
+ */
 class SyncTestCases extends TestCases {
   async createFolder(parentGuid, title, index) {
     let parentId = await PlacesTestUtils.promiseItemId(parentGuid);
@@ -330,7 +337,9 @@ async function findTagFolder(tag) {
   return results.length ? results[0].getResultByName("guid") : null;
 }
 
-// Exercises the new, async calls implemented in `Bookmarks.sys.mjs`.
+/**
+ * Exercises the new, async calls implemented in `Bookmarks.sys.mjs`.
+ */
 class AsyncTestCases extends TestCases {
   async createFolder(parentGuid, title, index) {
     let item = await PlacesUtils.bookmarks.insert({

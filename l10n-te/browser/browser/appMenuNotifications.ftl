@@ -15,20 +15,24 @@ appmenu-update-manual2 =
     .buttonaccesskey = D
     .secondarybuttonlabel = విస్మరించు
     .secondarybuttonaccesskey = m
+appmenu-update-unsupported2 =
+    .label = తాజాకరించలేకపోయాం
+    .buttonlabel = ఇంకా తెలుసుకోండి
+    .buttonaccesskey = L
+    .secondarybuttonlabel = విస్మరించు
+    .secondarybuttonaccesskey = m
 appmenu-update-restart2 =
     .label = తాజాకరణ అందుబాటులో ఉంది
     .buttonlabel = తాజాకరించి పునఃప్రారంభించు
     .buttonaccesskey = U
     .secondarybuttonlabel = విస్మరించు
     .secondarybuttonaccesskey = m
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = సరే
     .buttonaccesskey = O
 appmenu-addon-post-install-incognito-checkbox =
     .label = ఈ పొడగింతను అంతరంగీక కిటికీలలో నడవడానికి అనుమతించు
     .accesskey = A
-    
 appmenu-new-tab-controlled-changes =
     .label = మీ కొత్త ట్యాబు మారిపోయింది.
     .buttonlabel = మార్పులను ఉండనివ్వు

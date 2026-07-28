@@ -1,38 +1,39 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=2 sw=2 sts=2 et cindent: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifdef MOZ_AV1
-#  include "AOMDecoder.h"
-#endif
 #include "DXVA2Manager.h"
+
 #include <d3d11.h>
+
+#include "AOMDecoder.h"
 #include "DriverCrashGuard.h"
 #include "GfxDriverInfo.h"
 #include "ImageContainer.h"
 #include "MFTDecoder.h"
 #include "MediaTelemetryConstants.h"
 #include "PerformanceRecorder.h"
-#include "VideoUtils.h"
 #include "VPXDecoder.h"
+#include "VideoUtils.h"
 #include "WMFUtils.h"
 #include "gfxCrashReporterUtils.h"
 #include "gfxWindowsPlatform.h"
 #include "mfapi.h"
 #include "mozilla/AppShutdown.h"
+#include "mozilla/Assertions.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/StaticMutex.h"
 #include "mozilla/StaticPrefs_media.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/gfx/DeviceManagerDx.h"
+#include "mozilla/glean/DomMediaPlatformsWmfMetrics.h"
+#include "mozilla/layers/CompositeProcessD3D11FencesHolderMap.h"
 #include "mozilla/layers/D3D11ShareHandleImage.h"
-#include "mozilla/layers/D3D11TextureIMFSampleImage.h"
-#include "mozilla/layers/HelpersD3D11.h"
+#include "mozilla/layers/D3D11ZeroCopyTextureImage.h"
+#include "mozilla/layers/FenceD3D11.h"
 #include "mozilla/layers/ImageBridgeChild.h"
 #include "mozilla/layers/TextureD3D11.h"
 #include "mozilla/layers/TextureForwarder.h"
+#include "mozilla/layers/VideoProcessorD3D11.h"
 #include "mozilla/mscom/EnsureMTA.h"
 #include "nsPrintfCString.h"
 #include "nsThreadUtils.h"
@@ -114,6 +115,7 @@ static const DWORD sNVIDIABrokenNV12[] = {
 
 extern mozilla::LazyLogModule sPDMLog;
 #define LOG(...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, (__VA_ARGS__))
+#define LOGV(...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, (__VA_ARGS__))
 
 namespace mozilla {
 
@@ -319,6 +321,8 @@ static const char* DecoderGUIDToStr(const GUID& aGuid) {
 // number of videos we're decoding with DXVA. Use on main thread only.
 static Atomic<uint32_t> sDXVAVideosCount(0);
 
+// This class's functions are not thread-safe, please use them carefully.
+// TODO : make this class better in bug1932998.
 class D3D11DXVA2Manager : public DXVA2Manager {
  public:
   D3D11DXVA2Manager();
@@ -335,18 +339,32 @@ class D3D11DXVA2Manager : public DXVA2Manager {
   // into an image which is returned by aOutImage.
   HRESULT CopyToImage(IMFSample* aVideoSample, const gfx::IntRect& aRegion,
                       Image** aOutImage) override;
+  HRESULT CopyToImage(ID3D11Texture2D* aVideoSample, UINT aSurfaceIndex,
+                      const gfx::IntRect& aRegion,
+                      layers::Image** aOutImage) override;
 
   HRESULT WrapTextureWithImage(IMFSample* aVideoSample,
                                const gfx::IntRect& aRegion,
                                layers::Image** aOutImage) override;
 
-  HRESULT CopyToBGRATexture(ID3D11Texture2D* aInTexture, uint32_t aArrayIndex,
-                            ID3D11Texture2D** aOutTexture) override;
+  HRESULT WrapTextureWithImage(D3D11TextureWrapper* aTextureWrapper,
+                               const gfx::IntRect& aRegion,
+                               layers::Image** aOutImage) override;
 
   HRESULT ConfigureForSize(IMFMediaType* aInputType,
                            gfx::YUVColorSpace aColorSpace,
-                           gfx::ColorRange aColorRange, uint32_t aWidth,
-                           uint32_t aHeight) override;
+                           gfx::ColorRange aColorRange,
+                           gfx::ColorDepth aColorDepth,
+                           gfx::TransferFunction aTransferFunction,
+                           const Maybe<gfx::HDRMetadata>& aHDRMetadata,
+                           uint32_t aWidth, uint32_t aHeight) override;
+  HRESULT ConfigureForSize(gfx::SurfaceFormat aSurfaceFormat,
+                           gfx::YUVColorSpace aColorSpace,
+                           gfx::ColorRange aColorRange,
+                           gfx::ColorDepth aColorDepth,
+                           gfx::TransferFunction aTransferFunction,
+                           const Maybe<gfx::HDRMetadata>& aHDRMetadata,
+                           uint32_t aWidth, uint32_t aHeight) override;
 
   bool IsD3D11() override { return true; }
 
@@ -356,12 +374,28 @@ class D3D11DXVA2Manager : public DXVA2Manager {
   void BeforeShutdownVideoMFTDecoder() override;
 
   bool SupportsZeroCopyNV12Texture() override {
-    if (mIMFSampleUsageInfo->SupportsZeroCopyNV12Texture() &&
-        (mDevice != DeviceManagerDx::Get()->GetCompositorDevice())) {
-      mIMFSampleUsageInfo->DisableZeroCopyNV12Texture();
+    // The maximum number of video frames for which the client can use with zero
+    // video frame copy. If the usage count exceeds the maximum count, the zero
+    // video frame copy is disabled to prevent run out of video frames at
+    // decoder. The max count is set to prevent accidental disabling of the zero
+    // video frame copy during normal video playback. During normal video
+    // playback, ZeroCopyUsageInfo::GetRefCount() was around 5 to 8. The maximum
+    // count is set sufficiently higher than the GetRefCount() during normal
+    // video playback.
+    const int maxVideoFrameUsageCount = 14;
+
+    if (mZeroCopyUsageInfo->SupportsZeroCopyNV12Texture()) {
+      if (mDevice != DeviceManagerDx::Get()->GetCompositorDevice()) {
+        mZeroCopyUsageInfo->DisableZeroCopyNV12Texture();
+      } else if (mZeroCopyUsageInfo->GetRefCount() > maxVideoFrameUsageCount) {
+        mZeroCopyUsageInfo->DisableZeroCopyNV12Texture(
+            ZeroCopyUsageInfo::DisableReason::UsingTooManyFrames);
+      }
     }
-    return mIMFSampleUsageInfo->SupportsZeroCopyNV12Texture();
+    return mZeroCopyUsageInfo->SupportsZeroCopyNV12Texture();
   }
+
+  ID3D11Device* GetD3D11Device() override { return mDevice; }
 
  private:
   HRESULT CreateOutputSample(RefPtr<IMFSample>& aSample,
@@ -374,6 +408,19 @@ class D3D11DXVA2Manager : public DXVA2Manager {
   void RefreshIMFSampleWrappers();
   void ReleaseAllIMFSamples();
 
+  struct InputTextureInfo {
+    InputTextureInfo(ID3D11Texture2D* aTexture, UINT aIndex,
+                     const gfx::IntRect& aRegion)
+        : mTexture(aTexture), mIndex(aIndex), mRegion(aRegion) {};
+    ID3D11Texture2D* mTexture;
+    const UINT mIndex;
+    const gfx::IntRect mRegion;
+  };
+  HRESULT CopyTextureToImage(const InputTextureInfo& aInTexture,
+                             Image** aOutImage);
+
+  VideoProcessorD3D11* GetOrCreateVideoProcessor();
+
   RefPtr<ID3D11Device> mDevice;
   RefPtr<ID3D11DeviceContext> mContext;
   RefPtr<IMFDXGIDeviceManager> mDXGIDeviceManager;
@@ -382,6 +429,7 @@ class D3D11DXVA2Manager : public DXVA2Manager {
   RefPtr<layers::KnowsCompositor> mKnowsCompositor;
   RefPtr<ID3D11VideoDecoder> mDecoder;
   RefPtr<layers::SyncObjectClient> mSyncObject;
+  RefPtr<VideoProcessorD3D11> mProcessor;
   uint32_t mWidth = 0;
   uint32_t mHeight = 0;
   UINT mDeviceManagerToken = 0;
@@ -389,9 +437,14 @@ class D3D11DXVA2Manager : public DXVA2Manager {
   GUID mInputSubType;
   gfx::YUVColorSpace mYUVColorSpace;
   gfx::ColorRange mColorRange = gfx::ColorRange::LIMITED;
+  gfx::ColorDepth mColorDepth = gfx::ColorDepth::COLOR_8;
+  gfx::TransferFunction mTransferFunction = gfx::TransferFunction::BT709;
+  Maybe<gfx::HDRMetadata> mHDRMetadata;
+  gfx::SurfaceFormat mSurfaceFormat;
   std::list<ThreadSafeWeakPtr<layers::IMFSampleWrapper>> mIMFSampleWrappers;
-  RefPtr<layers::IMFSampleUsageInfo> mIMFSampleUsageInfo;
+  RefPtr<layers::ZeroCopyUsageInfo> mZeroCopyUsageInfo;
   uint32_t mVendorID = 0;
+  RefPtr<layers::FenceD3D11> mWriteFence;
 };
 
 bool D3D11DXVA2Manager::SupportsConfig(const VideoInfo& aInfo,
@@ -539,6 +592,10 @@ bool D3D11DXVA2Manager::SupportsConfig(const VideoInfo& aInfo,
       desc.OutputFormat = DXGI_FORMAT_P010;
     } else if (subtype == MFVideoFormat_P016) {
       desc.OutputFormat = DXGI_FORMAT_P016;
+    } else if (subtype == MFVideoFormat_A2R10G10B10) {
+      desc.OutputFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+    } else if (subtype == MFVideoFormat_A16B16G16R16F) {
+      desc.OutputFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
     }
   }
 
@@ -550,7 +607,7 @@ bool D3D11DXVA2Manager::SupportsConfig(const VideoInfo& aInfo,
 }
 
 D3D11DXVA2Manager::D3D11DXVA2Manager()
-    : mIMFSampleUsageInfo(new layers::IMFSampleUsageInfo) {}
+    : mZeroCopyUsageInfo(new layers::ZeroCopyUsageInfo) {}
 
 D3D11DXVA2Manager::~D3D11DXVA2Manager() {}
 
@@ -606,8 +663,8 @@ D3D11DXVA2Manager::Init(layers::KnowsCompositor* aKnowsCompositor,
   }
   mTextureClientAllocator->SetMaxPoolSize(5);
 
-  Telemetry::Accumulate(Telemetry::MEDIA_DECODER_BACKEND_USED,
-                        uint32_t(media::MediaDecoderBackend::WMFDXVA2D3D11));
+  glean::media::decoder_backend_used.AccumulateSingleSample(
+      uint32_t(media::MediaDecoderBackend::WMFDXVA2D3D11));
 
   reporter.SetSuccessful();
 
@@ -634,6 +691,13 @@ D3D11DXVA2Manager::InitInternal(layers::KnowsCompositor* aKnowsCompositor,
     }
   }
 
+  auto* fencesHolderMap = layers::CompositeProcessD3D11FencesHolderMap::Get();
+  const bool useFence =
+      fencesHolderMap && layers::FenceD3D11::IsSupported(mDevice);
+  if (useFence) {
+    mWriteFence = layers::FenceD3D11::Create(mDevice);
+  }
+
   RefPtr<ID3D10Multithread> mt;
   hr = mDevice->QueryInterface((ID3D10Multithread**)getter_AddRefs(mt));
   NS_ENSURE_TRUE(SUCCEEDED(hr) && mt, hr);
@@ -656,6 +720,7 @@ D3D11DXVA2Manager::InitInternal(layers::KnowsCompositor* aKnowsCompositor,
     return hr;
   }
 
+  // TODO(https://bugzilla.mozilla.org/show_bug.cgi?id=2008874)
   // The IMFTransform interface used by MFTDecoder is documented to require to
   // run on an MTA thread.
   // https://msdn.microsoft.com/en-us/library/windows/desktop/ee892371(v=vs.85).aspx#components
@@ -729,7 +794,7 @@ D3D11DXVA2Manager::InitInternal(layers::KnowsCompositor* aKnowsCompositor,
 
   if (!IsD3D11() || !XRE_IsGPUProcess() ||
       (mDevice != DeviceManagerDx::Get()->GetCompositorDevice())) {
-    mIMFSampleUsageInfo->DisableZeroCopyNV12Texture();
+    mZeroCopyUsageInfo->DisableZeroCopyNV12Texture();
   }
 
   return S_OK;
@@ -761,10 +826,6 @@ D3D11DXVA2Manager::CopyToImage(IMFSample* aVideoSample,
   NS_ENSURE_TRUE(aOutImage, E_POINTER);
   MOZ_ASSERT(mTextureClientAllocator);
 
-  RefPtr<D3D11ShareHandleImage> image =
-      new D3D11ShareHandleImage(gfx::IntSize(mWidth, mHeight), aRegion,
-                                ToColorSpace2(mYUVColorSpace), mColorRange);
-
   // Retrieve the DXGI_FORMAT for the current video sample.
   RefPtr<IMFMediaBuffer> buffer;
   HRESULT hr = aVideoSample->GetBufferByIndex(0, getter_AddRefs(buffer));
@@ -774,126 +835,24 @@ D3D11DXVA2Manager::CopyToImage(IMFSample* aVideoSample,
   hr = buffer->QueryInterface((IMFDXGIBuffer**)getter_AddRefs(dxgiBuf));
   NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
 
-  RefPtr<ID3D11Texture2D> tex;
-  hr = dxgiBuf->GetResource(__uuidof(ID3D11Texture2D), getter_AddRefs(tex));
+  RefPtr<ID3D11Texture2D> inputTexture;
+  hr = dxgiBuf->GetResource(__uuidof(ID3D11Texture2D),
+                            getter_AddRefs(inputTexture));
   NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
 
-  D3D11_TEXTURE2D_DESC inDesc;
-  tex->GetDesc(&inDesc);
+  UINT index;
+  dxgiBuf->GetSubresourceIndex(&index);
 
-  bool ok = image->AllocateTexture(mTextureClientAllocator, mDevice);
-  NS_ENSURE_TRUE(ok, E_FAIL);
+  InputTextureInfo info(inputTexture, index, aRegion);
+  return CopyTextureToImage(info, aOutImage);
+}
 
-  RefPtr<TextureClient> client =
-      image->GetTextureClient(ImageBridgeChild::GetSingleton().get());
-  NS_ENSURE_TRUE(client, E_FAIL);
-
-  RefPtr<ID3D11Texture2D> texture = image->GetTexture();
-  D3D11_TEXTURE2D_DESC outDesc;
-  texture->GetDesc(&outDesc);
-
-  RefPtr<IDXGIKeyedMutex> mutex;
-  texture->QueryInterface((IDXGIKeyedMutex**)getter_AddRefs(mutex));
-
-  {
-    AutoTextureLock(mutex, hr, 2000);
-    if (mutex && (FAILED(hr) || hr == WAIT_TIMEOUT || hr == WAIT_ABANDONED)) {
-      return hr;
-    }
-
-    if (!mutex && mDevice != DeviceManagerDx::Get()->GetCompositorDevice()) {
-      NS_ENSURE_TRUE(mSyncObject, E_FAIL);
-    }
-
-    UINT height = std::min(inDesc.Height, outDesc.Height);
-    PerformanceRecorder<PlaybackStage> perfRecorder(
-        MediaStage::CopyDecodedVideo, height);
-    // The D3D11TextureClientAllocator may return a different texture format
-    // than preferred. In which case the destination texture will be BGRA32.
-    if (outDesc.Format == inDesc.Format) {
-      // Our video frame is stored in a non-sharable ID3D11Texture2D. We need
-      // to create a copy of that frame as a sharable resource, save its share
-      // handle, and put that handle into the rendering pipeline.
-      UINT width = std::min(inDesc.Width, outDesc.Width);
-      D3D11_BOX srcBox = {0, 0, 0, width, height, 1};
-
-      UINT index;
-      dxgiBuf->GetSubresourceIndex(&index);
-      mContext->CopySubresourceRegion(texture, 0, 0, 0, 0, tex, index, &srcBox);
-    } else {
-      // Use MFT to do color conversion.
-      hr = E_FAIL;
-      mozilla::mscom::EnsureMTA(
-          [&]() -> void { hr = mTransform->Input(aVideoSample); });
-      NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-      RefPtr<IMFSample> sample;
-      hr = CreateOutputSample(sample, texture);
-      NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-      hr = E_FAIL;
-      mozilla::mscom::EnsureMTA(
-          [&]() -> void { hr = mTransform->Output(&sample); });
-      NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-    }
-    perfRecorder.Record();
-  }
-
-  if (!mutex && mDevice != DeviceManagerDx::Get()->GetCompositorDevice() &&
-      mSyncObject) {
-    static StaticMutex sMutex MOZ_UNANNOTATED;
-    // Ensure that we only ever attempt to synchronise via the sync object
-    // serially as when using the same D3D11 device for multiple video decoders
-    // it can lead to deadlocks.
-    StaticMutexAutoLock lock(sMutex);
-    // It appears some race-condition may allow us to arrive here even when
-    // mSyncObject is null. It's better to avoid that crash.
-    client->SyncWithObject(mSyncObject);
-    if (!mSyncObject->Synchronize(true)) {
-      return DXGI_ERROR_DEVICE_RESET;
-    }
-  } else if (mDevice == DeviceManagerDx::Get()->GetCompositorDevice() &&
-             mVendorID != 0x8086) {
-    MOZ_ASSERT(XRE_IsGPUProcess());
-    MOZ_ASSERT(mVendorID);
-
-    // Normally when D3D11Texture2D is copied by
-    // ID3D11DeviceContext::CopySubresourceRegion() with compositor device,
-    // WebRender does not need to wait copy complete, since WebRender also uses
-    // compositor device. But with some non-Intel GPUs, the copy complete need
-    // to be wait explicitly even with compositor device such as when using
-    // video overlays.
-
-    RefPtr<ID3D11DeviceContext> context;
-    mDevice->GetImmediateContext(getter_AddRefs(context));
-
-    RefPtr<ID3D11Query> query;
-    CD3D11_QUERY_DESC desc(D3D11_QUERY_EVENT);
-    HRESULT hr = mDevice->CreateQuery(&desc, getter_AddRefs(query));
-    if (SUCCEEDED(hr) && query) {
-      context->End(query);
-
-      auto* data = client->GetInternalData()->AsD3D11TextureData();
-      MOZ_ASSERT(data);
-      if (data) {
-        // If GPU is not NVIDIA GPU, ID3D11Query is used only for video overlay.
-        // See Bug 1910990 Intel GPU does not use ID3D11Query for waiting video
-        // frame copy.
-        const bool onlyForOverlay = mVendorID != 0x10DE;
-        // Wait query happens only just before blitting for video overlay.
-        data->RegisterQuery(query, onlyForOverlay);
-      } else {
-        gfxCriticalNoteOnce << "D3D11TextureData does not exist";
-      }
-    } else {
-      gfxCriticalNoteOnce << "Could not create D3D11_QUERY_EVENT: "
-                          << gfx::hexa(hr);
-    }
-  }
-
-  image.forget(aOutImage);
-
-  return S_OK;
+HRESULT D3D11DXVA2Manager::CopyToImage(ID3D11Texture2D* aInputTexture,
+                                       UINT aSurfaceIndex,
+                                       const gfx::IntRect& aRegion,
+                                       layers::Image** aOutImage) {
+  InputTextureInfo info(aInputTexture, aSurfaceIndex, aRegion);
+  return CopyTextureToImage(info, aOutImage);
 }
 
 HRESULT D3D11DXVA2Manager::WrapTextureWithImage(IMFSample* aVideoSample,
@@ -922,10 +881,23 @@ HRESULT D3D11DXVA2Manager::WrapTextureWithImage(IMFSample* aVideoSample,
 
   RefreshIMFSampleWrappers();
 
+  auto format = [&]() {
+    if (desc.Format == DXGI_FORMAT_P010) {
+      return gfx::SurfaceFormat::P010;
+    }
+    if (desc.Format == DXGI_FORMAT_P016) {
+      return gfx::SurfaceFormat::P016;
+    }
+    MOZ_ASSERT(desc.Format == DXGI_FORMAT_NV12);
+    return gfx::SurfaceFormat::NV12;
+  }();
+
   RefPtr<D3D11TextureIMFSampleImage> image = new D3D11TextureIMFSampleImage(
       aVideoSample, texture, arrayIndex, gfx::IntSize(mWidth, mHeight), aRegion,
-      ToColorSpace2(mYUVColorSpace), mColorRange);
-  image->AllocateTextureClient(mKnowsCompositor, mIMFSampleUsageInfo);
+      format, ToColorSpace2(mYUVColorSpace), mColorRange, mTransferFunction,
+      mHDRMetadata, mColorDepth);
+  image->AllocateTextureClient(mKnowsCompositor, mZeroCopyUsageInfo,
+                               mWriteFence);
 
   RefPtr<IMFSampleWrapper> wrapper = image->GetIMFSampleWrapper();
   ThreadSafeWeakPtr<IMFSampleWrapper> weak(wrapper);
@@ -933,6 +905,20 @@ HRESULT D3D11DXVA2Manager::WrapTextureWithImage(IMFSample* aVideoSample,
 
   image.forget(aOutImage);
 
+  return S_OK;
+}
+
+HRESULT D3D11DXVA2Manager::WrapTextureWithImage(
+    D3D11TextureWrapper* aTextureWrapper, const gfx::IntRect& aRegion,
+    layers::Image** aOutImage) {
+  NS_ENSURE_TRUE(aOutImage, E_POINTER);
+  RefPtr<D3D11TextureAVFrameImage> image = new D3D11TextureAVFrameImage(
+      aTextureWrapper, gfx::IntSize(mWidth, mHeight), aRegion,
+      ToColorSpace2(mYUVColorSpace), mColorRange, mTransferFunction,
+      mHDRMetadata, mColorDepth);
+  image->AllocateTextureClient(mKnowsCompositor, mZeroCopyUsageInfo,
+                               mWriteFence);
+  image.forget(aOutImage);
   return S_OK;
 }
 
@@ -962,134 +948,91 @@ void D3D11DXVA2Manager::BeforeShutdownVideoMFTDecoder() {
   ReleaseAllIMFSamples();
 }
 
-HRESULT
-D3D11DXVA2Manager::CopyToBGRATexture(ID3D11Texture2D* aInTexture,
-                                     uint32_t aArrayIndex,
-                                     ID3D11Texture2D** aOutTexture) {
-  NS_ENSURE_TRUE(aInTexture, E_POINTER);
-  NS_ENSURE_TRUE(aOutTexture, E_POINTER);
+// Glossary of RGB formats for display:
+// DXGI_FORMAT_B8G8R8A8_UNORM     <-> MFVideoFormat_ARGB32
+// DXGI_FORMAT_R16G16B16A16_FLOAT <-> MFVideoFormat_A16B16G16R16F
+// DXGI_FORMAT_R10G10B10A2_UNORM  <-> MFVideoFormat_A2R10G10B10
+// (Yes MFVideoFormat_A2R10G10B10 is actually R10G10B10A2)
+//
+// YUV formats for decoder output:
+// DXGI_FORMAT_NV12               <-> MFVideoFormat_NV12
+// DXGI_FORMAT_YV12               <-> MFVideoFormat_YV12
+// DXGI_FORMAT_P010               <-> MFVideoFormat_P010
+// DXGI_FORMAT_P016               <-> MFVideoFormat_P016
+//
+// Format pairings for SDR colorspaces:
+// {DXGI_FORMAT_NV12, DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709}
+// {DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P709}
+//
+// Format pairings for HDR colorspaces:
+// {DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020}
+// {DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709}
+//
+// A few notes:
+// * NV12 can be directly displayed as an overlay, whereas all other
+//   formats need to be converted to RGB for display.
+// * YV12 is only used for SW decode (and we have no SurfaceFormat to represent
+//   it, gfx::SurfaceFormat::YUV420 has a different plane order).
+// * P010 and P016 are for HDR video, testing these as an overlay showed that
+//   they do not seem to honor the HDR G2084 transfer function so we can
+//   consider them simply not displayable.
+// * If a video has alpha channel the decoder would have to output RGBA because
+//   Windows has no enums for YUV with alpha, we don't currently support RGBA
+//   output from decoders so alpha is not currently relevant.
+// * Windows seems to do some magic HDR tonemapping on SDR displays without even
+//   telling it to do anything, it's not clear what we can rely on about this,
+//   but testing in the wild is probably the best answer for now.
 
-  HRESULT hr;
-  RefPtr<ID3D11Texture2D> texture, inTexture;
-
-  inTexture = aInTexture;
-
-  CD3D11_TEXTURE2D_DESC desc;
-  aInTexture->GetDesc(&desc);
-
-  if (!mInputType || desc.Width != mWidth || desc.Height != mHeight) {
-    RefPtr<IMFMediaType> inputType;
-    hr = wmf::MFCreateMediaType(getter_AddRefs(inputType));
-    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-    hr = inputType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-    const GUID subType = [&]() {
-      switch (desc.Format) {
-        case DXGI_FORMAT_NV12:
-          return MFVideoFormat_NV12;
-        case DXGI_FORMAT_P010:
-          return MFVideoFormat_P010;
-        case DXGI_FORMAT_P016:
-          return MFVideoFormat_P016;
-        default:
-          MOZ_ASSERT_UNREACHABLE("Unexpected texture type");
-          return MFVideoFormat_NV12;
-      }
-    }();
-
-    hr = inputType->SetGUID(MF_MT_SUBTYPE, subType);
-    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-    hr = inputType->SetUINT32(MF_MT_INTERLACE_MODE,
-                              MFVideoInterlace_Progressive);
-    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-    hr = inputType->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE);
-    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-    hr = ConfigureForSize(inputType, mYUVColorSpace, mColorRange, desc.Width,
-                          desc.Height);
-    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
+// Convert a Media Foundation subtype GUID to a gfx::SurfaceFormat.
+static gfx::SurfaceFormat SurfaceFormatFromSubType(const GUID& aSubType) {
+  // We can't use a switch on subType because GUID is a struct.
+  if (aSubType == MFVideoFormat_ARGB32) {
+    return gfx::SurfaceFormat::B8G8R8A8;
   }
-
-  RefPtr<IDXGIKeyedMutex> mutex;
-  inTexture->QueryInterface((IDXGIKeyedMutex**)getter_AddRefs(mutex));
-  // The rest of this function will not work if inTexture implements
-  // IDXGIKeyedMutex! In that case case we would have to copy to a
-  // non-mutex using texture.
-
-  if (mutex) {
-    RefPtr<ID3D11Texture2D> newTexture;
-
-    desc.MiscFlags = 0;
-    hr = mDevice->CreateTexture2D(&desc, nullptr, getter_AddRefs(newTexture));
-    NS_ENSURE_TRUE(SUCCEEDED(hr) && newTexture, E_FAIL);
-
-    hr = mutex->AcquireSync(0, 2000);
-    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-    mContext->CopyResource(newTexture, inTexture);
-
-    mutex->ReleaseSync(0);
-    inTexture = newTexture;
+  if (aSubType == MFVideoFormat_A16B16G16R16F) {
+    return gfx::SurfaceFormat::R16G16B16A16F;
   }
-
-  desc = CD3D11_TEXTURE2D_DESC(
-      DXGI_FORMAT_B8G8R8A8_UNORM, desc.Width, desc.Height, 1, 1,
-      D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
-  desc.MiscFlags =
-      D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED;
-
-  hr = mDevice->CreateTexture2D(&desc, nullptr, getter_AddRefs(texture));
-  NS_ENSURE_TRUE(SUCCEEDED(hr) && texture, E_FAIL);
-
-  RefPtr<IMFSample> inputSample;
-  wmf::MFCreateSample(getter_AddRefs(inputSample));
-
-  // If these aren't set the decoder fails.
-  inputSample->SetSampleTime(10);
-  inputSample->SetSampleDuration(10000);
-
-  RefPtr<IMFMediaBuffer> inputBuffer;
-  hr = wmf::MFCreateDXGISurfaceBuffer(__uuidof(ID3D11Texture2D), inTexture,
-                                      aArrayIndex, FALSE,
-                                      getter_AddRefs(inputBuffer));
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-  inputSample->AddBuffer(inputBuffer);
-
-  hr = E_FAIL;
-  mozilla::mscom::EnsureMTA(
-      [&]() -> void { hr = mTransform->Input(inputSample); });
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-  RefPtr<IMFSample> outputSample;
-  hr = CreateOutputSample(outputSample, texture);
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-  hr = E_FAIL;
-  mozilla::mscom::EnsureMTA(
-      [&]() -> void { hr = mTransform->Output(&outputSample); });
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-  texture.forget(aOutTexture);
-
-  return S_OK;
+  if (aSubType == MFVideoFormat_A2R10G10B10) {
+    return gfx::SurfaceFormat::R10G10B10X2_UINT32;
+  }
+  if (aSubType == MFVideoFormat_NV12) {
+    return gfx::SurfaceFormat::NV12;
+  }
+  if (aSubType == MFVideoFormat_YUY2) {
+    return gfx::SurfaceFormat::YUY2;
+  }
+  if (aSubType == MFVideoFormat_P010) {
+    return gfx::SurfaceFormat::P010;
+  }
+  if (aSubType == MFVideoFormat_P016) {
+    return gfx::SurfaceFormat::P016;
+  }
+  MOZ_ASSERT_UNREACHABLE("Unknown subtype");
+  return gfx::SurfaceFormat::UNKNOWN;
 }
 
 HRESULT
 D3D11DXVA2Manager::ConfigureForSize(IMFMediaType* aInputType,
                                     gfx::YUVColorSpace aColorSpace,
                                     gfx::ColorRange aColorRange,
+                                    gfx::ColorDepth aColorDepth,
+                                    gfx::TransferFunction aTransferFunction,
+                                    const Maybe<gfx::HDRMetadata>& aHDRMetadata,
                                     uint32_t aWidth, uint32_t aHeight) {
   GUID subType = {0};
   HRESULT hr = aInputType->GetGUID(MF_MT_SUBTYPE, &subType);
   NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
 
+  // The aInputType subType here is one of the following:
+  // * MFVideoFormat_NV12
+  // * MFVideoFormat_YV12
+  // * MFVideoFormat_P010
+  // * MFVideoFormat_P016
+
   if (subType == mInputSubType && aWidth == mWidth && aHeight == mHeight &&
-      mYUVColorSpace == aColorSpace && mColorRange == aColorRange) {
+      mYUVColorSpace == aColorSpace && mColorRange == aColorRange &&
+      mColorDepth == aColorDepth && mTransferFunction == aTransferFunction &&
+      mHDRMetadata == aHDRMetadata) {
     // If the media type hasn't changed, don't reconfigure.
     return S_OK;
   }
@@ -1122,13 +1065,24 @@ D3D11DXVA2Manager::ConfigureForSize(IMFMediaType* aInputType,
   hr = outputType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
   NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
 
-  hr = outputType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_ARGB32);
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
+  // Pick an RGB format based on the required color depth.
+  if (aColorDepth > gfx::ColorDepth::COLOR_10) {
+    hr = outputType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_A16B16G16R16F);
+    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
+  } else if (aColorDepth > gfx::ColorDepth::COLOR_8) {
+    hr = outputType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_A2R10G10B10);
+    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
+  } else {
+    hr = outputType->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_ARGB32);
+    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
+  }
 
+  // TODO(https://bugzilla.mozilla.org/show_bug.cgi?id=2008874)
   hr = E_FAIL;
   mozilla::mscom::EnsureMTA([&]() -> void {
     hr = mTransform->SetMediaTypes(
-        inputType, outputType, [aWidth, aHeight](IMFMediaType* aOutput) {
+        inputType, outputType, MFVideoFormat_ARGB32,
+        [aWidth, aHeight](IMFMediaType* aOutput) {
           HRESULT hr = aOutput->SetUINT32(MF_MT_INTERLACE_MODE,
                                           MFVideoInterlace_Progressive);
           NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
@@ -1142,27 +1096,77 @@ D3D11DXVA2Manager::ConfigureForSize(IMFMediaType* aInputType,
   });
   NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
 
+  const bool isSizeChanged = (mWidth != aWidth) || (mHeight != aHeight);
   mWidth = aWidth;
   mHeight = aHeight;
   mInputType = inputType;
   mInputSubType = subType;
   mYUVColorSpace = aColorSpace;
   mColorRange = aColorRange;
+  mColorDepth = aColorDepth;
+  mTransferFunction = aTransferFunction;
+  mHDRMetadata = aHDRMetadata;
   if (mTextureClientAllocator) {
-    gfx::SurfaceFormat format = [&]() {
-      if (subType == MFVideoFormat_NV12) {
-        return gfx::SurfaceFormat::NV12;
-      } else if (subType == MFVideoFormat_P010) {
-        return gfx::SurfaceFormat::P010;
-      } else if (subType == MFVideoFormat_P016) {
-        return gfx::SurfaceFormat::P016;
-      } else {
-        MOZ_ASSERT_UNREACHABLE("Unexpected texture type");
-        return gfx::SurfaceFormat::NV12;
-      }
-    }();
-    mTextureClientAllocator->SetPreferredSurfaceFormat(format);
+    mSurfaceFormat = SurfaceFormatFromSubType(subType);
+    mTextureClientAllocator->SetPreferredSurfaceFormat(mSurfaceFormat);
   }
+  // Reconfig video processor as well
+  if (isSizeChanged && mProcessor) {
+    hr = mProcessor->Init(gfx::IntSize(mWidth, mHeight));
+    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
+  }
+  LOG("Configured D3D11DXVA2Manager, size=[%u,%u], colorSpace=%hhu, "
+      "colorRange=%hhu, colorDepth=%hhu, transferFunction=%hhu",
+      mWidth, mHeight, static_cast<uint8_t>(mYUVColorSpace),
+      static_cast<uint8_t>(mColorRange), static_cast<uint8_t>(mColorDepth),
+      static_cast<uint8_t>(mTransferFunction));
+  return S_OK;
+}
+
+HRESULT
+D3D11DXVA2Manager::ConfigureForSize(gfx::SurfaceFormat aSurfaceFormat,
+                                    gfx::YUVColorSpace aColorSpace,
+                                    gfx::ColorRange aColorRange,
+                                    gfx::ColorDepth aColorDepth,
+                                    gfx::TransferFunction aTransferFunction,
+                                    const Maybe<gfx::HDRMetadata>& aHDRMetadata,
+                                    uint32_t aWidth, uint32_t aHeight) {
+  if (aWidth == mWidth && aHeight == mHeight && mYUVColorSpace == aColorSpace &&
+      mColorRange == aColorRange && aSurfaceFormat == mSurfaceFormat &&
+      mColorDepth == aColorDepth && mTransferFunction == aTransferFunction &&
+      mHDRMetadata == aHDRMetadata) {
+    // No need to reconfigure if nothing changes.
+    return S_OK;
+  }
+
+  const bool isSizeChanged = (mWidth != aWidth) || (mHeight != aHeight);
+  mWidth = aWidth;
+  mHeight = aHeight;
+  mYUVColorSpace = aColorSpace;
+  mColorRange = aColorRange;
+  mColorDepth = aColorDepth;
+  mSurfaceFormat = aSurfaceFormat;
+  mTransferFunction = aTransferFunction;
+  mHDRMetadata = aHDRMetadata;
+  if (mTextureClientAllocator) {
+    // mSurfaceFormat here is one of the following:
+    // * SurfaceFormat::NV12
+    // * SurfaceFormat::YV12
+    // * SurfaceFormat::P010
+    // * SurfaceFormat::P016
+    mTextureClientAllocator->SetPreferredSurfaceFormat(mSurfaceFormat);
+  }
+  // Reconfig video processor as well
+  if (isSizeChanged && mProcessor) {
+    mProcessor->Init(gfx::IntSize(mWidth, mHeight));
+  }
+  LOG("Configured D3D11DXVA2Manager, size=[%u,%u], colorSpace=%hhu, "
+      "colorRange=%hhu, colorDepth=%hhu, transferFunction=%hhu, "
+      "surfaceFormat=%hhd",
+      mWidth, mHeight, static_cast<uint8_t>(mYUVColorSpace),
+      static_cast<uint8_t>(mColorRange), static_cast<uint8_t>(mColorDepth),
+      static_cast<uint8_t>(mTransferFunction),
+      static_cast<uint8_t>(mSurfaceFormat));
   return S_OK;
 }
 
@@ -1199,12 +1203,12 @@ bool D3D11DXVA2Manager::CanCreateDecoder(
 /* static */
 DXVA2Manager* DXVA2Manager::CreateD3D11DXVA(
     layers::KnowsCompositor* aKnowsCompositor, nsACString& aFailureReason,
-    ID3D11Device* aDevice) {
+    ID3D11Device* aDevice, DXVA2Usage aUsage) {
   // DXVA processing takes up a lot of GPU resources, so limit the number of
   // videos we use DXVA with at any one time.
   uint32_t dxvaLimit = StaticPrefs::media_wmf_dxva_max_videos();
 
-  if (sDXVAVideosCount == dxvaLimit) {
+  if (sDXVAVideosCount == dxvaLimit && aUsage == DXVA2Usage::Playback) {
     aFailureReason.AssignLiteral("Too many DXVA videos playing");
     return nullptr;
   }
@@ -1259,6 +1263,136 @@ bool DXVA2Manager::IsNV12Supported(uint32_t aVendorID, uint32_t aDeviceID,
   return true;
 }
 
+HRESULT D3D11DXVA2Manager::CopyTextureToImage(
+    const InputTextureInfo& aInTexture, Image** aOutImage) {
+  MOZ_DIAGNOSTIC_ASSERT(aInTexture.mTexture);
+
+  D3D11_TEXTURE2D_DESC inDesc;
+  aInTexture.mTexture->GetDesc(&inDesc);
+
+  LOG("CopyTextureToImage, inDesc.Format=%d, mYUVColorSpace=%d, "
+      "mColorRange=%d, mColorDepth=%d",
+      inDesc.Format, static_cast<int>(mYUVColorSpace),
+      static_cast<int>(mColorRange), static_cast<int>(mColorDepth));
+
+  RefPtr<D3D11ShareHandleImage> image = new D3D11ShareHandleImage(
+      gfx::IntSize(mWidth, mHeight), aInTexture.mRegion,
+      ToColorSpace2(mYUVColorSpace), mColorRange, mTransferFunction,
+      mHDRMetadata, mColorDepth);
+
+  if (!image->AllocateTexture(mTextureClientAllocator, mDevice)) {
+    LOG("Failed to allocate texture!");
+    return E_FAIL;
+  }
+
+  RefPtr<TextureClient> client =
+      image->GetTextureClient(ImageBridgeChild::GetSingleton().get());
+  if (!client) {
+    LOG("Failed to get texture client!");
+    return E_FAIL;
+  }
+
+  RefPtr<ID3D11Texture2D> texture = image->GetTexture();
+  D3D11_TEXTURE2D_DESC outDesc;
+  texture->GetDesc(&outDesc);
+
+  LOGV("CopyTexture, inTextureFormat=%d, outTextureFormat=%d", inDesc.Format,
+       outDesc.Format);
+
+  RefPtr<IDXGIKeyedMutex> mutex;
+  texture->QueryInterface((IDXGIKeyedMutex**)getter_AddRefs(mutex));
+
+  HRESULT hr;
+  {
+    AutoTextureLock(mutex, hr, 2000);
+    if (mutex && (FAILED(hr) || hr == WAIT_TIMEOUT || hr == WAIT_ABANDONED)) {
+      LOG("Failed to require texture lock");
+      return hr;
+    }
+
+    if (!mutex && mDevice != DeviceManagerDx::Get()->GetCompositorDevice() &&
+        !mSyncObject) {
+      LOG("No sync object!");
+      return E_FAIL;
+    }
+
+    UINT height = std::min(inDesc.Height, outDesc.Height);
+    PerformanceRecorder<PlaybackStage> perfRecorder(
+        MediaStage::CopyDecodedVideo, height);
+    // The D3D11TextureClientAllocator may return a different texture format
+    // than preferred. In which case the destination texture will be BGRA32.
+    // Eg. when NV12 is blocked by Gfx.
+    if (outDesc.Format == inDesc.Format) {
+      // Our video frame is stored in a non-sharable ID3D11Texture2D. We need
+      // to create a copy of that frame as a sharable resource, save its share
+      // handle, and put that handle into the rendering pipeline.
+      UINT width = std::min(inDesc.Width, outDesc.Width);
+      D3D11_BOX srcBox = {0, 0, 0, width, height, 1};
+      mContext->CopySubresourceRegion(texture, 0, 0, 0, 0, aInTexture.mTexture,
+                                      aInTexture.mIndex, &srcBox);
+    } else {
+      // Convert YUV to RGB.
+      auto* processor = GetOrCreateVideoProcessor();
+      if (!processor) {
+        LOG("Failed to get a video processor");
+        return E_FAIL;
+      }
+      VideoProcessorD3D11::InputTextureInfo info(
+          ToColorSpace2(mYUVColorSpace), mColorRange, mTransferFunction,
+          aInTexture.mIndex, aInTexture.mTexture);
+      if (!processor->CallVideoProcessorBlt(info, texture.get())) {
+        LOG("Failed on CallVideoProcessorBlt!");
+        return E_FAIL;
+      }
+    }
+    perfRecorder.Record();
+  }
+
+  auto* textureData = client->GetInternalData()->AsD3D11TextureData();
+  auto* fencesHolderMap = CompositeProcessD3D11FencesHolderMap::Get();
+  MOZ_ASSERT(textureData);
+  const bool useFence =
+      textureData && textureData->mFencesHolderId.isSome() && fencesHolderMap;
+  if (useFence) {
+    textureData->IncrementAndSignalWriteFence();
+  } else if (!mutex &&
+             mDevice != DeviceManagerDx::Get()->GetCompositorDevice() &&
+             mSyncObject) {
+    static StaticMutex sMutex MOZ_UNANNOTATED;
+    // Ensure that we only ever attempt to synchronise via the sync object
+    // serially as when using the same D3D11 device for multiple video decoders
+    // it can lead to deadlocks.
+    StaticMutexAutoLock lock(sMutex);
+    // It appears some race-condition may allow us to arrive here even when
+    // mSyncObject is null. It's better to avoid that crash.
+    client->SyncWithObject(mSyncObject);
+    if (!mSyncObject->Synchronize(true)) {
+      return DXGI_ERROR_DEVICE_RESET;
+    }
+  }
+
+  image.forget(aOutImage);
+  return S_OK;
+}
+
+VideoProcessorD3D11* D3D11DXVA2Manager::GetOrCreateVideoProcessor() {
+  if (mProcessor) {
+    return mProcessor;
+  }
+  mProcessor = VideoProcessorD3D11::Create(mDevice);
+  if (!mProcessor) {
+    LOG("Failed to create video processor D3D11");
+    return nullptr;
+  }
+  HRESULT hr = mProcessor->Init(gfx::IntSize(mWidth, mHeight));
+  if (FAILED(hr)) {
+    mProcessor = nullptr;
+    LOG("Failed to init video processor D3D11, hr=%lx", hr);
+  }
+  return mProcessor;
+}
+
 }  // namespace mozilla
 
 #undef LOG
+#undef LOGV

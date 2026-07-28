@@ -7,7 +7,7 @@ registerCleanupFunction(async () => {
 });
 
 add_task(async function setup() {
-  await http3_setup_tests("h3-29");
+  await http3_setup_tests("h3");
 });
 
 let Http3Listener = function (amount) {
@@ -60,13 +60,13 @@ Http3Listener.prototype = {
     try {
       httpVersion = request.protocolVersion;
     } catch (e) {}
-    Assert.equal(httpVersion, "h3-29");
+    Assert.equal(httpVersion, "h3");
     // We should get 2 correctOnProgress, i.e. one for request and one for the response.
     Assert.equal(this.onProgressMaxNotificationCount, 2);
     if (this.amount > 500000) {
       // 10 is an arbitrary number, but we cannot calculate exact number
       // because it depends on timing.
-      Assert.ok(this.onProgressNotificationCount > 10);
+      Assert.greater(this.onProgressNotificationCount, 10);
     }
     this.finish();
   },
@@ -92,7 +92,7 @@ function makeChan(uri, amount) {
   let stream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  stream.data = generateContent(amount);
+  stream.setByteStringData(generateContent(amount));
   let uchan = chan.QueryInterface(Ci.nsIUploadChannel);
   uchan.setUploadStream(stream, "text/plain", stream.available());
   chan.requestMethod = "POST";
@@ -141,7 +141,8 @@ add_task(async function test_bug1749957_bug1750056() {
     loadUsingSystemPrincipal: true,
   }).QueryInterface(Ci.nsIHttpChannel);
 
-  // https://searchfox.org/mozilla-central/rev/1920b17ac5988fcfec4e45e2a94478ebfbfc6f88/toolkit/components/viaduct/ViaductRequest.cpp#120-152
+  // Similar to viaduct-necko implementation:
+  // https://searchfox.org/firefox-main/source/services/application-services/components/viaduct-necko/backend.cpp
   {
     chan.requestMethod = "POST";
     chan.setRequestHeader("content-length", "" + amount, /* aMerge = */ false);
@@ -149,7 +150,7 @@ add_task(async function test_bug1749957_bug1750056() {
     let stream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
       Ci.nsIStringInputStream
     );
-    stream.data = generateContent(amount);
+    stream.setByteStringData(generateContent(amount));
     let uchan = chan.QueryInterface(Ci.nsIUploadChannel2);
     uchan.explicitSetUploadStream(
       stream,

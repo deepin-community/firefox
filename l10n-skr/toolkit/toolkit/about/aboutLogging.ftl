@@ -58,9 +58,7 @@ about-logging-preset-custom-description = لاگ ماڈیولز دستی طور 
 # Error handling
 about-logging-error = نقص:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = کلید "{ $k }" کیتے غلط قدر "{ $v }"
 about-logging-unknown-logging-preset = نامعلوم لاگنگ پری سیٹ "{ $v }"

@@ -25,7 +25,6 @@ webext-perms-add =
 webext-perms-cancel =
     .label = Cancel·la
     .accesskey = C
-
 webext-perms-sideload-text = Un altre programa del vostre ordinador ha instal·lat un complement que pot afectar el navegador. Reviseu els permisos que se sol·liciten i trieu Habilita o Cancel·la (per deixar-lo inhabilitat).
 webext-perms-sideload-text-no-perms = Un altre programa del vostre ordinador ha instal·lat un complement que pot afectar el navegador. Reviseu els permisos que se sol·liciten i trieu Habilita o Cancel·la (per deixar-lo inhabilitat).
 webext-perms-sideload-enable =
@@ -34,14 +33,12 @@ webext-perms-sideload-enable =
 webext-perms-sideload-cancel =
     .label = Cancel·la
     .accesskey = C
-
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
 webext-perms-update-text = «{ $extension }» s'ha actualitzat. Heu d'aprovar els permisos nous per instal·lar la versió actualitzada. Feu clic a «Cancel·la» per mantindre la versió actual de l'extensió. Esta extensió tindrà permís per:
 webext-perms-update-accept =
     .label = Actualitza
     .accesskey = A
-
 webext-perms-optional-perms-list-intro = Vol:
 webext-perms-optional-perms-allow =
     .label = Permet
@@ -49,13 +46,10 @@ webext-perms-optional-perms-allow =
 webext-perms-optional-perms-deny =
     .label = Denega
     .accesskey = D
-
 webext-perms-host-description-all-urls = Accedir a les dades de tots els llocs web
-
 # Variables:
 #   $domain (String): will be replaced by the DNS domain for which a webextension is requesting access (e.g., mozilla.org)
 webext-perms-host-description-wildcard = Accedir a les dades web del domini { $domain }
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -67,7 +61,6 @@ webext-perms-host-description-too-many-wildcards =
 # Variables:
 #   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., www.mozilla.org)
 webext-perms-host-description-one-site = Accedir a les dades de { $domain }
-
 # Variables:
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
@@ -76,24 +69,3 @@ webext-perms-host-description-too-many-sites =
         [one] Accedir a les dades en { $domainCount } altre domini
        *[other] Accedir a les dades en { $domainCount } altres dominis
     }
-
-## Headers used in the webextension permissions dialog for synthetic add-ons.
-## The part of the string describing what privileges the extension gives should be consistent
-## with the value of webext-site-perms-description-gated-perms-{sitePermission}.
-## Note, this string will be used as raw markup. Avoid characters like <, >, &
-## Variables:
-##   $hostname (String): the hostname of the site the add-on is being installed from.
-
-
-##
-
-
-## Headers used in the webextension permissions dialog.
-## Note: This string will be used as raw markup. Avoid characters like <, >, &
-## Variables:
-##   $extension (String): replaced with the localized name of the extension being installed.
-##   $hostname (String): will be replaced by the DNS host name for which a webextension enables permissions.
-
-
-## These should remain in sync with permissions.NAME.label in sitePermissions.properties
-

@@ -12,20 +12,6 @@ about-reader-color-scheme-sepia = Sepia
     .title = Schema da colurs sepia
 about-reader-color-scheme-auto = Automatic
     .title = Schema da colurs automatic
-about-reader-color-theme-light = Cler
-    .title = Design cun colurs cleras
-about-reader-color-theme-dark = Stgir
-    .title = Design cun colurs stgiras
-about-reader-color-theme-sepia = Sepia
-    .title = Design cun colurs sepia
-about-reader-color-theme-auto = Auto
-    .title = Design cun colurs tschernidas automaticamain
-about-reader-color-theme-gray = Grisch
-    .title = Design cun colurs grischas
-about-reader-color-theme-contrast = Cuntrast
-    .title = Design cun colurs da cuntrastantas
-about-reader-color-theme-custom = Colurs persunalisadas
-    .title = Design cun colurs persunalisadas
 about-reader-color-light-theme = Cler
     .title = Design cun colurs cleras
 about-reader-color-dark-theme = Stgir
@@ -49,7 +35,7 @@ about-reader-estimated-read-time =
        *[other] { $range } minutas
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Diminuir la grondezza da la scrittira
@@ -74,7 +60,6 @@ about-reader-font-type-monospace = Largezza fixa
 
 about-reader-toolbar-close = Serrar la vista da lectura
 about-reader-toolbar-type-controls = Controllas da la scrittira
-about-reader-toolbar-color-controls = Colurs
 about-reader-toolbar-text-layout-controls = Text e layout
 about-reader-toolbar-theme-controls = Design
 about-reader-toolbar-savetopocket = Memorisar en { -pocket-brand-name }
@@ -89,20 +74,24 @@ about-reader-customtheme-tab = Persunalisà
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Text
-    .title = Midar la colur
-about-reader-custom-colors-background = Fund davos
-    .title = Midar la colur
-about-reader-custom-colors-unvisited-links = Colliaziuns betg visitadas
-    .title = Midar la colur
-about-reader-custom-colors-visited-links = Colliaziuns visitadas
-    .title = Midar la colur
-about-reader-custom-colors-selection-highlight = Emfasa per preleger dad aut
-    .title = Midar la colur
-about-reader-custom-colors-reset-button = Restabilir il standard
 about-reader-reset-button = Restabilir il standard
+about-reader-custom-colors-foreground2 =
+    .label = Text
+    .title = Midar la colur
+about-reader-custom-colors-background2 =
+    .label = Fund davos
+    .title = Midar la colur
+about-reader-custom-colors-unvisited-links2 =
+    .label = Colliaziuns betg visitadas
+    .title = Midar la colur
+about-reader-custom-colors-visited-links2 =
+    .label = Colliaziuns visitadas
+    .title = Midar la colur
+about-reader-custom-colors-selection-highlight2 =
+    .label = Emfasa per preleger dad aut
+    .title = Midar la colur
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Text
 about-reader-text-size-label = Grondezza dal text
@@ -119,9 +108,6 @@ about-reader-content-width-label =
 about-reader-line-spacing-label =
     .label = Interlingia
 about-reader-advanced-layout-header = Avanzà
-about-reader-slider-label-width-narrow = Stretg
-about-reader-slider-label-width-wide = Lartg
-about-reader-slider-label-spacing-narrow = Stretg
 about-reader-character-spacing-label =
     .label = Spazi tranter ils caracters
 about-reader-word-spacing-label =
@@ -133,3 +119,5 @@ about-reader-text-alignment-center =
     .title = Centrar il text
 about-reader-text-alignment-right =
     .title = Alingiar il text a dretga
+about-reader-text-alignment-justify =
+    .title = Giustar il text

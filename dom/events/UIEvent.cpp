@@ -1,14 +1,12 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/dom/UIEvent.h"
+
 #include "base/basictypes.h"
 #include "ipc/IPCMessageUtils.h"
 #include "ipc/IPCMessageUtilsSpecializations.h"
-#include "mozilla/dom/UIEvent.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/ContentEvents.h"
 #include "mozilla/EventStateManager.h"
@@ -18,9 +16,9 @@
 #include "nsCOMPtr.h"
 #include "nsContentUtils.h"
 #include "nsIContent.h"
-#include "nsIInterfaceRequestorUtils.h"
 #include "nsIDocShell.h"
 #include "nsIFrame.h"
+#include "nsIInterfaceRequestorUtils.h"
 #include "nsLayoutUtils.h"
 #include "prtime.h"
 
@@ -30,10 +28,7 @@ UIEvent::UIEvent(EventTarget* aOwner, nsPresContext* aPresContext,
                  WidgetGUIEvent* aEvent)
     : Event(aOwner, aPresContext,
             aEvent ? aEvent : new InternalUIEvent(false, eVoidEvent, nullptr)),
-      mDefaultClientPoint(0, 0),
-      mLayerPoint(0, 0),
-      mPagePoint(0, 0),
-      mMovementPoint(0, 0) {
+      mLayerPoint(0, 0) {
   if (aEvent) {
     mEventIsInternal = false;
   } else {
@@ -90,34 +85,6 @@ NS_IMPL_RELEASE_INHERITED(UIEvent, Event)
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(UIEvent)
 NS_INTERFACE_MAP_END_INHERITING(Event)
 
-static nsIntPoint DevPixelsToCSSPixels(const LayoutDeviceIntPoint& aPoint,
-                                       nsPresContext* aContext) {
-  return nsIntPoint(aContext->DevPixelsToIntCSSPixels(aPoint.x),
-                    aContext->DevPixelsToIntCSSPixels(aPoint.y));
-}
-
-nsIntPoint UIEvent::GetMovementPoint() {
-  if (mEvent->mFlags.mIsPositionless) {
-    return nsIntPoint(0, 0);
-  }
-
-  if (mPrivateDataDuplicated || mEventIsInternal) {
-    return mMovementPoint;
-  }
-
-  if (!mEvent || !mEvent->AsGUIEvent()->mWidget ||
-      (mEvent->mMessage != eMouseMove && mEvent->mMessage != ePointerMove)) {
-    // Pointer Lock spec defines that movementX/Y must be zero for all mouse
-    // events except mousemove.
-    return nsIntPoint(0, 0);
-  }
-
-  // Calculate the delta between the last screen point and the current one.
-  nsIntPoint current = DevPixelsToCSSPixels(mEvent->mRefPoint, mPresContext);
-  nsIntPoint last = DevPixelsToCSSPixels(mEvent->mLastRefPoint, mPresContext);
-  return current - last;
-}
-
 void UIEvent::InitUIEvent(const nsAString& typeArg, bool canBubbleArg,
                           bool cancelableArg, nsGlobalWindowInner* viewArg,
                           int32_t detailArg) {
@@ -164,7 +131,6 @@ nsIntPoint UIEvent::GetLayerPoint() const {
   if (mEvent->mFlags.mIsPositionless) {
     return nsIntPoint(0, 0);
   }
-
   if (!mEvent ||
       (mEvent->mClass != eMouseEventClass &&
        mEvent->mClass != eMouseScrollEventClass &&
@@ -176,34 +142,46 @@ nsIntPoint UIEvent::GetLayerPoint() const {
       !mPresContext || mEventIsInternal) {
     return mLayerPoint;
   }
-  // XXX I'm not really sure this is correct; it's my best shot, though
   nsIFrame* targetFrame = mPresContext->EventStateManager()->GetEventTarget();
-  if (!targetFrame) return mLayerPoint;
+  if (!targetFrame) {
+    return mLayerPoint;
+  }
+  // NOTE(emilio): This matches Blink to my knowledge, but it's generally not
+  // super-well specified, see https://github.com/w3c/uievents/issues/398
+  RelativeTo root{targetFrame->PresShell()->GetRootFrame()};
+  const nsPoint rootPoint =
+      nsLayoutUtils::GetEventCoordinatesRelativeTo(mEvent, root);
   nsIFrame* layer = nsLayoutUtils::GetClosestLayer(targetFrame);
-  nsPoint pt(
-      nsLayoutUtils::GetEventCoordinatesRelativeTo(mEvent, RelativeTo{layer}));
-  return nsIntPoint(nsPresContext::AppUnitsToIntCSSPixels(pt.x),
-                    nsPresContext::AppUnitsToIntCSSPixels(pt.y));
+  nsPoint layerRootPoint{0, 0};
+  if (nsLayoutUtils::TransformPoint(RelativeTo{layer}, RelativeTo{root},
+                                    layerRootPoint) !=
+      nsLayoutUtils::TRANSFORM_SUCCEEDED) {
+    return mLayerPoint;
+  }
+  return RoundedToInt(CSSPoint::FromAppUnits(rootPoint - layerRootPoint))
+      .ToUnknownPoint();
 }
 
 void UIEvent::DuplicatePrivateData() {
-  mDefaultClientPoint = Event::GetClientCoords(
-      mPresContext, mEvent, mEvent->mRefPoint, mDefaultClientPoint);
-  mMovementPoint = GetMovementPoint();
   mLayerPoint = GetLayerPoint();
-  mPagePoint = Event::GetPageCoords(mPresContext, mEvent, mEvent->mRefPoint,
-                                    mDefaultClientPoint);
-  // GetScreenPoint converts mEvent->mRefPoint to right coordinates.
-  CSSIntPoint screenPoint =
+
+  // GetScreenCoords() converts mEvent->mRefPoint to right coordinates.
+  // Note that mPresContext will be cleared by Event::DuplicatePrivateData().
+  // Therefore, we need to use mPresContext before calling it.
+  const CSSIntPoint screenPoint = RoundedToInt(
       Event::GetScreenCoords(mPresContext, mEvent, mEvent->mRefPoint)
-          .valueOr(CSSIntPoint{0, 0});
+          .valueOr(CSSIntPoint{0, 0}));
 
   Event::DuplicatePrivateData();
+  MOZ_ASSERT_IF(!mEventIsInternal, !mPresContext);
 
-  CSSToLayoutDeviceScale scale = mPresContext
-                                     ? mPresContext->CSSToDevPixelScale()
-                                     : CSSToLayoutDeviceScale(1);
-  mEvent->mRefPoint = RoundedToInt(screenPoint * scale);
+  // GetScreenCoords() has already computed the screen point in CSS pixels which
+  // applied the scale of mPresContext.  Additionally, we don't have the widget
+  // anymore.  Therefore, we need to cache the point as in the screen
+  // coordinates.
+  MOZ_ASSERT(!mEvent || !mEvent->AsGUIEvent() ||
+             !mEvent->AsGUIEvent()->mWidget);
+  mEvent->mRefPoint = RoundedToInt(screenPoint * CSSToLayoutDeviceScale(1));
 }
 
 void UIEvent::Serialize(IPC::MessageWriter* aWriter,
@@ -225,7 +203,7 @@ bool UIEvent::Deserialize(IPC::MessageReader* aReader) {
 
 // XXX Following struct and array are used only in
 //     UIEvent::ComputeModifierState(), but if we define them in it,
-//     we fail to build on Mac at calling mozilla::ArrayLength().
+//     we fail to build on Mac at calling std::size().
 struct ModifierPair {
   Modifier modifier;
   const char* name;
@@ -263,9 +241,9 @@ Modifiers UIEvent::ComputeModifierState(const nsAString& aModifiersList) {
   aModifiersList.BeginReading(listStart);
   aModifiersList.EndReading(listEnd);
 
-  for (uint32_t i = 0; i < ArrayLength(kPairs); i++) {
+  for (auto entry : kPairs) {
     nsAString::const_iterator start(listStart), end(listEnd);
-    if (!FindInReadable(NS_ConvertASCIItoUTF16(kPairs[i].name), start, end)) {
+    if (!FindInReadable(NS_ConvertASCIItoUTF16(entry.name), start, end)) {
       continue;
     }
 
@@ -273,7 +251,7 @@ Modifiers UIEvent::ComputeModifierState(const nsAString& aModifiersList) {
         (end != listEnd && !NS_IsAsciiWhitespace(*(end)))) {
       continue;
     }
-    modifiers |= kPairs[i].modifier;
+    modifiers |= entry.modifier;
   }
 
   return modifiers;

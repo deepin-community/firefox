@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -62,7 +60,7 @@ void CompositorManagerChild::InitSameProcess(uint32_t aNamespace,
       aProcessToken, aNamespace, /* aSameProcess */ true);
   child->SetOtherEndpointProcInfo(ipc::EndpointProcInfo::Current());
   if (NS_WARN_IF(!child->Open(parent, CompositorThread(), ipc::ChildSide))) {
-    MOZ_DIAGNOSTIC_ASSERT(false, "Failed to open same process protocol");
+    MOZ_DIAGNOSTIC_CRASH("Failed to open same process protocol");
     return;
   }
   child->mCanSend = true;
@@ -139,8 +137,8 @@ bool CompositorManagerChild::CreateContentCompositorBridge(
   CompositorBridgeOptions options = ContentCompositorOptions();
 
   RefPtr<CompositorBridgeChild> bridge = new CompositorBridgeChild(sInstance);
-  if (NS_WARN_IF(
-          !sInstance->SendPCompositorBridgeConstructor(bridge, options))) {
+  if (NS_WARN_IF(!sInstance->SendPCompositorBridgeConstructor(bridge, options,
+                                                              aNamespace))) {
     return false;
   }
 
@@ -151,8 +149,7 @@ bool CompositorManagerChild::CreateContentCompositorBridge(
 /* static */
 already_AddRefed<CompositorBridgeChild>
 CompositorManagerChild::CreateWidgetCompositorBridge(
-    uint64_t aProcessToken, WebRenderLayerManager* aLayerManager,
-    uint32_t aNamespace, CSSToLayoutDeviceScale aScale,
+    uint64_t aProcessToken, uint32_t aNamespace, CSSToLayoutDeviceScale aScale,
     const CompositorOptions& aOptions, bool aUseExternalSurfaceSize,
     const gfx::IntSize& aSurfaceSize, uint64_t aInnerWindowId) {
   MOZ_ASSERT(XRE_IsParentProcess());
@@ -169,19 +166,19 @@ CompositorManagerChild::CreateWidgetCompositorBridge(
       aInnerWindowId);
 
   RefPtr<CompositorBridgeChild> bridge = new CompositorBridgeChild(sInstance);
-  if (NS_WARN_IF(
-          !sInstance->SendPCompositorBridgeConstructor(bridge, options))) {
+  if (NS_WARN_IF(!sInstance->SendPCompositorBridgeConstructor(bridge, options,
+                                                              aNamespace))) {
     return nullptr;
   }
 
-  bridge->InitForWidget(aProcessToken, aLayerManager, aNamespace);
+  bridge->InitForWidget(aProcessToken, aNamespace);
   return bridge.forget();
 }
 
 /* static */
 already_AddRefed<CompositorBridgeChild>
 CompositorManagerChild::CreateSameProcessWidgetCompositorBridge(
-    WebRenderLayerManager* aLayerManager, uint32_t aNamespace) {
+    uint32_t aNamespace) {
   MOZ_ASSERT(XRE_IsParentProcess());
   MOZ_ASSERT(NS_IsMainThread());
   if (NS_WARN_IF(!sInstance || !sInstance->CanSend())) {
@@ -191,12 +188,12 @@ CompositorManagerChild::CreateSameProcessWidgetCompositorBridge(
   CompositorBridgeOptions options = SameProcessWidgetCompositorOptions();
 
   RefPtr<CompositorBridgeChild> bridge = new CompositorBridgeChild(sInstance);
-  if (NS_WARN_IF(
-          !sInstance->SendPCompositorBridgeConstructor(bridge, options))) {
+  if (NS_WARN_IF(!sInstance->SendPCompositorBridgeConstructor(bridge, options,
+                                                              aNamespace))) {
     return nullptr;
   }
 
-  bridge->InitForWidget(1, aLayerManager, aNamespace);
+  bridge->InitForWidget(1, aNamespace);
   return bridge.forget();
 }
 
@@ -241,7 +238,23 @@ void CompositorManagerChild::SetReplyTimeout() {
 }
 
 bool CompositorManagerChild::ShouldContinueFromReplyTimeout() {
+  MOZ_ASSERT_IF(mSyncIPCStartTimeStamp.isSome(), XRE_IsParentProcess());
+
   if (XRE_IsParentProcess()) {
+#ifndef DEBUG
+    // Extend sync IPC reply timeout
+    if (mSyncIPCStartTimeStamp.isSome()) {
+      const int32_t maxDurationMs = StaticPrefs::
+          layers_gpu_process_extend_ipc_reply_timeout_ms_AtStartup();
+      const auto now = TimeStamp::Now();
+      const auto durationMs = static_cast<int32_t>(
+          (now - mSyncIPCStartTimeStamp.ref()).ToMilliseconds());
+
+      if (durationMs < maxDurationMs) {
+        return true;
+      }
+    }
+#endif
     gfxCriticalNote << "Killing GPU process due to IPC reply timeout";
     MOZ_DIAGNOSTIC_ASSERT(GPUProcessManager::Get()->GetGPUChild());
     GPUProcessManager::Get()->KillProcess(/* aGenerateMinidump */ true);
@@ -255,6 +268,16 @@ mozilla::ipc::IPCResult CompositorManagerChild::RecvNotifyWebRenderError(
   MOZ_ASSERT(NS_IsMainThread());
   GPUProcessManager::Get()->NotifyWebRenderError(aError);
   return IPC_OK();
+}
+
+void CompositorManagerChild::SetSyncIPCStartTimeStamp() {
+  MOZ_ASSERT(mSyncIPCStartTimeStamp.isNothing());
+
+  mSyncIPCStartTimeStamp = Some(TimeStamp::Now());
+}
+
+void CompositorManagerChild::ClearSyncIPCStartTimeStamp() {
+  mSyncIPCStartTimeStamp = Nothing();
 }
 
 }  // namespace layers

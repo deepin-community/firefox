@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,9 +17,7 @@
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/Components.h"
 #include "mozilla/ErrorNames.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/Try.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/Event.h"
 #include "mozilla/dom/EventBinding.h"
@@ -77,7 +73,9 @@ static const ClassificationStruct classificationArray[] = {
     {CF::CLASSIFIED_SOCIALTRACKING_TWITTER, MUC::Socialtracking_twitter},
     {CF::CLASSIFIED_ANY_BASIC_TRACKING, MUC::Any_basic_tracking},
     {CF::CLASSIFIED_ANY_STRICT_TRACKING, MUC::Any_strict_tracking},
-    {CF::CLASSIFIED_ANY_SOCIAL_TRACKING, MUC::Any_social_tracking}};
+    {CF::CLASSIFIED_ANY_SOCIAL_TRACKING, MUC::Any_social_tracking},
+    {CF::CLASSIFIED_CONSENTMANAGER, MUC::Consentmanager},
+    {CF::CLASSIFIED_ANTIFRAUD, MUC::Antifraud}};
 
 /*****************************************************************************
  * Lifetimes
@@ -161,8 +159,8 @@ already_AddRefed<ChannelWrapper> ChannelWrapper::Get(const GlobalObject& global,
   if (!wrapper) {
     wrapper = new ChannelWrapper(global.GetAsSupports(), channel);
     if (props) {
-      Unused << props->SetPropertyAsInterface(CHANNELWRAPPER_PROP_KEY,
-                                              wrapper->mStub);
+      (void)props->SetPropertyAsInterface(CHANNELWRAPPER_PROP_KEY,
+                                          wrapper->mStub);
     }
   }
 
@@ -211,6 +209,7 @@ void ChannelWrapper::ClearCachedAttributes() {
   ChannelWrapper_Binding::ClearCachedStatusLineValue(this);
   ChannelWrapper_Binding::ClearCachedUrlClassificationValue(this);
   if (!mFiredErrorEvent) {
+    mActivityError.Truncate();
     ChannelWrapper_Binding::ClearCachedErrorStringValue(this);
   }
 
@@ -298,13 +297,13 @@ void ChannelWrapper::Resume(ErrorResult& aRv) {
 
 void ChannelWrapper::GetContentType(nsCString& aContentType) const {
   if (nsCOMPtr<nsIHttpChannel> chan = MaybeHttpChannel()) {
-    Unused << chan->GetContentType(aContentType);
+    (void)chan->GetContentType(aContentType);
   }
 }
 
 void ChannelWrapper::SetContentType(const nsACString& aContentType) {
   if (nsCOMPtr<nsIHttpChannel> chan = MaybeHttpChannel()) {
-    Unused << chan->SetContentType(aContentType);
+    (void)chan->SetContentType(aContentType);
   }
 }
 
@@ -399,7 +398,7 @@ void ChannelWrapper::GetRequestHeader(const nsCString& aHeader,
                                       ErrorResult& aRv) const {
   aResult.SetIsVoid(true);
   if (nsCOMPtr<nsIHttpChannel> chan = MaybeHttpChannel()) {
-    Unused << chan->GetRequestHeader(aHeader, aResult);
+    (void)chan->GetRequestHeader(aHeader, aResult);
   } else {
     aRv.Throw(NS_ERROR_UNEXPECTED);
   }
@@ -458,7 +457,7 @@ already_AddRefed<nsILoadContext> ChannelWrapper::GetLoadContext() const {
     // NS_QueryNotificationCallbacks to get LoadContext of the channel.
     RefPtr<BrowsingContext> bc;
     nsCOMPtr<nsILoadInfo> loadInfo = chan->LoadInfo();
-    loadInfo->GetWorkerAssociatedBrowsingContext(getter_AddRefs(bc));
+    loadInfo->GetAssociatedBrowsingContext(getter_AddRefs(bc));
     if (bc) {
       ctxt = bc.forget();
       return ctxt.forget();
@@ -548,7 +547,7 @@ already_AddRefed<nsIURI> ChannelWrapper::GetOriginURI() const {
     if (nsIPrincipal* prin = loadInfo->TriggeringPrincipal()) {
       if (prin->GetIsContentPrincipal()) {
         auto* basePrin = BasePrincipal::Cast(prin);
-        Unused << basePrin->GetURI(getter_AddRefs(uri));
+        (void)basePrin->GetURI(getter_AddRefs(uri));
       }
     }
   }
@@ -561,7 +560,7 @@ already_AddRefed<nsIURI> ChannelWrapper::GetDocumentURI() const {
     if (nsIPrincipal* prin = loadInfo->GetLoadingPrincipal()) {
       if (prin->GetIsContentPrincipal()) {
         auto* basePrin = BasePrincipal::Cast(prin);
-        Unused << basePrin->GetURI(getter_AddRefs(uri));
+        (void)basePrin->GetURI(getter_AddRefs(uri));
       }
     }
   }
@@ -570,13 +569,13 @@ already_AddRefed<nsIURI> ChannelWrapper::GetDocumentURI() const {
 
 void ChannelWrapper::GetOriginURL(nsCString& aRetVal) const {
   if (nsCOMPtr<nsIURI> uri = GetOriginURI()) {
-    Unused << uri->GetSpec(aRetVal);
+    (void)uri->GetSpec(aRetVal);
   }
 }
 
 void ChannelWrapper::GetDocumentURL(nsCString& aRetVal) const {
   if (nsCOMPtr<nsIURI> uri = GetDocumentURI()) {
-    Unused << uri->GetSpec(aRetVal);
+    (void)uri->GetSpec(aRetVal);
   }
 }
 
@@ -605,7 +604,7 @@ const URLInfo& ChannelWrapper::FinalURLInfo() const {
       nsAutoCString spec(url.CSpec());
       spec.Replace(0, 4, "ws"_ns);
 
-      Unused << NS_NewURI(getter_AddRefs(uri), spec);
+      (void)NS_NewURI(getter_AddRefs(uri), spec);
       MOZ_RELEASE_ASSERT(uri);
       mFinalURLInfo.reset();
       mFinalURLInfo.emplace(uri.get(), true);
@@ -685,7 +684,7 @@ bool ChannelWrapper::Matches(
 }
 
 int64_t NormalizeFrameID(nsILoadInfo* aLoadInfo, uint64_t bcID) {
-  RefPtr<BrowsingContext> bc = aLoadInfo->GetWorkerAssociatedBrowsingContext();
+  RefPtr<BrowsingContext> bc = aLoadInfo->GetAssociatedBrowsingContext();
   if (!bc) {
     bc = aLoadInfo->GetBrowsingContext();
   }
@@ -699,7 +698,7 @@ int64_t NormalizeFrameID(nsILoadInfo* aLoadInfo, uint64_t bcID) {
 uint64_t ChannelWrapper::BrowsingContextId(nsILoadInfo* aLoadInfo) const {
   auto frameID = aLoadInfo->GetFrameBrowsingContextID();
   if (!frameID) {
-    frameID = aLoadInfo->GetWorkerAssociatedBrowsingContextID();
+    frameID = aLoadInfo->GetAssociatedBrowsingContextID();
   }
   if (!frameID) {
     frameID = aLoadInfo->GetBrowsingContextID();
@@ -716,7 +715,7 @@ int64_t ChannelWrapper::FrameId() const {
 
 int64_t ChannelWrapper::ParentFrameId() const {
   if (nsCOMPtr<nsILoadInfo> loadInfo = GetLoadInfo()) {
-    RefPtr<BrowsingContext> bc = loadInfo->GetWorkerAssociatedBrowsingContext();
+    RefPtr<BrowsingContext> bc = loadInfo->GetAssociatedBrowsingContext();
     if (!bc) {
       bc = loadInfo->GetBrowsingContext();
     }
@@ -817,6 +816,13 @@ already_AddRefed<nsITraceableChannel> ChannelWrapper::GetTraceableChannel(
     dom::ContentParent* aContentParent) const {
   nsCOMPtr<nsIRemoteTab> remoteTab;
   if (mAddonEntries.Get(aAddon.Id(), getter_AddRefs(remoteTab))) {
+    // aAddon existing in mAddonEntries implies that RegisterTraceableChannel
+    // was called before (in WebRequest.sys.mjs), which implies that
+    // ChannelWrapper::Matches() returned true before. That implies that
+    // CanAccessURI() was also true for the request origin (DocumentURLInfo()),
+    // so we do not need to check that again here because it is constant for
+    // the duration of the request. We need to revalidate FinalURLInfo() in
+    // case it changed, e.g. due to a redirect or permission change.
     if (!HaveChannel() ||
         !aAddon.CanAccessURI(FinalURLInfo(), false, true, true)) {
       return nullptr;
@@ -856,8 +862,6 @@ MozContentPolicyType GetContentPolicyType(ExtContentPolicyType aType) {
       return MozContentPolicyType::Image;
     case ExtContentPolicy::TYPE_OBJECT:
       return MozContentPolicyType::Object;
-    case ExtContentPolicy::TYPE_OBJECT_SUBREQUEST:
-      return MozContentPolicyType::Object_subrequest;
     case ExtContentPolicy::TYPE_XMLHTTPREQUEST:
       return MozContentPolicyType::Xmlhttprequest;
     // TYPE_FETCH returns xmlhttprequest for cross-browser compatibility.
@@ -886,6 +890,9 @@ MozContentPolicyType GetContentPolicyType(ExtContentPolicyType aType) {
       return MozContentPolicyType::Web_manifest;
     case ExtContentPolicy::TYPE_SPECULATIVE:
       return MozContentPolicyType::Speculative;
+    case ExtContentPolicy::TYPE_JSON:
+      return MozContentPolicyType::Json;
+    case ExtContentPolicy::TYPE_TEXT:
     case ExtContentPolicy::TYPE_PROXIED_WEBRTC_MEDIA:
     case ExtContentPolicy::TYPE_INVALID:
     case ExtContentPolicy::TYPE_OTHER:
@@ -907,7 +914,7 @@ MozContentPolicyType ChannelWrapper::Type() const {
 
 void ChannelWrapper::GetMethod(nsCString& aMethod) const {
   if (nsCOMPtr<nsIHttpChannel> chan = MaybeHttpChannel()) {
-    Unused << chan->GetRequestMethod(aMethod);
+    (void)chan->GetRequestMethod(aMethod);
   }
 }
 
@@ -918,7 +925,7 @@ void ChannelWrapper::GetMethod(nsCString& aMethod) const {
 uint32_t ChannelWrapper::StatusCode() const {
   uint32_t result = 0;
   if (nsCOMPtr<nsIHttpChannel> chan = MaybeHttpChannel()) {
-    Unused << chan->GetResponseStatus(&result);
+    (void)chan->GetResponseStatus(&result);
   }
   return result;
 }
@@ -944,7 +951,7 @@ void ChannelWrapper::GetStatusLine(nsCString& aRetVal) const {
 uint64_t ChannelWrapper::ResponseSize() const {
   uint64_t result = 0;
   if (nsCOMPtr<nsIHttpChannel> chan = MaybeHttpChannel()) {
-    Unused << chan->GetTransferSize(&result);
+    (void)chan->GetTransferSize(&result);
   }
   return result;
 }
@@ -952,7 +959,7 @@ uint64_t ChannelWrapper::ResponseSize() const {
 uint64_t ChannelWrapper::RequestSize() const {
   uint64_t result = 0;
   if (nsCOMPtr<nsIHttpChannel> chan = MaybeHttpChannel()) {
-    Unused << chan->GetRequestSize(&result);
+    (void)chan->GetRequestSize(&result);
   }
   return result;
 }
@@ -1000,7 +1007,7 @@ void ChannelWrapper::GetProxyInfo(dom::Nullable<MozProxyInfo>& aRetVal,
                                   ErrorResult& aRv) const {
   nsCOMPtr<nsIProxyInfo> proxyInfo;
   if (nsCOMPtr<nsIProxiedChannel> proxied = QueryChannel()) {
-    Unused << proxied->GetProxyInfo(getter_AddRefs(proxyInfo));
+    (void)proxied->GetProxyInfo(getter_AddRefs(proxyInfo));
   }
   if (proxyInfo) {
     MozProxyInfo result;
@@ -1017,7 +1024,7 @@ void ChannelWrapper::GetProxyInfo(dom::Nullable<MozProxyInfo>& aRetVal,
 void ChannelWrapper::GetRemoteAddress(nsCString& aRetVal) const {
   aRetVal.SetIsVoid(true);
   if (nsCOMPtr<nsIHttpChannelInternal> internal = QueryChannel()) {
-    Unused << internal->GetRemoteAddress(aRetVal);
+    (void)internal->GetRemoteAddress(aRetVal);
   }
 }
 
@@ -1086,7 +1093,7 @@ bool ChannelWrapper::ThirdParty() const {
 void ChannelWrapper::GetErrorString(nsString& aRetVal) const {
   if (nsCOMPtr<nsIChannel> chan = MaybeChannel()) {
     nsCOMPtr<nsITransportSecurityInfo> securityInfo;
-    Unused << chan->GetSecurityInfo(getter_AddRefs(securityInfo));
+    (void)chan->GetSecurityInfo(getter_AddRefs(securityInfo));
     if (securityInfo) {
       int32_t errorCode = 0;
       securityInfo->GetErrorCode(&errorCode);
@@ -1106,6 +1113,8 @@ void ChannelWrapper::GetErrorString(nsString& aRetVal) const {
       nsAutoCString name;
       GetErrorName(status, name);
       AppendUTF8toUTF16(name, aRetVal);
+    } else if (!mActivityError.IsEmpty()) {
+      aRetVal = mActivityError;
     } else {
       aRetVal.SetIsVoid(true);
     }
@@ -1114,17 +1123,55 @@ void ChannelWrapper::GetErrorString(nsString& aRetVal) const {
   }
 }
 
+void ChannelWrapper::FireErrorEvent() {
+  MOZ_ASSERT(!mFiredErrorEvent);
+  mFiredErrorEvent = true;
+  ChannelWrapper_Binding::ClearCachedErrorStringValue(this);
+  FireEvent(u"error"_ns);
+}
+
 void ChannelWrapper::ErrorCheck() {
-  if (!mFiredErrorEvent) {
-    nsAutoString error;
-    GetErrorString(error);
-    if (error.Length()) {
-      mChannelEntry = nullptr;
-      mFiredErrorEvent = true;
-      ChannelWrapper_Binding::ClearCachedErrorStringValue(this);
-      FireEvent(u"error"_ns);
-    }
+  if (mFiredErrorEvent) {
+    return;
   }
+  nsAutoString error;
+  GetErrorString(error);
+  if (error.Length()) {
+    mChannelEntry = nullptr;
+    FireErrorEvent();
+  }
+}
+
+void ChannelWrapper::ActivityErrorFallbackCheck() {
+  if (mFiredErrorEvent) {
+    return;
+  }
+
+  // Only needed when onErrorOccurred listeners are registered, which add an
+  // "error" DOM event listener on this wrapper.
+  if (!HasListenersFor(nsGkAtoms::onerror)) {
+    return;
+  }
+
+  nsCOMPtr<nsIHttpChannel> httpChan = MaybeHttpChannel();
+  if (!httpChan) {
+    return;
+  }
+
+  // If response headers were received, there is no activity-based error.
+  uint32_t responseStatus;
+  if (NS_SUCCEEDED(httpChan->GetResponseStatus(&responseStatus))) {
+    return;
+  }
+
+  // Edge case: the HTTP transaction completed without response headers and
+  // without a channel error status. Fire a synthetic error so that extensions
+  // with onErrorOccurred listeners are notified. The error name is generic
+  // because the phase-specific names (e.g. NS_ERROR_NET_ON_RESOLVING) that the
+  // former JS activity observer produced are only available from HTTP activity
+  // events, observing which is what this code exists to avoid.
+  mActivityError.AssignLiteral("NS_ERROR_NET_ON_RECEIVING_FROM");
+  FireErrorEvent();
 }
 
 /*****************************************************************************
@@ -1157,7 +1204,8 @@ ChannelWrapper::RequestListener::OnStartRequest(nsIRequest* request) {
   mChannelWrapper->ErrorCheck();
   mChannelWrapper->FireEvent(u"start"_ns);
 
-  return mOrigStreamListener->OnStartRequest(request);
+  nsCOMPtr<nsIStreamListener> origStreamListener = mOrigStreamListener;
+  return origStreamListener->OnStartRequest(request);
 }
 
 NS_IMETHODIMP
@@ -1167,9 +1215,11 @@ ChannelWrapper::RequestListener::OnStopRequest(nsIRequest* request,
 
   mChannelWrapper->mChannelEntry = nullptr;
   mChannelWrapper->ErrorCheck();
+  mChannelWrapper->ActivityErrorFallbackCheck();
   mChannelWrapper->FireEvent(u"stop"_ns);
 
-  return mOrigStreamListener->OnStopRequest(request, aStatus);
+  nsCOMPtr<nsIStreamListener> origStreamListener = mOrigStreamListener;
+  return origStreamListener->OnStopRequest(request, aStatus);
 }
 
 NS_IMETHODIMP
@@ -1178,8 +1228,9 @@ ChannelWrapper::RequestListener::OnDataAvailable(nsIRequest* request,
                                                  uint64_t sourceOffset,
                                                  uint32_t count) {
   MOZ_ASSERT(mOrigStreamListener, "Should have mOrigStreamListener");
-  return mOrigStreamListener->OnDataAvailable(request, inStr, sourceOffset,
-                                              count);
+  nsCOMPtr<nsIStreamListener> origStreamListener = mOrigStreamListener;
+  return origStreamListener->OnDataAvailable(request, inStr, sourceOffset,
+                                             count);
 }
 
 NS_IMETHODIMP

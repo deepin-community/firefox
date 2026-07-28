@@ -22,16 +22,18 @@ import org.junit.runner.RunWith
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.ext.components
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.helpers.perf.TestStrictModeManager
+import org.mozilla.fenix.utils.Settings
 import org.mozilla.fenix.widget.VoiceSearchActivity.Companion.SPEECH_PROCESSING
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class SpeechProcessingIntentProcessorTest {
 
     private val activity: HomeActivity = mockk(relaxed = true)
     private val navController: NavController = mockk(relaxed = true)
     private val out: Intent = mockk(relaxed = true)
+    private val settings: Settings = mockk()
 
     private val searchEngine = createSearchEngine(
         name = "Test",
@@ -61,7 +63,7 @@ class SpeechProcessingIntentProcessorTest {
     @Test
     fun `do not process blank intents`() {
         val processor = SpeechProcessingIntentProcessor(activity, store)
-        processor.process(Intent(), navController, out)
+        processor.process(Intent(), navController, out, settings)
 
         verify { activity wasNot Called }
         verify { navController wasNot Called }
@@ -74,7 +76,7 @@ class SpeechProcessingIntentProcessorTest {
             putExtra(HomeActivity.OPEN_TO_BROWSER_AND_LOAD, false)
         }
         val processor = SpeechProcessingIntentProcessor(activity, store)
-        processor.process(intent, navController, out)
+        processor.process(intent, navController, out, settings)
 
         verify { activity wasNot Called }
         verify { navController wasNot Called }
@@ -84,15 +86,18 @@ class SpeechProcessingIntentProcessorTest {
     @Test
     fun `reads the speech processing extra`() {
         every { testContext.components.strictMode } returns TestStrictModeManager()
+        every { testContext.components.nimbus.events } returns mockk(relaxed = true)
+
         val intent = Intent().apply {
             putExtra(HomeActivity.OPEN_TO_BROWSER_AND_LOAD, true)
             putExtra(SPEECH_PROCESSING, "hello world")
         }
 
         val processor = SpeechProcessingIntentProcessor(activity, store)
-        processor.process(intent, mockk(), mockk(relaxed = true))
+        processor.process(intent, mockk(), mockk(relaxed = true), settings)
 
         verify {
+            @Suppress("DEPRECATION")
             activity.openToBrowserAndLoad(
                 searchTermOrURL = "hello world",
                 newTab = true,

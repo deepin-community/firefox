@@ -11,6 +11,9 @@
 let gMaxResults;
 
 add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
   gMaxResults = Services.prefs.getIntPref("browser.urlbar.maxRichResults");
 
   registerCleanupFunction(async function () {
@@ -55,7 +58,7 @@ async function selectSettings(win, activateFn) {
       });
 
       Assert.equal(
-        win.gBrowser.contentWindow.history.state,
+        win.gBrowser.contentWindow.gLastCategory?.category,
         "paneSearch",
         "Should have opened the search preferences pane"
       );

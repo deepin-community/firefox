@@ -7,7 +7,6 @@
 
 #include "mozilla/DefineEnum.h"
 #include "mozilla/Maybe.h"
-#include "mozilla/RefPtr.h"
 #include "mozilla/dom/MediaSession.h"
 #include "nsID.h"
 #include "nsISupportsImpl.h"
@@ -36,6 +35,14 @@ MOZ_DEFINE_ENUM_CLASS_WITH_BASE_AND_TOSTRING(MediaPlaybackState, uint32_t,
  */
 MOZ_DEFINE_ENUM_CLASS_WITH_BASE_AND_TOSTRING(MediaAudibleState, bool,
                                              (eInaudible, eAudible));
+
+/**
+ * This enum distinguishes media sources that fully participate in the media
+ * control lifecycle (controllable, e.g. HTMLMediaElement) from sources that
+ * only contribute audibility and accept volume/mute (uncontrollable).
+ */
+MOZ_DEFINE_ENUM_CLASS_WITH_BASE_AND_TOSTRING(ControlType, bool,
+                                             (eControllable, eUncontrollable));
 
 /**
  * MediaPlaybackStatus is an internal module for the media controller, it

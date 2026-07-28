@@ -289,58 +289,132 @@ const gClipboardHelper = getClipboardHelper();
  *                                the calling window's document will be used
  *                         - initialTab: (optional) id of the inital tab to display
  */
-async function onLoadPageInfo() {
-  [
-    SIZE_UNKNOWN,
-    ALT_NOT_SET,
-    MEDIA_STRINGS.img,
-    MEDIA_STRINGS["bg-img"],
-    MEDIA_STRINGS["border-img"],
-    MEDIA_STRINGS["list-img"],
-    MEDIA_STRINGS.cursor,
-    MEDIA_STRINGS.object,
-    MEDIA_STRINGS.embed,
-    MEDIA_STRINGS.link,
-    MEDIA_STRINGS.input,
-    MEDIA_STRINGS.video,
-    MEDIA_STRINGS.audio,
-  ] = await document.l10n.formatValues([
-    "image-size-unknown",
-    "not-set-alternative-text",
-    "media-img",
-    "media-bg-img",
-    "media-border-img",
-    "media-list-img",
-    "media-cursor",
-    "media-object",
-    "media-embed",
-    "media-link",
-    "media-input",
-    "media-video",
-    "media-audio",
-  ]);
+window.addEventListener(
+  "load",
+  async function onLoadPageInfo() {
+    [
+      SIZE_UNKNOWN,
+      ALT_NOT_SET,
+      MEDIA_STRINGS.img,
+      MEDIA_STRINGS["bg-img"],
+      MEDIA_STRINGS["border-img"],
+      MEDIA_STRINGS["list-img"],
+      MEDIA_STRINGS.cursor,
+      MEDIA_STRINGS.object,
+      MEDIA_STRINGS.embed,
+      MEDIA_STRINGS.link,
+      MEDIA_STRINGS.input,
+      MEDIA_STRINGS.video,
+      MEDIA_STRINGS.audio,
+    ] = await document.l10n.formatValues([
+      "image-size-unknown",
+      "not-set-alternative-text",
+      "media-img",
+      "media-bg-img",
+      "media-border-img",
+      "media-list-img",
+      "media-cursor",
+      "media-object",
+      "media-embed",
+      "media-link",
+      "media-input",
+      "media-video",
+      "media-audio",
+    ]);
 
-  const args =
-    "arguments" in window &&
-    window.arguments.length >= 1 &&
-    window.arguments[0];
+    const args =
+      "arguments" in window &&
+      window.arguments.length >= 1 &&
+      window.arguments[0];
 
-  // Init media view
-  let imageTree = document.getElementById("imagetree");
-  imageTree.view = gImageView;
+    // Init media view
+    let imageTree = document.getElementById("imagetree");
+    imageTree.view = gImageView;
 
-  imageTree.controllers.appendController(treeController);
+    imageTree.controllers.appendController(treeController);
 
-  document
-    .getElementById("metatree")
-    .controllers.appendController(treeController);
+    document
+      .getElementById("metatree")
+      .controllers.appendController(treeController);
 
-  // Select the requested tab, if the name is specified
-  await loadTab(args);
+    document
+      .querySelector("#metatree > treecols")
+      .addEventListener("click", event => {
+        let id = event.target.id;
+        switch (id) {
+          case "meta-name":
+          case "meta-content":
+            gMetaView.onPageMediaSort(id);
+            break;
+        }
+      });
 
-  // Emit init event for tests
-  window.dispatchEvent(new Event("page-info-init"));
-}
+    document
+      .querySelector("#imagetree > treecols")
+      .addEventListener("click", event => {
+        let id = event.target.id;
+        switch (id) {
+          case "image-address":
+          case "image-type":
+          case "image-size":
+          case "image-alt":
+          case "image-count":
+            gImageView.onPageMediaSort(id);
+            break;
+        }
+      });
+
+    let imagetree = document.getElementById("imagetree");
+    imagetree.addEventListener("select", onImageSelect);
+    imagetree.addEventListener("dragstart", event =>
+      onBeginLinkDrag(event, "image-address", "image-alt")
+    );
+
+    document.addEventListener("command", event => {
+      switch (event.target.id) {
+        // == pageInfoCommandSet ==
+        case "cmd_close":
+          window.close();
+          break;
+        case "cmd_help":
+          doHelpButton();
+          break;
+        // == topBar ==
+        case "generalTab":
+        case "mediaTab":
+        case "permTab":
+        case "securityTab":
+          showTab(event.target.id.slice(0, -3));
+          break;
+        // == imageSaveBox ==
+        case "selectallbutton":
+          doSelectAllMedia();
+          break;
+        case "imagesaveasbutton":
+        case "mediasaveasbutton":
+          saveMedia();
+          break;
+        // == securityPanel ==
+        case "security-view-cert":
+          security.viewCert();
+          break;
+        case "security-clear-sitedata":
+          security.clearSiteData();
+          break;
+        case "security-view-password":
+          security.viewPasswords();
+          break;
+      }
+    });
+
+    // Select the requested tab, if the name is specified
+    await loadTab(args);
+
+    // Emit init event for tests
+    window.dispatchEvent(new Event("page-info-init"));
+  },
+  { once: true }
+);
 
 async function loadPageInfo(browsingContext, imageElement, browser) {
   browser = browser || window.opener.gBrowser.selectedBrowser;
@@ -372,6 +446,30 @@ async function loadPageInfo(browsingContext, imageElement, browser) {
   }
 }
 
+// Setup the <browser> used for media previews
+function createPreviewBrowserElement(browser, docInfo) {
+  const previewBrowser = document.createXULElement("browser");
+  previewBrowser.setAttribute("id", "mediaBrowser");
+  previewBrowser.setAttribute("type", "content");
+  previewBrowser.setAttribute("remote", "true");
+  previewBrowser.setAttribute("remoteType", browser.remoteType);
+  previewBrowser.setAttribute("maychangeremoteness", "true");
+  previewBrowser.setAttribute("disableglobalhistory", "true");
+  previewBrowser.setAttribute("nodefaultsrc", "true");
+  previewBrowser.setAttribute("disablecontextmenu", "true");
+  previewBrowser.setAttribute(
+    "initialBrowsingContextGroupId",
+    browser.browsingContext.group.id
+  );
+
+  let { userContextId } = docInfo.principal.originAttributes;
+  if (userContextId) {
+    previewBrowser.setAttribute("usercontextid", userContextId);
+  }
+
+  document.getElementById("mediaBrowser").replaceWith(previewBrowser);
+}
+
 /**
  * onNonMediaPageInfoLoad is responsible for populating the page info
  * UI other than the media tab. This includes general, permissions, and security.
@@ -393,6 +491,8 @@ async function onNonMediaPageInfoLoad(browser, pageInfoData, imageInfo) {
   document
     .getElementById("main-window")
     .setAttribute("relatedUrl", docInfo.location);
+
+  createPreviewBrowserElement(browser, docInfo);
 
   await makeGeneralTab(pageInfoData.metaViewRows, docInfo);
   if (
@@ -870,7 +970,6 @@ function makePreview(row) {
   var item = gImageView.data[row][COL_IMAGE_NODE];
   var url = gImageView.data[row][COL_IMAGE_ADDRESS];
   var isBG = gImageView.data[row][COL_IMAGE_BG];
-  var isAudio = false;
 
   setItemValue("imageurltext", url);
   setItemValue("imagetext", item.imageText);
@@ -878,7 +977,7 @@ function makePreview(row) {
 
   // get cache info
   var cacheKey = url.replace(/#.*$/, "");
-  openCacheEntry(cacheKey, function (cacheEntry) {
+  openCacheEntry(cacheKey, async function (cacheEntry) {
     // find out the file size
     if (cacheEntry) {
       let imageSize = cacheEntry.dataSize;
@@ -926,19 +1025,25 @@ function makePreview(row) {
       element.removeAttribute("data-l10n-id");
     }
 
-    var imageContainer = document.getElementById("theimagecontainer");
-    var oldImage = document.getElementById("thepreviewimage");
+    let forceMediaDocument = null;
+    let message = {
+      width: undefined,
+      height: undefined,
+    };
 
-    var isProtocolAllowed = checkProtocol(gImageView.data[row]);
+    let isAllowed = checkProtocol(gImageView.data[row]);
+    if (isAllowed) {
+      try {
+        Services.scriptSecurityManager.checkLoadURIWithPrincipal(
+          gDocInfo.principal,
+          Services.io.newURI(url),
+          0
+        );
+      } catch {
+        isAllowed = false;
+      }
+    }
 
-    var newImage = new Image();
-    newImage.id = "thepreviewimage";
-    var physWidth = 0,
-      physHeight = 0;
-    var width = 0,
-      height = 0;
-
-    let triggeringPrinStr = E10SUtils.serializePrincipal(gDocInfo.principal);
     if (
       (item.HTMLLinkElement ||
         item.HTMLInputElement ||
@@ -946,117 +1051,132 @@ function makePreview(row) {
         item.SVGImageElement ||
         (item.HTMLObjectElement && mimeType && mimeType.startsWith("image/")) ||
         isBG) &&
-      isProtocolAllowed
+      isAllowed
     ) {
-      function loadOrErrorListener() {
-        newImage.removeEventListener("load", loadOrErrorListener);
-        newImage.removeEventListener("error", loadOrErrorListener);
-        physWidth = newImage.width || 0;
-        physHeight = newImage.height || 0;
+      forceMediaDocument = "image";
 
-        // "width" and "height" attributes must be set to newImage,
-        // even if there is no "width" or "height attribute in item;
-        // otherwise, the preview image cannot be displayed correctly.
-        // Since the image might have been loaded out-of-process, we expect
-        // the item to tell us its width / height dimensions. Failing that
-        // the item should tell us the natural dimensions of the image. Finally
-        // failing that, we'll assume that the image was never loaded in the
-        // other process (this can be true for favicons, for example), and so
-        // we'll assume that we can use the natural dimensions of the newImage
-        // we just created. If the natural dimensions of newImage are not known
-        // then the image is probably broken.
-        if (!isBG) {
-          newImage.width =
-            ("width" in item && item.width) || newImage.naturalWidth;
-          newImage.height =
-            ("height" in item && item.height) || newImage.naturalHeight;
-        } else {
-          // the Width and Height of an HTML tag should not be used for its background image
-          // (for example, "table" can have "width" or "height" attributes)
-          newImage.width = item.naturalWidth || newImage.naturalWidth;
-          newImage.height = item.naturalHeight || newImage.naturalHeight;
+      if (item.SVGImageElement) {
+        message.width = item.SVGImageElementWidth;
+        message.height = item.SVGImageElementHeight;
+      } else if (!isBG) {
+        if ("width" in item && item.width) {
+          message.width = item.width;
         }
-
-        if (item.SVGImageElement) {
-          newImage.width = item.SVGImageElementWidth;
-          newImage.height = item.SVGImageElementHeight;
-        }
-
-        width = newImage.width;
-        height = newImage.height;
-
-        document.getElementById("theimagecontainer").collapsed = false;
-        document.getElementById("brokenimagecontainer").collapsed = true;
-
-        if (url) {
-          if (width != physWidth || height != physHeight) {
-            document.l10n.setAttributes(
-              document.getElementById("imagedimensiontext"),
-              "media-dimensions-scaled",
-              {
-                dimx: formatNumber(physWidth),
-                dimy: formatNumber(physHeight),
-                scaledx: formatNumber(width),
-                scaledy: formatNumber(height),
-              }
-            );
-          } else {
-            document.l10n.setAttributes(
-              document.getElementById("imagedimensiontext"),
-              "media-dimensions",
-              { dimx: formatNumber(width), dimy: formatNumber(height) }
-            );
-          }
+        if ("height" in item && item.height) {
+          message.height = item.height;
         }
       }
 
-      // We need to wait for the image to finish loading before using width & height
-      newImage.addEventListener("load", loadOrErrorListener);
-      newImage.addEventListener("error", loadOrErrorListener);
+      document.getElementById("theimagecontainer").collapsed = false;
+      document.getElementById("brokenimagecontainer").collapsed = true;
+    } else if (item.HTMLVideoElement && isAllowed) {
+      forceMediaDocument = "video";
 
-      newImage.setAttribute("triggeringprincipal", triggeringPrinStr);
-      newImage.setAttribute("src", url);
+      document.getElementById("theimagecontainer").collapsed = false;
+      document.getElementById("brokenimagecontainer").collapsed = true;
+
+      document.l10n.setAttributes(
+        document.getElementById("imagedimensiontext"),
+        "media-dimensions",
+        {
+          dimx: formatNumber(item.videoWidth),
+          dimy: formatNumber(item.videoHeight),
+        }
+      );
+    } else if (item.HTMLAudioElement && isAllowed) {
+      forceMediaDocument = "video"; // Audio also uses a VideoDocument.
+
+      document.getElementById("theimagecontainer").collapsed = false;
+      document.getElementById("brokenimagecontainer").collapsed = true;
     } else {
-      // Handle the case where newImage is not used for width & height
-      if (item.HTMLVideoElement && isProtocolAllowed) {
-        newImage = document.createElement("video");
-        newImage.id = "thepreviewimage";
-        newImage.setAttribute("triggeringprincipal", triggeringPrinStr);
-        newImage.src = url;
-        newImage.controls = true;
-        width = physWidth = item.videoWidth;
-        height = physHeight = item.videoHeight;
+      // fallback image for protocols not allowed (e.g., javascript:)
+      // or elements not [yet] handled (e.g., object, embed).
+      document.getElementById("brokenimagecontainer").collapsed = false;
+      document.getElementById("theimagecontainer").collapsed = true;
+      return;
+    }
 
-        document.getElementById("theimagecontainer").collapsed = false;
-        document.getElementById("brokenimagecontainer").collapsed = true;
-      } else if (item.HTMLAudioElement && isProtocolAllowed) {
-        newImage = new Audio();
-        newImage.id = "thepreviewimage";
-        newImage.setAttribute("triggeringprincipal", triggeringPrinStr);
-        newImage.src = url;
-        newImage.controls = true;
-        isAudio = true;
+    const mediaBrowser = document.getElementById("mediaBrowser");
 
-        document.getElementById("theimagecontainer").collapsed = false;
-        document.getElementById("brokenimagecontainer").collapsed = true;
-      } else {
-        // fallback image for protocols not allowed (e.g., javascript:)
-        // or elements not [yet] handled (e.g., object, embed).
-        document.getElementById("brokenimagecontainer").collapsed = false;
-        document.getElementById("theimagecontainer").collapsed = true;
+    const options = {
+      triggeringPrincipal: gDocInfo.principal,
+      forceMediaDocument,
+    };
+    mediaBrowser.loadURI(Services.io.newURI(url), options);
+
+    await new Promise(resolve => {
+      let webProgressListener = {
+        onStateChange(webProgress, request, aStateFlags) {
+          if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
+            mediaBrowser.webProgress?.removeProgressListener(
+              webProgressListener
+            );
+            resolve();
+          }
+        },
+
+        QueryInterface: ChromeUtils.generateQI([
+          "nsIWebProgressListener2",
+          "nsIWebProgressListener",
+          "nsISupportsWeakReference",
+        ]),
+      };
+      mediaBrowser.addProgressListener(
+        webProgressListener,
+        Ci.nsIWebProgress.NOTIFY_STATE_WINDOW
+      );
+    });
+
+    try {
+      const actor =
+        mediaBrowser.browsingContext.currentWindowGlobal.getActor(
+          "PageInfoPreview"
+        );
+
+      let data = await actor.sendQuery("PageInfoPreview:resize", message);
+      if (!data) {
+        return;
       }
 
-      if (url && !isAudio) {
+      let tree = document.getElementById("imagetree");
+      let activeRow = getSelectedRows(tree)[0];
+
+      // Make sure we only update the dimensions if the
+      // image is still selected.
+      if (url !== gImageView.data[activeRow][COL_IMAGE_ADDRESS]) {
+        return;
+      }
+
+      if (
+        data.width != data.naturalWidth ||
+        data.height != data.naturalHeight
+      ) {
+        document.l10n.setAttributes(
+          document.getElementById("imagedimensiontext"),
+          "media-dimensions-scaled",
+          {
+            dimx: formatNumber(data.naturalWidth),
+            dimy: formatNumber(data.naturalHeight),
+            scaledx: formatNumber(data.width),
+            scaledy: formatNumber(data.height),
+          }
+        );
+      } else {
         document.l10n.setAttributes(
           document.getElementById("imagedimensiontext"),
           "media-dimensions",
-          { dimx: formatNumber(width), dimy: formatNumber(height) }
+          {
+            dimx: formatNumber(data.width),
+            dimy: formatNumber(data.height),
+          }
         );
       }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      // Event for tests.
+      window.dispatchEvent(new Event("page-info-mediapreview-load"));
     }
-
-    imageContainer.removeChild(oldImage);
-    imageContainer.appendChild(newImage);
   });
 }
 

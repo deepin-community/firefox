@@ -1,9 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebVTTListener.h"
+
 #include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/HTMLTrackElement.h"
@@ -114,7 +114,8 @@ WebVTTListener::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
     mElement->SetReadyState(TextTrackReadyState::Loaded);
   }
 
-  mElement->CancelChannelAndListener();
+  // Prevent canceling the channel and listener if RFP is enabled.
+  mElement->CancelChannelAndListener(true);
 
   return aStatus;
 }

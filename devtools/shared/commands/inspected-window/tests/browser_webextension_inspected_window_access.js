@@ -25,8 +25,10 @@ async function openAboutBlankTabWithExtensionOrigin(extension) {
     gBrowser,
     `moz-extension://${extension.uuid}/manifest.json`
   );
-  const loaded = BrowserTestUtils.browserLoaded(tab.linkedBrowser);
-  await ContentTask.spawn(tab.linkedBrowser, null, () => {
+  const loaded = BrowserTestUtils.browserLoaded(tab.linkedBrowser, {
+    wantLoad: "about:blank",
+  });
+  await SpecialPowers.spawn(tab.linkedBrowser, [], () => {
     // about:blank inherits the principal when opened from content.
     content.wrappedJSObject.location.assign("about:blank");
   });

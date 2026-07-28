@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,6 +8,7 @@
 #include "TemporaryAccessGrantObserver.h"
 
 #include "mozilla/BounceTrackingProtection.h"
+#include "mozilla/ClearOnShutdown.h"
 #include "mozilla/Components.h"
 #include "mozilla/ContentBlockingAllowList.h"
 #include "mozilla/ContentBlockingUserInteraction.h"
@@ -23,10 +22,11 @@
 #include "mozilla/dom/WindowContext.h"
 #include "mozilla/dom/WindowGlobalParent.h"
 #include "mozilla/net/CookieJarSettings.h"
+#include "mozilla/net/UrlClassifierFeatureFactory.h"
 #include "mozilla/PermissionManager.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/StaticPrefs_privacy.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/AntitrackingMetrics.h"
 #include "mozIThirdPartyUtil.h"
 #include "nsContentUtils.h"
 #include "nsIClassifiedChannel.h"
@@ -67,6 +67,56 @@ bool GetTopLevelWindowId(BrowsingContext* aParentContext, uint32_t aBehavior,
           ? AntiTrackingUtils::GetTopLevelStorageAreaWindowId(aParentContext)
           : AntiTrackingUtils::GetTopLevelAntiTrackingWindowId(aParentContext);
   return aTopLevelInnerWindowId != 0;
+}
+
+// The list of feature names for trackers that have been annotated.
+static StaticAutoPtr<nsTArray<nsCString>> sUrlClassifierFeatureNamesForTrackers;
+
+// The list of features for trackers that have been annotated.
+static StaticAutoPtr<nsTArray<RefPtr<nsIUrlClassifierFeature>>>
+    sUrlClassifierFeaturesForTracker;
+
+const nsTArray<nsCString>& GetClassifierFeatureNamesForTrackers() {
+  if (!sUrlClassifierFeatureNamesForTrackers) {
+    sUrlClassifierFeatureNamesForTrackers = new nsTArray<nsCString>({
+        "emailtracking-protection"_ns,
+        "fingerprinting-annotation"_ns,
+        "socialtracking-annotation"_ns,
+        "tracking-annotation"_ns,
+    });
+
+    RunOnShutdown([] {
+      sUrlClassifierFeatureNamesForTrackers->Clear();
+      sUrlClassifierFeatureNamesForTrackers = nullptr;
+    });
+  }
+  return *sUrlClassifierFeatureNamesForTrackers;
+}
+
+const nsTArray<RefPtr<nsIUrlClassifierFeature>>&
+GetClassifierFeaturesForTrackers() {
+  if (!sUrlClassifierFeaturesForTracker) {
+    sUrlClassifierFeaturesForTracker =
+        new nsTArray<RefPtr<nsIUrlClassifierFeature>>();
+
+    // Construct the list of classifier features.
+    for (const nsCString& featureName :
+         GetClassifierFeatureNamesForTrackers()) {
+      nsCOMPtr<nsIUrlClassifierFeature> feature =
+          net::UrlClassifierFeatureFactory::GetFeatureByName(featureName);
+      if (NS_WARN_IF(!feature)) {
+        continue;
+      }
+      sUrlClassifierFeaturesForTracker->AppendElement(feature);
+    }
+    MOZ_ASSERT(!sUrlClassifierFeaturesForTracker->IsEmpty(),
+               "At least one URL classifier feature must be present");
+    RunOnShutdown([] {
+      sUrlClassifierFeaturesForTracker->Clear();
+      sUrlClassifierFeaturesForTracker = nullptr;
+    });
+  }
+  return *sUrlClassifierFeaturesForTracker;
 }
 
 }  // namespace
@@ -142,8 +192,8 @@ StorageAccessAPIHelper::AllowAccessForHelper(
         ("Disabled by network.cookie.cookieBehavior pref (%d), bailing out "
          "early",
          *aBehavior));
-    return StorageAccessPermissionGrantPromise::CreateAndResolve(true,
-                                                                 __func__);
+    return StorageAccessPermissionGrantPromise::CreateAndResolve(
+        eAllowAutoGrant, __func__);
   }
 
   MOZ_ASSERT(
@@ -153,8 +203,8 @@ StorageAccessAPIHelper::AllowAccessForHelper(
 
   // No need to continue when we are already in the allow list.
   if (parentWindowContext->GetIsOnContentBlockingAllowList()) {
-    return StorageAccessPermissionGrantPromise::CreateAndResolve(true,
-                                                                 __func__);
+    return StorageAccessPermissionGrantPromise::CreateAndResolve(
+        eAllowAutoGrant, __func__);
   }
 
   // Make sure storage access isn't disabled
@@ -320,8 +370,7 @@ StorageAccessAPIHelper::AllowAccessForOnChildProcess(
       return StorageAccessPermissionGrantPromise::CreateAndReject(false,
                                                                   __func__);
     }
-    Unused << trackingPrincipal->IsThirdPartyPrincipal(principal,
-                                                       &isThirdParty);
+    (void)trackingPrincipal->IsThirdPartyPrincipal(principal, &isThirdParty);
     if (aReason ==
             ContentBlockingNotifier::ePrivilegeStorageAccessForOriginAPI ||
         !isThirdParty) {
@@ -472,30 +521,35 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnParentProcess(
                                                                 __func__);
   }
 
-  auto storePermission =
-      [aParentContext, aTopLevelWindowId, trackingOrigin, trackingPrincipal,
-       aCookieBehavior,
-       aReason](int aAllowMode) -> RefPtr<StorageAccessPermissionGrantPromise> {
+  RefPtr<dom::BrowsingContext> parentBC = aParentContext;
+  auto storePermission = [parentBC, aTopLevelWindowId, trackingOrigin,
+                          trackingPrincipal, aCookieBehavior,
+                          aReason](StorageAccessPromptChoices aAllowMode)
+      -> RefPtr<StorageAccessPermissionGrantPromise> {
+    if (parentBC->IsDiscarded()) {
+      return StorageAccessPermissionGrantPromise::CreateAndReject(false,
+                                                                  __func__);
+    }
     // We don't have the window, send an IPC to the content process that
     // owns the parent window. But there is a special case, for window.open,
     // we'll return to the content process we need to inform when this
     // function is done. So we don't need to create an extra IPC for the case.
     if (aReason != ContentBlockingNotifier::eOpener) {
-      dom::ContentParent* cp = aParentContext->Canonical()->GetContentParent();
+      dom::ContentParent* cp = parentBC->Canonical()->GetContentParent();
       if (!cp) {
         return StorageAccessPermissionGrantPromise::CreateAndReject(false,
                                                                     __func__);
       }
 
-      Unused << cp->SendOnAllowAccessFor(aParentContext, trackingOrigin,
-                                         aCookieBehavior, aReason);
+      (void)cp->SendOnAllowAccessFor(parentBC, trackingOrigin, aCookieBehavior,
+                                     aReason);
     }
 
     Maybe<ContentBlockingNotifier::StorageAccessPermissionGrantedReason>
         reportReason;
     // We can directly report here if we can know the origin of the top.
     ContentBlockingNotifier::ReportUnblockingToConsole(
-        aParentContext, NS_ConvertUTF8toUTF16(trackingOrigin), aReason);
+        parentBC, NS_ConvertUTF8toUTF16(trackingOrigin), aReason);
     // Set the report reason to nothing if we've already reported.
     reportReason = Nothing();
 
@@ -503,9 +557,9 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnParentProcess(
     bool frameOnly = StaticPrefs::dom_storage_access_frame_only() &&
                      aReason == ContentBlockingNotifier::eStorageAccessAPI;
 
-    uint64_t innerWindowId = aParentContext->GetCurrentInnerWindowId();
+    uint64_t innerWindowId = parentBC->GetCurrentInnerWindowId();
 
-    return SaveAccessForOriginOnParentProcess(aTopLevelWindowId, aParentContext,
+    return SaveAccessForOriginOnParentProcess(aTopLevelWindowId, parentBC,
                                               trackingPrincipal, aAllowMode,
                                               frameOnly)
         ->Then(GetCurrentSerialEventTarget(), __func__,
@@ -525,7 +579,7 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnParentProcess(
                    RefPtr<dom::WindowContext> windowContext =
                        dom::WindowContext::GetById(innerWindowId);
                    if (windowContext) {
-                     Unused << BounceTrackingProtection::RecordUserActivation(
+                     (void)BounceTrackingProtection::RecordUserActivation(
                          windowContext);
                    }
                  }
@@ -533,6 +587,23 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnParentProcess(
                      StorageAccessAPIHelper::eAllow, __func__);
                });
   };
+
+  // Exclude trackers from opener heuristic if the pref is enabled.
+  if (aReason == ContentBlockingNotifier::eOpener &&
+      StaticPrefs::
+          privacy_restrict3rdpartystorage_heuristic_exclude_third_party_trackers()) {
+    return PerformTrackerCheck(trackingOrigin)
+        ->Then(GetCurrentSerialEventTarget(), __func__,
+               [storePermission](
+                   StorageAccessPermissionGrantPromise::ResolveOrRejectValue&&
+                       aValue) {
+                 if (aValue.IsResolve()) {
+                   return storePermission(aValue.ResolveValue());
+                 }
+                 return StorageAccessPermissionGrantPromise::CreateAndReject(
+                     false, __func__);
+               });
+  }
 
   if (aPerformFinalChecks) {
     return aPerformFinalChecks()->Then(
@@ -547,7 +618,74 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnParentProcess(
                                                                       __func__);
         });
   }
-  return storePermission(false);
+  return storePermission(eAllow);
+}
+
+// A helper class to handle the callback of the URL classifier feature check.
+class CheckTrackerCallback final : public nsIUrlClassifierFeatureCallback {
+ public:
+  NS_DECL_ISUPPORTS
+
+  NS_IMETHOD
+  OnClassifyComplete(const nsTArray<RefPtr<nsIUrlClassifierFeatureResult>>&
+                         aResults) override {
+    // If the result shows no tracker, we can resolve the promise.
+    if (aResults.IsEmpty()) {
+      mPromiseHolder.ResolveIfExists(StorageAccessAPIHelper::eAllowAutoGrant,
+                                     __func__);
+      return NS_OK;
+    }
+
+    // Otherwise, we reject the promise.
+    mPromiseHolder.RejectIfExists(false, __func__);
+    return NS_OK;
+  }
+
+  RefPtr<StorageAccessAPIHelper::StorageAccessPermissionGrantPromise>
+  Promise() {
+    return mPromiseHolder.Ensure(__func__);
+  }
+
+ private:
+  ~CheckTrackerCallback() = default;
+
+  MozPromiseHolder<StorageAccessAPIHelper::StorageAccessPermissionGrantPromise>
+      mPromiseHolder;
+};
+
+NS_IMPL_ISUPPORTS(CheckTrackerCallback, nsIUrlClassifierFeatureCallback);
+
+RefPtr<StorageAccessAPIHelper::StorageAccessPermissionGrantPromise>
+StorageAccessAPIHelper::PerformTrackerCheck(const nsACString& aTrackingOrigin) {
+  MOZ_ASSERT(XRE_IsParentProcess());
+
+  nsresult rv;
+  nsCOMPtr<nsIURIClassifier> uriClassifier =
+      do_GetService(NS_URICLASSIFIERSERVICE_CONTRACTID, &rv);
+
+  if (NS_FAILED(rv)) {
+    return StorageAccessPermissionGrantPromise::CreateAndReject(false,
+                                                                __func__);
+  }
+
+  nsCOMPtr<nsIURI> trackingURI;
+  rv = NS_NewURI(getter_AddRefs(trackingURI), aTrackingOrigin);
+  if (NS_FAILED(rv)) {
+    return StorageAccessPermissionGrantPromise::CreateAndReject(false,
+                                                                __func__);
+  }
+
+  auto callback = MakeRefPtr<CheckTrackerCallback>();
+
+  rv = uriClassifier->AsyncClassifyLocalWithFeatures(
+      trackingURI, GetClassifierFeaturesForTrackers(),
+      nsIUrlClassifierFeature::blocklist, callback, false);
+  if (NS_FAILED(rv)) {
+    return StorageAccessPermissionGrantPromise::CreateAndReject(false,
+                                                                __func__);
+  }
+
+  return callback->Promise();
 }
 
 /* static */ RefPtr<StorageAccessAPIHelper::StorageAccessPermissionGrantPromise>
@@ -611,21 +749,26 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnChildProcess(
                                                                 __func__);
   }
 
-  auto storePermission =
-      [aParentContext, aTopLevelWindowId, trackingOrigin, trackingPrincipal,
-       aCookieBehavior,
-       aReason](int aAllowMode) -> RefPtr<StorageAccessPermissionGrantPromise> {
+  RefPtr<dom::BrowsingContext> parentBC = aParentContext;
+  auto storePermission = [parentBC, aTopLevelWindowId, trackingOrigin,
+                          trackingPrincipal, aCookieBehavior,
+                          aReason](StorageAccessPromptChoices aAllowMode)
+      -> RefPtr<StorageAccessPermissionGrantPromise> {
+    if (parentBC->IsDiscarded()) {
+      return StorageAccessPermissionGrantPromise::CreateAndReject(false,
+                                                                  __func__);
+    }
     // Inform the window we granted permission for. This has to be done in the
     // window's process. As a child this is always the case.
-    StorageAccessAPIHelper::OnAllowAccessFor(aParentContext, trackingOrigin,
+    StorageAccessAPIHelper::OnAllowAccessFor(parentBC, trackingOrigin,
                                              aCookieBehavior, aReason);
 
     Maybe<ContentBlockingNotifier::StorageAccessPermissionGrantedReason>
         reportReason;
     // We can directly report here if we can know the origin of the top.
-    if (aParentContext->Top()->IsInProcess()) {
+    if (parentBC->Top()->IsInProcess()) {
       ContentBlockingNotifier::ReportUnblockingToConsole(
-          aParentContext, NS_ConvertUTF8toUTF16(trackingOrigin), aReason);
+          parentBC, NS_ConvertUTF8toUTF16(trackingOrigin), aReason);
 
       // Set the report reason to nothing if we've already reported.
       reportReason = Nothing();
@@ -648,35 +791,33 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnChildProcess(
     bool frameOnly = StaticPrefs::dom_storage_access_frame_only() &&
                      aReason == ContentBlockingNotifier::eStorageAccessAPI;
 
-    uint64_t innerWindowId = aParentContext->GetCurrentInnerWindowId();
+    uint64_t innerWindowId = parentBC->GetCurrentInnerWindowId();
 
     return cc
         ->SendStorageAccessPermissionGrantedForOrigin(
-            aTopLevelWindowId, aParentContext, trackingPrincipal,
-            trackingOrigin, aAllowMode, reportReason, frameOnly)
-        ->Then(
-            GetCurrentSerialEventTarget(), __func__,
-            [aReason, trackingPrincipal,
-             innerWindowId](const ContentChild::
-                                StorageAccessPermissionGrantedForOriginPromise::
-                                    ResolveOrRejectValue& aValue) {
-              if (aValue.IsResolve()) {
-                if (aValue.ResolveValue() &&
-                    (aReason == ContentBlockingNotifier::eStorageAccessAPI)) {
-                  ContentBlockingUserInteraction::Observe(trackingPrincipal);
-                  RefPtr<dom::WindowContext> windowContext =
-                      dom::WindowContext::GetById(innerWindowId);
-                  if (windowContext) {
-                    Unused << BounceTrackingProtection::RecordUserActivation(
-                        windowContext);
-                  }
-                }
-                return StorageAccessPermissionGrantPromise::CreateAndResolve(
-                    aValue.ResolveValue(), __func__);
-              }
-              return StorageAccessPermissionGrantPromise::CreateAndReject(
-                  false, __func__);
-            });
+            aTopLevelWindowId, parentBC, trackingPrincipal, trackingOrigin,
+            aAllowMode, reportReason, frameOnly)
+        ->Then(GetCurrentSerialEventTarget(), __func__,
+               [aReason, trackingPrincipal, innerWindowId](
+                   const ContentChild::
+                       StorageAccessPermissionGrantedForOriginPromise::
+                           ResolveOrRejectValue& aValue) {
+                 if (aValue.IsResolve() && aValue.ResolveValue()) {
+                   if (aReason == ContentBlockingNotifier::eStorageAccessAPI) {
+                     ContentBlockingUserInteraction::Observe(trackingPrincipal);
+                     RefPtr<dom::WindowContext> windowContext =
+                         dom::WindowContext::GetById(innerWindowId);
+                     if (windowContext) {
+                       (void)BounceTrackingProtection::RecordUserActivation(
+                           windowContext);
+                     }
+                   }
+                   return StorageAccessPermissionGrantPromise::CreateAndResolve(
+                       eAllow, __func__);
+                 }
+                 return StorageAccessPermissionGrantPromise::CreateAndReject(
+                     false, __func__);
+               });
   };
 
   if (aPerformFinalChecks) {
@@ -692,7 +833,7 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnChildProcess(
                                                                       __func__);
         });
   }
-  return storePermission(false);
+  return storePermission(eAllow);
 }
 
 /* static */ void StorageAccessAPIHelper::OnAllowAccessFor(
@@ -727,28 +868,62 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnChildProcess(
     return;
   }
 
-  Telemetry::AccumulateCategorical(
-      Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::StorageGranted);
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eStoragegranted)
+      .Add();
+
+  nsCOMPtr<nsIURI> trackingURI;
+  nsresult rv = NS_NewURI(getter_AddRefs(trackingURI), aTrackingOrigin);
+  if (NS_FAILED(rv)) {
+    trackingURI = nullptr;
+  }
 
   switch (aReason) {
     case ContentBlockingNotifier::StorageAccessPermissionGrantedReason::
         eStorageAccessAPI:
-      Telemetry::AccumulateCategorical(
-          Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::StorageAccessAPI);
+      glean::contentblocking::storage_access_granted_count
+          .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                       eStorageaccessapi)
+          .Add();
+      if (trackingURI) {
+        StorageAccessGrantTelemetryClassification::MaybeReportTracker(
+            static_cast<uint16_t>(
+                glean::contentblocking::StorageAccessGrantedCountLabel::
+                    eStorageaccessapiCt),
+            trackingURI);
+      }
       break;
     case ContentBlockingNotifier::StorageAccessPermissionGrantedReason::
         eOpenerAfterUserInteraction:
-      Telemetry::AccumulateCategorical(
-          Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::OpenerAfterUI);
+      glean::contentblocking::storage_access_granted_count
+          .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                       eOpenerafterui)
+          .Add();
+      if (trackingURI) {
+        StorageAccessGrantTelemetryClassification::MaybeReportTracker(
+            static_cast<uint16_t>(
+                glean::contentblocking::StorageAccessGrantedCountLabel::
+                    eOpenerafteruiCt),
+            trackingURI);
+      }
       break;
     case ContentBlockingNotifier::StorageAccessPermissionGrantedReason::eOpener:
-      Telemetry::AccumulateCategorical(
-          Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::Opener);
+      glean::contentblocking::storage_access_granted_count
+          .EnumGet(
+              glean::contentblocking::StorageAccessGrantedCountLabel::eOpener)
+          .Add();
+      if (trackingURI) {
+        StorageAccessGrantTelemetryClassification::MaybeReportTracker(
+            static_cast<uint16_t>(
+                glean::contentblocking::StorageAccessGrantedCountLabel::
+                    eOpenerCt),
+            trackingURI);
+      }
       break;
     default:
       break;
   }
-
   // Theoratically this can be done in the parent process. But right now,
   // we need the channel while notifying content blocking events, and
   // we don't have a trivial way to obtain the channel in the parent
@@ -763,8 +938,8 @@ StorageAccessAPIHelper::CompleteAllowAccessForOnChildProcess(
 RefPtr<mozilla::StorageAccessAPIHelper::ParentAccessGrantPromise>
 StorageAccessAPIHelper::SaveAccessForOriginOnParentProcess(
     uint64_t aTopLevelWindowId, BrowsingContext* aParentContext,
-    nsIPrincipal* aTrackingPrincipal, int aAllowMode, bool aFrameOnly,
-    uint64_t aExpirationTime) {
+    nsIPrincipal* aTrackingPrincipal, StorageAccessPromptChoices aAllowMode,
+    bool aFrameOnly, uint64_t aExpirationTime) {
   MOZ_ASSERT(aTopLevelWindowId != 0);
   MOZ_ASSERT(aTrackingPrincipal);
 
@@ -806,7 +981,8 @@ StorageAccessAPIHelper::SaveAccessForOriginOnParentProcess(
 RefPtr<mozilla::StorageAccessAPIHelper::ParentAccessGrantPromise>
 StorageAccessAPIHelper::SaveAccessForOriginOnParentProcess(
     nsIPrincipal* aParentPrincipal, nsIPrincipal* aTrackingPrincipal,
-    int aAllowMode, bool aFrameOnly, uint64_t aExpirationTime) {
+    StorageAccessPromptChoices aAllowMode, bool aFrameOnly,
+    uint64_t aExpirationTime) {
   MOZ_ASSERT(XRE_IsParentProcess());
   MOZ_ASSERT(aAllowMode == eAllow || aAllowMode == eAllowAutoGrant);
 
@@ -839,7 +1015,7 @@ StorageAccessAPIHelper::SaveAccessForOriginOnParentProcess(
     return ParentAccessGrantPromise::CreateAndReject(false, __func__);
   }
 
-  PermissionManager* permManager = PermissionManager::GetInstance();
+  RefPtr<PermissionManager> permManager = PermissionManager::GetInstance();
   if (NS_WARN_IF(!permManager)) {
     LOG(("Permission manager is null, bailing out early"));
     return ParentAccessGrantPromise::CreateAndReject(false, __func__);
@@ -880,7 +1056,7 @@ StorageAccessAPIHelper::SaveAccessForOriginOnParentProcess(
   rv = permManager->AddFromPrincipal(aParentPrincipal, type,
                                      nsIPermissionManager::ALLOW_ACTION,
                                      expirationType, when);
-  Unused << NS_WARN_IF(NS_FAILED(rv));
+  (void)NS_WARN_IF(NS_FAILED(rv));
 
   if (StaticPrefs::privacy_antitracking_testing()) {
     nsCOMPtr<nsIObserverService> obs = services::GetObserverService();
@@ -1003,10 +1179,10 @@ Maybe<bool> StorageAccessAPIHelper::CheckCallingContextDecidesStorageAccessAPI(
 
     if (!policy->AllowsFeature(u"storage-access"_ns,
                                dom::Optional<nsAString>())) {
-      nsContentUtils::ReportToConsole(
-          nsIScriptError::errorFlag, nsLiteralCString("requestStorageAccess"),
-          aDocument, nsContentUtils::eDOM_PROPERTIES,
-          "RequestStorageAccessPermissionsPolicy");
+      nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
+                                      nsLiteralCString("requestStorageAccess"),
+                                      aDocument, PropertiesFile::DOM_PROPERTIES,
+                                      "RequestStorageAccessPermissionsPolicy");
       return Some(false);
     }
   }
@@ -1027,10 +1203,10 @@ Maybe<bool> StorageAccessAPIHelper::CheckCallingContextDecidesStorageAccessAPI(
       !aDocument->NodePrincipal()->GetIsOriginPotentiallyTrustworthy()) {
     // Report the error to the console if we are requesting access
     if (aRequestingStorageAccess) {
-      nsContentUtils::ReportToConsole(
-          nsIScriptError::errorFlag, nsLiteralCString("requestStorageAccess"),
-          aDocument, nsContentUtils::eDOM_PROPERTIES,
-          "RequestStorageAccessNotSecureContext");
+      nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
+                                      nsLiteralCString("requestStorageAccess"),
+                                      aDocument, PropertiesFile::DOM_PROPERTIES,
+                                      "RequestStorageAccessNotSecureContext");
     }
     return Some(false);
   }
@@ -1039,10 +1215,10 @@ Maybe<bool> StorageAccessAPIHelper::CheckCallingContextDecidesStorageAccessAPI(
   if (aDocument->NodePrincipal()->GetIsNullPrincipal()) {
     // Report an error to the console for this case if we are requesting access
     if (aRequestingStorageAccess) {
-      nsContentUtils::ReportToConsole(
-          nsIScriptError::errorFlag, nsLiteralCString("requestStorageAccess"),
-          aDocument, nsContentUtils::eDOM_PROPERTIES,
-          "RequestStorageAccessNullPrincipal");
+      nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
+                                      nsLiteralCString("requestStorageAccess"),
+                                      aDocument, PropertiesFile::DOM_PROPERTIES,
+                                      "RequestStorageAccessNullPrincipal");
     }
     return Some(false);
   }
@@ -1057,10 +1233,10 @@ Maybe<bool> StorageAccessAPIHelper::CheckCallingContextDecidesStorageAccessAPI(
 
   if (aRequestingStorageAccess) {
     if (aDocument->StorageAccessSandboxed()) {
-      nsContentUtils::ReportToConsole(
-          nsIScriptError::errorFlag, nsLiteralCString("requestStorageAccess"),
-          aDocument, nsContentUtils::eDOM_PROPERTIES,
-          "RequestStorageAccessSandboxed");
+      nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
+                                      nsLiteralCString("requestStorageAccess"),
+                                      aDocument, PropertiesFile::DOM_PROPERTIES,
+                                      "RequestStorageAccessSandboxed");
       return Some(false);
     }
   }
@@ -1075,10 +1251,10 @@ StorageAccessAPIHelper::CheckSameSiteCallingContextDecidesStorageAccessAPI(
   if (aRequireUserActivation) {
     if (!aDocument->HasValidTransientUserGestureActivation()) {
       // Report an error to the console for this case
-      nsContentUtils::ReportToConsole(
-          nsIScriptError::errorFlag, nsLiteralCString("requestStorageAccess"),
-          aDocument, nsContentUtils::eDOM_PROPERTIES,
-          "RequestStorageAccessUserGesture");
+      nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
+                                      nsLiteralCString("requestStorageAccess"),
+                                      aDocument, PropertiesFile::DOM_PROPERTIES,
+                                      "RequestStorageAccessUserGesture");
       return Some(false);
     }
   }
@@ -1092,7 +1268,7 @@ StorageAccessAPIHelper::CheckSameSiteCallingContextDecidesStorageAccessAPI(
     // Report an error to the console for this case
     nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
                                     nsLiteralCString("requestStorageAccess"),
-                                    aDocument, nsContentUtils::eDOM_PROPERTIES,
+                                    aDocument, PropertiesFile::DOM_PROPERTIES,
                                     "RequestStorageAccessNullPrincipal");
     return Some(false);
   }
@@ -1106,10 +1282,10 @@ StorageAccessAPIHelper::CheckExistingPermissionDecidesStorageAccessAPI(
   MOZ_ASSERT(aDocument);
   if (aDocument->StorageAccessSandboxed()) {
     if (aRequestingStorageAccess) {
-      nsContentUtils::ReportToConsole(
-          nsIScriptError::errorFlag, nsLiteralCString("requestStorageAccess"),
-          aDocument, nsContentUtils::eDOM_PROPERTIES,
-          "RequestStorageAccessSandboxed");
+      nsContentUtils::ReportToConsole(nsIScriptError::errorFlag,
+                                      nsLiteralCString("requestStorageAccess"),
+                                      aDocument, PropertiesFile::DOM_PROPERTIES,
+                                      "RequestStorageAccessSandboxed");
     }
     return Some(false);
   }
@@ -1142,7 +1318,7 @@ StorageAccessAPIHelper::RequestStorageAccessAsyncHelper(
   // called later in CompleteAllowAccessFor inside of AllowAccessFor.
   auto performPermissionGrant = aDocument->CreatePermissionGrantPromise(
       aInnerWindow, principal, aHasUserInteraction, aRequireUserInteraction,
-      Nothing(), aFrameOnly);
+      aFrameOnly);
 
   // Try to allow access for the given principal.
   return StorageAccessAPIHelper::AllowAccessForOnChildProcess(
@@ -1188,8 +1364,8 @@ void StorageAccessAPIHelper::UpdateAllowAccessOnCurrentProcess(
     // Only check browsing contexts that are in-process.
     if (aContext->IsInProcess()) {
       nsAutoCString origin;
-      Unused << AntiTrackingUtils::GetPrincipalAndTrackingOrigin(
-          aContext, nullptr, origin);
+      (void)AntiTrackingUtils::GetPrincipalAndTrackingOrigin(aContext, nullptr,
+                                                             origin);
 
       if (aTrackingOrigin == origin) {
         nsCOMPtr<nsPIDOMWindowInner> inner =
@@ -1255,8 +1431,63 @@ void StorageAccessAPIHelper::UpdateAllowAccessOnParentProcess(
       AntiTrackingUtils::GetPrincipalAndTrackingOrigin(aContext, nullptr,
                                                        origin);
       if (aTrackingOrigin == origin) {
-        Unused << wgp->SendSaveStorageAccessPermissionGranted();
+        (void)wgp->SendSaveStorageAccessPermissionGranted();
       }
     });
   }
+}
+
+NS_IMPL_ISUPPORTS(StorageAccessGrantTelemetryClassification,
+                  nsIUrlClassifierFeatureCallback);
+
+StorageAccessGrantTelemetryClassification::
+    StorageAccessGrantTelemetryClassification(uint16_t aType)
+    : mType(aType) {}
+
+// static
+void StorageAccessGrantTelemetryClassification::MaybeReportTracker(
+    uint16_t aType, nsIURI* aURI) {
+  MOZ_ASSERT(aURI);
+  nsresult rv = NS_OK;
+  nsCOMPtr<nsIURIClassifier> uriClassifier =
+      do_GetService(NS_URICLASSIFIERSERVICE_CONTRACTID, &rv);
+  NS_ENSURE_SUCCESS_VOID(rv);
+  NS_ENSURE_TRUE_VOID(uriClassifier);
+
+  const nsTArray<nsCString>& featureNames =
+      GetClassifierFeatureNamesForTrackers();
+
+  RefPtr<StorageAccessGrantTelemetryClassification> classification =
+      new StorageAccessGrantTelemetryClassification(aType);
+
+  rv = uriClassifier->AsyncClassifyLocalWithFeatureNames(
+      aURI, featureNames, nsIUrlClassifierFeature::blocklist, classification);
+  (void)NS_WARN_IF(NS_FAILED(rv));
+}
+
+// nsIUrlClassifierFeatureCallback
+NS_IMETHODIMP
+StorageAccessGrantTelemetryClassification::OnClassifyComplete(
+    const nsTArray<RefPtr<nsIUrlClassifierFeatureResult>>& aResults) {
+  // If this URI is classified as a tracker, increment that category and the
+  // base value.
+  if (!aResults.IsEmpty()) {
+    // Because of compilation errors importing glean headers, we cannot use
+    // glean::contentblocking::StorageAccessGrantedCountLabel as the parameter
+    // to this constructor directly, so we do the next best thing and use its
+    // base type and make sure we don't go over the maximum defined value
+    if (static_cast<uint16_t>(glean::contentblocking::
+                                  StorageAccessGrantedCountLabel::e__Other__) <
+        mType) {
+      mType = static_cast<uint16_t>(
+          glean::contentblocking::StorageAccessGrantedCountLabel::e__Other__);
+    }
+    glean::contentblocking::StorageAccessGrantedCountLabel type{mType};
+    glean::contentblocking::storage_access_granted_count
+        .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                     eStoragegrantedCt)
+        .Add();
+    glean::contentblocking::storage_access_granted_count.EnumGet(type).Add();
+  }
+  return NS_OK;
 }

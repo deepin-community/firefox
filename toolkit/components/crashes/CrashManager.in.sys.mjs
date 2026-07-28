@@ -8,8 +8,10 @@ import { setTimeout } from "resource://gre/modules/Timer.sys.mjs";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
+  CrashServiceUtils: "resource://gre/modules/CrashService.sys.mjs",
   Log: "resource://gre/modules/Log.sys.mjs",
-  TelemetryController: "resource://gre/modules/TelemetryController.sys.mjs",
+  Subprocess: "resource://gre/modules/Subprocess.sys.mjs",
 });
 
 /**
@@ -29,126 +31,91 @@ export function dateToDays(date) {
   return Math.floor(date.getTime() / MILLISECONDS_IN_DAY);
 }
 
-/**
- * Get a field from the specified object and remove it.
- *
- * @param obj {Object} The object holding the field
- * @param field {String} The name of the field to be parsed and removed
- *
- * @returns {String} the field contents as a string, null if none was found
- */
-function getAndRemoveField(obj, field) {
-  let value = null;
+// sendGleanPing will sequence calls so that we only have one crash reporter
+// spawned at a time.
+let lastSendPing = Promise.resolve();
+function sendGleanPing(reason, annotations) {
+  const doSendPing = async () => {
+    const uAppDataPath = Services.dirsvc.get("UAppData", Ci.nsIFile).path;
+    const crashDataPath = PathUtils.join(uAppDataPath, "Crash Reports");
 
-  if (field in obj) {
-    value = obj[field];
-    delete obj[field];
-  }
+    const process = await lazy.Subprocess.call({
+      command: lazy.CrashServiceUtils.getCrashReporterPath().path,
+      arguments: ["--send-ping", crashDataPath, reason],
+      stderr: "stdout",
+    });
 
-  return value;
-}
+    await process.stdin.write(JSON.stringify(annotations));
+    await process.stdin.close();
+    const { exitCode } = await process.wait();
 
-/**
- * Parse the string stored in the specified field as JSON and then remove the
- * field from the object.
- *
- * @param obj {Object} The object holding the field
- * @param field {String} The name of the field to be parsed and removed
- *
- * @returns {Object} the parsed object, null if none was found
- */
-function parseAndRemoveField(obj, field) {
-  let value = null;
-
-  if (field in obj) {
-    try {
-      value = JSON.parse(obj[field]);
-    } catch (e) {
-      console.error(e);
+    if (exitCode !== 0) {
+      let output = "";
+      let s;
+      while ((s = await process.stdout.readString())) {
+        output += s;
+      }
+      console.error(`failed to send ping: ${output}`);
     }
+    // Flush stdout so any pending data is consumed. process.stdout.close()
+    // should have the same effect, but it doesn't seem to behave well (reporting
+    // that the file is closed).
+    while ((await process.stdout.read()).byteLength) {
+      // We don't need to do anything, just wait for an empty read
+    }
+  };
 
-    delete obj[field];
-  }
-
-  return value;
+  // `Promise.prototype.finally()` will resolve to the prior Promise state, so
+  // we use `.then()`, since we want to sequence calls but return the error
+  // from this `doSendPing()`.
+  lastSendPing = lastSendPing.then(doSendPing, doSendPing);
+  lazy.AsyncShutdown.sendTelemetry.addBlocker(
+    "CrashManager: submitting Glean crash ping(s)",
+    lastSendPing
+  );
+  return (lastSendPing = lastSendPing.finally(() =>
+    lazy.AsyncShutdown.sendTelemetry.removeBlocker(lastSendPing)
+  ));
 }
 
-/**
- * Convert a legacy Telemetry `StackTraces` layout to that expected by Glean.
+/*
+ * Clean up pending Glean pings.
  *
- * @param stackTraces {Object} The legacy Telemetry StackTraces object.
+ * We don't care about synchronizing with lastSendPing here because this will
+ * only occur once per application session, and the crashreporter already
+ * handles its own exclusive locking.
  *
- * @returns {Object} The stack traces layout expected by the Glean crash.stackTraces metric.
+ * Returns whether the crashreporter exited without error.
  */
-function stackTracesLegacyToGlean(stackTraces) {
-  let ret = {};
-  // Change "status" to "error", only populate if an error occurred.
-  if ("status" in stackTraces && stackTraces.status !== "OK") {
-    ret.error = stackTraces.status;
+async function cleanupPings() {
+  const uAppDataPath = Services.dirsvc.get("UAppData", Ci.nsIFile).path;
+  const crashDataPath = PathUtils.join(uAppDataPath, "Crash Reports");
+  const telemetryEnabled = Services.prefs.getBoolPref(
+    "datareporting.healthreport.uploadEnabled",
+    true
+  );
+
+  const process = await lazy.Subprocess.call({
+    command: lazy.CrashServiceUtils.getCrashReporterPath().path,
+    arguments: ["--ping-cleanup", crashDataPath, telemetryEnabled.toString()],
+  });
+
+  const blocker = () => process.kill();
+
+  lazy.AsyncShutdown.profileBeforeChange.addBlocker(
+    "CrashManager: killing ping cleanup process",
+    blocker
+  );
+
+  await process.stdin.close();
+  // This is best-effort: we don't care about failure.
+  const { exitCode } = await process.wait();
+  lazy.AsyncShutdown.profileBeforeChange.removeBlocker(blocker);
+  while ((await process.stdout.read()).byteLength) {
+    // Flush stdout to avoid leaking buffered data.
   }
 
-  // Change "crash_info" to flattened individual fields.
-  ret.crash_type = stackTraces.crash_info?.type;
-  ret.crash_address = stackTraces.crash_info?.address;
-  ret.crash_thread = stackTraces.crash_info?.crashing_thread;
-
-  ret.main_module = stackTraces.main_module;
-
-  // Rename modules[].{base_addr,end_addr}
-  if ("modules" in stackTraces) {
-    ret.modules = stackTraces.modules.map(module => ({
-      base_address: module.base_addr,
-      end_address: module.end_addr,
-      code_id: module.code_id,
-      debug_file: module.debug_file,
-      debug_id: module.debug_id,
-      filename: module.filename,
-      version: module.version,
-    }));
-  }
-
-  if ("threads" in stackTraces) {
-    ret.threads = stackTraces.threads.map(thread => ({
-      frames: thread.frames.map(frame => ({
-        module_index: frame.module_index,
-        ip: frame.ip,
-        trust: frame.trust,
-      })),
-    }));
-  }
-
-  return ret;
-}
-
-/**
- * Convert a legacy Telemetry `AsyncShutdownTimeout` value to that expected by Glean.
- *
- * @param value {String} The legacy Telemetry value.
- *
- * @returns {Object} The object appropriate for being `.set()` on the Glean
- * crash.asyncShutdownTimeout metric.
- */
-function asyncShutdownTimeoutLegacyToGlean(value) {
-  let obj = JSON.parse(value);
-  // The conditions object isn't a consistent shape, so we just store it as a serialized string.
-  obj.conditions = JSON.stringify(obj.conditions);
-  // Change camelCase to snake_case
-  obj.broken_add_blockers = obj.brokenAddBlockers;
-  delete obj.brokenAddBlockers;
-  return obj;
-}
-
-/**
- * Convert a legacy Telemetry `QuotaManagerShutdownTimeout` value to that expected by Glean.
- *
- * @param value {String} The legacy Telemetry value.
- *
- * @returns {Array} The array appropriate for being `.set()` on the Glean
- * crash.quotaManagerShutdownTimeout metric.
- */
-function quotaManagerShutdownTimeoutLegacyToGlean(value) {
-  // The Glean metric is an array of the lines.
-  return value.split("\n");
+  return exitCode === 0;
 }
 
 /**
@@ -175,9 +142,6 @@ function quotaManagerShutdownTimeoutLegacyToGlean(value) {
  *   storeDir (string)
  *     Directory we will use for our data store. This instance will write
  *     data files into the directory specified.
- *
- *   telemetryStoreSizeKey (string)
- *     Telemetry histogram to report store size under.
  */
 export var CrashManager = function (options) {
   for (let k in options) {
@@ -187,14 +151,12 @@ export var CrashManager = function (options) {
       case "pendingDumpsDir":
       case "submittedDumpsDir":
       case "eventsDirs":
-      case "storeDir":
+      case "storeDir": {
         let key = "_" + k;
         delete this[key];
         Object.defineProperty(this, key, { value });
         break;
-      case "telemetryStoreSizeKey":
-        this._telemetryStoreSizeKey = value;
-        break;
+      }
 
       default:
         throw new Error("Unknown property in options: " + k);
@@ -208,8 +170,12 @@ export var CrashManager = function (options) {
   // Map of crash ID / promise tuples used to track adding new crashes.
   this._crashPromises = new Map();
 
-  // Promise for the crash ping used only for testing.
-  this._pingPromise = null;
+  // Promise for the crash pings used only for testing.
+  this._gleanPingPromise = null;
+
+  // Tests may disable the Glean ping to avoid unnecessary overhead of invoking
+  // the crash reporter client.
+  this._disableGleanPing = false;
 
   // The CrashStore currently attached to this object.
   this._store = null;
@@ -432,7 +398,10 @@ CrashManager.prototype = Object.freeze({
 
         if (needsSave) {
           let store = await this._getStore();
-          await store.save();
+
+          if (store) {
+            await store.save();
+          }
         }
 
         for (let path of deletePaths) {
@@ -461,9 +430,32 @@ CrashManager.prototype = Object.freeze({
   pruneOldCrashes(date) {
     return (async () => {
       let store = await this._getStore();
-      store.pruneOldCrashes(date);
-      await store.save();
+
+      if (store) {
+        store.pruneOldCrashes(date);
+        await store.save();
+      }
     })();
+  },
+
+  async sendUnsubmittedPings() {
+    let store = await this._getStore();
+    if (!store) {
+      return;
+    }
+
+    const crashes = store.crashesWithoutPingSubmissions();
+    for (const crash of crashes) {
+      this._sendCrashPing(
+        store,
+        crash.id,
+        "crash",
+        crash.processType,
+        crash.crashDate,
+        crash.metadata
+      );
+    }
+    await store.save();
   },
 
   /**
@@ -472,9 +464,22 @@ CrashManager.prototype = Object.freeze({
   runMaintenanceTasks() {
     return (async () => {
       await this.aggregateEventsFiles();
+      await this.sendUnsubmittedPings();
 
       let offset = this.PURGE_OLDER_THAN_DAYS * MILLISECONDS_IN_DAY;
       await this.pruneOldCrashes(new Date(Date.now() - offset));
+
+      if (AppConstants.platform !== "android" && !this._disableGleanPing) {
+        this._cleanupPingsResult = await cleanupPings().catch(error => {
+          // The pipes can race (especially if the program exits quickly) and
+          // throw File closed. Don't treat it as an error.
+          if (error.message === "File closed") {
+            return true;
+          }
+          console.error(`failed to cleanup Glean crash pings: ${error}`);
+          return false;
+        });
+      }
     })();
   },
 
@@ -521,7 +526,17 @@ CrashManager.prototype = Object.freeze({
       }
 
       let store = await this._getStore();
-      if (store.addCrash(processType, crashType, id, date, metadata)) {
+      let needSave = false;
+
+      if (store) {
+        needSave = store.addCrash(processType, crashType, id, date, metadata);
+      }
+
+      if (this.isPingAllowed(processType)) {
+        this._sendCrashPing(store, id, "crash", processType, date, metadata);
+      }
+
+      if (needSave) {
         await store.save();
       }
 
@@ -530,10 +545,6 @@ CrashManager.prototype = Object.freeze({
       if (deferred) {
         this._crashPromises.delete(id);
         deferred.resolve();
-      }
-
-      if (this.isPingAllowed(processType)) {
-        this._sendCrashPing("crash", id, processType, date, metadata);
       }
     })();
 
@@ -569,7 +580,7 @@ CrashManager.prototype = Object.freeze({
    * @param processType (string) Process type to check for
    *
    * @return boolean True or False depending on whether ping is allowed
-   **/
+   */
   isPingAllowed(processType) {
     // gen_CrashManager.py will input the proper process pings informations.
 
@@ -596,6 +607,10 @@ CrashManager.prototype = Object.freeze({
    */
   async ensureCrashIsPresent(id) {
     let store = await this._getStore();
+    if (!store) {
+      return Promise.reject();
+    }
+
     let crash = store.getCrash(id);
 
     if (crash) {
@@ -618,7 +633,7 @@ CrashManager.prototype = Object.freeze({
    */
   async setRemoteCrashID(crashID, remoteID) {
     let store = await this._getStore();
-    if (store.setRemoteCrashID(crashID, remoteID)) {
+    if (store && store.setRemoteCrashID(crashID, remoteID)) {
       await store.save();
     }
   },
@@ -641,7 +656,7 @@ CrashManager.prototype = Object.freeze({
    */
   async addSubmissionAttempt(crashID, submissionID, date) {
     let store = await this._getStore();
-    if (store.addSubmissionAttempt(crashID, submissionID, date)) {
+    if (store && store.addSubmissionAttempt(crashID, submissionID, date)) {
       await store.save();
     }
   },
@@ -658,7 +673,10 @@ CrashManager.prototype = Object.freeze({
    */
   async addSubmissionResult(crashID, submissionID, date, result) {
     let store = await this._getStore();
-    if (store.addSubmissionResult(crashID, submissionID, date, result)) {
+    if (
+      store &&
+      store.addSubmissionResult(crashID, submissionID, date, result)
+    ) {
       await store.save();
     }
   },
@@ -673,7 +691,7 @@ CrashManager.prototype = Object.freeze({
    */
   async setCrashClassifications(crashID, classifications) {
     let store = await this._getStore();
-    if (store.setCrashClassifications(crashID, classifications)) {
+    if (store && store.setCrashClassifications(crashID, classifications)) {
       await store.save();
     }
   },
@@ -712,6 +730,10 @@ CrashManager.prototype = Object.freeze({
       let data = await IOUtils.read(entry.path);
       let store = await this._getStore();
 
+      if (!store) {
+        return this.EVENT_FILE_ERROR_UNKNOWN_EVENT;
+      }
+
       let decoder = new TextDecoder();
       data = decoder.decode(data);
 
@@ -746,258 +768,55 @@ CrashManager.prototype = Object.freeze({
     })();
   },
 
-  _filterAnnotations(annotations) {
-    let filteredAnnotations = {};
-
-    for (let line in annotations) {
-      try {
-        if (Services.appinfo.isAnnotationAllowedForPing(line)) {
-          filteredAnnotations[line] = annotations[line];
-        }
-      } catch (e) {
-        // Silently drop unknown annotations
-      }
-    }
-
-    return filteredAnnotations;
-  },
-
-  /**
-   * Submit a Glean crash ping with the given parameters.
-   *
-   * @param {string} reason - the reason for the crash ping, one of: "crash", "event_found"
-   * @param {string} type - the process type (from {@link processTypes})
-   * @param {DateTime} date - the time of the crash (or the closest time after it)
-   * @param {string} minidumpHash - the hash of the minidump file, if any
-   * @param {object} stackTraces - the object containing stack trace information
-   * @param {object} metadata - the object of Telemetry crash metadata
-   */
-  _submitGleanCrashPing(
-    reason,
-    type,
-    date,
-    minidumpHash,
-    stackTraces,
-    metadata
-  ) {
-    if (stackTraces) {
-      // Glean.crash.stack_traces has a slightly different shape than Telemetry
-      stackTraces = stackTracesLegacyToGlean(stackTraces);
-
-      // FIXME: Glean should probably accept an empty object here. Some tests
-      // pass { status: "OK" }, which ends up being removed by the above logic.
-      if (Object.keys(stackTraces).length) {
-        // FIXME: ?. a temporary workaround for bug 1900442
-        Glean.crash.stackTraces?.set(stackTraces);
-      }
-    }
-
-    Glean.crash.processType.set(type);
-    Glean.crash.time.set(date.getTime() * 1000);
-    Glean.crash.minidumpSha256Hash.set(minidumpHash);
-
-    // Convert Telemetry environment values to Glean metrics
-
-    const cap = Symbol("capitalize");
-    // Types such as quantity and string which can simply be `.set()`.
-    const generic = Symbol("generic");
-    const bool = Symbol("bool");
-    const string = Symbol("string");
-    const semicolon_list = Symbol("semicolon-separated string");
-    const comma_list = Symbol("comma-separated string");
-    const seconds = Symbol("seconds (floating)");
-
-    class Typed {
-      constructor(type, metaKey) {
-        this.type = type;
-        this.metaKey = metaKey;
-      }
-    }
-    function t(type, metaKey) {
-      return new Typed(type, metaKey);
-    }
-
-    const fieldMapping = {
-      crash: {
-        appChannel: "ReleaseChannel",
-        appDisplayVersion: "Version",
-        appBuild: "BuildID",
-        asyncShutdownTimeout: t(asyncShutdownTimeoutLegacyToGlean, cap),
-        backgroundTaskName: cap,
-        eventLoopNestingLevel: cap,
-        fontName: cap,
-        gpuProcessLaunch: "GPUProcessLaunchCount",
-        ipcChannelError: "ipc_channel_error",
-        isGarbageCollecting: cap,
-        mainThreadRunnableName: cap,
-        mozCrashReason: cap,
-        profilerChildShutdownPhase: cap,
-        quotaManagerShutdownTimeout: t(
-          quotaManagerShutdownTimeoutLegacyToGlean,
-          cap
-        ),
-        remoteType: cap,
-        shutdownProgress: cap,
-        startup: t(bool, "StartupCrash"),
-      },
-      crashWindows: {
-        errorReporting: t(bool, "WindowsErrorReporting"),
-        fileDialogErrorCode: t(string, "WindowsFileDialogErrorCode"),
-      },
-      dllBlocklist: {
-        list: t(semicolon_list, "BlockedDllList"),
-        initFailed: t(bool, "BlocklistInitFailed"),
-        user32LoadedBefore: t(bool, "User32BeforeBlocklist"),
-      },
-      environment: {
-        experimentalFeatures: t(comma_list, cap),
-        headlessMode: t(bool, cap),
-        uptime: t(seconds, "UptimeTS"),
-      },
-      memory: {
-        availableCommit: "AvailablePageFile",
-        availablePhysical: "AvailablePhysicalMemory",
-        availableSwap: "AvailableSwapMemory",
-        availableVirtual: "AvailableVirtualMemory",
-        lowPhysical: "LowPhysicalMemoryEvents",
-        oomAllocationSize: "OOMAllocationSize",
-        purgeablePhysical: "PurgeablePhysicalMemory",
-        systemUsePercentage: "SystemMemoryUsePercentage",
-        texture: "TextureUsage",
-        totalPageFile: cap,
-        totalPhysical: "TotalPhysicalMemory",
-        totalVirtual: "TotalVirtualMemory",
-      },
-      windows: {
-        packageFamilyName: "WindowsPackageFamilyName",
-      },
-    };
-
-    function gleanSet(root, mapping) {
-      for (const key in mapping) {
-        let value = mapping[key];
-        if (
-          typeof value === "string" ||
-          value === cap ||
-          value instanceof Typed
-        ) {
-          // Get type and metadata key
-          let type = generic;
-          let metadataKey = value;
-          if (value instanceof Typed) {
-            type = value.type;
-            metadataKey = value.metaKey;
-          }
-          // Elaborate metadata key if set to capitilize the Glean key.
-          if (metadataKey === cap) {
-            metadataKey = key.charAt(0).toUpperCase() + key.slice(1);
-          }
-
-          // If the metadata key is set, set the Glean metric.
-          if (metadataKey in metadata) {
-            let metaValue = metadata[metadataKey];
-
-            if (type === seconds) {
-              metaValue = parseFloat(metaValue) * 1e3;
-              root[key].setRaw(metaValue);
-              continue;
-            }
-
-            // Interpret types prior to calling `set`.
-            if (type === bool) {
-              metaValue = metaValue === "1";
-            } else if (type === string) {
-              metaValue = metaValue.toString();
-            } else if (type === semicolon_list) {
-              metaValue = metaValue.split(";").filter(x => x);
-            } else if (type === comma_list) {
-              metaValue = metaValue.split(",").filter(x => x);
-            } else if (typeof type === "function") {
-              // `object` metric transformation
-              metaValue = type(metaValue);
-            }
-            // FIXME: ?. a temporary workaround for bug 1900442
-            root[key]?.set(metaValue);
-          }
-        } else {
-          gleanSet(root[key], value);
-        }
-      }
-    }
-
-    gleanSet(Glean, fieldMapping);
-
-    GleanPings.crash.submit(reason);
-  },
-
   /**
    * Send a crash ping.
    *
-   * @param {string} reason - the reason for the crash ping, one of: "crash", "event_found"
+   * @param {object} store - The crash store.
    * @param {string} crashId - the crash identifier
+   * @param {string} reason - the reason for the crash ping, one of: "crash", "event_found"
    * @param {string} type - the process type (from {@link processTypes})
    * @param {DateTime} date - the time of the crash (or the closest time after it)
    * @param {object} metadata - Telemetry crash metadata
    */
-  _sendCrashPing(reason, crashId, type, date, metadata = {}) {
-    // If we have a saved environment, use it. Otherwise report
-    // the current environment.
-    let reportMeta = Cu.cloneInto(metadata, {});
-    let crashEnvironment = parseAndRemoveField(
-      reportMeta,
-      "TelemetryEnvironment"
-    );
-    let sessionId = getAndRemoveField(reportMeta, "TelemetrySessionId");
-    let stackTraces = getAndRemoveField(reportMeta, "StackTraces");
-    let minidumpSha256Hash = getAndRemoveField(
-      reportMeta,
-      "MinidumpSha256Hash"
-    );
-    // If CrashPingUUID is present then a Telemetry ping was generated by the
-    // crashreporter for this crash so we only need to send the Glean ping.
-    let onlyGlean = getAndRemoveField(reportMeta, "CrashPingUUID");
-
-    // Filter the remaining annotations to remove privacy-sensitive ones
-    reportMeta = this._filterAnnotations(reportMeta);
+  _sendCrashPing(store, crashId, reason, type, date, metadata = {}) {
+    // If we're shutting down, do nothing (we'll send the ping later, see
+    // `sendUnsubmittedPings`).
+    if (Services.startup.shuttingDown) {
+      return;
+    }
 
     // Glean crash pings should not be sent on Android: they are handled
     // separately in lib-crash for Fenix (and potentially other GeckoView
     // users).
-    if (AppConstants.platform !== "android") {
-      this._submitGleanCrashPing(
-        reason,
-        type,
-        date,
-        minidumpSha256Hash,
-        stackTraces,
-        reportMeta
-      );
-    }
-
-    if (onlyGlean) {
-      return;
-    }
-
-    this._pingPromise = lazy.TelemetryController.submitExternalPing(
-      "crash",
-      {
-        version: 1,
-        crashDate: date.toISOString().slice(0, 10), // YYYY-MM-DD
-        crashTime: date.toISOString().slice(0, 13) + ":00:00.000Z", // per-hour resolution
-        sessionId,
-        crashId,
-        minidumpSha256Hash,
-        processType: type,
-        stackTraces,
-        metadata: reportMeta,
-        hasCrashEnvironment: crashEnvironment !== null,
-      },
-      {
-        addClientId: true,
-        addEnvironment: true,
-        overrideEnvironment: crashEnvironment,
-      }
+    this._gleanPingPromise = null;
+    const telemetryEnabled = Services.prefs.getBoolPref(
+      "datareporting.healthreport.uploadEnabled",
+      true
     );
+    if (
+      telemetryEnabled &&
+      AppConstants.platform !== "android" &&
+      !this._disableGleanPing
+    ) {
+      const pingMeta = Cu.cloneInto(metadata, {});
+      // Delete unused fields from legacy telemetry
+      delete pingMeta.TelemetryEnvironment;
+      delete pingMeta.TelemetrySessionId;
+      pingMeta.CrashTime ??= Math.floor(date.getTime() / 1000).toString();
+      pingMeta.ProcessType ??= type;
+
+      this._gleanPingPromise = sendGleanPing(reason, pingMeta).catch(error => {
+        console.error(`failed to send Glean crash ping: ${error}`);
+        throw error;
+      });
+    }
+    if (store) {
+      // Consider the ping submitted, which means that the crashreporter client
+      // is passed the ping data (if applicable). This _doesn't_ mean the ping
+      // was received by the telemetry server. We rely on the crashreporter
+      // client's Glean instance to handle reliable delivery.
+      store.setPingSubmitted(crashId);
+    }
   },
 
   _handleEventFilePayload(store, entry, type, date, payload) {
@@ -1012,7 +831,7 @@ CrashManager.prototype = Object.freeze({
       case "crash.main.2":
         return this.EVENT_FILE_ERROR_OBSOLETE;
 
-      case "crash.main.3":
+      case "crash.main.3": {
         let crashID = lines[0];
         let metadata = JSON.parse(lines[1]);
         store.addCrash(
@@ -1024,14 +843,16 @@ CrashManager.prototype = Object.freeze({
         );
 
         this._sendCrashPing(
-          "event_found",
+          store,
           crashID,
+          "event_found",
           this.processTypes[Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT],
           date,
           metadata
         );
 
         break;
+      }
 
       case "crash.submission.1":
         if (lines.length == 3) {
@@ -1042,6 +863,10 @@ CrashManager.prototype = Object.freeze({
             crashID,
             date
           );
+
+          // We consider the crash to have already had a ping sent by the
+          // crashreporter client.
+          store.setPingSubmitted(crashID);
 
           let submissionID = this.generateSubmissionID();
           let succeeded = result === "true";
@@ -1078,30 +903,36 @@ CrashManager.prototype = Object.freeze({
    */
   _getDirectoryEntries(path, re) {
     return (async function () {
-      let children = await IOUtils.getChildren(path);
       let entries = [];
 
-      for (const entry of children) {
-        let stat = await IOUtils.stat(entry);
-        if (stat.type == "directory") {
-          continue;
+      try {
+        let children = await IOUtils.getChildren(path);
+
+        for (const entry of children) {
+          let stat = await IOUtils.stat(entry);
+          if (stat.type == "directory") {
+            continue;
+          }
+
+          let filename = PathUtils.filename(entry);
+          let match = re.exec(filename);
+          if (!match) {
+            continue;
+          }
+          entries.push({
+            path: entry,
+            id: match[1],
+            date: stat.lastModified,
+          });
         }
 
-        let filename = PathUtils.filename(entry);
-        let match = re.exec(filename);
-        if (!match) {
-          continue;
-        }
-        entries.push({
-          path: entry,
-          id: match[1],
-          date: stat.lastModified,
+        entries.sort((a, b) => {
+          return a.date - b.date;
         });
+      } catch (ex) {
+        // Missing events folders are allowed
+        console.error(ex);
       }
-
-      entries.sort((a, b) => {
-        return a.date - b.date;
-      });
 
       return entries;
     })();
@@ -1119,10 +950,7 @@ CrashManager.prototype = Object.freeze({
             permissions: 0o700,
           });
 
-          let store = new CrashStore(
-            this._storeDir,
-            this._telemetryStoreSizeKey
-          );
+          let store = new CrashStore(this._storeDir);
           await store.load();
 
           this._store = store;
@@ -1179,15 +1007,11 @@ CrashManager.prototype = Object.freeze({
     return (async () => {
       let store = await this._getStore();
 
+      if (!store) {
+        return [];
+      }
+
       return store.crashes;
-    })();
-  },
-
-  getCrashCountsByDay() {
-    return (async () => {
-      let store = await this._getStore();
-
-      return store._countsByDay;
     })();
   },
 });
@@ -1218,13 +1042,9 @@ var gCrashManager;
  *
  * @param storeDir (string)
  *        Directory the store should be located in.
- * @param telemetrySizeKey (string)
- *        The telemetry histogram that should be used to store the size
- *        of the data file.
  */
-export function CrashStore(storeDir, telemetrySizeKey) {
+export function CrashStore(storeDir) {
   this._storeDir = storeDir;
-  this._telemetrySizeKey = telemetrySizeKey;
 
   this._storePath = PathUtils.join(storeDir, "store.json.mozlz4");
 
@@ -1413,12 +1233,15 @@ CrashStore.prototype = Object.freeze({
 
       let encoder = new TextEncoder();
       let data = encoder.encode(JSON.stringify(normalized));
-      let size = await IOUtils.write(this._storePath, data, {
-        tmpPath: this._storePath + ".tmp",
-        compress: true,
-      });
-      if (this._telemetrySizeKey) {
-        Services.telemetry.getHistogramById(this._telemetrySizeKey).add(size);
+      try {
+        let size = await IOUtils.write(this._storePath, data, {
+          tmpPath: this._storePath + ".tmp",
+          compress: true,
+        });
+        Glean.crash.compressedStoreSize.accumulate(size);
+      } catch (ex) {
+        // This operation might fail during shutdown, tough luck.
+        console.error(ex);
       }
     })();
   },
@@ -1518,6 +1341,22 @@ CrashStore.prototype = Object.freeze({
   },
 
   /**
+   * All tracked crashes that haven't had a ping submitted.
+   *
+   * This is an array of CrashRecord.
+   */
+  crashesWithoutPingSubmissions() {
+    let crashes = [];
+    for (let [, crash] of this._data.crashes) {
+      if (crash.pingPending) {
+        crashes.push(new CrashRecord(crash));
+      }
+    }
+
+    return crashes;
+  },
+
+  /**
    * Obtain a particular crash from its ID.
    *
    * A CrashRecord will be returned if the crash exists. null will be returned
@@ -1600,6 +1439,7 @@ CrashStore.prototype = Object.freeze({
         submissions: new Map(),
         classifications: [],
         metadata,
+        pingPending: true,
       });
     }
 
@@ -1645,6 +1485,23 @@ CrashStore.prototype = Object.freeze({
   },
 
   /**
+   * The pingSubmitted field indicates whether a ping was submitted to the
+   * crashreporter for upload. Whether the crashreporter succeeds in sending the
+   * ping or not is not relevant here: this is used to ensure each crash has a
+   * ping attempted.
+   *
+   * @return boolean True if the pingSubmitted field was set, and false if not.
+   */
+  setPingSubmitted(crashID) {
+    let crash = this._data.crashes.get(crashID);
+    if (!crash) {
+      return false;
+    }
+    delete crash.pingPending;
+    return true;
+  },
+
+  /**
    * @param processType (string) One of the PROCESS_TYPE constants.
    * @param crashType (string) One of the CRASH_TYPE constants.
    *
@@ -1663,6 +1520,7 @@ CrashStore.prototype = Object.freeze({
 
   /**
    * Ensure the submission record is present in storage.
+   *
    * @returns [submission, crash]
    */
   _ensureSubmissionRecord(crashID, submissionID) {
@@ -1695,9 +1553,7 @@ CrashStore.prototype = Object.freeze({
     }
 
     submission.requestDate = date;
-    Services.telemetry
-      .getKeyedHistogramById("PROCESS_CRASH_SUBMIT_ATTEMPT")
-      .add(crash.type, 1);
+    Glean.crash.submitAttempt[crash.type].add(1);
     return true;
   },
 
@@ -1716,9 +1572,7 @@ CrashStore.prototype = Object.freeze({
 
     submission.responseDate = date;
     submission.result = result;
-    Services.telemetry
-      .getKeyedHistogramById("PROCESS_CRASH_SUBMIT_SUCCESS")
-      .add(crash.type, result == "ok");
+    Glean.crash.submitSuccess.get(crash.type, result == "ok").add(1);
     return true;
   },
 
@@ -1784,6 +1638,14 @@ CrashRecord.prototype = Object.freeze({
     return this._o.type;
   },
 
+  get processType() {
+    const index = this.type.lastIndexOf("-");
+    if (index !== -1) {
+      return this.type.slice(0, index);
+    }
+    return this.type;
+  },
+
   isOfType(processType, crashType) {
     return processType + "-" + crashType == this.type;
   },
@@ -1816,9 +1678,7 @@ ChromeUtils.defineLazyGetter(CrashManager, "Singleton", function () {
     return gCrashManager;
   }
 
-  gCrashManager = new CrashManager({
-    telemetryStoreSizeKey: "CRASH_STORE_COMPRESSED_BYTES",
-  });
+  gCrashManager = new CrashManager({});
 
   // Automatically aggregate event files shortly after startup. This
   // ensures it happens with some frequency.

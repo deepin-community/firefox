@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,8 +5,8 @@
 #ifndef mozilla_dom_cache_Cache_h
 #define mozilla_dom_cache_Cache_h
 
-#include "mozilla/dom/cache/Types.h"
 #include "mozilla/dom/cache/TypeUtils.h"
+#include "mozilla/dom/cache/Types.h"
 #include "nsCOMPtr.h"
 #include "nsISupportsImpl.h"
 #include "nsString.h"
@@ -38,11 +36,22 @@ namespace cache {
 class AutoChildOpArgs;
 class CacheChild;
 
+enum class PutStatusPolicy { Default, RequireOK };
+bool IsValidPutRequestURL(nsIURI* aUrl, ErrorResult& aRv);
+bool IsValidPutRequestMethod(const RequestOrUTF8String& aRequest,
+                             ErrorResult& aRv);
+bool IsValidPutRequestMethod(const Request& aRequest, ErrorResult& aRv);
+bool IsValidPutResponseStatus(Response& aResponse, PutStatusPolicy aPolicy,
+                              ErrorResult& aRv);
+
 class Cache final : public nsISupports,
                     public nsWrapperCache,
-                    public TypeUtils {
+                    public TypeUtils,
+                    public CacheChildListener {
  public:
   Cache(nsIGlobalObject* aGlobal, CacheChild* aActor, Namespace aNamespace);
+
+  static bool CachesEnabled(JSContext* aCx, JSObject*);
 
   // webidl interface methods
   already_AddRefed<Promise> Match(JSContext* aCx,
@@ -75,8 +84,9 @@ class Cache final : public nsISupports,
   virtual JSObject* WrapObject(JSContext* aContext,
                                JS::Handle<JSObject*> aGivenProto) override;
 
-  // Called when CacheChild actor is being destroyed
-  void DestroyInternal(CacheChild* aActor);
+  // Called when CacheChild actor is being destroyed.
+  // Overrides CacheChildListener method
+  void OnActorDestroy(CacheChild* aActor) override;
 
   // TypeUtils methods
   virtual nsIGlobalObject* GetGlobalObject() const override;
@@ -84,8 +94,6 @@ class Cache final : public nsISupports,
 #ifdef DEBUG
   virtual void AssertOwningThread() const override;
 #endif
-
-  virtual mozilla::ipc::PBackgroundChild* GetIPCManager() override;
 
  private:
   class FetchHandler;

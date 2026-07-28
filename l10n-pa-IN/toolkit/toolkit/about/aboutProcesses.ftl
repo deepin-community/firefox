@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = ਟੈਬਾਂ ਨੂੰ ਅਣ-ਲੋਡ ਕਰੋ ਤੇ ਪਰੋਸੈਸ ਨੂੰ ਖਤਮ ਕਰੋ
+about-processes-kill-process =
+    .title = ਪਰੋਸੈਸ ਨੂੰ ਖ਼ਤਮ ਕਰੋ
 about-processes-shutdown-tab =
     .title = ਟੈਬ ਬੰਦ ਕਰੋ
 # Profiler icons
@@ -37,7 +39,7 @@ about-processes-column-cpu-total = CPU
 
 about-processes-browser-process = { -brand-short-name } ({ $pid })
 about-processes-web-process = ਸਾਂਝੇ ਵੈੱਬ ਪਰੋਸੈਸ ({ $pid })
-about-processes-file-process = ਫ਼ਾਈਲਾਂ ({ $pid })
+about-processes-file-process = ਫ਼ਾਇਲਾਂ ({ $pid })
 about-processes-extension-process = ਇਕਸਟੈਨਸ਼ਨ ({ $pid })
 about-processes-privilegedabout-process = ਸਫ਼ਿਆਂ ਬਾਰੇ ({ $pid })
 about-processes-plugin-process = ਪਲੱਗਇਨ ({ $pid })
@@ -51,11 +53,25 @@ about-processes-remote-sandbox-broker-process = ਰਿਮੋਟ ਸੈਂਡਬ�
 about-processes-fork-server-process = ਫੋਰਕ ਸਰਵਰ ({ $pid })
 about-processes-preallocated-process = ਪਹਿਲਾਂ-ਜਾਰੀ ਕੀਤਾ ({ $pid })
 about-processes-utility-process = ਸਹੂਲਤ ({ $pid })
+about-processes-inference-process = ਇਨਫਰੈਂਸ ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
 #    $type (String) The raw type for this process.
 about-processes-unknown-process = ਹੋਰ: { $type } ({ $pid })
+
+## Properties of isolated web processes
+
+about-processes-web-isolated-property-private = ਪ੍ਰਾਈਵੇਟ
+about-processes-web-isolated-property-serviceworker = ਸਰਵਿਸ-ਵਰਕਰ
+about-processes-web-isolated-property-jit-disabled = JIT ਅਸਮਰੱਥ ਹੈ
+
+## Isolated process names
+## Variables:
+##    $origin (String) The domain name for this process.
+##    $properties (String) A formatted list of properties from the above strings.
+
+about-processes-web-isolated-process2 = { $origin } ({ $properties })
 
 ## Isolated process names
 ## Variables:
@@ -128,6 +144,7 @@ about-processes-utility-actor-mf-media-engine = Windows ਮੀਡੀਆ ਫਾ�
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = ਵਿੰਡੋਜ਼ ਸਹੂਲਤਾਂ
 about-processes-utility-actor-windows-file-dialog = ਵਿੰਡੋਜ਼ ਫਾਇਲ ਡਾਈਲਾਗ
+about-processes-utility-actor-pkcs11-module = ਸਕਿਉਰਟੀ ਮੈਡਿਊਲ ਸਹਾਇਕ
 
 ## Displaying CPU (percentage and total)
 ## Variables:

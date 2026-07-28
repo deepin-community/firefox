@@ -10,22 +10,29 @@
 
 // This file contains classes that implement RtpReceiverInterface.
 // An RtpReceiver associates a MediaStreamTrackInterface with an underlying
-// transport (provided by cricket::VoiceChannel/cricket::VideoChannel)
+// transport (provided by webrtc::VoiceChannel/webrtc::VideoChannel)
 
 #ifndef PC_RTP_RECEIVER_H_
 #define PC_RTP_RECEIVER_H_
 
 #include <stdint.h>
 
+#include <optional>
 #include <string>
 #include <vector>
 
-#include "absl/types/optional.h"
+#include "absl/functional/any_invocable.h"
 #include "api/dtls_transport_interface.h"
 #include "api/media_stream_interface.h"
+#include "api/rtc_error.h"
 #include "api/rtp_receiver_interface.h"
 #include "api/scoped_refptr.h"
+#include "api/sequence_checker.h"
+#include "api/sframe/sframe_decrypter_interface.h"
+#include "api/sframe/sframe_types.h"
 #include "media/base/media_channel.h"
+#include "rtc_base/system/no_unique_address.h"
+#include "rtc_base/thread.h"
 
 namespace webrtc {
 
@@ -44,26 +51,35 @@ class RtpReceiverInternal : public RtpReceiverInterface {
   // * SetMediaChannel(nullptr) must be called before the media channel is
   //   destroyed.
   // * This method must be invoked on the worker thread.
-  virtual void SetMediaChannel(
-      cricket::MediaReceiveChannelInterface* media_channel) = 0;
+  virtual void SetMediaChannel(MediaReceiveChannelInterface* media_channel) = 0;
 
   // Configures the RtpReceiver with the underlying media channel, with the
   // given SSRC as the stream identifier.
-  virtual void SetupMediaChannel(uint32_t ssrc) = 0;
+  // This function returns a callable object that must be invoked on the worker
+  // thread by the caller to complete the operation. This is done to allow the
+  // caller to batch up tasks for the worker thread.
+  [[nodiscard]] virtual absl::AnyInvocable<void() &&> GetSetupForMediaChannel(
+      uint32_t ssrc) = 0;
 
   // Configures the RtpReceiver with the underlying media channel to receive an
   // unsignaled receive stream.
-  virtual void SetupUnsignaledMediaChannel() = 0;
+  // This function returns a callable object that must be invoked on the worker
+  // thread by the caller to complete the operation. This is done to allow the
+  // caller to batch up tasks for the worker thread.
+  [[nodiscard]] virtual absl::AnyInvocable<void() &&>
+  GetSetupForUnsignaledMediaChannel() = 0;
 
   virtual void set_transport(
-      rtc::scoped_refptr<DtlsTransportInterface> dtls_transport) = 0;
+      scoped_refptr<DtlsTransportInterface> dtls_transport) = 0;
   // This SSRC is used as an identifier for the receiver between the API layer
   // and the WebRtcVideoEngine, WebRtcVoiceEngine layer.
-  virtual absl::optional<uint32_t> ssrc() const = 0;
+  virtual std::optional<uint32_t> ssrc() const = 0;
 
   // Call this to notify the RtpReceiver when the first packet has been received
   // on the corresponding channel.
-  virtual void NotifyFirstPacketReceived() = 0;
+  virtual void NotifyFirstPacketReceived(uint32_t ssrc) = 0;
+  // Similar to the above but done whenever the receptive flag changed.
+  virtual void NotifyFirstPacketReceivedAfterReceptiveChange(uint32_t ssrc) = 0;
 
   // Set the associated remote media streams for this receiver. The remote track
   // will be removed from any streams that are no longer present and added to
@@ -73,7 +89,7 @@ class RtpReceiverInternal : public RtpReceiverInterface {
   // set_stream_ids() as soon as downstream projects are no longer dependent on
   // stream objects.
   virtual void SetStreams(
-      const std::vector<rtc::scoped_refptr<MediaStreamInterface>>& streams) = 0;
+      const std::vector<scoped_refptr<MediaStreamInterface>>& streams) = 0;
 
   // Returns an ID that changes if the attached track changes, but
   // otherwise remains constant. Used to generate IDs for stats.
@@ -83,8 +99,20 @@ class RtpReceiverInternal : public RtpReceiverInterface {
  protected:
   static int GenerateUniqueId();
 
-  static std::vector<rtc::scoped_refptr<MediaStreamInterface>>
-  CreateStreamsFromIds(std::vector<std::string> stream_ids);
+  static std::vector<scoped_refptr<MediaStreamInterface>> CreateStreamsFromIds(
+      std::vector<std::string> stream_ids);
+};
+
+class RtpReceiverBase : public RtpReceiverInternal {
+ public:
+  RTCErrorOr<scoped_refptr<SframeDecrypterInterface>>
+  CreateSframeDecrypterOrError(SframeCipherSuite cipher_suite) override;
+
+ protected:
+  explicit RtpReceiverBase(Thread* worker_thread);
+
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker signaling_thread_checker_;
+  Thread* const worker_thread_;
 };
 
 }  // namespace webrtc

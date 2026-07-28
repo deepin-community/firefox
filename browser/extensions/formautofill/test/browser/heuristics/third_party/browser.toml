@@ -1,5 +1,7 @@
 [DEFAULT]
-skip-if = ["os == 'android'"] # bug 1730213
+skip-if = [
+  "os == 'android'", # bug 1730213
+]
 support-files = [
   "../../head.js",
   "../../../fixtures/**",
@@ -20,6 +22,8 @@ support-files = [
 ["browser_GlobalDirectAsda.js"]
 
 ["browser_HomeDepot.js"]
+
+["browser_Inkbox.js"]
 
 ["browser_Lufthansa.js"]
 

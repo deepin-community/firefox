@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -509,16 +507,19 @@ already_AddRefed<Promise> MediaKeySession::Close(ErrorResult& aRv) {
   return promise.forget();
 }
 
-void MediaKeySession::OnClosed() {
+void MediaKeySession::OnClosed(MediaKeySessionClosedReason aReason) {
   if (IsClosed()) {
     return;
   }
-  EME_LOG("MediaKeySession[%p,'%s'] session close operation complete.", this,
-          NS_ConvertUTF16toUTF8(mSessionId).get());
+  EME_LOG(
+      "MediaKeySession[%p,'%s'] session close operation complete due to reason "
+      "'%s'.",
+      this, NS_ConvertUTF16toUTF8(mSessionId).get(),
+      GetEnumString(aReason).get());
   mIsClosed = true;
   mKeys->OnSessionClosed(this);
   mKeys = nullptr;
-  mClosed->MaybeResolveWithUndefined();
+  mClosed->MaybeResolve(aReason);
 }
 
 bool MediaKeySession::IsClosed() const { return mIsClosed; }

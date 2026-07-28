@@ -1,5 +1,6 @@
+import pytest
 from support.context import using_context
-from tests.support.asserts import assert_success
+from tests.support.classic.asserts import assert_success
 
 
 def get_window_handle(session):
@@ -8,12 +9,14 @@ def get_window_handle(session):
     )
 
 
+@pytest.mark.allow_system_access
 def test_basic(session):
     with using_context(session, "chrome"):
         response = get_window_handle(session)
         assert_success(response, session.window_handle)
 
 
+@pytest.mark.allow_system_access
 def test_different_handle_than_content_scope(session):
     response = get_window_handle(session)
     content_handle = assert_success(response)

@@ -4,9 +4,12 @@
 
 package org.mozilla.fenix.library.history.viewholders
 
+import android.content.res.ColorStateList
 import android.view.View
+import androidx.annotation.LayoutRes
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import mozilla.components.support.ktx.android.content.getColorFromAttr
 import org.mozilla.fenix.R
 import org.mozilla.fenix.databinding.HistoryListItemBinding
 import org.mozilla.fenix.ext.components
@@ -18,11 +21,16 @@ import org.mozilla.fenix.library.history.HistoryFragmentState
 import org.mozilla.fenix.library.history.HistoryFragmentStore
 import org.mozilla.fenix.library.history.HistoryItemTimeGroup
 import org.mozilla.fenix.selection.SelectionHolder
+import com.google.android.material.R as materialR
+import mozilla.components.ui.icons.R as iconsR
 
 class HistoryListItemViewHolder(
     view: View,
     private val selectionHolder: SelectionHolder<History>,
     private val store: HistoryFragmentStore,
+    private val onHistoryItemClicked: (History) -> Unit,
+    private val onRecentlyClosedClicked: () -> Unit,
+    private val onDeleteInitiated: (Set<History>) -> Unit,
 ) : RecyclerView.ViewHolder(view) {
 
     private var item: History? = null
@@ -30,15 +38,16 @@ class HistoryListItemViewHolder(
 
     init {
         binding.recentlyClosedNavEmpty.recentlyClosedNav.setOnClickListener {
-            store.dispatch(HistoryFragmentAction.EnterRecentlyClosed)
+            onRecentlyClosedClicked()
         }
 
         binding.historyLayout.overflowView.apply {
-            setImageResource(R.drawable.ic_close)
+            setImageResource(iconsR.drawable.mozac_ic_cross_24)
             contentDescription = view.context.getString(R.string.history_delete_item)
             setOnClickListener {
                 val item = item ?: return@setOnClickListener
                 store.dispatch(HistoryFragmentAction.DeleteItems(setOf(item)))
+                onDeleteInitiated(setOf(item))
             }
         }
     }
@@ -87,6 +96,9 @@ class HistoryListItemViewHolder(
 
         binding.historyLayout.setOnClickListener {
             store.dispatch(HistoryFragmentAction.HistoryItemClicked(item))
+            if (mode.selectedItems.isEmpty()) {
+                onHistoryItemClicked(item)
+            }
         }
         binding.historyLayout.setOnLongClickListener {
             store.dispatch(HistoryFragmentAction.HistoryItemLongClicked(item))
@@ -98,9 +110,15 @@ class HistoryListItemViewHolder(
         if (item is History.Regular &&
             (this.item as? History.Regular)?.url != item.url
         ) {
+            binding.historyLayout.iconView.imageTintList = null
             binding.historyLayout.loadFavicon(item.url)
         } else if (item is History.Group) {
-            binding.historyLayout.iconView.setImageResource(R.drawable.ic_multiple_tabs)
+            binding.historyLayout.iconView.apply {
+                setImageResource(iconsR.drawable.mozac_ic_tab_tray_24)
+                imageTintList = ColorStateList.valueOf(
+                    context.getColorFromAttr(materialR.attr.colorOnSurface),
+                )
+            }
         }
 
         if (mode is HistoryFragmentState.Mode.Editing) {
@@ -155,6 +173,8 @@ class HistoryListItemViewHolder(
 
     companion object {
         const val DISABLED_BUTTON_ALPHA = 0.7f
-        const val LAYOUT_ID = R.layout.history_list_item
+
+        @LayoutRes
+        val LAYOUT_ID = R.layout.history_list_item
     }
 }

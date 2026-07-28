@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,6 +5,7 @@
 #include "mozilla/glean/bindings/Event.h"
 
 #include "nsString.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/dom/GleanMetricsBinding.h"
 #include "mozilla/dom/ToJSValue.h"
 #include "mozilla/glean/bindings/Common.h"
@@ -21,9 +20,12 @@ JSObject* GleanEvent::WrapObject(JSContext* aCx,
   return dom::GleanEvent_Binding::Wrap(aCx, this, aGivenProto);
 }
 
+using mozilla::dom::Nullable;
+using mozilla::dom::Optional;
+
 void GleanEvent::Record(
-    const dom::Optional<dom::Record<nsCString, nsCString>>& aExtra) {
-  if (!aExtra.WasPassed()) {
+    const Optional<Nullable<dom::Record<nsCString, nsCString>>>& aExtra) {
+  if (!aExtra.WasPassed() || aExtra.Value().IsNull()) {
     mEvent.Record();
     return;
   }
@@ -31,8 +33,8 @@ void GleanEvent::Record(
   nsTArray<nsCString> extraKeys;
   nsTArray<nsCString> extraValues;
   CopyableTArray<Telemetry::EventExtraEntry> telExtras;
-  nsCString telValue;
-  for (const auto& entry : aExtra.Value().Entries()) {
+  nsCString telValue(VoidCString());
+  for (const auto& entry : aExtra.Value().Value().Entries()) {
     if (entry.mValue.IsVoid()) {
       // Someone passed undefined/null for this value.
       // Pretend it wasn't here.
@@ -53,9 +55,9 @@ void GleanEvent::Record(
   // here as well as in EventMetric::Record.
   auto id = EventIdForMetric(mEvent.mId);
   if (id) {
-    Telemetry::RecordEvent(id.extract(),
-                           telValue.IsEmpty() ? Nothing() : Some(telValue),
-                           telExtras.IsEmpty() ? Nothing() : Some(telExtras));
+    TelemetryEvent::RecordEventNative(
+        id.extract(), telValue.IsVoid() ? Nothing() : Some(telValue),
+        telExtras.IsEmpty() ? Nothing() : Some(telExtras));
   }
 
   // Calling the implementation directly, because we have a `string->string`
@@ -65,7 +67,7 @@ void GleanEvent::Record(
 
 void GleanEvent::TestGetValue(
     const nsACString& aPingName,
-    dom::Nullable<nsTArray<dom::GleanEventRecord>>& aResult, ErrorResult& aRv) {
+    Nullable<nsTArray<dom::GleanEventRecord>>& aResult, ErrorResult& aRv) {
   auto resEvents = mEvent.TestGetValue(aPingName);
   if (resEvents.isErr()) {
     aRv.ThrowDataError(resEvents.unwrapErr());

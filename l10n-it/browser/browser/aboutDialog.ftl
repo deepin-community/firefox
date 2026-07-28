@@ -4,75 +4,94 @@
 
 aboutDialog-title =
     .title = Informazioni su { -brand-full-name }
-
 releaseNotes-link = Novità
-
 update-checkForUpdatesButton =
     .label = Controlla aggiornamenti
     .accesskey = C
-
 update-updateButton =
     .label = Riavvia per aggiornare { -brand-shorter-name }
     .accesskey = R
-
 update-checkingForUpdates = Ricerca aggiornamenti…
+settings-update-checking-for-updates =
+    .label = Ricerca aggiornamenti…
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
 settings-update-downloading = <img data-l10n-name="icon"/>Download aggiornamento — <label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = Download aggiornamento — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading-2 =
+    .label = Download aggiornamento — { $transfer }
 
 ##
 
 update-applying = Installazione aggiornamento…
-
+settings-update-applying =
+    .label = Installazione aggiornamento…
 update-failed = Aggiornamento non riuscito. <label data-l10n-name="failed-link">Scarica l’ultima versione</label>
 update-failed-main = Aggiornamento non riuscito. <a data-l10n-name="failed-link-main">Scarica l’ultima versione</a>
-
 update-adminDisabled = Aggiornamenti disattivati dall’amministratore di sistema
 update-policy-disabled = Aggiornamenti disattivati dalla tua organizzazione
+settings-update-policy-disabled =
+    .label = Aggiornamenti disattivati dalla tua organizzazione
 update-noUpdatesFound = { -brand-short-name } è aggiornato
+settings-update-no-updates-found =
+    .label = { -brand-short-name } è aggiornato
 aboutdialog-update-checking-failed = Impossibile controllare la disponibilità di aggiornamenti.
+settings-update-checking-failed =
+    .label = Impossibile controllare la disponibilità di aggiornamenti.
 update-otherInstanceHandlingUpdates = Aggiornamento di { -brand-short-name } in corso in un’altra istanza
+settings-update-other-instance-handling-updates =
+    .label = Aggiornamento di { -brand-short-name } in corso in un’altra istanza
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
 
 aboutdialog-update-manual-with-link = Aggiornamenti disponibili su <label data-l10n-name="manual-link">{ $displayUrl }</label>
 settings-update-manual-with-link = Aggiornamenti disponibili su <a data-l10n-name="manual-link">{ $displayUrl }</a>
-
 update-unsupported = Non è possibile installare ulteriori aggiornamenti su questo sistema. <label data-l10n-name="unsupported-link">Ulteriori informazioni</label>
-
+settings-update-unsupported = Non è possibile installare ulteriori aggiornamenti su questo sistema. <a data-l10n-name="unsupported-link">Ulteriori informazioni</a>
 update-restarting = Riavvio…
-
+settings-update-restarting =
+    .label = Riavvio…
 update-internal-error2 = Impossibile verificare la disponibilità di aggiornamenti a causa di un errore interno. Aggiornamenti disponibili a <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-internal-error = Impossibile verificare la disponibilità di aggiornamenti a causa di un errore interno. Aggiornamenti disponibili a <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 ##
 
 # Variables:
 #   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
 aboutdialog-channel-description = Canale di aggiornamento attuale: <label data-l10n-name="current-channel">{ $channel }</label>.
-
 warningDesc-version = { -brand-short-name } è una versione sperimentale e potrebbe risultare instabile.
-
 aboutdialog-help-user = Supporto per { -brand-product-name }
 aboutdialog-submit-feedback = Invia feedback
-
 community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> è una <label data-l10n-name="community-exp-creditsLink">comunità mondiale</label> che lavora per mantenere il Web aperto, pubblico e accessibile a tutti.
-
 community-2 = { -brand-short-name } è progettato da <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, una <label data-l10n-name="community-creditsLink">comunità mondiale</label> che lavora per mantenere il Web aperto, pubblico e accessibile a tutti.
-
 helpus = Vuoi aiutarci? <label data-l10n-name="helpus-donateLink">Fai una donazione</label> o <label data-l10n-name="helpus-getInvolvedLink">collabora con noi</label>
-
 bottomLinks-license = Informazioni sulla licenza
+bottom-links-terms = Condizioni di utilizzo
+bottom-links-privacy = Informativa sulla privacy
 bottomLinks-rights = Diritti dell’utente finale
 bottomLinks-privacy = Informativa sulla privacy
-
+# Example of resulting string: 66.0.1 (64-bit)
+# Variables:
+#   $version (String): version of Firefox, e.g. 66.0.1
+#   $bits (Number): bits of the architecture (32 or 64)
 aboutDialog-version = { $version } ({ $bits } bit)
-
+# Example of resulting string: 66.0a1 (2019-01-16) (64-bit)
+# Variables:
+#   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+#   $isodate (String): date in ISO format, e.g. 2019-01-16
+#   $bits (Number): bits of the architecture (32 or 64)
 aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits } bit)
-
+# Example of resulting string: 131.0a1 (aarch64)
+# Variables:
+#   $version (String): version of Firefox, e.g. 66.0.1
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
 aboutdialog-version-arch = { $version } ({ $arch })
-
+# Example of resulting string: 131.0a1 (2024-08-27) (aarch64)
+# Variables:
+#   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+#   $isodate (String): date in ISO format, e.g. 2019-01-16
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
 aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })

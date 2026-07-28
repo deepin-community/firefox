@@ -17,9 +17,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.databinding.QuicksettingsWebsiteInfoBinding
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class WebsiteInfoViewTest {
 
     private lateinit var view: WebsiteInfoView
@@ -44,7 +44,7 @@ class WebsiteInfoViewTest {
             WebsiteInfoState(
                 websiteUrl = websiteUrl,
                 websiteTitle = "Mozilla",
-                websiteSecurityUiValues = WebsiteSecurityUiValues.SECURE,
+                websiteInfoUiValues = WebsiteInfoUiValues.SECURE,
                 certificateName = "",
             ),
         )
@@ -61,7 +61,7 @@ class WebsiteInfoViewTest {
             WebsiteInfoState(
                 websiteUrl = "https://mozilla.org",
                 websiteTitle = "Mozilla",
-                websiteSecurityUiValues = WebsiteSecurityUiValues.INSECURE,
+                websiteInfoUiValues = WebsiteInfoUiValues.INSECURE,
                 certificateName = "Certificate",
             ),
         )

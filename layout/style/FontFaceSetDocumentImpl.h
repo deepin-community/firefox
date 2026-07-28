@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -46,7 +44,7 @@ class FontFaceSetDocumentImpl final : public FontFaceSetImpl,
 
   bool IsFontLoadAllowed(const gfxFontFaceSrc&) override;
 
-  nsPresContext* GetPresContext() const override;
+  FontVisibilityProvider* GetFontVisibilityProvider() const override;
 
   bool UpdateRules(const nsTArray<nsFontFaceRuleContainer>& aRules) override;
 
@@ -91,10 +89,9 @@ class FontFaceSetDocumentImpl final : public FontFaceSetImpl,
   void FindMatchingFontFaces(const nsTHashSet<FontFace*>& aMatchingFaces,
                              nsTArray<FontFace*>& aFontFaces) override;
 
-  void InsertRuleFontFace(FontFaceImpl* aFontFace, FontFace* aFontFaceOwner,
-                          StyleOrigin aOrigin,
-                          nsTArray<FontFaceRecord>& aOldRecords,
-                          bool& aFontSetModified);
+  /* Returns whether the font set was modified. */
+  bool InsertRuleFontFace(StyleLockedFontFaceRule*, StyleOrigin,
+                          nsTArray<FontFaceRecord>& aOldRecords);
 
   // Helper function for HasLoadingFontFaces.
   void UpdateHasLoadingFontFaces() override;

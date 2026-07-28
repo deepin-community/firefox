@@ -18,6 +18,7 @@ use crate::gecko_bindings::structs::root::mozilla::detail::GkAtoms_Atoms_AtomsCo
 use crate::gecko_bindings::structs::{nsAtom, nsDynamicAtom, nsStaticAtom};
 use nsstring::{nsAString, nsStr};
 use precomputed_hash::PrecomputedHash;
+use serde::{Deserialize, Serialize};
 use std::borrow::{Borrow, Cow};
 use std::char::{self, DecodeUtf16};
 use std::fmt::{self, Write};
@@ -52,6 +53,41 @@ pub use self::namespace::{Namespace, WeakNamespace};
 #[derive(Eq, PartialEq)]
 #[repr(C)]
 pub struct Atom(NonZeroUsize);
+
+impl Serialize for Atom {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        // TODO(dshin, Bug 1929015): Optimization for static atoms is possible.
+        self.deref().with_str(|s| serializer.serialize_str(s))
+    }
+}
+
+struct AtomStrVisitor;
+impl<'de> serde::de::Visitor<'de> for AtomStrVisitor {
+    type Value = Atom;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, "A string to atomize")
+    }
+
+    fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(Atom::from(s))
+    }
+}
+
+impl<'de> Deserialize<'de> for Atom {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_str(AtomStrVisitor)
+    }
+}
 
 /// An atom *without* a strong reference.
 ///
@@ -167,7 +203,7 @@ impl WeakAtom {
     }
 
     // NOTE: don't expose this, since it's slow, and easy to be misused.
-    fn chars(&self) -> DecodeUtf16<Cloned<slice::Iter<u16>>> {
+    fn chars(&self) -> DecodeUtf16<Cloned<slice::Iter<'_, u16>>> {
         char::decode_utf16(self.as_slice().iter().cloned())
     }
 
@@ -492,6 +528,6 @@ impl From<String> for Atom {
     }
 }
 
-malloc_size_of_is_0!(Atom);
+malloc_size_of::malloc_size_of_is_0!(Atom);
 
 impl SpecifiedValueInfo for Atom {}

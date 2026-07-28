@@ -13,10 +13,10 @@
 //! within the implementation.
 //!
 //! [`Handle`]: crate::arena::Handle
-//! [`NonZeroU32`]: std::num::NonZeroU32
+//! [`NonZeroU32`]: core::num::NonZeroU32
 #![allow(dead_code)]
 
-use std::num::NonZeroU32;
+use core::num::NonZeroU32;
 
 /// An unsigned 32-bit value known not to be [`u32::MAX`].
 ///
@@ -42,13 +42,13 @@ use std::num::NonZeroU32;
 ///
 /// Although this should not be observable to its users, a `NonMaxU32` whose
 /// value is `n` is a newtype around a [`NonZeroU32`] whose value is `n + 1`.
-/// This way, the range of values that `NonMaxU32` can represent, `0..=u32::MAX
-/// - 1`, is mapped to the range `1..=u32::MAX`, which is the range that
-/// [`NonZeroU32`] can represent. (And conversely, since [`u32`] addition wraps
-/// around, the value unrepresentable in `NonMaxU32`, [`u32::MAX`], becomes the
-/// value unrepresentable in [`NonZeroU32`], `0`.)
+/// This way, the range of values that `NonMaxU32` can represent,
+/// `0..=u32::MAX - 1`, is mapped to the range `1..=u32::MAX`, which is the
+/// range that /// [`NonZeroU32`] can represent. (And conversely, since
+/// [`u32`] addition wraps around, the value unrepresentable in `NonMaxU32`,
+/// [`u32::MAX`], becomes the value unrepresentable in [`NonZeroU32`], `0`.)
 ///
-/// [`NonZeroU32`]: std::num::NonZeroU32
+/// [`NonZeroU32`]: core::num::NonZeroU32
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct NonMaxU32(NonZeroU32);
@@ -70,24 +70,6 @@ impl NonMaxU32 {
         self.0.get() - 1
     }
 
-    /// Construct a [`NonMaxU32`] whose value is `n`.
-    ///
-    /// # Safety
-    ///
-    /// The value of `n` must not be [`u32::MAX`].
-    pub const unsafe fn new_unchecked(n: u32) -> NonMaxU32 {
-        NonMaxU32(unsafe { NonZeroU32::new_unchecked(n + 1) })
-    }
-
-    /// Construct a [`NonMaxU32`] whose value is `index`.
-    ///
-    /// # Safety
-    ///
-    /// - The value of `index` must be strictly less than [`u32::MAX`].
-    pub const unsafe fn from_usize_unchecked(index: usize) -> Self {
-        NonMaxU32(unsafe { NonZeroU32::new_unchecked(index as u32 + 1) })
-    }
-
     pub fn checked_add(self, n: u32) -> Option<Self> {
         // Adding `n` to `self` produces `u32::MAX` if and only if
         // adding `n` to `self.0` produces `0`. So we can simply
@@ -97,14 +79,14 @@ impl NonMaxU32 {
     }
 }
 
-impl std::fmt::Debug for NonMaxU32 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for NonMaxU32 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.get().fmt(f)
     }
 }
 
-impl std::fmt::Display for NonMaxU32 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for NonMaxU32 {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.get().fmt(f)
     }
 }
@@ -140,6 +122,5 @@ impl<'de> serde::Deserialize<'de> for NonMaxU32 {
 
 #[test]
 fn size() {
-    use core::mem::size_of;
     assert_eq!(size_of::<Option<NonMaxU32>>(), size_of::<u32>());
 }

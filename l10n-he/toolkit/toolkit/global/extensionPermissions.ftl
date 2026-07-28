@@ -30,4 +30,46 @@ webext-perms-description-sessions = גישה ללשוניות שנסגרו לא�
 webext-perms-description-tabs = גישה ללשוניות
 webext-perms-description-tabHide = הסתרה והצגת לשוניות הדפדפן
 webext-perms-description-topSites = גישה להיסטוריית הגלישה
+webext-perms-description-trialML = הורדה והרצת מודולי AI במכשיר שלך
+webext-perms-description-userScripts = לאפשר לתסריטי צד שלישי לא מאומתים לגשת לנתונים שלך
 webext-perms-description-webNavigation = גישה לפעילות הדפדפן במהלך הניווט
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = תסריטים שאינם מאומתים עלולים להוות סיכוני אבטחה ופרטיות, כמו הפעלת קוד מזיק או מעקב אחר פעילות באתר. יש להריץ תסריטים מהרחבות או מקורות מהימנים בלבד.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = תסריטים שאינם מאומתים עלולים להוות סיכוני אבטחה ופרטיות. יש להריץ תסריטים מהרחבות או מקורות מהימנים בלבד.
+
+## Short form to be used in lists or in a string (`webext-perms-description-data-some`)
+## that formats some of the data collection permissions below using `Intl.ListFormat`.
+##
+## This is used when the data collection permissions are required.
+
+webext-perms-description-data-short-authenticationInfo = מידע אימות
+webext-perms-description-data-short-bookmarksInfo = סימניות
+webext-perms-description-data-short-browsingActivity = פעילות גלישה
+webext-perms-description-data-short-financialAndPaymentInfo = מידע על כספים ותשלומים
+webext-perms-description-data-short-healthInfo = מידע על בריאות
+webext-perms-description-data-short-locationInfo = מיקום
+webext-perms-description-data-short-personalCommunications = תקשורת אישית
+webext-perms-description-data-short-personallyIdentifyingInfo = מידע המאפשר זיהוי אישי
+webext-perms-description-data-short-searchTerms = מונחי חיפוש
+webext-perms-description-data-short-technicalAndInteraction = נתונים טכניים ונתוני אינטראקציה
+webext-perms-description-data-short-websiteActivity = פעילות אתר
+webext-perms-description-data-short-websiteContent = תוכן אתר
+
+## Long form to be used in `about:addons` when these data collection permissions are optional.
+
+webext-perms-description-data-long-authenticationInfo = שיתוף מידע אימות עם מפתח ההרחבה
+webext-perms-description-data-long-bookmarksInfo = שיתוף מידע על הסימניות עם מפתח ההרחבה
+webext-perms-description-data-long-browsingActivity = שיתוף פעילות הגלישה עם מפתח ההרחבה
+webext-perms-description-data-long-financialAndPaymentInfo = שיתוף מידע על כספים ותשלומים עם מפתח ההרחבה
+webext-perms-description-data-long-healthInfo = שיתוף מידע על הבריאות עם מפתח ההרחבה
+webext-perms-description-data-long-locationInfo = שיתוף מידע על המיקום עם מפתח ההרחבה
+webext-perms-description-data-long-personalCommunications = שיתוף תקשורת אישית עם מפתח ההרחבה
+webext-perms-description-data-long-personallyIdentifyingInfo = שיתוף מידע המאפשר זיהוי אישי עם מפתח ההרחבה
+webext-perms-description-data-long-searchTerms = שיתוף מונחי חיפוש עם מפתח ההרחבה
+webext-perms-description-data-long-technicalAndInteraction = שיתוף נתונים טכניים ונתוני אינטראקציה עם מפתח ההרחבה
+webext-perms-description-data-long-websiteActivity = שיתוף פעילות אתרים עם מפתח ההרחבה
+webext-perms-description-data-long-websiteContent = שיתוף תכני אתרים עם מפתח ההרחבה

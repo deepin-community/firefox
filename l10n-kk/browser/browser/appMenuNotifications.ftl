@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Тайдыру
     .secondarybuttonaccesskey = д
 appmenu-update-restart-message2 = { -brand-shorter-name } соңғы нұсқасын алыңыз. Ашық беттер мен терезелер қалпына келтіріледі.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Болдырмау
+    .secondarybuttonaccesskey = ы
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } соңғы нұсқаға дейін автоматты түрде жаңартыла алмайды.
     .buttonlabel = Сонда да { -brand-shorter-name } жаңарту
@@ -37,15 +40,19 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Қазір емес
     .secondarybuttonaccesskey = м
 appmenu-update-other-instance-message = Жаңа { -brand-shorter-name } жаңартуы бар, бірақ оны орнату мүмкін емес, себебі { -brand-shorter-name } басқа көшірмесі жұмыс істеп тұр. Жаңартуды жалғастыру үшін оны жабыңыз немесе сонда да жаңартуды таңдаңыз (басқа көшірме оны қайта іске қосқанға дейін дұрыс жұмыс істемеуі мүмкін).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = ОК
     .buttonaccesskey = о
 appmenu-addon-post-install-message3 = Қосымшалар мен темаларды қолданба мәзірі арқылы басқарыңыз.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Рұқсаттар мен деректерге қатысты параметрлерді кез келген уақытта <a data-l10n-name="settings-link">кеңейту параметрлерінен</a> өзгертуге болады.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Кеңейтуді құралдар тақтасына бекіту
+    .accesskey = б
 appmenu-addon-post-install-incognito-checkbox =
     .label = Бұл кеңейтуге жекелік шолу терезелерінде орындалуға рұқсат ету
     .accesskey = а
-    
 appmenu-new-tab-controlled-changes =
     .label = Сіздің жаңа бетіңіз өзгертілген.
     .buttonlabel = Өзгерістерді сақтау

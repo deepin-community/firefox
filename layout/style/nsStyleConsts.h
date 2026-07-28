@@ -1,18 +1,13 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* constants used in the style struct data provided by ComputedStyle */
 
-#ifndef nsStyleConsts_h___
-#define nsStyleConsts_h___
-
-#include <inttypes.h>
+#ifndef nsStyleConsts_h_
+#define nsStyleConsts_h_
 
 #include "X11UndefineNone.h"
-
 #include "gfxFontConstants.h"
 #include "mozilla/ServoStyleConsts.h"
 
@@ -56,7 +51,7 @@ enum class StyleBoxPack : uint8_t {
 };
 
 // box-sizing
-enum class StyleBoxSizing : uint8_t { Content, Border };
+enum class StyleBoxSizing : uint8_t { ContentBox, BorderBox };
 
 // box-shadow
 enum class StyleBoxShadowType : uint8_t {
@@ -146,32 +141,6 @@ enum class StyleShapeSourceType : uint8_t {
   Path,  // SVG path function
 };
 
-// user-focus
-enum class StyleUserFocus : uint8_t {
-  None,
-  Ignore,
-  Normal,
-};
-
-// user-input
-enum class StyleUserInput : uint8_t {
-  None,
-  Auto,
-};
-
-// user-modify
-enum class StyleUserModify : uint8_t {
-  ReadOnly,
-  ReadWrite,
-  WriteOnly,
-};
-
-// -moz-inert
-enum class StyleInert : uint8_t {
-  None,
-  Inert,
-};
-
 // -moz-window-dragging
 enum class StyleWindowDragging : uint8_t {
   Default,
@@ -217,15 +186,6 @@ enum class StyleDirection : uint8_t { Ltr, Rtl };
 // (To avoid ambiguity, this bit must be high enough such that no other
 // values here accidentally use it in their binary representation.)
 static constexpr uint8_t kWritingModeSidewaysMask = 4;
-
-enum class StyleWritingModeProperty : uint8_t {
-  HorizontalTb = 0,
-  VerticalRl = 1,
-  // HorizontalBT = 2,    // hypothetical
-  VerticalLr = 3,
-  SidewaysRl = VerticalRl | kWritingModeSidewaysMask,
-  SidewaysLr = VerticalLr | kWritingModeSidewaysMask,
-};
 
 // See nsStylePosition
 enum class StyleFlexDirection : uint8_t {
@@ -278,14 +238,8 @@ enum class StyleMathVariant : uint8_t {
 // See nsStyleFont::mMathStyle
 enum class StyleMathStyle : uint8_t { Compact = 0, Normal = 1 };
 
-// See nsStyleDisplay.mPosition
-enum class StylePositionProperty : uint8_t {
-  Static,
-  Relative,
-  Absolute,
-  Fixed,
-  Sticky,
-};
+// See nsStyleFont::mMathShift
+enum class StyleMathShift : uint8_t { Compact = 0, Normal = 1 };
 
 enum class FrameBorderProperty : uint8_t { Yes, No, One, Zero };
 
@@ -331,20 +285,6 @@ enum class ListStyle : uint8_t {
 // See nsStyleList
 enum class StyleListStylePosition : uint8_t { Inside, Outside };
 
-// See nsStyleVisibility
-enum class StylePointerEvents : uint8_t {
-  None,
-  Visiblepainted,
-  Visiblefill,
-  Visiblestroke,
-  Visible,
-  Painted,
-  Fill,
-  Stroke,
-  All,
-  Auto,
-};
-
 enum class StyleIsolation : uint8_t {
   Auto,
   Isolate,
@@ -381,7 +321,7 @@ enum class StyleTextSecurity : uint8_t {
 // See nsStyleDisplay
 enum class StyleTopLayer : uint8_t {
   None,
-  Top,
+  Auto,
 };
 
 // See nsStyleVisibility
@@ -441,7 +381,7 @@ enum class StyleTextOrientation : uint8_t {
 
 // Whether flexbox visibility: collapse items use legacy -moz-box behavior or
 // not.
-enum class StyleMozBoxCollapse : uint8_t {
+enum class StyleBoxCollapse : uint8_t {
   Flex,
   Legacy,
 };
@@ -487,19 +427,6 @@ enum class StyleImeMode : uint8_t {
 enum class StyleWindowShadow : uint8_t {
   Auto,
   None,
-};
-
-// dominant-baseline
-enum class StyleDominantBaseline : uint8_t {
-  Auto,
-  Ideographic,
-  Alphabetic,
-  Hanging,
-  Mathematical,
-  Central,
-  Middle,
-  TextAfterEdge,
-  TextBeforeEdge,
 };
 
 // mask-type
@@ -592,4 +519,4 @@ enum class StyleScrollBehavior : uint8_t {
 
 }  // namespace mozilla
 
-#endif /* nsStyleConsts_h___ */
+#endif /* nsStyleConsts_h_ */

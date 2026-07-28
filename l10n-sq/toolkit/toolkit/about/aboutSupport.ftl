@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-page-title = Të dhëna Diagnostikimi
+page-title = Hollësi Diagnostikimi
 page-subtitle =
     Kjo faqe përmban të dhëna teknike që mund të jenë të dobishme, kur përpiqeni
     të zgjidhni një problem. Nëse po shihni për përgjigje për pyetje të rëndomta
@@ -18,6 +18,10 @@ support-addons-type = Lloj
 support-addons-enabled = E aktivizuar
 support-addons-version = Version
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Vendndodhje
 legacy-user-stylesheets-title = Fletëstile Përdoruesi të Dikurshme
 legacy-user-stylesheets-enabled = Aktive
 legacy-user-stylesheets-stylesheet-types = Fletëstile
@@ -78,7 +82,7 @@ app-basics-enterprise-policies = Rregulla Në Nivel Ndërmarrjeje
 app-basics-location-service-key-google = Kyç Shërbimi Vendndodhjesh Google
 app-basics-safebrowsing-key-google = Kyç Google Safebrowsing
 app-basics-key-mozilla = Kyç Mozilla Location Service
-app-basics-safe-mode = Mënyrë e Sigurt
+app-basics-safe-mode = Mënyrë e Siguruar
 app-basics-memory-size = Madhësi Kujtese (RAM)
 app-basics-disk-available = Hapësirë Disku e Lirë
 # Variables:
@@ -179,6 +183,8 @@ media-capabilities-enumerate = Numërtoni bazë të dhënash
 
 media-codec-support-sw-decoding = Shkodim nga Software
 media-codec-support-hw-decoding = Shkodim nga Hardware
+media-codec-support-sw-encoding = Kodim nga Software
+media-codec-support-hw-encoding = Kodim nga Hardware
 media-codec-support-codec-name = Emër Kodeku
 media-codec-support-supported = I mbuluar
 media-codec-support-unsupported = E pambuluar
@@ -297,7 +303,7 @@ gpu-device-id = ID Pajisjeje
 gpu-subsys-id = ID Subsys-i
 gpu-drivers = Përudhës
 gpu-ram = RAM
-gpu-driver-vendor = Shitës Përudhësi
+gpu-driver-vendor = Tregtues Përudhësi
 gpu-driver-version = Version Përudhësi
 gpu-driver-date = Datë Përudhësi
 gpu-active = Aktiv
@@ -423,7 +429,7 @@ support-remote-settings-sync-history-infos = Hollësi
 support-remote-experiments-title = Eksperimente Së Largëti
 support-remote-experiments-name = Emër
 support-remote-experiments-branch = Degë Eksperimenti
-support-remote-experiments-see-about-studies = Për më tepër të dhëna, shihni <a data-l10n-name="support-about-studies-link">about:studies</a>, përfshi si të çaktivizohen eksperimente individuale ose të çaktivizohet xhirimi nga { -brand-short-name }-i në të ardhmen i këtij lloji eksperimentesh.
+support-remote-experiments-see-about-studies = Për më tepër hollësi, shihni <a data-l10n-name="support-about-studies-link">about:studies</a>, përfshi si të çaktivizohen eksperimente individuale, ose të çaktivizohet xhirimi nga { -brand-short-name }-i në të ardhmen i këtij lloji eksperimentesh.
 support-remote-features-title = Veçori Së Largëti
 support-remote-features-name = Emër
 support-remote-features-status = Gjendje

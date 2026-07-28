@@ -16,9 +16,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.robolectric.RobolectricTestRunner
+import kotlin.test.assertIs
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class LoginExceptionsViewTest {
 
     private lateinit var parent: ViewGroup
@@ -41,8 +42,8 @@ class LoginExceptionsViewTest {
             "Firefox Fenix won’t save passwords for sites listed here.",
             view.binding.exceptionsEmptyMessage.text,
         )
-        assertTrue(view.binding.exceptionsList.adapter is LoginExceptionsAdapter)
-        assertTrue(view.binding.exceptionsList.layoutManager is LinearLayoutManager)
+        assertIs<LoginExceptionsAdapter>(view.binding.exceptionsList.adapter)
+        assertIs<LinearLayoutManager>(view.binding.exceptionsList.layoutManager)
     }
 
     @Test

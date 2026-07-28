@@ -5,24 +5,23 @@ It depends on [glean-parser] from pypi.org
 
 [glean-parser]: https://pypi.org/project/glean-parser/
 
-To update the in-tree glean-parser change the version in `third_party/python/requirements.in`,
+To update the in-tree glean-parser change the version in `third_party/python/pyproject.toml`,
 then run
 
 ```
 ./mach vendor python
 ```
 
-```{note}
-**Important**: the glean_parser and all of its dependencies must support Python 3.5, as discussed here.
-This is the minimum version supported by mach and installed on the CI images for running tests.
-This is enforced by the version ranges declared in the Python installation manifest.
-```
+We presently pin our version of glean-parser to the version in [sdk_generator.sh],
+otherwise we could use some of the
+[more interesting switches on ./mach vendor python][vendor-python].
+
+[vendor-python]: /python/index
 
 ## Version mismatch of the Python dependencies
 
 The logic for handling version mismatches is very similar to the one for the Rust crates.
 See [Updating the Glean SDK](updating_sdk.md) for details.
-However, updating Python packages also requires to think about Python 3.5 (and Python 2, still) compatibility.
 
 ## Keeping versions in sync
 

@@ -92,6 +92,9 @@ about-webrtc-debug-mode-off-state-label = Bắt đầu chế độ gỡ lỗi
 about-webrtc-debug-mode-on-state-label = Dừng chế độ gỡ lỗi
 about-webrtc-stats-heading = Thống kê phiên
 about-webrtc-enable-logging-label = Bật cài đặt nhật ký WebRTC được định trước
+about-webrtc-peerconnections-section-heading = Số liệu thống kê RTCPeerConnection
+about-webrtc-peerconnections-section-show-msg = Hiển thị Số liệu thống kê RTCPeerConnection
+about-webrtc-peerconnections-section-hide-msg = Ẩn Số liệu thống kê RTCPeerConnection
 about-webrtc-stats-clear = Xóa lịch sử
 about-webrtc-log-heading = Nhật ký kết nối
 about-webrtc-log-clear = Xóa nhật ký
@@ -147,9 +150,6 @@ about-webrtc-time-elapsed = Thời gian đã trôi qua (giây)
 about-webrtc-estimated-framerate = Tốc độ khung hình ước tính
 about-webrtc-rotation-degrees = Xoay (độ)
 
-## SSRCs are identifiers that represent endpoints in an RTP stream
-
-
 ## These are displayed on the button that shows or hides the
 ## PeerConnection configuration disclosure
 
@@ -166,10 +166,14 @@ about-webrtc-configuration-element-provided = Cung cấp
 about-webrtc-configuration-element-not-provided = Không cung cấp
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = Người dùng thiết lập tùy chọn WebRTC
+# The options set by the user in about:config that could impact a WebRTC call
+about-webrtc-user-modified-configuration-heading = Cấu hình WebRTC do người dùng chỉnh sửa
 
 ## These are displayed on the button that shows or hides the
 ## user modified configuration disclosure
 
+about-webrtc-user-modified-configuration-show-msg = Hiển thị cấu hình do người dùng chỉnh sửa
+about-webrtc-user-modified-configuration-hide-msg = Ẩn cấu hình do người dùng chỉnh sửa
 
 ##
 
@@ -192,10 +196,7 @@ about-webrtc-round-trip-time-ms = RTT ms
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Thống kê khung hình video - ID MediaStreamTrack: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = đã lưu trang vào: { $path }
 about-webrtc-debug-mode-off-state-msg = nhật ký theo dõi có thể được tìm thấy tại: { $path }
@@ -277,6 +278,6 @@ about-webrtc-hide-msg-sdp = Ẩn SDP
 ## The Media Context is the set of preferences and detected capabilities that informs
 ## the negotiated CODEC settings.
 
-
-##
-
+about-webrtc-media-context-show-msg = Hiện Media Context
+about-webrtc-media-context-hide-msg = Ẩn Media Context
+about-webrtc-media-context-heading = Media Context

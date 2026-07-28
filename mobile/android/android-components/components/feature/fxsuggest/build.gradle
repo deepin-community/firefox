@@ -6,73 +6,68 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
-        maven {
-            url "https://maven.mozilla.org/maven2"
-        }
+        gradle.configureMavenRepositories(delegate)
     }
-
     dependencies {
-        classpath "${ApplicationServicesConfig.groupId}:tooling-nimbus-gradle:${ApplicationServicesConfig.version}"
+        classpath libs.kotlin.serialization
     }
 }
 
 plugins {
-    id "com.jetbrains.python.envs" version "$python_envs_plugin"
+    alias(libs.plugins.dependency.analysis)
+    alias(libs.plugins.python.envs.plugin)
+    id 'org.mozilla.nimbus-gradle-plugin'
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlinx-serialization'
 
 android {
-    defaultConfig {
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    namespace 'mozilla.components.feature.fxsuggest'
-}
-
-tasks.withType(KotlinCompile).configureEach {
-    kotlinOptions.freeCompilerArgs += '-opt-in=kotlin.ExperimentalUnsignedTypes'
+    namespace = 'mozilla.components.feature.fxsuggest'
 }
 
 dependencies {
     api ComponentsDependencies.mozilla_remote_settings
 
-    implementation project(':browser-state')
-    implementation project(':concept-awesomebar')
-    implementation project(':concept-engine')
-    implementation project(':feature-session')
-    implementation project(':service-nimbus')
-    implementation project(':support-base')
-    implementation project(':support-ktx')
+    implementation project(':components:browser-state')
+    implementation project(':components:concept-awesomebar')
+    implementation project(':components:concept-base')
+    implementation project(':components:concept-engine')
+    implementation project(':components:feature-session')
+    implementation project(':components:service-nimbus')
+    implementation project(':components:support-appservices')
+    implementation project(':components:support-base')
+    implementation project(':components:support-remotesettings')
+    implementation project(':components:support-ktx')
 
-    implementation ComponentsDependencies.androidx_work_runtime
-    implementation ComponentsDependencies.kotlin_coroutines
+    implementation ComponentsDependencies.mozilla_appservices_errorsupport
+    implementation (ComponentsDependencies.mozilla_appservices_httpconfig) {
+        // Override the version of concept-fetch that A-S depends on,
+        // since we want to replace it with our own.
+        exclude group: 'org.mozilla.components', module: 'concept-fetch'
+    }
+    implementation ComponentsDependencies.mozilla_appservices_merino
     implementation ComponentsDependencies.mozilla_appservices_suggest
+    implementation libs.androidx.work.runtime
+    implementation libs.kotlinx.coroutines
+    implementation libs.kotlinx.serialization.json
+    implementation project(':components:concept-fetch')
 
-    testImplementation project(':support-test')
+    testImplementation project(':components:support-test')
 
-    testImplementation ComponentsDependencies.androidx_test_core
-    testImplementation ComponentsDependencies.androidx_test_junit
-    testImplementation ComponentsDependencies.androidx_work_testing
-    testImplementation ComponentsDependencies.mozilla_appservices_full_megazord_forUnitTests
-    testImplementation ComponentsDependencies.testing_coroutines
-    testImplementation ComponentsDependencies.testing_robolectric
+    testImplementation ComponentsDependencies.mozilla_appservices_full_megazord_libsForTests
+    testImplementation libs.androidx.concurrent
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.androidx.work.testing
+    testImplementation libs.kotlin.test
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.robolectric
 }
 
-apply from: '../../../android-lint.gradle'
+apply from: '../../../common-config.gradle'
 apply from: '../../../publish.gradle'
-apply plugin: "org.mozilla.appservices.nimbus-gradle-plugin"
 nimbus {
     // The path to the Nimbus feature manifest file
     manifestFile = "fxsuggest.fml.yaml"
@@ -85,4 +80,4 @@ nimbus {
     applicationServicesDir = gradle.hasProperty('localProperties.autoPublish.application-services.dir')
         ? gradle.getProperty('localProperties.autoPublish.application-services.dir') : null
 }
-ext.configurePublish(config.componentsGroupId, archivesBaseName, project.ext.description)
+ext.configurePublish(config.componentsGroupId, project.name, project.ext.description)

@@ -4,9 +4,16 @@
 
 const DISTRIBUTION_CUSTOMIZATION_COMPLETE_TOPIC =
   "distribution-customization-complete";
+const DISTRIBUTION_PREFERENCES_COMPLETE_TOPIC =
+  "distribution-preferences-complete";
 
 const PREF_CACHED_FILE_EXISTENCE = "distribution.iniFile.exists.value";
 const PREF_CACHED_FILE_APPVERSION = "distribution.iniFile.exists.appversion";
+
+// These prefixes must only contain characters
+// allowed by PlacesUtils.isValidGuid
+const BOOKMARK_GUID_PREFIX = "DstB-";
+const FOLDER_GUID_PREFIX = "DstF-";
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
@@ -19,11 +26,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
 export function DistributionCustomizer() {}
 
 DistributionCustomizer.prototype = {
-  // These prefixes must only contain characters
-  // allowed by PlacesUtils.isValidGuid
-  BOOKMARK_GUID_PREFIX: "DstB-",
-  FOLDER_GUID_PREFIX: "DstF-",
-
   get _iniFile() {
     // For parallel xpcshell testing purposes allow loading the distribution.ini
     // file from the profile folder through an hidden pref.
@@ -114,13 +116,14 @@ DistributionCustomizer.prototype = {
 
   async _removeDistributionBookmarks() {
     await lazy.PlacesUtils.bookmarks.fetch(
-      { guidPrefix: this.BOOKMARK_GUID_PREFIX },
-      bookmark => lazy.PlacesUtils.bookmarks.remove(bookmark).catch()
+      { guidPrefix: BOOKMARK_GUID_PREFIX },
+      bookmark =>
+        lazy.PlacesUtils.bookmarks.remove(bookmark).catch(console.error)
     );
     await lazy.PlacesUtils.bookmarks.fetch(
-      { guidPrefix: this.FOLDER_GUID_PREFIX },
+      { guidPrefix: FOLDER_GUID_PREFIX },
       folder => {
-        lazy.PlacesUtils.bookmarks.remove(folder).catch();
+        lazy.PlacesUtils.bookmarks.remove(folder).catch(console.error);
       }
     );
   },
@@ -178,16 +181,14 @@ DistributionCustomizer.prototype = {
         case "default":
           break;
 
-        case "folder":
+        case "folder": {
           if (itemIndex < defaultIndex) {
             index = prependIndex++;
           }
 
           let folder = await lazy.PlacesUtils.bookmarks.insert({
             type: lazy.PlacesUtils.bookmarks.TYPE_FOLDER,
-            guid: lazy.PlacesUtils.generateGuidWithPrefix(
-              this.FOLDER_GUID_PREFIX
-            ),
+            guid: lazy.PlacesUtils.generateGuidWithPrefix(FOLDER_GUID_PREFIX),
             parentGuid,
             index,
             title: item.title,
@@ -198,6 +199,7 @@ DistributionCustomizer.prototype = {
             "BookmarksFolder-" + item.folderId
           );
           break;
+        }
 
         case "separator":
           if (itemIndex < defaultIndex) {
@@ -236,9 +238,7 @@ DistributionCustomizer.prototype = {
           }
 
           await lazy.PlacesUtils.bookmarks.insert({
-            guid: lazy.PlacesUtils.generateGuidWithPrefix(
-              this.BOOKMARK_GUID_PREFIX
-            ),
+            guid: lazy.PlacesUtils.generateGuidWithPrefix(BOOKMARK_GUID_PREFIX),
             parentGuid,
             index,
             title: item.title,
@@ -247,11 +247,13 @@ DistributionCustomizer.prototype = {
 
           if (item.icon && item.iconData) {
             try {
-              lazy.PlacesUtils.favicons.setFaviconForPage(
-                Services.io.newURI(item.link),
-                Services.io.newURI(item.icon),
-                Services.io.newURI(item.iconData)
-              );
+              lazy.PlacesUtils.favicons
+                .setFaviconForPage(
+                  Services.io.newURI(item.link),
+                  Services.io.newURI(item.icon),
+                  Services.io.newURI(item.iconData)
+                )
+                .catch(console.error);
             } catch (e) {
               console.error(e);
             }
@@ -392,6 +394,15 @@ DistributionCustomizer.prototype = {
       return this._checkCustomizationComplete();
     }
 
+    if (
+      distroID == "MozillaOnline" &&
+      Services.prefs.getBoolPref("distribution.mozillaonline.ignore", false)
+    ) {
+      Glean.distribution.mozillaonlineIgnored.set(true);
+      this.__defineGetter__("_ini", () => null);
+      return this._checkCustomizationComplete();
+    }
+
     let defaults = Services.prefs.getDefaultBranch(null);
 
     // Global really contains info we set as prefs.  They're only
@@ -466,50 +477,7 @@ DistributionCustomizer.prototype = {
       }
     }
 
-    for (let [prefName, prefValue] of preferences) {
-      prefValue = prefValue.replace(/%LOCALE%/g, this._locale);
-      prefValue = prefValue.replace(/%LANGUAGE%/g, this._language);
-      prefValue = parseValue(prefValue);
-      try {
-        if (prefName == "general.useragent.locale") {
-          defaults.setStringPref("intl.locale.requested", prefValue);
-        } else {
-          switch (typeof prefValue) {
-            case "boolean":
-              defaults.setBoolPref(prefName, prefValue);
-              break;
-            case "number":
-              defaults.setIntPref(prefName, prefValue);
-              break;
-            case "string":
-              defaults.setStringPref(prefName, prefValue);
-              break;
-          }
-        }
-      } catch (e) {
-        /* ignore bad prefs and move on */
-      }
-    }
-
-    if (this._ini.getString("Global", "id") == "yandex") {
-      // All yandex distributions have the same distribution ID,
-      // so we're using an internal preference to name them correctly.
-      // This is needed for search to work properly.
-      try {
-        defaults.setStringPref(
-          "distribution.id",
-          defaults
-            .get("extensions.yasearch@yandex.ru.clids.vendor")
-            .replace("firefox", "yandex")
-        );
-      } catch (e) {
-        // Just use the default distribution ID.
-      }
-    }
-
-    let localizedStr = Cc["@mozilla.org/pref-localizedstring;1"].createInstance(
-      Ci.nsIPrefLocalizedString
-    );
+    applyPrefsToDefaults(preferences, this._locale);
 
     let localizablePreferences = new Map();
 
@@ -522,57 +490,8 @@ DistributionCustomizer.prototype = {
       }
     }
 
-    if (sections["LocalizablePreferences-" + this._language]) {
-      for (let key of this._ini.getKeys(
-        "LocalizablePreferences-" + this._language
-      )) {
-        let value = this._ini.getString(
-          "LocalizablePreferences-" + this._language,
-          key
-        );
-        if (value) {
-          localizablePreferences.set(key, value);
-        } else {
-          // If something was set by Preferences, but it's empty in language,
-          // it should be removed.
-          localizablePreferences.delete(key);
-        }
-      }
-    }
-
-    if (sections["LocalizablePreferences-" + this._locale]) {
-      for (let key of this._ini.getKeys(
-        "LocalizablePreferences-" + this._locale
-      )) {
-        let value = this._ini.getString(
-          "LocalizablePreferences-" + this._locale,
-          key
-        );
-        if (value) {
-          localizablePreferences.set(key, value);
-        } else {
-          // If something was set by Preferences, but it's empty in locale,
-          // it should be removed.
-          localizablePreferences.delete(key);
-        }
-      }
-    }
-
-    for (let [prefName, prefValue] of localizablePreferences) {
-      prefValue = parseValue(prefValue);
-      prefValue = prefValue.replace(/%LOCALE%/g, this._locale);
-      prefValue = prefValue.replace(/%LANGUAGE%/g, this._language);
-      localizedStr.data = "data:text/plain," + prefName + "=" + prefValue;
-      try {
-        defaults.setComplexValue(
-          prefName,
-          Ci.nsIPrefLocalizedString,
-          localizedStr
-        );
-      } catch (e) {
-        /* ignore bad prefs and move on */
-      }
-    }
+    this._localizablePreferences = localizablePreferences;
+    applyPrefsToDefaults(localizablePreferences, this._locale);
 
     return this._checkCustomizationComplete();
   },
@@ -603,21 +522,70 @@ DistributionCustomizer.prototype = {
           );
         }
       } catch (e) {}
+      // If a theme was specified in the distribution, and it's a new profile,
+      // set the theme as default.
+      try {
+        const activeThemeID = Services.prefs.getCharPref(
+          "extensions.activeThemeID"
+        );
+        if (activeThemeID) {
+          lazy.AddonManager.getAddonByID(activeThemeID).then(addon =>
+            addon?.enable()
+          );
+        }
+      } catch (e) {}
     }
 
     let prefDefaultsApplied = this._prefDefaultsApplied || !this._ini;
-    if (
-      this._customizationsApplied &&
-      this._bookmarksApplied &&
-      prefDefaultsApplied
-    ) {
+    if (this._customizationsApplied && prefDefaultsApplied) {
       Services.obs.notifyObservers(
         null,
-        DISTRIBUTION_CUSTOMIZATION_COMPLETE_TOPIC
+        DISTRIBUTION_PREFERENCES_COMPLETE_TOPIC
       );
+
+      if (this._bookmarksApplied) {
+        Services.obs.notifyObservers(
+          null,
+          DISTRIBUTION_CUSTOMIZATION_COMPLETE_TOPIC
+        );
+      }
     }
   },
 };
+
+function applyPrefsToDefaults(
+  prefs,
+  locale = Services.locale.requestedLocale || "en-US"
+) {
+  let language = locale.split("-")[0];
+  let defaults = Services.prefs.getDefaultBranch(null);
+  for (let [prefName, prefValue] of prefs) {
+    prefValue = parseValue(prefValue);
+    if (typeof prefValue == "string") {
+      prefValue = prefValue.replace(/%LOCALE%/g, locale);
+      prefValue = prefValue.replace(/%LANGUAGE%/g, language);
+    }
+    try {
+      if (prefName == "general.useragent.locale") {
+        defaults.setStringPref("intl.locale.requested", prefValue);
+      } else {
+        switch (typeof prefValue) {
+          case "boolean":
+            defaults.setBoolPref(prefName, prefValue);
+            break;
+          case "number":
+            defaults.setIntPref(prefName, prefValue);
+            break;
+          case "string":
+            defaults.setStringPref(prefName, prefValue);
+            break;
+        }
+      }
+    } catch (e) {
+      /* ignore bad prefs and move on */
+    }
+  }
+}
 
 function parseValue(value) {
   try {
@@ -639,3 +607,52 @@ function enumToObject(UTF8Enumerator) {
   }
   return ret;
 }
+
+export let DistributionManagement = {
+  _distributionCustomizer: null,
+  _localizablePreferences: null,
+  get BOOKMARK_GUID_PREFIX() {
+    return BOOKMARK_GUID_PREFIX;
+  },
+  get FOLDER_GUID_PREFIX() {
+    return FOLDER_GUID_PREFIX;
+  },
+
+  _ensureCustomizer() {
+    if (this._distributionCustomizer) {
+      return;
+    }
+    this._distributionCustomizer = new DistributionCustomizer();
+    Services.obs.addObserver(this, DISTRIBUTION_CUSTOMIZATION_COMPLETE_TOPIC);
+  },
+
+  observe(_subject, topic) {
+    if (topic == DISTRIBUTION_CUSTOMIZATION_COMPLETE_TOPIC) {
+      Services.obs.removeObserver(
+        this,
+        DISTRIBUTION_CUSTOMIZATION_COMPLETE_TOPIC
+      );
+      this._distributionCustomizer = null;
+    } else if (topic == "intl:requested-locales-changed") {
+      applyPrefsToDefaults(this._localizablePreferences);
+    }
+  },
+
+  applyCustomizations() {
+    this._ensureCustomizer();
+    this._distributionCustomizer.applyCustomizations();
+    let localizablePreferences =
+      this._distributionCustomizer._localizablePreferences;
+    if (localizablePreferences?.size) {
+      this._localizablePreferences = localizablePreferences;
+      Services.obs.addObserver(this, "intl:requested-locales-changed");
+    }
+  },
+
+  applyBookmarks() {
+    this._ensureCustomizer();
+    this._distributionCustomizer.applyBookmarks();
+  },
+
+  QueryInterface: ChromeUtils.generateQI([Ci.nsIObserver]),
+};

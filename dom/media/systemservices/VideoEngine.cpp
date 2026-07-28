@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set sw=2 ts=8 et ft=cpp : */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,7 +5,6 @@
 #include "VideoEngine.h"
 
 #include "libwebrtcglue/SystemTime.h"
-#include "system_wrappers/include/clock.h"
 #include "video_engine/desktop_capture_impl.h"
 
 #ifdef MOZ_WIDGET_ANDROID
@@ -22,8 +19,6 @@ int32_t SetCaptureAndroidVM(JavaVM* javaVM);
 
 namespace mozilla::camera {
 
-#undef LOG
-#undef LOG_ENABLED
 mozilla::LazyLogModule gVideoEngineLog("VideoEngine");
 #define LOG(args) MOZ_LOG(gVideoEngineLog, mozilla::LogLevel::Debug, args)
 #define LOG_ENABLED() MOZ_LOG_TEST(gVideoEngineLog, mozilla::LogLevel::Debug)
@@ -47,69 +42,13 @@ int VideoEngine::SetAndroidObjects() {
 }
 #endif
 
-int32_t VideoEngine::CreateVideoCapture(const char* aDeviceUniqueIdUTF8) {
+VideoCaptureFactory::CreateVideoCaptureResult VideoEngine::CreateVideoCapture(
+    int32_t aCaptureId, const char* aDeviceUniqueIdUTF8) {
   LOG(("%s", __PRETTY_FUNCTION__));
   MOZ_ASSERT(aDeviceUniqueIdUTF8);
 
-  int32_t id = GenerateId();
-  LOG(("CaptureDeviceType=%s id=%d", EnumValueToString(mCaptureDevType), id));
-
-  for (auto& it : mCaps) {
-    if (it.second.VideoCapture() &&
-        it.second.VideoCapture()->CurrentDeviceName() &&
-        strcmp(it.second.VideoCapture()->CurrentDeviceName(),
-               aDeviceUniqueIdUTF8) == 0) {
-      mIdMap.emplace(id, it.first);
-      return id;
-    }
-  }
-
-  CaptureEntry entry = {-1, nullptr, nullptr};
-
-  VideoCaptureFactory::CreateVideoCaptureResult capturer =
-      mVideoCaptureFactory->CreateVideoCapture(id, aDeviceUniqueIdUTF8,
-                                               mCaptureDevType);
-  entry =
-      CaptureEntry(id, std::move(capturer.mCapturer), capturer.mDesktopImpl);
-
-  mCaps.emplace(id, std::move(entry));
-  mIdMap.emplace(id, id);
-  return id;
-}
-
-int VideoEngine::ReleaseVideoCapture(const int32_t aId) {
-  bool found = false;
-
-#ifdef DEBUG
-  {
-    auto it = mIdMap.find(aId);
-    MOZ_ASSERT(it != mIdMap.end());
-    Unused << it;
-  }
-#endif
-
-  for (auto& it : mIdMap) {
-    if (it.first != aId && it.second == mIdMap[aId]) {
-      // There are other tracks still using this hardware.
-      found = true;
-    }
-  }
-
-  if (!found) {
-    WithEntry(aId, [&found](CaptureEntry& cap) {
-      cap.mVideoCaptureModule = nullptr;
-      found = true;
-    });
-    MOZ_ASSERT(found);
-    if (found) {
-      auto it = mCaps.find(mIdMap[aId]);
-      MOZ_ASSERT(it != mCaps.end());
-      mCaps.erase(it);
-    }
-  }
-
-  mIdMap.erase(aId);
-  return found ? 0 : (-1);
+  return mVideoCaptureFactory->CreateVideoCapture(
+      aCaptureId, aDeviceUniqueIdUTF8, mCaptureDevType);
 }
 
 std::shared_ptr<webrtc::VideoCaptureModule::DeviceInfo>
@@ -154,7 +93,15 @@ VideoEngine::GetOrCreateVideoCaptureDeviceInfo() {
   }
 #endif
 
-  mDeviceInfo = mVideoCaptureFactory->CreateDeviceInfo(mId, mCaptureDevType);
+  if (mDeviceInfo) {
+    mDeviceInfo->DeRegisterVideoInputFeedBack(this);
+  }
+
+  mDeviceInfo = mVideoCaptureFactory->CreateDeviceInfo(mCaptureDevType);
+
+  if (mDeviceInfo && mCaptureDevType == CaptureDeviceType::Camera) {
+    mDeviceInfo->RegisterVideoInputFeedBack(this);
+  }
 
   LOG(("EXIT %s", __PRETTY_FUNCTION__));
   return mDeviceInfo;
@@ -162,7 +109,12 @@ VideoEngine::GetOrCreateVideoCaptureDeviceInfo() {
 
 void VideoEngine::ClearVideoCaptureDeviceInfo() {
   LOG(("%s", __PRETTY_FUNCTION__));
+  if (mDeviceInfo) {
+    mDeviceInfo->DeRegisterVideoInputFeedBack(this);
+    OnDeviceChange();
+  }
   mDeviceInfo.reset();
+  mVideoCaptureFactory->Invalidate();
 }
 
 already_AddRefed<VideoEngine> VideoEngine::Create(
@@ -173,63 +125,18 @@ already_AddRefed<VideoEngine> VideoEngine::Create(
       new VideoEngine(aCaptureDeviceType, std::move(aVideoCaptureFactory)));
 }
 
-VideoEngine::CaptureEntry::CaptureEntry(
-    int32_t aCapnum, rtc::scoped_refptr<webrtc::VideoCaptureModule> aCapture,
-    webrtc::DesktopCaptureImpl* aDesktopImpl)
-    : mCapnum(aCapnum),
-      mVideoCaptureModule(std::move(aCapture)),
-      mDesktopImpl(aDesktopImpl) {}
-
-rtc::scoped_refptr<webrtc::VideoCaptureModule>
-VideoEngine::CaptureEntry::VideoCapture() {
-  return mVideoCaptureModule;
-}
-
-mozilla::MediaEventSource<void>*
-VideoEngine::CaptureEntry::CaptureEndedEvent() {
-  if (!mDesktopImpl) {
-    return nullptr;
-  }
-#if !defined(WEBRTC_ANDROID) && !defined(WEBRTC_IOS)
-  return mDesktopImpl->CaptureEndedEvent();
-#else
-  return nullptr;
-#endif
-}
-
-int32_t VideoEngine::CaptureEntry::Capnum() const { return mCapnum; }
-
-bool VideoEngine::WithEntry(
-    const int32_t entryCapnum,
-    const std::function<void(CaptureEntry& entry)>&& fn) {
-#ifdef DEBUG
-  {
-    auto it = mIdMap.find(entryCapnum);
-    MOZ_ASSERT(it != mIdMap.end());
-    Unused << it;
-  }
-#endif
-
-  auto it = mCaps.find(mIdMap[entryCapnum]);
-  MOZ_ASSERT(it != mCaps.end());
-  if (it == mCaps.end()) {
-    return false;
-  }
-  fn(it->second);
-  return true;
-}
-
 int32_t VideoEngine::GenerateId() {
   // XXX Something better than this (a map perhaps, or a simple boolean TArray,
   // given the number in-use is O(1) normally!)
   static int sId = 0;
-  return mId = sId++;
+  return sId++;
 }
+
+void VideoEngine::OnDeviceChange() { mDeviceChangeEvent.Notify(); }
 
 VideoEngine::VideoEngine(const CaptureDeviceType& aCaptureDeviceType,
                          RefPtr<VideoCaptureFactory> aVideoCaptureFactory)
-    : mId(0),
-      mCaptureDevType(aCaptureDeviceType),
+    : mCaptureDevType(aCaptureDeviceType),
       mVideoCaptureFactory(std::move(aVideoCaptureFactory)),
       mDeviceInfo(nullptr) {
   MOZ_ASSERT(mVideoCaptureFactory);
@@ -239,8 +146,12 @@ VideoEngine::VideoEngine(const CaptureDeviceType& aCaptureDeviceType,
 }
 
 VideoEngine::~VideoEngine() {
-  MOZ_ASSERT(mCaps.empty());
-  MOZ_ASSERT(mIdMap.empty());
+  if (mDeviceInfo) {
+    mDeviceInfo->DeRegisterVideoInputFeedBack(this);
+  }
 }
+
+#undef LOG
+#undef LOG_ENABLED
 
 }  // namespace mozilla::camera

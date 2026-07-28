@@ -80,6 +80,9 @@ toolbar-button-fxaccount =
 
 ## Account toolbar Button
 
+toolbar-button-account =
+    .label = ගිණුම
+    .tooltiptext = ගිණුම
 
 ## Save Page
 
@@ -146,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = { -pocket-brand-name } වෙත සබැඳිය සුරකින්න
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = වි-තැපෑල පිටපත් කරන්න
@@ -159,11 +160,6 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = සබැඳියේ පිටපතක්
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = අඩවියේ ලුහුබැඳීම් රහිතව සබැඳියේ පිටපතක්
-    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -213,7 +209,7 @@ main-context-menu-media-hide-controls =
     .label = පාලන සඟවන්න
     .accesskey = C
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = පූර්ණ තිරය
@@ -287,9 +283,7 @@ main-context-menu-send-to-device =
     .label = පිටුව උපාංගයට යවන්න
     .accesskey = D
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = සුරැකි පිවිසුම භාවිතය

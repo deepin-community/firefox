@@ -23,6 +23,11 @@ protections-panel-etp-more-info =
     .aria-label = Více informací o rozšířené ochraně proti sledování
 protections-panel-etp-on-header = Rozšířená ochrana proti sledování je zapnuta
 protections-panel-etp-off-header = Rozšířená ochrana proti sledování je vypnuta
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = Stránka nefunguje?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = Stránka nefunguje?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = Rozšířená ochrana proti sledování
     .description = Vypnutá pro tuto stránku
     .aria-label = Rozšířená ochrana proti sledování: vypnutá na stránce { $host }
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = Stránka nefunguje?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = Stránka nefunguje?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -58,11 +58,11 @@ protections-panel-not-blocking-why-etp-off-tooltip-label =
 
 protections-panel-no-trackers-found =
     { -brand-short-name.gender ->
-        [masculine] { -brand-short-name } na této stránce nenalezl
-        [feminine] { -brand-short-name } na této stránce nenalezla
-        [neuter] { -brand-short-name } na této stránce nenalezlo
-       *[other] Aplikace { -brand-short-name } na této stránce nenalezla
-    } žádné známé sledovací prvky.
+        [masculine] { -brand-short-name } na této stránce nenalezl žádné známé sledovací prvky.
+        [feminine] { -brand-short-name } na této stránce nenalezla žádné známé sledovací prvky.
+        [neuter] { -brand-short-name } na této stránce nenalezlo žádné známé sledovací prvky.
+       *[other] Aplikace { -brand-short-name } na této stránce nenalezla žádné známé sledovací prvky.
+    }
 protections-panel-content-blocking-tracking-protection = Sledující obsah
 protections-panel-content-blocking-socialblock = Sledující prvky sociálních sítí
 protections-panel-content-blocking-cryptominers-label = Těžba kryptoměn
@@ -77,6 +77,28 @@ protections-panel-content-blocking-fingerprinters-label = Otisk prohlížeče
 protections-panel-blocking-label = Zablokováno
 protections-panel-not-blocking-label = Povoleno
 protections-panel-not-found-label = Nenalezeno
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } blokuje sledování obsahu, když jste na tomto webu, pokud to nepovolíte.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Povolit { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = Sledovací prvky a obsah { $trackername } jsou zablokované
+smartblock-placeholder-desc =
+    { -brand-full-name.case-status ->
+        [with-cases] Nastavení { -brand-short-name(case: "gen") } zablokovalo sledování tohoto obsahu na různých webech nebo jeho použití pro reklamy.
+       *[no-cases] Nastavení aplikace { -brand-short-name } zablokovalo sledování tohoto obsahu na různých webech nebo jeho použití pro reklamy.
+    }
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Povolit na { $websitehost }
+# Caption shown above the original text and links extracted from a blocked
+# third-party embed (e.g. a Twitter/X or Instagram post) that SmartBlock has
+# replaced with a placeholder. The caption sits above a bordered content box
+# containing the extracted text.
+smartblock-placeholder-content-header = Obsah z blokovaného vloženého prvku
 
 ##
 
@@ -101,7 +123,7 @@ protections-panel-site-not-working-view-send-report = Poslat hlášení
 
 protections-panel-cross-site-tracking-cookies = Tyto cookies slouží k vašemu sledování napříč webovými stránkami a sběru dat o tom, co na internetu děláte. Používají je třetí strany jako jsou reklamní systémy nebo analytické společnosti.
 protections-panel-cryptominers = Těžba kryptoměn využívá výpočetní výkon vašeho počítače k získávání digitálních měn. Běžící skripty vybíjí vaši baterii a zpomalují váš počítač.
-protections-panel-fingerprinters = Sběrem informací o vašem prohlížeči a počítači lze vytvořit unikátní otisk a ten pak použít k vašemu sledování napříč různými a nijak nesouvisejícími servery a webovými stránkami.
+protections-panel-fingerprinters = Sběrem informací o vašem prohlížeči a počítači lze vytvořit unikátní otisk a ten pak použít k vašemu sledování napříč různými a nijak nesouvisejícími weby.
 protections-panel-tracking-content = Webové stránky mohou načítat externí reklamy, videa a další obsah, který obsahuje sledovací kód. Po zablokování sledujícího obsahu se stránky načítají rychleji, ale některá tlačítka nebo formuláře nemusí správně fungovat.
 protections-panel-social-media-trackers = Sociální sítě umisťují na ostatní stránky sledovací prvky, pomocí kterých mohou sledovat, co na internetu děláte, vidíte a co si pouštíte. To umožňuje společnostem, které tato sociální média vlastní, dozvědět se o vás víc než jen to, co sdílíte na svých profilech.
 protections-panel-description-shim-allowed = Některé níže označené sledovací prvky byly na této stránce částečně povoleny, protože jste s nimi interagovali.
@@ -117,19 +139,6 @@ protections-panel-content-blocking-breakage-report-view-description =
     { -brand-short-name.case-status ->
         [with-cases] Blokování sledovacích prvků může na některých stránkách způsobovat problémy. Jejich nahlášením významně pomůžete { -brand-short-name(case: "acc") } dále vylepšovat. S vaším hlášením se Mozille odešle URL stránky a informace o vašem nastavení blokování obsahu. <label data-l10n-name="learn-more">Zjistit více</label>
        *[no-cases] Blokování sledovacích prvků může na některých stránkách způsobovat problémy. Jejich nahlášením významně pomůžete aplikaci { -brand-short-name } dále vylepšovat. S vaším hlášením se Mozille odešle URL stránky a informace o vašem nastavení blokování obsahu. <label data-l10n-name="learn-more">Zjistit více</label>
-    }
-protections-panel-content-blocking-breakage-report-view-description2 =
-    { -brand-short-name.case-status ->
-        [with-cases]
-            { -vendor-short-name.case-status ->
-                [with-cases] Blokování sledovacích prvků může na některých stránkách způsobovat problémy. Jejich nahlášením významně pomůžete { -brand-short-name(case: "acc") } dále vylepšovat. S vaším hlášením se { -vendor-short-name(case: "dat") } odešle URL stránky a informace o vašem nastavení blokování obsahu.
-               *[no-cases] Blokování sledovacích prvků může na některých stránkách způsobovat problémy. Jejich nahlášením významně pomůžete { -brand-short-name(case: "acc") } dále vylepšovat. S vaším hlášením se organizaci { -vendor-short-name } odešle URL stránky a informace o vašem nastavení blokování obsahu.
-            }
-       *[no-cases]
-            { -vendor-short-name.case-status ->
-                [with-cases] Blokování sledovacích prvků může na některých stránkách způsobovat problémy. Jejich nahlášením významně pomůžete aplikaci { -brand-short-name } dále vylepšovat. S vaším hlášením se { -vendor-short-name(case: "dat") } odešle URL stránky a informace o vašem nastavení blokování obsahu.
-               *[no-cases] Blokování sledovacích prvků může na některých stránkách způsobovat problémy. Jejich nahlášením významně pomůžete aplikaci { -brand-short-name } dále vylepšovat. S vaším hlášením se organizaci { -vendor-short-name } odešle URL stránky a informace o vašem nastavení blokování obsahu.
-            }
     }
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =

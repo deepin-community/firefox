@@ -3,22 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
     .label = ਮੇਰੀਆਂ ਪਸੰਦਾਂ
+# Starting with macOS Ventura (13), the name of the "Preferences" menu item changed to "Settings".
+menu-application-settings =
+    .label = …ਸੈਟਿੰਗਾਂ
+menu-application-set-as-default =
+    .label = { -brand-shorter-name } ਨੂੰ ਮੂਲ ਬਰਾਊਜ਼ਰ ਬਣਾਓ
 menu-application-services =
     .label = ਸਰਵਿਸਾਂ
 menu-application-hide-this =
@@ -97,6 +90,12 @@ menu-file-email-link =
 menu-file-share-url =
     .label = ਸਾਂਝਾ ਕਰੋ
     .accesskey = h
+menu-file-share-qrcode =
+    .label = …QR ਤਿਆਰ ਕਰੋ
+    .accesskey = Q
+menu-file-share-qrcode2 =
+    .label = QR ਕੋਡ ਬਣਾਓ
+    .accesskey = Q
 menu-file-print-setup =
     .label = …ਸਫ਼ੇ ਦਾ ਸੈਟਅੱਪ
     .accesskey = u
@@ -145,8 +144,6 @@ menu-view-history-button =
     .label = ਅਤੀਤ
 menu-view-synced-tabs-sidebar =
     .label = ਸਿੰਕ ਕੀਤੀਆਂ ਟੈਬਾਂ
-menu-view-megalist-sidebar =
-    .label = ਪਾਸਵਰਡ
 menu-view-full-zoom =
     .label = ਜ਼ੂਮ
     .accesskey = Z
@@ -202,7 +199,7 @@ menu-view-close-readerview =
 ##
 
 menu-view-show-all-tabs =
-    .label = ਸਭ ਟੈਬ ਵੇਖੋ
+    .label = ਸਭ ਟੈਬਾਂ ਨੂੰ ਵੇਖੋ
     .accesskey = A
 menu-view-bidi-switch-page-direction =
     .label = ਸਫ਼ੇ ਦੀ ਦਿਸ਼ਾ ਬਦਲੋ
@@ -244,7 +241,7 @@ menu-edit-bookmark =
     .label = …ਇਹ ਬੁੱਕਮਾਰਕ ਨੂੰ ਸੋਧੋ
 # "Search" is a verb, as in "Search in bookmarks"
 menu-bookmarks-search =
-    .label = ਬੁੱਕਮਾਰਕ ਖੋਜੋ
+    .label = ਬੁੱਕਮਾਰਕ ਵਿੱਚ ਖੋਜੋ
 menu-bookmarks-all-tabs =
     .label = …ਸਭ ਟੈਬਾਂ ਲਈ ਬੁੱਕਮਾਰਕ ਬਣਾਓ
 menu-bookmarks-toolbar =
@@ -254,6 +251,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = ਮੋਬਾਈਲ ਬੁੱਕਮਾਰਕ
 
+## Profiles Menu
+
+menu-profiles =
+    .label = ਪਰੋਫਾਈਲ
+menu-profiles-manage-profiles =
+    .label = ਪਰੋਫਾਈਲਾਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ
+menu-profiles-new-profile =
+    .label = ਨਵਾਂ ਪਰੋਫਾਈਲ
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (ਮੌਜੂਦਾ)
+menu-profiles-menu =
+    .label = ਪਰੋਫਾਈਲ
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,8 +275,11 @@ menu-tools =
 menu-tools-downloads =
     .label = ਡਾਊਨਲੋਡ
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = ਇਕਸਟੈਨਸ਼ਨਾਂ ਅਤੇ ਥੀਮ
+    .accesskey = E
 menu-tools-addons-and-themes =
-    .label = ਐਡ-ਆਨ ਤੇ ਥੀਮ
+    .label = ਐਡ-ਆਨ ਅਤੇ ਥੀਮ
     .accesskey = A
 menu-tools-fxa-sign-in2 =
     .label = ਸਾਈਨ ਇਨ ਕਰੋ
@@ -289,6 +305,9 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = ਸਫ਼ੇ ਦੀ ਜਾਣਕਾਰੀ
     .accesskey = I
+menu-tools-edit-pdf =
+    .label = …PDF ਨੂੰ ਸੋਧੋ
+    .accesskey = P
 menu-settings =
     .label = ਸੈਟਿੰਗਾਂ
     .accesskey =

@@ -11,7 +11,9 @@ about-processes-column-action =
 ## Tooltips
 
 about-processes-shutdown-process =
-    .title = Deskargatu fitxak eta hil prozesua
+    .title = Hustu fitxak eta akabatu prozesua
+about-processes-kill-process =
+    .title = Akabatu prozesua
 about-processes-shutdown-tab =
     .title = Itxi fitxa
 # Profiler icons
@@ -51,11 +53,26 @@ about-processes-remote-sandbox-broker-process = Urruneko isolamenduko artekaria 
 about-processes-fork-server-process = Fork zerbitzaria ({ $pid })
 about-processes-preallocated-process = Aurrez esleitutakoa ({ $pid })
 about-processes-utility-process = Utilitatea ({ $pid })
+about-processes-inference-process = Inferentzia ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
 #    $type (String) The raw type for this process.
 about-processes-unknown-process = Bestelakoa: { $type } ({ $pid })
+
+## Properties of isolated web processes
+
+about-processes-web-isolated-property-private = pribatua
+about-processes-web-isolated-property-serviceworker = zerbitzu-langilea
+about-processes-web-isolated-property-jit-disabled = JIT desgaituta
+about-processes-web-isolated-property-with-coop-coep = jatorri gurutzatu isolatua
+
+## Isolated process names
+## Variables:
+##    $origin (String) The domain name for this process.
+##    $properties (String) A formatted list of properties from the above strings.
+
+about-processes-web-isolated-process2 = { $origin } ({ $properties })
 
 ## Isolated process names
 ## Variables:
@@ -82,8 +99,8 @@ about-processes-with-coop-coep-process-private = { $origin } — Pribatua ({ $pi
 #                   Can be an empty string if the process is idle.
 about-processes-active-threads =
     { $active ->
-        [one] { $number }/{ $active } hari aktibo: { $list }
-       *[other] { $number }/{ $active } hari aktibo: { $list }
+        [one] { $active }/{ $number } hari aktibo: { $list }
+       *[other] { $active }/{ $number } hari aktibo: { $list }
     }
 # Single-line summary of threads (idle process)
 # Variables:
@@ -126,6 +143,9 @@ about-processes-utility-actor-audio-decoder-wmf = Windows Media Framework audio-
 about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media Engine CDM
 # "Oracle" refers to an internal Firefox process and should be kept in English
 about-processes-utility-actor-js-oracle = JavaScript Oracle
+about-processes-utility-actor-windows-utils = Windows tresnak
+about-processes-utility-actor-windows-file-dialog = Windows fitxategien elkarrizketa-koadroa
+about-processes-utility-actor-pkcs11-module = Segurtasun-moduluaren laguntzailea
 
 ## Displaying CPU (percentage and total)
 ## Variables:

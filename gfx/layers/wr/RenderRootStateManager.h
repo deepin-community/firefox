@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -35,9 +33,12 @@ class RenderRootStateManager {
   WebRenderUserDataRefTable* GetWebRenderUserDataTable();
   WebRenderLayerManager* LayerManager() { return mLayerManager; }
 
-  void AddImageKeyForDiscard(wr::ImageKey key);
-  void AddBlobImageKeyForDiscard(wr::BlobImageKey key);
+  void AddImageKeyForDiscard(wr::ImageKey);
+  void AddBlobImageKeyForDiscard(wr::BlobImageKey);
+  void AddSnapshotImageKeyForDiscard(wr::SnapshotImageKey);
+  void AddUnusedSnapshotImageKeyForDiscard(wr::SnapshotImageKey);
   void DiscardImagesInTransaction(wr::IpcResourceUpdateQueue& aResources);
+  void DiscardUnusedImagesInTransaction(wr::IpcResourceUpdateQueue& aResources);
   void DiscardLocalImages();
 
   void ClearCachedResources();
@@ -76,6 +77,8 @@ class RenderRootStateManager {
   Maybe<wr::IpcResourceUpdateQueue> mAsyncResourceUpdates;
   nsTArray<wr::ImageKey> mImageKeysToDelete;
   nsTArray<wr::BlobImageKey> mBlobImageKeysToDelete;
+  nsTArray<wr::SnapshotImageKey> mSnapshotImageKeysToDelete;
+  nsTArray<wr::SnapshotImageKey> mUnusedSnapshotImageKeysToDelete;
   std::unordered_map<uint64_t, RefPtr<SharedSurfacesAnimation>>
       mAsyncAnimations;
 

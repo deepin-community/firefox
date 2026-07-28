@@ -6,7 +6,11 @@ support-files = [
   "FAIL.html",
   "PASS.html",
 ]
-prefs = ["formhelper.autozoom.force-disable.test-only=true"]
+prefs = [
+  "formhelper.autozoom.force-disable.test-only=true",
+  "dom.forms.html_color_picker.enabled=false",
+  "dom.lift_select_parser_restrictions.enabled=true",
+]
 
 ["test_MozEditableElement_setUserInput.html"]
 
@@ -46,6 +50,9 @@ support-files = ["file_double_submit.html"]
 ["test_input_attributes_reflection.html"]
 
 ["test_input_color_input_change_events.html"]
+skip-if = [
+  "os == 'mac' && os_version == '14.70' && arch == 'x86_64'", # Bug 1929441
+]
 
 ["test_input_color_picker_datalist.html"]
 
@@ -103,10 +110,11 @@ support-files = ["file_login_fields.html"]
 ["test_input_number_l10n.html"]
 
 ["test_input_number_mouse_events.html"]
-# Not run on Firefox for Android where the spin buttons are hidden:
+run-if = [
+  "os != 'android'", # Not run on Firefox for Android where the spin buttons are hidden:
+]
 skip-if = [
-  "os == 'android'",
-  "os == 'mac' && debug", # Bug 1484442
+  "os == 'mac' && os_version == '10.15' && arch == 'x86_64' && debug", # Bug 1484442
 ]
 
 ["test_input_number_placeholder_shown.html"]
@@ -137,11 +145,18 @@ skip-if = [
 
 ["test_input_setting_value.html"]
 
+["test_input_text_show_picker.html"]
+skip-if = [
+  "os == 'android'", # Bug 1535985
+]
+
 ["test_input_textarea_set_value_no_scroll.html"]
 
 ["test_input_time_key_events.html"]
 
 ["test_input_time_sec_millisec_field.html"]
+
+["test_input_type_change_key_event.html"]
 
 ["test_input_types_pref.html"]
 
@@ -168,10 +183,9 @@ skip-if = [
 ["test_meter_pseudo-classes.html"]
 
 ["test_min_attribute.html"]
+support-files = ["datetime_utils.js"]
 
 ["test_minlength_attribute.html"]
-
-["test_mozistextfield.html"]
 
 ["test_novalidate_attribute.html"]
 
@@ -205,10 +219,18 @@ support-files = ["save_restore_custom_elements_sample.html"]
 ["test_save_restore_radio_groups.html"]
 
 ["test_select_change_event.html"]
-skip-if = ["os == 'mac'"]
+skip-if = [
+  "os == 'mac' && os_version == '10.15' && arch == 'x86_64'",
+  "os == 'mac' && os_version == '14.70' && arch == 'x86_64'", # Bug 1929441
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64'", # Bug 2019466
+]
 
 ["test_select_input_change_event.html"]
-skip-if = ["os == 'mac'"]
+skip-if = [
+  "os == 'mac' && os_version == '10.15' && arch == 'x86_64'",
+  "os == 'mac' && os_version == '14.70' && arch == 'x86_64'", # Bug 1929441
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64'", # Bug 2023967
+]
 
 ["test_select_selectedOptions.html"]
 
@@ -217,6 +239,7 @@ skip-if = ["os == 'mac'"]
 ["test_set_range_text.html"]
 
 ["test_step_attribute.html"]
+support-files = ["datetime_utils.js"]
 
 ["test_stepup_stepdown.html"]
 

@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = أهِمل
     .secondarybuttonaccesskey = ه
 appmenu-update-restart-message2 = ثبّت أحدث نسخة من { -brand-shorter-name }. ستُستعاد الألسنة والنوافذ المفتوحة.
+appmenu-theme-installed =
+    .secondarybuttonlabel = تراجع
+    .secondarybuttonaccesskey = ر
 appmenu-update-other-instance =
     .label = تعذّر تحديث { -brand-shorter-name } لآخر إصدارة تلقائيًا.
     .buttonlabel = مع ذلك، حدّث { -brand-shorter-name }
@@ -38,9 +41,15 @@ appmenu-update-other-instance =
     .secondarybuttonaccesskey = ل
 appmenu-update-other-instance-message = يتوفّر تحديث { -brand-shorter-name } جديد، لكن تعذّر تثبيته بسبب تشغيل نسخة أخرى من { -brand-shorter-name }. أغلِق هذه النسخة لمتابعة التحديث، أو اختر التحديث على أية حال (قد لا تعمل النسخة الأخرى كما ينبغي حتّى تعيد تشغيلها).
 appmenu-addon-private-browsing-installed2 =
-    .buttonlabel = حسنا
+    .buttonlabel = حسنًا
     .buttonaccesskey = ح
 appmenu-addon-post-install-message3 = أدِر الإضافات والسمات لديك عبر قائمة التطبيق.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = يُمكنك تحديث تصاريح وتفضيلات البيانات في أي وقت في <a data-l10n-name="settings-link">إعدادات الامتداد</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = ثبّت الامتداد على شريط الأدوات
+    .accesskey = د
 appmenu-addon-post-install-incognito-checkbox =
     .label = اسمح لهذا الامتداد بأن يعمل في النوافذ الخاصة
     .accesskey = س

@@ -98,6 +98,14 @@ DownloadLegacyTransfer.prototype = {
       // object to be available before notifying.
       this._promiseDownload
         .then(download => {
+          download.source.triggeredByContentDispositionHeader = false;
+          if (aRequest instanceof Ci.nsIHttpChannel) {
+            try {
+              download.source.triggeredByContentDispositionHeader =
+                !!aRequest.contentDispositionHeader;
+            } catch (e) {}
+          }
+
           // If the request was blocked, now that we have the download object we
           // should set a flag that can be retrieved later when handling the
           // cancellation so that the proper error can be thrown.
@@ -341,7 +349,8 @@ DownloadLegacyTransfer.prototype = {
     this._cancelable = aCancelable;
     let launchWhenSucceeded = false,
       contentType = null,
-      launcherPath = null;
+      launcherPath = null,
+      launcherId = null;
 
     if (aMIMEInfo instanceof Ci.nsIMIMEInfo) {
       launchWhenSucceeded =
@@ -349,11 +358,12 @@ DownloadLegacyTransfer.prototype = {
       contentType = aMIMEInfo.type;
 
       let appHandler = aMIMEInfo.preferredApplicationHandler;
-      if (
-        aMIMEInfo.preferredAction == Ci.nsIMIMEInfo.useHelperApp &&
-        appHandler instanceof Ci.nsILocalHandlerApp
-      ) {
-        launcherPath = appHandler.executable.path;
+      if (aMIMEInfo.preferredAction == Ci.nsIMIMEInfo.useHelperApp) {
+        if (appHandler instanceof Ci.nsILocalHandlerApp) {
+          launcherPath = appHandler.executable.path;
+        } else if (appHandler instanceof Ci.nsIGIOHandlerApp) {
+          launcherId = appHandler.id;
+        }
       }
     }
     // Create a new Download object associated to a DownloadLegacySaver, and
@@ -383,6 +393,7 @@ DownloadLegacyTransfer.prototype = {
       launchWhenSucceeded,
       contentType,
       launcherPath,
+      launcherId,
       handleInternally,
       openDownloadsListOnStart,
     };
@@ -391,9 +402,9 @@ DownloadLegacyTransfer.prototype = {
     // it is already canceled, so we need to generate and attach the
     // corresponding error to the download.
     if (aDownloadClassification == Ci.nsITransfer.DOWNLOAD_POTENTIALLY_UNSAFE) {
-      Services.telemetry
-        .getKeyedHistogramById("DOWNLOADS_USER_ACTION_ON_BLOCKED_DOWNLOAD")
-        .add(lazy.DownloadError.BLOCK_VERDICT_INSECURE, 0);
+      Glean.downloads.userActionOnBlockedDownload[
+        lazy.DownloadError.BLOCK_VERDICT_INSECURE
+      ].accumulateSingleSample(0);
 
       serialisedDownload.errorObj = {
         becauseBlockedByReputationCheck: true,

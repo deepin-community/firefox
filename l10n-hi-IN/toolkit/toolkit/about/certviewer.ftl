@@ -4,9 +4,6 @@
 
 certificate-viewer-certificate-section-title = प्रमाणपत्र
 
-## Error messages
-
-
 ## Certificate information labels
 
 certificate-viewer-algorithm = एल्गोरिथ्म
@@ -23,6 +20,7 @@ certificate-viewer-ip-address = IP पता
 certificate-viewer-other-name = अन्य नाम
 certificate-viewer-id = आईडी
 certificate-viewer-location = स्थान
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = लॉग आईडी
 certificate-viewer-method = तरीका
 certificate-viewer-name = नाम
@@ -44,7 +42,6 @@ certificate-viewer-validity = वैधता
 certificate-viewer-fingerprints = फिंगरप्रिंट
 certificate-viewer-authority-info-aia = प्राधिकरण जानकारी (AIA)
 certificate-viewer-certificate-policies = प्रमाणपत्र नीतियां
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = डाउनलोड
@@ -56,13 +53,6 @@ certificate-viewer-boolean =
         [true] हां
        *[false] नहीं
     }
-
-## Variables:
-##   $fileName (String) - The file name to save the PEM data in, derived from the common name from the certificate being displayed.
-
-
-##
-
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

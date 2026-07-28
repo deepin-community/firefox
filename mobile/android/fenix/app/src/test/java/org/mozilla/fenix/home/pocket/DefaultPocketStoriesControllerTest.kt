@@ -4,72 +4,108 @@
 
 package org.mozilla.fenix.home.pocket
 
+import androidx.navigation.NavController
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
 import io.mockk.verifyOrder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.test.runTest
 import mozilla.components.service.pocket.PocketStory
+import mozilla.components.service.pocket.PocketStory.ContentRecommendation
 import mozilla.components.service.pocket.PocketStory.PocketRecommendedStory
 import mozilla.components.service.pocket.PocketStory.PocketSponsoredStory
-import mozilla.components.service.pocket.ext.getCurrentFlightImpressions
+import mozilla.components.service.pocket.PocketStory.SponsoredContent
+import mozilla.components.service.pocket.PocketStory.SponsoredContentCallbacks
+import mozilla.components.service.pocket.PocketStory.SponsoredContentFrequencyCaps
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.fenix.BrowserDirection
-import org.mozilla.fenix.GleanMetrics.Pings
 import org.mozilla.fenix.GleanMetrics.Pocket
-import org.mozilla.fenix.HomeActivity
+import org.mozilla.fenix.GleanMetrics.StoriesLibrary
+import org.mozilla.fenix.R
 import org.mozilla.fenix.components.AppStore
-import org.mozilla.fenix.components.appstate.AppAction
+import org.mozilla.fenix.components.appstate.AppAction.ContentRecommendationsAction
 import org.mozilla.fenix.components.appstate.AppState
-import org.mozilla.fenix.ext.components
-import org.mozilla.fenix.ext.settings
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.components.appstate.recommendations.ContentRecommendationsState
+import org.mozilla.fenix.components.usecases.FenixBrowserUseCases
+import org.mozilla.fenix.ext.nav
+import org.mozilla.fenix.helpers.FenixGleanTestRule
+import org.mozilla.fenix.home.HomeFragmentDirections
+import org.mozilla.fenix.home.mars.MARSUseCases
+import org.mozilla.fenix.home.pocket.controller.DefaultPocketStoriesController
 import org.mozilla.fenix.utils.Settings
+import org.mozilla.fenix.utils.Stories.markAsOpenedFromHomeScreen
+import org.mozilla.fenix.utils.Stories.markAsOpenedFromStoriesScreen
+import java.lang.ref.WeakReference
+import kotlin.test.assertNotNull
 
-@RunWith(FenixRobolectricTestRunner::class) // For gleanTestRule
+@RunWith(AndroidJUnit4::class)
 class DefaultPocketStoriesControllerTest {
 
     @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
-    private val homeActivity: HomeActivity = mockk(relaxed = true)
+    private val navController: NavController = mockk(relaxed = true)
     private val settings: Settings = mockk(relaxed = true)
+    private val fenixBrowserUseCases: FenixBrowserUseCases = mockk(relaxed = true)
+    private val marsUseCases: MARSUseCases = mockk(relaxed = true)
+    private val nowInSeconds = System.currentTimeMillis() / 1000
+    private val flightPeriod = 100
 
-    @Before
-    fun setup() {
-        every { homeActivity.components.settings } returns settings
-        every { homeActivity.settings() } returns settings
-    }
+    // Data for "shown" tests, expecting 3 previous impressions.
+    private val impressionsForShownTest = listOf(
+        nowInSeconds - flightPeriod * 2, // This one is old and will be filtered out
+        nowInSeconds - flightPeriod / 2,
+        nowInSeconds - flightPeriod / 3,
+        nowInSeconds - flightPeriod / 4,
+    )
+    private val contentCapsForShownTest = SponsoredContentFrequencyCaps(
+        currentImpressions = impressionsForShownTest,
+        flightCount = 5,
+        flightPeriod = flightPeriod,
+    )
+
+    // Data for "clicked" tests, expecting 2 previous impressions.
+    private val impressionsForClickedTest = listOf(
+        nowInSeconds - flightPeriod * 2, // This one is old and will be filtered out
+        nowInSeconds - flightPeriod / 2,
+        nowInSeconds - flightPeriod / 3,
+    )
+    private val contentCapsForClickedTest = SponsoredContentFrequencyCaps(
+        currentImpressions = impressionsForClickedTest,
+        flightCount = 5,
+        flightPeriod = flightPeriod,
+    )
 
     @Test
-    fun `GIVEN a category is selected WHEN that same category is clicked THEN deselect it and record telemetry`() {
+    fun `GIVEN a category is selected WHEN that same category is clicked THEN deselect it and record telemetry`() = runTest {
         val category1 = PocketRecommendedStoriesCategory("cat1", emptyList())
         val category2 = PocketRecommendedStoriesCategory("cat2", emptyList())
         val selections = listOf(PocketRecommendedStoriesSelectedCategory(category2.name))
         val store = spyk(
             AppStore(
                 AppState(
-                    pocketStoriesCategories = listOf(category1, category2),
-                    pocketStoriesCategoriesSelections = selections,
+                    recommendationState = ContentRecommendationsState(
+                        pocketStoriesCategories = listOf(category1, category2),
+                        pocketStoriesCategoriesSelections = selections,
+                    ),
                 ),
             ),
         )
-        val controller = createController(appStore = store)
+        val controller = createController(scope = this, appStore = store)
         assertNull(Pocket.homeRecsCategoryClicked.testGetValue())
 
         controller.handleCategoryClick(category2)
-        verify(exactly = 0) { store.dispatch(AppAction.SelectPocketStoriesCategory(category2.name)) }
-        verify { store.dispatch(AppAction.DeselectPocketStoriesCategory(category2.name)) }
+        verify(exactly = 0) { store.dispatch(ContentRecommendationsAction.SelectPocketStoriesCategory(category2.name)) }
+        verify { store.dispatch(ContentRecommendationsAction.DeselectPocketStoriesCategory(category2.name)) }
 
         assertNotNull(Pocket.homeRecsCategoryClicked.testGetValue())
         val event = Pocket.homeRecsCategoryClicked.testGetValue()!!
@@ -83,7 +119,7 @@ class DefaultPocketStoriesControllerTest {
     }
 
     @Test
-    fun `GIVEN 8 categories are selected WHEN when a new one is clicked THEN the oldest selected is deselected before selecting the new one and record telemetry`() {
+    fun `GIVEN 8 categories are selected WHEN when a new one is clicked THEN the oldest selected is deselected before selecting the new one and record telemetry`() = runTest {
         val category1 = PocketRecommendedStoriesSelectedCategory(name = "cat1", selectionTimestamp = 111)
         val category2 = PocketRecommendedStoriesSelectedCategory(name = "cat2", selectionTimestamp = 222)
         val category3 = PocketRecommendedStoriesSelectedCategory(name = "cat3", selectionTimestamp = 333)
@@ -96,26 +132,28 @@ class DefaultPocketStoriesControllerTest {
         val store = spyk(
             AppStore(
                 AppState(
-                    pocketStoriesCategoriesSelections = listOf(
-                        category1,
-                        category2,
-                        category3,
-                        category4,
-                        category5,
-                        category6,
-                        category7,
-                        oldestSelectedCategory,
+                    recommendationState = ContentRecommendationsState(
+                        pocketStoriesCategoriesSelections = listOf(
+                            category1,
+                            category2,
+                            category3,
+                            category4,
+                            category5,
+                            category6,
+                            category7,
+                            oldestSelectedCategory,
+                        ),
                     ),
                 ),
             ),
         )
-        val controller = createController(appStore = store)
+        val controller = createController(scope = this, appStore = store)
         assertNull(Pocket.homeRecsCategoryClicked.testGetValue())
 
         controller.handleCategoryClick(PocketRecommendedStoriesCategory(newSelectedCategory.name))
 
-        verify { store.dispatch(AppAction.DeselectPocketStoriesCategory(oldestSelectedCategory.name)) }
-        verify { store.dispatch(AppAction.SelectPocketStoriesCategory(newSelectedCategory.name)) }
+        verify { store.dispatch(ContentRecommendationsAction.DeselectPocketStoriesCategory(oldestSelectedCategory.name)) }
+        verify { store.dispatch(ContentRecommendationsAction.SelectPocketStoriesCategory(newSelectedCategory.name)) }
 
         assertNotNull(Pocket.homeRecsCategoryClicked.testGetValue())
         val event = Pocket.homeRecsCategoryClicked.testGetValue()!!
@@ -129,7 +167,7 @@ class DefaultPocketStoriesControllerTest {
     }
 
     @Test
-    fun `GIVEN fewer than 8 categories are selected WHEN when a new one is clicked THEN don't deselect anything but select the newly clicked category and record telemetry`() {
+    fun `GIVEN fewer than 8 categories are selected WHEN when a new one is clicked THEN don't deselect anything but select the newly clicked category and record telemetry`() = runTest {
         val category1 = PocketRecommendedStoriesSelectedCategory(name = "cat1", selectionTimestamp = 111)
         val category2 = PocketRecommendedStoriesSelectedCategory(name = "cat2", selectionTimestamp = 222)
         val category3 = PocketRecommendedStoriesSelectedCategory(name = "cat3", selectionTimestamp = 333)
@@ -140,25 +178,27 @@ class DefaultPocketStoriesControllerTest {
         val store = spyk(
             AppStore(
                 AppState(
-                    pocketStoriesCategoriesSelections = listOf(
-                        category1,
-                        category2,
-                        category3,
-                        category4,
-                        category5,
-                        category6,
-                        oldestSelectedCategory,
+                    recommendationState = ContentRecommendationsState(
+                        pocketStoriesCategoriesSelections = listOf(
+                            category1,
+                            category2,
+                            category3,
+                            category4,
+                            category5,
+                            category6,
+                            oldestSelectedCategory,
+                        ),
                     ),
                 ),
             ),
         )
         val newSelectedCategoryName = "newSelectedCategory"
-        val controller = createController(appStore = store)
+        val controller = createController(scope = this, appStore = store)
 
         controller.handleCategoryClick(PocketRecommendedStoriesCategory(newSelectedCategoryName))
 
-        verify(exactly = 0) { store.dispatch(AppAction.DeselectPocketStoriesCategory(oldestSelectedCategory.name)) }
-        verify { store.dispatch(AppAction.SelectPocketStoriesCategory(newSelectedCategoryName)) }
+        verify(exactly = 0) { store.dispatch(ContentRecommendationsAction.DeselectPocketStoriesCategory(oldestSelectedCategory.name)) }
+        verify { store.dispatch(ContentRecommendationsAction.SelectPocketStoriesCategory(newSelectedCategoryName)) }
 
         assertNotNull(Pocket.homeRecsCategoryClicked.testGetValue())
         val event = Pocket.homeRecsCategoryClicked.testGetValue()!!
@@ -172,67 +212,96 @@ class DefaultPocketStoriesControllerTest {
     }
 
     @Test
-    fun `WHEN a new recommended story is shown THEN update the State`() {
+    fun `WHEN a new recommended story is shown THEN update the State`() = runTest {
         val store = spyk(AppStore())
-        val controller = createController(appStore = store)
+        val controller = createController(scope = this, appStore = store)
         val storyShown: PocketRecommendedStory = mockk()
-        val storyGridLocation = 1 to 2
+        val storyPosition = Triple(1, 2, 3)
 
-        controller.handleStoryShown(storyShown, storyGridLocation)
+        controller.handleStoryShown(storyShown, storyPosition)
 
-        verify { store.dispatch(AppAction.PocketStoriesShown(listOf(storyShown))) }
-    }
-
-    @Test
-    fun `WHEN a new sponsored story is shown THEN update the State and record telemetry`() {
-        val store = spyk(AppStore())
-        val controller = createController(appStore = store)
-        val storyShown: PocketSponsoredStory = mockk {
-            every { shim.click } returns "testClickShim"
-            every { shim.impression } returns "testImpressionShim"
-            every { id } returns 123
-        }
-        var wasPingSent = false
-        mockkStatic("mozilla.components.service.pocket.ext.PocketStoryKt") {
-            // Simulate that the story was already shown 3 times.
-            every { storyShown.getCurrentFlightImpressions() } returns listOf(2L, 3L, 7L)
-            // Test that the spoc ping is immediately sent with the needed data.
-            Pings.spoc.testBeforeNextSubmit { reason ->
-                assertEquals(storyShown.shim.impression, Pocket.spocShim.testGetValue())
-                assertEquals(Pings.spocReasonCodes.impression.name, reason?.name)
-                wasPingSent = true
-            }
-
-            controller.handleStoryShown(storyShown, 1 to 2)
-
-            verify { store.dispatch(AppAction.PocketStoriesShown(listOf(storyShown))) }
-            assertNotNull(Pocket.homeRecsSpocShown.testGetValue())
-            assertEquals(1, Pocket.homeRecsSpocShown.testGetValue()!!.size)
-            val data = Pocket.homeRecsSpocShown.testGetValue()!!.single().extra
-            assertEquals("123", data?.entries?.first { it.key == "spoc_id" }?.value)
-            assertEquals("1x2", data?.entries?.first { it.key == "position" }?.value)
-            assertEquals("4", data?.entries?.first { it.key == "times_shown" }?.value)
-            assertTrue(wasPingSent)
+        verify {
+            store.dispatch(
+                ContentRecommendationsAction.PocketStoriesShown(
+                    impressions = listOf(
+                        PocketImpression(story = storyShown, position = 3),
+                    ),
+                ),
+            )
         }
     }
 
     @Test
-    fun `WHEN new stories are shown THEN update the State and record telemetry`() {
+    fun `WHEN a sponsored content is shown THEN update the State and record telemetry`() = runTest {
         val store = spyk(AppStore())
-        val controller = createController(appStore = store)
-        val storiesShown: List<PocketStory> = mockk()
+        val controller = createController(scope = this, appStore = store)
+        val sponsoredContent = SponsoredContent(
+            url = "https://firefox.com",
+            title = "Firefox",
+            callbacks = SponsoredContentCallbacks(
+                clickUrl = "https://firefox.com/click",
+                impressionUrl = "https://firefox.com/impression",
+            ),
+            imageUrl = "https://test.com/image1.jpg",
+            domain = "firefox.com",
+            excerpt = "Mozilla Firefox",
+            sponsor = "Mozilla",
+            blockKey = "1",
+            caps = contentCapsForShownTest,
+            priority = 3,
+        )
+
+        controller.handleStoryShown(sponsoredContent, storyPosition = Triple(1, 2, 3))
+
+        assertEquals(1, Pocket.homeRecsSpocShown.testGetValue()!!.size)
+
+        val data = Pocket.homeRecsSpocShown.testGetValue()!!.single().extra
+        assertEquals(2, data?.size)
+        assertEquals("1x2", data?.entries?.first { it.key == "position" }?.value)
+        assertEquals("4", data?.entries?.first { it.key == "times_shown" }?.value)
+
+        verify {
+            store.dispatch(
+                ContentRecommendationsAction.PocketStoriesShown(
+                    impressions = listOf(
+                        PocketImpression(story = sponsoredContent, position = 3),
+                    ),
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `WHEN new stories are shown THEN update the State and record telemetry`() = runTest {
+        val store = spyk(AppStore())
+        val controller = createController(scope = this, appStore = store)
+        val recommendation = mockk<ContentRecommendation>()
+        val story = mockk<PocketStory>()
+        val sponsoredStory = mockk<PocketSponsoredStory>()
+        val storiesShown = listOf(recommendation, story, sponsoredStory)
+
         assertNull(Pocket.homeRecsShown.testGetValue())
 
         controller.handleStoriesShown(storiesShown)
 
-        verify { store.dispatch(AppAction.PocketStoriesShown(storiesShown)) }
+        verify {
+            store.dispatch(
+                ContentRecommendationsAction.PocketStoriesShown(
+                    impressions = listOf(
+                        PocketImpression(story = recommendation, position = 0),
+                        PocketImpression(story = story, position = 1),
+                    ),
+                ),
+            )
+        }
+
         assertNotNull(Pocket.homeRecsShown.testGetValue())
         assertEquals(1, Pocket.homeRecsShown.testGetValue()!!.size)
         assertNull(Pocket.homeRecsShown.testGetValue()!!.single().extra)
     }
 
     @Test
-    fun `WHEN a recommended story is clicked THEN open that story's url using HomeActivity and record telemetry`() {
+    fun `WHEN a recommended story is clicked THEN open that story's url using HomeActivity and record telemetry`() = runTest {
         val story = PocketRecommendedStory(
             title = "",
             url = "testLink",
@@ -242,12 +311,19 @@ class DefaultPocketStoriesControllerTest {
             timeToRead = 0,
             timesShown = 123,
         )
-        val controller = createController()
+        val controller = createController(scope = this)
         assertNull(Pocket.homeRecsStoryClicked.testGetValue())
 
-        controller.handleStoryClicked(story, 1 to 2)
+        controller.handleStoryClicked(story, storyPosition = Triple(1, 2, 3))
 
-        verify { homeActivity.openToBrowserAndLoad(story.url, true, BrowserDirection.FromHome) }
+        verify {
+            navController.navigate(R.id.browserFragment)
+            fenixBrowserUseCases.loadUrlOrSearch(
+                searchTermOrURL = story.url,
+                newTab = true,
+                private = false,
+            )
+        }
 
         assertNotNull(Pocket.homeRecsStoryClicked.testGetValue())
         val event = Pocket.homeRecsStoryClicked.testGetValue()!!
@@ -259,8 +335,8 @@ class DefaultPocketStoriesControllerTest {
     }
 
     @Test
-    fun `GIVEN homepage as a new tab is enabled  WHEN a recommended story is clicked THEN open that story's url using HomeActivity and record telemetry`() {
-        every { homeActivity.settings().enableHomepageAsNewTab } returns true
+    fun `GIVEN homepage as a new tab is enabled WHEN a recommended story is clicked THEN open that story's url using HomeActivity and record telemetry`() = runTest {
+        every { settings.enableHomepageAsNewTab } returns true
 
         val story = PocketRecommendedStory(
             title = "",
@@ -271,12 +347,19 @@ class DefaultPocketStoriesControllerTest {
             timeToRead = 0,
             timesShown = 123,
         )
-        val controller = createController()
+        val controller = createController(scope = this)
         assertNull(Pocket.homeRecsStoryClicked.testGetValue())
 
-        controller.handleStoryClicked(story, 1 to 2)
+        controller.handleStoryClicked(story, storyPosition = Triple(1, 2, 3))
 
-        verify { homeActivity.openToBrowserAndLoad(story.url, false, BrowserDirection.FromHome) }
+        verify {
+            navController.navigate(R.id.browserFragment)
+            fenixBrowserUseCases.loadUrlOrSearch(
+                searchTermOrURL = story.url,
+                newTab = false,
+                private = false,
+            )
+        }
 
         assertNotNull(Pocket.homeRecsStoryClicked.testGetValue())
         val event = Pocket.homeRecsStoryClicked.testGetValue()!!
@@ -288,171 +371,151 @@ class DefaultPocketStoriesControllerTest {
     }
 
     @Test
-    fun `WHEN a sponsored story is clicked THEN open that story's url using HomeActivity and record telemetry`() {
-        val storyClicked = PocketSponsoredStory(
-            id = 7,
-            title = "",
-            url = "testLink",
-            imageUrl = "",
-            sponsor = "",
-            shim = mockk {
-                every { click } returns "testClickShim"
-                every { impression } returns "testImpressionShim"
-            },
+    fun `WHEN a sponsored content is clicked THEN navigate to the sponsored content URL and record the interaction`() = runTest {
+        val sponsoredContent = SponsoredContent(
+            url = "https://firefox.com",
+            title = "Firefox",
+            callbacks = SponsoredContentCallbacks(
+                clickUrl = "https://firefox.com/click",
+                impressionUrl = "https://firefox.com/impression",
+            ),
+            imageUrl = "https://test.com/image1.jpg",
+            domain = "firefox.com",
+            excerpt = "Mozilla Firefox",
+            sponsor = "Mozilla",
+            blockKey = "1",
+            caps = contentCapsForClickedTest,
             priority = 3,
-            caps = mockk(relaxed = true),
         )
-        val controller = createController()
-        var wasPingSent = false
+        val controller = createController(scope = this)
+
         assertNull(Pocket.homeRecsSpocClicked.testGetValue())
-        mockkStatic("mozilla.components.service.pocket.ext.PocketStoryKt") {
-            // Simulate that the story was already shown 2 times.
-            every { storyClicked.getCurrentFlightImpressions() } returns listOf(2L, 3L)
-            // Test that the spoc ping is immediately sent with the needed data.
-            Pings.spoc.testBeforeNextSubmit { reason ->
-                assertEquals(storyClicked.shim.click, Pocket.spocShim.testGetValue())
-                assertEquals(Pings.spocReasonCodes.click.name, reason?.name)
-                wasPingSent = true
-            }
 
-            controller.handleStoryClicked(storyClicked, 2 to 3)
+        controller.handleStoryClicked(sponsoredContent, storyPosition = Triple(2, 3, 4))
+        testScheduler.advanceUntilIdle()
 
-            verify { homeActivity.openToBrowserAndLoad(storyClicked.url, true, BrowserDirection.FromHome) }
-            assertNotNull(Pocket.homeRecsSpocClicked.testGetValue())
-            assertEquals(1, Pocket.homeRecsSpocClicked.testGetValue()!!.size)
-            val data = Pocket.homeRecsSpocClicked.testGetValue()!!.single().extra
-            assertEquals("7", data?.entries?.first { it.key == "spoc_id" }?.value)
-            assertEquals("2x3", data?.entries?.first { it.key == "position" }?.value)
-            assertEquals("3", data?.entries?.first { it.key == "times_shown" }?.value)
-            assertTrue(wasPingSent)
+        assertEquals(1, Pocket.homeRecsSpocClicked.testGetValue()!!.size)
+        val data = Pocket.homeRecsSpocClicked.testGetValue()!!.single().extra
+        assertEquals(2, data?.size)
+        assertEquals("2x3", data?.entries?.first { it.key == "position" }?.value)
+        assertEquals("3", data?.entries?.first { it.key == "times_shown" }?.value)
+
+        coVerify {
+            navController.navigate(R.id.browserFragment)
+            fenixBrowserUseCases.loadUrlOrSearch(
+                searchTermOrURL = sponsoredContent.url,
+                newTab = true,
+                private = false,
+            )
+            marsUseCases.recordInteraction(sponsoredContent.callbacks.clickUrl)
         }
     }
 
     @Test
-    fun `GIVEN homepage as a new tab is enabled WHEN a sponsored story is clicked THEN open that story's url using HomeActivity and record telemetry`() {
-        every { homeActivity.settings().enableHomepageAsNewTab } returns true
-
-        val storyClicked = PocketSponsoredStory(
-            id = 7,
-            title = "",
-            url = "testLink",
-            imageUrl = "",
-            sponsor = "",
-            shim = mockk {
-                every { click } returns "testClickShim"
-                every { impression } returns "testImpressionShim"
-            },
-            priority = 3,
-            caps = mockk(relaxed = true),
-        )
-        val controller = createController()
-        var wasPingSent = false
-        assertNull(Pocket.homeRecsSpocClicked.testGetValue())
-        mockkStatic("mozilla.components.service.pocket.ext.PocketStoryKt") {
-            // Simulate that the story was already shown 2 times.
-            every { storyClicked.getCurrentFlightImpressions() } returns listOf(2L, 3L)
-            // Test that the spoc ping is immediately sent with the needed data.
-            Pings.spoc.testBeforeNextSubmit { reason ->
-                assertEquals(storyClicked.shim.click, Pocket.spocShim.testGetValue())
-                assertEquals(Pings.spocReasonCodes.click.name, reason?.name)
-                wasPingSent = true
-            }
-
-            controller.handleStoryClicked(storyClicked, 2 to 3)
-
-            verify { homeActivity.openToBrowserAndLoad(storyClicked.url, false, BrowserDirection.FromHome) }
-            assertNotNull(Pocket.homeRecsSpocClicked.testGetValue())
-            assertEquals(1, Pocket.homeRecsSpocClicked.testGetValue()!!.size)
-            val data = Pocket.homeRecsSpocClicked.testGetValue()!!.single().extra
-            assertEquals("7", data?.entries?.first { it.key == "spoc_id" }?.value)
-            assertEquals("2x3", data?.entries?.first { it.key == "position" }?.value)
-            assertEquals("3", data?.entries?.first { it.key == "times_shown" }?.value)
-            assertTrue(wasPingSent)
-        }
-    }
-
-    @Test
-    fun `WHEN discover more is clicked then open that using HomeActivity and record telemetry`() {
-        val link = "http://getpocket.com/explore"
-        val controller = createController()
-        assertNull(Pocket.homeRecsDiscoverClicked.testGetValue())
-
-        controller.handleDiscoverMoreClicked(link)
-
-        verify { homeActivity.openToBrowserAndLoad(link, true, BrowserDirection.FromHome) }
-        assertNotNull(Pocket.homeRecsDiscoverClicked.testGetValue())
-        assertEquals(1, Pocket.homeRecsDiscoverClicked.testGetValue()!!.size)
-        assertNull(Pocket.homeRecsDiscoverClicked.testGetValue()!!.single().extra)
-    }
-
-    @Test
-    fun `WHEN learn more is clicked then open that using HomeActivity and record telemetry`() {
-        val link = "https://www.mozilla.org/en-US/firefox/pocket/"
-        val controller = createController()
-        assertNull(Pocket.homeRecsLearnMoreClicked.testGetValue())
-
-        controller.handleLearnMoreClicked(link)
-
-        verify { homeActivity.openToBrowserAndLoad(link, true, BrowserDirection.FromHome) }
-        assertNotNull(Pocket.homeRecsLearnMoreClicked.testGetValue())
-        assertNull(Pocket.homeRecsLearnMoreClicked.testGetValue()!!.single().extra)
-    }
-
-    @Test
-    fun `WHEN a story is clicked THEN its link is opened`() {
+    fun `WHEN a story is clicked THEN its link is opened`() = runTest {
         val story = PocketRecommendedStory("", "url", "", "", "", 0, 0)
-        val controller = createController()
+        val controller = createController(scope = this)
 
-        controller.handleStoryClicked(story, 1 to 2)
+        controller.handleStoryClicked(story, storyPosition = Triple(1, 2, 3))
 
         verifyOrder {
-            homeActivity.openToBrowserAndLoad(story.url, true, BrowserDirection.FromHome)
+            navController.navigate(R.id.browserFragment)
+            fenixBrowserUseCases.loadUrlOrSearch(
+                searchTermOrURL = story.url,
+                newTab = true,
+                private = false,
+            )
         }
     }
 
     @Test
-    fun `GIVEN homepage as a new tab is enabled WHEN a story is clicked THEN its link is opened`() {
-        every { homeActivity.settings().enableHomepageAsNewTab } returns true
+    fun `GIVEN homepage as a new tab is enabled WHEN a story is clicked THEN its link is opened`() = runTest {
+        every { settings.enableHomepageAsNewTab } returns true
 
         val story = PocketRecommendedStory("", "url", "", "", "", 0, 0)
-        val controller = createController()
+        val controller = createController(scope = this)
 
-        controller.handleStoryClicked(story, 1 to 2)
+        controller.handleStoryClicked(story, storyPosition = Triple(1, 2, 3))
 
         verifyOrder {
-            homeActivity.openToBrowserAndLoad(story.url, false, BrowserDirection.FromHome)
+            navController.navigate(R.id.browserFragment)
+            fenixBrowserUseCases.loadUrlOrSearch(
+                searchTermOrURL = story.url,
+                newTab = false,
+                private = false,
+            )
         }
     }
 
     @Test
-    fun `WHEN discover more is clicked THEN its link is opened`() {
-        val link = "https://discoverMore.link"
-        val controller = createController()
+    fun `GIVEN the user is on the home screen WHEN a story is clicked THEN its link is opened with a home screen UTM marker`() = runTest {
+        every { navController.currentDestination?.id } returns R.id.homeFragment
+        val originalURL = "https://story.test"
+        val story = PocketRecommendedStory("", originalURL, "", "", "", 0, 0)
+        val controller = createController(scope = this)
 
-        controller.handleDiscoverMoreClicked(link)
+        controller.handleStoryClicked(story, storyPosition = Triple(1, 2, 3))
 
         verifyOrder {
-            homeActivity.openToBrowserAndLoad(link, true, BrowserDirection.FromHome)
+            navController.navigate(R.id.browserFragment)
+            fenixBrowserUseCases.loadUrlOrSearch(
+                searchTermOrURL = originalURL.markAsOpenedFromHomeScreen(),
+                newTab = true,
+                private = false,
+            )
         }
     }
 
     @Test
-    fun `WHEN learn more link is clicked THEN that link is opened`() {
-        val link = "https://learnMore.link"
-        val controller = createController()
+    fun `GIVEN the user is on the stories screen WHEN a story is clicked THEN its link is opened with a stories screen UTM marker`() = runTest {
+        every { navController.currentDestination?.id } returns R.id.storiesFragment
+        val originalURL = "https://story.test"
+        val story = PocketRecommendedStory("", originalURL, "", "", "", 0, 0)
+        val controller = createController(scope = this)
 
-        controller.handleLearnMoreClicked(link)
+        controller.handleStoryClicked(story, storyPosition = Triple(1, 2, 3))
 
         verifyOrder {
-            homeActivity.openToBrowserAndLoad(link, true, BrowserDirection.FromHome)
+            navController.navigate(R.id.browserFragment)
+            fenixBrowserUseCases.loadUrlOrSearch(
+                searchTermOrURL = originalURL.markAsOpenedFromStoriesScreen(),
+                newTab = true,
+                private = false,
+            )
         }
+    }
+
+    @Test
+    fun `WHEN the discover more button is clicked THEN navigate to the discover more stories screen`() = runTest {
+        val controller = createController(scope = this)
+
+        controller.handleDiscoverMoreClicked()
+
+        verify {
+            navController.nav(
+                R.id.homeFragment,
+                HomeFragmentDirections.actionHomeFragmentToStoriesFragment(),
+            )
+        }
+    }
+
+    @Test
+    fun `WHEN screen is shown THEN impression is logged`() = runTest {
+        assertNull(StoriesLibrary.viewed.testGetValue())
+        val controller = createController(scope = this)
+        controller.handleDiscoverMoreScreenViewed()
+        assertNotNull(StoriesLibrary.viewed.testGetValue())
     }
 
     private fun createController(
+        scope: CoroutineScope,
         appStore: AppStore = AppStore(),
     ) = DefaultPocketStoriesController(
-        homeActivity = homeActivity,
+        navControllerRef = WeakReference(navController),
         appStore = appStore,
         settings = settings,
+        fenixBrowserUseCases = fenixBrowserUseCases,
+        marsUseCases = marsUseCases,
+        viewLifecycleScope = scope,
     )
 }

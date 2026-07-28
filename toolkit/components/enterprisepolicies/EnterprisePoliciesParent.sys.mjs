@@ -13,6 +13,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   WindowsGPOParser: "resource://gre/modules/policies/WindowsGPOParser.sys.mjs",
   macOSPoliciesParser:
     "resource://gre/modules/policies/macOSPoliciesParser.sys.mjs",
+  SitePolicyUtils: "resource://gre/modules/SitePolicyUtils.sys.mjs",
 });
 
 // This is the file that will be searched for in the
@@ -38,9 +39,6 @@ const PREF_TEST_ROOT = "mochitest.testRoot";
 
 const PREF_LOGLEVEL = "browser.policies.loglevel";
 
-// To force disallowing enterprise-only policies during tests
-const PREF_DISALLOW_ENTERPRISE = "browser.policies.testing.disallowEnterprise";
-
 // To allow for cleaning up old policies
 const PREF_POLICIES_APPLIED = "browser.policies.applied";
 
@@ -58,6 +56,14 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
 });
 
 const isXpcshell = Services.env.exists("XPCSHELL_TEST_PROFILE_DIR");
+
+// On Nightly under a test harness, ignore real system/user policies so a
+// developer's local policies.json or registry entries don't leak into tests.
+// Restricted to Nightly so release builds never expose a way to bypass
+// enterprise policies via a test env var.
+function shouldIgnoreLocalPolicies() {
+  return AppConstants.NIGHTLY_BUILD && (Cu.isInAutomation || isXpcshell);
+}
 
 // We're only testing for empty objects, not
 // empty strings or empty arrays.
@@ -78,6 +84,7 @@ export function EnterprisePoliciesManager() {
   Services.obs.addObserver(this, "final-ui-startup", true);
   Services.obs.addObserver(this, "sessionstore-windows-restored", true);
   Services.obs.addObserver(this, "EnterprisePolicies:Restart", true);
+  Services.obs.addObserver(this, "distribution-customization-complete", true);
 }
 
 EnterprisePoliciesManager.prototype = {
@@ -112,47 +119,46 @@ EnterprisePoliciesManager.prototype = {
 
     if (provider.failed) {
       this.status = Ci.nsIEnterprisePolicies.FAILED;
-      this._reportEnterpriseTelemetry();
       return;
     }
 
     if (!provider.hasPolicies) {
       this.status = Ci.nsIEnterprisePolicies.INACTIVE;
-      this._reportEnterpriseTelemetry();
+      return;
+    }
+
+    // Because security.enterprise_roots.enabled is true by default, we can
+    // ignore attempts by Antivirus to try to set it via policy.
+    // We have to explicitly check for true or 1 because this happens before
+    // policy is parsed against the schema, so the value could be coming
+    // from the registry.
+    if (
+      Object.keys(provider.policies).length === 1 &&
+      provider.policies.Certificates &&
+      Object.keys(provider.policies.Certificates).length === 1 &&
+      (provider.policies.Certificates.ImportEnterpriseRoots === true ||
+        provider.policies.Certificates.ImportEnterpriseRoots === 1)
+    ) {
+      this.status = Ci.nsIEnterprisePolicies.INACTIVE;
       return;
     }
 
     this.status = Ci.nsIEnterprisePolicies.ACTIVE;
+
+    // Make Web Serial support be opt-in for enterprise policies.
+    Services.prefs
+      .getDefaultBranch("")
+      .setBoolPref("dom.webserial.enabled", false);
+
     this._parsedPolicies = {};
-    this._reportEnterpriseTelemetry(provider.policies);
     this._activatePolicies(provider.policies);
 
     Services.prefs.setBoolPref(PREF_POLICIES_APPLIED, true);
   },
 
-  _reportEnterpriseTelemetry(policies = {}) {
-    let excludedDistributionIDs = [
-      "mozilla-mac-eol-esr115",
-      "mozilla-win-eol-esr115",
-    ];
-    let distroId = Services.prefs
-      .getDefaultBranch(null)
-      .getCharPref("distribution.id", "");
-
-    let policiesLength = Object.keys(policies).length;
-
-    Services.telemetry.scalarSet("policies.count", policiesLength);
-
-    let isEnterprise =
-      // As we migrate folks to ESR for other reasons (deprecating an OS),
-      // we need to add checks here for distribution IDs.
-      (AppConstants.IS_ESR && !excludedDistributionIDs.includes(distroId)) ||
-      // If there are multiple policies then its enterprise.
-      policiesLength > 1 ||
-      // If ImportEnterpriseRoots isn't the only policy then it's enterprise.
-      (policiesLength && !policies.Certificates?.ImportEnterpriseRoots);
-
-    Services.telemetry.scalarSet("policies.is_enterprise", isEnterprise);
+  _reportEnterpriseTelemetry() {
+    Glean.policies.count.set(Object.keys(this._parsedPolicies || {}).length);
+    Glean.policies.isEnterprise.set(this.isEnterprise);
   },
 
   _chooseProvider() {
@@ -189,11 +195,6 @@ EnterprisePoliciesManager.prototype = {
         continue;
       }
 
-      if (policySchema.enterprise_only && !areEnterpriseOnlyPoliciesAllowed()) {
-        lazy.log.error(`Policy ${policyName} is only allowed on ESR`);
-        continue;
-      }
-
       let { valid: parametersAreValid, parsedValue: parsedParameters } =
         lazy.JsonSchemaValidator.validate(policyParameters, policySchema, {
           allowAdditionalProperties: true,
@@ -205,6 +206,13 @@ EnterprisePoliciesManager.prototype = {
       }
 
       let policyImpl = lazy.Policies[policyName];
+
+      if (!policyImpl) {
+        // This means there is an entry in the schema, but no implementaton.
+        // We only do this when we deprecate policies.
+        lazy.log.info(`${policyName} has been deprecated.`);
+        continue;
+      }
 
       if (policyImpl.validate && !policyImpl.validate(parsedParameters)) {
         lazy.log.error(
@@ -270,9 +278,11 @@ EnterprisePoliciesManager.prototype = {
 
   async _restart() {
     DisallowedFeatures = {};
+    SitePolicies = [];
 
     Services.ppmm.sharedData.delete("EnterprisePolicies:Status");
     Services.ppmm.sharedData.delete("EnterprisePolicies:DisallowedFeatures");
+    Services.ppmm.sharedData.delete("EnterprisePolicies:SitePolicies");
 
     this._status = Ci.nsIEnterprisePolicies.UNINITIALIZED;
     this._parsedPolicies = undefined;
@@ -293,6 +303,7 @@ EnterprisePoliciesManager.prototype = {
     await notifyTopicOnIdle("profile-after-change");
     await notifyTopicOnIdle("final-ui-startup");
     await notifyTopicOnIdle("sessionstore-windows-restored");
+    await notifyTopicOnIdle("distribution-customization-complete");
   },
 
   // nsIObserver implementation
@@ -316,16 +327,22 @@ EnterprisePoliciesManager.prototype = {
 
       case "sessionstore-windows-restored":
         this._runPoliciesCallbacks("onAllWindowsRestored");
-
-        // After the last set of policy callbacks ran, notify the test observer.
-        Services.obs.notifyObservers(
-          null,
-          "EnterprisePolicies:AllPoliciesApplied"
-        );
         break;
 
       case "EnterprisePolicies:Restart":
         this._restart().then(null, console.error);
+        break;
+
+      case "distribution-customization-complete":
+        this._reportEnterpriseTelemetry();
+
+        // Notify the test observer when the last message
+        // is received.
+        Services.obs.notifyObservers(
+          null,
+          "EnterprisePolicies:AllPoliciesApplied"
+        );
+
         break;
     }
   },
@@ -345,6 +362,18 @@ EnterprisePoliciesManager.prototype = {
     }
   },
 
+  updateSitePolicies(policies) {
+    SitePolicies = policies;
+
+    let clonable = policies.map(policy => ({
+      match: policy.match.patterns.map(p => p.pattern),
+      exceptions: policy.exceptions.patterns.map(p => p.pattern),
+      features: policy.features,
+    }));
+
+    Services.ppmm.sharedData.set("EnterprisePolicies:SitePolicies", clonable);
+  },
+
   // ------------------------------
   // public nsIEnterprisePolicies members
   // ------------------------------
@@ -362,8 +391,17 @@ EnterprisePoliciesManager.prototype = {
     return this._status;
   },
 
-  isAllowed: function BG_sanitize(feature) {
+  isAllowed(feature) {
     return !(feature in DisallowedFeatures);
+  },
+
+  isAllowedForURI(feature, uri) {
+    return lazy.SitePolicyUtils.isAllowedForURI(
+      this,
+      SitePolicies,
+      feature,
+      uri
+    );
   },
 
   getActivePolicies() {
@@ -402,15 +440,34 @@ EnterprisePoliciesManager.prototype = {
   },
 
   getExtensionSettings(extensionID) {
-    let settings = null;
-    if (ExtensionSettings) {
-      if (extensionID in ExtensionSettings) {
-        settings = ExtensionSettings[extensionID];
-      } else if ("*" in ExtensionSettings) {
-        settings = ExtensionSettings["*"];
-      }
+    if (!ExtensionSettings) {
+      return null;
     }
-    return settings;
+    if (extensionID in ExtensionSettings) {
+      const settings = ExtensionSettings[extensionID];
+      if (
+        settings.installation_mode === "force_installed" &&
+        !("updates_disabled" in settings)
+      ) {
+        return { ...settings, updates_disabled: false };
+      }
+      return settings;
+    }
+    if ("*" in ExtensionSettings) {
+      return ExtensionSettings["*"];
+    }
+    return null;
+  },
+
+  isAddonRequiredByPolicy(addonID) {
+    const policySettings = this.getExtensionSettings(addonID);
+    const legacyLockedSettings =
+      this.getActivePolicies()?.Extensions?.Locked ?? [];
+    return (
+      ["force_installed", "normal_installed"].includes(
+        policySettings?.installation_mode
+      ) || legacyLockedSettings.includes(addonID)
+    );
   },
 
   mayInstallAddon(addon) {
@@ -447,10 +504,8 @@ EnterprisePoliciesManager.prototype = {
   },
 
   isExemptExecutableExtension(url, extension) {
-    let urlObject;
-    try {
-      urlObject = new URL(url);
-    } catch (e) {
+    let urlObject = URL.parse(url);
+    if (!urlObject) {
       return false;
     }
     let { hostname } = urlObject;
@@ -472,42 +527,35 @@ EnterprisePoliciesManager.prototype = {
     }
     return false;
   },
+
+  get isEnterprise() {
+    let excludedDistributionIDs = [
+      "mozilla-mac-eol-esr115",
+      "mozilla-win-eol-esr115",
+    ];
+    let distroId = Services.prefs
+      .getDefaultBranch(null)
+      .getCharPref("distribution.id", "");
+
+    let policiesLength = Object.keys(this._parsedPolicies || {}).length;
+
+    let isEnterprise =
+      // As we migrate folks to ESR for other reasons (deprecating an OS),
+      // we need to add checks here for distribution IDs.
+      (AppConstants.IS_ESR && !excludedDistributionIDs.includes(distroId)) ||
+      // If there are policies then its enterprise.
+      policiesLength > 0;
+
+    return isEnterprise;
+  },
 };
 
 let DisallowedFeatures = {};
+let SitePolicies = [];
 let SupportMenu = null;
 let ExtensionPolicies = null;
 let ExtensionSettings = null;
 let InstallSources = null;
-
-/**
- * areEnterpriseOnlyPoliciesAllowed
- *
- * Checks whether the policies marked as enterprise_only in the
- * schema are allowed to run on this browser.
- *
- * This is meant to only allow policies to run on ESR, but in practice
- * we allow it to run on channels different than release, to allow
- * these policies to be tested on pre-release channels.
- *
- * @returns {Bool} Whether the policy can run.
- */
-function areEnterpriseOnlyPoliciesAllowed() {
-  if (Cu.isInAutomation || isXpcshell) {
-    if (Services.prefs.getBoolPref(PREF_DISALLOW_ENTERPRISE, false)) {
-      // This is used as an override to test the "enterprise_only"
-      // functionality itself on tests.
-      return false;
-    }
-    return true;
-  }
-
-  return (
-    AppConstants.IS_ESR ||
-    AppConstants.MOZ_DEV_EDITION ||
-    AppConstants.NIGHTLY_BUILD
-  );
-}
 
 /*
  * JSON PROVIDER OF POLICIES
@@ -535,8 +583,10 @@ class JSONPoliciesProvider {
     return this._failed;
   }
 
-  _getConfigurationFile() {
-    let configFile = null;
+  _getLocalConfigurationFile() {
+    if (shouldIgnoreLocalPolicies()) {
+      return null;
+    }
 
     if (AppConstants.platform == "linux" && AppConstants.MOZ_SYSTEM_POLICIES) {
       let systemConfigFile = Services.dirsvc.get("SysConfD", Ci.nsIFile);
@@ -548,6 +598,7 @@ class JSONPoliciesProvider {
     }
 
     try {
+      let configFile;
       let perUserPath = Services.prefs.getBoolPref(PREF_PER_USER_DIR, false);
       if (perUserPath) {
         configFile = Services.dirsvc.get("XREUserRunTimeDir", Ci.nsIFile);
@@ -555,10 +606,16 @@ class JSONPoliciesProvider {
         configFile = Services.dirsvc.get("XREAppDist", Ci.nsIFile);
       }
       configFile.append(POLICIES_FILENAME);
+      return configFile;
     } catch (ex) {
       // Getting the correct directory will fail in xpcshell tests. This should
       // be handled the same way as if the configFile simply does not exist.
+      return null;
     }
+  }
+
+  _getConfigurationFile() {
+    let configFile = this._getLocalConfigurationFile();
 
     let alternatePath = Services.prefs.getStringPref(PREF_ALTERNATE_PATH, "");
 
@@ -609,6 +666,7 @@ class JSONPoliciesProvider {
 
         if (!this._policies) {
           lazy.log.error("Policies file doesn't contain a 'policies' object");
+          this._policies = null;
           this._failed = true;
         }
       }
@@ -662,9 +720,12 @@ class WindowsGPOPoliciesProvider {
     try {
       let regLocation = "SOFTWARE\\Policies";
       if (Cu.isInAutomation || isXpcshell) {
-        try {
-          regLocation = Services.prefs.getStringPref(PREF_ALTERNATE_GPO);
-        } catch (e) {}
+        let altLocation = Services.prefs.getStringPref(PREF_ALTERNATE_GPO, "");
+        if (altLocation) {
+          regLocation = altLocation;
+        } else if (shouldIgnoreLocalPolicies()) {
+          return;
+        }
       }
       wrk.open(root, regLocation, wrk.ACCESS_READ);
       if (wrk.hasChild("Mozilla\\" + Services.appinfo.name)) {

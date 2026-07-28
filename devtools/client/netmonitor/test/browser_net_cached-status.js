@@ -8,8 +8,6 @@
  */
 
 add_task(async function () {
-  // Disable rcwn to make cache behavior deterministic.
-  await pushPref("network.http.rcwn.enabled", false);
   // performing http to https redirects, hence we do not
   // want https-first to interfere with that test
   await pushPref("dom.security.https_first", false);
@@ -45,7 +43,7 @@ add_task(async function () {
       details: {
         status: 301,
         statusText: "Moved Permanently",
-        type: "html",
+        type: "html (redirect)",
         fullMimeType: "text/html; charset=utf-8",
       },
     },
@@ -77,7 +75,7 @@ add_task(async function () {
         status: 301,
         statusText: "Moved Permanently (cached)",
         displayedStatus: "cached",
-        type: "html",
+        type: "html (redirect)",
         fullMimeType: "text/html; charset=utf-8",
       },
     },
@@ -116,6 +114,8 @@ add_task(async function () {
   info("Performing requests #2...");
   await performRequestsAndWait();
 
+  await waitForAllNetworkUpdateEvents();
+
   let index = 0;
   for (const request of REQUEST_DATA) {
     const requestItem = document.querySelectorAll(".request-list-item")[index];
@@ -123,7 +123,7 @@ add_task(async function () {
     const requestsListStatus = requestItem.querySelector(".status-code");
     EventUtils.sendMouseEvent({ type: "mouseover" }, requestsListStatus);
     await waitUntil(() => requestsListStatus.title);
-    await waitForDOMIfNeeded(requestItem, ".requests-list-timings-total");
+    await waitForDOM(requestItem, ".requests-list-timings-total");
 
     info("Verifying request #" + index);
     await verifyRequestItemTarget(

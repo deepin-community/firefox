@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,15 +5,16 @@
 /* implementation of quotes for the CSS 'content' property */
 
 #include "nsQuoteList.h"
-#include "nsReadableUtils.h"
-#include "nsIContent.h"
-#include "nsIFrame.h"
-#include "nsIFrameInlines.h"
-#include "nsContainerFrame.h"
+
 #include "mozilla/ContainStyleScopeManager.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/dom/Text.h"
 #include "mozilla/intl/Quotes.h"
+#include "nsContainerFrame.h"
+#include "nsIContent.h"
+#include "nsIFrame.h"
+#include "nsIFrameInlines.h"
+#include "nsReadableUtils.h"
 
 using namespace mozilla;
 
@@ -26,10 +25,11 @@ bool nsQuoteNode::InitTextFrame(nsGenConList* aList, nsIFrame* aPseudoFrame,
   nsQuoteList* quoteList = static_cast<nsQuoteList*>(aList);
   bool dirty = false;
   quoteList->Insert(this);
-  if (quoteList->IsLast(this))
+  if (quoteList->IsLast(this)) {
     quoteList->Calc(this);
-  else
+  } else {
     dirty = true;
+  }
 
   // Don't set up text for 'no-open-quote' and 'no-close-quote'.
   if (IsRealQuote()) {
@@ -125,8 +125,9 @@ void nsQuoteList::RecalcAll() {
     int32_t oldDepth = node->mDepthBefore;
     Calc(node);
 
-    if (node->mDepthBefore != oldDepth && node->mText && node->IsRealQuote())
+    if (node->mDepthBefore != oldDepth && node->mText && node->IsRealQuote()) {
       node->mText->SetData(node->Text(), IgnoreErrors());
+    }
   }
 }
 

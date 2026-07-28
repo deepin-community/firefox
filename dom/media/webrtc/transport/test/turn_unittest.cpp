@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -40,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdlib.h>
+
 #include <iostream>
 
 #include "runnable_utils.h"
@@ -51,7 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define USE_TURN
 
 // nICEr includes
-extern "C" {
+// clang-format off
 #include "nr_api.h"
 #include "transport_addr.h"
 #include "nr_crypto.h"
@@ -60,13 +59,13 @@ extern "C" {
 #include "nr_socket_buffered_stun.h"
 #include "stun_client_ctx.h"
 #include "turn_client_ctx.h"
-}
+// clang-format on
 
 #include "nricectx.h"
 
 using namespace mozilla;
 
-static std::string kDummyTurnServer("192.0.2.1");  // From RFC 5737
+MOZ_RUNINIT static std::string kDummyTurnServer("192.0.2.1");  // From RFC 5737
 
 class TurnClient : public MtransportTest {
  public:

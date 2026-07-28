@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -13,10 +11,12 @@
 #include "mozilla/RefPtr.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/StaticPtr.h"
+#include "mozilla/StaticString.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/EventQueue.h"
 #include "mozilla/UniquePtr.h"
 #include "nsISupportsImpl.h"
+#include "nsThreadUtils.h"  // for MOZ_COLLECTING_RUNNABLE_TELEMETRY
 
 #include <atomic>
 #include <vector>
@@ -94,7 +94,7 @@ class TaskManager {
   uint32_t PendingTaskCount() { return mTaskCount; }
 
  protected:
-  virtual ~TaskManager() {}
+  virtual ~TaskManager() = default;
 
  private:
   friend class TaskController;
@@ -201,7 +201,7 @@ class Task {
         mSeqNo(sCurrentTaskSeqNo++),
         mPriority(static_cast<uint32_t>(aPriority)) {}
 
-  virtual ~Task() {}
+  virtual ~Task() = default;
 
   friend class TaskController;
 
@@ -287,7 +287,7 @@ class IdleTaskManager : public TaskManager {
 // ReprioritizeTask.
 class TaskController {
  public:
-  TaskController();
+  explicit TaskController();
 
   static TaskController* Get() {
     MOZ_ASSERT(sSingleton.get());
@@ -317,6 +317,8 @@ class TaskController {
       PerformanceCounterState* aPerformanceCounterState);
 
   static void Shutdown();
+
+  static Task::TaskResult RunTask(Task*);
 
   // This adds a task to the TaskController graph.
   // This may be called on any thread.
@@ -354,6 +356,23 @@ class TaskController {
 
   static int32_t GetPoolThreadCount();
   static size_t GetThreadStackSize();
+
+#ifdef MOZ_MEMORY
+  // To be called once during startup.
+  static void SetupIdleMemoryCleanup();
+
+  // Used internally to update prefs (can't be private, though).
+  void UpdateIdleMemoryCleanupPrefs();
+
+  // If needed, schedule a round of idle processing for moz_jemalloc's
+  // idle purge.
+  void MayScheduleIdleMemoryCleanup();
+
+  // Request idle memory cleanup, e.g. after GC/CC completion.
+  // Unlike MayScheduleIdleMemoryCleanup, this does not check for pending
+  // tasks -- the caller knows cleanup is needed regardless.
+  void RequestIdleMemoryCleanup(StaticString aReason);
+#endif
 
  private:
   friend void ThreadFuncPoolThread(void* aIndex);
@@ -416,8 +435,9 @@ class TaskController {
   std::stack<RefPtr<Task>> mCurrentTasksMT;
 
   // A list of all tasks ordered by priority.
-  std::set<RefPtr<Task>, Task::PriorityCompare> mThreadableTasks;
-  std::set<RefPtr<Task>, Task::PriorityCompare> mMainThreadTasks;
+  using PrioritySortedTasks = std::set<RefPtr<Task>, Task::PriorityCompare>;
+  PrioritySortedTasks mThreadableTasks;
+  PrioritySortedTasks mMainThreadTasks;
 
   // TaskManagers currently active.
   // We can use a raw pointer since tasks always hold on to their TaskManager.
@@ -429,6 +449,11 @@ class TaskController {
   // This ensures we keep running the main thread if we processed a task there.
   bool mMayHaveMainThreadTask = true;
   bool mShuttingDown = false;
+
+#ifdef MOZ_MEMORY
+  // Flag if we should trigger deferred idle purging in mozjemalloc.
+  bool mIsLazyPurgeEnabled;
+#endif
 
   // This stores whether the last main thread task runnable did work.
   // Accessed only on MainThread

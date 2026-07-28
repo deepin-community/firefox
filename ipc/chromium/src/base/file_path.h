@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 // Copyright (c) 2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -70,7 +68,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 
 // Windows-style drive letter support and pathname separator characters can be
 // enabled and disabled independently, to aid testing.  These #defines are
@@ -113,18 +110,15 @@ class FilePath {
   // The character used to identify a file extension.
   static const CharType kExtensionSeparator;
 
-  FilePath() {}
-  FilePath(const FilePath& that) : path_(that.path_) {}
+  FilePath() = default;
+  FilePath(const FilePath& that) = default;
   explicit FilePath(const StringType& path) : path_(path) {}
 
 #if defined(XP_WIN)
   explicit FilePath(const wchar_t* path) : path_(path) {}
 #endif
 
-  FilePath& operator=(const FilePath& that) {
-    path_ = that.path_;
-    return *this;
-  }
+  FilePath& operator=(const FilePath& that) = default;
 
   bool operator==(const FilePath& that) const { return path_ == that.path_; }
 
@@ -189,8 +183,8 @@ class FilePath {
   // If this object's path is kCurrentDirectory, a new FilePath corresponding
   // only to |component| is returned.  |component| must be a relative path;
   // it is an error to pass an absolute path.
-  FilePath Append(const StringType& component) const WARN_UNUSED_RESULT;
-  FilePath Append(const FilePath& component) const WARN_UNUSED_RESULT;
+  [[nodiscard]] FilePath Append(const StringType& component) const;
+  [[nodiscard]] FilePath Append(const FilePath& component) const;
 
   // Although Windows StringType is std::wstring, since the encoding it uses for
   // paths is well defined, it can handle ASCII path components as well.
@@ -198,7 +192,7 @@ class FilePath {
   // On Linux, although it can use any 8-bit encoding for paths, we assume that
   // ASCII is a valid subset, regardless of the encoding, since many operating
   // system paths will always be ASCII.
-  FilePath AppendASCII(const std::string& component) const WARN_UNUSED_RESULT;
+  [[nodiscard]] FilePath AppendASCII(const std::string& component) const;
 
   // Returns true if this FilePath contains an absolute path.  On Windows, an
   // absolute path begins with either a drive letter specification followed by

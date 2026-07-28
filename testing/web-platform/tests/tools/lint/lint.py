@@ -13,7 +13,7 @@ from collections import defaultdict
 from typing import (Any, Callable, Dict, IO, Iterable, List, Optional, Sequence, Set, Text, Tuple,
                     Type, TypeVar)
 
-from urllib.parse import urlsplit, urljoin
+from urllib.parse import urlsplit, urljoin, parse_qs
 
 try:
     from xml.etree import cElementTree as ElementTree
@@ -33,7 +33,8 @@ from ..manifest.sourcefile import SourceFile, js_meta_re, python_meta_re, space_
 
 from ..metadata.yaml.load import load_data_to_dict
 from ..metadata.meta.schema import META_YML_FILENAME, MetaFile
-from ..metadata.webfeatures.schema import WEB_FEATURES_YML_FILENAME, WebFeaturesFile
+from ..metadata.webfeatures.schema import (WEB_FEATURES_YML_FILENAME, WebFeaturesFile,
+                                          FileMatchingMode)
 
 # The Ignorelist is a two level dictionary. The top level is indexed by
 # error names (e.g. 'TRAILING WHITESPACE'). Each of those then has a map of
@@ -356,7 +357,8 @@ regexps = [item() for item in  # type: ignore
             rules.AssertThrowsRegexp,
             rules.PromiseRejectsRegexp,
             rules.AssertPreconditionRegexp,
-            rules.HTMLInvalidSyntaxRegexp]]
+            rules.HTMLInvalidSyntaxRegexp,
+            rules.TestDriverInternalRegexp]]
 
 
 def check_regexp_line(repo_root: Text, path: Text, f: IO[bytes]) -> List[rules.Error]:
@@ -475,7 +477,7 @@ def check_parsed(repo_root: Text, path: Text, f: IO[bytes]) -> List[rules.Error]
 
     testdriver_vendor_nodes: List[ElementTree.Element] = []
     if source_file.testdriver_nodes:
-        if test_type != "testharness":
+        if test_type not in {"testharness", "reftest", "print-reftest", "crashtest", "support"}:
             errors.append(rules.TestdriverInUnsupportedType.error(path, (test_type,)))
 
         if len(source_file.testdriver_nodes) > 1:
@@ -523,20 +525,87 @@ def check_parsed(repo_root: Text, path: Text, f: IO[bytes]) -> List[rules.Error]
     for element in source_file.root.findall(".//{http://www.w3.org/1999/xhtml}script[@src]"):
         src = element.attrib["src"]
 
-        def incorrect_path(script: Text, src: Text) -> bool:
-            return (script == src or
-                ("/%s" % script in src and src != "/resources/%s" % script))
+        def is_path_correct(script: Text, src: Text) -> bool:
+            """
+            If the `src` relevant to the `script`, check that the `src` is the
+            correct path for `script`.
+            :param script: the script name to check the `src` for.
+            :param src: the included path.
+            :return: if the `src` irrelevant to the `script`, or if the `src`
+                     path is the correct path.
+            """
+            if script == src:
+                # The src does not provide the full path.
+                return False
 
-        if incorrect_path("testharness.js", src):
+            if "/%s" % script not in src:
+                # The src is not relevant to the script.
+                return True
+
+            return ("%s" % src).startswith("/resources/%s" % script)
+
+        def is_query_string_correct(script: Text, src: Text,
+                allowed_query_string_params: Dict[str, List[str]]) -> bool:
+            """
+            Checks if the query string in a script tag's `src` is valid.
+
+            Specifically, it verifies that the query string parameters and their
+            values are among those allowed for the given script. It handles vendor
+            prefixes (parameters or values containing a colon) by allowing them
+            unconditionally.
+
+            :param script: the name of the script (e.g., "testharness.js"). Used
+                           to verify is the given `src` is related to the
+                           script.
+            :param src: the full `src` attribute value from the script tag.
+            :param allowed_query_string_params: A dictionary where keys are
+                                                allowed parameter names and
+                                                values are lists of allowed
+                                                values for each parameter.
+            :return: if the query string is empty or contains only allowed
+                     params.
+            """
+            if not ("%s" % src).startswith("/resources/%s?" % script):
+                # The src is not related to the script.
+                return True
+
+            try:
+                query_string = urlsplit(urljoin(source_file.url, src)).query
+                query_string_params = parse_qs(query_string,
+                                               keep_blank_values=True)
+            except ValueError:
+                # Parsing error means that the query string is incorrect.
+                return False
+
+            for param_name in query_string_params:
+                if param_name not in allowed_query_string_params:
+                    return False
+
+                for param_value in query_string_params[param_name]:
+                    if ':' in param_value:
+                        # Allow for vendor-specific values in query parameters.
+                        continue
+                    if param_value not in allowed_query_string_params[
+                            param_name]:
+                        return False
+            return True
+
+        if (not is_path_correct("testharness.js", src) or
+                not is_query_string_correct("testharness.js", src, {})):
             errors.append(rules.TestharnessPath.error(path))
 
-        if incorrect_path("testharnessreport.js", src):
+        if (not is_path_correct("testharnessreport.js", src) or
+                not is_query_string_correct("testharnessreport.js", src, {})):
             errors.append(rules.TestharnessReportPath.error(path))
 
-        if incorrect_path("testdriver.js", src):
+        if not is_path_correct("testdriver.js", src):
             errors.append(rules.TestdriverPath.error(path))
+        if not is_query_string_correct("testdriver.js", src,
+                                       {'feature': ['bidi', 'extensions']}):
+            errors.append(rules.TestdriverUnsupportedQueryParameter.error(path))
 
-        if incorrect_path("testdriver-vendor.js", src):
+        if (not is_path_correct("testdriver-vendor.js", src) or
+                not is_query_string_correct("testdriver-vendor.js", src, {})):
             errors.append(rules.TestdriverVendorPath.error(path))
 
         script_path = None
@@ -687,22 +756,55 @@ def check_meta_file(repo_root: Text, path: Text, f: IO[bytes]) -> List[rules.Err
     return []
 
 
+def check_web_features_file_path(repo_root: Text, path: Text) -> List[rules.Error]:
+    basename = os.path.basename(path)
+    if basename == "WEB_FEATURES.yaml":
+        return [rules.InvalidWebFeaturesFile.error(path, ("Use 'WEB_FEATURES.yml' instead of 'WEB_FEATURES.yaml'",))]
+    if basename != WEB_FEATURES_YML_FILENAME:
+        return []
+    source_file = SourceFile(repo_root, path, "/")
+    if source_file.in_non_test_dir():
+        dir_path = os.path.dirname(path)
+        return [rules.WebFeaturesFileInNonTestDirectory.error(path, (dir_path,))]
+    return []
+
+
 def check_web_features_file(repo_root: Text, path: Text, f: IO[bytes]) -> List[rules.Error]:
     if os.path.basename(path) != WEB_FEATURES_YML_FILENAME:
         return []
     try:
         web_features_file: WebFeaturesFile = WebFeaturesFile(load_data_to_dict(f))
-    except Exception:
-        return [rules.InvalidWebFeaturesFile.error(path)]
+    except Exception as e:
+        return [rules.InvalidWebFeaturesFile.error(path, (str(e),))]
     errors = []
     base_dir = os.path.join(repo_root, os.path.dirname(path))
     files_in_directory = [
         f for f in os.listdir(base_dir) if os.path.isfile(os.path.join(base_dir, f))]
     for feature in web_features_file.features:
         if isinstance(feature.files, list):
+            # Resolve inclusion patterns to files, then subtract exclusions.
+            included: Set[str] = set()
+            dir_path = os.path.dirname(path)
             for file in feature.files:
-                if not file.match_files(files_in_directory):
-                    errors.append(rules.MissingTestInWebFeaturesFile.error(path, (file)))
+                matched = file.match_files(files_in_directory)
+                if file.matching_mode == FileMatchingMode.INCLUDE:
+                    if not matched:
+                        errors.append(rules.MissingTestInWebFeaturesFile.error(path, (file)))
+                    included.update(matched)
+                    # Only check explicitly named files (no wildcards).
+                    if "*" not in str(file):
+                        for filename in matched:
+                            rel_path = os.path.join(dir_path, filename)
+                            source_file = SourceFile(repo_root, rel_path, "/")
+                            if source_file.possible_types == {"support"}:
+                                errors.append(rules.NonTestFileInWebFeaturesFile.error(path, (
+                                    filename, feature.name)))
+                elif file.matching_mode == FileMatchingMode.EXCLUDE:
+                    excluded = set(matched) & included
+                    if not excluded:
+                        errors.append(rules.UnnecessaryExclusionInWebFeaturesFile.error(path, (
+                            f"'{file}' in feature '{feature.name}'",)))
+                    included -= excluded
 
     return errors
 
@@ -1026,7 +1128,8 @@ def lint(repo_root: Text,
 
 
 path_lints = [check_file_type, check_path_length, check_worker_collision, check_ahem_copy,
-              check_mojom_js, check_tentative_directories, check_gitignore_file]
+              check_mojom_js, check_tentative_directories, check_gitignore_file,
+              check_web_features_file_path]
 file_lints = [check_regexp_line, check_parsed, check_python_ast, check_script_metadata,
               check_ahem_system_font, check_meta_file, check_web_features_file]
 

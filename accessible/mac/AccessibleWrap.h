@@ -1,5 +1,4 @@
 /* clang-format off */
-/* -*- Mode: Objective-C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* clang-format on */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,8 +8,8 @@
  * see http://lxr.mozilla.org/seamonkey/source/accessible/accessible-docs.html
  */
 
-#ifndef _AccessibleWrap_H_
-#define _AccessibleWrap_H_
+#ifndef AccessibleWrap_H_
+#define AccessibleWrap_H_
 
 #include <objc/objc.h>
 
@@ -24,6 +23,7 @@
 
 #if defined(__OBJC__)
 @class mozAccessible;
+@class NSView;
 #endif
 
 namespace mozilla {
@@ -44,6 +44,15 @@ class AccessibleWrap : public LocalAccessible {
   virtual void GetNativeInterface(void** aOutAccessible) override;
 
   /**
+   * Get the NSView parallel to this accessible.
+   */
+#if defined(__OBJC__)
+  NSView* GetNativeWidget();
+#else
+  id GetNativeWidget();
+#endif
+
+  /**
    * The objective-c |Class| type that this accessible's native object
    * should be instantied with.   used on runtime to determine the
    * right type for this accessible's associated native object.
@@ -53,6 +62,8 @@ class AccessibleWrap : public LocalAccessible {
   virtual void Shutdown() override;
 
   virtual nsresult HandleAccEvent(AccEvent* aEvent) override;
+
+  static bool IsLiveRegion(nsIContent* aContent);
 
  protected:
   friend class xpcAccessibleMacInterface;

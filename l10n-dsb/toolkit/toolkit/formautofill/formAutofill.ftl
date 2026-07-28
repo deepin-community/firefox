@@ -15,9 +15,9 @@ autofill-use-payment-method-os-prompt-other = { -brand-short-name } wopytujo, sk
 autofill-edit-payment-method-os-prompt-macos = skłaźone informacije płaśeńskeje metody pokazaś
 autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } wopytujo, skłaźone informacije płaśeńskeje metody pokazaś. Wobkšuśćo pśistup k Windowsowemu kontoju dołojce.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } wopytujo, skłaźone informacije płaśeńskeje metody pokazaś.
-# The links lead users to Form Autofill browser preferences.
+# The link leads users to Form Autofill browser preferences.
 autofill-options-link = Nastajenja za awtomatiske wupołnjowanje formularow
-autofill-options-link-osx = Nastajenja za awtomatiske wupołnjowanje formularowy
+autofill-options-link-osx = Nastajenja za awtomatiske wupołnjowanje formularow
 
 ## The credit card capture doorhanger
 
@@ -81,3 +81,6 @@ autofill-category-name = mě
 autofill-category-organization = organizacija
 autofill-category-tel = telefon
 autofill-category-email = e-mail
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } jo njewěste sedło namakał. Awtomatiske wupołnjenje jo nachylu znjemóžnjone

@@ -1,5 +1,3 @@
-# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
-# vim: set filetype=python:
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -34,6 +32,7 @@ FINAL_TARGET_FILES.content += [
     "redirect.html",
     "server.js",
     "shutdown-leaks-collector.js",
+    "ShutdownLeakPathFinder.sys.mjs",
     "ShutdownLeaksCollector.sys.mjs",
 ]
 
@@ -80,7 +79,6 @@ FINAL_TARGET_FILES.content.tests.BrowserTestUtils += [
 
 MOCHITEST_MANIFESTS += [
     "baselinecoverage/plain/mochitest.toml",
-    "tests/MochiKit-1.4.2/tests/mochitest.toml",
 ]
 
 MOCHITEST_CHROME_MANIFESTS += [
@@ -118,6 +116,7 @@ TEST_HARNESS_FILES.testing.mochitest += [
     "runjunit.py",
     "runtests.py",
     "runtestsremote.py",
+    "runtestsremoteios.py",
     "server.js",
     "start_desktop.js",
 ]
@@ -132,6 +131,50 @@ TEST_HARNESS_FILES.testing.mochitest.Http2Server += [
     "Http2Server/http2_server.js",
     "Http2Server/mochitest-cert.key.pem",
     "Http2Server/mochitest-cert.pem",
+]
+
+TEST_HARNESS_FILES.testing.mochitest.xpcshell["moz-http2"] += [
+    "../xpcshell/moz-http2/http2-cert.key",
+    "../xpcshell/moz-http2/http2-cert.key.keyspec",
+    "../xpcshell/moz-http2/http2-cert.pem",
+    "../xpcshell/moz-http2/http2-cert.pem.certspec",
+    "../xpcshell/moz-http2/moz-http2-child.js",
+    "../xpcshell/moz-http2/moz-http2.js",
+    "../xpcshell/moz-http2/package-lock.json",
+    "../xpcshell/moz-http2/package.json",
+    "../xpcshell/moz-http2/proxy-cert.key",
+    "../xpcshell/moz-http2/proxy-cert.key.keyspec",
+    "../xpcshell/moz-http2/proxy-cert.pem",
+    "../xpcshell/moz-http2/proxy-cert.pem.certspec",
+    "../xpcshell/moz-http2/README.md",
+]
+
+TEST_HARNESS_FILES.testing.mochitest.xpcshell["node-http2"] += [
+    "../xpcshell/node-http2/package.json",
+    "../xpcshell/node-http2/README.md",
+]
+
+TEST_HARNESS_FILES.testing.mochitest.xpcshell["node-http2"].lib += [
+    "../xpcshell/node-http2/lib/http.js",
+    "../xpcshell/node-http2/lib/index.js",
+]
+
+TEST_HARNESS_FILES.testing.mochitest.xpcshell["node-http2"].lib.protocol += [
+    "../xpcshell/node-http2/lib/protocol/compressor.js",
+    "../xpcshell/node-http2/lib/protocol/connection.js",
+    "../xpcshell/node-http2/lib/protocol/endpoint.js",
+    "../xpcshell/node-http2/lib/protocol/flow.js",
+    "../xpcshell/node-http2/lib/protocol/framer.js",
+    "../xpcshell/node-http2/lib/protocol/index.js",
+    "../xpcshell/node-http2/lib/protocol/stream.js",
+]
+
+TEST_HARNESS_FILES.testing.mochitest.xpcshell.node_ip += [
+    "../xpcshell/node_ip/package.json",
+]
+
+TEST_HARNESS_FILES.testing.mochitest.xpcshell.node_ip.lib += [
+    "../xpcshell/node_ip/lib/ip.js",
 ]
 
 TEST_HARNESS_FILES.testing.mochitest.embed += [
@@ -169,53 +212,6 @@ TEST_HARNESS_FILES.testing.mochitest.dynamic += [
 
 TEST_HARNESS_FILES.testing.mochitest.static += [
     "static/harness.css",
-]
-
-TEST_HARNESS_FILES.testing.mochitest.MochiKit += [
-    "MochiKit/__package__.js",
-    "MochiKit/Async.js",
-    "MochiKit/Base.js",
-    "MochiKit/Color.js",
-    "MochiKit/Controls.js",
-    "MochiKit/DateTime.js",
-    "MochiKit/DOM.js",
-    "MochiKit/DragAndDrop.js",
-    "MochiKit/Format.js",
-    "MochiKit/Iter.js",
-    "MochiKit/Logging.js",
-    "MochiKit/LoggingPane.js",
-    "MochiKit/MochiKit.js",
-    "MochiKit/MockDOM.js",
-    "MochiKit/New.js",
-    "MochiKit/Signal.js",
-    "MochiKit/Sortable.js",
-    "MochiKit/Style.js",
-    "MochiKit/Test.js",
-    "MochiKit/Visual.js",
-]
-
-TEST_HARNESS_FILES.testing.mochitest.tests.testing.mochitest.tests[
-    "MochiKit-1.4.2"
-].MochiKit += [
-    "tests/MochiKit-1.4.2/MochiKit/Async.js",
-    "tests/MochiKit-1.4.2/MochiKit/Base.js",
-    "tests/MochiKit-1.4.2/MochiKit/Color.js",
-    "tests/MochiKit-1.4.2/MochiKit/DateTime.js",
-    "tests/MochiKit-1.4.2/MochiKit/DOM.js",
-    "tests/MochiKit-1.4.2/MochiKit/DragAndDrop.js",
-    "tests/MochiKit-1.4.2/MochiKit/Format.js",
-    "tests/MochiKit-1.4.2/MochiKit/Iter.js",
-    "tests/MochiKit-1.4.2/MochiKit/Logging.js",
-    "tests/MochiKit-1.4.2/MochiKit/LoggingPane.js",
-    "tests/MochiKit-1.4.2/MochiKit/MochiKit.js",
-    "tests/MochiKit-1.4.2/MochiKit/MockDOM.js",
-    "tests/MochiKit-1.4.2/MochiKit/Position.js",
-    "tests/MochiKit-1.4.2/MochiKit/Selector.js",
-    "tests/MochiKit-1.4.2/MochiKit/Signal.js",
-    "tests/MochiKit-1.4.2/MochiKit/Sortable.js",
-    "tests/MochiKit-1.4.2/MochiKit/Style.js",
-    "tests/MochiKit-1.4.2/MochiKit/Test.js",
-    "tests/MochiKit-1.4.2/MochiKit/Visual.js",
 ]
 
 TEST_HARNESS_FILES.testing.mochitest.iceserver += [
@@ -268,6 +264,11 @@ TEST_HARNESS_FILES.testing.mochitest.DoHServer.node_ip += [
 TEST_HARNESS_FILES.testing.mochitest.DoHServer.node_ip.lib += [
     "../xpcshell/node_ip/lib/ip.js",
 ]
+
+if CONFIG["MOZ_BUILD_APP"] != "mobile/android":
+    TEST_HARNESS_FILES.testing.mochitest += [
+        "extensions/**.xpi",
+    ]
 
 with Files("**"):
     BUG_COMPONENT = ("Testing", "Mochitest")

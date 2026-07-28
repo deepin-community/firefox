@@ -4,10 +4,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![allow(clippy::module_name_repetitions)] // This lint doesn't work here.
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
+pub mod bytes;
 mod codec;
-mod datagram;
+pub mod datagram;
 pub mod event;
 #[cfg(feature = "build-fuzzing-corpus")]
 mod fuzz;
@@ -18,70 +19,72 @@ pub mod log;
 pub mod qlog;
 pub mod tos;
 
-use std::fmt::Write;
+use std::fmt::Write as _;
 
 use enum_map::Enum;
+use strum::Display;
 
 #[cfg(feature = "build-fuzzing-corpus")]
 pub use self::fuzz::write_item_to_fuzzing_corpus;
 pub use self::{
-    codec::{Decoder, Encoder},
+    bytes::Bytes,
+    codec::{Buffer, Decoder, Encoder, MAX_VARINT},
     datagram::Datagram,
     header::Header,
     incrdecoder::{IncrementalDecoderBuffer, IncrementalDecoderIgnore, IncrementalDecoderUint},
-    tos::{IpTos, IpTosDscp, IpTosEcn},
+    tos::{Dscp, Ecn, Tos},
 };
 
 #[must_use]
-pub fn hex(buf: impl AsRef<[u8]>) -> String {
+pub fn hex<A: AsRef<[u8]>>(buf: A) -> String {
     let mut ret = String::with_capacity(buf.as_ref().len() * 2);
     for b in buf.as_ref() {
-        write!(&mut ret, "{b:02x}").unwrap();
+        write!(&mut ret, "{b:02x}").expect("write OK");
     }
     ret
 }
 
 #[must_use]
-pub fn hex_snip_middle(buf: impl AsRef<[u8]>) -> String {
+pub fn hex_snip_middle<A: AsRef<[u8]>>(buf: A) -> String {
     const SHOW_LEN: usize = 8;
     let buf = buf.as_ref();
     if buf.len() <= SHOW_LEN * 2 {
         hex_with_len(buf)
     } else {
         let mut ret = String::with_capacity(SHOW_LEN * 2 + 16);
-        write!(&mut ret, "[{}]: ", buf.len()).unwrap();
+        write!(&mut ret, "[{}]: ", buf.len()).expect("write OK");
         for b in &buf[..SHOW_LEN] {
-            write!(&mut ret, "{b:02x}").unwrap();
+            write!(&mut ret, "{b:02x}").expect("write OK");
         }
         ret.push_str("..");
         for b in &buf[buf.len() - SHOW_LEN..] {
-            write!(&mut ret, "{b:02x}").unwrap();
+            write!(&mut ret, "{b:02x}").expect("write OK");
         }
         ret
     }
 }
 
 #[must_use]
-pub fn hex_with_len(buf: impl AsRef<[u8]>) -> String {
+pub fn hex_with_len<A: AsRef<[u8]>>(buf: A) -> String {
     let buf = buf.as_ref();
     let mut ret = String::with_capacity(10 + buf.len() * 2);
-    write!(&mut ret, "[{}]: ", buf.len()).unwrap();
+    write!(&mut ret, "[{}]: ", buf.len()).expect("write OK");
     for b in buf {
-        write!(&mut ret, "{b:02x}").unwrap();
+        write!(&mut ret, "{b:02x}").expect("write OK");
     }
     ret
 }
 
 #[must_use]
 pub const fn const_max(a: usize, b: usize) -> usize {
-    [a, b][(a < b) as usize]
+    [a, b][(a <= b) as usize]
 }
 #[must_use]
 pub const fn const_min(a: usize, b: usize) -> usize {
-    [a, b][(a >= b) as usize]
+    [a, b][(a > b) as usize]
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Enum)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Enum, Display)]
 /// Client or Server.
 pub enum Role {
     Client,
@@ -98,14 +101,74 @@ impl Role {
     }
 }
 
-impl ::std::fmt::Display for Role {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MessageType {
     Request,
     Response,
+}
+
+/// Dispatch a method call on an enum to its variants' inner values.
+///
+/// The variant list is given once in a local wrapper; method bodies stay clean:
+///
+/// ```ignore
+/// // Once per enum, in the impl module:
+/// macro_rules! dispatch {
+///     ($self:ident . $method:ident $args:tt) => {
+///         neqo_common::dispatch!([Variant1, Variant2, Variant3] $self . $method $args)
+///     };
+/// }
+///
+/// impl SomeTrait for MyEnum {
+///     fn method(&self) -> T { dispatch!(self.method()) }
+/// }
+/// ```
+#[macro_export]
+macro_rules! dispatch {
+    ([$($variant:ident),+ $(,)?] $self:ident . $method:ident $args:tt) => {
+        match $self {
+            $( Self::$variant(v) => v.$method $args, )+
+        }
+    };
+}
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hex_output() {
+        assert_eq!(hex([]), "");
+        assert_eq!(hex([0xab, 0xcd]), "abcd");
+    }
+
+    #[test]
+    fn const_minmax() {
+        for (a, b, min, max) in [(2, 5, 2, 5), (5, 2, 2, 5), (3, 3, 3, 3)] {
+            assert_eq!(const_min(a, b), min);
+            assert_eq!(const_max(a, b), max);
+        }
+    }
+
+    #[test]
+    fn hex_snip_middle_boundary() {
+        // Exactly SHOW_LEN*2 = 16 bytes: should use full hex (no "..").
+        let short: Vec<u8> = (0..16).collect();
+        let s = hex_snip_middle(&short);
+        assert!(!s.contains(".."), "16 bytes should not be truncated");
+        assert!(s.ends_with("0e0f"));
+
+        // 17 bytes: one over the boundary, should be truncated.
+        let just_over: Vec<u8> = (0..17).collect();
+        assert!(hex_snip_middle(&just_over).contains(".."));
+
+        // 20 bytes: truncated, check first 8 and last 8 bytes are exact.
+        let long: Vec<u8> = (0..20).collect();
+        let s = hex_snip_middle(&long);
+        assert!(s.starts_with("[20]: 0001020304050607"));
+        assert!(s.contains(".."));
+        // Last 8 bytes (12..20 = 0x0c..0x13) must be exactly "0c0d0e0f10111213".
+        assert!(s.ends_with("0c0d0e0f10111213"));
+    }
 }

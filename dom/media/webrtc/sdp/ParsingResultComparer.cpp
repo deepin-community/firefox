@@ -1,20 +1,18 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "sdp/Sdp.h"
 #include "sdp/ParsingResultComparer.h"
-#include "sdp/SipccSdpParser.h"
-#include "sdp/RsdparsaSdpParser.h"
 
-#include <string>
-#include <ostream>
 #include <regex>
+#include <sstream>
+#include <string>
 
 #include "mozilla/Assertions.h"
 #include "mozilla/Logging.h"
+#include "sdp/RsdparsaSdpParser.h"
+#include "sdp/Sdp.h"
+#include "sdp/SipccSdpParser.h"
 
 using mozilla::LogLevel;
 static mozilla::LazyLogModule sSdpDiffLogger("sdpdiff_logger");
@@ -192,7 +190,7 @@ bool ParsingResultComparer::CompareMediaSections(
 
 bool ParsingResultComparer::CompareAttrLists(
     const SdpAttributeList& rustAttrlist, const SdpAttributeList& sipccAttrlist,
-    int level, const SdpComparisonResult expect) const {
+    const int level, const SdpComparisonResult expect) const {
   bool result = true;
 
   for (size_t i = AttributeType::kFirstAttribute;
@@ -265,7 +263,7 @@ std::vector<std::string> SplitLines(const std::string& sdp) {
 }
 
 std::string ParsingResultComparer::GetAttributeLines(
-    const std::string& attrType, int level) const {
+    const std::string& attrType, const int level) const {
   std::vector<std::string> lines = SplitLines(mOriginalSdp);
   std::string attrToFind = attrType + ":";
   std::string attrLines;

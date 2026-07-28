@@ -1,10 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsIDNService_h__
-#define nsIDNService_h__
+#ifndef nsIDNService_h_
+#define nsIDNService_h_
 
 #include "nsIIDNService.h"
 
@@ -12,6 +11,7 @@
 #include "mozilla/intl/UnicodeScriptCodes.h"
 #include "mozilla/net/IDNBlocklistUtils.h"
 #include "mozilla/Span.h"
+#include "nsTHashSet.h"
 
 class nsIPrefBranch;
 
@@ -34,6 +34,13 @@ class nsIDNService final : public nsIIDNService {
 
  protected:
   virtual ~nsIDNService();
+
+ private:
+  void InitCJKSlashConfusables();
+  void InitCJKIdeographs();
+  void InitDigitConfusables();
+  void InitCyrillicLatinConfusables();
+  void InitThaiLatinConfusables();
 
  public:
   /**
@@ -79,7 +86,17 @@ class nsIDNService final : public nsIIDNService {
   bool illegalScriptCombo(mozilla::intl::Script script,
                           mozilla::net::ScriptCombo& savedScript);
 
+  bool isCJKSlashConfusable(char32_t aChar);
+  bool isCJKIdeograph(char32_t aChar);
+
   nsTArray<mozilla::net::BlocklistRange> mIDNBlocklist;
+
+  // Confusables that we would like to check for IDN spoofing detection.
+  nsTHashSet<char32_t> mCJKSlashConfusables;
+  nsTHashSet<char32_t> mCJKIdeographs;
+  nsTHashSet<char32_t> mDigitConfusables;
+  nsTHashSet<char32_t> mCyrillicLatinConfusables;
+  nsTHashSet<char32_t> mThaiLatinConfusables;
 };
 
 extern "C" MOZ_EXPORT bool mozilla_net_is_label_safe(const char32_t* aLabel,
@@ -87,4 +104,4 @@ extern "C" MOZ_EXPORT bool mozilla_net_is_label_safe(const char32_t* aLabel,
                                                      const char32_t* aTld,
                                                      size_t aTldLen);
 
-#endif  // nsIDNService_h__
+#endif  // nsIDNService_h_

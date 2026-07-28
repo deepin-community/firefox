@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -14,7 +12,7 @@
 #include "mozilla/net/UrlClassifierCommon.h"
 #include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/AntitrackingMetrics.h"
 
 #include "nsIChannel.h"
 #include "nsIClassifiedChannel.h"
@@ -119,7 +117,8 @@ UrlClassifierFeatureEmailTrackingDataCollection::MaybeCreate(
     return nullptr;
   }
 
-  bool isThirdParty = AntiTrackingUtils::IsThirdPartyChannel(aChannel);
+  RefPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
+  bool isThirdParty = loadInfo->GetIsThirdPartyContextToTopWindow();
 
   // We don't need to collect data if the email tracker is loaded in first-party
   // context.
@@ -213,10 +212,13 @@ UrlClassifierFeatureEmailTrackingDataCollection::ProcessChannel(
 
   if (flags & nsIClassifiedChannel::ClassificationFlags::
                   CLASSIFIED_EMAILTRACKING_CONTENT) {
-    Telemetry::AccumulateCategorical(
-        isTopEmailWebApp
-            ? Telemetry::LABELS_EMAIL_TRACKER_COUNT::content_email_webapp
-            : Telemetry::LABELS_EMAIL_TRACKER_COUNT::content_normal);
+    glean::contentblocking::email_tracker_count
+        .EnumGet(isTopEmailWebApp
+                     ? glean::contentblocking::EmailTrackerCountLabel::
+                           eContentEmailWebapp
+                     : glean::contentblocking::EmailTrackerCountLabel::
+                           eContentNormal)
+        .Add();
 
     // Notify the load event to record the content blocking log.
     //
@@ -226,10 +228,13 @@ UrlClassifierFeatureEmailTrackingDataCollection::ProcessChannel(
         aChannel,
         nsIWebProgressListener::STATE_LOADED_EMAILTRACKING_LEVEL_2_CONTENT);
   } else {
-    Telemetry::AccumulateCategorical(
-        isTopEmailWebApp
-            ? Telemetry::LABELS_EMAIL_TRACKER_COUNT::base_email_webapp
-            : Telemetry::LABELS_EMAIL_TRACKER_COUNT::base_normal);
+    glean::contentblocking::email_tracker_count
+        .EnumGet(
+            isTopEmailWebApp
+                ? glean::contentblocking::EmailTrackerCountLabel::
+                      eBaseEmailWebapp
+                : glean::contentblocking::EmailTrackerCountLabel::eBaseNormal)
+        .Add();
     // Notify to record content blocking log. Note that we don't need to notify
     // if email tracking is enabled because the email tracking protection
     // feature will be responsible for notifying the blocking event.

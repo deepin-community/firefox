@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -48,14 +46,7 @@ bool ScaledFontFontconfig::UseSubpixelPosition() const {
 }
 
 SkTypeface* ScaledFontFontconfig::CreateSkTypeface() {
-  SkPixelGeometry geo = mInstanceData.mFlags & InstanceData::SUBPIXEL_BGR
-                            ? (mInstanceData.mFlags & InstanceData::LCD_VERTICAL
-                                   ? kBGR_V_SkPixelGeometry
-                                   : kBGR_H_SkPixelGeometry)
-                            : (mInstanceData.mFlags & InstanceData::LCD_VERTICAL
-                                   ? kRGB_V_SkPixelGeometry
-                                   : kRGB_H_SkPixelGeometry);
-  return SkCreateTypefaceFromCairoFTFont(mFace->GetFace(), mFace.get(), geo,
+  return SkCreateTypefaceFromCairoFTFont(mFace->GetFace(), mFace.get(),
                                          mInstanceData.mLcdFilter);
 }
 
@@ -470,6 +461,11 @@ bool ScaledFontFontconfig::GetWRFontInstanceOptions(
         break;
     }
   }
+
+  platformOptions.gamma =
+      int16_t(StaticPrefs::gfx_font_rendering_freetype_gamma());
+  platformOptions.enhanced_contrast =
+      int16_t(StaticPrefs::gfx_font_rendering_freetype_enhanced_contrast());
 
   *aOutOptions = Some(options);
   *aOutPlatformOptions = Some(platformOptions);

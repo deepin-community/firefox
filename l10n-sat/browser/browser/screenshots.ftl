@@ -49,12 +49,3 @@ screenshots-too-large-error-details = ᱱᱚᱠᱟ ᱡᱟᱭᱜᱟ ᱵᱟᱪᱷ�
 screenshots-component-retry-button =
     .title = ᱥᱠᱨᱤᱱᱥᱚᱴ ᱫᱩᱦᱲᱟᱹ ᱤᱫᱤ ᱵᱤᱲᱟᱹᱣ ᱢᱮ
     .aria-label = ᱥᱠᱨᱤᱱᱥᱚᱴ ᱫᱩᱦᱲᱟᱹ ᱤᱫᱤ ᱵᱤᱲᱟᱹᱣ ᱢᱮ
-screenshots-component-copy-button-label = ᱱᱚᱠᱚᱞ
-screenshots-component-download-button-label = ᱰᱟᱣᱱᱞᱚᱰ
-
-## The below strings are used to capture keydown events so the strings should
-## not be changed unless the keyboard layout in the locale requires it.
-
-
-##
-

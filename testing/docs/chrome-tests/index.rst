@@ -37,7 +37,7 @@ For example, to run all chrome tests under `toolkit/content`, run the following 
 
 ::
 
-   ./mach test toolkit/content/test/chrome/chrome.ini
+   ./mach test toolkit/content/test/chrome/chrome.toml
 
 To run a single test, just pass the path to the test into mach:
 
@@ -89,20 +89,19 @@ running with chrome privileges, i.e. code and UI are referenced by
 
 The comparison functions are identical to those supported by Mochitests,
 see how the comparison functions work
-in the Mochitest documentation for more details. The `EventUtils helper
-functions <https://searchfox.org/mozilla-central/source/testing/mochitest/tests/SimpleTest/EventUtils.js>`__
+in the Mochitest documentation for more details. The :searchfox:`EventUtils helper functions <testing/mochitest/tests/SimpleTest/EventUtils.js>`
 are available on the "EventUtils" object defined in the global scope.
 
 The test suite also supports asynchronous tests.
-To use these asynchronous tests, please use the `add_task() <https://searchfox.org/mozilla-central/source/testing/mochitest/tests/SimpleTest/SimpleTest.js#2025>`__ functionality.
+To use these asynchronous tests, please use the :searchfox:`add_task() <testing/mochitest/tests/SimpleTest/SimpleTest.js#2025>` functionality.
 
 Any exceptions thrown while running a test will be caught and reported
 in the test output as a failure. Exceptions thrown outside of the test's
 context (e.g. in a timeout, event handler, etc) will not be caught, but
 will result in a timed out test.
 
-The test file name must be prefixed with "test_", and must have a file
-extension of ".xhtml". Files that don't match this pattern will be ignored
+The test file name must be prefixed with ``test_``, and must have a file
+extension of ``.xhtml``. Files that don't match this pattern will be ignored
 by the test harness, but you still can include them. For example, a XUL
 window file opened by your test_demo.xhtml via openDialog should be named
 window_demo.xhtml. Putting the bug number in the file name is recommended

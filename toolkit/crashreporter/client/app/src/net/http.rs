@@ -8,9 +8,19 @@
 //! This is far from a general implementation, instead implementing the sort of requests that we
 //! need.
 
-use crate::std::{fs::File, path::Path, process::Child};
+use crate::config::installation_program_path;
+use crate::std::{
+    self, env,
+    fs::{File, OpenOptions},
+    io::{Read, Seek},
+    mem::ManuallyDrop,
+    path::{Path, PathBuf},
+    process::Child,
+    sync::atomic::{AtomicUsize, Ordering::Relaxed},
+};
 use anyhow::Context;
-use std::io::Read;
+use once_cell::sync::Lazy;
+use serde::Serialize;
 
 #[cfg(mock)]
 use crate::std::mock::{mock_key, MockKey};
@@ -31,18 +41,82 @@ impl MockHttp {
 }
 
 /// The user agent used by this application.
-pub const USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+pub fn user_agent() -> &'static str {
+    static USER_AGENT: Lazy<String> = Lazy::new(|| {
+        format!(
+            "{}/{} ({} {})",
+            env!("CARGO_PKG_NAME"),
+            mozbuild::config::MOZ_APP_VERSION,
+            std::env::consts::OS,
+            std::env::consts::ARCH,
+        )
+    });
+    &*USER_AGENT
+}
+
+pub(crate) struct BackgroundTaskAttempts {
+    remaining: AtomicUsize,
+}
+
+impl BackgroundTaskAttempts {
+    #[cfg_attr(all(mock, not(test)), allow(unused))]
+    pub const fn new(count: usize) -> Self {
+        BackgroundTaskAttempts {
+            remaining: AtomicUsize::new(count),
+        }
+    }
+
+    /// Returns whether the background task should be attempted again.
+    pub fn should_attempt(&self) -> bool {
+        self.remaining.load(Relaxed) != 0
+    }
+
+    /// Record a failed background task attempt.
+    pub fn failed(&self) {
+        self.remaining.fetch_sub(1, Relaxed);
+    }
+
+    /// Remove all background task attempts.
+    pub fn drain(&self) {
+        self.remaining.store(0, Relaxed);
+    }
+}
+
+std::mock::mocked_static! {
+    /// How many times the background task may fail before discontinuing use.
+    ///
+    /// The background task may repeatedly fail for many reasons, for example due to a crash or
+    /// misconfigured network settings.
+    static BACKGROUND_TASK_ATTEMPTS: BackgroundTaskAttempts = BackgroundTaskAttempts::new(2);
+
+    impl BACKGROUND_TASK_ATTEMPTS {
+        fn should_attempt(self) -> bool {
+            Self.try_get(|v| v.should_attempt()).unwrap_or(true)
+        }
+
+        fn failed(self) {
+            Self.try_get(|v| v.failed());
+        }
+
+        fn drain(self) {
+            Self.try_get(|v| v.drain());
+        }
+    }
+}
 
 // TODO set reasonable connect timeout and low speed limit?
 
+/*
+ * IMPORTANT! Keep the serialized JSON format for RequestBuilder compatible with
+ * toolkit/crashreporter/networking/BackgroundTask_crashNetwork.sys.mjs
+ */
+
 /// Types of requests that can be created.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "type")]
 pub enum RequestBuilder<'a> {
     /// Send a POST with multiple mime parts.
     MimePost { parts: Vec<MimePart<'a>> },
-    /// Gzip and POST a file's contents.
-    #[allow(unused)]
-    GzipAndPostFile { file: &'a Path },
     /// Send a POST.
     Post {
         body: &'a [u8],
@@ -51,16 +125,19 @@ pub enum RequestBuilder<'a> {
 }
 
 /// A single mime part to send.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct MimePart<'a> {
     pub name: &'a str,
     pub content: MimePartContent<'a>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub filename: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mime_type: Option<&'a str>,
 }
 
 /// The content of a mime part.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "type", content = "value")]
 pub enum MimePartContent<'a> {
     /// Send a file's contents.
     File(&'a Path),
@@ -69,7 +146,13 @@ pub enum MimePartContent<'a> {
 }
 
 /// A request that is ready to be sent.
-pub enum Request {
+pub enum Request<'a> {
+    BackgroundTaskChild {
+        child: Child,
+        file: TempRequestFile,
+        builder: RequestBuilder<'a>,
+        url: &'a str,
+    },
     CurlChild {
         child: Child,
         stdin: Option<Box<dyn Read + Send + 'static>>,
@@ -83,37 +166,67 @@ pub enum Request {
     },
 }
 
-/// Format a `time::Date` using the date format described by RFC 7231, section 7.1.1.2, for use in
-/// the HTTP Date header.
-fn format_rfc7231_datetime(datetime: time::OffsetDateTime) -> anyhow::Result<String> {
-    let format = time::macros::format_description!(
-        "[weekday repr:short], [day] [month repr:short] [year] [hour]:[minute]:[second] GMT"
-    );
-    datetime
-        .to_offset(time::UtcOffset::UTC)
-        .format(format)
-        .context("failed to format datetime")
-}
-
-fn now_date_header() -> Option<String> {
-    match format_rfc7231_datetime(time::OffsetDateTime::now_utc()) {
-        Err(e) => {
-            log::warn!("failed to format Date header, omitting: {e}");
-            None
-        }
-        Ok(s) => Some(format!("Date: {s}")),
-    }
-}
-
-impl RequestBuilder<'_> {
+impl<'a> RequestBuilder<'a> {
     /// Build the request with the given url.
-    pub fn build(&self, url: &str) -> std::io::Result<Request> {
+    pub fn build(&self, url: &'a str) -> std::io::Result<Request<'a>> {
+        log::debug!("starting request to {url}: {self:?}");
+
         // When mocking is enabled, check for that first.
         #[cfg(mock)]
         if let Some(r) = self.try_send_with_mock(url) {
             return r;
         }
 
+        // First we try to invoke a firefox background task to send the request. This is
+        // preferrable because it will respect the user's network settings, however it is less
+        // reliable if the cause of our crash is a bug in early firefox startup or network code.
+        if BACKGROUND_TASK_ATTEMPTS.should_attempt() {
+            match self.send_with_background_task(url) {
+                Ok(r) => return Ok(r),
+                Err(e) => {
+                    log::info!(
+                        "failed to invoke background task ({e}), falling back to curl backend"
+                    );
+                    // A failure to spawn the background task more than likely indicates it will
+                    // never work in the future.
+                    BACKGROUND_TASK_ATTEMPTS.drain();
+                }
+            };
+        }
+
+        self.send_with_curl(url)
+    }
+
+    /// Send the request with the firefox `crashreporterNetworkBackend` background task.
+    fn send_with_background_task(&self, url: &'a str) -> std::io::Result<Request<'a>> {
+        let path = installation_program_path(mozbuild::config::MOZ_APP_NAME);
+        let mut cmd = crate::process::background_command(path);
+        cmd.args(["--backgroundtask", "crashreporterNetworkBackend"]);
+        cmd.arg(url);
+        cmd.arg(user_agent());
+        // Disable crash reporting in the background task. We don't want a crash in the background
+        // task to launch another crash reporter flow. See bugs 1991491/1987145.
+        cmd.env("MOZ_CRASHREPORTER_DISABLE", "1")
+            .env_remove("MOZ_CRASHREPORTER");
+
+        let mut file = TempRequestFile::new()?;
+        serde_json::to_writer(&mut *file, self)?;
+        cmd.arg(&file.path);
+
+        cmd.stdin(std::process::Stdio::null());
+        cmd.stdout(std::process::Stdio::piped());
+        cmd.stderr(std::process::Stdio::piped());
+
+        cmd.spawn().map(move |child| Request::BackgroundTaskChild {
+            child,
+            file,
+            builder: self.clone(),
+            url,
+        })
+    }
+
+    /// Send the request with the curl backend.
+    pub fn send_with_curl(&self, url: &str) -> std::io::Result<Request<'static>> {
         // Windows 10+ and macOS 10.15+ contain `curl` 7.64.1+ as a system-provided executable, so
         // `send_with_curl_executable` should not fail.
         //
@@ -145,26 +258,18 @@ impl RequestBuilder<'_> {
     }
 
     /// Send the request with the `curl` executable.
-    fn send_with_curl_executable(&self, url: &str) -> std::io::Result<Request> {
+    fn send_with_curl_executable(&self, url: &str) -> std::io::Result<Request<'static>> {
         let mut cmd = crate::process::background_command("curl");
         let mut stdin: Option<Box<dyn Read + Send + 'static>> = None;
 
-        cmd.args(["--user-agent", USER_AGENT]);
+        cmd.arg("--fail");
+        cmd.args(["--user-agent", user_agent()]);
 
         match self {
             Self::MimePost { parts } => {
                 for part in parts {
                     part.curl_command_args(&mut cmd, &mut stdin)?;
                 }
-            }
-            Self::GzipAndPostFile { file } => {
-                cmd.args(["--header", "Content-Encoding: gzip", "--data-binary", "@-"]);
-                if let Some(header) = now_date_header() {
-                    cmd.args(["--header", &header]);
-                }
-
-                let encoder = flate2::read::GzEncoder::new(File::open(file)?, Default::default());
-                stdin = Some(Box::new(encoder));
             }
             Self::Post { body, headers } => {
                 for (k, v) in headers.iter() {
@@ -187,12 +292,12 @@ impl RequestBuilder<'_> {
     }
 
     /// Send the request with the `curl` library.
-    fn send_with_libcurl(&self, url: &str) -> std::io::Result<Request> {
+    fn send_with_libcurl(&self, url: &str) -> std::io::Result<Request<'static>> {
         let curl = super::libcurl::load()?;
         let mut easy = curl.easy()?;
 
         easy.set_url(url)?;
-        easy.set_user_agent(USER_AGENT)?;
+        easy.set_user_agent(user_agent())?;
         easy.set_max_redirs(30)?;
 
         match self {
@@ -204,20 +309,6 @@ impl RequestBuilder<'_> {
                 }
 
                 easy.set_mime_post(mime)?;
-            }
-            Self::GzipAndPostFile { file } => {
-                let mut headers = easy.slist();
-                headers.append("Content-Encoding: gzip")?;
-                if let Some(header) = now_date_header() {
-                    headers.append(&header)?;
-                }
-                easy.set_headers(headers)?;
-
-                let mut encoder =
-                    flate2::read::GzEncoder::new(File::open(file)?, Default::default());
-                let mut data = Vec::new();
-                encoder.read_to_end(&mut data)?;
-                easy.set_postfields(data)?;
             }
             Self::Post { body, headers } => {
                 let mut header_list = easy.slist();
@@ -234,7 +325,7 @@ impl RequestBuilder<'_> {
     }
 
     #[cfg(mock)]
-    fn try_send_with_mock(&self, url: &str) -> Option<std::io::Result<Request>> {
+    fn try_send_with_mock(&self, url: &str) -> Option<std::io::Result<Request<'static>>> {
         let result = MockHttp.try_get(|f| f(self, url))?;
         if result
             .as_ref()
@@ -246,6 +337,60 @@ impl RequestBuilder<'_> {
         } else {
             Some(result.map(|response| Request::Mock { response }))
         }
+    }
+}
+
+pub struct TempRequestFile {
+    path: PathBuf,
+    file: ManuallyDrop<File>,
+}
+
+static REQUEST_NUM: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+impl TempRequestFile {
+    fn new() -> std::io::Result<Self> {
+        // Incorporate process id and a process-unique id to avoid runtime conflicts.
+        let path = std::env::temp_dir().join(format!(
+            "{}{}-request{}.json",
+            env!("CARGO_PKG_NAME"),
+            std::process::id(),
+            REQUEST_NUM.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
+        if let Some(p) = path.parent() {
+            std::fs::create_dir_all(p)?;
+        }
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(&path)?;
+        Ok(TempRequestFile {
+            path,
+            file: ManuallyDrop::new(file),
+        })
+    }
+}
+
+impl std::ops::Deref for TempRequestFile {
+    type Target = File;
+    fn deref(&self) -> &Self::Target {
+        &self.file
+    }
+}
+
+impl std::ops::DerefMut for TempRequestFile {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.file
+    }
+}
+
+impl Drop for TempRequestFile {
+    fn drop(&mut self) {
+        // # Safety
+        // We do not use self.file after this
+        unsafe { ManuallyDrop::drop(&mut self.file) };
+        let _ = std::fs::remove_file(&self.path);
     }
 }
 
@@ -311,10 +456,51 @@ impl MimePart<'_> {
     }
 }
 
-impl Request {
+impl Request<'_> {
     /// Send the request, returning the response body (if any).
     pub fn send(self) -> anyhow::Result<Vec<u8>> {
         Ok(match self {
+            Self::BackgroundTaskChild {
+                child,
+                mut file,
+                builder,
+                url,
+            } => {
+                (move || {
+                    let output = child
+                        .wait_with_output()
+                        .context("failed to wait on background task process")?;
+
+                    if !output.status.success() {
+                        BACKGROUND_TASK_ATTEMPTS.failed();
+                        if !BACKGROUND_TASK_ATTEMPTS.should_attempt() {
+                            log::info!("the background task process has exceeded the acceptable number of failures and will no longer be used");
+                        }
+
+                        anyhow::bail!(
+                            "process failed (exit status {}) with stderr: {}",
+                            output.status,
+                            String::from_utf8_lossy(&output.stderr)
+                        );
+                    }
+
+                    file.rewind().context("failed to rewind response file")?;
+                    let mut ret = Vec::new();
+                    file.read_to_end(&mut ret)
+                        .context("failed to read response file")?;
+                    Ok(ret)
+                })()
+                .or_else(|e| {
+                    // If any error occurs, we try again with the curl backend. In theory we
+                    // could do this specifically if the process returns a failure exit code,
+                    // however since we want to give the best effort in sending the request, we
+                    // do it for any failure.
+                    log::error!("background task error: {e:#}");
+                    log::info!("falling back to curl backend");
+
+                    builder.send_with_curl(url).context("curl error")?.send()
+                })?
+            }
             Self::CurlChild { mut child, stdin } => {
                 if let Some(mut stdin) = stdin {
                     let mut child_stdin = child

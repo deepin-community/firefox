@@ -11,6 +11,8 @@ const BROWSERTOOLBOX_SCOPE_PREF = "devtools.browsertoolbox.scope";
 const BROWSERTOOLBOX_SCOPE_EVERYTHING = "everything";
 const BROWSERTOOLBOX_SCOPE_PARENTPROCESS = "parent-process";
 
+const SHOW_CONTENT_SCRIPTS_PREF = "devtools.debugger.show-content-scripts";
+
 // eslint-disable-next-line mozilla/reject-some-requires
 const createStore = require("resource://devtools/client/shared/redux/create-store.js");
 const reducer = require("resource://devtools/shared/commands/target/reducers/targets.js");
@@ -43,7 +45,7 @@ class TargetCommand extends EventEmitter {
    *        The context to inspector identified by this descriptor.
    * @param {WatcherFront} watcherFront
    *        If available, a reference to the related Watcher Front.
-   * @param {Object} commands
+   * @param {object} commands
    *        The commands object with all interfaces defined from devtools/shared/commands/
    */
   constructor({ descriptorFront, watcherFront, commands }) {
@@ -60,10 +62,16 @@ class TargetCommand extends EventEmitter {
 
     this._updateBrowserToolboxScope =
       this._updateBrowserToolboxScope.bind(this);
+    this._updateContentScriptListening =
+      this._updateContentScriptListening.bind(this);
 
     Services.prefs.addObserver(
       BROWSERTOOLBOX_SCOPE_PREF,
       this._updateBrowserToolboxScope
+    );
+    Services.prefs.addObserver(
+      SHOW_CONTENT_SCRIPTS_PREF,
+      this._updateContentScriptListening
     );
     // Until Watcher actor notify about new top level target when navigating to another process
     // we have to manually switch to a new target from the client side
@@ -115,6 +123,7 @@ class TargetCommand extends EventEmitter {
       this.rootFront.traits.workerConsoleApiMessagesDispatchedToMainThread ===
       false;
     this.listenForServiceWorkers = false;
+    this.listenForContentScripts = false;
 
     // Tells us if we received the first top level target.
     // If target switching is done on:
@@ -162,9 +171,30 @@ class TargetCommand extends EventEmitter {
     }
   }
 
+  /**
+   * Toggle listening to CONTENT_SCRIPT target type based on SHOW_CONTENT_SCRIPTS_PREF pref changes.
+   */
+  _updateContentScriptListening() {
+    const showContentScripts = Services.prefs.getBoolPref(
+      SHOW_CONTENT_SCRIPTS_PREF,
+      false
+    );
+    if (showContentScripts) {
+      // `_computeTargetTypes`, which is used by `startListening` to compute the types to listen to,
+      // will read the pref and force listening to CONTENT_SCRIPT type
+      this.startListening();
+    } else {
+      this.stopListeningForType(TargetCommand.TYPES.CONTENT_SCRIPT, {
+        isTargetSwitching: false,
+        isModeSwitching: false,
+      });
+    }
+  }
+
   // Called whenever a new Target front is available.
   // Either because a target was already available as we started calling startListening
   // or if it has just been created
+  // eslint-disable-next-line complexity
   async _onTargetAvailable(targetFront) {
     // We put the `commands` on the targetFront so it can be retrieved from any front easily.
     // Without this, protocol.js fronts won't have any easy access to it.
@@ -196,9 +226,7 @@ class TargetCommand extends EventEmitter {
       return;
     }
 
-    // Handle top level target switching
-    // Note that, for now, `_onTargetAvailable` isn't called for the *initial* top level target.
-    // i.e. the one that is passed to TargetCommand constructor.
+    // Handle top level target switching (when debugging a tab, navigation of the tab to a new document)
     if (targetFront.isTopLevel) {
       // First report that all existing targets are destroyed
       if (!isFirstTarget) {
@@ -208,17 +236,18 @@ class TargetCommand extends EventEmitter {
       // Update the reference to the memoized top level target
       this.targetFront = targetFront;
       this.descriptorFront.setTarget(targetFront);
-      this.#selectedTargetFront = null;
+
+      // When reloading a Web Extension, the fallback document, which is the top level may be notified *after* the background page.
+      // So avoid resetting it being selected on late arrival of the fallback document.
+      if (!this.descriptorFront.isWebExtensionDescriptor) {
+        this.#selectedTargetFront = null;
+      }
 
       if (isFirstTarget && this.isServerTargetSwitchingEnabled()) {
         this._gotFirstTopLevelTarget = true;
         this._resolveOnFirstTarget();
       }
     }
-
-    // Map the descriptor typeName to a target type.
-    const targetType = this.getTargetType(targetFront);
-    targetFront.setTargetType(targetType);
 
     this._targets.add(targetFront);
     try {
@@ -240,7 +269,7 @@ class TargetCommand extends EventEmitter {
     this.store.dispatch(registerTarget(targetFront));
 
     // Then, once the target is attached, notify the target front creation listeners
-    await this._createListeners.emitAsync(targetType, {
+    await this._createListeners.emitAsync(targetFront.targetType, {
       targetFront,
       isTargetSwitching,
     });
@@ -257,6 +286,19 @@ class TargetCommand extends EventEmitter {
 
     if (isTargetSwitching) {
       this.emit("switched-target", targetFront);
+    }
+
+    const autoSelectTarget =
+      // When we navigate to a new top level document, automatically select that new document's target,
+      // so that tools can start selecting and displaying this new document.
+      isTargetSwitching ||
+      // When debugging Web Extension, workaround the fallback document by automatically selected any incoming target
+      // as soon as we are currently selecting that fallback document.
+      (this.descriptorFront.isWebExtensionDescriptor &&
+        this.#selectedTargetFront?.isFallbackExtensionDocument);
+
+    if (autoSelectTarget) {
+      await this.selectTarget(targetFront);
     }
   }
 
@@ -311,16 +353,16 @@ class TargetCommand extends EventEmitter {
    *
    * @param {TargetFront} targetFront
    *        The target that just got destroyed.
-   * @param {Object} options
-   * @param {Boolean} [options.isTargetSwitching]
+   * @param {object} options
+   * @param {boolean} [options.isTargetSwitching]
    *        To be set to true when this is about the top level target which is being replaced
    *        by a new one.
    *        The passed target should be still the one store in TargetCommand.targetFront
    *        and will be replaced via a call to onTargetAvailable with a new target front.
-   * @param {Boolean} [options.isModeSwitching]
+   * @param {boolean} [options.isModeSwitching]
    *        To be set to true when the target was destroyed was called as the result of a
    *        change to the devtools.browsertoolbox.scope pref.
-   * @param {Boolean} [options.shouldDestroyTargetFront]
+   * @param {boolean} [options.shouldDestroyTargetFront]
    *        By default, the passed target front will be destroyed. But in some cases like
    *        legacy listeners for service workers we want to keep the front alive.
    */
@@ -355,7 +397,20 @@ class TargetCommand extends EventEmitter {
         this.#selectedTargetFront = null;
       } else {
         // Otherwise we want to select the top level target
-        this.selectTarget(this.targetFront);
+        let fallbackTarget = this.targetFront;
+
+        // When debugging Web Extension we don't want to immediately fallback to the top level target, which is the fallback document.
+        // Instead, try to lookup for the background page.
+        if (this.descriptorFront.isWebExtensionDescriptor) {
+          const backgroundPageTargetFront = [...this._targets].find(
+            target => !target.isFallbackExtensionDocument
+          );
+          if (backgroundPageTargetFront) {
+            fallbackTarget = backgroundPageTargetFront;
+          }
+        }
+
+        this.selectTarget(fallbackTarget);
       }
     }
 
@@ -387,8 +442,7 @@ class TargetCommand extends EventEmitter {
     }
 
     this.#selectedTargetFront = targetFront;
-    const targetType = this.getTargetType(targetFront);
-    await this._selectListeners.emitAsync(targetType, {
+    await this._selectListeners.emitAsync(targetFront.targetType, {
       targetFront,
     });
   }
@@ -416,9 +470,9 @@ class TargetCommand extends EventEmitter {
    *   - a target type is supported
    *   - or that a custom trait is true
    *
-   * @param {String} [targetTypeOrTrait]
+   * @param {string} [targetTypeOrTrait]
    *        Optional target type or trait.
-   * @return {Boolean} true if the watcher is available and supports the
+   * @return {boolean} true if the watcher is available and supports the
    *          optional targetTypeOrTrait
    */
   hasTargetWatcherSupport(targetTypeOrTrait) {
@@ -517,7 +571,6 @@ class TargetCommand extends EventEmitter {
     // Note that this is a public attribute, used outside of this class
     // and helps knowing what is the current top level target we debug.
     this.targetFront = await this.descriptorFront.getTarget();
-    this.targetFront.setTargetType(this.getTargetType(this.targetFront));
     this.targetFront.setIsTopLevel(true);
     this._gotFirstTopLevelTarget = true;
 
@@ -539,23 +592,54 @@ class TargetCommand extends EventEmitter {
       this.hasTargetWatcherSupport(TargetCommand.TYPES.FRAME)
     ) {
       types = [TargetCommand.TYPES.FRAME];
+      const showContentScripts = Services.prefs.getBoolPref(
+        SHOW_CONTENT_SCRIPTS_PREF,
+        false
+      );
+      if (
+        showContentScripts &&
+        this.hasTargetWatcherSupport(TargetCommand.TYPES.CONTENT_SCRIPT)
+      ) {
+        types.push(TargetCommand.TYPES.CONTENT_SCRIPT);
+      }
+    } else if (
+      this.descriptorFront.isWebExtensionDescriptor &&
+      this.descriptorFront.isServerTargetSwitchingEnabled()
+    ) {
+      types = [TargetCommand.TYPES.FRAME];
     } else if (this.descriptorFront.isBrowserProcessDescriptor) {
       const browserToolboxScope = Services.prefs.getCharPref(
         BROWSERTOOLBOX_SCOPE_PREF
       );
       if (browserToolboxScope == BROWSERTOOLBOX_SCOPE_EVERYTHING) {
-        types = TargetCommand.ALL_TYPES;
+        // Listen for all target types when the browser toolbox is in multiprocess mode.
+        //
+        // Except for CONTENT_SCRIPT targets, as their scripts are already debuggable
+        // via the content process targets.
+        if (!this.listenForContentScripts) {
+          types = TargetCommand.ALL_TYPES.filter(
+            t => t != TargetCommand.TYPES.CONTENT_SCRIPT
+          );
+        } else {
+          types = TargetCommand.ALL_TYPES;
+        }
       }
     }
     if (this.listenForWorkers && !types.includes(TargetCommand.TYPES.WORKER)) {
       types.push(TargetCommand.TYPES.WORKER);
     }
+
+    // Bug 1607778 - For now, shared workers are only displayed in the Browser Toolbox.
+    // The server doesn't expose them yet. See `getWatcherSupportedTargets()` and
+    // `WorkerTargetWatcherClass.shouldHandleWorker`.
     if (
       this.listenForWorkers &&
+      this.descriptorFront.isBrowserProcessDescriptor &&
       !types.includes(TargetCommand.TYPES.SHARED_WORKER)
     ) {
       types.push(TargetCommand.TYPES.SHARED_WORKER);
     }
+
     if (
       this.listenForServiceWorkers &&
       !types.includes(TargetCommand.TYPES.SERVICE_WORKER)
@@ -634,34 +718,6 @@ class TargetCommand extends EventEmitter {
     }
   }
 
-  getTargetType(target) {
-    const { typeName } = target;
-    if (typeName == "windowGlobalTarget") {
-      return TargetCommand.TYPES.FRAME;
-    }
-
-    if (
-      typeName == "contentProcessTarget" ||
-      typeName == "parentProcessTarget"
-    ) {
-      return TargetCommand.TYPES.PROCESS;
-    }
-
-    if (typeName == "workerDescriptor" || typeName == "workerTarget") {
-      if (target.isSharedWorker) {
-        return TargetCommand.TYPES.SHARED_WORKER;
-      }
-
-      if (target.isServiceWorker) {
-        return TargetCommand.TYPES.SERVICE_WORKER;
-      }
-
-      return TargetCommand.TYPES.WORKER;
-    }
-
-    throw new Error("Unsupported target typeName: " + typeName);
-  }
-
   _matchTargetType(type, target) {
     return type === target.targetType;
   }
@@ -697,8 +753,8 @@ class TargetCommand extends EventEmitter {
   /**
    * Listen for the creation and/or destruction of target fronts matching one of the provided types.
    *
-   * @param {Object} options
-   * @param {Array<String>} options.types
+   * @param {object} options
+   * @param {Array<string>} options.types
    *        The type of target to listen for. Constant of TargetCommand.TYPES.
    * @param {Function} options.onAvailable
    *        Mandatory callback fired when a target has been just created or was already available.
@@ -710,7 +766,9 @@ class TargetCommand extends EventEmitter {
    *        Optional callback fired in case of target front destruction.
    *        The function is called with the same arguments than onAvailable.
    * @param {Function} options.onSelected
-   *        Optional callback fired when a given target is selected from the iframe picker
+   *        Optional callback fired for any new top level target (on startup and navigations),
+   *        as well as when the user select a new target from the console context selector,
+   *        debugger threads list and toolbox iframe dropdown.
    *        The function is called with a single object argument containing the following properties:
    *        - {TargetFront} targetFront: The target Front
    */
@@ -809,6 +867,22 @@ class TargetCommand extends EventEmitter {
 
     await Promise.all(promises);
     this._pendingWatchTargetInitialization.delete(onAvailable);
+
+    try {
+      if (
+        onSelected &&
+        this.selectedTargetFront &&
+        types.includes(this.selectedTargetFront.targetType)
+      ) {
+        await onSelected({
+          targetFront: this.selectedTargetFront,
+        });
+      }
+    } catch (e) {
+      // Prevent throwing when onSelected handler throws on one target
+      // (this may make test to fail when closing the toolbox quickly after opening)
+      console.error("Exception when calling onSelected handler", e.message, e);
+    }
   }
 
   /**
@@ -861,7 +935,7 @@ class TargetCommand extends EventEmitter {
   /**
    * Retrieve all the current target fronts of a given type.
    *
-   * @param {Array<String>} types
+   * @param {Array<string>} types
    *        The types of target to retrieve. Array of TargetCommand.TYPES
    * @return {Array<TargetFront>} Array of target fronts matching any of the
    *         provided types.
@@ -882,7 +956,7 @@ class TargetCommand extends EventEmitter {
    * Retrieve all the target fronts in the selected target tree (including the selected
    * target itself).
    *
-   * @param {Array<String>} types
+   * @param {Array<string>} types
    *        The types of target to retrieve. Array of TargetCommand.TYPES
    * @return {Promise<Array<TargetFront>>} Promise that resolves to an array of target fronts.
    */
@@ -908,12 +982,12 @@ class TargetCommand extends EventEmitter {
   /**
    * For all the target fronts of given types, retrieve all the target-scoped fronts of the given types.
    *
-   * @param {Array<String>} targetTypes
+   * @param {Array<string>} targetTypes
    *        The types of target to iterate over. Constant of TargetCommand.TYPES.
-   * @param {String} frontType
+   * @param {string} frontType
    *        The type of target-scoped front to retrieve. It can be "inspector", "console", "thread",...
-   * @param {Object} options
-   * @param {Boolean} options.onlyInSelectedTargetTree
+   * @param {object} options
+   * @param {boolean} options.onlyInSelectedTargetTree
    *        Set to true to only get the fronts for targets who are in the "targets tree"
    *        of the selected target.
    */
@@ -988,7 +1062,7 @@ class TargetCommand extends EventEmitter {
    * Reload the current top level target.
    * This only works for targets inheriting from WindowGlobalTarget.
    *
-   * @param {Boolean} bypassCache
+   * @param {boolean} bypassCache
    *        If true, the reload will be forced to bypass any cache.
    */
   async reloadTopLevelTarget(bypassCache = false) {
@@ -1017,6 +1091,39 @@ class TargetCommand extends EventEmitter {
   }
 
   /**
+   * Navigate the top level document to a new URL.
+   *
+   * @param {string} url
+   * @param {boolean} waitForLoad
+   *        Default to true and wait for the document to be fully loaded before resolving.
+   * @return Promise
+   *        Promise resolved once the navigation has been proceeded by the remote runtime,
+   *        and if waitForLoad is true, resolved only once the target url is fully loaded.
+   */
+  navigateTo(url, waitForLoad = true) {
+    if (!this.descriptorFront.traits.supportsNavigation) {
+      throw new Error("Descriptor doesn't support navigation");
+    }
+
+    return this.descriptorFront.navigateTo(url, waitForLoad);
+  }
+
+  goBack() {
+    if (!this.descriptorFront.traits.supportsNavigation) {
+      throw new Error("Descriptor doesn't support navigation");
+    }
+
+    return this.descriptorFront.goBack();
+  }
+
+  goForward() {
+    if (!this.descriptorFront.traits.supportsNavigation) {
+      throw new Error("Descriptor doesn't support navigation");
+    }
+    return this.descriptorFront.goForward();
+  }
+
+  /**
    * Called when the top level target is replaced by a new one.
    * Typically when we navigate to another domain which requires to be loaded in a distinct process.
    *
@@ -1035,14 +1142,18 @@ class TargetCommand extends EventEmitter {
    * @param {WindowGlobalTargetFront} targetFront
    *        The target front we want the toolbox to focus on.
    */
-  selectTarget(targetFront) {
-    return this._onTargetSelected(targetFront);
+  async selectTarget(targetFront) {
+    // Ignore any target which we may try to select, but is already being destroyed
+    if (targetFront.isDestroyedOrBeingDestroyed()) {
+      return;
+    }
+    await this._onTargetSelected(targetFront);
   }
 
   /**
    * Returns true if the top-level frame is the selected one
    *
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   isTopLevelTargetSelected() {
     return this.selectedTargetFront === this.targetFront;
@@ -1051,7 +1162,7 @@ class TargetCommand extends EventEmitter {
   /**
    * Returns true if a non top-level frame is the selected one in the iframe picker.
    *
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   isNonTopLevelTargetSelected() {
     return this.selectedTargetFront !== this.targetFront;
@@ -1125,6 +1236,10 @@ class TargetCommand extends EventEmitter {
       BROWSERTOOLBOX_SCOPE_PREF,
       this._updateBrowserToolboxScope
     );
+    Services.prefs.removeObserver(
+      SHOW_CONTENT_SCRIPTS_PREF,
+      this._updateContentScriptListening
+    );
   }
 }
 
@@ -1137,6 +1252,7 @@ TargetCommand.TYPES = TargetCommand.prototype.TYPES = {
   WORKER: "worker",
   SHARED_WORKER: "shared_worker",
   SERVICE_WORKER: "service_worker",
+  CONTENT_SCRIPT: "content_script",
 };
 TargetCommand.ALL_TYPES = TargetCommand.prototype.ALL_TYPES = Object.values(
   TargetCommand.TYPES

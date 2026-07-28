@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -27,15 +26,12 @@ class PlatformCompositorWidgetDelegate : public CompositorWidgetDelegate {
   virtual void LeavePresentLock() = 0;
   virtual void OnDestroyWindow() = 0;
   virtual bool OnWindowResize(const LayoutDeviceIntSize& aSize) = 0;
-  virtual void OnWindowModeChange(nsSizeMode aSizeMode) = 0;
 
   // Transparency handling.
   virtual void UpdateTransparency(TransparencyMode aMode) = 0;
-  virtual void ClearTransparentWindow() = 0;
 
   // Deliver visibility info
-  virtual void NotifyVisibilityUpdated(nsSizeMode aSizeMode,
-                                       bool aIsFullyOccluded) = 0;
+  virtual void NotifyVisibilityUpdated(bool aIsFullyOccluded) = 0;
 
   // CompositorWidgetDelegate Overrides
 
@@ -76,20 +72,27 @@ class WinCompositorWidget : public CompositorWidget {
   bool HasFxrOutputHandler() const { return !!mFxrHandler; }
   FxROutputHandler* GetFxrOutputHandler() const { return mFxrHandler.get(); }
 
-  virtual nsSizeMode GetWindowSizeMode() const = 0;
   virtual bool GetWindowIsFullyOccluded() const = 0;
 
   virtual void UpdateCompositorWnd(const HWND aCompositorWnd,
                                    const HWND aParentWnd) = 0;
   virtual void SetRootLayerTreeID(const layers::LayersId& aRootLayerTreeId) = 0;
 
+  bool TransparencyModeIs(TransparencyMode aMode) const {
+    return TransparencyMode(uint32_t(mTransparencyMode)) == aMode;
+  }
+
  protected:
-  bool mSetParentCompleted;
+  void SetTransparencyMode(TransparencyMode aMode) {
+    mTransparencyMode = uint32_t(aMode);
+  }
+
+  bool mSetParentCompleted = false;
 
  private:
   uintptr_t mWidgetKey;
   HWND mWnd;
-
+  mozilla::Atomic<uint32_t, MemoryOrdering::Relaxed> mTransparencyMode;
   WinCompositorWnds mCompositorWnds;
   LayoutDeviceIntSize mLastCompositorWndSize;
 

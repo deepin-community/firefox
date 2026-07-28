@@ -24,7 +24,10 @@ function waitForLocationChange() {
 
 add_task(async function setPref() {
   await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.keyboard_navigation", true]],
+    set: [
+      ["test.wait300msAfterTabSwitch", true],
+      ["browser.toolbars.keyboard_navigation", true],
+    ],
   });
 });
 
@@ -117,9 +120,9 @@ add_task(async function testDeveloperButtonWrongKey() {
 add_task(async function testPageActionsButtonPress() {
   // The page actions button is not normally visible, so we must
   // unhide it.
-  BrowserPageActions.mainButtonNode.style.visibility = "visible";
+  BrowserPageActions.mainButtonNode.style.display = "flex";
   registerCleanupFunction(() => {
-    BrowserPageActions.mainButtonNode.style.removeProperty("visibility");
+    BrowserPageActions.mainButtonNode.style.removeProperty("display");
   });
   await BrowserTestUtils.withNewTab("https://example.com", async function () {
     let button = document.getElementById("pageActionButton");
@@ -187,6 +190,7 @@ add_task(async function testReloadButtonPress() {
 // Test activation of the Sidebars button from the keyboard.
 // This is a toolbarbutton with a command handler.
 add_task(async function testSidebarsButtonPress() {
+  const { SidebarController } = window;
   let sidebarRevampEnabled = Services.prefs.getBoolPref(
     "sidebar.revamp",
     false
@@ -194,6 +198,12 @@ add_task(async function testSidebarsButtonPress() {
   let sidebar, sidebarBox;
   if (!sidebarRevampEnabled) {
     CustomizableUI.addWidgetToArea("sidebar-button", "nav-bar");
+  } else {
+    // Expanded is only available with vertical tabs enabled
+    await SpecialPowers.pushPrefEnv({
+      set: [["sidebar.verticalTabs", true]],
+    });
+    await SidebarController.updateUIState({ launcherExpanded: false });
   }
   let button = document.getElementById("sidebar-button");
   ok(!button.checked, "Sidebars button not checked at start of test");
@@ -238,6 +248,7 @@ add_task(async function testSidebarsButtonPress() {
       "Sidebar not expanded after press"
     );
     ok(!sidebar.expanded, "Sidebar not expanded after press");
+    await SpecialPowers.popPrefEnv();
   }
 });
 
@@ -319,31 +330,4 @@ add_task(async function testDownloadsButtonPress() {
   panel.hidePopup();
   await hidden;
   DownloadsButton.hide();
-});
-
-// Test activation of the Save to Pocket button from the keyboard.
-// This is a customizable widget button which shows an popup panel
-// with a browser element to embed the pocket UI into it.
-// The Pocket panel should appear and focus should move inside it.
-add_task(async function testPocketButtonPress() {
-  await BrowserTestUtils.withNewTab("https://example.com", async function () {
-    let button = document.getElementById("save-to-pocket-button");
-    // The panel is created on the fly, so we can't simply wait for focus
-    // inside it.
-    let showing = BrowserTestUtils.waitForEvent(document, "popupshowing", true);
-    await focusAndActivateElement(button, () => EventUtils.synthesizeKey(" "));
-    let event = await showing;
-    let panel = event.target;
-    is(panel.id, "customizationui-widget-panel");
-    let focused = BrowserTestUtils.waitForEvent(panel, "focus", true);
-    await focused;
-    is(
-      document.activeElement.tagName,
-      "browser",
-      "Focus inside Pocket panel after Bookmark button pressed"
-    );
-    let hidden = BrowserTestUtils.waitForEvent(panel, "popuphidden");
-    EventUtils.synthesizeKey("KEY_Escape");
-    await hidden;
-  });
 });

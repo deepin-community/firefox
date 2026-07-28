@@ -1,11 +1,9 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=4 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef nsDragService_h__
-#define nsDragService_h__
+#ifndef nsDragService_h_
+#define nsDragService_h_
 
 #include "mozilla/RefPtr.h"
 #include "nsBaseDragService.h"
@@ -23,6 +21,7 @@ namespace gfx {
 class SourceSurface;
 }
 }  // namespace mozilla
+
 class DragData final {
  public:
   NS_INLINE_DECL_REFCOUNTING(DragData)
@@ -57,6 +56,8 @@ class DragData final {
   bool IsURIFlavor() const;
 
   int GetURIsNum() const;
+
+  bool IsDataValid() const;
 
 #ifdef MOZ_LOGGING
   void Print() const;
@@ -110,6 +111,8 @@ class nsDragSession : public nsBaseDragSession, public nsIObserver {
   // mTargetDragContextForRemote context.
   NS_IMETHOD UpdateDragEffect() override;
 
+  nsAutoCString GetDebugTag() const;
+
   MOZ_CAN_RUN_SCRIPT nsresult
   EndDragSessionImpl(bool aDoneDrag, uint32_t aKeyModifiers) override;
 
@@ -125,6 +128,8 @@ class nsDragSession : public nsBaseDragSession, public nsIObserver {
   };
 
   static int GetLoopDepth() { return sEventLoopDepth; };
+
+  static bool IsTextFlavor(GdkAtom aFlavor);
 
  protected:
   // mScheduledTask indicates what signal has been received from GTK and
@@ -261,6 +266,8 @@ class nsDragSession : public nsBaseDragSession, public nsIObserver {
   static GdkAtom sFilePromiseURLMimeAtom;
   static GdkAtom sFilePromiseMimeAtom;
   static GdkAtom sNativeImageMimeAtom;
+  static GdkAtom sUTF8STRINGMimeAtom;
+  static GdkAtom sSTRINGMimeAtom;
 
   nsDragSession();
 
@@ -273,9 +280,9 @@ class nsDragSession : public nsBaseDragSession, public nsIObserver {
   // nsIDragSession
   MOZ_CAN_RUN_SCRIPT NS_IMETHOD InvokeDragSession(
       nsIWidget* aWidget, nsINode* aDOMNode, nsIPrincipal* aPrincipal,
-      nsIContentSecurityPolicy* aCsp, nsICookieJarSettings* aCookieJarSettings,
-      nsIArray* anArrayTransferables, uint32_t aActionType,
-      nsContentPolicyType aContentPolicyType) override;
+      nsIPolicyContainer* aPolicyContainer,
+      nsICookieJarSettings* aCookieJarSettings, nsIArray* anArrayTransferables,
+      uint32_t aActionType, nsContentPolicyType aContentPolicyType) override;
 
   // Methods called from nsWindow to handle responding to GTK drag
   // destination signals
@@ -307,9 +314,9 @@ class nsDragSession : public nsBaseDragSession, public nsIObserver {
   bool SourceDataGetText(nsITransferable* aItem, const nsACString& aMIMEType,
                          bool aNeedToDoConversionToPlainText,
                          GtkSelectionData* aSelectionData);
-  void SourceDataGetImage(nsITransferable* aItem,
+  bool SourceDataGetImage(nsITransferable* aItem,
                           GtkSelectionData* aSelectionData);
-  void SourceDataGetXDND(nsITransferable* aItem, GdkDragContext* aContext,
+  bool SourceDataGetXDND(nsITransferable* aItem, GdkDragContext* aContext,
                          GtkSelectionData* aSelectionData);
   void SourceDataGetUriList(GdkDragContext* aContext,
                             GtkSelectionData* aSelectionData,
@@ -322,6 +329,9 @@ class nsDragSession : public nsBaseDragSession, public nsIObserver {
 
   // set the drag icon during drag-begin
   void SetDragIcon(GdkDragContext* aContext);
+
+  void MarkAsActive() { mActive = true; }
+  bool IsActive() const { return mActive; }
 
  protected:
   virtual ~nsDragSession();
@@ -342,7 +352,8 @@ class nsDragSession : public nsBaseDragSession, public nsIObserver {
 
   mozilla::LayoutDeviceIntPoint mTargetWindowPoint;
 
-  int mWaitingForDragDataRequests = 0;
+  // Track gtk_drag_get_data() requests here.
+  RefPtr<GdkDragContext> mWaitingForDragDataContext;
 
   bool IsDragFlavorAvailable(GdkAtom aRequestedFlavor);
 
@@ -354,6 +365,9 @@ class nsDragSession : public nsBaseDragSession, public nsIObserver {
 
   // the source of our drags
   GtkWidget* mHiddenWidget;
+  // Workaround for Bug 1979719. We consider D&D session running only after
+  // first "move" event on Wayland.
+  bool mActive = false;
 
   // get a list of the sources in gtk's format
   GtkTargetList* GetSourceList(void);
@@ -397,4 +411,4 @@ class nsDragService : public nsBaseDragService {
   already_AddRefed<nsIDragSession> CreateDragSession() override;
 };
 
-#endif  // nsDragService_h__
+#endif  // nsDragService_h_

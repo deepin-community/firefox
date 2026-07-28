@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -30,12 +29,9 @@ class Provider {
   Provider();
   ~Provider();
 
-  bool Initialize(HWND aWindowHandle, DWORD aTargetProcessId,
-                  TransparencyMode aTransparencyMode);
+  bool Initialize(HWND aWindowHandle, DWORD aTargetProcessId);
 
   Maybe<RemoteBackbufferHandles> CreateRemoteHandles();
-
-  void UpdateTransparencyMode(TransparencyMode aTransparencyMode);
 
   Provider(const Provider&) = delete;
   Provider(Provider&&) = delete;
@@ -59,10 +55,6 @@ class Provider {
   bool mStopServiceThread;
   PRThread* mServiceThread;
   std::unique_ptr<PresentableSharedImage> mBackbuffer;
-  mozilla::Atomic<uint32_t, MemoryOrdering::Relaxed> mTransparencyMode;
-  TransparencyMode GetTransparencyMode() const {
-    return TransparencyMode(uint32_t(mTransparencyMode));
-  }
 };
 
 class Client {

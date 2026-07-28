@@ -36,10 +36,17 @@ certificate-viewer-key-size = Андозаи калид
 certificate-viewer-inc-locality = Нишонии ҳуқуқӣ
 certificate-viewer-locality = Нишонӣ
 certificate-viewer-location = Ҷойгиршавӣ
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Номи сабт
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Рақами мушаххаси сабт
 certificate-viewer-method = Усул
 certificate-viewer-modulus = Модул
 certificate-viewer-name = Ном
+certificate-viewer-surname = Насаб
+# See https://datatracker.ietf.org/doc/html/rfc4519#section-2.12
+# Contains name strings that are the part of a person's name that is not their surname.
+certificate-viewer-given-name = Ном
 certificate-viewer-not-after = Боэътибор то
 certificate-viewer-not-before = Боэътибор аз
 certificate-viewer-organization = Ташкилот
@@ -81,7 +88,6 @@ certificate-viewer-authority-info-aia = Маълумот дар бораи ма�
 certificate-viewer-certificate-policies = Сиёсатҳои гувоҳнома
 certificate-viewer-embedded-scts = Рӯйхати SCT
 certificate-viewer-crl-endpoints = Нуқтаҳои паҳнкунии CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Боргирӣ кардан
@@ -101,7 +107,6 @@ certificate-viewer-download-pem = PEM (гувоҳнома)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (занҷир)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Ин васеъшавӣ ҳамҷум танқидӣ қайд карда шудааст, ва агар муштариён гувоҳномаро нафаҳманд, онҳо бояд онро рад кунанд.
@@ -112,6 +117,8 @@ certificate-viewer-export = Содир кардан
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (номаълум)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = гувоҳнома
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

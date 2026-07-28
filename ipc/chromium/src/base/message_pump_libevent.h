@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -52,7 +50,7 @@ class MessagePumpLibevent : public MessagePump {
   // a File Descriptor.
   class Watcher {
    public:
-    virtual ~Watcher() {}
+    virtual ~Watcher() = default;
     // Called from MessageLoop::Run when an FD can be read from/written to
     // without blocking
     virtual void OnFileCanReadWithoutBlocking(int fd) = 0;
@@ -82,48 +80,6 @@ class MessagePumpLibevent : public MessagePump {
                            FileDescriptorWatcher* controller,
                            Watcher* delegate);
 
-  // This is analagous to FileDescriptorWatcher above, which really is
-  // just a wrapper around libevent's |struct event|.  This class acts
-  // as a sort of "scoped event watcher" in that it guarantees that
-  // when this class is out of scope, the signal-event it wraps is
-  // removed from libevent's guts.
-  //
-  // XXX/cjones: this isn't my favorite API, but preserving it in
-  // order to match code above
-  class SignalEvent {
-    friend class MessagePumpLibevent;
-
-   public:
-    SignalEvent();
-    ~SignalEvent();  // implicitly calls StopCatching()
-
-    // Have libevent forget this event.
-    bool StopCatching();
-
-   private:
-    void Init(event* e);
-    event* ReleaseEvent();
-
-    event* event_;
-
-    DISALLOW_COPY_AND_ASSIGN(SignalEvent);
-  };
-
-  class SignalWatcher {
-   public:
-    virtual ~SignalWatcher() {}
-    // Called from MessageLoop::Run when |sig| has been delivered to
-    // this process
-    virtual void OnSignal(int sig) = 0;
-  };
-
-  // Have the current thread's message loop catch the signal |sig|.
-  // Multiple watchers can catch the same signal; they're all notified
-  // upon its delivery.  Callers must provide a preallocated
-  // SignalEvent object which can be used to manage the lifetime of
-  // this event.  Returns true on success.
-  bool CatchSignal(int sig, SignalEvent* sigevent, SignalWatcher* delegate);
-
   // MessagePump methods:
   virtual void Run(Delegate* delegate) override;
   virtual void Quit() override;
@@ -152,9 +108,6 @@ class MessagePumpLibevent : public MessagePump {
 
   // Called by libevent to tell us a registered FD can be read/written to.
   static void OnLibeventNotification(int fd, short flags, void* context);
-
-  // Called by libevent upon receiving a signal
-  static void OnLibeventSignalNotification(int sig, short flags, void* context);
 
   // Unix pipe used to implement ScheduleWork()
   // ... callback; called by libevent inside Run() when pipe is ready to read

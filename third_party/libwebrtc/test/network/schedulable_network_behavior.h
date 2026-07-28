@@ -11,8 +11,13 @@
 #ifndef TEST_NETWORK_SCHEDULABLE_NETWORK_BEHAVIOR_H_
 #define TEST_NETWORK_SCHEDULABLE_NETWORK_BEHAVIOR_H_
 
+#include <cstdint>
+#include <memory>
+
+#include "absl/functional/any_invocable.h"
 #include "api/sequence_checker.h"
 #include "api/test/network_emulation/network_config_schedule.pb.h"
+#include "api/test/network_emulation/network_queue.h"
 #include "api/test/simulated_network.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
@@ -27,8 +32,12 @@ namespace webrtc {
 // specified with a schedule proto.
 class SchedulableNetworkBehavior : public SimulatedNetwork {
  public:
-  SchedulableNetworkBehavior(network_behaviour::NetworkConfigSchedule schedule,
-                             Clock& clock);
+  SchedulableNetworkBehavior(
+      network_behaviour::NetworkConfigSchedule schedule,
+      uint64_t random_seed,
+      Clock& clock,
+      absl::AnyInvocable<bool(webrtc::Timestamp)> start_condition,
+      std::unique_ptr<NetworkQueue> queue);
 
   bool EnqueuePacket(PacketInFlightInfo packet_info) override;
 
@@ -37,6 +46,10 @@ class SchedulableNetworkBehavior : public SimulatedNetwork {
 
   SequenceChecker sequence_checker_;
   const network_behaviour::NetworkConfigSchedule schedule_;
+  absl::AnyInvocable<bool(webrtc::Timestamp)> start_condition_
+      RTC_GUARDED_BY(&sequence_checker_);
+  // Send time of the first packet enqueued after `start_condition_` return
+  // true.
   Timestamp first_send_time_ RTC_GUARDED_BY(&sequence_checker_) =
       Timestamp::MinusInfinity();
 

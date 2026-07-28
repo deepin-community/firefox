@@ -25,14 +25,19 @@ th {
   text-align: start;
 }
 
-th, td {
-  border-bottom: 1px solid var(--in-content-border-color);
+th,
+td {
+  border-bottom: 1px solid var(--border-color);
 }
 
 th,
 #submitted td {
   /* Unsubmitted table already gets spacing from button */
   padding-block: 10px;
+}
+
+#unsubmitted tr.ignored {
+  font-weight: lighter;
 }
 
 .submit-button,

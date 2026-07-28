@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Hata Ayıklama - Çalışma Zamanı / 
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Bu { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Bu { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Bu { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Kur
+about-debugging-sidebar-setup-title =
+    .title = Kur
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Push hizmeti
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Köken
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Çok işlemli { -brand-shorter-name } için Service Worker denetleme özelliği şimdilik devre dışıdır
@@ -325,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Çok işlemli araç kutusu
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Hedef tarayıcı için ana işlem ve içerik işlemleri
+about-debugging-message-error-icon =
+    .alt = Hata simgesi
+about-debugging-message-info-icon =
+    .alt = Bilgi simgesi
+about-debugging-message-warning-icon =
+    .alt = Uyarı simgesi
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Mesajı kapat
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Mesajı kapat
@@ -334,3 +354,5 @@ about-debugging-message-details-label-error = Hata ayrıntıları
 about-debugging-message-details-label-warning = Uyarı ayrıntıları
 # Label text used for default state of details of message component.
 about-debugging-message-details-label = Ayrıntılar
+about-debugging-sidebar =
+    .heading = Hata ayıklama

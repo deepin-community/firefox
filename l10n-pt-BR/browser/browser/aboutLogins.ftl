@@ -41,7 +41,7 @@ about-logins-menu-menuitem-help = Ajuda
 ## Login List
 
 login-list =
-    .aria-label = Contas que combinar com a consulta
+    .aria-label = Contas que correspondem à consulta
 # Variables
 #   $count (number) - Number of logins
 login-list-count =
@@ -315,7 +315,7 @@ confirm-discard-changes-dialog-confirm-button = Descartar
 
 ## Breach Alert notification
 
-about-logins-breach-alert-title = Vazamento de site
+about-logins-breach-alert-title = Vazamento de dados em site
 breach-alert-text = Senhas foram vazadas ou roubadas deste site desde a última vez que você atualizou suas credenciais de acesso. Mude a senha para proteger sua conta.
 about-logins-breach-alert-date = Este vazamento ocorreu em { DATETIME($date, day: "numeric", month: "long", year: "numeric") }
 # Variables:

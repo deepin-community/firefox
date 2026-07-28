@@ -1,16 +1,15 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:set ts=4 sw=2 sts=2 et cin: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/net/DNS.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/mozalloc.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "nsContentUtils.h"
+#include "nsIOService.h"
+#include "nsPrintfCString.h"
 #include "nsString.h"
 #include <string.h>
 
@@ -84,12 +83,7 @@ void NetAddrToPRNetAddr(const NetAddr* addr, PRNetAddr* prAddr) {
     memcpy(&prAddr->ipv6.ip, &addr->inet6.ip, sizeof(addr->inet6.ip.u8));
     prAddr->ipv6.scope_id = addr->inet6.scope_id;
   }
-#if defined(XP_UNIX)
-  else if (addr->raw.family == AF_LOCAL) {
-    prAddr->local.family = PR_AF_LOCAL;
-    memcpy(prAddr->local.path, addr->local.path, sizeof(addr->local.path));
-  }
-#elif defined(XP_WIN)
+#if defined(XP_UNIX) || defined(XP_WIN)
   else if (addr->raw.family == AF_LOCAL) {
     prAddr->local.family = PR_AF_LOCAL;
     memcpy(prAddr->local.path, addr->local.path, sizeof(addr->local.path));
@@ -117,7 +111,12 @@ bool NetAddr::ToStringBuffer(char* buf, uint32_t bufSize) const {
   }
 #if defined(XP_UNIX)
   if (addr->raw.family == AF_LOCAL) {
-    if (bufSize < sizeof(addr->local.path)) {
+    // local.path is NOT guaranteed to be NUL-terminated: PR_Accept casts
+    // PRNetAddr* to struct sockaddr* and Linux sun_path is 108 bytes vs
+    // our 104, so a peer bound to a >=104-char path fills the whole field
+    // with non-NUL data. We must write our own terminator, so require
+    // strictly more than sizeof(path) bytes.
+    if (bufSize <= sizeof(addr->local.path)) {
       // Many callers don't bother checking our return value, so
       // null-terminate just in case.
       if (bufSize > 0) {
@@ -132,20 +131,54 @@ bool NetAddr::ToStringBuffer(char* buf, uint32_t bufSize) const {
     // using the destination's size may cause us to read off the end of the
     // source.
     memcpy(buf, addr->local.path, sizeof(addr->local.path));
+    buf[sizeof(addr->local.path)] = '\0';
     return true;
   }
 #endif
   return false;
 }
 
+bool NetAddr::ToString(nsACString& aOutput) const {
+  size_t bufferSize = 0;
+  if (raw.family == AF_INET) {
+    bufferSize = INET_ADDRSTRLEN;
+  } else if (raw.family == AF_INET6) {
+    bufferSize = INET6_ADDRSTRLEN;
+  }
+#if defined(XP_UNIX)
+  else if (raw.family == AF_LOCAL) {
+    // +1 for the NUL terminator that ToStringBuffer writes.
+    bufferSize = sizeof(local.path) + 1;
+  }
+#endif
+
+  auto handleOrErr = aOutput.BulkWrite(bufferSize, /* aPrefixToPreserve */ 0,
+                                       /* aAllowShrinking */ false);
+  if (handleOrErr.isErr()) {
+    NS_ABORT_OOM(bufferSize);
+    return false;
+  }
+  auto handle = handleOrErr.unwrap();
+
+  if (!ToStringBuffer(handle.Elements(), bufferSize)) {
+    handle.Finish(0, /* aAllowShrinking */ false);
+    return false;
+  }
+  handle.Finish(strlen(handle.Elements()), /* aAllowShrinking */ false);
+  return true;
+}
+
 nsCString NetAddr::ToString() const {
   nsCString out;
-  out.SetLength(kNetAddrMaxCStrBufSize);
-  if (ToStringBuffer(out.BeginWriting(), kNetAddrMaxCStrBufSize)) {
-    out.SetLength(strlen(out.BeginWriting()));
-    return out;
-  }
-  return ""_ns;
+  ToString(out);
+  return out;
+}
+
+void NetAddr::ToAddrPortString(nsACString& aOutput) const {
+  ToString(aOutput);
+  uint16_t port = 0;
+  GetPort(&port);
+  aOutput.AppendPrintf(":%d", port);
 }
 
 bool NetAddr::IsLoopbackAddr() const {
@@ -157,8 +190,30 @@ bool NetAddr::IsLoopbackAddr() const {
     return false;
   }
 
-  return IPv6ADDR_IS_V4MAPPED(&addr->inet6.ip) &&
-         IPv6ADDR_V4MAPPED_TO_IPADDR(&addr->inet6.ip) == htonl(INADDR_LOOPBACK);
+  if (IPv6ADDR_IS_V4MAPPED(&addr->inet6.ip)) {
+    return IPv6ADDR_V4MAPPED_TO_IPADDR(&addr->inet6.ip) ==
+           htonl(INADDR_LOOPBACK);
+  }
+
+  // IPv6 loopback address ::1
+  uint64_t ipv6Addr1 = ntohl(addr->inet6.ip.u64[0]);
+  uint64_t ipv6Addr2 = ntohl(addr->inet6.ip.u64[1]);
+  return (ipv6Addr1 == 0 && ipv6Addr2 == 1);
+}
+
+bool NetAddr::IsBenchMarkingAddress() const {
+  // check for 198.18.0.0/15
+  if (this->raw.family == AF_INET) {
+    uint32_t addr = ntohl(this->inet.ip) >> 17;
+    return addr == (0xC612 >> 1);
+  }
+
+  if (IPv6ADDR_IS_V4MAPPED(&this->inet6.ip)) {
+    uint32_t addr = ntohl(IPv6ADDR_V4MAPPED_TO_IPADDR(&this->inet6.ip)) >> 17;
+    return addr == (0xC612 >> 1);
+  }
+
+  return false;
 }
 
 bool NetAddr::IsLoopBackAddressWithoutIPv6Mapping() const {
@@ -212,8 +267,38 @@ bool NetAddr::IsIPAddrAny() const {
 
 NetAddr::NetAddr(const PRNetAddr* prAddr) { PRNetAddrToNetAddr(prAddr, this); }
 
+nsILoadInfo::IPAddressSpace NetAddr::GetIpAddressSpace() const {
+  const NetAddr* addr = this;
+  if (addr->raw.family != AF_INET && addr->raw.family != AF_INET6) {
+    // We don't know the address space for non-IP addresses.
+    return nsILoadInfo::IPAddressSpace::Unknown;
+  }
+
+  nsILoadInfo::IPAddressSpace overriddenIpAddressSpace;
+
+  if (NS_SUCCEEDED(gIOService->GetOverridenIpAddressSpace(
+          &overriddenIpAddressSpace, *this))) {
+    return overriddenIpAddressSpace;
+  }
+
+  if (StaticPrefs::network_lna_benchmarking_is_local() &&
+      addr->IsBenchMarkingAddress()) {
+    return nsILoadInfo::IPAddressSpace::Local;
+  }
+
+  if (addr->IsLoopbackAddr() || addr->IsIPAddrAny()) {
+    return nsILoadInfo::IPAddressSpace::Local;
+  }
+
+  if (addr->IsIPAddrLocal() || addr->IsIPAddrShared()) {
+    return nsILoadInfo::IPAddressSpace::Private;
+  }
+
+  return nsILoadInfo::IPAddressSpace::Public;
+}
+
 nsresult NetAddr::InitFromString(const nsACString& aString, uint16_t aPort) {
-  PRNetAddr prAddr{};
+  PRNetAddr prAddr;
   memset(&prAddr, 0, sizeof(PRNetAddr));
   if (PR_StringToNetAddr(PromiseFlatCString(aString).get(), &prAddr) !=
       PR_SUCCESS) {
@@ -241,14 +326,20 @@ bool NetAddr::IsIPAddrV4Mapped() const {
 
 static bool isLocalIPv4(uint32_t networkEndianIP) {
   uint32_t addr32 = ntohl(networkEndianIP);
-  return addr32 >> 24 == 0x0A ||    // 10/8 prefix (RFC 1918).
-         addr32 >> 20 == 0xAC1 ||   // 172.16/12 prefix (RFC 1918).
+  return addr32 >> 24 == 0x00 ||    // 0/8 prefix (RFC 1122).
+         addr32 >> 24 == 0x0A ||    // 10/8 prefix (RFC 1918).
+         addr32 >> 20 == 0x0AC1 ||  // 172.16/12 prefix (RFC 1918).
          addr32 >> 16 == 0xC0A8 ||  // 192.168/16 prefix (RFC 1918).
          addr32 >> 16 == 0xA9FE;    // 169.254/16 prefix (Link Local).
 }
 
 bool NetAddr::IsIPAddrLocal() const {
   const NetAddr* addr = this;
+
+  // An IPv4/6 any address.
+  if (IsIPAddrAny()) {
+    return true;
+  }
 
   // IPv4 RFC1918 and Link Local Addresses.
   if (addr->raw.family == AF_INET) {
@@ -318,7 +409,7 @@ bool NetAddr::operator==(const NetAddr& other) const {
   }
   if (this->raw.family == AF_LOCAL) {
     return strncmp(this->local.path, other.local.path,
-                   ArrayLength(this->local.path));
+                   std::size(this->local.path));
 #endif
   }
   return false;

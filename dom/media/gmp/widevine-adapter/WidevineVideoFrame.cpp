@@ -1,9 +1,9 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WidevineVideoFrame.h"
+
 #include "GMPLog.h"
 #include "WidevineUtils.h"
 #include "mozilla/CheckedInt.h"
@@ -127,14 +127,14 @@ bool WidevineVideoFrame::InitToBlack(int32_t aWidth, int32_t aHeight,
   SetFormat(cdm::VideoFormat::kI420);
   SetSize(cdm::Size{aWidth, aHeight});
   SetFrameBuffer(buffer);
-  SetPlaneOffset(cdm::VideoPlane::kYPlane, 0);
-  SetStride(cdm::VideoPlane::kYPlane, aWidth);
+  SetPlaneOffset(cdm::kYPlane, 0);
+  SetStride(cdm::kYPlane, aWidth);
   // Note: U and V planes are stored at the same place in order to
   // save memory since their contents are the same.
-  SetPlaneOffset(cdm::VideoPlane::kUPlane, ySize);
-  SetStride(cdm::VideoPlane::kUPlane, halfWidth);
-  SetPlaneOffset(cdm::VideoPlane::kVPlane, ySize);
-  SetStride(cdm::VideoPlane::kVPlane, halfWidth);
+  SetPlaneOffset(cdm::kUPlane, ySize);
+  SetStride(cdm::kUPlane, halfWidth);
+  SetPlaneOffset(cdm::kVPlane, ySize);
+  SetStride(cdm::kVPlane, halfWidth);
   SetTimestamp(aTimeStamp);
   return true;
 }

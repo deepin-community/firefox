@@ -9,7 +9,7 @@ import { connect } from "devtools/client/shared/vendor/react-redux";
 
 import actions from "../../actions/index";
 import { getCurrentThread, getIsPaused } from "../../selectors/index";
-import AccessibleImage from "../shared/AccessibleImage";
+import DebuggerImage from "../shared/DebuggerImage";
 
 const classnames = require("resource://devtools/client/shared/classnames.js");
 
@@ -30,7 +30,15 @@ export class Thread extends Component {
   render() {
     const { currentThread, isPaused, thread } = this.props;
 
-    const isWorker = thread.targetType.includes("worker");
+    const { targetType } = thread;
+    let iconClassname;
+    if (targetType.includes("worker")) {
+      iconClassname = "worker";
+    } else if (targetType.includes("content_script")) {
+      iconClassname = "extension";
+    } else {
+      iconClassname = "window";
+    }
     let label = thread.name;
     if (thread.serviceWorkerStatus) {
       label += ` (${thread.serviceWorkerStatus})`;
@@ -48,8 +56,8 @@ export class Thread extends Component {
         {
           className: "icon",
         },
-        React.createElement(AccessibleImage, {
-          className: isWorker ? "worker" : "window",
+        React.createElement(DebuggerImage, {
+          name: iconClassname,
         })
       ),
       div(

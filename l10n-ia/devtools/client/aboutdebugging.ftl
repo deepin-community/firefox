@@ -20,6 +20,14 @@ about-debugging-page-title-runtime-page = Depuration - Execution / { $selectedRu
 # Display name of the runtime for the currently running instance of Firefox. Used in the
 # Sidebar and in the Setup page.
 about-debugging-this-firefox-runtime-name = Iste { -brand-shorter-name }
+# Sidebar heading and title for selecting the currently running instance of Firefox
+about-debugging-sidebar-this-firefox2 = Iste { -brand-shorter-name }
+about-debugging-sidebar-this-firefox-title =
+    .title = Iste { -brand-shorter-name }
+# Sidebar heading and title for connecting to some remote source
+about-debugging-sidebar-setup2 = Installation
+about-debugging-sidebar-setup-title =
+    .title = Installation
 # Sidebar heading for selecting the currently running instance of Firefox
 # .name is processed by fluent-react / SidebarFixedItem
 about-debugging-sidebar-this-firefox =
@@ -119,13 +127,13 @@ about-debugging-setup-usb-step-enable-debug-firefox2 = Activar le Depuration USB
 about-debugging-setup-usb-step-plug-device = Connecte le apparato Android a tu computator.
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
 # The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
-about-debugging-setup-usb-troubleshoot = Problemas de connexion al apparato USB?  <a>Remediar</a>
+about-debugging-setup-usb-troubleshoot = Problemas de connexion al apparato USB?  <a>Solver</a>
 # Network section of the Setup page
 about-debugging-setup-network =
     .title = Position del rete
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
 # The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
-about-debugging-setup-network-troubleshoot = Problemas de connexion via un loco de rete?  <a>Remediar</a>
+about-debugging-setup-network-troubleshoot = Problemas de connexion via un loco de rete?  <a>Solver</a>
 # Text of a button displayed after the network locations "Host" input.
 # Clicking on it will add the new network location to the list.
 about-debugging-network-locations-add-button = Adder
@@ -313,6 +321,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Servicio de pulsata
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Origine
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Le inspection de obreros de servicio es actualmente disactivate pro le modo multiprocesso de { -brand-shorter-name }
@@ -325,6 +336,15 @@ about-debugging-multiprocess-toolbox-name = Instrumentario multiprocesso
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
 about-debugging-multiprocess-toolbox-description = Processo principal e processos de contento pro le navigator de destination
+about-debugging-message-error-icon =
+    .alt = Icone de error
+about-debugging-message-info-icon =
+    .alt = Icone de information
+about-debugging-message-warning-icon =
+    .alt = Icone de aviso
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon2 =
+    .tooltiptext = Clauder message
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
     .alt = Clauder message
@@ -334,3 +354,5 @@ about-debugging-message-details-label-error = Detalios del error
 about-debugging-message-details-label-warning = Detalios del aviso
 # Label text used for default state of details of message component.
 about-debugging-message-details-label = Detalios
+about-debugging-sidebar =
+    .heading = Depuration

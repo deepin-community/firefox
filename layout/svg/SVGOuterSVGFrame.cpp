@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,17 +7,18 @@
 
 // Keep others in (case-insensitive) order:
 #include "gfxContext.h"
-#include "nsDisplayList.h"
-#include "nsIInterfaceRequestorUtils.h"
-#include "nsLayoutUtils.h"
-#include "nsObjectLoadingContent.h"
-#include "nsSubDocumentFrame.h"
 #include "mozilla/PresShell.h"
+#include "mozilla/ReflowInput.h"
 #include "mozilla/SVGUtils.h"
 #include "mozilla/dom/BrowserChild.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/SVGSVGElement.h"
+#include "nsDisplayList.h"
+#include "nsIInterfaceRequestorUtils.h"
+#include "nsLayoutUtils.h"
+#include "nsObjectLoadingContent.h"
+#include "nsSubDocumentFrame.h"
 
 using namespace mozilla::dom;
 using namespace mozilla::gfx;
@@ -71,6 +70,26 @@ float SVGOuterSVGFrame::ComputeFullZoom() const {
   return 1.0f;
 }
 
+class AsyncSendIntrinsicSizeAndRatioToEmbedder final : public Runnable {
+ public:
+  explicit AsyncSendIntrinsicSizeAndRatioToEmbedder(SVGOuterSVGFrame* aFrame)
+      : Runnable("AsyncSendIntrinsicSizeAndRatioToEmbedder") {
+    mElement = aFrame->GetContent()->AsElement();
+  }
+  NS_IMETHOD Run() override {
+    AUTO_PROFILER_LABEL("AsyncSendIntrinsicSizeAndRatioToEmbedder::Run", OTHER);
+    // Check we're still an outer svg frame. We could have been
+    // moved inside another svg element and now be an SVGInnerSVGFrame.
+    if (SVGOuterSVGFrame* frame = do_QueryFrame(mElement->GetPrimaryFrame())) {
+      frame->MaybeSendIntrinsicSizeAndRatioToEmbedder();
+    }
+    return NS_OK;
+  }
+
+ private:
+  RefPtr<Element> mElement;
+};
+
 void SVGOuterSVGFrame::Init(nsIContent* aContent, nsContainerFrame* aParent,
                             nsIFrame* aPrevInFlow) {
   NS_ASSERTION(aContent->IsSVGElement(nsGkAtoms::svg),
@@ -108,7 +127,10 @@ void SVGOuterSVGFrame::Init(nsIContent* aContent, nsContainerFrame* aParent,
     }
   }
 
-  MaybeSendIntrinsicSizeAndRatioToEmbedder();
+  // We need to do this async in order to get the right ordering with
+  // respect to `Destroy()` when reframed.
+  nsContentUtils::AddScriptRunner(
+      MakeAndAddRef<AsyncSendIntrinsicSizeAndRatioToEmbedder>(this));
 }
 
 //----------------------------------------------------------------------
@@ -122,7 +144,7 @@ NS_QUERYFRAME_TAIL_INHERITING(SVGDisplayContainerFrame)
 //----------------------------------------------------------------------
 // nsIFrame methods
 
-nscoord SVGOuterSVGFrame::IntrinsicISize(gfxContext* aContext,
+nscoord SVGOuterSVGFrame::IntrinsicISize(const IntrinsicSizeInput& aInput,
                                          IntrinsicISizeType aType) {
   if (aType == IntrinsicISizeType::MinISize) {
     return GetIntrinsicSize().ISize(GetWritingMode()).valueOr(0);
@@ -144,7 +166,10 @@ nscoord SVGOuterSVGFrame::IntrinsicISize(gfxContext* aContext,
     // is treated as 100%). The following if-condition, deciding to return
     // either the fallback intrinsic size or zero, is made to match blink and
     // webkit's behavior for webcompat.
-    if (isize.IsExplicitlySet() || StylePosition()->ISize(wm).HasPercent() ||
+    if (isize.IsExplicitlySet() ||
+        StylePosition()
+            ->ISize(wm, AnchorPosResolutionParams::From(this))
+            ->HasPercent() ||
         !GetAspectRatio()) {
       result = wm.IsVertical() ? kFallbackIntrinsicSize.height
                                : kFallbackIntrinsicSize.width;
@@ -197,7 +222,6 @@ IntrinsicSize SVGOuterSVGFrame::GetIntrinsicSize() {
   return FinishIntrinsicSize(containAxes, intrinsicSize);
 }
 
-/* virtual */
 AspectRatio SVGOuterSVGFrame::GetIntrinsicRatio() const {
   if (ContainSizeAxesIfApplicable(this).IsAny()) {
     return AspectRatio();
@@ -227,8 +251,7 @@ AspectRatio SVGOuterSVGFrame::GetIntrinsicRatio() const {
     }
   }
 
-  const auto& viewBox = content->GetViewBoxInternal();
-  if (viewBox.HasRect()) {
+  if (const auto& viewBox = content->GetViewBoxInternal(); viewBox.HasRect()) {
     float zoom = Style()->EffectiveZoom().ToFloat();
     const auto& anim = viewBox.GetAnimValue() * zoom;
     return AspectRatio::FromSize(anim.width, anim.height);
@@ -239,7 +262,7 @@ AspectRatio SVGOuterSVGFrame::GetIntrinsicRatio() const {
 
 /* virtual */
 nsIFrame::SizeComputationResult SVGOuterSVGFrame::ComputeSize(
-    gfxContext* aRenderingContext, WritingMode aWritingMode,
+    const SizeComputationInput& aSizingInput, WritingMode aWritingMode,
     const LogicalSize& aCBSize, nscoord aAvailableISize,
     const LogicalSize& aMargin, const LogicalSize& aBorderPadding,
     const StyleSizeOverrides& aSizeOverrides, ComputeSizeFlags aFlags) {
@@ -254,11 +277,10 @@ nsIFrame::SizeComputationResult SVGOuterSVGFrame::ComputeSize(
 
   LogicalSize cbSize = aCBSize;
   IntrinsicSize intrinsicSize = GetIntrinsicSize();
-
+  AspectRatio ratio = GetAspectRatio();
   if (mIsRootContent) {
     // We're the root of the outermost browsing context, so we need to scale
     // cbSize by the full-zoom so that SVGs with percentage width/height zoom:
-
     NS_ASSERTION(aCBSize.ISize(aWritingMode) != NS_UNCONSTRAINEDSIZE &&
                      aCBSize.BSize(aWritingMode) != NS_UNCONSTRAINEDSIZE,
                  "root should not have auto-width/height containing block");
@@ -270,44 +292,11 @@ nsIFrame::SizeComputationResult SVGOuterSVGFrame::ComputeSize(
       cbSize.ISize(aWritingMode) *= zoom;
       cbSize.BSize(aWritingMode) *= zoom;
     }
-
-    // We also need to honour the width and height attributes' default values
-    // of 100% when we're the root of a browsing context.  (GetIntrinsicSize()
-    // doesn't report these since there's no such thing as a percentage
-    // intrinsic size.  Also note that explicit percentage values are mapped
-    // into style, so the following isn't for them.)
-
-    auto* content = static_cast<SVGSVGElement*>(GetContent());
-
-    const SVGAnimatedLength& width =
-        content->mLengthAttributes[SVGSVGElement::ATTR_WIDTH];
-    if (width.IsPercentage()) {
-      MOZ_ASSERT(!intrinsicSize.width,
-                 "GetIntrinsicSize should have reported no intrinsic width");
-      float val = width.GetAnimValInSpecifiedUnits() / 100.0f;
-      intrinsicSize.width.emplace(std::max(val, 0.0f) *
-                                  cbSize.Width(aWritingMode));
-    }
-
-    const SVGAnimatedLength& height =
-        content->mLengthAttributes[SVGSVGElement::ATTR_HEIGHT];
-    NS_ASSERTION(aCBSize.BSize(aWritingMode) != NS_UNCONSTRAINEDSIZE,
-                 "root should not have auto-height containing block");
-    if (height.IsPercentage()) {
-      MOZ_ASSERT(!intrinsicSize.height,
-                 "GetIntrinsicSize should have reported no intrinsic height");
-      float val = height.GetAnimValInSpecifiedUnits() / 100.0f;
-      intrinsicSize.height.emplace(std::max(val, 0.0f) *
-                                   cbSize.Height(aWritingMode));
-    }
-    MOZ_ASSERT(intrinsicSize.height && intrinsicSize.width,
-               "We should have just handled the only situation where"
-               "we lack an intrinsic height or width.");
   }
 
   return {ComputeSizeWithIntrinsicDimensions(
-              aRenderingContext, aWritingMode, intrinsicSize, GetAspectRatio(),
-              cbSize, aMargin, aBorderPadding, aSizeOverrides, aFlags),
+              aSizingInput.mRenderingContext, aWritingMode, intrinsicSize,
+              ratio, cbSize, aMargin, aBorderPadding, aSizeOverrides, aFlags),
           AspectRatioUsage::None};
 }
 
@@ -347,7 +336,7 @@ void SVGOuterSVGFrame::Reflow(nsPresContext* aPresContext,
       nsPresContext::AppUnitsToFloatCSSPixels(aReflowInput.ComputedWidth()),
       nsPresContext::AppUnitsToFloatCSSPixels(aReflowInput.ComputedHeight()));
 
-  uint32_t changeBits = 0;
+  ChangeFlags changeBits;
   if (newViewportSize != svgElem->GetViewportSize()) {
     // When our viewport size changes, we may need to update the overflow rects
     // of our child frames. This is the case if:
@@ -376,17 +365,17 @@ void SVGOuterSVGFrame::Reflow(nsPresContext* aPresContext,
         child->MarkSubtreeDirty();
       }
     }
-    changeBits |= COORD_CONTEXT_CHANGED;
+    changeBits += ChangeFlag::CoordContextChanged;
     svgElem->SetViewportSize(newViewportSize);
   }
   if (mIsRootContent && !mIsInIframe) {
     const auto oldZoom = mFullZoom;
     mFullZoom = ComputeFullZoom();
     if (oldZoom != mFullZoom) {
-      changeBits |= FULL_ZOOM_CHANGED;
+      changeBits += ChangeFlag::FullZoomChanged;
     }
   }
-  if (changeBits && !HasAnyStateBits(NS_FRAME_FIRST_REFLOW)) {
+  if (!changeBits.isEmpty() && !HasAnyStateBits(NS_FRAME_FIRST_REFLOW)) {
     NotifyViewportOrTransformChanged(changeBits);
   }
 
@@ -456,15 +445,6 @@ void SVGOuterSVGFrame::Reflow(nsPresContext* aPresContext,
                   aDesiredSize.Width(), aDesiredSize.Height()));
 }
 
-void SVGOuterSVGFrame::DidReflow(nsPresContext* aPresContext,
-                                 const ReflowInput* aReflowInput) {
-  SVGDisplayContainerFrame::DidReflow(aPresContext, aReflowInput);
-
-  // Make sure elements styled by :hover get updated if script/animation moves
-  // them under or out from under the pointer:
-  PresShell()->SynthesizeMouseMove(false);
-}
-
 /* virtual */
 void SVGOuterSVGFrame::UnionChildOverflow(OverflowAreas& aOverflowAreas,
                                           bool aAsIfScrolled) {
@@ -484,21 +464,20 @@ void SVGOuterSVGFrame::UnionChildOverflow(OverflowAreas& aOverflowAreas,
 // container methods
 
 nsresult SVGOuterSVGFrame::AttributeChanged(int32_t aNameSpaceID,
-                                            nsAtom* aAttribute,
-                                            int32_t aModType) {
+                                            nsAtom* aAttribute, AttrModType) {
   if (aNameSpaceID == kNameSpaceID_None &&
       !HasAnyStateBits(NS_FRAME_FIRST_REFLOW | NS_FRAME_IS_NONDISPLAY)) {
     if (aAttribute == nsGkAtoms::viewBox ||
-        aAttribute == nsGkAtoms::preserveAspectRatio ||
-        aAttribute == nsGkAtoms::transform) {
+        aAttribute == nsGkAtoms::preserveAspectRatio) {
       // make sure our cached transform matrix gets (lazily) updated
       mCanvasTM = nullptr;
 
       SVGUtils::NotifyChildrenOfSVGChange(
           PrincipalChildList().FirstChild(),
           aAttribute == nsGkAtoms::viewBox
-              ? TRANSFORM_CHANGED | COORD_CONTEXT_CHANGED
-              : TRANSFORM_CHANGED);
+              ? ChangeFlags(ChangeFlag::TransformChanged,
+                            ChangeFlag::CoordContextChanged)
+              : ChangeFlag::TransformChanged);
 
       if (aAttribute != nsGkAtoms::transform) {
         static_cast<SVGSVGElement*>(GetContent())
@@ -561,49 +540,48 @@ void SVGOuterSVGFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
 //----------------------------------------------------------------------
 // ISVGSVGFrame methods:
 
-void SVGOuterSVGFrame::NotifyViewportOrTransformChanged(uint32_t aFlags) {
-  MOZ_ASSERT(aFlags && !(aFlags & ~(COORD_CONTEXT_CHANGED | TRANSFORM_CHANGED |
-                                    FULL_ZOOM_CHANGED)),
-             "Unexpected aFlags value");
-
-  SVGSVGElement* content = static_cast<SVGSVGElement*>(GetContent());
-
-  if (aFlags & COORD_CONTEXT_CHANGED) {
+void SVGOuterSVGFrame::NotifyViewportOrTransformChanged(ChangeFlags aFlags) {
+  auto* content = static_cast<SVGSVGElement*>(GetContent());
+  if (aFlags.contains(ChangeFlag::CoordContextChanged)) {
     if (content->HasViewBox()) {
       // Percentage lengths on children resolve against the viewBox rect so we
       // don't need to notify them of the viewport change, but the viewBox
       // transform will have changed, so we need to notify them of that instead.
-      aFlags = TRANSFORM_CHANGED;
+      aFlags = ChangeFlag::TransformChanged;
     } else if (content->ShouldSynthesizeViewBox()) {
       // In the case of a synthesized viewBox, the synthetic viewBox's rect
       // changes as the viewport changes. As a result we need to maintain the
       // COORD_CONTEXT_CHANGED flag.
-      aFlags |= TRANSFORM_CHANGED;
+      aFlags += ChangeFlag::TransformChanged;
     } else if (mCanvasTM && mCanvasTM->IsSingular()) {
       // A width/height of zero will result in us having a singular mCanvasTM
       // even when we don't have a viewBox. So we also want to recompute our
       // mCanvasTM for this width/height change even though we don't have a
       // viewBox.
-      aFlags |= TRANSFORM_CHANGED;
+      aFlags += ChangeFlag::TransformChanged;
     }
   }
 
-  bool haveNonFulLZoomTransformChange = (aFlags & TRANSFORM_CHANGED);
+  bool haveNonFullZoomTransformChange =
+      aFlags.contains(ChangeFlag::TransformChanged);
 
-  if (aFlags & FULL_ZOOM_CHANGED) {
-    // Convert FULL_ZOOM_CHANGED to TRANSFORM_CHANGED:
-    aFlags = (aFlags & ~FULL_ZOOM_CHANGED) | TRANSFORM_CHANGED;
+  if (aFlags.contains(ChangeFlag::FullZoomChanged)) {
+    // Convert FullZoomChanged to TransformChanged.
+    aFlags -= ChangeFlag::FullZoomChanged;
+    aFlags += ChangeFlag::TransformChanged;
   }
 
-  if (aFlags & TRANSFORM_CHANGED) {
+  if (aFlags.contains(ChangeFlag::TransformChanged)) {
     // Make sure our canvas transform matrix gets (lazily) recalculated:
     mCanvasTM = nullptr;
 
-    if (haveNonFulLZoomTransformChange &&
+    if (haveNonFullZoomTransformChange &&
         !HasAnyStateBits(NS_FRAME_IS_NONDISPLAY)) {
-      uint32_t flags = HasAnyStateBits(NS_FRAME_IN_REFLOW)
-                           ? SVGSVGElement::eDuringReflow
-                           : 0;
+      SVGViewportElement::ChildrenOnlyTransformChangedFlags flags;
+      if (HasAnyStateBits(NS_FRAME_IN_REFLOW)) {
+        flags +=
+            SVGViewportElement::ChildrenOnlyTransformChangedFlag::DuringReflow;
+      }
       content->ChildrenOnlyTransformChanged(flags);
     }
   }
@@ -628,13 +606,13 @@ void SVGOuterSVGFrame::PaintSVG(gfxContext& aContext,
 }
 
 SVGBBox SVGOuterSVGFrame::GetBBoxContribution(
-    const gfx::Matrix& aToBBoxUserspace, uint32_t aFlags) {
+    const gfx::Matrix& aToBBoxUserspace, SVGBBoxFlags aFlags) {
   NS_ASSERTION(
       PrincipalChildList().FirstChild()->IsSVGOuterSVGAnonChildFrame() &&
           !PrincipalChildList().FirstChild()->GetNextSibling(),
       "We should have a single, anonymous, child");
   // We must defer to our child so that we don't include our
-  // content->PrependLocalTransformsTo() transforms.
+  // content->ChildToUserSpaceTransform() transform.
   auto* anonKid = static_cast<SVGOuterSVGAnonChildFrame*>(
       PrincipalChildList().FirstChild());
   return anonKid->GetBBoxContribution(aToBBoxUserspace, aFlags);
@@ -649,9 +627,9 @@ gfxMatrix SVGOuterSVGFrame::GetCanvasTM() {
     float devPxPerCSSPx = 1.0f / nsPresContext::AppUnitsToFloatCSSPixels(
                                      PresContext()->AppUnitsPerDevPixel());
 
-    gfxMatrix tm = content->PrependLocalTransformsTo(
-        gfxMatrix::Scaling(devPxPerCSSPx, devPxPerCSSPx));
-    mCanvasTM = MakeUnique<gfxMatrix>(tm);
+    gfxMatrix tm = content->ChildToUserSpaceTransform().PostScale(
+        devPxPerCSSPx, devPxPerCSSPx);
+    mCanvasTM = std::make_unique<gfxMatrix>(tm);
   }
   return *mCanvasTM;
 }
@@ -688,7 +666,7 @@ void SVGOuterSVGFrame::AppendDirectlyOwnedAnonBoxes(
 
 void SVGOuterSVGFrame::MaybeSendIntrinsicSizeAndRatioToEmbedder() {
   MaybeSendIntrinsicSizeAndRatioToEmbedder(Some(GetIntrinsicSize()),
-                                           Some(GetAspectRatio()));
+                                           Some(GetIntrinsicRatio()));
 }
 
 void SVGOuterSVGFrame::MaybeSendIntrinsicSizeAndRatioToEmbedder(
@@ -717,8 +695,8 @@ void SVGOuterSVGFrame::MaybeSendIntrinsicSizeAndRatioToEmbedder(
   }
 
   if (BrowserChild* browserChild = BrowserChild::GetFrom(docShell)) {
-    Unused << browserChild->SendIntrinsicSizeOrRatioChanged(aIntrinsicSize,
-                                                            aIntrinsicRatio);
+    (void)browserChild->SendIntrinsicSizeOrRatioChanged(aIntrinsicSize,
+                                                        aIntrinsicRatio);
   }
 }
 
@@ -789,33 +767,14 @@ void SVGOuterSVGAnonChildFrame::BuildDisplayList(
 }
 
 bool SVGOuterSVGFrame::HasChildrenOnlyTransform(Matrix* aTransform) const {
-  // Our elements 'transform' attribute is applied to our SVGOuterSVGFrame
-  // parent, and the element's children-only transforms are applied to us, the
-  // anonymous child frame.
   auto* content = static_cast<SVGSVGElement*>(GetContent());
   if (!content->HasChildrenOnlyTransform()) {
     return false;
   }
   if (aTransform) {
-    // Outer-<svg> doesn't use x/y, so we can pass eChildToUserSpace here.
-    *aTransform = gfx::ToMatrix(
-        content->PrependLocalTransformsTo(gfxMatrix(), eChildToUserSpace));
-    if (aTransform->HasNonTranslation()) {
-      // The nsDisplayTransform code will apply this transform to our inner kid,
-      // including to its frame position.  We don't want our frame position to
-      // be scaled though, so we need to correct for that in the transform.
-      // XXX Yeah, this is a bit hacky.
-      // viewBox, currentScale and currentTranslate should only produce a
-      // rectilinear transform.
-      MOZ_ASSERT(aTransform->IsRectilinear(),
-                 "Non-rectilinear transform will break the following logic");
-      CSSPoint pos =
-          CSSPixel::FromAppUnits(GetContentRectRelativeToSelf().TopLeft());
-      CSSPoint scaledPos =
-          CSSPoint(aTransform->_11 * pos.x, aTransform->_22 * pos.y);
-      CSSPoint deltaPos = scaledPos - pos;
-      *aTransform *= Matrix::Translation(-deltaPos.x, -deltaPos.y);
-    }
+    // Outer-<svg> doesn't use x/y, so we can use the child-to-user-space
+    // transform here.
+    *aTransform = gfx::ToMatrix(content->ChildToUserSpaceTransform());
   }
   return true;
 }

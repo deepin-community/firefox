@@ -1,41 +1,38 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "nsIAuthPrompt.h"
+#include "ReferrerInfo.h"
+#include "mozilla/Encoding.h"
+#include "mozilla/UniquePtr.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/Element.h"
+#include "mozilla/dom/Text.h"
+#include "nsAttrName.h"
+#include "nsCharsetSource.h"
+#include "nsComponentManagerUtils.h"
+#include "nsContentPolicyUtils.h"
+#include "nsError.h"
+#include "nsIAuthPrompt.h"
 #include "nsIExpatSink.h"
+#include "nsIHttpChannel.h"
 #include "nsIInterfaceRequestor.h"
 #include "nsILoadGroup.h"
-#include "nsParser.h"
-#include "nsCharsetSource.h"
-#include "nsIRequestObserver.h"
-#include "nsContentPolicyUtils.h"
-#include "nsIStreamConverterService.h"
-#include "nsSyncLoadService.h"
-#include "nsIHttpChannel.h"
-#include "nsIURI.h"
 #include "nsIPrincipal.h"
+#include "nsIRequestObserver.h"
+#include "nsIScriptError.h"
+#include "nsIStreamConverterService.h"
+#include "nsIURI.h"
 #include "nsIWindowWatcher.h"
 #include "nsIXMLContentSink.h"
 #include "nsMimeTypes.h"
 #include "nsNetUtil.h"
-#include "nsGkAtoms.h"
+#include "nsParser.h"
+#include "nsSyncLoadService.h"
 #include "txLog.h"
 #include "txMozillaXSLTProcessor.h"
 #include "txStylesheetCompiler.h"
 #include "txXMLUtils.h"
-#include "nsAttrName.h"
-#include "nsComponentManagerUtils.h"
-#include "nsIScriptError.h"
-#include "nsError.h"
-#include "mozilla/Attributes.h"
-#include "mozilla/dom/Element.h"
-#include "mozilla/dom/Text.h"
-#include "mozilla/Encoding.h"
-#include "mozilla/UniquePtr.h"
-#include "ReferrerInfo.h"
 
 using namespace mozilla;
 using mozilla::dom::Document;
@@ -110,7 +107,7 @@ txStylesheetSink::HandleStartElement(const char16_t* aName,
                                      const char16_t** aAtts,
                                      uint32_t aAttsCount, uint32_t aLineNumber,
                                      uint32_t aColumnNumber) {
-  MOZ_ASSERT(aAttsCount % 2 == 0, "incorrect aAttsCount");
+  MOZ_RELEASE_ASSERT(aAttsCount % 2 == 0, "incorrect aAttsCount");
 
   nsresult rv = mCompiler->startElement(aName, aAtts, aAttsCount / 2);
   if (NS_FAILED(rv)) {
@@ -211,7 +208,8 @@ txStylesheetSink::OnDataAvailable(nsIRequest* aRequest,
     }
   }
 
-  return mListener->OnDataAvailable(aRequest, aInputStream, aOffset, aCount);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  return listener->OnDataAvailable(aRequest, aInputStream, aOffset, aCount);
 }
 
 NS_IMETHODIMP
@@ -242,7 +240,14 @@ txStylesheetSink::OnStartRequest(nsIRequest* aRequest) {
   // Time to sniff! Note: this should go away once file channels do
   // sniffing themselves.
   nsCOMPtr<nsIURI> uri;
-  channel->GetURI(getter_AddRefs(uri));
+  nsresult rv = NS_GetFinalChannelURI(channel, getter_AddRefs(uri));
+  NS_ENSURE_SUCCESS(rv, rv);
+  nsAutoCString spec;
+  uri->GetSpec(spec);
+  NS_ConvertUTF8toUTF16 baseURI(spec);
+  mCompiler->setBaseURI(
+      baseURI);  // Redirections potentially impact the Base URI, always update
+                 // the base URI with the final URL.
   if (uri->SchemeIs("file") &&
       contentType.EqualsLiteral(UNKNOWN_CONTENT_TYPE)) {
     nsresult rv;
@@ -254,12 +259,13 @@ txStylesheetSink::OnStartRequest(nsIRequest* aRequest) {
                                   NS_ISUPPORTS_CAST(nsIParser*, mParser),
                                   getter_AddRefs(converter));
       if (NS_SUCCEEDED(rv)) {
-        mListener = converter;
+        mListener = std::move(converter);
       }
     }
   }
 
-  return mListener->OnStartRequest(aRequest);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  return listener->OnStartRequest(aRequest);
 }
 
 NS_IMETHODIMP
@@ -268,7 +274,7 @@ txStylesheetSink::OnStopRequest(nsIRequest* aRequest, nsresult aStatusCode) {
 
   nsCOMPtr<nsIHttpChannel> httpChannel = do_QueryInterface(aRequest);
   if (httpChannel) {
-    Unused << httpChannel->GetRequestSucceeded(&success);
+    (void)httpChannel->GetRequestSucceeded(&success);
   }
 
   nsresult result = aStatusCode;
@@ -291,7 +297,8 @@ txStylesheetSink::OnStopRequest(nsIRequest* aRequest, nsresult aStatusCode) {
     mCompiler->cancel(result, nullptr, spec.get());
   }
 
-  nsresult rv = mListener->OnStopRequest(aRequest, aStatusCode);
+  nsCOMPtr<nsIStreamListener> listener = mListener;
+  nsresult rv = listener->OnStopRequest(aRequest, aStatusCode);
   mListener = nullptr;
   mParser = nullptr;
   return rv;
@@ -332,12 +339,12 @@ class txCompileObserver final : public txACompileObserver {
                      nsIPrincipal* aSourcePrincipal,
                      ReferrerPolicy aReferrerPolicy);
 
+  // This exists solely to suppress a warning from nsDerivedSafe
+  txCompileObserver() = delete;
+
  private:
   RefPtr<txMozillaXSLTProcessor> mProcessor;
   nsCOMPtr<Document> mLoaderDocument;
-
-  // This exists solely to suppress a warning from nsDerivedSafe
-  txCompileObserver();
 
   // Private destructor, to discourage deletion outside of Release():
   ~txCompileObserver() = default;
@@ -479,7 +486,7 @@ static nsresult handleNode(nsINode* aNode, txStylesheetCompiler* aCompiler) {
     // explicitly destroy the attrs here since we no longer need it
     atts = nullptr;
 
-    for (nsIContent* child = element->GetFirstChild(); child;
+    for (nsCOMPtr<nsIContent> child = element->GetFirstChild(); child;
          child = child->GetNextSibling()) {
       rv = handleNode(child, aCompiler);
       NS_ENSURE_SUCCESS(rv, rv);
@@ -493,7 +500,7 @@ static nsresult handleNode(nsINode* aNode, txStylesheetCompiler* aCompiler) {
     rv = aCompiler->characters(chars);
     NS_ENSURE_SUCCESS(rv, rv);
   } else if (aNode->IsDocument()) {
-    for (nsIContent* child = aNode->GetFirstChild(); child;
+    for (nsCOMPtr<nsIContent> child = aNode->GetFirstChild(); child;
          child = child->GetNextSibling()) {
       rv = handleNode(child, aCompiler);
       NS_ENSURE_SUCCESS(rv, rv);
@@ -532,29 +539,24 @@ nsresult txSyncCompileObserver::loadURI(const nsAString& aUri,
   nsresult rv = NS_NewURI(getter_AddRefs(uri), aUri);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  nsCOMPtr<nsIURI> referrerUri;
-  rv = NS_NewURI(getter_AddRefs(referrerUri), aReferrerUri);
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  nsCOMPtr<nsIPrincipal> referrerPrincipal =
-      BasePrincipal::CreateContentPrincipal(referrerUri, OriginAttributes());
-  NS_ENSURE_TRUE(referrerPrincipal, NS_ERROR_FAILURE);
+  nsCOMPtr<nsPIDOMWindowInner> window =
+      do_QueryInterface(mProcessor->GetParentObject());
+  NS_ENSURE_TRUE(window, NS_ERROR_FAILURE);
+  nsCOMPtr<Document> loaderDoc = window->GetExtantDoc();
+  NS_ENSURE_TRUE(loaderDoc, NS_ERROR_FAILURE);
 
   // This is probably called by js, a loadGroup for the channel doesn't
   // make sense.
-  nsCOMPtr<nsINode> source;
-  if (mProcessor) {
-    source = mProcessor->GetSourceContentModel();
-  }
+  nsCOMPtr<nsINode> source = mProcessor->GetSourceContentModel();
   dom::nsAutoSyncOperation sync(source ? source->OwnerDoc() : nullptr,
                                 dom::SyncOperationBehavior::eSuspendInput);
   nsCOMPtr<Document> document;
 
   rv = nsSyncLoadService::LoadDocument(
-      uri, nsIContentPolicy::TYPE_XSLT, referrerPrincipal,
-      nsILoadInfo::SEC_REQUIRE_CORS_INHERITS_SEC_CONTEXT, nullptr,
-      source ? source->OwnerDoc()->CookieJarSettings() : nullptr, false,
-      aReferrerPolicy, getter_AddRefs(document));
+      uri, nsIContentPolicy::TYPE_XSLT, loaderDoc,
+      /* aLoaderPrincipal */ nullptr,
+      nsILoadInfo::SEC_REQUIRE_CORS_INHERITS_SEC_CONTEXT, nullptr, nullptr,
+      false, aReferrerPolicy, getter_AddRefs(document));
   NS_ENSURE_SUCCESS(rv, rv);
 
   rv = handleNode(document, aCompiler);

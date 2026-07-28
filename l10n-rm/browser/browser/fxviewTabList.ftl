@@ -53,6 +53,10 @@ fxviewtabrow-move-tab-end = Spustar a la fin
     .accesskey = f
 fxviewtabrow-move-tab-window = Spustar en ina nova fanestra
     .accesskey = o
+fxviewtabrow-send-to-device = Trametter ad in apparat
+    .accesskey = n
+fxviewtabrow-send-to-mobile = Trametter ad in apparat mobil
+    .accesskey = n
 fxviewtabrow-send-tab = Trametter il tab ad in apparat
     .accesskey = p
 fxviewtabrow-pin-tab = Fixar il tab
@@ -67,16 +71,8 @@ fxviewtabrow-unmute-tab = Reactivar il tun dal tab
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Opziuns per { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Deactivar il tun per { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Activar il tun per { $tabTitle }
 
-## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+## The following strings are for displaying elements in Firefox View to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 fxviewtabrow-mute-tab-button-no-context =
     .title = Deactivar il tun dal tab

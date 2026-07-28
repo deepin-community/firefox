@@ -1,4 +1,3 @@
-/* -*- js-indent-level: 2; indent-tabs-mode: nil -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +9,6 @@ import { TelemetryUtils } from "resource://gre/modules/TelemetryUtils.sys.mjs";
 const LOGGER_NAME = "Toolkit.Telemetry";
 const LOGGER_PREFIX = "TelemetryStorage::";
 
-const Telemetry = Services.telemetry;
 const Utils = TelemetryUtils;
 
 // Compute the path of the pings archive on the first use.
@@ -252,7 +250,7 @@ export var TelemetryStorage = {
   /**
    * Save a pending - outgoing - ping to disk and track it.
    *
-   * @param {Object} ping The ping data.
+   * @param {object} ping The ping data.
    * @return {Promise} Resolved when the ping was saved.
    */
   savePendingPing(ping) {
@@ -261,7 +259,8 @@ export var TelemetryStorage = {
 
   /**
    * Saves session data to disk.
-   * @param {Object}  sessionData The session data.
+   *
+   * @param {object}  sessionData The session data.
    * @return {Promise} Resolved when the data was saved.
    */
   saveSessionData(sessionData) {
@@ -270,6 +269,7 @@ export var TelemetryStorage = {
 
   /**
    * Loads session data from a session data file.
+   *
    * @return {Promise<object>} Resolved with the session data in object form.
    */
   loadSessionData() {
@@ -279,7 +279,7 @@ export var TelemetryStorage = {
   /**
    * Load a pending ping from disk by id.
    *
-   * @param {String} id The pings id.
+   * @param {string} id The pings id.
    * @return {Promise} Resolved with the loaded ping data.
    */
   loadPendingPing(id) {
@@ -289,7 +289,7 @@ export var TelemetryStorage = {
   /**
    * Remove a pending ping from disk by id.
    *
-   * @param {String} id The pings id.
+   * @param {string} id The pings id.
    * @return {Promise} Resolved when the ping was removed.
    */
   removePendingPing(id) {
@@ -417,8 +417,9 @@ export var TelemetryStorage = {
 
   /**
    * Loads a ping file.
-   * @param {String} aFilePath The path of the ping file.
-   * @return {Promise<Object>} A promise resolved with the ping content or rejected if the
+   *
+   * @param {string} aFilePath The path of the ping file.
+   * @return {Promise<object>} A promise resolved with the ping content or rejected if the
    *                           ping contains invalid data.
    */
   async loadPingFile(aFilePath) {
@@ -428,6 +429,7 @@ export var TelemetryStorage = {
   /**
    * Remove FHR database files. This is temporary and will be dropped in
    * the future.
+   *
    * @return {Promise} Resolved when the database files are deleted.
    */
   removeFHRDatabase() {
@@ -436,10 +438,11 @@ export var TelemetryStorage = {
 
   /**
    * Only used in tests, builds an archived ping path from the ping metadata.
-   * @param {String} aPingId The ping id.
-   * @param {Object} aDate The ping creation date.
-   * @param {String} aType The ping type.
-   * @return {String} The full path to the archived ping.
+   *
+   * @param {string} aPingId The ping id.
+   * @param {object} aDate The ping creation date.
+   * @param {string} aType The ping type.
+   * @return {string} The full path to the archived ping.
    */
   _testGetArchivedPingPath(aPingId, aDate, aType) {
     return getArchivedPingPath(aPingId, aDate, aType);
@@ -449,7 +452,7 @@ export var TelemetryStorage = {
    * Only used in tests, this helper extracts ping metadata from a given filename.
    *
    * @param fileName {String} The filename.
-   * @return {Object} Null if the filename didn't match the expected form.
+   * @return {object} Null if the filename didn't match the expected form.
    *                  Otherwise an object with the extracted data in the form:
    *                  { timestamp: <number>,
    *                    id: <string>,
@@ -504,6 +507,7 @@ SaveSerializer.prototype = {
 
   /**
    * Make sure to flush all the pending operations.
+   *
    * @return {Promise} A promise resolved when all the pending operations have completed.
    */
   flushTasks() {
@@ -707,7 +711,7 @@ var TelemetryStorageImpl = {
       type: internString(ping.type),
     });
 
-    Telemetry.getHistogramById("TELEMETRY_ARCHIVE_SESSION_PING_COUNT").add();
+    Glean.telemetry.archiveSessionPingCount.add(1);
     return undefined;
   },
 
@@ -737,12 +741,10 @@ var TelemetryStorageImpl = {
     let checkSize = async function (path) {
       const fileSize = await IOUtils.stat(path).then(info => info.size);
       if (fileSize > PING_FILE_MAXIMUM_SIZE_BYTES) {
-        Telemetry.getHistogramById(
-          "TELEMETRY_DISCARDED_ARCHIVED_PINGS_SIZE_MB"
-        ).add(Math.floor(fileSize / 1024 / 1024));
-        Telemetry.getHistogramById(
-          "TELEMETRY_PING_SIZE_EXCEEDED_ARCHIVED"
-        ).add();
+        Glean.telemetry.discardedArchivedPingsSize.accumulate(
+          Math.floor(fileSize / 1024 / 1024)
+        );
+        Glean.telemetry.pingSizeExceededArchived.add(1);
         await IOUtils.remove(path, { ignoreAbsent: true });
         throw new Error(
           `loadArchivedPing - exceeded the maximum ping size: ${fileSize}`
@@ -798,13 +800,13 @@ var TelemetryStorageImpl = {
         `_saveSessionData - Failed to write session data to ${filePath}`,
         e
       );
-      Telemetry.getHistogramById("TELEMETRY_SESSIONDATA_FAILED_SAVE").add(1);
     }
   },
 
   /**
    * Loads session data from the session data file.
-   * @return {Promise<Object>} A promise resolved with an object on success,
+   *
+   * @return {Promise<object>} A promise resolved with an object on success,
    *                           with null otherwise.
    */
   loadSessionData() {
@@ -822,7 +824,6 @@ var TelemetryStorageImpl = {
       content = await IOUtils.readUTF8(dataFile);
     } catch (ex) {
       this._log.info("_loadSessionData - can not load session data file", ex);
-      Telemetry.getHistogramById("TELEMETRY_SESSIONDATA_FAILED_LOAD").add(1);
       return null;
     }
 
@@ -831,7 +832,6 @@ var TelemetryStorageImpl = {
       data = JSON.parse(content);
     } catch (ex) {
       this._log.error("_loadSessionData - failed to parse session data", ex);
-      Telemetry.getHistogramById("TELEMETRY_SESSIONDATA_FAILED_PARSE").add(1);
       return null;
     }
 
@@ -885,6 +885,7 @@ var TelemetryStorageImpl = {
 
   /**
    * Removes pings which are too old from the pings archive.
+   *
    * @return {Promise} Resolved when the ping age check is complete.
    */
   async _purgeOldPings() {
@@ -976,19 +977,20 @@ var TelemetryStorageImpl = {
     const endTimeStamp = Policy.now().getTime();
 
     // Save the time it takes to evict old directories and the eviction count.
-    Telemetry.getHistogramById("TELEMETRY_ARCHIVE_EVICTED_OLD_DIRS").add(
+    Glean.telemetry.archiveEvictedOldDirs.accumulateSingleSample(
       evictedDirsCount
     );
-    Telemetry.getHistogramById("TELEMETRY_ARCHIVE_EVICTING_DIRS_MS").add(
+    Glean.telemetry.archiveEvictingDirs.accumulateSingleSample(
       Math.ceil(endTimeStamp - startTimeStamp)
     );
-    Telemetry.getHistogramById("TELEMETRY_ARCHIVE_OLDEST_DIRECTORY_AGE").add(
+    Glean.telemetry.archiveOldestDirectoryAge.accumulateSingleSample(
       maxDirAgeInMonths
     );
   },
 
   /**
    * Enforce a disk quota for the pings archive.
+   *
    * @return {Promise} Resolved when the quota check is complete.
    */
   async _enforceArchiveQuota() {
@@ -1052,12 +1054,10 @@ var TelemetryStorageImpl = {
             "_enforceArchiveQuota - failed to remove archived ping" + ping.id
           )
         );
-        Telemetry.getHistogramById(
-          "TELEMETRY_DISCARDED_ARCHIVED_PINGS_SIZE_MB"
-        ).add(Math.floor(fileSize / 1024 / 1024));
-        Telemetry.getHistogramById(
-          "TELEMETRY_PING_SIZE_EXCEEDED_ARCHIVED"
-        ).add();
+        Glean.telemetry.discardedArchivedPingsSize.accumulate(
+          Math.floor(fileSize / 1024 / 1024)
+        );
+        Glean.telemetry.pingSizeExceededArchived.add(1);
         continue;
       }
 
@@ -1074,18 +1074,18 @@ var TelemetryStorageImpl = {
     }
 
     // Save the time it takes to check if the archive is over-quota.
-    Telemetry.getHistogramById("TELEMETRY_ARCHIVE_CHECKING_OVER_QUOTA_MS").add(
+    Glean.telemetry.archiveCheckingOverQuota.accumulateSingleSample(
       Math.round(Policy.now().getTime() - startTimeStamp)
     );
 
     let submitProbes = (sizeInMB, evictedPings, elapsedMs) => {
-      Telemetry.getHistogramById("TELEMETRY_ARCHIVE_SIZE_MB").add(sizeInMB);
-      Telemetry.getHistogramById("TELEMETRY_ARCHIVE_EVICTED_OVER_QUOTA").add(
+      Glean.telemetry.archiveSize.accumulate(sizeInMB);
+      Glean.telemetry.archiveEvictedOverQuota.accumulateSingleSample(
         evictedPings
       );
-      Telemetry.getHistogramById(
-        "TELEMETRY_ARCHIVE_EVICTING_OVER_QUOTA_MS"
-      ).add(elapsedMs);
+      Glean.telemetry.archiveEvictingOverQuota.accumulateSingleSample(
+        elapsedMs
+      );
     };
 
     // Check if we're using too much space. If not, submit the archive size and bail out.
@@ -1172,6 +1172,7 @@ var TelemetryStorageImpl = {
 
   /**
    * Enforce a disk quota for the pending pings.
+   *
    * @return {Promise} Resolved when the quota check is complete.
    */
   async _enforcePendingPingsQuota() {
@@ -1226,20 +1227,18 @@ var TelemetryStorageImpl = {
     }
 
     // Save the time it takes to check if the pending pings are over-quota.
-    Telemetry.getHistogramById("TELEMETRY_PENDING_CHECKING_OVER_QUOTA_MS").add(
+    Glean.telemetry.pendingCheckingOverQuota.accumulateSingleSample(
       Math.round(Policy.now().getTime() - startTimeStamp)
     );
 
     let recordHistograms = (sizeInMB, evictedPings, elapsedMs) => {
-      Telemetry.getHistogramById("TELEMETRY_PENDING_PINGS_SIZE_MB").add(
-        sizeInMB
+      Glean.telemetry.pendingPingsSize.accumulate(sizeInMB);
+      Glean.telemetry.pendingPingsEvictedOverQuota.accumulateSingleSample(
+        evictedPings
       );
-      Telemetry.getHistogramById(
-        "TELEMETRY_PENDING_PINGS_EVICTED_OVER_QUOTA"
-      ).add(evictedPings);
-      Telemetry.getHistogramById(
-        "TELEMETRY_PENDING_EVICTING_OVER_QUOTA_MS"
-      ).add(elapsedMs);
+      Glean.telemetry.pendingEvictingOverQuota.accumulateSingleSample(
+        elapsedMs
+      );
     };
 
     // Check if we're using too much space. If not, bail out.
@@ -1333,12 +1332,8 @@ var TelemetryStorageImpl = {
     this._log.trace("_scanArchive");
 
     let submitProbes = (pingCount, dirCount) => {
-      Telemetry.getHistogramById("TELEMETRY_ARCHIVE_SCAN_PING_COUNT").add(
-        pingCount
-      );
-      Telemetry.getHistogramById("TELEMETRY_ARCHIVE_DIRECTORIES_COUNT").add(
-        dirCount
-      );
+      Glean.telemetry.archiveScanPingCount.accumulateSingleSample(pingCount);
+      Glean.telemetry.archiveDirectoriesCount.accumulateSingleSample(dirCount);
     };
 
     if (!(await IOUtils.exists(lazy.gPingsArchivePath))) {
@@ -1505,10 +1500,10 @@ var TelemetryStorageImpl = {
     // Purge pings which are too big.
     if (fileSize > PING_FILE_MAXIMUM_SIZE_BYTES) {
       await this.removePendingPing(id);
-      Telemetry.getHistogramById(
-        "TELEMETRY_DISCARDED_PENDING_PINGS_SIZE_MB"
-      ).add(Math.floor(fileSize / 1024 / 1024));
-      Telemetry.getHistogramById("TELEMETRY_PING_SIZE_EXCEEDED_PENDING").add();
+      Glean.telemetry.discardedPendingPingsSize.accumulate(
+        Math.floor(fileSize / 1024 / 1024)
+      );
+      Glean.telemetry.pingSizeExceededPending.add(1);
 
       // Currently we don't have the ping type available without loading the ping from disk.
       // Bug 1384903 will fix that.
@@ -1525,11 +1520,9 @@ var TelemetryStorageImpl = {
     } catch (e) {
       // If we failed to load the ping, check what happened and update the histogram.
       if (e instanceof PingReadError) {
-        Telemetry.getHistogramById("TELEMETRY_PENDING_LOAD_FAILURE_READ").add();
+        Glean.telemetry.pendingLoadFailureRead.add(1);
       } else if (e instanceof PingParseError) {
-        Telemetry.getHistogramById(
-          "TELEMETRY_PENDING_LOAD_FAILURE_PARSE"
-        ).add();
+        Glean.telemetry.pendingLoadFailureParse.add(1);
       }
 
       // Remove the ping from the cache, so we don't try to load it again.
@@ -1564,7 +1557,7 @@ var TelemetryStorageImpl = {
    * Track any pending ping save tasks through the promise passed here.
    * This is needed to block on any outstanding ping save activity.
    *
-   * @param {Object<Promise>} The save promise to track.
+   * @param {Promise} The save promise to track.
    */
   _trackPendingPingSaveTask(promise) {
     let clear = () => this._activePendingPingSaves.delete(promise);
@@ -1574,7 +1567,8 @@ var TelemetryStorageImpl = {
 
   /**
    * Return a promise that allows to wait on pending pings being saved.
-   * @return {Object<Promise>} A promise resolved when all the pending pings save promises
+   *
+   * @return {Promise} A promise resolved when all the pending pings save promises
    *         are resolved.
    */
   promisePendingPingSaves() {
@@ -1832,12 +1826,10 @@ var TelemetryStorageImpl = {
             ex
           );
         } finally {
-          Telemetry.getHistogramById(
-            "TELEMETRY_DISCARDED_PENDING_PINGS_SIZE_MB"
-          ).add(Math.floor(info.size / 1024 / 1024));
-          Telemetry.getHistogramById(
-            "TELEMETRY_PING_SIZE_EXCEEDED_PENDING"
-          ).add();
+          Glean.telemetry.discardedPendingPingsSize.accumulate(
+            Math.floor(info.size / 1024 / 1024)
+          );
+          Glean.telemetry.pingSizeExceededPending.add(1);
 
           // Currently we don't have the ping type available without loading the ping from disk.
           // Bug 1384903 will fix that.
@@ -1874,9 +1866,10 @@ var TelemetryStorageImpl = {
 
   /**
    * Loads a ping file.
-   * @param {String} aFilePath The path of the ping file.
-   * @param {Boolean} [aCompressed=false] If |true|, expects the file to be compressed using lz4.
-   * @return {Promise<Object>} A promise resolved with the ping content or rejected if the
+   *
+   * @param {string} aFilePath The path of the ping file.
+   * @param {boolean} [aCompressed=false] If |true|, expects the file to be compressed using lz4.
+   * @return {Promise<object>} A promise resolved with the ping content or rejected if the
    *                           ping contains invalid data.
    * @throws {PingReadError} There was an error while reading the ping file from the disk.
    * @throws {PingParseError} There was an error while parsing the JSON content of the ping file.
@@ -1916,7 +1909,7 @@ var TelemetryStorageImpl = {
    * This helper extracts that data from a given filename.
    *
    * @param fileName {String} The filename.
-   * @return {Object} Null if the filename didn't match the expected form.
+   * @return {object} Null if the filename didn't match the expected form.
    *                  Otherwise an object with the extracted data in the form:
    *                  { timestamp: <number>,
    *                    id: <string>,
@@ -2058,6 +2051,7 @@ var TelemetryStorageImpl = {
   /**
    * Remove FHR database files. This is temporary and will be dropped in
    * the future.
+   *
    * @return {Promise} Resolved when the database files are deleted.
    */
   async removeFHRDatabase() {
@@ -2125,10 +2119,11 @@ function getPingDirectory() {
 
 /**
  * Build the path to the archived ping.
- * @param {String} aPingId The ping id.
- * @param {Object} aDate The ping creation date.
- * @param {String} aType The ping type.
- * @return {String} The full path to the archived ping.
+ *
+ * @param {string} aPingId The ping id.
+ * @param {object} aDate The ping creation date.
+ * @param {string} aType The ping type.
+ * @return {string} The full path to the archived ping.
  */
 function getArchivedPingPath(aPingId, aDate, aType) {
   // Get the ping creation date and generate the archive directory to hold it. Note
@@ -2145,6 +2140,7 @@ function getArchivedPingPath(aPingId, aDate, aType) {
 
 /**
  * Get the size of the ping file on the disk.
+ *
  * @return {Integer} The file size, in bytes, of the ping file or 0 on errors.
  */
 var getArchivedPingSize = async function (aPingId, aDate, aType) {
@@ -2163,6 +2159,7 @@ var getArchivedPingSize = async function (aPingId, aDate, aType) {
 
 /**
  * Get the size of the pending ping file on the disk.
+ *
  * @return {Integer} The file size, in bytes, of the ping file or 0 on errors.
  */
 var getPendingPingSize = async function (aPingId) {
@@ -2177,8 +2174,9 @@ var getPendingPingSize = async function (aPingId) {
 
 /**
  * Check if a directory name is in the "YYYY-MM" format.
- * @param {String} aDirName The name of the pings archive directory.
- * @return {Boolean} True if the directory name is in the right format, false otherwise.
+ *
+ * @param {string} aDirName The name of the pings archive directory.
+ * @return {boolean} True if the directory name is in the right format, false otherwise.
  */
 function isValidArchiveDir(aDirName) {
   const dirRegEx = /^[0-9]{4}-[0-9]{2}$/;
@@ -2187,9 +2185,10 @@ function isValidArchiveDir(aDirName) {
 
 /**
  * Gets a date object from an archive directory name.
- * @param {String} aDirName The name of the pings archive directory. Must be in the YYYY-MM
+ *
+ * @param {string} aDirName The name of the pings archive directory. Must be in the YYYY-MM
  *        format.
- * @return {Object} A Date object or null if the dir name is not valid.
+ * @return {object} A Date object or null if the dir name is not valid.
  */
 function getDateFromArchiveDir(aDirName) {
   let [year, month] = aDirName.split("-");

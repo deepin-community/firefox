@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Skedë e Re
     .accesskey = S
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Mbyll Skedat në të Majtë
     .accesskey = j
+close-tabs-to-the-start-vertical =
+    .label = Mbylli Skedat Sipër
+    .accesskey = ë
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Mbyll Skedat në të Djathtë
     .accesskey = D
+close-tabs-to-the-end-vertical =
+    .label = Mbylli Skedat Poshtë
+    .accesskey = o
 close-other-tabs =
     .label = Mbylli Skedat e Tjera
     .accesskey = T
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Kaloje në Dritare të Re
     .accesskey = D
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Kaloje te { $profileName }
 tab-context-close-multiple-tabs =
     .label = Mbyll Skeda të Shumta
     .accesskey = u
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Ndajeni me të tjerët
     .accesskey = N
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Skedë e re Djathtas
+    .accesskey = a
+tab-context-new-tab-open-vertical =
+    .label = Skedë e Re Poshtë
+    .accesskey = e
+tab-context-new-group =
+    .label = Grup i Ri
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -105,6 +129,22 @@ tab-context-move-tabs =
            *[other] Lëvizni Skeda
         }
     .accesskey = L
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Dërgoje te Pajisje
+           *[other] Send { $tabCount } Tabs to Device
+        }
+    .accesskey = D
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-mobile =
+    .label =
+        { $tabCount ->
+            [1] Dërgoje në Celular
+           *[other] Send { $tabCount } Tabs to Mobile
+        }
+    .accesskey = D
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -112,3 +152,10 @@ tab-context-send-tabs-to-device =
            *[other] Dërgo { $tabCount } Skedë te Pajisje
         }
     .accesskey = D
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Hiqe Skedën Nga Kujtesa
+           *[other] Unload { $tabCount } Tabs
+        }
+    .accesskey = H

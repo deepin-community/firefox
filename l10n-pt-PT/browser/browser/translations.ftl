@@ -85,6 +85,14 @@ translations-panel-error-change-button =
     .label = Altere o idioma fonte
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from this language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+translations-panel-error-unsupported-hint-known-2 = Lamentamos, mas ainda não suportamos traduções a partir de { $language }.
+translations-panel-error-unsupported-hint-unknown-2 = Lamentamos, mas ainda não suportamos traduções deste idioma.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }
 #
 # Variables:
@@ -126,14 +134,7 @@ translations-manage-description = Transferir idiomas para a tradução offline.
 translations-manage-all-language = Todos os idiomas
 translations-manage-download-button = Transferir
 translations-manage-delete-button = Eliminar
-translations-manage-intro = Defina as suas preferências de idioma e de tradução de sites e faça a gestão dos idiomas instalados para tradução offline.
-translations-manage-install-description = Instalar idiomas para tradução offline
-translations-manage-language-install-button =
-    .label = Instalar
-translations-manage-language-install-all-button =
-    .label = Instalar todos
-    .accesskey = I
-translations-manage-intro-2 = Defina o seu idioma e preferências de tradução do site e faça a gestão dos idiomas transferidos para tradução offline.
+translations-manage-intro-2 = Defina as preferências de tradução e o seu idioma do site e controle os idiomas transferidos para a tradução off-line.
 translations-manage-download-description = Transferir idiomas para a tradução offline.
 translations-manage-language-download-button =
     .label = Transferir
@@ -145,7 +146,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Remover todos
     .accesskey = R
-translations-manage-error-install = Ocorreu um problema ao instalar os ficheiros de idioma. Por favor, tente novamente.
 translations-manage-error-download = Ocorreu um problema ao transferir os ficheiros de idioma. Por favor, tente novamente.
 translations-manage-error-delete = Ocorreu um erro ao eliminar os ficheiros de idioma. Por favor, tente novamente.
 translations-manage-error-remove = Ocorreu um erro ao remover os ficheiros de idioma. Por favor, tente novamente.
@@ -236,6 +236,16 @@ select-translations-panel-init-failure-message =
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Ocorreu um problema com a tradução. Por favor, tente novamente.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support translations from { $language } yet.
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known-2 =
+    .message = Lamentamos, mas ainda não suportamos traduções a partir de { $language }.
+select-translations-panel-unsupported-language-message-unknown-2 =
+    .message = Lamentamos, mas ainda não suportamos traduções deste idioma.
 # If your language requires declining the language name, a possible solution
 # is to adapt the structure of the phrase, or use a support noun, e.g.
 # `Sorry, we don't support the language yet: { $language }

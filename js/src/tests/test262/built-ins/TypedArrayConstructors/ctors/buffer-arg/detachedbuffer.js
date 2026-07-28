@@ -1,4 +1,3 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2017 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 /*---
@@ -19,6 +18,6 @@ testWithTypedArrayConstructors(function(TA) {
   var buffer = new ArrayBuffer(3 * offset);
   $DETACHBUFFER(buffer);
   assert.throws(TypeError, () => new TA(buffer));
-});
+}, null, ["passthrough"]);
 
 reportCompare(0, 0);

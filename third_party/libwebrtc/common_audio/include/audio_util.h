@@ -25,6 +25,17 @@ namespace webrtc {
 
 typedef std::numeric_limits<int16_t> limits_int16;
 
+// TODO(tommi, peah): Move these constants to their own header, e.g.
+// `audio_constants.h`. Also consider if they should be in api/.
+
+// Absolute highest acceptable sample rate supported for audio processing,
+// capture and codecs. Note that for some components some cases a lower limit
+// applies which typically is 48000 but in some cases is lower.
+constexpr int kMaxSampleRateHz = 384000;
+
+// Number of samples per channel for 10ms of audio at the highest sample rate.
+constexpr size_t kMaxSamplesPerChannel10ms = kMaxSampleRateHz / 100u;
+
 // The conversion functions use the following naming convention:
 // S16:      int16_t [-32768, 32767]
 // Float:    float   [-1.0, 1.0]
@@ -95,7 +106,7 @@ inline float FloatS16ToDbfs(float v) {
 // Copy audio from `src` channels to `dest` channels unless `src` and `dest`
 // point to the same address. `src` and `dest` must have the same number of
 // channels, and there must be sufficient space allocated in `dest`.
-// TODO: b/335805780 - Accept ArrayView.
+// TODO: b/335805780 - Accept std::span.
 template <typename T>
 void CopyAudioIfNeeded(const T* const* src,
                        int num_frames,

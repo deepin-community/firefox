@@ -30,6 +30,12 @@ toolbar-context-menu-reopen-closed-tabs =
            *[other] Կրկին բացել փակված ներդիրները
         }
     .accesskey = o
+toolbar-context-turn-on-vertical-tabs =
+    .label = Միացնել ուղղահայաց ներդիրները
+toolbar-context-turn-off-vertical-tabs =
+    .label = Անջատել ուղղահայաց ներդիրները
+toolbar-context-customize-sidebar =
+    .label = Հարմարեցնել կողագոտին
 toolbar-context-menu-manage-extension =
     .label = Կառավարել ընդլայնումը
     .accesskey = E

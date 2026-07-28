@@ -11,15 +11,26 @@
 ##  $extension (string) - Name of extension that initiated the request
 
 permission-dialog-description = ਇਸ ਸਾਈਟ ਨੂੰ { $scheme } ਲਿੰਕ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
-permission-dialog-description-file = ਇਸ ਫ਼ਾਈਲ ਨੂੰ { $scheme } ਲਿੰਕ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
+permission-dialog-description-file = ਕੀ ਇਸ ਫ਼ਾਇਲ ਨੂੰ { $scheme } ਲਿੰਕ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
 permission-dialog-description-host = { $host } ਨੂੰ { $scheme } ਲਿੰਕ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
 permission-dialog-description-extension = { $extension } ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ { $scheme } ਲਿੰਕ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
 permission-dialog-description-app = ਇਸ ਸਾਈਟ ਨੂੰ { $scheme } ਲਿੰਕ { $appName } ਨਾਲ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
 permission-dialog-description-host-app = { $host } ਨੂੰ { $scheme } ਲਿੰਕ { $appName } ਨਾਲ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
-permission-dialog-description-file-app = ਇਸ ਫ਼ਾਈਲ ਨੂੰ { $scheme } ਲਿੰਕ { $appName } ਨਾਲ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
+permission-dialog-description-file-app = ਕੀ ਇਸ ਫ਼ਾਇਲ ਨੂੰ { $scheme } ਲਿੰਕ { $appName } ਨਾਲ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
 permission-dialog-description-extension-app = { $extension } ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ { $appName } ਨਾਲ { $scheme } ਲਿੰਕ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਹੈ?
 permission-dialog-description-system-app = ਕੀ { $scheme } ਲਿੰਕ ਨੂੰ { $appName } ਨਾਲ ਖੋਲ੍ਹਣਾ ਹੈ?
 permission-dialog-description-system-noapp = { $scheme } ਲਿੰਕ ਖੋਲ੍ਹਣਾ ਹੈ?
+# Header on a permission prompt, asking the user if they should allow the website to continue.
+wallet-custom-scheme-warning-heading =
+    .heading = ਇਸ ਸਾਈਟ ਨੂੰ ਤੁਹਾਡਾ ਡਿਜ਼ਿਟਲ ਵਾਲਟ ਖੋਲ੍ਹਣ ਦੀ ਮਨਜ਼ੂਰੀ ਦੇਣੀ ਹੈ?
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host-app = <strong>{ $scheme }</strong> ਲਿੰਕ ਨੂੰ ਖੋਲ੍ਹਣ ਨਾਲ <strong>{ $host }</strong> ਨੂੰ <strong>{ $appName }</strong> ਤੋਂ ਆਪਣੀ ਅਸਲ ਪਛਾਣ ਦੀ ਬੇਨਤੀ ਨੂੰ ਮਨਜ਼ੂਰ ਕਰਦੇ ਹੋ। ਜੇ ਤੁਸੀਂ ਇਸ ਸਾਈਟ ਉੱਤੇ ਭਰੋਸਾ ਕਰਦੇ ਹੋ ਤਾਂ ਸਿਰਫ਼ ਤਾਂ ਹੀ ਜਾਰੀ ਰੱਖਿਓ।
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-app = <strong>{ $scheme }</strong> ਲਿੰਕ ਨੂੰ ਖੋਲ੍ਹਣ ਨਾਲ ਇਸ ਸਾਈਟ ਨੂੰ <strong>{ $appName }</strong> ਤੋਂ ਆਪਣੀ ਅਸਲ ਪਛਾਣ ਦੀ ਬੇਨਤੀ ਨੂੰ ਮਨਜ਼ੂਰ ਕਰਦੇ ਹੋ। ਜੇ ਤੁਸੀਂ ਇਸ ਸਾਈਟ ਉੱਤੇ ਭਰੋਸਾ ਕਰਦੇ ਹੋ ਤਾਂ ਸਿਰਫ਼ ਤਾਂ ਹੀ ਜਾਰੀ ਰੱਖਿਓ।
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host = <strong>{ $scheme }</strong> ਲਿੰਕ ਨੂੰ ਖੋਲ੍ਹਣ ਨਾਲ <strong>{ $host }</strong> ਨੂੰ ਤੁਹਾਡੇ ਡਿਜ਼ਿਟਲ ਵਾਲਟ ਤੋਂ ਆਪਣੀ ਅਸਲ ਪਛਾਣ ਦੀ ਬੇਨਤੀ ਨੂੰ ਮਨਜ਼ੂਰ ਕਰਦੇ ਹੋ। ਜੇ ਤੁਸੀਂ ਇਸ ਸਾਈਟ ਉੱਤੇ ਭਰੋਸਾ ਕਰਦੇ ਹੋ ਤਾਂ ਸਿਰਫ਼ ਤਾਂ ਹੀ ਜਾਰੀ ਰੱਖਿਓ।
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning = <strong>{ $scheme }</strong> ਲਿੰਕ ਨੂੰ ਖੋਲ੍ਹਣ ਨਾਲ ਇਸ ਸਾਈਟ ਨੂੰ ਤੁਹਾਡੇ ਡਿਜ਼ਿਟਲ ਵਾਲਟ ਤੋਂ ਆਪਣੀ ਅਸਲ ਪਛਾਣ ਦੀ ਬੇਨਤੀ ਨੂੰ ਮਨਜ਼ੂਰ ਕਰਦੇ ਹੋ। ਜੇ ਤੁਸੀਂ ਇਸ ਸਾਈਟ ਉੱਤੇ ਭਰੋਸਾ ਕਰਦੇ ਹੋ ਤਾਂ ਸਿਰਫ਼ ਤਾਂ ਹੀ ਜਾਰੀ ਰੱਖਿਓ।
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
@@ -29,7 +40,7 @@ permission-dialog-description-system-noapp = { $scheme } ਲਿੰਕ ਖੋਲ�
 ##  $scheme (string) - The type of link that's being opened.
 
 permission-dialog-remember = <strong>{ $host }</strong> ਨੂੰ  <strong>{ $scheme }</strong> ਲਿੰਕ ਹਮੇਸ਼ਾਂ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ
-permission-dialog-remember-file = ਇਸ ਫ਼ਾਈਲ ਨੂੰ <strong>{ $scheme }</strong> ਲਿੰਕ ਹਮੇਸ਼ਾਂ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ
+permission-dialog-remember-file = ਇਸ ਫ਼ਾਇਲ ਨੂੰ <strong>{ $scheme }</strong> ਲਿੰਕ ਹਮੇਸ਼ਾਂ ਖੋਲ੍ਹਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ
 permission-dialog-remember-extension = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ <strong>{ $scheme }</strong> ਲਿੰਕ ਦੀ ਹਮੇਸ਼ਾ ਇਜਾਜ਼ਤ ਦਿਓ
 
 ##

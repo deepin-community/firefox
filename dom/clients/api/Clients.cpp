@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -8,20 +6,20 @@
 
 #include "Client.h"
 #include "ClientDOMUtil.h"
+#include "mozilla/SchedulerGroup.h"
+#include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/dom/ClientIPCTypes.h"
 #include "mozilla/dom/ClientManager.h"
 #include "mozilla/dom/ClientsBinding.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/ServiceWorkerDescriptor.h"
 #include "mozilla/dom/ServiceWorkerManager.h"
+#include "mozilla/dom/ServiceWorkerUtils.h"
 #include "mozilla/dom/WorkerScope.h"
 #include "mozilla/ipc/BackgroundUtils.h"
-#include "mozilla/SchedulerGroup.h"
-#include "mozilla/StaticPrefs_privacy.h"
-#include "mozilla/StorageAccess.h"
 #include "nsIGlobalObject.h"
-#include "nsString.h"
 #include "nsReadableUtils.h"
+#include "nsString.h"
 
 namespace mozilla::dom {
 
@@ -88,11 +86,10 @@ already_AddRefed<Promise> Clients::Get(const nsAString& aClientID,
           [outerPromise, holder, scope](const ClientOpResult& aResult) {
             holder->Complete();
             NS_ENSURE_TRUE_VOID(holder->GetParentObject());
-            RefPtr<Client> client = new Client(
-                holder->GetParentObject(), aResult.get_ClientInfoAndState());
-            if (client->GetStorageAccess() == StorageAccess::eAllow ||
-                (StaticPrefs::privacy_partition_serviceWorkers() &&
-                 ShouldPartitionStorage(client->GetStorageAccess()))) {
+            if (ServiceWorkersStorageAllowedForClient(
+                    aResult.get_ClientInfoAndState())) {
+              RefPtr<Client> client = new Client(
+                  holder->GetParentObject(), aResult.get_ClientInfoAndState());
               outerPromise->MaybeResolve(std::move(client));
               return;
             }
@@ -171,14 +168,11 @@ already_AddRefed<Promise> Clients::MatchAll(const ClientQueryOptions& aOptions,
         bool storageDenied = false;
         for (const ClientInfoAndState& value :
              aResult.get_ClientList().values()) {
-          RefPtr<Client> client = new Client(global, value);
-          if (client->GetStorageAccess() != StorageAccess::eAllow &&
-              (!StaticPrefs::privacy_partition_serviceWorkers() ||
-               !ShouldPartitionStorage(client->GetStorageAccess()))) {
+          if (!ServiceWorkersStorageAllowedForClient(value)) {
             storageDenied = true;
             continue;
           }
-          clientList.AppendElement(std::move(client));
+          clientList.AppendElement(new Client(global, value));
         }
         if (storageDenied) {
           nsCOMPtr<nsIRunnable> r = NS_NewRunnableFunction(

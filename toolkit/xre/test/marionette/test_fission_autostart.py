@@ -3,13 +3,6 @@ from contextlib import contextmanager
 from marionette_harness import MarionetteTestCase
 
 
-class ExperimentStatus:
-    UNENROLLED = 0
-    ENROLLED_CONTROL = 1
-    ENROLLED_TREATMENT = 2
-    DISQUALIFIED = 3
-
-
 class Prefs:
     FISSION_AUTOSTART = "fission.autostart"
     FISSION_AUTOSTART_SESSION = "fission.autostart.session"
@@ -21,8 +14,6 @@ ENV_DISABLE_E10S = "MOZ_FORCE_DISABLE_E10S"
 
 
 DECISION_STATUS = {
-    "experimentControl": 1,
-    "experimentTreatment": 2,
     "disabledByE10sEnv": 3,
     "enabledByEnv": 4,
     "disabledByEnv": 5,
@@ -132,7 +123,7 @@ class TestFissionAutostart(MarionetteTestCase):
             self.setUpSession()
 
     def setUp(self):
-        super(TestFissionAutostart, self).setUp()
+        super().setUp()
 
         # If we have configured marionette to require a particular value for
         # `fission.autostart`, remove it as a forced pref until `tearDown`, and
@@ -156,12 +147,12 @@ class TestFissionAutostart(MarionetteTestCase):
 
     def tearDown(self):
         if self.fissionRequired is not None:
-            self.marionette.instance.required_prefs[
-                Prefs.FISSION_AUTOSTART
-            ] = self.fissionRequired
+            self.marionette.instance.required_prefs[Prefs.FISSION_AUTOSTART] = (
+                self.fissionRequired
+            )
         self.marionette.restart(in_app=False, clean=True)
 
-        super(TestFissionAutostart, self).tearDown()
+        super().tearDown()
 
     def test_runtime_changes(self):
         """Tests that changes to preferences during runtime do not have any

@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 20; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -57,8 +56,8 @@ RLBoxHunspell* RLBoxHunspell::Create(const nsCString& affpath,
   const w2c_mem_capacity capacity = get_valid_wasm2c_memory_capacity(
       expectedMaxMemory, true /* wasm's 32-bit memory */);
 
-  bool success =
-      sandbox->create_sandbox(/* shouldAbortOnFailure = */ false, &capacity);
+  bool success = sandbox->create_sandbox(/* shouldAbortOnFailure = */ false,
+                                         &capacity, "rlbox_wasm2c_hunspell");
 #elif defined(MOZ_WASM_SANDBOXING_HUNSPELL)
   bool success = sandbox->create_sandbox(/* shouldAbortOnFailure = */ false);
 #else

@@ -60,11 +60,9 @@ async function getRandomKeyHexFromBrowser(
   let keyAboutBlank = await SpecialPowers.spawn(browser, [], async _ => {
     let ifr = content.document.createElement("iframe");
 
-    let loaded = new content.Promise(resolve => {
-      ifr.onload = resolve;
-    });
-    content.document.body.appendChild(ifr);
+    const loaded = ContentTaskUtils.waitForEvent(ifr, "load");
     ifr.src = "about:blank";
+    content.document.body.appendChild(ifr);
 
     await loaded;
 
@@ -106,11 +104,9 @@ async function getRandomKeyHexFromBrowser(
     async domain => {
       let ifr = content.document.createElement("iframe");
 
-      let loaded = new content.Promise(resolve => {
-        ifr.onload = resolve;
-      });
-      content.document.body.appendChild(ifr);
+      const loaded = ContentTaskUtils.waitForEvent(ifr, "load");
       ifr.src = domain;
+      content.document.body.appendChild(ifr);
 
       await loaded;
 
@@ -137,11 +133,9 @@ async function getRandomKeyHexFromBrowser(
     async domain => {
       let ifr = content.document.createElement("iframe");
 
-      let loaded = new content.Promise(resolve => {
-        ifr.onload = resolve;
-      });
-      content.document.body.appendChild(ifr);
+      const loaded = ContentTaskUtils.waitForEvent(ifr, "load");
       ifr.src = domain;
+      content.document.body.appendChild(ifr);
 
       await loaded;
 
@@ -169,6 +163,7 @@ async function getRandomKeyHexFromBrowser(
 add_task(async function test_randomization_disabled_with_rfp_disabled() {
   await SpecialPowers.pushPrefEnv({
     set: [
+      ["privacy.baselineFingerprintingProtection", false],
       ["privacy.resistFingerprinting", false],
       ["privacy.resistFingerprinting.pbmode", false],
       ["privacy.fingerprintingProtection", false],
@@ -358,6 +353,7 @@ add_task(async function test_reset_key_after_pbm_session_ends() {
 add_task(async function test_randomization_with_exempted_normal_window() {
   await SpecialPowers.pushPrefEnv({
     set: [
+      ["privacy.baselineFingerprintingProtection", false],
       ["privacy.resistFingerprinting", false],
       ["privacy.resistFingerprinting.pbmode", true],
       ["privacy.fingerprintingProtection", false],
@@ -454,7 +450,7 @@ add_task(async function test_reset_random_key_when_clear_site_data() {
   BrowserTestUtils.removeTab(anotherTab);
 
   // Call ForgetAboutSite for the test domain.
-  await ForgetAboutSite.removeDataFromDomain("example.com");
+  await ForgetAboutSite.removeDataFromBaseDomain("example.com");
 
   // Open the tab for the test domain again and verify the key is reset.
   tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_PAGE);

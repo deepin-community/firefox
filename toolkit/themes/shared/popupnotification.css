@@ -25,23 +25,23 @@ popupnotification {
 }
 
 popupnotificationcontent {
-  margin-top: .5em;
+  margin-top: var(--space-small);
 }
 
 .popup-notification-header-container,
 .popup-notification-footer-container {
   display: flex;
-  max-width: calc(2 * var(--arrowpanel-padding) + 16px /* Icon width */ + var(--panel-border-radius) + var(--popup-notification-body-width));
+  max-width: calc(2 * var(--panel-padding) + var(--icon-size) + var(--panel-border-radius) + var(--popup-notification-body-width));
 }
 
 .popup-notification-body-container {
-  padding: var(--arrowpanel-padding);
+  padding: var(--panel-padding);
 }
 
 .popup-notification-icon {
-  height: 16px;
-  width: 16px;
-  margin-inline-end: 6px;
+  height: var(--icon-size);
+  width: var(--icon-size);
+  margin-inline-end: var(--space-small);
 
   &:not([hasicon]) {
     display: none;
@@ -49,17 +49,29 @@ popupnotificationcontent {
 }
 
 .popup-notification-body {
+  /* this variable here uses --panel-padding, a space token, as part of calculation */
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
   width: var(--popup-notification-body-width);
   flex: 1 auto;
 }
 
+/*
+ * Ensure that host names in PopupNotifications wrap. This targets the "name"
+ * element in the description container which is the "name" property of the
+ * PopupNotification. Name is what gets substituted from the l10n string using
+ * the placeholder <>.
+ */
+.popup-notification-description-name {
+  word-break: break-all;
+}
+
 .popup-notification-closebutton {
-  margin-inline-end: -8px;
-  margin-top: -8px;
+  margin-inline-end: calc(-1 * var(--space-small));
+  margin-top: calc(-1 * var(--space-small));
 }
 
 .popup-notification-origin {
-  margin-bottom: .3em !important;
+  margin-bottom: var(--space-xsmall) !important;
 
   &:not([value]) {
     display: none;
@@ -67,14 +79,14 @@ popupnotificationcontent {
 }
 
 .popup-notification-hint-text {
-  margin-top: .5em !important;
+  margin-top: var(--space-small) !important;
 
   &:empty {
     display: none;
   }
 }
 
-.popup-notification-secondary-button:not([dropmarkerhidden="true"]) {
+.popup-notification-secondary-button:not([dropmarkerhidden]) {
   border-start-end-radius: 0;
   border-end-end-radius: 0;
 
@@ -94,8 +106,8 @@ popupnotificationcontent {
   border-start-start-radius: 0 !important;
   border-end-start-radius: 0 !important;
   margin-inline-start: 1px !important;
-  padding: 8px !important;
-  max-width: 32px;
+  padding: var(--space-small) !important;
+  max-width: var(--size-item-large);
 
   > .button-box > hbox {
     display: none;
@@ -111,16 +123,16 @@ popupnotificationcontent {
 }
 
 .popup-notification-warning {
-  color: #d74345;
+  color: var(--text-color-error);
 }
 
 .popup-notification-checkbox > .checkbox-label-box > .checkbox-label {
-  opacity: 0.7;
+  opacity: var(--opacity-deemphasized);
 }
 
 .popup-notification-learnmore-link {
   text-decoration: underline;
-  margin-block: 4px 0;
+  margin-block: var(--space-xsmall) 0;
 
   &:not([href]) {
     display: none;

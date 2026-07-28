@@ -1,37 +1,8 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "IndexedDatabaseManager.h"
-
-#include "chrome/common/ipc_channel.h"  // for IPC::Channel::kMaximumMessageSize
-#include "nsIScriptError.h"
-#include "nsIScriptGlobalObject.h"
-
-#include "jsapi.h"
-#include "js/Object.h"              // JS::GetClass
-#include "js/PropertyAndElement.h"  // JS_DefineProperty
-#include "mozilla/ClearOnShutdown.h"
-#include "mozilla/ContentEvents.h"
-#include "mozilla/EventDispatcher.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/ResultExtensions.h"
-#include "mozilla/dom/DOMException.h"
-#include "mozilla/dom/ErrorEvent.h"
-#include "mozilla/dom/ErrorEventBinding.h"
-#include "mozilla/dom/WorkerScope.h"
-#include "mozilla/dom/Promise.h"
-#include "mozilla/dom/RootedDictionary.h"
-#include "mozilla/dom/quota/Assertions.h"
-#include "mozilla/dom/quota/PromiseUtils.h"
-#include "mozilla/dom/quota/ResultExtensions.h"
-#include "mozilla/intl/LocaleCanonicalizer.h"
-#include "mozilla/ipc/BackgroundChild.h"
-#include "mozilla/ipc/PBackgroundChild.h"
-#include "nsContentUtils.h"
-#include "mozilla/Logging.h"
 
 #include "ActorsChild.h"
 #include "DatabaseFileManager.h"
@@ -42,7 +13,32 @@
 #include "IndexedDBCommon.h"
 #include "ProfilerHelpers.h"
 #include "ScriptErrorHelper.h"
+#include "chrome/common/ipc_channel.h"  // for IPC::Channel::kMaximumMessageSize
+#include "js/Object.h"                  // JS::GetClass
+#include "js/PropertyAndElement.h"      // JS_DefineProperty
+#include "jsapi.h"
+#include "mozilla/ClearOnShutdown.h"
+#include "mozilla/ContentEvents.h"
+#include "mozilla/EventDispatcher.h"
+#include "mozilla/Logging.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/dom/DOMException.h"
+#include "mozilla/dom/ErrorEvent.h"
+#include "mozilla/dom/ErrorEventBinding.h"
+#include "mozilla/dom/Promise.h"
+#include "mozilla/dom/RootedDictionary.h"
+#include "mozilla/dom/WorkerScope.h"
+#include "mozilla/dom/quota/Assertions.h"
+#include "mozilla/dom/quota/PromiseUtils.h"
+#include "mozilla/dom/quota/ResultExtensions.h"
+#include "mozilla/intl/LocaleCanonicalizer.h"
+#include "mozilla/intl/LocaleService.h"
+#include "mozilla/ipc/BackgroundChild.h"
+#include "mozilla/ipc/PBackgroundChild.h"
 #include "nsCharSeparatedTokenizer.h"
+#include "nsContentUtils.h"
+#include "nsIScriptError.h"
+#include "nsIScriptGlobalObject.h"
 
 // Bindings for ResolveConstructors
 #include "mozilla/dom/IDBCursorBinding.h"
@@ -120,6 +116,17 @@ namespace {
 // Anything larger is compressed and stored outside the database.
 const int32_t kDefaultDataThresholdBytes = 1024 * 1024;  // 1MB
 
+// The maximum size of a structured clone that can be transferred through IPC.
+// Originally planned as 1024 MB, but adjusted to 1042 MB based on the
+// following considerations:
+// - The largest model at https://whisper.ggerganov.com is 1030 MB.
+// - Chrome's limit varies between 1030–1050 MB depending on the platform.
+// Keeping the limit at 1042 MB ensures better compatibility with both use
+// cases.
+//
+// This limit might be increased after bug 1944231 and bug 1942995 are fixed.
+const int32_t kDefaultMaxStructuredCloneSize = 1042 * 1024 * 1024;  // 1042 MB
+
 // The maximal size of a serialized object to be transfered through IPC.
 const int32_t kDefaultMaxSerializedMsgSize = IPC::Channel::kMaximumMessageSize;
 
@@ -134,6 +141,8 @@ const int32_t kDefaultMaxPreloadExtraRecords = 64;
 #define IDB_PREF_BRANCH_ROOT "dom.indexedDB."
 
 const char kDataThresholdPref[] = IDB_PREF_BRANCH_ROOT "dataThreshold";
+const char kPrefMaxStructuredCloneSize[] =
+    IDB_PREF_BRANCH_ROOT "maxStructuredCloneSize";
 const char kPrefMaxSerilizedMsgSize[] =
     IDB_PREF_BRANCH_ROOT "maxSerializedMsgSize";
 const char kPrefMaxPreloadExtraRecords[] =
@@ -156,6 +165,7 @@ bool gInitialized MOZ_GUARDED_BY(gDBManagerMutex) = false;
 bool gClosed MOZ_GUARDED_BY(gDBManagerMutex) = false;
 
 Atomic<int32_t> gDataThresholdBytes(0);
+Atomic<int32_t> gMaxStructuredCloneSize(0);
 Atomic<int32_t> gMaxSerializedMsgSize(0);
 Atomic<int32_t> gMaxPreloadExtraRecords(0);
 
@@ -173,6 +183,17 @@ void DataThresholdPrefChangedCallback(const char* aPrefName, void* aClosure) {
   }
 
   gDataThresholdBytes = dataThresholdBytes;
+}
+
+void MaxStructuredCloneSizePrefChangeCallback(const char* aPrefName,
+                                              void* aClosure) {
+  MOZ_ASSERT(NS_IsMainThread());
+  MOZ_ASSERT(!strcmp(aPrefName, kPrefMaxStructuredCloneSize));
+  MOZ_ASSERT(!aClosure);
+
+  gMaxStructuredCloneSize =
+      Preferences::GetInt(aPrefName, kDefaultMaxStructuredCloneSize);
+  MOZ_ASSERT(gMaxStructuredCloneSize > 0);
 }
 
 void MaxSerializedMsgSizePrefChangeCallback(const char* aPrefName,
@@ -217,7 +238,8 @@ auto DatabaseFilePathMatchPredicate(const nsAString* const aDatabaseFilePath) {
 
 }  // namespace
 
-IndexedDatabaseManager::IndexedDatabaseManager() : mBackgroundActor(nullptr) {
+IndexedDatabaseManager::IndexedDatabaseManager()
+    : mLocaleInitialized(false), mBackgroundActor(nullptr) {
   NS_ASSERTION(NS_IsMainThread(), "Wrong thread!");
 }
 
@@ -313,6 +335,9 @@ nsresult IndexedDatabaseManager::Init() {
   Preferences::RegisterCallbackAndCall(DataThresholdPrefChangedCallback,
                                        kDataThresholdPref);
 
+  Preferences::RegisterCallbackAndCall(MaxStructuredCloneSizePrefChangeCallback,
+                                       kPrefMaxStructuredCloneSize);
+
   Preferences::RegisterCallbackAndCall(MaxSerializedMsgSizePrefChangeCallback,
                                        kPrefMaxSerilizedMsgSize);
 
@@ -346,6 +371,9 @@ void IndexedDatabaseManager::Destroy() {
 
   Preferences::UnregisterCallback(DataThresholdPrefChangedCallback,
                                   kDataThresholdPref);
+
+  Preferences::UnregisterCallback(MaxStructuredCloneSizePrefChangeCallback,
+                                  kPrefMaxStructuredCloneSize);
 
   Preferences::UnregisterCallback(MaxSerializedMsgSizePrefChangeCallback,
                                   kPrefMaxSerilizedMsgSize);
@@ -483,6 +511,16 @@ uint32_t IndexedDatabaseManager::DataThreshold() {
              "DataThreshold() called before indexedDB has been initialized!");
 
   return gDataThresholdBytes;
+}
+
+// static
+uint32_t IndexedDatabaseManager::MaxStructuredCloneSize() {
+  MOZ_ASSERT(
+      Get(),
+      "MaxStructuredCloneSize() called before indexedDB has been initialized!");
+  MOZ_ASSERT(gMaxStructuredCloneSize > 0);
+
+  return gMaxStructuredCloneSize;
 }
 
 // static
@@ -712,15 +750,6 @@ void IndexedDatabaseManager::LoggingModePrefChangedCallback(
   }
 
   bool useProfiler = Preferences::GetBool(kPrefLoggingProfiler);
-#if !defined(MOZ_GECKO_PROFILER)
-  if (useProfiler) {
-    NS_WARNING(
-        "IndexedDB cannot create profiler marks because this build does "
-        "not have profiler extensions enabled!");
-    useProfiler = false;
-  }
-#endif
-
   const bool logDetails = Preferences::GetBool(kPrefLoggingDetails);
 
   if (useProfiler) {
@@ -732,10 +761,14 @@ void IndexedDatabaseManager::LoggingModePrefChangedCallback(
 }
 
 nsresult IndexedDatabaseManager::EnsureLocale() {
-  MOZ_ASSERT(NS_IsMainThread());
+  AssertIsOnMainThread();
+
+  if (mLocaleInitialized) {
+    return NS_OK;
+  }
 
   nsAutoCString acceptLang;
-  Preferences::GetLocalizedCString("intl.accept_languages", acceptLang);
+  intl::LocaleService::GetInstance()->GetAcceptLanguages(acceptLang);
 
   // Split values on commas.
   for (const auto& lang :
@@ -752,6 +785,8 @@ nsresult IndexedDatabaseManager::EnsureLocale() {
   if (mLocale.IsEmpty()) {
     mLocale.AssignLiteral("en_US");
   }
+
+  mLocaleInitialized = true;
 
   return NS_OK;
 }

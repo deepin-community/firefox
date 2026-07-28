@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -7,15 +5,43 @@
 // Main header first:
 // This is also necessary to ensure our definition of M_SQRT1_2 is picked up
 #include "SVGUtils.h"
+
 #include <algorithm>
 
 // Keep others in (case-insensitive) order:
+#include "SVGAnimatedLength.h"
+#include "SVGPaintServerFrame.h"
 #include "gfx2DGlue.h"
 #include "gfxContext.h"
 #include "gfxMatrix.h"
 #include "gfxPlatform.h"
 #include "gfxRect.h"
 #include "gfxUtils.h"
+#include "mozilla/CSSClipPathInstance.h"
+#include "mozilla/FilterInstance.h"
+#include "mozilla/ISVGDisplayableFrame.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/PresShell.h"
+#include "mozilla/SVGClipPathFrame.h"
+#include "mozilla/SVGContainerFrame.h"
+#include "mozilla/SVGContentUtils.h"
+#include "mozilla/SVGContextPaint.h"
+#include "mozilla/SVGForeignObjectFrame.h"
+#include "mozilla/SVGGeometryFrame.h"
+#include "mozilla/SVGIntegrationUtils.h"
+#include "mozilla/SVGMaskFrame.h"
+#include "mozilla/SVGObserverUtils.h"
+#include "mozilla/SVGOuterSVGFrame.h"
+#include "mozilla/SVGTextFrame.h"
+#include "mozilla/StaticPrefs_svg.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/SVGClipPathElement.h"
+#include "mozilla/dom/SVGGeometryElement.h"
+#include "mozilla/dom/SVGPathElement.h"
+#include "mozilla/dom/SVGUnitTypesBinding.h"
+#include "mozilla/dom/SVGViewportElement.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/gfx/PatternHelpers.h"
 #include "nsCSSFrameConstructor.h"
 #include "nsDisplayList.h"
 #include "nsFrameList.h"
@@ -27,35 +53,7 @@
 #include "nsPresContext.h"
 #include "nsStyleStruct.h"
 #include "nsStyleTransformMatrix.h"
-#include "SVGAnimatedLength.h"
-#include "SVGPaintServerFrame.h"
 #include "nsTextFrame.h"
-#include "mozilla/CSSClipPathInstance.h"
-#include "mozilla/FilterInstance.h"
-#include "mozilla/ISVGDisplayableFrame.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/PresShell.h"
-#include "mozilla/StaticPrefs_svg.h"
-#include "mozilla/SVGClipPathFrame.h"
-#include "mozilla/SVGContainerFrame.h"
-#include "mozilla/SVGContentUtils.h"
-#include "mozilla/SVGContextPaint.h"
-#include "mozilla/SVGForeignObjectFrame.h"
-#include "mozilla/SVGIntegrationUtils.h"
-#include "mozilla/SVGGeometryFrame.h"
-#include "mozilla/SVGMaskFrame.h"
-#include "mozilla/SVGObserverUtils.h"
-#include "mozilla/SVGOuterSVGFrame.h"
-#include "mozilla/SVGTextFrame.h"
-#include "mozilla/Unused.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/gfx/PatternHelpers.h"
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/SVGClipPathElement.h"
-#include "mozilla/dom/SVGGeometryElement.h"
-#include "mozilla/dom/SVGPathElement.h"
-#include "mozilla/dom/SVGUnitTypesBinding.h"
-#include "mozilla/dom/SVGViewportElement.h"
 
 using namespace mozilla::dom;
 using namespace mozilla::dom::SVGUnitTypes_Binding;
@@ -120,7 +118,7 @@ nsRect SVGUtils::GetPostFilterInkOverflowRect(nsIFrame* aFrame,
   nsTArray<SVGFilterFrame*> filterFrames;
   if (!aFrame->StyleEffects()->HasFilters() ||
       SVGObserverUtils::GetAndObserveFilters(aFrame, &filterFrames) ==
-          SVGObserverUtils::eHasRefsSomeInvalid) {
+          SVGObserverUtils::ReferenceState::HasRefsSomeInvalid) {
     return aPreFilterRect;
   }
 
@@ -224,39 +222,23 @@ Size SVGUtils::GetContextSize(const nsIFrame* aFrame) {
 
   SVGViewportElement* ctx = element->GetCtx();
   if (ctx) {
-    size.width = ctx->GetLength(SVGContentUtils::X);
-    size.height = ctx->GetLength(SVGContentUtils::Y);
+    size.width = ctx->GetLength(SVGLength::Axis::X);
+    size.height = ctx->GetLength(SVGLength::Axis::Y);
   }
   return size;
 }
 
 float SVGUtils::ObjectSpace(const gfxRect& aRect,
+                            const dom::UserSpaceMetrics& aMetrics,
                             const SVGAnimatedLength* aLength) {
-  float axis;
+  float axis =
+      float(SVGContentUtils::AxisLength(aRect.Size(), aLength->Axis()));
 
-  switch (aLength->GetCtxType()) {
-    case SVGContentUtils::X:
-      axis = aRect.Width();
-      break;
-    case SVGContentUtils::Y:
-      axis = aRect.Height();
-      break;
-    case SVGContentUtils::XY:
-      axis = float(SVGContentUtils::ComputeNormalizedHypotenuse(
-          aRect.Width(), aRect.Height()));
-      break;
-    default:
-      MOZ_ASSERT_UNREACHABLE("unexpected ctx type");
-      axis = 0.0f;
-      break;
-  }
   if (aLength->IsPercentage()) {
     // Multiply first to avoid precision errors:
     return axis * aLength->GetAnimValInSpecifiedUnits() / 100;
   }
-  return aLength->GetAnimValueWithZoom(
-             static_cast<SVGViewportElement*>(nullptr)) *
-         axis;
+  return aLength->GetAnimValueWithZoom(aMetrics) * axis;
 }
 
 float SVGUtils::UserSpace(nsIFrame* aNonSVGContext,
@@ -287,42 +269,42 @@ nsIFrame* SVGUtils::GetOuterSVGFrameAndCoveredRegion(nsIFrame* aFrame,
   }
 
   if (aFrame->HasAnyStateBits(NS_FRAME_IS_NONDISPLAY)) {
-    *aRect = nsRect(0, 0, 0, 0);
-  } else {
-    uint32_t flags = SVGUtils::eForGetClientRects | SVGUtils::eBBoxIncludeFill |
-                     SVGUtils::eBBoxIncludeStroke |
-                     SVGUtils::eBBoxIncludeMarkers |
-                     SVGUtils::eUseUserSpaceOfUseElement;
-
-    auto ctm = nsLayoutUtils::GetTransformToAncestor(RelativeTo{aFrame},
-                                                     RelativeTo{outer});
-
-    float initPositionX = NSAppUnitsToFloatPixels(aFrame->GetPosition().x,
-                                                  AppUnitsPerCSSPixel()),
-          initPositionY = NSAppUnitsToFloatPixels(aFrame->GetPosition().y,
-                                                  AppUnitsPerCSSPixel());
-
-    Matrix mm;
-    ctm.ProjectTo2D();
-    ctm.CanDraw2D(&mm);
-    gfxMatrix m = ThebesMatrix(mm);
-
-    float appUnitsPerDevPixel = aFrame->PresContext()->AppUnitsPerDevPixel();
-    float devPixelPerCSSPixel =
-        float(AppUnitsPerCSSPixel()) / appUnitsPerDevPixel;
-
-    // The matrix that GetBBox accepts should operate on "user space",
-    // i.e. with CSS pixel unit.
-    m = m.PreScale(devPixelPerCSSPixel, devPixelPerCSSPixel);
-
-    // Both SVGUtils::GetBBox and nsLayoutUtils::GetTransformToAncestor
-    // will count this displacement, we should remove it here to avoid
-    // double-counting.
-    m = m.PreTranslate(-initPositionX, -initPositionY);
-
-    gfxRect bbox = SVGUtils::GetBBox(aFrame, flags, &m);
-    *aRect = nsLayoutUtils::RoundGfxRectToAppRect(bbox, appUnitsPerDevPixel);
+    *aRect = nsRect();
+    return outer;
   }
+
+  auto ctm = nsLayoutUtils::GetTransformToAncestor(RelativeTo{aFrame},
+                                                   RelativeTo{outer});
+
+  Matrix mm;
+  ctm.ProjectTo2D();
+  ctm.CanDraw2D(&mm);
+  gfxMatrix m = ThebesMatrix(mm);
+
+  float appUnitsPerDevPixel = aFrame->PresContext()->AppUnitsPerDevPixel();
+  float devPixelPerCSSPixel =
+      float(AppUnitsPerCSSPixel()) / appUnitsPerDevPixel;
+
+  // The matrix that GetBBox accepts should operate on "user space",
+  // i.e. with CSS pixel unit.
+  m.PreScale(devPixelPerCSSPixel, devPixelPerCSSPixel);
+
+  auto initPosition = gfxPoint(
+      NSAppUnitsToFloatPixels(aFrame->GetPosition().x, AppUnitsPerCSSPixel()),
+      NSAppUnitsToFloatPixels(aFrame->GetPosition().y, AppUnitsPerCSSPixel()));
+
+  // Both SVGUtils::GetBBox and nsLayoutUtils::GetTransformToAncestor
+  // will count this displacement, we should remove it here to avoid
+  // double-counting.
+  m.PreTranslate(-initPosition);
+
+  SVGBBoxFlags flags = {SVGBBoxFlag::ForGetClientRects,
+                        SVGBBoxFlag::IncludeFillGeometry,
+                        SVGBBoxFlag::IncludeStroke, SVGBBoxFlag::IncludeMarkers,
+                        SVGBBoxFlag::UseUserSpaceOfUseElement};
+
+  gfxRect bbox = SVGUtils::GetBBox(aFrame, flags, &m);
+  *aRect = nsLayoutUtils::RoundGfxRectToAppRect(bbox, appUnitsPerDevPixel);
 
   return outer;
 }
@@ -347,7 +329,7 @@ gfxMatrix SVGUtils::GetCanvasTM(nsIFrame* aFrame) {
   auto* parent = static_cast<SVGContainerFrame*>(aFrame->GetParent());
   auto* content = static_cast<SVGElement*>(aFrame->GetContent());
 
-  return content->PrependLocalTransformsTo(parent->GetCanvasTM());
+  return content->ChildToUserSpaceTransform() * parent->GetCanvasTM();
 }
 
 bool SVGUtils::GetParentSVGTransforms(const nsIFrame* aFrame,
@@ -361,13 +343,15 @@ bool SVGUtils::GetParentSVGTransforms(const nsIFrame* aFrame,
   return false;
 }
 
-void SVGUtils::NotifyChildrenOfSVGChange(nsIFrame* aFrame, uint32_t aFlags) {
+void SVGUtils::NotifyChildrenOfSVGChange(
+    nsIFrame* aFrame, ISVGDisplayableFrame::ChangeFlags aFlags) {
   for (nsIFrame* kid : aFrame->PrincipalChildList()) {
     ISVGDisplayableFrame* SVGFrame = do_QueryFrame(kid);
     if (SVGFrame) {
       SVGFrame->NotifySVGChanged(aFlags);
     } else {
-      NS_ASSERTION(kid->IsSVGFrame() || kid->IsInSVGTextSubtree(),
+      NS_ASSERTION(kid->IsSVGFrame() || kid->IsInSVGTextSubtree() ||
+                       kid->IsPlaceholderFrame(),
                    "SVG frame expected");
       // recurse into the children of container frames e.g. <clipPath>, <mask>
       // in case they have child frames with transformation matrices
@@ -381,10 +365,13 @@ void SVGUtils::NotifyChildrenOfSVGChange(nsIFrame* aFrame, uint32_t aFlags) {
 // ************************************************************
 
 float SVGUtils::ComputeOpacity(const nsIFrame* aFrame, bool aHandleOpacity) {
+  if (!aHandleOpacity) {
+    return 1.0f;
+  }
+
   const auto* styleEffects = aFrame->StyleEffects();
 
-  if (!styleEffects->IsOpaque() &&
-      (SVGUtils::CanOptimizeOpacity(aFrame) || !aHandleOpacity)) {
+  if (!styleEffects->IsOpaque() && SVGUtils::CanOptimizeOpacity(aFrame)) {
     return 1.0f;
   }
 
@@ -405,7 +392,7 @@ SVGUtils::MaskUsage SVGUtils::DetermineMaskUsage(const nsIFrame* aFrame,
   const nsStyleSVGReset* svgReset = firstFrame->StyleSVGReset();
 
   if (SVGObserverUtils::GetAndObserveMasks(firstFrame, nullptr) !=
-      SVGObserverUtils::eHasNoRefs) {
+      SVGObserverUtils::ReferenceState::HasNoRefs) {
     usage.mShouldGenerateMaskLayer = true;
   }
 
@@ -504,10 +491,9 @@ class MixModeBlender {
     mSourceCtx->SetPattern(pattern);
     mSourceCtx->Paint();
   }
-
- private:
   MixModeBlender() = delete;
 
+ private:
   IntRect ComputeClipExtsInDeviceSpace(const gfxMatrix& aTransform) {
     // These are used if we require a temporary surface for a custom blend
     // mode. Clip the source context first, so that we can generate a smaller
@@ -538,12 +524,15 @@ class MixModeBlender {
     IntRect result;
     ToRect(clippedFrameSurfaceRect).ToIntRect(&result);
 
-    return Factory::CheckSurfaceSize(result.Size()) ? result : IntRect();
+    return mSourceCtx->GetDrawTarget()->CanCreateSimilarDrawTarget(
+               result.Size(), SurfaceFormat::B8G8R8A8)
+               ? result
+               : IntRect();
   }
 
   nsIFrame* mFrame;
   gfxContext* mSourceCtx;
-  UniquePtr<gfxContext> mTargetCtx;
+  std::unique_ptr<gfxContext> mTargetCtx;
   IntPoint mTargetOffset;
 };
 
@@ -596,7 +585,7 @@ void SVGUtils::PaintFrameWithEffects(nsIFrame* aFrame, gfxContext& aContext,
   nsTArray<SVGFilterFrame*> filterFrames;
   const bool hasInvalidFilter =
       SVGObserverUtils::GetAndObserveFilters(aFrame, &filterFrames) ==
-      SVGObserverUtils::eHasRefsSomeInvalid;
+      SVGObserverUtils::ReferenceState::HasRefsSomeInvalid;
   SVGObserverUtils::GetAndObserveClipPath(aFrame, &clipPathFrame);
   SVGObserverUtils::GetAndObserveMasks(aFrame, &maskFrames);
 
@@ -710,9 +699,9 @@ void SVGUtils::PaintFrameWithEffects(nsIFrame* aFrame, gfxContext& aContext,
     };
     // If we're masking a userSpaceOnUse mask we may need to include the
     // stroke too. Err on the side of caution and include it always.
-    gfxRect bbox = GetBBox(aFrame, SVGUtils::eUseFrameBoundsForOuterSVG |
-                                       SVGUtils::eBBoxIncludeFillGeometry |
-                                       SVGUtils::eBBoxIncludeStroke);
+    gfxRect bbox = GetBBox(
+        aFrame, {SVGBBoxFlag::UseFrameBoundsForOuterSVG,
+                 SVGBBoxFlag::IncludeFillGeometry, SVGBBoxFlag::IncludeStroke});
     FilterInstance::PaintFilteredFrame(
         aFrame, aFrame->StyleEffects()->mFilters.AsSpan(), filterFrames, target,
         callback, nullptr, aImgParams, 1.0f, &bbox);
@@ -760,10 +749,8 @@ IntSize SVGUtils::ConvertToSurfaceSize(const gfxSize& aSize,
                       surfaceSize.height != ceil(aSize.height);
 
   if (!Factory::AllowedSurfaceSize(surfaceSize)) {
-    surfaceSize.width =
-        std::min(NS_SVG_OFFSCREEN_MAX_DIMENSION, surfaceSize.width);
-    surfaceSize.height =
-        std::min(NS_SVG_OFFSCREEN_MAX_DIMENSION, surfaceSize.height);
+    surfaceSize.width = std::min(kReasonableSurfaceSize, surfaceSize.width);
+    surfaceSize.height = std::min(kReasonableSurfaceSize, surfaceSize.height);
     *aResultOverflows = true;
   }
 
@@ -784,7 +771,8 @@ bool SVGUtils::HitTestRect(const gfx::Matrix& aMatrix, float aRX, float aRY,
 }
 
 gfxRect SVGUtils::GetClipRectForFrame(const nsIFrame* aFrame, float aX,
-                                      float aY, float aWidth, float aHeight) {
+                                      float aY, float aWidth, float aHeight,
+                                      SVGBBoxFlags aFlags) {
   const nsStyleDisplay* disp = aFrame->StyleDisplay();
   const nsStyleEffects* effects = aFrame->StyleEffects();
 
@@ -797,14 +785,17 @@ gfxRect SVGUtils::GetClipRectForFrame(const nsIFrame* aFrame, float aX,
 
   const auto& rect = effects->mClip.AsRect();
   nsRect coordClipRect = rect.ToLayoutRect();
+  if (aFlags.contains(SVGBBoxFlag::DisregardCSSZoom)) {
+    coordClipRect.Scale(1 / aFrame->Style()->EffectiveZoom().ToFloat());
+  }
   nsIntRect clipPxRect = coordClipRect.ToOutsidePixels(AppUnitsPerCSSPixel());
   gfxRect clipRect =
       gfxRect(clipPxRect.x, clipPxRect.y, clipPxRect.width, clipPxRect.height);
   if (rect.right.IsAuto()) {
-    clipRect.width = aWidth - clipRect.X();
+    clipRect.width = std::max(aWidth - clipRect.X(), 0.0);
   }
   if (rect.bottom.IsAuto()) {
-    clipRect.height = aHeight - clipRect.Y();
+    clipRect.height = std::max(aHeight - clipRect.Y(), 0.0);
   }
   if (disp->mOverflowX != StyleOverflow::Hidden) {
     clipRect.x = aX;
@@ -817,7 +808,7 @@ gfxRect SVGUtils::GetClipRectForFrame(const nsIFrame* aFrame, float aX,
   return clipRect;
 }
 
-gfxRect SVGUtils::GetBBox(nsIFrame* aFrame, uint32_t aFlags,
+gfxRect SVGUtils::GetBBox(nsIFrame* aFrame, SVGBBoxFlags aFlags,
                           const gfxMatrix* aToBoundsSpace) {
   if (aFrame->IsTextFrame()) {
     aFrame = aFrame->GetParent();
@@ -841,13 +832,19 @@ gfxRect SVGUtils::GetBBox(nsIFrame* aFrame, uint32_t aFlags,
 
   const bool isOuterSVG = svg && !hasSVGLayout;
   MOZ_ASSERT(!isOuterSVG || aFrame->IsSVGOuterSVGFrame());
-  if (!svg || (isOuterSVG && (aFlags & eUseFrameBoundsForOuterSVG))) {
+  if (!svg ||
+      (isOuterSVG && aFlags.contains(SVGBBoxFlag::UseFrameBoundsForOuterSVG))) {
     // An HTML element or an SVG outer frame.
     MOZ_ASSERT(!hasSVGLayout);
-    bool onlyCurrentFrame = aFlags & eIncludeOnlyCurrentFrameForNonSVGElement;
-    return SVGIntegrationUtils::GetSVGBBoxForNonSVGFrame(
+    bool onlyCurrentFrame =
+        aFlags.contains(SVGBBoxFlag::IncludeOnlyCurrentFrameForNonSVGElement);
+    gfxRect bbox = SVGIntegrationUtils::GetSVGBBoxForNonSVGFrame(
         aFrame,
         /* aUnionContinuations = */ !onlyCurrentFrame);
+    if (aFlags.contains(SVGBBoxFlag::DisregardCSSZoom)) {
+      bbox.Scale(1 / aFrame->Style()->EffectiveZoom().ToFloat());
+    }
+    return bbox;
   }
 
   MOZ_ASSERT(svg);
@@ -860,13 +857,13 @@ gfxRect SVGUtils::GetBBox(nsIFrame* aFrame, uint32_t aFlags,
 
   // Clean out flags which have no effects on returning bbox from now, so that
   // we can cache and reuse ObjectBoundingBoxProperty() in the code below.
-  aFlags &=
-      ~(eIncludeOnlyCurrentFrameForNonSVGElement | eUseFrameBoundsForOuterSVG);
+  aFlags -= {SVGBBoxFlag::IncludeOnlyCurrentFrameForNonSVGElement,
+             SVGBBoxFlag::UseFrameBoundsForOuterSVG};
   if (!aFrame->IsSVGUseFrame()) {
-    aFlags &= ~eUseUserSpaceOfUseElement;
+    aFlags -= SVGBBoxFlag::UseUserSpaceOfUseElement;
   }
 
-  if (aFlags == eBBoxIncludeFillGeometry &&
+  if (aFlags == SVGBBoxFlag::IncludeFillGeometry &&
       // We only cache bbox in element's own user space
       !aToBoundsSpace) {
     gfxRect* prop = aFrame->GetProperty(ObjectBoundingBoxProperty());
@@ -881,28 +878,43 @@ gfxRect SVGUtils::GetBBox(nsIFrame* aFrame, uint32_t aFlags,
   }
 
   if (aFrame->IsSVGForeignObjectFrame() ||
-      aFlags & SVGUtils::eUseUserSpaceOfUseElement) {
+      aFlags.contains(SVGBBoxFlag::UseUserSpaceOfUseElement)) {
     // The spec says getBBox "Returns the tight bounding box in *current user
     // space*". So we should really be doing this for all elements, but that
     // needs investigation to check that we won't break too much content.
     // NOTE: When changing this to apply to other frame types, make sure to
     // also update SVGUtils::FrameSpaceInCSSPxToUserSpaceOffset.
     MOZ_ASSERT(aFrame->GetContent()->IsSVGElement(), "bad cast");
-    SVGElement* element = static_cast<SVGElement*>(aFrame->GetContent());
-    matrix = element->PrependLocalTransformsTo(matrix, eChildToUserSpace);
+    auto* element = static_cast<SVGElement*>(aFrame->GetContent());
+    gfxMatrix transform = element->ChildToUserSpaceTransform();
+    if (aFlags.contains(SVGBBoxFlag::DisregardCSSZoom)) {
+      // The outer if statement above ensures this is just a translation so
+      // the simplest unzoom solution here is just to undo that translation
+      // and rescale it.
+      MOZ_ASSERT(!transform.HasNonTranslation(),
+                 "Expecting only a translation here");
+      gfxPoint translation = transform.GetTranslation();
+      // Remove the zoomed translation and replace it by the unzoomed value.
+      transform.PostTranslate(-translation)
+          .PostTranslate(translation /
+                         aFrame->Style()->EffectiveZoom().ToFloat());
+    }
+    matrix.PreMultiply(transform);
   }
   gfxRect bbox =
       svg->GetBBoxContribution(ToMatrix(matrix), aFlags).ToThebesRect();
   // Account for 'clipped'.
-  if (aFlags & SVGUtils::eBBoxIncludeClipped) {
+  if (aFlags.contains(SVGBBoxFlag::IncludeClipped)) {
     gfxRect clipRect;
     gfxRect fillBBox =
-        svg->GetBBoxContribution({}, SVGUtils::eBBoxIncludeFill).ToThebesRect();
+        svg->GetBBoxContribution({}, (aFlags & SVGBBoxFlag::DisregardCSSZoom) +
+                                         SVGBBoxFlag::IncludeFillGeometry)
+            .ToThebesRect();
     // XXX Should probably check for overflow: clip too.
     bool hasClip = aFrame->StyleDisplay()->IsScrollableOverflow();
     if (hasClip) {
-      clipRect = SVGUtils::GetClipRectForFrame(aFrame, 0.0f, 0.0f,
-                                               fillBBox.width, fillBBox.height);
+      clipRect = SVGUtils::GetClipRectForFrame(
+          aFrame, 0.0f, 0.0f, fillBBox.width, fillBBox.height, aFlags);
       clipRect.MoveBy(fillBBox.TopLeft());
       if (aFrame->IsSVGForeignObjectFrame() || aFrame->IsSVGUseFrame()) {
         clipRect = matrix.TransformBounds(clipRect);
@@ -910,7 +922,7 @@ gfxRect SVGUtils::GetBBox(nsIFrame* aFrame, uint32_t aFlags,
     }
     SVGClipPathFrame* clipPathFrame;
     if (SVGObserverUtils::GetAndObserveClipPath(aFrame, &clipPathFrame) ==
-        SVGObserverUtils::eHasRefsSomeInvalid) {
+        SVGObserverUtils::ReferenceState::HasRefsSomeInvalid) {
       bbox = gfxRect();
     } else {
       if (clipPathFrame) {
@@ -928,7 +940,8 @@ gfxRect SVGUtils::GetBBox(nsIFrame* aFrame, uint32_t aFlags,
                    .ToThebesRect();
       }
 
-      if (hasClip) {
+      if (hasClip && !aFlags.contains(
+                         SVGBBoxFlag::DoNotClipToBBoxOfContentInsideClipPath)) {
         bbox = bbox.Intersect(clipRect);
       }
 
@@ -938,7 +951,7 @@ gfxRect SVGUtils::GetBBox(nsIFrame* aFrame, uint32_t aFlags,
     }
   }
 
-  if (aFlags == eBBoxIncludeFillGeometry &&
+  if (aFlags == SVGBBoxFlag::IncludeFillGeometry &&
       // We only cache bbox in element's own user space
       !aToBoundsSpace) {
     // Obtaining the bbox for objectBoundingBox calculations is common so we
@@ -966,9 +979,8 @@ gfxPoint SVGUtils::FrameSpaceInCSSPxToUserSpaceOffset(const nsIFrame* aFrame) {
   // For foreignObject frames, SVGUtils::GetBBox applies their local
   // transform, so we need to do the same here.
   if (aFrame->IsSVGForeignObjectFrame()) {
-    gfxMatrix transform =
-        static_cast<SVGElement*>(aFrame->GetContent())
-            ->PrependLocalTransformsTo(gfxMatrix(), eChildToUserSpace);
+    gfxMatrix transform = static_cast<SVGElement*>(aFrame->GetContent())
+                              ->ChildToUserSpaceTransform();
     NS_ASSERTION(!transform.HasNonTranslation(),
                  "we're relying on this being an offset-only transform");
     return transform.GetTranslation();
@@ -978,19 +990,22 @@ gfxPoint SVGUtils::FrameSpaceInCSSPxToUserSpaceOffset(const nsIFrame* aFrame) {
 }
 
 static gfxRect GetBoundingBoxRelativeRect(const SVGAnimatedLength* aXYWH,
+                                          const SVGElement* aElement,
                                           const gfxRect& aBBox) {
-  return gfxRect(aBBox.x + SVGUtils::ObjectSpace(aBBox, &aXYWH[0]),
-                 aBBox.y + SVGUtils::ObjectSpace(aBBox, &aXYWH[1]),
-                 SVGUtils::ObjectSpace(aBBox, &aXYWH[2]),
-                 SVGUtils::ObjectSpace(aBBox, &aXYWH[3]));
+  SVGElementMetrics metrics(aElement);
+  return gfxRect(aBBox.x + SVGUtils::ObjectSpace(aBBox, metrics, &aXYWH[0]),
+                 aBBox.y + SVGUtils::ObjectSpace(aBBox, metrics, &aXYWH[1]),
+                 SVGUtils::ObjectSpace(aBBox, metrics, &aXYWH[2]),
+                 SVGUtils::ObjectSpace(aBBox, metrics, &aXYWH[3]));
 }
 
 gfxRect SVGUtils::GetRelativeRect(uint16_t aUnits,
                                   const SVGAnimatedLength* aXYWH,
                                   const gfxRect& aBBox,
+                                  const SVGElement* aElement,
                                   const UserSpaceMetrics& aMetrics) {
   if (aUnits == SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
-    return GetBoundingBoxRelativeRect(aXYWH, aBBox);
+    return GetBoundingBoxRelativeRect(aXYWH, aElement, aBBox);
   }
   return gfxRect(UserSpace(aMetrics, &aXYWH[0]), UserSpace(aMetrics, &aXYWH[1]),
                  UserSpace(aMetrics, &aXYWH[2]),
@@ -1000,13 +1015,15 @@ gfxRect SVGUtils::GetRelativeRect(uint16_t aUnits,
 gfxRect SVGUtils::GetRelativeRect(uint16_t aUnits,
                                   const SVGAnimatedLength* aXYWH,
                                   const gfxRect& aBBox, nsIFrame* aFrame) {
+  auto* svgElement = SVGElement::FromNode(aFrame->GetContent());
   if (aUnits == SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
-    return GetBoundingBoxRelativeRect(aXYWH, aBBox);
+    return GetBoundingBoxRelativeRect(aXYWH, svgElement, aBBox);
   }
-  if (SVGElement* svgElement = SVGElement::FromNode(aFrame->GetContent())) {
-    return GetRelativeRect(aUnits, aXYWH, aBBox, SVGElementMetrics(svgElement));
+  if (svgElement) {
+    return GetRelativeRect(aUnits, aXYWH, aBBox, svgElement,
+                           SVGElementMetrics(svgElement));
   }
-  return GetRelativeRect(aUnits, aXYWH, aBBox,
+  return GetRelativeRect(aUnits, aXYWH, aBBox, svgElement,
                          NonSVGFrameUserSpaceMetrics(aFrame));
 }
 
@@ -1042,7 +1059,8 @@ bool SVGUtils::CanOptimizeOpacity(const nsIFrame* aFrame) {
 
 gfxMatrix SVGUtils::AdjustMatrixForUnits(const gfxMatrix& aMatrix,
                                          const SVGAnimatedEnumeration* aUnits,
-                                         nsIFrame* aFrame, uint32_t aFlags) {
+                                         nsIFrame* aFrame,
+                                         SVGBBoxFlags aFlags) {
   if (aFrame && aUnits->GetAnimValue() == SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
     gfxRect bbox = GetBBox(aFrame, aFlags);
     gfxMatrix tm = aMatrix;
@@ -1072,6 +1090,21 @@ bool SVGUtils::GetNonScalingStrokeTransform(const nsIFrame* aFrame,
   return aUserToOuterSVG->HasNonTranslation() && !aUserToOuterSVG->IsSingular();
 }
 
+void SVGUtils::UpdateNonScalingStrokeStateBit(nsIFrame* aFrame) {
+  MOZ_ASSERT(aFrame->HasAnyStateBits(NS_FRAME_SVG_LAYOUT),
+             "Called on invalid frame type");
+  MOZ_ASSERT(aFrame->StyleSVGReset()->HasNonScalingStroke(),
+             "Expecting initial frame to have non-scaling-stroke style");
+
+  do {
+    MOZ_ASSERT(aFrame->IsSVGFrame(), "Unexpected frame type");
+    aFrame->AddStateBits(NS_STATE_SVG_MAY_CONTAIN_NON_SCALING_STROKE);
+    if (aFrame->IsSVGOuterSVGFrame()) {
+      return;
+    }
+  } while ((aFrame = aFrame->GetParent()));
+}
+
 // The logic here comes from _cairo_stroke_style_max_distance_from_path
 static gfxRect PathExtentsToMaxStrokeExtents(const gfxRect& aPathExtents,
                                              const nsIFrame* aFrame,
@@ -1088,8 +1121,8 @@ static gfxRect PathExtentsToMaxStrokeExtents(const gfxRect& aPathExtents,
     matrix.PreMultiply(outerSVGToUser);
   }
 
-  double dx = style_expansion * (fabs(matrix._11) + fabs(matrix._21));
-  double dy = style_expansion * (fabs(matrix._22) + fabs(matrix._12));
+  double dx = style_expansion * (std::abs(matrix._11) + std::abs(matrix._21));
+  double dy = style_expansion * (std::abs(matrix._22) + std::abs(matrix._12));
 
   gfxRect strokeExtents = aPathExtents;
   strokeExtents.Inflate(dx, dy);
@@ -1142,7 +1175,7 @@ gfxRect SVGUtils::PathExtentsToMaxStrokeExtents(const gfxRect& aPathExtents,
 
 /* static */
 nscolor SVGUtils::GetFallbackOrPaintColor(
-    const ComputedStyle& aStyle, StyleSVGPaint nsStyleSVG::*aFillOrStroke,
+    const ComputedStyle& aStyle, StyleSVGPaint nsStyleSVG::* aFillOrStroke,
     nscolor aDefaultContextFallbackColor) {
   const auto& paint = aStyle.StyleSVG()->*aFillOrStroke;
   nscolor color;
@@ -1377,8 +1410,8 @@ void SVGUtils::SetupStrokeGeometry(nsIFrame* aFrame, gfxContext* aContext,
                     strokeOptions.mDashOffset, devPxPerCSSPx);
 }
 
-uint16_t SVGUtils::GetGeometryHitTestFlags(const nsIFrame* aFrame) {
-  uint16_t flags = 0;
+SVGHitTestFlags SVGUtils::GetGeometryHitTestFlags(const nsIFrame* aFrame) {
+  SVGHitTestFlags flags;
 
   switch (aFrame->Style()->PointerEvents()) {
     case StylePointerEvents::None:
@@ -1387,44 +1420,44 @@ uint16_t SVGUtils::GetGeometryHitTestFlags(const nsIFrame* aFrame) {
     case StylePointerEvents::Visiblepainted:
       if (aFrame->StyleVisibility()->IsVisible()) {
         if (!aFrame->StyleSVG()->mFill.kind.IsNone()) {
-          flags = SVG_HIT_TEST_FILL;
+          flags = SVGHitTestFlag::Fill;
         }
         if (!aFrame->StyleSVG()->mStroke.kind.IsNone()) {
-          flags |= SVG_HIT_TEST_STROKE;
+          flags += SVGHitTestFlag::Stroke;
         }
       }
       break;
     case StylePointerEvents::Visiblefill:
       if (aFrame->StyleVisibility()->IsVisible()) {
-        flags = SVG_HIT_TEST_FILL;
+        flags = SVGHitTestFlag::Fill;
       }
       break;
     case StylePointerEvents::Visiblestroke:
       if (aFrame->StyleVisibility()->IsVisible()) {
-        flags = SVG_HIT_TEST_STROKE;
+        flags = SVGHitTestFlag::Stroke;
       }
       break;
     case StylePointerEvents::Visible:
       if (aFrame->StyleVisibility()->IsVisible()) {
-        flags = SVG_HIT_TEST_FILL | SVG_HIT_TEST_STROKE;
+        flags = {SVGHitTestFlag::Fill, SVGHitTestFlag::Stroke};
       }
       break;
     case StylePointerEvents::Painted:
       if (!aFrame->StyleSVG()->mFill.kind.IsNone()) {
-        flags = SVG_HIT_TEST_FILL;
+        flags = SVGHitTestFlag::Fill;
       }
       if (!aFrame->StyleSVG()->mStroke.kind.IsNone()) {
-        flags |= SVG_HIT_TEST_STROKE;
+        flags += SVGHitTestFlag::Stroke;
       }
       break;
     case StylePointerEvents::Fill:
-      flags = SVG_HIT_TEST_FILL;
+      flags = SVGHitTestFlag::Fill;
       break;
     case StylePointerEvents::Stroke:
-      flags = SVG_HIT_TEST_STROKE;
+      flags = SVGHitTestFlag::Stroke;
       break;
     case StylePointerEvents::All:
-      flags = SVG_HIT_TEST_FILL | SVG_HIT_TEST_STROKE;
+      flags = {SVGHitTestFlag::Fill, SVGHitTestFlag::Stroke};
       break;
     default:
       NS_ERROR("not reached");
@@ -1462,19 +1495,17 @@ bool SVGUtils::GetSVGGlyphExtents(const Element* aElement,
     return false;
   }
 
-  gfxMatrix transform(aSVGToAppSpace);
+  gfxMatrix transform = aSVGToAppSpace;
   if (auto* svg = SVGElement::FromNode(frame->GetContent())) {
-    transform = svg->PrependLocalTransformsTo(aSVGToAppSpace);
+    transform = svg->ChildToUserSpaceTransform() * transform;
   }
 
   *aResult =
       svgFrame
-          ->GetBBoxContribution(gfx::ToMatrix(transform),
-                                SVGUtils::eBBoxIncludeFill |
-                                    SVGUtils::eBBoxIncludeFillGeometry |
-                                    SVGUtils::eBBoxIncludeStroke |
-                                    SVGUtils::eBBoxIncludeStrokeGeometry |
-                                    SVGUtils::eBBoxIncludeMarkers)
+          ->GetBBoxContribution(
+              gfx::ToMatrix(transform),
+              {SVGBBoxFlag::IncludeFillGeometry, SVGBBoxFlag::IncludeStroke,
+               SVGBBoxFlag::IncludeStrokeGeometry, SVGBBoxFlag::IncludeMarkers})
           .ToThebesRect();
   return true;
 }

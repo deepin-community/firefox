@@ -1,26 +1,25 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 sw=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "TextInputHandler.h"
+#include <Foundation/Foundation.h>
+#include <Foundation/NSObjCRuntime.h>
 
 #include "mozilla/Logging.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/AutoRestore.h"
 #include "mozilla/MacStringHelpers.h"
 #include "mozilla/MiscEvents.h"
 #include "mozilla/MouseEvents.h"
 #include "mozilla/StaticPrefs_intl.h"
 #include "mozilla/StaticPrefs_widget.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/WidgetCocoaMetrics.h"
 #include "mozilla/TextEventDispatcher.h"
 #include "mozilla/TextEvents.h"
 #include "mozilla/ToString.h"
 
-#include "nsChildView.h"
+#include "nsCocoaWindow.h"
 #include "nsObjCExceptions.h"
 #include "nsBidiUtils.h"
 #include "nsToolkit.h"
@@ -51,10 +50,6 @@ mozilla::LazyLogModule gKeyLog("KeyboardHandler");
 #define MOZ_LOG_KEY_OR_IME(aLogLevel, aArgs)                               \
   MOZ_LOG(MOZ_LOG_TEST(gIMELog, aLogLevel) ? gIMELog : gKeyLog, aLogLevel, \
           aArgs)
-
-static const char* OnOrOff(bool aBool) { return aBool ? "ON" : "off"; }
-
-static const char* TrueOrFalse(bool aBool) { return aBool ? "TRUE" : "FALSE"; }
 
 static const char* GetKeyNameForNativeKeyCode(unsigned short aNativeKeyCode) {
   switch (aNativeKeyCode) {
@@ -545,9 +540,11 @@ bool TISInputSourceWrapper::IsDeadKey(NSEvent* aNativeKeyEvent) {
     return false;
   }
 
-  // Assmue that if control key or command key is pressed, it's not a dead key.
+  // Assume that if the control key, command key or Fn key is pressed, it's not
+  // a dead key.
   NSUInteger cocoaState = [aNativeKeyEvent modifierFlags];
-  if (cocoaState & (NSEventModifierFlagControl | NSEventModifierFlagCommand)) {
+  if (cocoaState & (NSEventModifierFlagControl | NSEventModifierFlagCommand |
+                    NSEventModifierFlagFunction)) {
     return false;
   }
 
@@ -696,7 +693,7 @@ void TISInputSourceWrapper::InitByInputSourceID(const CFStringRef aID) {
 
 void TISInputSourceWrapper::InitByLayoutID(SInt32 aLayoutID,
                                            bool aOverrideKeyboard) {
-  // NOTE: Doument new layout IDs in TextInputHandler.h when you add ones.
+  // NOTE: Document new layout IDs in TextInputHandler.h when you add ones.
   switch (aLayoutID) {
     case 0:
       InitByInputSourceID("com.apple.keylayout.US");
@@ -928,7 +925,7 @@ void TISInputSourceWrapper::Select() {
 }
 
 void TISInputSourceWrapper::Clear() {
-  // Clear() is always called when TISInputSourceWrappper is created.
+  // Clear() is always called when TISInputSourceWrapper is created.
   EnsureToLogAllKeyboardLayoutsAndIMEs();
 
   if (mInputSourceList) {
@@ -1008,7 +1005,7 @@ void TISInputSourceWrapper::ComputeInsertStringForCharCode(
                     ? static_cast<char16_t>(aResult[0] + ('A' - 1))
                     : static_cast<char16_t>(aResult[0] + ('a' - 1));
     }
-    // If Meta key is pressed, it may cause to switch the keyboard layout like
+    // If Meta key is pressed, it may cause switching the keyboard layout like
     // Arabic, Russian, Hebrew, Greek and Dvorak-QWERTY.
     else if (aKeyEvent.IsMeta() &&
              !(aKeyEvent.IsControl() || aKeyEvent.IsAlt())) {
@@ -1065,7 +1062,7 @@ void TISInputSourceWrapper::InitKeyEvent(NSEvent* aNativeKeyEvent,
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
   MOZ_ASSERT(!aIsProcessedByIME || aKeyEvent.mMessage != eKeyPress,
-             "eKeyPress event should not be marked as proccessed by IME");
+             "eKeyPress event should not be marked as processed by IME");
 
   MOZ_LOG(gKeyLog, LogLevel::Info,
           ("%p TISInputSourceWrapper::InitKeyEvent, aNativeKeyEvent=%p, "
@@ -1293,7 +1290,7 @@ void TISInputSourceWrapper::WillDispatchKeyboardEvent(
            this, aKeyEvent.mKeyCode, aKeyEvent.mCharCode));
 
   // If aInsertString is not nullptr (it means InsertText() is called)
-  // and it acutally inputs a character, we don't need to append alternative
+  // and it actually inputs a character, we don't need to append alternative
   // charCode values since such keyboard event shouldn't be handled as
   // a shortcut key.
   if (aInsertString && charCode) {
@@ -1419,12 +1416,13 @@ void TISInputSourceWrapper::WillDispatchKeyboardEvent(
     AlternativeCharCode altCharCodes(cmdedChar, cmdedShiftChar);
     aKeyEvent.mAlternativeCharCodes.AppendElement(altCharCodes);
   }
-  MOZ_LOG(gKeyLog, LogLevel::Info,
-          ("%p   TISInputSourceWrapper::WillDispatchKeyboardEvent, "
-           "hasCmdShiftOnlyChar=%s, isCmdSwitchLayout=%s, isDvorakQWERTY=%s, "
-           "cmdedChar=U+%X, cmdedShiftChar=U+%X",
-           this, TrueOrFalse(hasCmdShiftOnlyChar), TrueOrFalse(isDvorakQWERTY),
-           TrueOrFalse(isDvorakQWERTY), cmdedChar, cmdedShiftChar));
+  MOZ_LOG(
+      gKeyLog, LogLevel::Info,
+      ("%p   TISInputSourceWrapper::WillDispatchKeyboardEvent, "
+       "hasCmdShiftOnlyChar=%s, isCmdSwitchLayout=%s, isDvorakQWERTY=%s, "
+       "cmdedChar=U+%X, cmdedShiftChar=U+%X",
+       this, TrueOrFalse(hasCmdShiftOnlyChar), TrueOrFalse(isCmdSwitchLayout),
+       TrueOrFalse(isDvorakQWERTY), cmdedChar, cmdedShiftChar));
   // Special case for 'SS' key of German layout. See the comment of
   // hasCmdShiftOnlyChar definition for the detail.
   if (hasCmdShiftOnlyChar && originalCmdedShiftChar) {
@@ -1693,7 +1691,7 @@ KeyNameIndex TISInputSourceWrapper::ComputeGeckoKeyNameIndex(
   case aNativeKey:                                                     \
     return aKeyNameIndex;
 
-#include "NativeKeyToDOMKeyName.h"
+#include "NativeKeyToDOMKeyName.inc"
 
 #undef NS_NATIVE_KEY_TO_DOM_KEY_NAME_INDEX
 
@@ -1722,7 +1720,7 @@ CodeNameIndex TISInputSourceWrapper::ComputeGeckoCodeNameIndex(
   case aNativeKey:                                                       \
     return aCodeNameIndex;
 
-#include "NativeKeyToDOMCodeName.h"
+#include "NativeKeyToDOMCodeName.inc"
 
 #undef NS_NATIVE_KEY_TO_DOM_CODE_NAME_INDEX
 
@@ -1787,7 +1785,7 @@ void TextInputHandler::DebugPrintAllKeyboardLayouts() {
  *
  ******************************************************************************/
 
-TextInputHandler::TextInputHandler(nsChildView* aWidget,
+TextInputHandler::TextInputHandler(nsCocoaWindow* aWidget,
                                    NSView<mozView>* aNativeView)
     : IMEInputHandler(aWidget, aNativeView) {
   EnsureToLogAllKeyboardLayoutsAndIMEs();
@@ -1821,17 +1819,16 @@ bool TextInputHandler::HandleKeyDownEvent(NSEvent* aNativeEvent,
        GetCharacters([aNativeEvent characters]),
        GetCharacters([aNativeEvent charactersIgnoringModifiers])));
 
-  // Except when Command key is pressed, we should hide mouse cursor until
-  // next mousemove.  Handling here means that:
-  // - Don't hide mouse cursor at pressing modifier key
-  // - Hide mouse cursor even if the key event will be handled by IME (i.e.,
-  //   even without dispatching eKeyPress events)
-  // - Hide mouse cursor even when a plugin has focus
-  if (!([aNativeEvent modifierFlags] & NSEventModifierFlagCommand)) {
+  // We should hide the mouse cursor until the next mousemove, unless we aren't
+  // dealing with editable content or the Command key was pressed. We hide the
+  // mouse cursor even if the key event will be handled by IME (i.e., even
+  // without dispatching eKeyPress events).
+  if (IsEditableContent() &&
+      !([aNativeEvent modifierFlags] & NSEventModifierFlagCommand)) {
     [NSCursor setHiddenUntilMouseMoves:YES];
   }
 
-  RefPtr<nsChildView> widget(mWidget);
+  RefPtr<nsCocoaWindow> widget(mWidget);
 
   KeyEventState* currentKeyEvent = PushKeyEvent(aNativeEvent, aUniqueId);
   AutoKeyEventStateCleaner remover(this);
@@ -1848,6 +1845,14 @@ bool TextInputHandler::HandleKeyDownEvent(NSEvent* aNativeEvent,
                         "something and canceling the composition",
                         this));
     return false;
+  }
+
+  // macOS supports shortcut keys using the `Fn` key. Check first if this key
+  // event is such a shortcut key.
+  if (nsCocoaUtils::ModifiersForEvent(aNativeEvent) & MODIFIER_FN) {
+    if (mWidget->SendEventToNativeMenuSystem(aNativeEvent)) {
+      return true;
+    }
   }
 
   // Let Cocoa interpret the key events, caching IsIMEComposing first.
@@ -1890,7 +1895,7 @@ bool TextInputHandler::HandleKeyDownEvent(NSEvent* aNativeEvent,
     //       For example, Japanese IME of Apple shows candidate window for
     //       typing window.  They, you can switch the sort order with Tab key.
     //       However, when you choose "Symbol" of the sort order, there may
-    //       be no candiate words.  In this case, IME handles the Tab key
+    //       be no candidate words.  In this case, IME handles the Tab key
     //       actually, but we cannot know it because composition string is
     //       not updated.  So, let's mark eKeyDown event as "processed by IME"
     //       when there is composition string.  This is same as Chrome.
@@ -1949,7 +1954,6 @@ bool TextInputHandler::HandleKeyDownEvent(NSEvent* aNativeEvent,
                                                    currentKeyEvent);
       currentKeyEvent->mKeyPressHandled =
           (status == nsEventStatus_eConsumeNoDefault);
-      currentKeyEvent->mKeyPressDispatched = true;
       MOZ_LOG_KEY_OR_IME(
           LogLevel::Info,
           ("%p TextInputHandler::HandleKeyDownEvent, eKeyPress event has been "
@@ -2038,8 +2042,8 @@ void TextInputHandler::HandleFlagsChanged(NSEvent* aNativeEvent) {
     return;
   }
 
-  RefPtr<nsChildView> kungFuDeathGrip(mWidget);
-  mozilla::Unused << kungFuDeathGrip;  // Not referenced within this function
+  RefPtr<nsCocoaWindow> kungFuDeathGrip(mWidget);
+  (void)kungFuDeathGrip;  // Not referenced within this function
 
   MOZ_LOG_KEY_OR_IME(
       LogLevel::Info,
@@ -2416,17 +2420,12 @@ void TextInputHandler::InsertText(NSString* aString,
 
   MOZ_LOG_KEY_OR_IME(
       LogLevel::Info,
-      ("%p TextInputHandler::InsertText, aString=\"%s\", "
-       "aReplacementRange=%p { location=%lu, length=%lu }, "
-       "IsIMEComposing()=%s, "
-       "keyevent=%p, keydownDispatched=%s, "
-       "keydownHandled=%s, keypressDispatched=%s, "
-       "causedOtherKeyEvents=%s, compositionDispatched=%s",
-       this, GetCharacters(aString), aReplacementRange,
-       static_cast<unsigned long>(
-           aReplacementRange ? aReplacementRange->location : 0),
-       static_cast<unsigned long>(aReplacementRange ? aReplacementRange->length
-                                                    : 0),
+      ("%p TextInputHandler::InsertText, aString=\"%s\", aReplacementRange=%s, "
+       "IsIMEComposing()=%s, keyevent=%p, keydownDispatched=%s, "
+       "keydownHandled=%s, keypressDispatched=%s, causedOtherKeyEvents=%s, "
+       "compositionDispatched=%s",
+       this, GetCharacters(aString),
+       aReplacementRange ? ToString(*aReplacementRange).c_str() : "nullptr",
        TrueOrFalse(IsIMEComposing()),
        currentKeyEvent ? currentKeyEvent->mKeyEvent : nullptr,
        currentKeyEvent ? TrueOrFalse(currentKeyEvent->mKeyDownDispatched)
@@ -2559,7 +2558,7 @@ void TextInputHandler::InsertText(NSString* aString,
   }
 
   // XXX Shouldn't we hold mDispatcher instead of mWidget?
-  RefPtr<nsChildView> widget(mWidget);
+  RefPtr<nsCocoaWindow> widget(mWidget);
   nsresult rv = mDispatcher->BeginNativeInputTransaction();
   if (NS_WARN_IF(NS_FAILED(rv))) {
     MOZ_LOG_KEY_OR_IME(LogLevel::Error,
@@ -2599,15 +2598,29 @@ void TextInputHandler::InsertText(NSString* aString,
   // If mCurrentKeyEvent.mKeyEvent is null, the text should be inputted as
   // composition events.
   nsEventStatus status = nsEventStatus_eIgnore;
-  bool keyPressDispatched = mDispatcher->MaybeDispatchKeypressEvents(
-      keypressEvent, status, currentKeyEvent);
+  bool keyPressDispatched = [&]() {
+    // If text content is chrome process, OnTextChange etc will be dispatched
+    // synchronously. We don't want to dismiss text substitution panel at this
+    // point.
+    mPendingDismissTextSubstitution = false;
+    AutoRestore<bool> block(mBlockDismissTextSubstitutionPanel);
+    mBlockDismissTextSubstitutionPanel = true;
+
+    return mDispatcher->MaybeDispatchKeypressEvents(keypressEvent, status,
+                                                    currentKeyEvent);
+  }();
   bool keyPressHandled = (status == nsEventStatus_eConsumeNoDefault);
 
-  // WebKit and text editor dismisses autocorrect panel by space, then process
-  // autocorrect.
-  if (keypressEvent.mKeyCode == NS_VK_SPACE && keyPressDispatched) {
-    mProcessTextSubstitution = true;
-    DismissTextSubstitutionPanel();
+  if (keyPressDispatched) {
+    // WebKit and text editor dismisses autocorrect panel by space, then process
+    // autocorrect.
+    const bool isSpaceKeyPress = (keypressEvent.mKeyCode == NS_VK_SPACE);
+    // If not space key, we don't process text substitution.
+    mProcessTextSubstitution = isSpaceKeyPress;
+
+    if (isSpaceKeyPress || mPendingDismissTextSubstitution) {
+      DismissTextSubstitutionPanel();
+    }
   }
 
   // Note: mWidget might have become null here. Don't count on it from here on.
@@ -2701,12 +2714,16 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
       case Command::SelectWordNext:
       case Command::EndLine:
       case Command::SelectEndLine:
+      case Command::MoveRight3:
+      case Command::SelectRight3:
       case Command::CharPrevious:
       case Command::SelectCharPrevious:
       case Command::WordPrevious:
       case Command::SelectWordPrevious:
       case Command::BeginLine:
       case Command::SelectBeginLine:
+      case Command::MoveLeft3:
+      case Command::SelectLeft3:
       case Command::LinePrevious:
       case Command::SelectLinePrevious:
       case Command::MoveTop:
@@ -2733,7 +2750,7 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
     }
   }
 
-  RefPtr<nsChildView> widget(mWidget);
+  RefPtr<nsCocoaWindow> widget(mWidget);
   nsresult rv = mDispatcher->BeginNativeInputTransaction();
   if (NS_WARN_IF(NS_FAILED(rv))) {
     MOZ_LOG_KEY_OR_IME(LogLevel::Error,
@@ -2748,7 +2765,7 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
   //       command to the keypress event and it should be handled as
   //       the key press in editor.
 
-  // If it's handling actual key event and hasn't cause any composition
+  // If it's handling actual key event and hasn't caused any composition
   // events nor other key events, we should expose actual modifier state.
   // Otherwise, we should adjust Control, Option and Command state since
   // editor may behave differently if some of them are active.
@@ -2758,7 +2775,7 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
   WidgetKeyboardEvent keydownEvent(true, eKeyDown, widget);
   WidgetKeyboardEvent keypressEvent(true, eKeyPress, widget);
   if (!dispatchFakeKeyPress) {
-    // If we're acutally handling a key press, we should dispatch
+    // If we're actually handling a key press, we should dispatch
     // the keypress event as-is.
     currentKeyEvent->InitKeyEvent(this, keydownEvent, false);
     currentKeyEvent->InitKeyEvent(this, keypressEvent, false);
@@ -2839,7 +2856,9 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
       case Command::WordNext:
       case Command::SelectWordNext:
       case Command::EndLine:
-      case Command::SelectEndLine: {
+      case Command::SelectEndLine:
+      case Command::MoveRight3:
+      case Command::SelectRight3: {
         nsCocoaUtils::InitInputEvent(keypressEvent, keyEvent);
         keypressEvent.mKeyCode = NS_VK_RIGHT;
         keypressEvent.mKeyNameIndex = KEY_NAME_INDEX_ArrowRight;
@@ -2847,7 +2866,8 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
             ~(MODIFIER_CONTROL | MODIFIER_ALT | MODIFIER_META);
         if (aCommand == Command::SelectCharNext ||
             aCommand == Command::SelectWordNext ||
-            aCommand == Command::SelectEndLine) {
+            aCommand == Command::SelectEndLine ||
+            aCommand == Command::SelectRight3) {
           keypressEvent.mModifiers |= MODIFIER_SHIFT;
         }
         if (aCommand == Command::WordNext ||
@@ -2855,7 +2875,9 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
           keypressEvent.mModifiers |= MODIFIER_ALT;
         }
         if (aCommand == Command::EndLine ||
-            aCommand == Command::SelectEndLine) {
+            aCommand == Command::SelectEndLine ||
+            aCommand == Command::MoveRight3 ||
+            aCommand == Command::SelectRight3) {
           keypressEvent.mModifiers |= MODIFIER_META;
         }
         break;
@@ -2865,7 +2887,9 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
       case Command::WordPrevious:
       case Command::SelectWordPrevious:
       case Command::BeginLine:
-      case Command::SelectBeginLine: {
+      case Command::SelectBeginLine:
+      case Command::MoveLeft3:
+      case Command::SelectLeft3: {
         nsCocoaUtils::InitInputEvent(keypressEvent, keyEvent);
         keypressEvent.mKeyCode = NS_VK_LEFT;
         keypressEvent.mKeyNameIndex = KEY_NAME_INDEX_ArrowLeft;
@@ -2873,7 +2897,8 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
             ~(MODIFIER_CONTROL | MODIFIER_ALT | MODIFIER_META);
         if (aCommand == Command::SelectCharPrevious ||
             aCommand == Command::SelectWordPrevious ||
-            aCommand == Command::SelectBeginLine) {
+            aCommand == Command::SelectBeginLine ||
+            aCommand == Command::SelectLeft3) {
           keypressEvent.mModifiers |= MODIFIER_SHIFT;
         }
         if (aCommand == Command::WordPrevious ||
@@ -2881,7 +2906,9 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
           keypressEvent.mModifiers |= MODIFIER_ALT;
         }
         if (aCommand == Command::BeginLine ||
-            aCommand == Command::SelectBeginLine) {
+            aCommand == Command::SelectBeginLine ||
+            aCommand == Command::MoveLeft3 ||
+            aCommand == Command::SelectLeft3) {
           keypressEvent.mModifiers |= MODIFIER_META;
         }
         break;
@@ -3042,7 +3069,7 @@ bool TextInputHandler::HandleCommand(Command aCommand) {
 }
 
 bool TextInputHandler::DoCommandBySelector(const char* aSelector) {
-  RefPtr<nsChildView> widget(mWidget);
+  RefPtr<nsCocoaWindow> widget(mWidget);
 
   KeyEventState* currentKeyEvent = GetCurrentKeyEvent();
 
@@ -3103,9 +3130,18 @@ bool TextInputHandler::DoCommandBySelector(const char* aSelector) {
     currentKeyEvent->InitKeyEvent(this, keypressEvent, false);
 
     nsEventStatus status = nsEventStatus_eIgnore;
-    currentKeyEvent->mKeyPressDispatched =
-        mDispatcher->MaybeDispatchKeypressEvents(keypressEvent, status,
-                                                 currentKeyEvent);
+    // If text content is chrome process, OnTextChange etc will be dispatched
+    // synchronously. We don't want to dismiss text substitution panel at this
+    // point.
+    {
+      mPendingDismissTextSubstitution = false;
+      AutoRestore<bool> block(mBlockDismissTextSubstitutionPanel);
+      mBlockDismissTextSubstitutionPanel = true;
+
+      currentKeyEvent->mKeyPressDispatched =
+          mDispatcher->MaybeDispatchKeypressEvents(keypressEvent, status,
+                                                   currentKeyEvent);
+    }
     currentKeyEvent->mKeyPressHandled =
         (status == nsEventStatus_eConsumeNoDefault);
     MOZ_LOG_KEY_OR_IME(
@@ -3115,10 +3151,17 @@ bool TextInputHandler::DoCommandBySelector(const char* aSelector) {
          this, TrueOrFalse(Destroyed()),
          TrueOrFalse(currentKeyEvent->mKeyPressHandled)));
 
-    // WebKit and text editor dismisses autocorrect panel by enter, then process
-    // autocorrect.
-    mProcessTextSubstitution = (keypressEvent.mKeyCode == NS_VK_RETURN);
-    DismissTextSubstitutionPanel();
+    if (currentKeyEvent->mKeyPressDispatched) {
+      // WebKit and text editor dismisses autocorrect panel by enter, then
+      // process autocorrect.
+      const bool isEnterKeyPress = (keypressEvent.mKeyCode == NS_VK_RETURN);
+      // If not enterkey key, we don't process text substitution.
+      mProcessTextSubstitution = isEnterKeyPress;
+
+      if (isEnterKeyPress || mPendingDismissTextSubstitution) {
+        DismissTextSubstitutionPanel();
+      }
+    }
 
     // This command is now dispatched with keypress event.
     // So, this shouldn't be handled by nobody anymore.
@@ -3161,7 +3204,7 @@ bool TextInputHandler::DoCommandBySelector(const char* aSelector) {
  ******************************************************************************/
 
 bool IMEInputHandler::sStaticMembersInitialized = false;
-bool IMEInputHandler::sCachedIsForRTLLangage = false;
+bool IMEInputHandler::sCachedIsForRTLLanguage = false;
 CFStringRef IMEInputHandler::sLatestIMEOpenedModeInputSourceID = nullptr;
 IMEInputHandler* IMEInputHandler::sFocusedIMEHandler = nullptr;
 
@@ -3218,8 +3261,7 @@ void IMEInputHandler::OnCurrentTextInputSourceChange(
       // U+2026 is "..."
       key.Append(char16_t(0x2026));
     }
-    Telemetry::ScalarSet(Telemetry::ScalarID::WIDGET_IME_NAME_ON_MAC, key,
-                         true);
+    glean::widget::ime_name_on_mac.Get(NS_ConvertUTF16toUTF8(key)).Set(true);
   }
 
   if (MOZ_LOG_TEST(gIMELog, LogLevel::Info)) {
@@ -3273,11 +3315,11 @@ void IMEInputHandler::OnCurrentTextInputSourceChange(
   /**
    * When the direction is changed, all the children are notified.
    * No need to treat the initial case separately because it is covered
-   * by the general case (sCachedIsForRTLLangage is initially false)
+   * by the general case (sCachedIsForRTLLanguage is initially false)
    */
-  if (sCachedIsForRTLLangage != tis.IsForRTLLanguage()) {
+  if (sCachedIsForRTLLanguage != tis.IsForRTLLanguage()) {
     WidgetUtils::SendBidiKeyboardInfoToContent();
-    sCachedIsForRTLLangage = tis.IsForRTLLanguage();
+    sCachedIsForRTLLanguage = tis.IsForRTLLanguage();
   }
 }
 
@@ -3329,7 +3371,7 @@ void IMEInputHandler::DebugPrintAllIMEModes() {
 
 // static
 TSMDocumentID IMEInputHandler::GetCurrentTSMDocumentID() {
-  // At least on Mac OS X 10.6.x and 10.7.x, ::TSMGetActiveDocument() has a bug.
+  // At least on macOS 10.6.x and 10.7.x, ::TSMGetActiveDocument() has a bug.
   // The result of ::TSMGetActiveDocument() isn't modified for new active text
   // input context until [NSTextInputContext currentInputContext] is called.
   // Therefore, we need to call it here.
@@ -3342,7 +3384,7 @@ TSMDocumentID IMEInputHandler::GetCurrentTSMDocumentID() {
 /******************************************************************************
  *
  *  IMEInputHandler implementation #1
- *    The methods are releated to the pending methods.  Some jobs should be
+ *    The methods are related to the pending methods.  Some jobs should be
  *    run after the stack is finished, e.g, some methods cannot run the jobs
  *    during processing the focus event.  And also some other jobs should be
  *    run at the next focus event is processed.
@@ -3412,7 +3454,7 @@ IMEInputHandler::GetIMENotificationRequests() {
   // XXX Shouldn't we move floating window which shows composition string
   //     when plugin has focus and its parent is scrolled or the window is
   //     moved?
-  return IMENotificationRequests(IMENotificationRequests::NOTIFY_TEXT_CHANGE);
+  return {IMENotificationRequest::TextChange};
 }
 
 NS_IMETHODIMP_(void)
@@ -3558,7 +3600,7 @@ void IMEInputHandler::ResetTimer() {
   }
   mTimer->InitWithNamedFuncCallback(FlushPendingMethods, this, 0,
                                     nsITimer::TYPE_ONE_SHOT,
-                                    "IMEInputHandler::FlushPendingMethods");
+                                    "IMEInputHandler::FlushPendingMethods"_ns);
 }
 
 void IMEInputHandler::ExecutePendingMethods() {
@@ -3721,15 +3763,13 @@ already_AddRefed<mozilla::TextRangeArray> IMEInputHandler::CreateTextRangeArray(
 }
 
 bool IMEInputHandler::DispatchCompositionStartEvent() {
-  MOZ_LOG(
-      gIMELog, LogLevel::Info,
-      ("%p IMEInputHandler::DispatchCompositionStartEvent, "
-       "mSelectedRange={ location=%lu, length=%lu }, Destroyed()=%s, "
-       "mView=%p, mWidget=%p, inputContext=%p, mIsIMEComposing=%s",
-       this, static_cast<unsigned long>(SelectedRange().location),
-       static_cast<unsigned long>(mSelectedRange.length),
-       TrueOrFalse(Destroyed()), mView, mWidget,
-       mView ? [mView inputContext] : nullptr, TrueOrFalse(mIsIMEComposing)));
+  MOZ_LOG(gIMELog, LogLevel::Info,
+          ("%p IMEInputHandler::DispatchCompositionStartEvent, "
+           "mSelectedRange=%s, Destroyed()=%s, mView=%p, mWidget=%p, "
+           "inputContext=%p, mIsIMEComposing=%s",
+           this, ToString(SelectedRange()).c_str(), TrueOrFalse(Destroyed()),
+           mView, mWidget, mView ? [mView inputContext] : nullptr,
+           TrueOrFalse(mIsIMEComposing)));
 
   RefPtr<IMEInputHandler> kungFuDeathGrip(this);
 
@@ -3750,6 +3790,11 @@ bool IMEInputHandler::DispatchCompositionStartEvent() {
                             currentKeyEvent->mKeyEvent);
 
   nsEventStatus status;
+  // IME may have already retrieved the selection and cached it.  Therefore, we
+  // should retrieve selection range before dispatching eCompositionStart.
+  mIMECompositionStartBeforeStart = mIMECompositionStartInContent =
+      Some(SelectedRange().location);
+  mSelectedRangeOverride = Some(SelectedRange());
   rv = mDispatcher->StartComposition(status);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     MOZ_LOG(gIMELog, LogLevel::Error,
@@ -3767,15 +3812,9 @@ bool IMEInputHandler::DispatchCompositionStartEvent() {
     return false;
   }
 
-  // FYI: compositionstart may cause committing composition by the webapp.
-  if (!mIsIMEComposing) {
-    return false;
-  }
-
-  // FYI: The selection range might have been modified by a compositionstart
-  //      event handler.
-  mIMECompositionStart = SelectedRange().location;
-  return true;
+  // FYI: Dispatching eCompositionStart may cause committing the composition if
+  // the focused editor is in chrome UI.
+  return mIsIMEComposing;
 }
 
 bool IMEInputHandler::DispatchCompositionChangeEvent(
@@ -3785,14 +3824,11 @@ bool IMEInputHandler::DispatchCompositionChangeEvent(
 
   MOZ_LOG(
       gIMELog, LogLevel::Info,
-      ("%p IMEInputHandler::DispatchCompositionChangeEvent, "
-       "aText=\"%s\", aAttrString=\"%s\", "
-       "aSelectedRange={ location=%lu, length=%lu }, Destroyed()=%s, mView=%p, "
+      ("%p IMEInputHandler::DispatchCompositionChangeEvent, aText=\"%s\", "
+       "aAttrString=\"%s\", aSelectedRange=%s, Destroyed()=%s, mView=%p, "
        "mWidget=%p, inputContext=%p, mIsIMEComposing=%s",
        this, NS_ConvertUTF16toUTF8(aText).get(),
-       GetCharacters([aAttrString string]),
-       static_cast<unsigned long>(aSelectedRange.location),
-       static_cast<unsigned long>(aSelectedRange.length),
+       GetCharacters([aAttrString string]), ToString(aSelectedRange).c_str(),
        TrueOrFalse(Destroyed()), mView, mWidget,
        mView ? [mView inputContext] : nullptr, TrueOrFalse(mIsIMEComposing)));
 
@@ -3823,8 +3859,12 @@ bool IMEInputHandler::DispatchCompositionChangeEvent(
     return false;
   }
 
-  mSelectedRange.location = mIMECompositionStart + aSelectedRange.location;
-  mSelectedRange.length = aSelectedRange.length;
+  // For avoiding IME to be confused at the preceding text changes during
+  // composition, we should not use the actual offset in content so that we
+  // should use the location at composition start.
+  mSelectedRangeOverride = Some(
+      NSMakeRange(*mIMECompositionStartBeforeStart + aSelectedRange.location,
+                  aSelectedRange.length));
 
   if (mIMECompositionString) {
     [mIMECompositionString release];
@@ -3873,11 +3913,17 @@ bool IMEInputHandler::DispatchCompositionCommitEvent(
 
   RefPtr<IMEInputHandler> kungFuDeathGrip(this);
 
+  // Finish overriding Selection and mSelectedRange will be updated before
+  // dispatching the committing composition below and allow OnSelectionChange()
+  // changes the result of SelectedRange().
+  mSelectedRangeOverride.reset();
+
   if (!Destroyed()) {
-    // IME may query selection immediately after this, however, in e10s mode,
-    // OnSelectionChange() will be called asynchronously.  Until then, we
-    // should emulate expected selection range if the webapp does nothing.
-    mSelectedRange.location = mIMECompositionStart;
+    // mSelectedRange will be updated asynchronously if focused editor is in a
+    // remote process.  However, IME may retrieve selected range immediately.
+    // Therefore, we should emulate the selection after committing composition
+    // right now.
+    mSelectedRange.location = *mIMECompositionStartInContent;
     if (aCommitString) {
       mSelectedRange.location += aCommitString->Length();
     } else if (mIMECompositionString) {
@@ -3906,7 +3952,8 @@ bool IMEInputHandler::DispatchCompositionCommitEvent(
   }
 
   mIsIMEComposing = mIsDeadKeyComposing = false;
-  mIMECompositionStart = UINT32_MAX;
+  mIMECompositionStartBeforeStart.reset();
+  mIMECompositionStartInContent.reset();
   if (mIMECompositionString) {
     [mIMECompositionString release];
     mIMECompositionString = nullptr;
@@ -3969,7 +4016,7 @@ bool IMEInputHandler::MaybeDispatchCurrentKeydownEvent(bool aIsProcessedByIME) {
   // Mark currentKeyEvent as "dispatched eKeyDown event" and actually do it.
   currentKeyEvent->mKeyDownDispatched = true;
 
-  RefPtr<nsChildView> widget(mWidget);
+  RefPtr<nsCocoaWindow> widget(mWidget);
 
   WidgetKeyboardEvent keydownEvent(true, eKeyDown, widget);
   // Don't mark the eKeyDown event as "processed by IME" if the composition
@@ -4012,20 +4059,14 @@ void IMEInputHandler::InsertTextAsCommittingComposition(
     NSString* aString, NSRange* aReplacementRange) {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
-  MOZ_LOG(
-      gIMELog, LogLevel::Info,
-      ("%p IMEInputHandler::InsertTextAsCommittingComposition, "
-       "aAttrString=\"%s\", aReplacementRange=%p { location=%lu, length=%lu }, "
-       "Destroyed()=%s, IsIMEComposing()=%s, "
-       "mMarkedRange={ location=%lu, length=%lu }",
-       this, GetCharacters(aString), aReplacementRange,
-       static_cast<unsigned long>(
-           aReplacementRange ? aReplacementRange->location : 0),
-       static_cast<unsigned long>(aReplacementRange ? aReplacementRange->length
-                                                    : 0),
-       TrueOrFalse(Destroyed()), TrueOrFalse(IsIMEComposing()),
-       static_cast<unsigned long>(mMarkedRange.location),
-       static_cast<unsigned long>(mMarkedRange.length)));
+  MOZ_LOG(gIMELog, LogLevel::Info,
+          ("%p IMEInputHandler::InsertTextAsCommittingComposition, "
+           "aAttrString=\"%s\", aReplacementRange=%s, Destroyed()=%s, "
+           "IsIMEComposing()=%s, mMarkedRange=%s",
+           this, GetCharacters(aString),
+           aReplacementRange ? ToString(*aReplacementRange).c_str() : "nullptr",
+           TrueOrFalse(Destroyed()), TrueOrFalse(IsIMEComposing()),
+           ToString(mMarkedRange).c_str()));
 
   if (IgnoreIMECommit()) {
     MOZ_CRASH("IMEInputHandler::InsertTextAsCommittingComposition() must not"
@@ -4063,7 +4104,7 @@ void IMEInputHandler::InsertTextAsCommittingComposition(
       MOZ_LOG(
           gIMELog, LogLevel::Info,
           ("%p   IMEInputHandler::InsertTextAsCommittingComposition, "
-           "destroyed by commiting composition for setting replacement range",
+           "destroyed by committing composition for setting replacement range",
            this));
       return;
     }
@@ -4094,9 +4135,9 @@ void IMEInputHandler::InsertTextAsCommittingComposition(
       return;
     }
 
-    // Otherise, emulate an IME composition.  This is our traditional behavior,
+    // Otherwise, emulate an IME composition.  This is our traditional behavior,
     // but `beforeinput` events are not cancelable since they should be so for
-    // native IME limitation.  So, this is now seriously imcompatible with the
+    // native IME limitation.  So, this is now seriously incompatible with the
     // other browsers.
     if (!DispatchCompositionStartEvent()) {
       MOZ_LOG(gIMELog, LogLevel::Info,
@@ -4129,24 +4170,16 @@ void IMEInputHandler::SetMarkedText(NSAttributedString* aAttrString,
 
   MOZ_LOG(
       gIMELog, LogLevel::Info,
-      ("%p IMEInputHandler::SetMarkedText, "
-       "aAttrString=\"%s\", aSelectedRange={ location=%lu, length=%lu }, "
-       "aReplacementRange=%p { location=%lu, length=%lu }, "
-       "Destroyed()=%s, IsIMEComposing()=%s, "
-       "mMarkedRange={ location=%lu, length=%lu }, keyevent=%p, "
-       "keydownDispatched=%s, keydownHandled=%s, "
-       "keypressDispatched=%s, causedOtherKeyEvents=%s, "
-       "compositionDispatched=%s",
+      ("%p IMEInputHandler::SetMarkedText, aAttrString=\"%s\", "
+       "aSelectedRange=%s, aReplacementRange=%s, Destroyed()=%s, "
+       "IsIMEComposing()=%s, mMarkedRange=%s, keyevent=%p, "
+       "keydownDispatched=%s, keydownHandled=%s, keypressDispatched=%s, "
+       "causedOtherKeyEvents=%s, compositionDispatched=%s",
        this, GetCharacters([aAttrString string]),
-       static_cast<unsigned long>(aSelectedRange.location),
-       static_cast<unsigned long>(aSelectedRange.length), aReplacementRange,
-       static_cast<unsigned long>(
-           aReplacementRange ? aReplacementRange->location : 0),
-       static_cast<unsigned long>(aReplacementRange ? aReplacementRange->length
-                                                    : 0),
+       ToString(aSelectedRange).c_str(),
+       aReplacementRange ? ToString(*aReplacementRange).c_str() : "nullptr",
        TrueOrFalse(Destroyed()), TrueOrFalse(IsIMEComposing()),
-       static_cast<unsigned long>(mMarkedRange.location),
-       static_cast<unsigned long>(mMarkedRange.length),
+       ToString(mMarkedRange).c_str(),
        currentKeyEvent ? currentKeyEvent->mKeyEvent : nullptr,
        currentKeyEvent ? TrueOrFalse(currentKeyEvent->mKeyDownDispatched)
                        : "N/A",
@@ -4197,7 +4230,7 @@ void IMEInputHandler::SetMarkedText(NSAttributedString* aAttrString,
       MOZ_LOG(
           gIMELog, LogLevel::Info,
           ("%p   IMEInputHandler::SetMarkedText, "
-           "destroyed by commiting composition for setting replacement range",
+           "destroyed by committing composition for setting replacement range",
            this));
       return;
     }
@@ -4260,11 +4293,9 @@ NSAttributedString* IMEInputHandler::GetAttributedSubstringFromRange(
 
   MOZ_LOG(
       gIMELog, LogLevel::Info,
-      ("%p   IMEInputHandler::GetAttributedSubstringFromRange, "
-       "aRange={ location=%lu, length=%lu }, aActualRange=%p, Destroyed()=%s",
-       this, static_cast<unsigned long>(aRange.location),
-       static_cast<unsigned long>(aRange.length), aActualRange,
-       TrueOrFalse(Destroyed())));
+      ("%p   IMEInputHandler::GetAttributedSubstringFromRange, aRange=%s, "
+       "aActualRange=%p, Destroyed()=%s",
+       this, ToString(aRange).c_str(), aActualRange, TrueOrFalse(Destroyed())));
 
   if (aActualRange) {
     *aActualRange = NSMakeRange(NSNotFound, 0);
@@ -4286,12 +4317,12 @@ NSAttributedString* IMEInputHandler::GetAttributedSubstringFromRange(
   //     at least for now.
   NSUInteger compositionLength =
       mIMECompositionString ? [mIMECompositionString length] : 0;
-  if (mIMECompositionStart != UINT32_MAX &&
-      aRange.location >= mIMECompositionStart &&
+  if (mIMECompositionStartBeforeStart.isSome() &&
+      aRange.location >= *mIMECompositionStartBeforeStart &&
       aRange.location + aRange.length <=
-          mIMECompositionStart + compositionLength) {
-    NSRange range =
-        NSMakeRange(aRange.location - mIMECompositionStart, aRange.length);
+          *mIMECompositionStartBeforeStart + compositionLength) {
+    NSRange range = NSMakeRange(
+        aRange.location - *mIMECompositionStartBeforeStart, aRange.length);
     NSString* nsstr = [mIMECompositionString substringWithRange:range];
     NSMutableAttributedString* result =
         [[[NSMutableAttributedString alloc] initWithString:nsstr
@@ -4319,14 +4350,14 @@ NSAttributedString* IMEInputHandler::GetAttributedSubstringFromRange(
                                                 mWidget);
   WidgetQueryContentEvent::Options options;
   int64_t startOffset = aRange.location;
-  if (IsIMEComposing()) {
+  if (mIMECompositionStartBeforeStart.isSome()) {
     // The composition may be at different offset from the selection start
     // offset at dispatching compositionstart because start of composition
     // is fixed when composition string becomes non-empty in the editor.
     // Therefore, we need to use query event which is relative to insertion
     // point.
     options.mRelativeToInsertionPoint = true;
-    startOffset -= mIMECompositionStart;
+    startOffset -= *mIMECompositionStartBeforeStart;
   }
   queryTextContentEvent.InitForQueryTextContent(startOffset, aRange.length,
                                                 options);
@@ -4360,37 +4391,48 @@ NSAttributedString* IMEInputHandler::GetAttributedSubstringFromRange(
 
 bool IMEInputHandler::HasMarkedText() {
   MOZ_LOG(gIMELog, LogLevel::Info,
-          ("%p   IMEInputHandler::HasMarkedText, "
-           "mMarkedRange={ location=%lu, length=%lu }",
-           this, static_cast<unsigned long>(mMarkedRange.location),
-           static_cast<unsigned long>(mMarkedRange.length)));
+          ("%p   IMEInputHandler::HasMarkedText, mMarkedRange=%s", this,
+           ToString(mMarkedRange).c_str()));
 
   return (mMarkedRange.location != NSNotFound) && (mMarkedRange.length != 0);
 }
 
 NSRange IMEInputHandler::MarkedRange() {
   MOZ_LOG(gIMELog, LogLevel::Info,
-          ("%p   IMEInputHandler::MarkedRange, "
-           "mMarkedRange={ location=%lu, length=%lu }",
-           this, static_cast<unsigned long>(mMarkedRange.location),
-           static_cast<unsigned long>(mMarkedRange.length)));
+          ("%p   IMEInputHandler::MarkedRange, mMarkedRange=%s", this,
+           ToString(mMarkedRange).c_str()));
 
   if (!HasMarkedText()) {
     return NSMakeRange(NSNotFound, 0);
   }
+
+  // XXX If MarkedRange() is required by IME, we could return actual range in
+  // content.  If we do that, IME can interact with the latest content
+  // information.  E.g., actual surrounding text which may have already been
+  // modified by the web apps during the composition.  On the other hand,
+  // there is no way to notify IME of when it's updated.  Therefore, if
+  // `SelectedRange()` is called before `MarkedRange()`, the ranges will
+  // mismatch in IME.  Therefore, probably we should not do that.
+
   return mMarkedRange;
 }
 
 NSRange IMEInputHandler::SelectedRange() {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
-  MOZ_LOG(
-      gIMELog, LogLevel::Info,
-      ("%p   IMEInputHandler::SelectedRange, Destroyed()=%s, mSelectedRange={ "
-       "location=%lu, length=%lu }",
-       this, TrueOrFalse(Destroyed()),
-       static_cast<unsigned long>(mSelectedRange.location),
-       static_cast<unsigned long>(mSelectedRange.length)));
+  MOZ_LOG(gIMELog, LogLevel::Info,
+          ("%p   IMEInputHandler::SelectedRange, Destroyed()=%s, "
+           "mSelectedRange=%s, mSelectedRangeOverride=%s",
+           this, TrueOrFalse(Destroyed()), ToString(mSelectedRange).c_str(),
+           ToString(mSelectedRangeOverride).c_str()));
+
+  // If selection range is overridden during a composition, we should return the
+  // override instead of selected range in the content.  That makes IME work
+  // without confusion even if IME caches the compositing range at starting
+  // composition and the web app changes the preceding text of the composition.
+  if (mSelectedRangeOverride.isSome()) {
+    return *mSelectedRangeOverride;
+  }
 
   if (Destroyed()) {
     return mSelectedRange;
@@ -4466,12 +4508,11 @@ NSRect IMEInputHandler::FirstRectForCharacterRange(NSRange& aRange,
                                                    NSRange* aActualRange) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
-  MOZ_LOG(gIMELog, LogLevel::Info,
-          ("%p IMEInputHandler::FirstRectForCharacterRange, Destroyed()=%s, "
-           "aRange={ location=%lu, length=%lu }, aActualRange=%p }",
-           this, TrueOrFalse(Destroyed()),
-           static_cast<unsigned long>(aRange.location),
-           static_cast<unsigned long>(aRange.length), aActualRange));
+  MOZ_LOG(
+      gIMELog, LogLevel::Info,
+      ("%p IMEInputHandler::FirstRectForCharacterRange, Destroyed()=%s, "
+       "aRange=%s, aActualRange=%p }",
+       this, TrueOrFalse(Destroyed()), ToString(aRange).c_str(), aActualRange));
 
   // XXX this returns first character rect or caret rect, it is limitation of
   // now. We need more work for returns first line rect. But current
@@ -4494,14 +4535,14 @@ NSRect IMEInputHandler::FirstRectForCharacterRange(NSRange& aRange,
     WidgetQueryContentEvent queryTextRectEvent(true, eQueryTextRect, mWidget);
     WidgetQueryContentEvent::Options options;
     int64_t startOffset = aRange.location;
-    if (IsIMEComposing()) {
+    if (mIMECompositionStartBeforeStart.isSome()) {
       // The composition may be at different offset from the selection start
       // offset at dispatching compositionstart because start of composition
       // is fixed when composition string becomes non-empty in the editor.
       // Therefore, we need to use query event which is relative to insertion
       // point.
       options.mRelativeToInsertionPoint = true;
-      startOffset -= mIMECompositionStart;
+      startOffset -= *mIMECompositionStartBeforeStart;
     }
     queryTextRectEvent.InitForQueryTextRect(startOffset, 1, options);
     DispatchEvent(queryTextRectEvent);
@@ -4519,14 +4560,14 @@ NSRect IMEInputHandler::FirstRectForCharacterRange(NSRange& aRange,
     WidgetQueryContentEvent queryCaretRectEvent(true, eQueryCaretRect, mWidget);
     WidgetQueryContentEvent::Options options;
     int64_t startOffset = aRange.location;
-    if (IsIMEComposing()) {
+    if (mIMECompositionStartBeforeStart.isSome()) {
       // The composition may be at different offset from the selection start
       // offset at dispatching compositionstart because start of composition
       // is fixed when composition string becomes non-empty in the editor.
       // Therefore, we need to use query event which is relative to insertion
       // point.
       options.mRelativeToInsertionPoint = true;
-      startOffset -= mIMECompositionStart;
+      startOffset -= *mIMECompositionStartBeforeStart;
     }
     queryCaretRectEvent.InitForQueryCaretRect(startOffset, options);
     DispatchEvent(queryCaretRectEvent);
@@ -4539,30 +4580,20 @@ NSRect IMEInputHandler::FirstRectForCharacterRange(NSRange& aRange,
     actualRange.length = 0;
   }
 
-  nsIWidget* rootWidget = mWidget->GetTopLevelWidget();
-  NSWindow* rootWindow =
-      static_cast<NSWindow*>(rootWidget->GetNativeData(NS_NATIVE_WINDOW));
-  NSView* rootView =
-      static_cast<NSView*>(rootWidget->GetNativeData(NS_NATIVE_WIDGET));
-  if (!rootWindow || !rootView) {
-    return rect;
-  }
-  rect = nsCocoaUtils::DevPixelsToCocoaPoints(r, mWidget->BackingScaleFactor());
-  rect = [rootView convertRect:rect toView:nil];
-  rect.origin = nsCocoaUtils::ConvertPointToScreen(rootWindow, rect.origin);
+  // Widget relative -> Screen relative.
+  r += mWidget->WidgetToScreenOffset();
+  rect = nsCocoaUtils::GeckoRectToCocoaRectDevPix(
+      r, mWidget->BackingScaleFactor());
 
   if (aActualRange) {
     *aActualRange = actualRange;
   }
 
   MOZ_LOG(gIMELog, LogLevel::Info,
-          ("%p   IMEInputHandler::FirstRectForCharacterRange, "
-           "useCaretRect=%s rect={ x=%f, y=%f, width=%f, height=%f }, "
-           "actualRange={ location=%lu, length=%lu }",
+          ("%p   IMEInputHandler::FirstRectForCharacterRange, useCaretRect=%s "
+           "rect={ x=%f, y=%f, width=%f, height=%f }, actualRange=%s",
            this, TrueOrFalse(useCaretRect), rect.origin.x, rect.origin.y,
-           rect.size.width, rect.size.height,
-           static_cast<unsigned long>(actualRange.location),
-           static_cast<unsigned long>(actualRange.length)));
+           rect.size.width, rect.size.height, ToString(actualRange).c_str()));
 
   return rect;
 
@@ -4634,14 +4665,12 @@ NSArray* IMEInputHandler::GetValidAttributesForMarkedText() {
  *
  ******************************************************************************/
 
-IMEInputHandler::IMEInputHandler(nsChildView* aWidget,
+IMEInputHandler::IMEInputHandler(nsCocoaWindow* aWidget,
                                  NSView<mozView>* aNativeView)
     : TextInputHandlerBase(aWidget, aNativeView),
       mPendingMethods(0),
       mCandidatedTextSubstitutionResult(nullptr),
       mProcessTextSubstitution(false),
-      mIMECompositionString(nullptr),
-      mIMECompositionStart(UINT32_MAX),
       mRangeForWritingMode(),
       mIsIMEComposing(false),
       mIsDeadKeyComposing(false),
@@ -4665,6 +4694,10 @@ IMEInputHandler::~IMEInputHandler() {
   }
   if (sFocusedIMEHandler == this) {
     sFocusedIMEHandler = nullptr;
+  }
+  if (mCandidatedTextSubstitutionResult) {
+    [mCandidatedTextSubstitutionResult release];
+    mCandidatedTextSubstitutionResult = nullptr;
   }
   if (mIMECompositionString) {
     [mIMECompositionString release];
@@ -4700,7 +4733,7 @@ void IMEInputHandler::OnFocusChangeInGecko(bool aFocus) {
   ResetTimer();
 }
 
-bool IMEInputHandler::OnDestroyWidget(nsChildView* aDestroyingWidget) {
+bool IMEInputHandler::OnDestroyWidget(nsCocoaWindow* aDestroyingWidget) {
   MOZ_LOG(gIMELog, LogLevel::Info,
           ("%p IMEInputHandler::OnDestroyWidget, aDestroyingWidget=%p, "
            "sFocusedIMEHandler=%p, IsIMEComposing()=%s",
@@ -4708,7 +4741,7 @@ bool IMEInputHandler::OnDestroyWidget(nsChildView* aDestroyingWidget) {
            TrueOrFalse(IsIMEComposing())));
 
   // If we're not focused, the focused IMEInputHandler may have been
-  // created by another widget/nsChildView.
+  // created by another widget/nsCocoaWindow.
   if (sFocusedIMEHandler && sFocusedIMEHandler != this) {
     sFocusedIMEHandler->OnDestroyWidget(aDestroyingWidget);
   }
@@ -4952,10 +4985,21 @@ void IMEInputHandler::OpenSystemPreferredLanguageIME() {
 void IMEInputHandler::OnSelectionChange(
     const IMENotification& aIMENotification) {
   MOZ_ASSERT(aIMENotification.mSelectionChangeData.IsInitialized());
-  MOZ_LOG(gIMELog, LogLevel::Info,
-          ("%p IMEInputHandler::OnSelectionChange", this));
 
-  if (!aIMENotification.mSelectionChangeData.HasRange()) {
+  const IMENotification::SelectionChangeDataBase& selectionChangeData =
+      aIMENotification.mSelectionChangeData;
+  MOZ_LOG(gIMELog, LogLevel::Info,
+          ("%p "
+           "IMEInputHandler::OnSelectionChange(aIMENotification."
+           "mSelectionChangeData=%s)",
+           this, ToString(selectionChangeData).c_str()));
+
+  // mSelectedRange and mRangeForWritingMode should be the range in the actual
+  // content.  Therefore, they should be maintained here.  On the other hand,
+  // mSelectedRangeOverride needs to keep selection range which is probably
+  // expected by IME.  Therefore, we shouldn't touch the override here.
+
+  if (!selectionChangeData.HasRange()) {
     mSelectedRange.location = NSNotFound;
     mSelectedRange.length = 0;
     mRangeForWritingMode.location = NSNotFound;
@@ -4963,10 +5007,9 @@ void IMEInputHandler::OnSelectionChange(
     return;
   }
 
-  mWritingMode = aIMENotification.mSelectionChangeData.GetWritingMode();
+  mWritingMode = selectionChangeData.GetWritingMode();
   mRangeForWritingMode =
-      NSMakeRange(aIMENotification.mSelectionChangeData.mOffset,
-                  aIMENotification.mSelectionChangeData.Length());
+      NSMakeRange(selectionChangeData.mOffset, selectionChangeData.Length());
   if (mIMEHasFocus) {
     mSelectedRange = mRangeForWritingMode;
   }
@@ -5009,6 +5052,11 @@ static NSTextCheckingType GetTextCheckingTypes() {
 }
 
 void IMEInputHandler::OnTextChange(const IMENotification& aIMENotification) {
+  if (mIMECompositionStartInContent.isSome()) {
+    mIMECompositionStartInContent =
+        Some(aIMENotification.mTextChangeData.ComputeNewOffset(
+            *mIMECompositionStartInContent));
+  }
   HandleTextSubstitution(aIMENotification);
 }
 
@@ -5021,8 +5069,10 @@ void IMEInputHandler::HandleTextSubstitution(
   }
 
   // Dismiss text substitution panel since this text change might be script etc
-  mProcessTextSubstitution = false;
-  DismissTextSubstitutionPanel();
+  if (!mBlockDismissTextSubstitutionPanel) {
+    mProcessTextSubstitution = false;
+    DismissTextSubstitutionPanel();
+  }
 
   // Set new text substitution data to show its panel by current changed text.
   //
@@ -5058,6 +5108,14 @@ void IMEInputHandler::HandleTextSubstitution(
           &IMEInputHandler::OnTextSubstitution,
           aIMENotification.mTextChangeData.mAddedEndOffset),
       100, EventQueuePriority::Idle);
+
+  // OnTextSubstitution might be called on non-e10s during dispatching a key
+  // events. If during it (mBlockDismissTextSubstitutionPanel is true), we have
+  // to mark that text substitution panel s going to dismiss. Then after
+  // dispatching a key event, it should be dismissed.
+  if (mBlockDismissTextSubstitutionPanel) {
+    mPendingDismissTextSubstitution = true;
+  }
 }
 
 void IMEInputHandler::OnTextSubstitution(uint32_t aStartOffset) {
@@ -5152,6 +5210,7 @@ void IMEInputHandler::OnTextSubstitution(uint32_t aStartOffset) {
   // NSTextCheckingResult.range is read only, so re-create this result object.
   NSRange candidatedRange = NSMakeRange(candidate.range.location + startFetch,
                                         candidate.range.length);
+  [mCandidatedTextSubstitutionResult release];
   mCandidatedTextSubstitutionResult = [[NSTextCheckingResult
       correctionCheckingResultWithRange:candidatedRange
                       replacementString:candidate.replacementString
@@ -5254,6 +5313,11 @@ void IMEInputHandler::ShowTextSubstitutionPanel() {
 void IMEInputHandler::DismissTextSubstitutionPanel() {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
+  MOZ_LOG(gIMELog, LogLevel::Info,
+          ("%p IMEInputHandler::DismissTextSubstitutionPanel, "
+           "mProcessTextSubstitution=%s",
+           this, mProcessTextSubstitution ? "true" : "false"));
+
   NSSpellChecker* spellchecker = [NSSpellChecker sharedSpellChecker];
   if (!spellchecker) {
     return;
@@ -5337,7 +5401,7 @@ int32_t TextInputHandlerBase::sSecureEventInputCount = 0;
 NS_IMPL_ISUPPORTS(TextInputHandlerBase, TextEventDispatcherListener,
                   nsISupportsWeakReference)
 
-TextInputHandlerBase::TextInputHandlerBase(nsChildView* aWidget,
+TextInputHandlerBase::TextInputHandlerBase(nsCocoaWindow* aWidget,
                                            NSView<mozView>* aNativeView)
     : mWidget(aWidget), mDispatcher(aWidget->GetTextEventDispatcher()) {
   gHandlerInstanceCount++;
@@ -5351,7 +5415,7 @@ TextInputHandlerBase::~TextInputHandlerBase() {
   }
 }
 
-bool TextInputHandlerBase::OnDestroyWidget(nsChildView* aDestroyingWidget) {
+bool TextInputHandlerBase::OnDestroyWidget(nsCocoaWindow* aDestroyingWidget) {
   MOZ_LOG_KEY_OR_IME(LogLevel::Info,
                      ("%p TextInputHandlerBase::OnDestroyWidget, "
                       "aDestroyingWidget=%p, mWidget=%p",
@@ -5439,7 +5503,7 @@ NSInteger TextInputHandlerBase::GetWindowLevel() {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
   MOZ_LOG_KEY_OR_IME(LogLevel::Info,
-                     ("%p TextInputHandlerBase::GetWindowLevel, Destryoed()=%s",
+                     ("%p TextInputHandlerBase::GetWindowLevel, Destroyed()=%s",
                       this, TrueOrFalse(Destroyed())));
 
   if (Destroyed()) {
@@ -5469,7 +5533,7 @@ TextInputHandlerBase::AttachNativeKeyEvent(WidgetKeyboardEvent& aKeyEvent) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
   // Don't try to replace a native event if one already exists.
-  // OS X doesn't have an OS modifier, can't make a native event.
+  // macOS doesn't have an OS modifier, can't make a native event.
   if (aKeyEvent.mNativeKeyEvent) {
     return NS_OK;
   }
@@ -5482,7 +5546,7 @@ TextInputHandlerBase::AttachNativeKeyEvent(WidgetKeyboardEvent& aKeyEvent) {
 
   NSInteger windowNumber = [[mView window] windowNumber];
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
-  aKeyEvent.mNativeKeyEvent = nsCocoaUtils::MakeNewCococaEventFromWidgetEvent(
+  aKeyEvent.mNativeKeyEvent = nsCocoaUtils::MakeNewCocoaEventFromWidgetEvent(
       aKeyEvent, windowNumber, context);
 
   return NS_OK;

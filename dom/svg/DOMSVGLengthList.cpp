@@ -1,17 +1,16 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "DOMSVGLengthList.h"
 
-#include "SVGElement.h"
-#include "DOMSVGLength.h"
-#include "nsError.h"
-#include "SVGAnimatedLengthList.h"
-#include "mozilla/dom/SVGLengthListBinding.h"
 #include <algorithm>
+
+#include "DOMSVGLength.h"
+#include "SVGAnimatedLengthList.h"
+#include "SVGElement.h"
+#include "mozilla/dom/SVGLengthListBinding.h"
+#include "nsError.h"
 
 // See the comment in this file's header.
 
@@ -69,10 +68,10 @@ NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(DOMSVGLengthList)
 NS_INTERFACE_MAP_END
 
 void DOMSVGLengthList::IndexedSetter(uint32_t index, DOMSVGLength& newValue,
-                                     ErrorResult& error) {
+                                     ErrorResult& aRv) {
   // Need to take a ref to the return value so it does not leak.
-  RefPtr<DOMSVGLength> ignored = ReplaceItem(newValue, index, error);
-  Unused << ignored;
+  RefPtr<DOMSVGLength> ignored = ReplaceItem(newValue, index, aRv);
+  (void)ignored;
 }
 
 JSObject* DOMSVGLengthList::WrapObject(JSContext* cx,
@@ -124,9 +123,9 @@ SVGLengthList& DOMSVGLengthList::InternalList() const {
 
 // ----------------------------------------------------------------------------
 
-void DOMSVGLengthList::Clear(ErrorResult& aError) {
+void DOMSVGLengthList::Clear(ErrorResult& aRv) {
   if (IsAnimValList()) {
-    aError.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -143,9 +142,9 @@ void DOMSVGLengthList::Clear(ErrorResult& aError) {
 }
 
 already_AddRefed<DOMSVGLength> DOMSVGLengthList::Initialize(
-    DOMSVGLength& newItem, ErrorResult& error) {
+    DOMSVGLength& newItem, ErrorResult& aRv) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
@@ -165,21 +164,21 @@ already_AddRefed<DOMSVGLength> DOMSVGLengthList::Initialize(
   ErrorResult rv;
   Clear(rv);
   MOZ_ASSERT(!rv.Failed());
-  return InsertItemBefore(*domItem, 0, error);
+  return InsertItemBefore(*domItem, 0, aRv);
 }
 
 already_AddRefed<DOMSVGLength> DOMSVGLengthList::GetItem(uint32_t index,
-                                                         ErrorResult& error) {
+                                                         ErrorResult& aRv) {
   bool found;
-  RefPtr<DOMSVGLength> item = IndexedGetter(index, found, error);
+  RefPtr<DOMSVGLength> item = IndexedGetter(index, found, aRv);
   if (!found) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    aRv.ThrowIndexSizeError("Index out of range");
   }
   return item.forget();
 }
 
 already_AddRefed<DOMSVGLength> DOMSVGLengthList::IndexedGetter(
-    uint32_t index, bool& found, ErrorResult& error) {
+    uint32_t index, bool& found, ErrorResult& aRv) {
   if (IsAnimValList()) {
     Element()->FlushAnimations();
   }
@@ -191,15 +190,14 @@ already_AddRefed<DOMSVGLength> DOMSVGLengthList::IndexedGetter(
 }
 
 already_AddRefed<DOMSVGLength> DOMSVGLengthList::InsertItemBefore(
-    DOMSVGLength& newItem, uint32_t index, ErrorResult& error) {
+    DOMSVGLength& newItem, uint32_t index, ErrorResult& aRv) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
-  index = std::min(index, LengthNoFlush());
-  if (index >= DOMSVGLength::MaxListIndex()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+  if (LengthNoFlush() >= DOMSVGLength::MaxListIndex()) {
+    aRv.ThrowIndexSizeError("List too long");
     return nullptr;
   }
 
@@ -211,16 +209,18 @@ already_AddRefed<DOMSVGLength> DOMSVGLengthList::InsertItemBefore(
   // Ensure we have enough memory so we can avoid complex error handling below:
   if (!mItems.SetCapacity(mItems.Length() + 1, fallible) ||
       !InternalList().SetCapacity(InternalList().Length() + 1)) {
-    error.Throw(NS_ERROR_OUT_OF_MEMORY);
+    aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
     return nullptr;
   }
   if (AnimListMirrorsBaseList()) {
     if (!mAList->mAnimVal->mItems.SetCapacity(
             mAList->mAnimVal->mItems.Length() + 1, fallible)) {
-      error.Throw(NS_ERROR_OUT_OF_MEMORY);
+      aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
       return nullptr;
     }
   }
+
+  index = std::min(index, LengthNoFlush());
 
   AutoChangeLengthListNotifier notifier(this);
   // Now that we know we're inserting, keep animVal list in sync as necessary.
@@ -240,14 +240,14 @@ already_AddRefed<DOMSVGLength> DOMSVGLengthList::InsertItemBefore(
 }
 
 already_AddRefed<DOMSVGLength> DOMSVGLengthList::ReplaceItem(
-    DOMSVGLength& newItem, uint32_t index, ErrorResult& error) {
+    DOMSVGLength& newItem, uint32_t index, ErrorResult& aRv) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
   if (index >= LengthNoFlush()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    aRv.ThrowIndexSizeError("Index out of range");
     return nullptr;
   }
 
@@ -273,15 +273,15 @@ already_AddRefed<DOMSVGLength> DOMSVGLengthList::ReplaceItem(
   return domItem.forget();
 }
 
-already_AddRefed<DOMSVGLength> DOMSVGLengthList::RemoveItem(
-    uint32_t index, ErrorResult& error) {
+already_AddRefed<DOMSVGLength> DOMSVGLengthList::RemoveItem(uint32_t index,
+                                                            ErrorResult& aRv) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
   if (index >= LengthNoFlush()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    aRv.ThrowIndexSizeError("Index out of range");
     return nullptr;
   }
 

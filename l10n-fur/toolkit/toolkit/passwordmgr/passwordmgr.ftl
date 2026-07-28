@@ -30,10 +30,8 @@ password-manager-password-password-button-allow =
 password-manager-update-password-button-deny =
     .label = No sta inzornâ
     .accesskey = N
+primary-password-prompt-message = Par plasê inserìs la tô password principâl.
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Nissun non utent
-password-manager-toggle-password =
-    .label = Mostre password
-    .accesskey = M
 password-manager-confirm-password-change = Conferme il cambi de password
 password-manager-select-username = Selezione la credenziâl di inzornâ:

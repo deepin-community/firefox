@@ -5,12 +5,12 @@
 # tree. An additional intellectual property rights grant can be found
 # in the file PATENTS.  All contributing project authors may
 # be found in the AUTHORS file in the root of the source tree.
-import("//build/config/arm.gni")
-import("//build/config/features.gni")
-import("//build/config/mips.gni")
-import("//build/config/ozone.gni")
-import("//build/config/sanitizers/sanitizers.gni")
-import("//build/config/sysroot.gni")
+import("//chromium/build/config/arm.gni")
+import("//chromium/build/config/features.gni")
+import("//chromium/build/config/mips.gni")
+import("//chromium/build/config/ozone.gni")
+import("//chromium/build/config/sanitizers/sanitizers.gni")
+import("//chromium/build/config/sysroot.gni")
 import("//build_overrides/build.gni")
 
 if (!build_with_chromium && is_component_build) {
@@ -28,20 +28,20 @@ if (!build_with_chromium && is_component_build) {
 }
 
 if (is_ios) {
-  import("//build/config/ios/rules.gni")
+  import("//chromium/build/config/ios/rules.gni")
 }
 
 if (is_mac) {
-  import("//build/config/mac/rules.gni")
+  import("//chromium/build/config/mac/rules.gni")
 }
 
 if (is_android) {
-  import("//build/config/android/config.gni")
-  import("//build/config/android/rules.gni")
+  import("//chromium/build/config/android/config.gni")
+  import("//chromium/build/config/android/rules.gni")
 }
 
 if (is_fuchsia) {
-  import("//build/config/fuchsia/config.gni")
+  import("//chromium/build/config/fuchsia/config.gni")
 }
 
 if (build_with_chromium) {
@@ -63,10 +63,6 @@ declare_args() {
 }
 
 declare_args() {
-  # If set to true, C++ code will refer to the new JNI Generator symbols.
-  # If set to false the old ones will be used (to provide a nice update path).
-  rtc_jni_generator_legacy_symbols = false
-
   # Setting this to true, will make RTC_DLOG() expand to log statements instead
   # of being removed by the preprocessor.
   # This is useful for example to be able to get RTC_DLOGs on a release build.
@@ -82,19 +78,6 @@ declare_args() {
   # rtc_enable_symbol_export=false will only export RTC_OBJC_EXPORT
   # annotated symbols.
   rtc_enable_objc_symbol_export = rtc_enable_symbol_export
-
-  # Setting this to true will define WEBRTC_EXCLUDE_FIELD_TRIAL_DEFAULT which
-  # will tell the pre-processor to remove the default definition of symbols
-  # needed to use field_trial. In that case a new implementation needs to be
-  # provided.
-  if (build_with_chromium) {
-    # When WebRTC is built as part of Chromium it should exclude the default
-    # implementation of field_trial unless it is building for NACL or
-    # Chromecast.
-    rtc_exclude_field_trial_default = !is_nacl && !is_castos && !is_cast_android
-  } else {
-    rtc_exclude_field_trial_default = false
-  }
 
   # Setting this to true will define WEBRTC_EXCLUDE_METRICS_DEFAULT which
   # will tell the pre-processor to remove the default definition of symbols
@@ -113,9 +96,6 @@ declare_args() {
   # TLS-TURN server. In return disabling this saves around 100kb in the binary.
   rtc_builtin_ssl_root_certificates = true
 
-  # Include the iLBC audio codec?
-  rtc_include_ilbc = true
-
   # Disable this to avoid building the Opus audio codec.
   rtc_include_opus = true
 
@@ -132,11 +112,7 @@ declare_args() {
 
   # Used to specify an external OpenSSL include path when not compiling the
   # library that comes with WebRTC (i.e. rtc_build_ssl == 0).
-  rtc_ssl_root = "unused"
-
-  # Enable when an external authentication mechanism is used for performing
-  # packet authentication for RTP packets instead of libsrtp.
-  rtc_enable_external_auth = build_with_chromium
+  rtc_ssl_root = ""
 
   # Selects whether debug dumps for the audio processing module
   # should be generated.
@@ -152,7 +128,7 @@ declare_args() {
   rtc_build_tools = false
 
   # Set this to false to skip building code that requires X11.
-  rtc_use_x11 = use_x11
+  rtc_use_x11 = ozone_platform_x11
 
   # Set this to use PipeWire on the Wayland display server.
   # By default it's only enabled on desktop Linux (excludes ChromeOS) and
@@ -174,28 +150,34 @@ declare_args() {
   # See http://clang.llvm.org/docs/SanitizerCoverage.html .
   rtc_sanitize_coverage = ""
 
-  # Selects fixed-point code where possible.
-  rtc_prefer_fixed_point = false
-  if (target_cpu == "arm" || target_cpu == "arm64") {
-    rtc_prefer_fixed_point = true
-  }
+  # When set to true, Plan B will be deprecated.
+  deprecate_plan_b = true
 
   # Determines whether NEON code will be built.
   rtc_build_with_neon =
       (target_cpu == "arm" && arm_use_neon) || target_cpu == "arm64"
 
-  # Enable this to build OpenH264 encoder/FFmpeg decoder. This is supported on
-  # all platforms except Android and iOS. Because FFmpeg can be built
-  # with/without H.264 support, `ffmpeg_branding` has to separately be set to a
-  # value that includes H.264, for example "Chrome". If FFmpeg is built without
-  # H.264, compilation succeeds but `H264DecoderImpl` fails to initialize.
+  # Enable this to build OpenH264 encoder/FFmpeg decoder. When building WebRTC
+  # as part of Chromium, this is delegated to `media_use_openh264`. When
+  # building WebRTC as a standalone library, this is supported on all platforms
+  # except Android and iOS. Because FFmpeg can be built with/without H.264
+  # support, `ffmpeg_branding` has to separately be set to a value that
+  # includes H.264, for example "Chrome". If FFmpeg is built without H.264,
+  # compilation succeeds but `H264DecoderImpl` fails to initialize.
   # CHECK THE OPENH264, FFMPEG AND H.264 LICENSES/PATENTS BEFORE BUILDING.
   # http://www.openh264.org, https://www.ffmpeg.org/
   #
   # Enabling H264 when building with MSVC is currently not supported, see
   # bugs.webrtc.org/9213#c13 for more info.
-  rtc_use_h264 =
-      proprietary_codecs && !is_android && !is_ios && !(is_win && !is_clang)
+  if (build_with_chromium) {
+    rtc_use_h264 = media_use_openh264
+  } else {
+    rtc_use_h264 =
+        proprietary_codecs && !is_android && !is_ios && !(is_win && !is_clang)
+  }
+
+  # Use system OpenH264
+  rtc_system_openh264 = false
 
   # Enable to use H265
   if (build_with_chromium) {
@@ -299,16 +281,6 @@ declare_args() {
   rtc_build_opus = !build_with_mozilla
   rtc_build_ssl = !build_with_mozilla
 
-  # Enable libevent task queues on platforms that support it.
-  if (is_win || is_mac || is_ios || is_nacl || is_fuchsia ||
-      target_cpu == "wasm") {
-    rtc_enable_libevent = false
-    rtc_build_libevent = false
-  } else {
-    rtc_enable_libevent = true
-    rtc_build_libevent = !build_with_mozilla
-  }
-
   # Excluded in Chromium since its prerequisites don't require Pulse Audio.
   rtc_include_pulse_audio = !build_with_chromium
 
@@ -345,9 +317,11 @@ declare_args() {
   # Set this to true to disable webrtc metrics.
   rtc_disable_metrics = false
 
-  # Set this to true to exclude the transient suppressor in the audio processing
-  # module from the build.
-  rtc_exclude_transient_suppressor = false
+  # Enables an experimental rust version of base64 for building and testing.
+  rtc_rusty_base64 = false
+
+  # Enables PSNR calculation for video getStats.
+  rtc_video_psnr = true
 }
 
 declare_args() {
@@ -359,7 +333,7 @@ declare_args() {
 }
 
 # Enable liboam only on non-mozilla builds.
-enable_libaom = !build_with_mozilla
+enable_libaom = true
 
 # Make it possible to provide custom locations for some libraries (move these
 # up into declare_args should we need to actually use them for the GN build).
@@ -391,8 +365,8 @@ rtc_common_configs = [ webrtc_root + ":common_config" ]
 
 if (is_mac || is_ios) {
   if (filter_include(default_compiler_configs,
-                     [ "//build/config/compiler:enable_arc" ]) == []) {
-    rtc_common_configs += [ "//build/config/compiler:enable_arc" ]
+                     [ "//chromium/build/config/compiler:enable_arc" ]) == []) {
+    rtc_common_configs += [ "//chromium/build/config/compiler:enable_arc" ]
   }
 }
 
@@ -410,7 +384,7 @@ rtc_common_inherited_config = webrtc_root + ":common_inherited_config"
 # Common configs to remove or add in all rtc targets.
 rtc_remove_configs = []
 if (!build_with_chromium && is_clang) {
-  rtc_remove_configs += [ "//build/config/clang:find_bad_constructs" ]
+  rtc_remove_configs += [ "//chromium/build/config/clang:find_bad_constructs" ]
 }
 rtc_add_configs = rtc_common_configs
 rtc_prod_configs = [ webrtc_root + ":rtc_prod_config" ]
@@ -503,10 +477,13 @@ all_poison_types = [
 
   # Software video codecs (VP8 and VP9 through libvpx).
   "software_video_codecs",
+
+  # Residual echo estimator based that runs inferences using the tflite library.
+  "default_neural_residual_echo_estimator",
 ]
 
-absl_include_config = "//third_party/abseil-cpp:absl_include_config"
-absl_define_config = "//third_party/abseil-cpp:absl_define_config"
+absl_include_config = "//libwebrtc/third_party/abseil-cpp:absl_include_config"
+absl_define_config = "//libwebrtc/third_party/abseil-cpp:absl_define_config"
 
 # Abseil Flags are testonly, so this config will only be applied to WebRTC targets
 # that are testonly.
@@ -548,14 +525,24 @@ template("rtc_test") {
       public_configs += invoker.public_configs
     }
     if (!build_with_chromium && is_android) {
+      use_default_launcher = false
       android_manifest = webrtc_root + "test/android/AndroidManifest.xml"
       use_raw_android_executable = false
-      min_sdk_version = 21
-      target_sdk_version = 23
+      min_sdk_version = 23
+      target_sdk_version = 24
       deps += [
-        "//build/android/gtest_apk:native_test_instrumentation_test_runner_java",
+        "//chromium/build/android/gtest_apk:native_test_instrumentation_test_runner_java",
+        webrtc_root + "sdk/android:native_test_jni_onload",
+        webrtc_root + "sdk/android:base_java",
         webrtc_root + "test:native_test_java",
+        webrtc_root + "test:native_test_support",
+        "//third_party/jni_zero:jni_zero_java",
       ]
+    }
+
+    # TODO: bugs.webrtc.org/467294026 - Support iOS too.
+    if (!defined(invoker.is_xctest) || !invoker.is_xctest) {
+      deps += [ webrtc_root + "test:test_main" ]
     }
 
     # Build //test:google_test_runner_objc when the test is not a real XCTest.
@@ -607,6 +594,12 @@ template("rtc_source_set") {
     forward_variables_from(invoker, [ "visibility" ])
     if (!defined(visibility)) {
       visibility = webrtc_default_visibility
+    }
+
+    if (defined(invoker.sources)) {
+      nonheader_sources = filter_include(invoker.sources, [ "*.cc" ])
+      assert(nonheader_sources == [],
+             "rtc_source_set shall not contain cc files")
     }
 
     # What's your poison?
@@ -697,6 +690,36 @@ template("rtc_source_set") {
         deps = filtered_deps
         deps += [ "//third_party/abseil-cpp:absl" ]
       }
+    }
+
+    # Rather than widespread changes to most, if not all, BUILD.gn files
+    # we'll do some filtering on dependencies here.
+    if (build_with_mozilla && defined(deps)) {
+      # Now that abseil-cpp is moved to Mozilla's third_party directory
+      # we remove all the abseil-cpp dependency listings so moz.build
+      # generation succeed.
+      filtered_deps = []
+      foreach (dep, deps) {
+        newdep = string_replace(dep, "//third_party/abseil-cpp/", "")
+        if (newdep == dep) {
+          filtered_deps += [ dep ]
+        }
+      }
+      deps = []
+      deps = filtered_deps
+
+      # We don't build any of the test code, but many of the test
+      # targets list gtest/gmock as a dependency.  We can simply
+      # filter them out here.
+      filtered_deps = []
+      foreach (dep, deps) {
+        newdep = string_replace(dep, "//testing/g", "")
+        if (newdep == dep) {
+          filtered_deps += [ dep ]
+        }
+      }
+      deps = []
+      deps = filtered_deps
     }
   }
 }
@@ -932,6 +955,57 @@ template("rtc_library") {
         deps += [ "//third_party/abseil-cpp:absl" ]
       }
     }
+
+    # Rather than widespread changes to most, if not all, BUILD.gn files
+    # we'll do some filtering on dependencies here.
+    if (build_with_mozilla && defined(deps)) {
+      # Now that abseil-cpp is moved to Mozilla's third_party directory
+      # we remove all the abseil-cpp dependency listings so moz.build
+      # generation succeed.
+      filtered_deps = []
+      foreach (dep, deps) {
+        newdep = string_replace(dep, "//third_party/abseil-cpp/", "")
+        if (newdep == dep) {
+          filtered_deps += [ dep ]
+        }
+      }
+      deps = []
+      deps = filtered_deps
+
+      # We don't build any of the test code, but many of the test
+      # targets list gtest/gmock as a dependency.  We can simply
+      # filter them out here.
+      filtered_deps = []
+      foreach (dep, deps) {
+        newdep = string_replace(dep, "//testing/g", "")
+        if (newdep == dep) {
+          filtered_deps += [ dep ]
+        }
+      }
+      deps = []
+      deps = filtered_deps
+
+      # Moving the google build directory requires looking for libwebrtc's
+      # third_party dependencies under libwebrtc/third_party instead of
+      # simply third_party.
+      modified_deps = []
+      foreach (dep, deps) {
+        newdep = string_replace(dep, "//third_party/", "//libwebrtc/third_party/")
+        newdep = string_replace(newdep, "//build", "//chromium/build")
+        modified_deps += [ newdep ]
+      }
+      deps = []
+      deps = modified_deps
+    }
+    if (build_with_mozilla && defined(data_deps)) {
+      modified_deps = []
+      foreach (dep, data_deps) {
+        newdep = string_replace(dep, "//build/", "//chromium/build/")
+        modified_deps += [ newdep ]
+      }
+      data_deps = []
+      data_deps = modified_deps
+    }
   }
 }
 
@@ -969,8 +1043,26 @@ template("rtc_executable") {
     if (is_win) {
       deps += [
         # Give executables the default manifest on Windows (a no-op elsewhere).
-        "//build/win:default_exe_manifest",
+        "//chromium/build/win:default_exe_manifest",
       ]
+    }
+
+    # Convert abseil dependencies to //third_party/abseil-cpp:absl_full when
+    # build_with_chromium=true so that webrtc targets won't need exceptions to
+    # depend on individual absl targets.
+    # Note that //third_party/abseil-cpp:absl_full build target includes flags,
+    # but //third_party/abseil-cpp:absl target - doesn't. That allows webrtc
+    # executables, but not libraries to use absl flags.
+    if (build_with_chromium && defined(deps)) {
+      absl_dependencies =
+          filter_labels_include(deps, [ "//third_party/abseil-cpp/*" ])
+      if (absl_dependencies != []) {
+        filtered_deps =
+            filter_labels_exclude(deps, [ "//third_party/abseil-cpp/*" ])
+        deps = []
+        deps = filtered_deps
+        deps += [ "//third_party/abseil-cpp:absl_full" ]
+      }
     }
   }
 }
@@ -1050,24 +1142,60 @@ if (is_mac || is_ios) {
     forward_variables_from(invoker, [ "output_name" ])
     this_target_name = target_name
     umbrella_header_path =
-        "$target_gen_dir/$output_name.framework/WebRTC/$output_name.h"
+        "$target_gen_dir/$output_name.framework/Headers/$output_name.h"
     modulemap_path = "$target_gen_dir/Modules/module.modulemap"
-    privacy_manifest_path = "$target_gen_dir/$target_name/PrivacyInfo.xcprivacy"
+    privacy_manifest_path =
+        "$target_gen_dir/$this_target_name/PrivacyInfo.xcprivacy"
+
+    action("umbrella_header_$this_target_name") {
+      script = "//tools_webrtc/ios/generate_umbrella_header.py"
+      sources = invoker.sources
+      outputs = [ umbrella_header_path ]
+      args = [
+               "--out",
+               rebase_path(umbrella_header_path, root_build_dir),
+               "--sources",
+             ] + rebase_path(sources, root_build_dir)
+    }
 
     action_foreach("create_bracket_include_headers_$target_name") {
       script = "//tools_webrtc/apple/copy_framework_header.py"
-      sources = invoker.sources
+      if (is_mac) {
+        sources = invoker.sources
+      } else {
+        sources = invoker.public_headers
+      }
       output_name = invoker.output_name
       outputs = [
-        "$target_gen_dir/$output_name.framework/WebRTC/{{source_file_part}}",
+        "$target_gen_dir/$output_name.framework/Headers/{{source_file_part}}",
       ]
       args = [
         "--input",
         "{{source}}",
         "--output",
         rebase_path(target_gen_dir, root_build_dir) +
-            "/$output_name.framework/WebRTC/{{source_file_part}}",
+            "/$output_name.framework/Headers/{{source_file_part}}",
       ]
+    }
+
+    action("create_privacy_manifest_$this_target_name") {
+      script = "//tools_webrtc/apple/generate_privacy_manifest.py"
+      args = [
+        "--output",
+        rebase_path(privacy_manifest_path),
+      ]
+      outputs = [ privacy_manifest_path ]
+    }
+
+    bundle_data("privacy_manifest_bundle_data_$this_target_name") {
+      deps = [ ":create_privacy_manifest_$this_target_name" ]
+      sources = get_target_outputs(":create_privacy_manifest_$this_target_name")
+      if (is_mac || target_environment == "catalyst") {
+        privacy_manifest_out_path = "Versions/A/Resources/PrivacyInfo.xcprivacy"
+      } else {
+        privacy_manifest_out_path = "PrivacyInfo.xcprivacy"
+      }
+      outputs = [ "{{bundle_contents_dir}}/$privacy_manifest_out_path" ]
     }
 
     if (is_mac) {
@@ -1076,71 +1204,90 @@ if (is_mac || is_ios) {
         if (defined(invoker.configs)) {
           configs += invoker.configs
         }
-
         framework_version = "A"
         framework_contents = [
           "Headers",
           "Modules",
           "Resources",
         ]
-
         ldflags = [
           "-all_load",
           "-install_name",
           "@rpath/$output_name.framework/$output_name",
         ]
 
+        # This is the fix. The mac framework now has a direct dependency on
+        # the creation of the privacy manifest, just like the iOS version.
         deps += [
-          ":copy_framework_headers_$this_target_name",
           ":copy_modulemap_$this_target_name",
-          ":copy_privacy_manifest_$this_target_name",
           ":copy_umbrella_header_$this_target_name",
           ":create_bracket_include_headers_$this_target_name",
+          ":create_privacy_manifest_$this_target_name",
           ":modulemap_$this_target_name",
-          ":umbrella_header_$this_target_name",
+          ":privacy_manifest_bundle_data_$this_target_name",
         ]
       }
     }
     if (is_ios) {
       ios_framework_bundle(target_name) {
-        forward_variables_from(invoker,
-                               "*",
-                               [
-                                 "configs",
-                                 "public_headers",
-                               ])
+        if (defined(invoker.testonly)) {
+          testonly = invoker.testonly
+        }
+        if (defined(invoker.visibility)) {
+          visibility = invoker.visibility
+        }
+        if (defined(invoker.sources)) {
+          sources = invoker.sources
+        }
+        if (defined(invoker.deps)) {
+          deps = invoker.deps
+        }
+        if (defined(invoker.defines)) {
+          defines = invoker.defines
+        }
+        if (defined(invoker.include_dirs)) {
+          include_dirs = invoker.include_dirs
+        }
+        if (defined(invoker.public_configs)) {
+          public_configs = invoker.public_configs
+        }
+        if (defined(invoker.all_dependent_configs)) {
+          all_dependent_configs = invoker.all_dependent_configs
+        }
+        if (defined(invoker.ldflags)) {
+          ldflags = invoker.ldflags
+        }
+        if (defined(invoker.libs)) {
+          libs = invoker.libs
+        }
+        if (defined(invoker.frameworks)) {
+          frameworks = invoker.frameworks
+        }
+        if (defined(invoker.info_plist)) {
+          info_plist = invoker.info_plist
+        }
         if (defined(invoker.configs)) {
           configs += invoker.configs
         }
+
         public_headers = get_target_outputs(
                 ":create_bracket_include_headers_$this_target_name")
+        public_headers +=
+            get_target_outputs(":umbrella_header_$this_target_name")
 
         deps += [
-          ":copy_privacy_manifest_$this_target_name",
-          ":copy_umbrella_header_$this_target_name",
           ":create_bracket_include_headers_$this_target_name",
+          ":create_privacy_manifest_$this_target_name",
+          ":umbrella_header_$this_target_name",
         ]
+
+        if (defined(invoker.bundle_deps)) {
+          bundle_deps = invoker.bundle_deps
+        } else {
+          bundle_deps = []
+        }
+        bundle_deps += [ ":privacy_manifest_bundle_data_$this_target_name" ]
       }
-    }
-
-    if (is_mac || target_environment == "catalyst") {
-      # Catalyst frameworks use the same layout as regular Mac frameworks.
-      headers_dir = "Versions/A/Headers"
-
-      # The path to the privacy manifest file differs between Mac and iOS.
-      # https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/adding_a_privacy_manifest_to_your_app_or_third-party_sdk
-      privacy_manifest_out_path = "Versions/A/Resources/PrivacyInfo.xcprivacy"
-    } else {
-      headers_dir = "Headers"
-      privacy_manifest_out_path = "PrivacyInfo.xcprivacy"
-    }
-
-    bundle_data("copy_framework_headers_$this_target_name") {
-      sources = get_target_outputs(
-              ":create_bracket_include_headers_$this_target_name")
-
-      outputs = [ "{{bundle_contents_dir}}/Headers/{{source_file_part}}" ]
-      deps = [ ":create_bracket_include_headers_$this_target_name" ]
     }
 
     action("modulemap_$this_target_name") {
@@ -1160,46 +1307,15 @@ if (is_mac || is_ios) {
       deps = [ ":modulemap_$this_target_name" ]
     }
 
-    action("umbrella_header_$this_target_name") {
-      sources = get_target_outputs(
-              ":create_bracket_include_headers_$this_target_name")
-
-      script = "//tools_webrtc/ios/generate_umbrella_header.py"
-
-      outputs = [ umbrella_header_path ]
-      args = [
-               "--out",
-               rebase_path(umbrella_header_path, root_build_dir),
-               "--sources",
-             ] + sources
-      deps = [ ":create_bracket_include_headers_$this_target_name" ]
-    }
-
-    copy("copy_umbrella_header_$target_name") {
-      sources = [ umbrella_header_path ]
-      outputs =
-          [ "$root_out_dir/$output_name.framework/$headers_dir/$output_name.h" ]
-
-      deps = [ ":umbrella_header_$target_name" ]
-    }
-
-    action("create_privacy_manifest_$target_name") {
-      script = "//tools_webrtc/apple/generate_privacy_manifest.py"
-
-      args = [
-        "--output",
-        rebase_path(privacy_manifest_path),
-      ]
-
-      outputs = [ privacy_manifest_path ]
-    }
-
-    copy("copy_privacy_manifest_$target_name") {
-      sources = [ privacy_manifest_path ]
-      outputs =
-          [ "$root_out_dir/$output_name.framework/$privacy_manifest_out_path" ]
-
-      deps = [ ":create_privacy_manifest_$target_name" ]
+    if (is_mac) {
+      headers_dir = "Versions/A/Headers"
+      copy("copy_umbrella_header_$this_target_name") {
+        sources = [ umbrella_header_path ]
+        outputs = [
+          "$root_out_dir/$output_name.framework/$headers_dir/$output_name.h",
+        ]
+        deps = [ ":umbrella_header_$this_target_name" ]
+      }
     }
   }
 }
@@ -1216,21 +1332,11 @@ if (is_android && !build_with_mozilla) {
                                "visibility",
                              ])
 
-      errorprone_args = []
-
-      # Treat warnings as errors.
-      errorprone_args += [ "-Werror" ]
-
       # Add any arguments defined by the invoker.
       if (defined(invoker.errorprone_args)) {
-        errorprone_args += invoker.errorprone_args
+        errorprone_args = invoker.errorprone_args
       }
 
-      if (!defined(deps)) {
-        deps = []
-      }
-
-      no_build_hooks = true
       not_needed([ "android_manifest" ])
     }
   }
@@ -1245,16 +1351,6 @@ if (is_android && !build_with_mozilla) {
                                "suppressed_configs",
                                "visibility",
                              ])
-
-      # Treat warnings as errors.
-      errorprone_args = []
-      errorprone_args += [ "-Werror" ]
-
-      if (!defined(deps)) {
-        deps = []
-      }
-
-      no_build_hooks = true
     }
   }
 
@@ -1268,16 +1364,7 @@ if (is_android && !build_with_mozilla) {
                                "suppressed_configs",
                                "visibility",
                              ])
-
-      # Treat warnings as errors.
-      errorprone_args = []
-      errorprone_args += [ "-Werror" ]
-
-      if (!defined(deps)) {
-        deps = []
-      }
-
-      no_build_hooks = true
+      deps += [ "//third_party/jni_zero:jni_zero_java" ]
     }
   }
 }

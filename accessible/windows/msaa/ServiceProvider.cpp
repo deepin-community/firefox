@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -15,8 +13,8 @@
 #include "RootAccessible.h"
 #include "uiaRawElmProvider.h"
 
+#include "mozilla/a11y/Compatibility.h"
 #include "mozilla/a11y/DocAccessibleChild.h"
-#include "mozilla/StaticPrefs_accessibility.h"
 
 #include "ISimpleDOM.h"
 
@@ -87,8 +85,7 @@ ServiceProvider::QueryService(REFGUID aGuidService, REFIID aIID,
       aGuidService == IID_SimpleDOMDeprecated ||
       aGuidService == IID_IAccessible || aGuidService == IID_IAccessible2 ||
       // UIA IAccessibleEx
-      (aGuidService == IID_IAccessibleEx &&
-       StaticPrefs::accessibility_uia_enable())) {
+      (aGuidService == IID_IAccessibleEx && Compatibility::IsUiaEnabled())) {
     return mMsaa->QueryInterface(aIID, aInstancePtr);
   }
 

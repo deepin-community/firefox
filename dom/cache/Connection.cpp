@@ -1,13 +1,11 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/cache/Connection.h"
 
-#include "mozilla/dom/cache/DBSchema.h"
 #include "mozStorageHelper.h"
+#include "mozilla/dom/cache/DBSchema.h"
 
 namespace mozilla::dom::cache {
 
@@ -37,7 +35,7 @@ Connection::Close() {
 
   // If we are closing here, then Cache must not have a transaction
   // open anywhere else.  This may fail if storage is corrupted.
-  Unused << NS_WARN_IF(NS_FAILED(db::IncrementalVacuum(*this)));
+  (void)NS_WARN_IF(NS_FAILED(db::IncrementalVacuum(*this)));
 
   return mBase->Close();
 }

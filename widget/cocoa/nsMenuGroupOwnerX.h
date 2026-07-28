@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -36,7 +35,8 @@ enum {
   eCommand_ID_Update = 7,
   eCommand_ID_TouchBar = 8,
   eCommand_ID_Account = 9,
-  eCommand_ID_Last = 10
+  eCommand_ID_SetAsDefault = 10,
+  eCommand_ID_Last = 11
 };
 
 // The menu group owner observes DOM mutations, notifies registered
@@ -77,7 +77,9 @@ class nsMenuGroupOwnerX : public nsMultiMutationObserver, public nsIObserver {
 
   nsChangeObserver* LookupContentChangeObserver(nsIContent* aContent);
 
-  RefPtr<nsIContent> mContent;
+  void InstallOrUninstallRootMutationObserver();
+
+  const RefPtr<nsIContent> mContent;
 
   // Unique command id (per menu-bar) to give to next item that asks.
   uint32_t mCurrentCommandID = eCommand_ID_Last;
@@ -91,6 +93,8 @@ class nsMenuGroupOwnerX : public nsMultiMutationObserver, public nsIObserver {
 
   MOZMenuItemRepresentedObject* mRepresentedObject = nil;  // [strong]
   mozilla::WeakPtr<nsMenuBarX> mMenuBar;
+
+  bool mObservingMutationsOnRoot = false;
 };
 
 @interface MOZMenuItemRepresentedObject : NSObject

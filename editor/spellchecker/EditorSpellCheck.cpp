@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=2 sts=2 sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,7 +8,6 @@
 #include "HTMLEditor.h"            // for HTMLEditor
 #include "TextServicesDocument.h"  // for TextServicesDocument
 
-#include "mozilla/Attributes.h"   // for final
 #include "mozilla/dom/Element.h"  // for Element
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/Selection.h"
@@ -158,7 +155,7 @@ class DictionaryFetcher final : public nsIContentPrefCallback2 {
   nsTArray<nsCString> mDictionaries;
 
  private:
-  ~DictionaryFetcher() {}
+  ~DictionaryFetcher() = default;
 
   RefPtr<EditorSpellCheck> mSpellCheck;
 };
@@ -298,7 +295,6 @@ NS_IMPL_CYCLE_COLLECTION(EditorSpellCheck, mEditor, mSpellChecker)
 EditorSpellCheck::EditorSpellCheck()
     : mTxtSrvFilterType(0),
       mSuggestedWordIndex(0),
-      mDictionaryIndex(0),
       mDictionaryFetcherGroup(0),
       mUpdateDictionaryRunning(false) {}
 
@@ -534,30 +530,6 @@ EditorSpellCheck::IgnoreWordAllOccurrences(const nsAString& aWord) {
 }
 
 NS_IMETHODIMP
-EditorSpellCheck::GetPersonalDictionary() {
-  NS_ENSURE_TRUE(mSpellChecker, NS_ERROR_NOT_INITIALIZED);
-
-  // We can spell check with any editor type
-  mDictionaryList.Clear();
-  mDictionaryIndex = 0;
-  return mSpellChecker->GetPersonalDictionary(&mDictionaryList);
-}
-
-NS_IMETHODIMP
-EditorSpellCheck::GetPersonalDictionaryWord(nsAString& aDictionaryWord) {
-  // XXX This is buggy if mDictionaryList.Length() is over INT32_MAX.
-  if (mDictionaryIndex < static_cast<int32_t>(mDictionaryList.Length())) {
-    aDictionaryWord = mDictionaryList[mDictionaryIndex];
-    mDictionaryIndex++;
-  } else {
-    // A blank string signals that there are no more strings
-    aDictionaryWord.Truncate();
-  }
-
-  return NS_OK;
-}
-
-NS_IMETHODIMP
 EditorSpellCheck::AddWordToDictionary(const nsAString& aWord) {
   NS_ENSURE_TRUE(mSpellChecker, NS_ERROR_NOT_INITIALIZED);
 
@@ -627,7 +599,7 @@ EditorSpellCheck::SetCurrentDictionaries(
         StoreCurrentDictionaries(mEditor, aDictionaries);
 #ifdef DEBUG_DICT
         printf("***** Writing content preferences for |%s|\n",
-               DictionariesToString(aDictionaries).Data());
+               DictionariesToString(aDictionaries).get());
 #endif
       } else {
         // If user sets a dictionary matching the language defined by
@@ -636,7 +608,7 @@ EditorSpellCheck::SetCurrentDictionaries(
         ClearCurrentDictionaries(mEditor);
 #ifdef DEBUG_DICT
         printf("***** Clearing content preferences for |%s|\n",
-               DictionariesToString(aDictionaries).Data());
+               DictionariesToString(aDictionaries).get());
 #endif
       }
 
@@ -652,7 +624,7 @@ EditorSpellCheck::SetCurrentDictionaries(
         Preferences::SetCString("spellchecker.dictionary", asString);
 #ifdef DEBUG_DICT
         printf("***** Possibly storing spellchecker.dictionary |%s|\n",
-               asString.Data());
+               asString.get());
 #endif
       }
     } else {
@@ -667,12 +639,19 @@ EditorSpellCheck::SetCurrentDictionaries(
       } else {
         anonymousDivOrEditingHost = mEditor->GetRoot();
       }
-      RefPtr<Document> ownerDoc = anonymousDivOrEditingHost->OwnerDoc();
-      Document* parentDoc = ownerDoc->GetInProcessParentDocument();
-      if (parentDoc) {
-        parentDoc->SetHeaderData(
-            nsGkAtoms::headerContentLanguage,
-            NS_ConvertUTF8toUTF16(DictionariesToString(aDictionaries)));
+      // If lang is available, we should respect it for spellchecker. But if not
+      // available or cannot access editing host, we don't know better language
+      // for content. But since this is mail composer, we will also respect pref
+      // (dictionary.spellchecker), application locale and system locale, if not
+      // available.
+      if (anonymousDivOrEditingHost) {
+        RefPtr<Document> ownerDoc = anonymousDivOrEditingHost->OwnerDoc();
+        Document* parentDoc = ownerDoc->GetInProcessParentDocument();
+        if (parentDoc) {
+          parentDoc->SetHeaderData(
+              nsGkAtoms::headerContentLanguage,
+              NS_ConvertUTF8toUTF16(DictionariesToString(aDictionaries)));
+        }
       }
     }
   }
@@ -706,8 +685,6 @@ EditorSpellCheck::UninitSpellChecker() {
 
   // Cleanup - kill the spell checker
   DeleteSuggestedWordList();
-  mDictionaryList.Clear();
-  mDictionaryIndex = 0;
   mDictionaryFetcherGroup++;
   mSpellChecker = nullptr;
   return NS_OK;
@@ -769,7 +746,18 @@ EditorSpellCheck::UpdateCurrentDictionary(
 
   RefPtr<DictionaryFetcher> fetcher =
       new DictionaryFetcher(this, aCallback, mDictionaryFetcherGroup);
-  fetcher->mRootContentLang = rootEditableElement->GetLang();
+  fetcher->mRootContentLang = [&] {
+    if (rootEditableElement->IsInNativeAnonymousSubtree()) {
+      if (auto* host =
+              rootEditableElement
+                  ->GetClosestNativeAnonymousSubtreeRootParentOrHost()) {
+        // Let text editors inherit the language of the parent content across
+        // the shadow tree.
+        return host->GetLang();
+      }
+    }
+    return rootEditableElement->GetLang();
+  }();
   RefPtr<Document> doc = rootEditableElement->GetComposedDoc();
   NS_ENSURE_STATE(doc);
   fetcher->mRootDocContentLang = doc->GetContentLanguage();
@@ -914,7 +902,7 @@ nsresult EditorSpellCheck::DictionaryFetched(DictionaryFetcher* aFetcher) {
               [self, fetcher]() {
 #ifdef DEBUG_DICT
                 printf("***** Assigned from content preferences |%s|\n",
-                       DictionariesToString(fetcher->mDictionaries).Data());
+                       DictionariesToString(fetcher->mDictionaries).get());
 #endif
                 // We take an early exit here, so let's not forget to clear
                 // the word list.
@@ -1010,7 +998,7 @@ void EditorSpellCheck::SetFallbackDictionary(DictionaryFetcher* aFetcher) {
           printf(
               "***** Trying preference value |%s| since it matches language "
               "code\n",
-              dictionary.Data());
+              dictionary.get());
 #endif
           if (BuildDictionaryList(dictionary, dictList,
                                   DICT_COMPARE_CASE_INSENSITIVE, tryDictList)) {
@@ -1109,7 +1097,7 @@ void EditorSpellCheck::SetFallbackDictionary(DictionaryFetcher* aFetcher) {
         if (!currentDictionaries.IsEmpty() && tryDictList.IsEmpty()) {
 #ifdef DEBUG_DICT
           printf("***** Retrieved current dict |%s|\n",
-                 DictionariesToString(currentDictionaries).Data());
+                 DictionariesToString(currentDictionaries).get());
 #endif
           self->EndUpdateDictionary();
           if (fetcher->mCallback) {

@@ -12,6 +12,15 @@ function tick() {
   );
 }
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["test.wait300msAfterTabSwitch", true],
+      ["widget.macos.allow-native-select", false],
+    ],
+  });
+});
+
 add_task(async function () {
   const url = "data:text/html," + encodeURI(PAGE);
   await BrowserTestUtils.withNewTab(

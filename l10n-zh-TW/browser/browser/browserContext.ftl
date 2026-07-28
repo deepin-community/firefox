@@ -130,6 +130,9 @@ main-context-menu-open-link =
 main-context-menu-open-link-new-tab =
     .label = 用新分頁開啟鏈結
     .accesskey = T
+main-context-menu-open-link-split-view =
+    .label = 用分割畫面開啟鏈結
+    .accesskey = M
 main-context-menu-open-link-container-tab =
     .label = 用新容器分頁開啟鏈結
     .accesskey = z
@@ -149,9 +152,7 @@ main-context-menu-save-link-to-pocket =
     .label = 將鏈結儲存至 { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = 複製電子郵件地址
@@ -162,11 +163,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = 複製鏈結
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = 複製不含追蹤碼的鏈結
-    .accesskey = y
+main-context-menu-preview-link =
+    .label = 預覽鏈結
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = 複製乾淨鏈結
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -216,7 +221,7 @@ main-context-menu-media-hide-controls =
     .label = 隱藏控制按鈕
     .accesskey = C
 
-##
+## Displayed within the send tab submenu to prompt users to sign in, enable sync, pair a device, or troubleshoot device issues.
 
 main-context-menu-media-video-fullscreen =
     .label = 全螢幕
@@ -268,6 +273,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = 檢視說明
     .accesskey = D
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = 使用 { $engine } 搜尋圖片
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = 另存視訊檔案…
     .accesskey = v
@@ -283,6 +293,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = 郵寄音訊…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = 傳送到裝置
+    .accesskey = n
+main-context-menu-send-to-mobile-2 =
+    .label = 傳送到行動裝置
+    .accesskey = n
+main-context-menu-send-to-mobile-sign-in = 登入即可傳送分頁
+main-context-menu-send-to-mobile-enable-sync2 = 開啟同步功能即可傳送分頁
+main-context-menu-send-to-mobile-connect-phone2 = 連結您的手機
+main-context-menu-send-to-mobile-device-missing2 = 沒看到您的裝置嗎？
+main-context-menu-send-to-mobile-sign-in-from-link = 登入即可傳送鏈結
+main-context-menu-send-to-mobile-sign-in-from-page = 登入即可傳送頁面
+main-context-menu-send-to-mobile-enable-sync3 = 開啟 Sync 即可傳送分頁
+main-context-menu-send-to-mobile-enable-sync-from-link = 開啟 Sync 即可傳送鏈結
+main-context-menu-send-to-mobile-enable-sync-from-page = 開啟 Sync 即可傳送頁面
+main-context-menu-send-to-mobile-connect-phone3 = 連結裝置即可傳送分頁
+main-context-menu-send-to-mobile-connect-phone-from-link = 連結裝置即可傳送鏈結
+main-context-menu-send-to-mobile-connect-phone-from-page = 連結裝置即可傳送頁面
 main-context-menu-save-to-pocket =
     .label = 將頁面儲存至 { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +318,7 @@ main-context-menu-send-to-device =
     .label = 將頁面傳送至裝置
     .accesskey = D
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = 使用已存的登入資訊
@@ -319,9 +345,15 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = 設為用關鍵字搜尋…
     .accesskey = K
+main-context-menu-add-engine =
+    .label = 新增搜尋引擎
+    .accesskey = E
 main-context-menu-link-send-to-device =
     .label = 將鏈結傳送至裝置
     .accesskey = D
+main-context-menu-link-send-to-mobile =
+    .label = 將鏈結傳送到行動裝置
+    .accesskey = n
 main-context-menu-frame =
     .label = 本頁框
     .accesskey = h
@@ -389,3 +421,13 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = 顯示密碼
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = 新功能
+main-context-menu-pdfjs-copy-page =
+    .label = 複製頁面
+main-context-menu-pdfjs-cut-page =
+    .label = 剪下頁面
+main-context-menu-pdfjs-delete-page =
+    .label = 刪除頁面
+main-context-menu-pdfjs-save-page =
+    .label = 將選擇頁面另存為…

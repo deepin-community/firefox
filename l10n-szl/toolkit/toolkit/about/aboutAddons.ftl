@@ -7,10 +7,6 @@ search-header =
     .placeholder = Szukej na addons.mozilla.org
     .searchbuttonlabel = Szukej
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -222,6 +218,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Już je używany ôd rozszyrzynio { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Pokoż { $numberToShow } wiyncyj
@@ -348,16 +346,16 @@ addon-detail-update-check-label = Badnij za aktualizacyjami
 install-update-button = Aktualizuj
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Przizwolōne w prywatnych ôknach
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Przizwolōne w prywatnych ôknach
     .aria-label = { addon-badge-private-browsing-allowed2.title }
 addon-detail-private-browsing-help = Jak dosz zgoda, to rozszyrzynie bydzie mieć dostymp do twojij aktywności w internecie bez czas prywatnego przeglōndanio. <a data-l10n-name="learn-more">Przewiydz sie wiyncyj</a>
 addon-detail-private-browsing-allow = Przizwōl
 addon-detail-private-browsing-disallow = Niy zwolej
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -400,7 +398,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = Rozszyrzynie { $name } je niykōmpatybilne z aplikacyjōm { -brand-short-name }{ $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -415,12 +413,8 @@ details-notification-unsigned2 =
     .message = Niy szło zweryfikować rozszyrzynio { $name } do użycio w aplikacyji { -brand-short-name }. Używej go pozornie.
 details-notification-unsigned-link = Wiyncyj informacyji
 details-notification-blocked = Rozszyrzynie { $name } je zastawiōne skuli problymōw z bezpieczyństwym abo stabilnościōm.
-details-notification-blocked2 =
-    .message = Rozszyrzynie { $name } je zastawiōne skuli problymōw z bezpieczyństwym abo stabilnościōm.
 details-notification-blocked-link = Wiyncyj informacyji
 details-notification-softblocked = Wiadōmo, iże skuli rozszyrzynio { $name } sōm problymy z bezpieczyństwym abo stabilnościōm.
-details-notification-softblocked2 =
-    .message = Wiadōmo, iże skuli rozszyrzynio { $name } sōm problymy z bezpieczyństwym abo stabilnościōm.
 details-notification-softblocked-link = Wiyncyj informacyji
 details-notification-gmp-pending = Rozszyrzynie { $name } chned bydzie zainstalowane.
 details-notification-gmp-pending2 =

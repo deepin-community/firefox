@@ -4,7 +4,7 @@
 
 "use strict";
 
-/* eslint no-unused-vars: [2, {"vars": "local"}] */
+/* eslint no-unused-vars: [2, {"vars": "local", caughtErrors: "none"}] */
 /* import-globals-from ../../shared/test/shared-head.js */
 
 // Sometimes HTML pages have a `clear` function that cleans up the storage they
@@ -13,34 +13,34 @@
 // do this registration before importing `shared-head`, since declaration
 // order matters.
 registerCleanupFunction(async () => {
-  const browser = gBrowser.selectedBrowser;
-  const contexts = browser.browsingContext.getAllBrowsingContextsInSubtree();
-  for (const context of contexts) {
-    await SpecialPowers.spawn(context, [], async () => {
-      const win = content.wrappedJSObject;
-
-      // Some windows (e.g., about: URLs) don't have storage available
-      try {
-        win.localStorage.clear();
-        win.sessionStorage.clear();
-      } catch (ex) {
-        // ignore
-      }
-
-      if (win.clear) {
-        // Do not get hung into win.clear() forever
-        await Promise.race([
-          new Promise(r => win.setTimeout(r, 10000)),
-          win.clear(),
-        ]);
-      }
-    });
-  }
-
   Services.cookies.removeAll();
 
   // Close tabs and force memory collection to happen
   while (gBrowser.tabs.length > 1) {
+    const browser = gBrowser.selectedBrowser;
+    const contexts = browser.browsingContext.getAllBrowsingContextsInSubtree();
+    for (const context of contexts) {
+      await SpecialPowers.spawn(context, [], async () => {
+        const win = content.wrappedJSObject;
+
+        // Some windows (e.g., about: URLs) don't have storage available
+        try {
+          win.localStorage.clear();
+          win.sessionStorage.clear();
+        } catch (ex) {
+          // ignore
+        }
+
+        if (win.clear) {
+          // Do not get hung into win.clear() forever
+          await Promise.race([
+            new Promise(r => win.setTimeout(r, 10000)),
+            win.clear(),
+          ]);
+        }
+      });
+    }
+
     await closeTabAndToolbox(gBrowser.selectedTab);
   }
   forceCollections();
@@ -65,11 +65,19 @@ const DEBUGGERLOG_PREF = "devtools.debugger.log";
 // Allows Cache API to be working on usage `http` test page
 const CACHES_ON_HTTP_PREF = "dom.caches.testing.enabled";
 const PATH = "browser/devtools/client/storage/test/";
-const MAIN_DOMAIN = "http://test1.example.org/" + PATH;
-const MAIN_DOMAIN_SECURED = "https://test1.example.org/" + PATH;
-const MAIN_DOMAIN_WITH_PORT = "http://test1.example.org:8000/" + PATH;
-const ALT_DOMAIN = "http://sectest1.example.org/" + PATH;
-const ALT_DOMAIN_SECURED = "https://sectest1.example.org:443/" + PATH;
+const MAIN_DOMAIN = "example.org";
+const MAIN_HOST = "test1.example.org";
+
+const MAIN_ORIGIN = "http://test1.example.org";
+const MAIN_ORIGIN_SECURED = "https://test1.example.org";
+const MAIN_URL = MAIN_ORIGIN + "/" + PATH;
+const MAIN_URL_SECURED = MAIN_ORIGIN_SECURED + "/" + PATH;
+const MAIN_URL_WITH_PORT = MAIN_ORIGIN + ":8000/" + PATH;
+
+const ALT_ORIGIN = "http://sectest1.example.org";
+const ALT_ORIGIN_SECURED = "https://sectest1.example.org";
+const ALT_URL = ALT_ORIGIN + "/" + PATH;
+const ALT_URL_SECURED = ALT_ORIGIN_SECURED + ":443/" + PATH;
 
 // GUID to be used as a separator in compound keys. This must match the same
 // constant in devtools/server/actors/resources/storage/index.js,
@@ -152,7 +160,7 @@ async function openTabAndSetupStorage(url, options = {}) {
  * Open a toolbox with the storage panel opened by default
  * for a given Web Extension.
  *
- * @param {String} addonId
+ * @param {string} addonId
  *        The ID of the Web Extension to debug.
  */
 var openStoragePanelForAddon = async function (addonId) {
@@ -481,17 +489,33 @@ function matchVariablesViewProperty(prop, rule) {
 /**
  * Click selects a row in the table.
  *
- * @param {[String]} ids
+ * @param {[string]} ids
  *        The array id of the item in the tree
+ * @param {object=} options
+ * @param {boolean=} waitForItem
+ *        Wait for the item to be available in the tree. Defaults to true. Force
+ *        to false if selecting the item is optional AND the item is not
+ *        guaranteed to be available.
  */
-async function selectTreeItem(ids) {
+async function selectTreeItem(ids, options = {}) {
+  const { waitForItem = true } = options;
+
   if (gUI.tree.isSelected(ids)) {
     info(`"${ids}" is already selected, returning.`);
     return;
   }
+
   if (!gUI.tree.exists(ids)) {
-    info(`"${ids}" does not exist, returning.`);
-    return;
+    if (!waitForItem) {
+      info(`${ids} is unavailable and waitForItem=false, returning`);
+      return;
+    }
+
+    info(`Wait until ${ids} the expected item appears in the tree`);
+    await waitFor(
+      () => gUI.tree.exists(ids),
+      `Waiting until ${ids} exists in the storage tree`
+    );
   }
 
   // The item exists but is not selected... select it.
@@ -511,7 +535,7 @@ async function selectTreeItem(ids) {
 /**
  * Click selects a row in the table.
  *
- * @param {String} id
+ * @param {string} id
  *        The id of the row in the table widget
  */
 async function selectTableItem(id) {
@@ -539,10 +563,11 @@ async function selectTableItem(id) {
 
 /**
  * Wait for eventName on target.
- * @param {Object} target An observable object that either supports on/off or
+ *
+ * @param {object} target An observable object that either supports on/off or
  * addEventListener/removeEventListener
- * @param {String} eventName
- * @param {Boolean} useCapture Optional, for addEventListener/removeEventListener
+ * @param {string} eventName
+ * @param {boolean} useCapture Optional, for addEventListener/removeEventListener
  * @return A promise that resolves when the event has been handled
  */
 function once(target, eventName, useCapture = false) {
@@ -573,12 +598,12 @@ function once(target, eventName, useCapture = false) {
 /**
  * Get values for a row.
  *
- * @param  {String}  id
+ * @param  {string}  id
  *         The uniqueId of the given row.
- * @param  {Boolean} includeHidden
+ * @param  {boolean} includeHidden
  *         Include hidden columns.
  *
- * @return {Object}
+ * @return {object}
  *         An object of column names to values for the given row.
  */
 function getRowValues(id, includeHidden = false) {
@@ -595,26 +620,34 @@ function getRowValues(id, includeHidden = false) {
 }
 
 /**
+ * Get the row element for a given id
+ *
+ * @param  {string}  id
+ *         The uniqueId of the given row.
+ * @returns {Element|null}
+ */
+function getRowItem(id) {
+  const doc = gPanelWindow.document;
+  const table = gUI.table;
+  return doc.querySelector(
+    `.table-widget-column#${table.uniqueId} .table-widget-cell[value='${id}']`
+  );
+}
+
+/**
  * Get cells for a row.
  *
- * @param  {String}  id
+ * @param  {string}  id
  *         The uniqueId of the given row.
- * @param  {Boolean} includeHidden
+ * @param  {boolean} includeHidden
  *         Include hidden columns.
  *
- * @return {Object}
+ * @return {object}
  *         An object of column names to cells for the given row.
  */
 function getRowCells(id, includeHidden = false) {
-  const doc = gPanelWindow.document;
   const table = gUI.table;
-  const item = doc.querySelector(
-    ".table-widget-column#" +
-      table.uniqueId +
-      " .table-widget-cell[value='" +
-      id +
-      "']"
-  );
+  const item = getRowItem(id);
 
   if (!item) {
     ok(
@@ -677,12 +710,12 @@ function showAvailableIds() {
 /**
  * Get a cell value.
  *
- * @param {String} id
+ * @param {string} id
  *        The uniqueId of the row.
- * @param {String} column
+ * @param {string} column
  *        The id of the column
  *
- * @yield {String}
+ * @yield {string}
  *        The cell value.
  */
 function getCellValue(id, column) {
@@ -710,21 +743,21 @@ function getCellValue(id, column) {
 /**
  * Edit a cell value. The cell is assumed to be in edit mode, see startCellEdit.
  *
- * @param {String} id
+ * @param {string} id
  *        The uniqueId of the row.
- * @param {String} column
+ * @param {string} column
  *        The id of the column
- * @param {String} newValue
+ * @param {string} newValue
  *        Replacement value.
- * @param {Boolean} validate
+ * @param {boolean} validate
  *        Validate result? Default true.
  *
- * @yield {String}
+ * @yield {string}
  *        The uniqueId of the changed row.
  */
 async function editCell(id, column, newValue, validate = true) {
   const row = getRowCells(id, true);
-  const editableFieldsEngine = gUI.table._editableFieldsEngine;
+  const editableFieldsEngine = gUI.table.editableFieldsEngine;
 
   editableFieldsEngine.edit(row[column]);
 
@@ -734,16 +767,16 @@ async function editCell(id, column, newValue, validate = true) {
 /**
  * Begin edit mode for a cell.
  *
- * @param {String} id
+ * @param {string} id
  *        The uniqueId of the row.
- * @param {String} column
+ * @param {string} column
  *        The id of the column
- * @param {Boolean} selectText
+ * @param {boolean} selectText
  *        Select text? Default true.
  */
 function startCellEdit(id, column, selectText = true) {
   const row = getRowCells(id, true);
-  const editableFieldsEngine = gUI.table._editableFieldsEngine;
+  const editableFieldsEngine = gUI.table.editableFieldsEngine;
   const cell = row[column];
 
   info("Selecting row " + id);
@@ -753,7 +786,7 @@ function startCellEdit(id, column, selectText = true) {
   editableFieldsEngine.edit(cell);
 
   if (!selectText) {
-    const textbox = gUI.table._editableFieldsEngine.textbox;
+    const textbox = gUI.table.editableFieldsEngine.textbox;
     textbox.selectionEnd = textbox.selectionStart;
   }
 }
@@ -761,11 +794,11 @@ function startCellEdit(id, column, selectText = true) {
 /**
  * Check a cell value.
  *
- * @param {String} id
+ * @param {string} id
  *        The uniqueId of the row.
- * @param {String} column
+ * @param {string} column
  *        The id of the column
- * @param {String} expected
+ * @param {string} expected
  *        Expected value.
  */
 function checkCell(id, column, expected) {
@@ -779,16 +812,16 @@ function checkCell(id, column, expected) {
 /**
  * Check that a cell is not in edit mode.
  *
- * @param {String} id
+ * @param {string} id
  *        The uniqueId of the row.
- * @param {String} column
+ * @param {string} column
  *        The id of the column
  */
 function checkCellUneditable(id, column) {
   const row = getRowCells(id, true);
   const cell = row[column];
 
-  const editableFieldsEngine = gUI.table._editableFieldsEngine;
+  const editableFieldsEngine = gUI.table.editableFieldsEngine;
   const textbox = editableFieldsEngine.textbox;
 
   // When a field is being edited, the cell is hidden, and the textbox is made visible.
@@ -801,9 +834,9 @@ function checkCellUneditable(id, column) {
 /**
  * Show or hide a column.
  *
- * @param  {String} id
+ * @param  {string} id
  *         The uniqueId of the given column.
- * @param  {Boolean} state
+ * @param  {boolean} state
  *         true = show, false = hide
  */
 function showColumn(id, state) {
@@ -815,7 +848,7 @@ function showColumn(id, state) {
 /**
  * Toggle sort direction on a column by clicking on the column header.
  *
- * @param  {String} id
+ * @param  {string} id
  *         The uniqueId of the given column.
  */
 function clickColumnHeader(id) {
@@ -829,7 +862,7 @@ function clickColumnHeader(id) {
 /**
  * Show or hide all columns.
  *
- * @param  {Boolean} state
+ * @param  {boolean} state
  *         true = show, false = hide
  */
 function showAllColumns(state) {
@@ -844,15 +877,15 @@ function showAllColumns(state) {
  * Type a string in the currently selected editor and then wait for the row to
  * be updated.
  *
- * @param  {String} str
+ * @param  {string} str
  *         The string to type.
- * @param  {String} terminator
+ * @param  {string} terminator
  *         The terminating key e.g. KEY_Enter or KEY_Tab
- * @param  {Boolean} validate
+ * @param  {boolean} validate
  *         Validate result? Default true.
  */
 async function typeWithTerminator(str, terminator, validate = true) {
-  const editableFieldsEngine = gUI.table._editableFieldsEngine;
+  const editableFieldsEngine = gUI.table.editableFieldsEngine;
   const textbox = editableFieldsEngine.textbox;
   const colName = textbox.closest(".table-widget-column").id;
 
@@ -880,7 +913,7 @@ async function typeWithTerminator(str, terminator, validate = true) {
 }
 
 function getCurrentEditorValue() {
-  const editableFieldsEngine = gUI.table._editableFieldsEngine;
+  const editableFieldsEngine = gUI.table.editableFieldsEngine;
   const textbox = editableFieldsEngine.textbox;
 
   return textbox.value;
@@ -889,11 +922,11 @@ function getCurrentEditorValue() {
 /**
  * Press a key x times.
  *
- * @param  {String} key
+ * @param  {string} key
  *         The key to press e.g. VK_RETURN or VK_TAB
- * @param {Number} x
+ * @param {number} x
  *         The number of times to press the key.
- * @param {Object} modifiers
+ * @param {object} modifiers
  *         The event modifier e.g. {shiftKey: true}
  */
 function PressKeyXTimes(key, x, modifiers = {}) {
@@ -915,7 +948,8 @@ async function checkState(state) {
   for (const [store, names] of state) {
     const storeName = store.join(" > ");
     info(`Selecting tree item ${storeName}`);
-    await selectTreeItem(store);
+    // Item might be unavailable, set waitForItem=false.
+    await selectTreeItem(store, { waitForItem: false });
 
     const items = gUI.table.items;
 
@@ -940,9 +974,10 @@ async function checkState(state) {
 
 /**
  * Checks if document's active element is within the given element.
+ *
  * @param  {HTMLDocument}  doc document with active element in question
  * @param  {DOMNode}       container element tested on focus containment
- * @return {Boolean}
+ * @return {boolean}
  */
 function containsFocus(doc, container) {
   let elm = doc.activeElement;
@@ -962,9 +997,8 @@ var focusSearchBoxUsingShortcut = async function (panelWin, callback) {
 
   panelWin.focus();
 
-  const shortcut = await panelWin.document.l10n.formatValue(
-    "storage-filter-key"
-  );
+  const shortcut =
+    await panelWin.document.l10n.formatValue("storage-filter-key");
   synthesizeKeyShortcut(shortcut);
 
   await focused;
@@ -974,8 +1008,8 @@ var focusSearchBoxUsingShortcut = async function (panelWin, callback) {
   }
 };
 
-function getCookieId(name, domain, path) {
-  return `${name}${SEPARATOR_GUID}${domain}${SEPARATOR_GUID}${path}`;
+function getCookieId(name, domain, path, partitionKey = "") {
+  return `${name}${SEPARATOR_GUID}${domain}${SEPARATOR_GUID}${path}${SEPARATOR_GUID}${partitionKey}`;
 }
 
 function setPermission(url, permission) {
@@ -1003,19 +1037,19 @@ function sidebarToggleVisible() {
 /**
  * Check whether the variables view in the sidebar contains a tree.
  *
- * @param  {Boolean} state
+ * @param  {boolean} state
  *         Should a tree be visible?
  */
 function sidebarParseTreeVisible(state) {
   if (state) {
     Assert.greater(
-      gUI.view._currHierarchy.size,
+      gUI.view._testOnlyHierarchy.size,
       2,
       "Parse tree should be visible."
     );
   } else {
     Assert.lessOrEqual(
-      gUI.view._currHierarchy.size,
+      gUI.view._testOnlyHierarchy.size,
       2,
       "Parse tree should not be visible."
     );
@@ -1024,6 +1058,7 @@ function sidebarParseTreeVisible(state) {
 
 /**
  * Add an item.
+ *
  * @param  {Array} store
  *         An array containing the path to the store to which we wish to add an
  *         item.
@@ -1034,7 +1069,9 @@ async function performAdd(store) {
   const toolbar = gPanelWindow.document.getElementById("storage-toolbar");
   const type = store[0];
 
-  await selectTreeItem(store);
+  // Set waitForItem=false, there might not be any item in the table before
+  // using add.
+  await selectTreeItem(store, { waitForItem: false });
 
   const menuAdd = toolbar.querySelector("#add-button");
 
@@ -1063,6 +1100,48 @@ async function performAdd(store) {
   return rowId;
 }
 
+/**
+ * Remove all items from a store.
+ *
+ * @param  {Array} store
+ *         An array containing the path to the store from which we wish to remove all items.
+ */
+async function performRemoveAll(store) {
+  const storeName = store.join(" > ");
+  const toolbar = gPanelWindow.document.getElementById("storage-toolbar");
+
+  // Set waitForItem=false, there might not be any item in the table before
+  // using remove all.
+  await selectTreeItem(store, { waitForItem: false });
+
+  const menuDeleteAll = toolbar.querySelector("#delete-all-button");
+
+  if (menuDeleteAll.hidden) {
+    is(
+      menuDeleteAll.hidden,
+      false,
+      `performRemoveAll called for ${storeName} but it is not supported`
+    );
+    return;
+  }
+
+  menuDeleteAll.click();
+
+  // Wait for the table to become empty
+  await BrowserTestUtils.waitForCondition(
+    () => getCellLength() === 0,
+    `All items removed from ${storeName}`,
+    500,
+    100
+  );
+
+  is(
+    getCellLength(),
+    0,
+    `All items were successfully removed from ${storeName}.`
+  );
+}
+
 // Cell css selector that can be used to count or select cells.
 // The selector is restricted to a single column to avoid counting duplicates.
 const CELL_SELECTOR =
@@ -1089,9 +1168,10 @@ async function scroll() {
 
 /**
  * Asserts that the given tree path exists
+ *
  * @param {Document} doc
  * @param {Array} path
- * @param {Boolean} isExpected
+ * @param {boolean} isExpected
  */
 function checkTree(doc, path, isExpected = true) {
   const doesExist = isInTree(doc, path);
@@ -1103,6 +1183,7 @@ function checkTree(doc, path, isExpected = true) {
 
 /**
  * Returns whether a tree path exists
+ *
  * @param {Document} doc
  * @param {Array} path
  */
@@ -1113,9 +1194,10 @@ function isInTree(doc, path) {
 
 /**
  * Returns the label of the node for the provided tree path
+ *
  * @param {Document} doc
  * @param {Array} path
- * @returns {String}
+ * @returns {string}
  */
 function getTreeNodeLabel(doc, path) {
   const treeId = JSON.stringify(path);
@@ -1125,7 +1207,8 @@ function getTreeNodeLabel(doc, path) {
 
 /**
  * Checks that the pair <name, value> is displayed at the data table
- * @param {String} name
+ *
+ * @param {string} name
  * @param {any} value
  */
 function checkStorageData(name, value) {
@@ -1143,7 +1226,8 @@ async function waitForStorageData(name, value) {
 
 /**
  * Returns whether the pair <name, value> is displayed at the data table
- * @param {String} name
+ *
+ * @param {string} name
  * @param {any} value
  */
 function hasStorageData(name, value) {
@@ -1152,9 +1236,10 @@ function hasStorageData(name, value) {
 
 /**
  * Returns an URL of a page that uses the document-builder to generate its content
- * @param {String} domain
- * @param {String} html
- * @param {String} protocol
+ *
+ * @param {string} domain
+ * @param {string} html
+ * @param {string} protocol
  */
 function buildURLWithContent(domain, html, protocol = "https") {
   return `${protocol}://${domain}/document-builder.sjs?html=${encodeURI(html)}`;
@@ -1162,8 +1247,9 @@ function buildURLWithContent(domain, html, protocol = "https") {
 
 /**
  * Asserts that the given cookie holds the provided value in the data table
- * @param {String} name
- * @param {String} value
+ *
+ * @param {string} name
+ * @param {string} value
  */
 function checkCookieData(name, value) {
   ok(
@@ -1174,8 +1260,9 @@ function checkCookieData(name, value) {
 
 /**
  * Returns whether the given cookie holds the provided value in the data table
- * @param {String} name
- * @param {String} value
+ *
+ * @param {string} name
+ * @param {string} value
  */
 function hasCookieData(name, value) {
   const rows = Array.from(gUI.table.items);

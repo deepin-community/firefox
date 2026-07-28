@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -12,7 +11,6 @@
 #include "mozilla/Attributes.h"
 #include "nsDeque.h"
 #include "nsString.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/Mutex.h"
 
 namespace mozilla {
@@ -55,11 +53,11 @@ class nvFIFO {
   nsDeque<nvPair> mTable;
 
   // This mutex is held when adding or removing elements in the table
-  // and when accessing the table from the main thread (in SizeOfDynamicTable)
-  // Since the operator[] and other const methods are always called
-  // on the socket thread, they don't need to lock the mutex.
-  // Mutable so it can be locked in SizeOfDynamicTable which is const
-  mutable Mutex mMutex MOZ_UNANNOTATED{"nvFIFO"};
+  // and when accessing the table from the main thread (in SizeOfDynamicTable).
+  // The operator[] and other methods called on the socket thread do not lock
+  // because the socket thread is the sole modifier of mTable and mByteCount.
+  // Mutable so it can be locked in SizeOfDynamicTable which is const.
+  mutable Mutex mMutex MOZ_ANNOTATED{"nvFIFO"};
 };
 
 class HpackDynamicTableReporter;
@@ -89,10 +87,6 @@ class Http2BaseCompressor {
 
   uint32_t mPeakSize{0};
   uint32_t mPeakCount{0};
-  MOZ_INIT_OUTSIDE_CTOR
-  Telemetry::HistogramID mPeakSizeID;
-  MOZ_INIT_OUTSIDE_CTOR
-  Telemetry::HistogramID mPeakCountID;
 
   bool mDumpTables{false};
 
@@ -104,11 +98,8 @@ class Http2Compressor;
 
 class Http2Decompressor final : public Http2BaseCompressor {
  public:
-  Http2Decompressor() {
-    mPeakSizeID = Telemetry::HPACK_PEAK_SIZE_DECOMPRESSOR;
-    mPeakCountID = Telemetry::HPACK_PEAK_COUNT_DECOMPRESSOR;
-  };
-  virtual ~Http2Decompressor() = default;
+  Http2Decompressor() = default;
+  virtual ~Http2Decompressor();
 
   // NS_OK: Produces the working set of HTTP/1 formatted headers
   [[nodiscard]] nsresult DecodeHeaderBlock(const uint8_t* data,
@@ -161,18 +152,16 @@ class Http2Decompressor final : public Http2BaseCompressor {
 
 class Http2Compressor final : public Http2BaseCompressor {
  public:
-  Http2Compressor() {
-    mPeakSizeID = Telemetry::HPACK_PEAK_SIZE_COMPRESSOR;
-    mPeakCountID = Telemetry::HPACK_PEAK_COUNT_COMPRESSOR;
-  };
-  virtual ~Http2Compressor() = default;
+  Http2Compressor() = default;
+  virtual ~Http2Compressor();
 
   // HTTP/1 formatted header block as input - HTTP/2 formatted
   // header block as output
   [[nodiscard]] nsresult EncodeHeaderBlock(
       const nsCString& nvInput, const nsACString& method,
       const nsACString& path, const nsACString& host, const nsACString& scheme,
-      const nsACString& protocol, bool simpleConnectForm, nsACString& output);
+      const nsACString& protocol, bool simpleConnectForm, nsACString& output,
+      bool addTEHeader);
 
   int64_t GetParsedContentLength() {
     return mParsedContentLength;

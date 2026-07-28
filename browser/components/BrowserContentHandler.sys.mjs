@@ -8,24 +8,27 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
   BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
+  BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
   FirstStartup: "resource://gre/modules/FirstStartup.sys.mjs",
-  HeadlessShell: "resource:///modules/HeadlessShell.sys.mjs",
+  HeadlessShell: "moz-src:///browser/components/shell/HeadlessShell.sys.mjs",
   HomePage: "resource:///modules/HomePage.sys.mjs",
   LaterRun: "resource:///modules/LaterRun.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+  SearchUIUtils: "moz-src:///browser/components/search/SearchUIUtils.sys.mjs",
   SessionStartup: "resource:///modules/sessionstore/SessionStartup.sys.mjs",
-  ShellService: "resource:///modules/ShellService.sys.mjs",
+  ShellService: "moz-src:///browser/components/shell/ShellService.sys.mjs",
   SpecialMessageActions:
     "resource://messaging-system/lib/SpecialMessageActions.sys.mjs",
   UpdatePing: "resource://gre/modules/UpdatePing.sys.mjs",
 });
 
 XPCOMUtils.defineLazyServiceGetters(lazy, {
-  UpdateManager: ["@mozilla.org/updates/update-manager;1", "nsIUpdateManager"],
-  WinTaskbar: ["@mozilla.org/windows-taskbar;1", "nsIWinTaskbar"],
-  WindowsUIUtils: ["@mozilla.org/windows-ui-utils;1", "nsIWindowsUIUtils"],
+  UpdateManager: ["@mozilla.org/updates/update-manager;1", Ci.nsIUpdateManager],
+  WinTaskbar: ["@mozilla.org/windows-taskbar;1", Ci.nsIWinTaskbar],
+  WindowsUIUtils: ["@mozilla.org/windows-ui-utils;1", Ci.nsIWindowsUIUtils],
 });
 
 ChromeUtils.defineLazyGetter(lazy, "gSystemPrincipal", () =>
@@ -43,7 +46,7 @@ ChromeUtils.defineLazyGetter(lazy, "gWindowsAlertsService", () => {
 });
 
 // One-time startup homepage override configurations
-const ONCE_DOMAINS = ["mozilla.org", "firefox.com"];
+const ONCE_DOMAINS = new Set(["mozilla.org", "firefox.com"]);
 const ONCE_PREF = "browser.startup.homepage_override.once";
 
 // Index of Private Browsing icon in firefox.exe
@@ -104,6 +107,7 @@ const OVERRIDE_NEW_MSTONE = 2;
 const OVERRIDE_NEW_BUILD_ID = 3;
 /**
  * Determines whether a home page override is needed.
+ *
  * @param {boolean} [updateMilestones=true]
  *   True if we should update the milestone prefs after comparing those prefs
  *   with the current platform version and build ID.
@@ -183,6 +187,7 @@ function needHomepageOverride(updateMilestones = true) {
 /**
  * Gets the override page for the first run after the application has been
  * updated.
+ *
  * @param  update
  *         The nsIUpdate for the update that has been applied.
  * @param  defaultOverridePage
@@ -270,7 +275,11 @@ function openBrowserWindow(
   let args;
   if (!urlOrUrlList) {
     // Just pass in the defaultArgs directly. We'll use system principal on the other end.
-    args = [gBrowserContentHandler.getArgs(isStartup)];
+    if (isStartup) {
+      args = [gBrowserContentHandler.getFirstWindowArgs()];
+    } else {
+      args = [gBrowserContentHandler.getNewWindowArgs()];
+    }
   } else if (Array.isArray(urlOrUrlList)) {
     // There isn't an explicit way to pass a principal here, so we load multiple URLs
     // with system principal when we get to actually loading them.
@@ -318,44 +327,8 @@ function openBrowserWindow(
   }
 
   if (isStartup) {
-    let win = Services.wm.getMostRecentWindow("navigator:blank");
+    let win = gBrowserContentHandler.replaceStartupWindow(args, forcePrivate);
     if (win) {
-      // Remove the windowtype of our blank window so that we don't close it
-      // later on when seeing cmdLine.preventDefault is true.
-      win.document.documentElement.removeAttribute("windowtype");
-
-      if (forcePrivate) {
-        win.docShell.QueryInterface(
-          Ci.nsILoadContext
-        ).usePrivateBrowsing = true;
-
-        if (
-          AppConstants.platform == "win" &&
-          Services.prefs.getBoolPref(
-            "browser.privateWindowSeparation.enabled",
-            true
-          )
-        ) {
-          lazy.WinTaskbar.setGroupIdForWindow(
-            win,
-            lazy.WinTaskbar.defaultPrivateGroupId
-          );
-          lazy.WindowsUIUtils.setWindowIconFromExe(
-            win,
-            Services.dirsvc.get("XREExeF", Ci.nsIFile).path,
-            // This corresponds to the definitions in
-            // nsNativeAppSupportWin.h
-            PRIVATE_BROWSING_ICON_INDEX
-          );
-        }
-      }
-
-      let openTime = win.openTime;
-      win.location = AppConstants.BROWSER_CHROME_URL;
-      win.arguments = args; // <-- needs to be a plain JS array here.
-
-      ChromeUtils.addProfilerMarker("earlyBlankWindowVisible", openTime);
-      lazy.BrowserWindowTracker.registerOpeningWindow(win, forcePrivate);
       return win;
     }
   }
@@ -396,32 +369,65 @@ function openPreferences(cmdLine) {
   openBrowserWindow(cmdLine, lazy.gSystemPrincipal, "about:preferences");
 }
 
-async function doSearch(searchTerm, cmdLine) {
+async function doSearch(searchText, cmdLine) {
   // XXXbsmedberg: use handURIToExistingBrowser to obey tabbed-browsing
   // preferences, but need nsIBrowserDOMWindow extensions
   // Open the window immediately as BrowserContentHandler needs to
   // be handled synchronously. Then load the search URI when the
   // SearchService has loaded.
   let win = openBrowserWindow(cmdLine, lazy.gSystemPrincipal, "about:blank");
-  await new Promise(resolve => {
-    Services.obs.addObserver(function observe(subject) {
-      if (subject == win) {
-        Services.obs.removeObserver(
-          observe,
-          "browser-delayed-startup-finished"
-        );
-        resolve();
-      }
-    }, "browser-delayed-startup-finished");
-  });
+  await lazy.BrowserUtils.promiseObserved(
+    "browser-delayed-startup-finished",
+    subject => subject == win
+  );
 
-  win.BrowserSearch.loadSearchFromCommandLine(
-    searchTerm,
-    lazy.PrivateBrowsingUtils.isInTemporaryAutoStartMode ||
+  lazy.SearchUIUtils.loadSearch({
+    window: win,
+    searchText,
+    usePrivateWindow:
+      lazy.PrivateBrowsingUtils.isInTemporaryAutoStartMode ||
       lazy.PrivateBrowsingUtils.isWindowPrivate(win),
-    lazy.gSystemPrincipal,
-    win.gBrowser.selectedBrowser.csp
-  ).catch(console.error);
+    triggeringPrincipal: lazy.gSystemPrincipal,
+    policyContainer: win.gBrowser.selectedBrowser.policyContainer,
+    sapSource: "system",
+  }).catch(console.error);
+}
+
+function spinForLastUpdateInstalled() {
+  return spinResolve(lazy.UpdateManager.lastUpdateInstalled());
+}
+
+function spinForUpdateInstalledAtStartup() {
+  return spinResolve(lazy.UpdateManager.updateInstalledAtStartup());
+}
+
+function spinResolve(promise) {
+  if (!(promise instanceof Promise)) {
+    return promise;
+  }
+  let done = false;
+  let result = null;
+  let error = null;
+  promise
+    .catch(e => {
+      error = e;
+    })
+    .then(r => {
+      result = r;
+      done = true;
+    });
+
+  Services.tm.spinEventLoopUntil(
+    "BrowserContentHandler.sys.mjs:BCH_spinResolve",
+    () => done
+  );
+  if (!done) {
+    throw new Error("Forcefully exited event loop.");
+  } else if (error) {
+    throw error;
+  } else {
+    return result;
+  }
 }
 
 export function nsBrowserContentHandler() {
@@ -447,6 +453,7 @@ nsBrowserContentHandler.prototype = {
       cmdLine.handleFlagWithParam("kiosk-monitor", false)
     ) {
       gKiosk = true;
+      Glean.browserStartup.kioskMode.set(true);
     }
     if (cmdLine.handleFlag("disable-pinch", false)) {
       let defaults = Services.prefs.getDefaultBranch(null);
@@ -612,9 +619,8 @@ nsBrowserContentHandler.prototype = {
       if (cmdLine.state == Ci.nsICommandLine.STATE_INITIAL_LAUNCH) {
         let win = Services.wm.getMostRecentWindow("navigator:blank");
         if (win) {
-          win.docShell.QueryInterface(
-            Ci.nsILoadContext
-          ).usePrivateBrowsing = true;
+          win.docShell.QueryInterface(Ci.nsILoadContext).usePrivateBrowsing =
+            true;
         }
       }
     }
@@ -665,7 +671,7 @@ nsBrowserContentHandler.prototype = {
       "  --browser          Open a browser window.\n" +
       "  --new-window <url> Open <url> in a new window.\n" +
       "  --new-tab <url>    Open <url> in a new tab.\n" +
-      "  --private-window <url> Open <url> in a new private window.\n";
+      "  --private-window [<url>] Open <url> in a new private window.\n";
     if (AppConstants.platform == "win") {
       info += "  --preferences      Open Options dialog.\n";
     } else {
@@ -691,10 +697,52 @@ nsBrowserContentHandler.prototype = {
   /* nsIBrowserHandler */
 
   get defaultArgs() {
-    return this.getArgs();
+    return this.getNewWindowArgs();
   },
 
-  getArgs(isStartup = false) {
+  // This function is expected to be called in non-startup cases,
+  // a WNP will not be retrieved within this function, but it will retrieve
+  // any new profile override page(s) or regular startup page(s).
+  // For the startup version of this function, please use getFirstWindowArgs().
+  // See Bug 1642039 for more information.
+  getNewWindowArgs(skipStartPage = false) {
+    var page = lazy.LaterRun.getURL();
+    if (page == "about:blank") {
+      page = "";
+    }
+    var startPage = "";
+    var prefb = Services.prefs;
+    try {
+      var choice = prefb.getIntPref("browser.startup.page");
+      if (choice == 1 || choice == 3) {
+        startPage = lazy.HomePage.get();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (startPage == "about:blank") {
+      startPage = "";
+    }
+
+    if (!skipStartPage && startPage) {
+      if (page) {
+        page += "|" + startPage;
+      } else {
+        page = startPage;
+      }
+    } else if (!page) {
+      page = startPage;
+    }
+
+    return page || "about:blank";
+  },
+
+  // This function is expected to be called very early during Firefox startup,
+  // It will retrieve a WNP if avaliable, before calling getNewWindowsArg()
+  // to retrieve any other startup pages that needs to be displayed.
+  // See Bug 1642039 for more information.
+  getFirstWindowArgs() {
     var prefb = Services.prefs;
 
     if (!gFirstWindow) {
@@ -723,14 +771,18 @@ nsBrowserContentHandler.prototype = {
         "unknown"
       );
       override = needHomepageOverride();
+      // An object to measure the progress of handleUpdateSuccess
+      let progress = {
+        updateFetched: false,
+        payloadCreated: false,
+        pingFailed: false,
+      };
+
       if (override != OVERRIDE_NONE) {
         switch (override) {
           case OVERRIDE_NEW_PROFILE:
             // New profile.
             gFirstRunProfile = true;
-            if (lazy.NimbusFeatures.aboutwelcome.getVariable("showModal")) {
-              break;
-            }
             overridePage = Services.urlFormatter.formatURLPref(
               "startup.homepage_welcome_url"
             );
@@ -752,7 +804,17 @@ nsBrowserContentHandler.prototype = {
             overridePage = Services.urlFormatter.formatURLPref(
               "startup.homepage_override_url"
             );
-            let update = lazy.UpdateManager.lastUpdateInstalled;
+
+            /*
+            The update manager loads its data asynchronously, off of the main thread.
+            However, making this function asynchronous would be very difficult and
+            wouldn't provide any benefit. This code is part of the sequence of operations
+            that must run before the first tab and its contents can be displayed.
+            The user has to wait for this to complete regardless of the method or thread of execution,
+            and the browser will be practically unusable until it finishes.
+            Therefore, asynchronous execution does not offer any real advantages in this context.
+            */
+            let update = spinForLastUpdateInstalled();
 
             // Make sure the update is newer than the last WNP version
             // and the update is not newer than the current Firefox version.
@@ -768,12 +830,15 @@ nsBrowserContentHandler.prototype = {
               overridePage = null;
             }
 
-            /** If the override URL is provided by an experiment, is a valid
+            /**
+             * If the override URL is provided by an experiment, is a valid
              * Firefox What's New Page URL, and the update version is less than
              * or equal to the maxVersion set by the experiment, we'll try to use
              * the experiment override URL instead of the default or the
              * update-provided URL. Additional policy checks are done in
-             * @see getPostUpdateOverridePage */
+             *
+             * @see getPostUpdateOverridePage
+             */
             const nimbusOverrideUrl = Services.urlFormatter.formatURLPref(
               "startup.homepage_override_url_nimbus"
             );
@@ -808,13 +873,19 @@ nsBrowserContentHandler.prototype = {
             // greater or equal to minVersion set by the experiment.
             if (nimbusOverrideUrl && versionMatch) {
               try {
-                let uri = Services.io.newURI(nimbusOverrideUrl);
-                // Only allow https://www.mozilla.org and https://www.mozilla.com
+                let uri = Services.io.newURI(
+                  nimbusOverrideUrl.split("|")[0].trim()
+                );
+                // Only allow https://www.mozilla.org, https://www.mozilla.com, and https://www.firefox.com
                 if (
                   uri.scheme === "https" &&
-                  ["www.mozilla.org", "www.mozilla.com"].includes(uri.host)
+                  [
+                    "www.mozilla.org",
+                    "www.mozilla.com",
+                    "www.firefox.com",
+                  ].includes(uri.host)
                 ) {
-                  nimbusWNP = uri.spec;
+                  nimbusWNP = nimbusOverrideUrl;
                 } else {
                   throw new Error("Bad URL");
                 }
@@ -856,20 +927,56 @@ nsBrowserContentHandler.prototype = {
 
             // Send the update ping to signal that the update was successful.
             // Only do this if the update is installed right now.
-            if (lazy.UpdateManager.updateInstalledAtStartup) {
-              lazy.UpdatePing.handleUpdateSuccess(old_mstone, old_buildId);
-            }
+            // The following code is ran asynchronously, but we won't await on it
+            // since the user may be still waiting for the browser to start up at this point.
+            let handleUpdateSuccessTask =
+              lazy.UpdateManager.updateInstalledAtStartup().then(
+                async updateInstalledAtStartup => {
+                  if (updateInstalledAtStartup) {
+                    await lazy.UpdatePing.handleUpdateSuccess(
+                      old_mstone,
+                      old_buildId,
+                      progress
+                    );
+                  }
+                }
+              );
+
+            // Adding a shutdown blocker to ensure the
+            // update ping will be sent before Firefox exits.
+            lazy.AsyncShutdown.profileBeforeChange.addBlocker(
+              "BrowserContentHandler: running handleUpdateSuccess",
+              handleUpdateSuccessTask,
+              { fetchState: () => ({ progress }) }
+            );
 
             overridePage = overridePage.replace("%OLD_VERSION%", old_mstone);
             break;
           }
-          case OVERRIDE_NEW_BUILD_ID:
-            if (lazy.UpdateManager.updateInstalledAtStartup) {
-              // Send the update ping to signal that the update was successful.
-              lazy.UpdatePing.handleUpdateSuccess(old_mstone, old_buildId);
+          case OVERRIDE_NEW_BUILD_ID: {
+            // We must spin the events loop because `getFirstWindowArgs` cannot be
+            // easily made asynchronous, having too many synchronous callers. Additionally
+            // we must know the value of `updateInstalledAtStartup` immediately,
+            // in order to properly enable `lazy.LaterRun`, that will be invoked shortly after this.
+            let updateInstalledAtStartup = spinForUpdateInstalledAtStartup();
+
+            if (updateInstalledAtStartup) {
+              let handleUpdateSuccessTask = lazy.UpdatePing.handleUpdateSuccess(
+                old_mstone,
+                old_buildId,
+                progress
+              );
+
+              lazy.AsyncShutdown.profileBeforeChange.addBlocker(
+                "BrowserContentHandler: running handleUpdateSuccess",
+                handleUpdateSuccessTask,
+                { fetchState: () => ({ progress }) }
+              );
+
               lazy.LaterRun.enable(lazy.LaterRun.ENABLE_REASON_UPDATE_APPLIED);
             }
             break;
+          }
         }
       }
     } catch (ex) {}
@@ -880,36 +987,37 @@ nsBrowserContentHandler.prototype = {
     }
 
     // Allow showing a one-time startup override if we're not showing one
-    if (isStartup && overridePage == "" && prefb.prefHasUserValue(ONCE_PREF)) {
+    if (overridePage == "" && prefb.prefHasUserValue(ONCE_PREF)) {
       try {
         // Show if we haven't passed the expiration or there's no expiration
-        const { expire, url } = JSON.parse(
-          Services.urlFormatter.formatURLPref(ONCE_PREF)
+        let { expire, url, feature_id, slug } = JSON.parse(
+          prefb.getStringPref(ONCE_PREF)
         );
+        url = Services.urlFormatter.formatURL(url);
         if (!(Date.now() > expire)) {
           // Only set allowed urls as override pages
           overridePage = url
             .split("|")
             .map(val => {
-              try {
-                return new URL(val);
-              } catch (ex) {
+              let parsed = URL.parse(val);
+              if (!parsed) {
                 // Invalid URL, so filter out below
-                console.error("Invalid once url:", ex);
-                return null;
+                console.error(`Invalid once url: ${val}`);
               }
+              return parsed;
             })
             .filter(
               parsed =>
-                parsed &&
-                parsed.protocol == "https:" &&
+                parsed?.protocol == "https:" &&
                 // Only accept exact hostname or subdomain; without port
-                ONCE_DOMAINS.includes(
+                ONCE_DOMAINS.has(
                   Services.eTLD.getBaseDomainFromHost(parsed.host)
                 )
             )
             .join("|");
-
+          if (feature_id && slug) {
+            lazy.NimbusFeatures[feature_id]?.recordExposureEvent({ slug });
+          }
           // Be noisy as properly configured urls should be unchanged
           if (overridePage != url) {
             console.error(`Mismatched once urls: ${url}`);
@@ -935,23 +1043,16 @@ nsBrowserContentHandler.prototype = {
       }
     }
 
-    var startPage = "";
-    try {
-      var choice = prefb.getIntPref("browser.startup.page");
-      if (choice == 1 || choice == 3) {
-        startPage = lazy.HomePage.get();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    let skipStartPage =
+      override == OVERRIDE_NEW_PROFILE &&
+      prefb.getBoolPref("browser.startup.firstrunSkipsHomepage");
+
+    var startPage = this.getNewWindowArgs(skipStartPage && !willRestoreSession);
 
     if (startPage == "about:blank") {
       startPage = "";
     }
 
-    let skipStartPage =
-      override == OVERRIDE_NEW_PROFILE &&
-      prefb.getBoolPref("browser.startup.firstrunSkipsHomepage");
     // Only show the startPage if we're not restoring an update session and are
     // not set to skip the start page on this profile
     if (overridePage && startPage && !willRestoreSession && !skipStartPage) {
@@ -1029,17 +1130,15 @@ nsBrowserContentHandler.prototype = {
   /* nsIContentHandler */
 
   handleContent: function bch_handleContent(contentType, context, request) {
-    const NS_ERROR_WONT_HANDLE_CONTENT = 0x805d0001;
-
     try {
       var webNavInfo = Cc["@mozilla.org/webnavigation-info;1"].getService(
         Ci.nsIWebNavigationInfo
       );
       if (!webNavInfo.isTypeSupported(contentType)) {
-        throw NS_ERROR_WONT_HANDLE_CONTENT;
+        throw new Components.Exception("", Cr.NS_ERROR_WONT_HANDLE_CONTENT);
       }
     } catch (e) {
-      throw NS_ERROR_WONT_HANDLE_CONTENT;
+      throw new Components.Exception("", Cr.NS_ERROR_WONT_HANDLE_CONTENT);
     }
 
     request.QueryInterface(Ci.nsIChannel);
@@ -1051,6 +1150,52 @@ nsBrowserContentHandler.prototype = {
       request.loadInfo.triggeringPrincipal
     );
     request.cancel(Cr.NS_BINDING_ABORTED);
+  },
+
+  /**
+   * Replace the startup UI window created in BrowserGlue with an actual window
+   */
+  replaceStartupWindow(args, forcePrivate) {
+    let win = Services.wm.getMostRecentWindow("navigator:blank");
+    if (win) {
+      // Remove the windowtype of our blank window so that we don't close it
+      // later on when seeing cmdLine.preventDefault is true.
+      win.document.documentElement.removeAttribute("windowtype");
+
+      if (forcePrivate) {
+        win.docShell.QueryInterface(Ci.nsILoadContext).usePrivateBrowsing =
+          true;
+
+        if (
+          AppConstants.platform == "win" &&
+          Services.prefs.getBoolPref(
+            "browser.privateWindowSeparation.enabled",
+            true
+          )
+        ) {
+          lazy.WinTaskbar.setGroupIdForWindow(
+            win,
+            lazy.WinTaskbar.defaultPrivateGroupId
+          );
+          lazy.WindowsUIUtils.setWindowIconFromExe(
+            win,
+            Services.dirsvc.get("XREExeF", Ci.nsIFile).path,
+            // This corresponds to the definitions in
+            // nsNativeAppSupportWin.h
+            PRIVATE_BROWSING_ICON_INDEX
+          );
+        }
+      }
+
+      let openTime = win.openTime;
+      win.location = AppConstants.BROWSER_CHROME_URL;
+      win.arguments = args; // <-- needs to be a plain JS array here.
+
+      ChromeUtils.addProfilerMarker("earlyBlankWindowVisible", openTime);
+      lazy.BrowserWindowTracker.registerOpeningWindow(win, forcePrivate);
+      return win;
+    }
+    return null;
   },
 
   /* nsICommandLineValidator */
@@ -1133,14 +1278,14 @@ function handURIToExistingBrowser(
  *        truth-y if Firefox was launched/started rather than running and invoked.
  */
 function maybeRecordToHandleTelemetry(uri, isLaunch) {
-  let scalar = isLaunch
-    ? "os.environment.launched_to_handle"
-    : "os.environment.invoked_to_handle";
+  let counter = isLaunch
+    ? Glean.osEnvironment.launchedToHandle
+    : Glean.osEnvironment.invokedToHandle;
 
   if (uri instanceof Ci.nsIFileURL) {
     let extension = "." + uri.fileExtension.toLowerCase();
-    // Keep synchronized with https://searchfox.org/mozilla-central/source/browser/installer/windows/nsis/shared.nsh
-    // and https://searchfox.org/mozilla-central/source/browser/installer/windows/msix/AppxManifest.xml.in.
+    // Keep synchronized with https://searchfox.org/firefox-main/source/browser/installer/windows/nsis/shared.nsh
+    // and https://searchfox.org/firefox-main/source/browser/installer/windows/msix/AppxManifest.xml.in.
     let registeredExtensions = new Set([
       ".avif",
       ".htm",
@@ -1153,18 +1298,47 @@ function maybeRecordToHandleTelemetry(uri, isLaunch) {
       ".webp",
     ]);
     if (registeredExtensions.has(extension)) {
-      Services.telemetry.keyedScalarAdd(scalar, extension, 1);
+      counter[extension].add(1);
     } else {
-      Services.telemetry.keyedScalarAdd(scalar, ".<other extension>", 1);
+      counter[".<other extension>"].add(1);
     }
   } else if (uri) {
     let scheme = uri.scheme.toLowerCase();
     let registeredSchemes = new Set(["about", "http", "https", "mailto"]);
     if (registeredSchemes.has(scheme)) {
-      Services.telemetry.keyedScalarAdd(scalar, scheme, 1);
+      counter[scheme].add(1);
     } else {
-      Services.telemetry.keyedScalarAdd(scalar, "<other protocol>", 1);
+      counter["<other protocol>"].add(1);
     }
+  }
+}
+
+/**
+ * Records a count for Bing navigations that match the Windows Search pattern,
+ * using the Bing base domain and `/search` path as heuristic signals. It also
+ * records telemetry for example.com to allow the testing of the filepath.
+ *
+ * @param {nsIURI} uri
+ *        The URI being loaded.
+ * @param {bool} isLaunch
+ *        Indicates whether the browser is starting (true) or already running.
+ */
+function maybeRecordSearchActivationTelemetry(uri, isLaunch) {
+  if (AppConstants.platform != "win") {
+    return;
+  }
+
+  try {
+    if (
+      Services.eTLD.getBaseDomain(uri) == "bing.com" &&
+      uri.filePath == "/search"
+    ) {
+      Glean.browserEngagement.windowsStartSearchActivationCount[
+        isLaunch ? "startup" : "new_tab"
+      ].add(1);
+    }
+  } catch (_) {
+    // Ignore URIs for which no registrable domain can be determined.
   }
 }
 
@@ -1175,6 +1349,183 @@ nsDefaultCommandLineHandler.prototype = {
   QueryInterface: ChromeUtils.generateQI(["nsICommandLineHandler"]),
 
   _haveProfile: false,
+
+  /**
+   * @param {nsICommandLine} cmdLine
+   * @returns {boolean} true if the command is handled as notification, otherwise false.
+   */
+  handleNotification(cmdLine) {
+    if (AppConstants.platform !== "win") {
+      // Only for Windows for now
+      return false;
+    }
+
+    // Windows itself does disk I/O when the notification service is
+    // initialized, so make sure that is lazy.
+    let tag = cmdLine.handleFlagWithParam("notification-windowsTag", false);
+    if (!tag) {
+      return false;
+    }
+
+    // All notifications will invoke Firefox with an action.  Prior to Bug 1805514,
+    // this data was extracted from the Windows toast object directly (keyed by the
+    // notification ID) and not passed over the command line.  This is acceptable
+    // because the data passed is chrome-controlled, but if we implement the `actions`
+    // part of the DOM Web Notifications API, this will no longer be true:
+    // content-controlled data might transit over the command line.  This could lead
+    // to escaping bugs and overflows.  In the future, we intend to avoid any such
+    // issue by once again extracting all such data from the Windows toast object.
+    let notificationData = cmdLine.handleFlagWithParam(
+      "notification-windowsAction",
+      false
+    );
+    if (!notificationData) {
+      return false;
+    }
+
+    let alertService = lazy.gWindowsAlertsService;
+    if (!alertService) {
+      console.error("Windows alert service not available.");
+      return false;
+    }
+
+    // Notification handling occurs asynchronously to prevent blocking the
+    // main thread. As a result we won't have the information we need to open
+    // a new tab in the case of notification fallback handling before
+    // returning. We call `enterLastWindowClosingSurvivalArea` to prevent
+    // the browser from exiting in case early blank window is pref'd off.
+    if (cmdLine.state == Ci.nsICommandLine.STATE_INITIAL_LAUNCH) {
+      Services.startup.enterLastWindowClosingSurvivalArea();
+    }
+    this.handleNotificationImpl(cmdLine, tag, notificationData, alertService)
+      .catch(e => {
+        console.error(
+          `Error handling Windows notification with tag '${tag}':`,
+          e
+        );
+      })
+      .finally(() => {
+        if (cmdLine.state == Ci.nsICommandLine.STATE_INITIAL_LAUNCH) {
+          Services.startup.exitLastWindowClosingSurvivalArea();
+        }
+      });
+    return true;
+  },
+
+  /**
+   * Returns when the signal is sent to the relevant notification handler, either:
+   * 1. The service worker via nsINotificationHandler for a web notification, or
+   * 2. SpecialMessageActions for a Messaging-System-invoked one
+   *
+   * @param {nsICommandLine} cmdLine
+   * @param {string} notificationId
+   * @param {string} notificationData
+   * @param {nsIWindowsAlertsService} alertService
+   */
+  async handleNotificationImpl(
+    cmdLine,
+    notificationId,
+    notificationData,
+    alertService
+  ) {
+    let { tagWasHandled } = await alertService.handleWindowsTag(notificationId);
+
+    try {
+      notificationData = JSON.parse(notificationData);
+    } catch (e) {
+      console.error(
+        `Failed to parse (notificationData=${notificationData}) for Windows notification (id=${notificationId})`
+      );
+    }
+
+    // This is awkward: the relaunch data set by the caller is _wrapped_
+    // into a compound object that includes additional notification data,
+    // and everything is exchanged as strings.  Unwrap and parse here.
+    let opaqueRelaunchData = null;
+    if (notificationData?.opaqueRelaunchData) {
+      try {
+        opaqueRelaunchData = JSON.parse(notificationData.opaqueRelaunchData);
+      } catch (e) {
+        console.error(
+          `Failed to parse (opaqueRelaunchData=${notificationData.opaqueRelaunchData}) for Windows notification (id=${notificationId})`
+        );
+      }
+    }
+
+    if (notificationData?.privilegedName) {
+      Glean.browserLaunchedToHandle.systemNotification.record({
+        name: notificationData.privilegedName,
+      });
+    }
+
+    // If we have an action in the notification data, this will be the
+    // window to perform the action in.
+    let winForAction;
+
+    // Fall back to launchUrl to not break notifications opened from
+    // previous builds after browser updates, as such notification would
+    // still have the old field.
+    let origin = notificationData?.origin ?? notificationData?.launchUrl;
+    let action = notificationData?.action;
+
+    if (cmdLine.state == Ci.nsICommandLine.STATE_INITIAL_LAUNCH) {
+      // Get a browser window where we can open a tab. Having a browser
+      // window here helps:
+      //
+      // 1. Earlier loading without having to wait for service worker
+      // 2. Makes sure a browser window loads even if no service worker exists
+      //    or the worker decides to not open anything
+      //
+      // instead of making user to wait on the initial navigator:blank.
+      winForAction = openBrowserWindow(cmdLine, lazy.gSystemPrincipal);
+      await lazy.BrowserUtils.promiseObserved(
+        "browser-delayed-startup-finished",
+        subject => subject == winForAction
+      );
+    }
+
+    if (!tagWasHandled && origin && !opaqueRelaunchData) {
+      let originPrincipal =
+        Services.scriptSecurityManager.createContentPrincipalFromOrigin(origin);
+
+      const handler = Cc["@mozilla.org/notification-handler;1"].getService(
+        Ci.nsINotificationHandler
+      );
+
+      await handler.respondOnClick(
+        originPrincipal,
+        notificationId,
+        action,
+        /* aAutoClosed */ true
+      );
+      return;
+    }
+
+    // Relaunch in private windows only if we're in perma-private mode.
+    let allowPrivate = lazy.PrivateBrowsingUtils.permanentPrivateBrowsing;
+    winForAction = lazy.BrowserWindowTracker.getTopWindow({
+      private: allowPrivate,
+      allowFromInactiveWorkspace: true,
+    });
+
+    // Note: at time of writing `opaqueRelaunchData` was only used by the
+    // Messaging System; if present it could be inferred that the message
+    // originated from the Messaging System. The Messaging System did not
+    // act on Windows 8 style notification callbacks, so there was no risk
+    // of duplicating behavior. If a non-Messaging System consumer is
+    // modified to populate `opaqueRelaunchData` or the Messaging System
+    // modified to use the callback directly, we will need to revisit
+    // this assumption.
+    if (opaqueRelaunchData && winForAction) {
+      // Without dispatch, `OPEN_URL` with `where: "tab"` does not work on relaunch.
+      Services.tm.dispatchToMainThread(() => {
+        lazy.SpecialMessageActions.handleAction(
+          opaqueRelaunchData,
+          winForAction.gBrowser
+        );
+      });
+    }
+  },
 
   /* nsICommandLineHandler */
   handle: function dch_handle(cmdLine) {
@@ -1189,176 +1540,9 @@ nsDefaultCommandLineHandler.prototype = {
       return;
     }
 
-    if (AppConstants.platform == "win") {
-      // Windows itself does disk I/O when the notification service is
-      // initialized, so make sure that is lazy.
-      while (true) {
-        let tag = cmdLine.handleFlagWithParam("notification-windowsTag", false);
-        if (!tag) {
-          break;
-        }
-
-        // All notifications will invoke Firefox with an action.  Prior to Bug 1805514,
-        // this data was extracted from the Windows toast object directly (keyed by the
-        // notification ID) and not passed over the command line.  This is acceptable
-        // because the data passed is chrome-controlled, but if we implement the `actions`
-        // part of the DOM Web Notifications API, this will no longer be true:
-        // content-controlled data might transit over the command line.  This could lead
-        // to escaping bugs and overflows.  In the future, we intend to avoid any such
-        // issue by once again extracting all such data from the Windows toast object.
-        let notificationData = cmdLine.handleFlagWithParam(
-          "notification-windowsAction",
-          false
-        );
-        if (!notificationData) {
-          break;
-        }
-
-        let alertService = lazy.gWindowsAlertsService;
-        if (!alertService) {
-          console.error("Windows alert service not available.");
-          break;
-        }
-
-        async function handleNotification() {
-          let { tagWasHandled } = await alertService.handleWindowsTag(tag);
-
-          try {
-            notificationData = JSON.parse(notificationData);
-          } catch (e) {
-            console.error(
-              `Failed to parse (notificationData=${notificationData}) for Windows notification (tag=${tag})`
-            );
-          }
-
-          // This is awkward: the relaunch data set by the caller is _wrapped_
-          // into a compound object that includes additional notification data,
-          // and everything is exchanged as strings.  Unwrap and parse here.
-          let opaqueRelaunchData = null;
-          if (notificationData?.opaqueRelaunchData) {
-            try {
-              opaqueRelaunchData = JSON.parse(
-                notificationData.opaqueRelaunchData
-              );
-            } catch (e) {
-              console.error(
-                `Failed to parse (opaqueRelaunchData=${notificationData.opaqueRelaunchData}) for Windows notification (tag=${tag})`
-              );
-            }
-          }
-
-          if (notificationData?.privilegedName) {
-            Services.telemetry.setEventRecordingEnabled(
-              "browser.launched_to_handle",
-              true
-            );
-            Glean.browserLaunchedToHandle.systemNotification.record({
-              name: notificationData.privilegedName,
-            });
-          }
-
-          // If we have an action in the notification data, this will be the
-          // window to perform the action in.
-          let winForAction;
-
-          if (
-            !tagWasHandled &&
-            notificationData?.launchUrl &&
-            !opaqueRelaunchData
-          ) {
-            // Unprivileged Web Notifications contain a launch URL and are
-            // handled slightly differently than privileged notifications with
-            // actions. If the tag was not handled, then the notification was
-            // from a prior instance of the application and we need to handle
-            // fallback behavior.
-            let { uri, principal } = resolveURIInternal(
-              cmdLine,
-              notificationData.launchUrl
-            );
-            if (cmdLine.state != Ci.nsICommandLine.STATE_INITIAL_LAUNCH) {
-              // Try to find an existing window and load our URI into the current
-              // tab, new tab, or new window as prefs determine.
-              try {
-                handURIToExistingBrowser(
-                  uri,
-                  Ci.nsIBrowserDOMWindow.OPEN_DEFAULTWINDOW,
-                  cmdLine,
-                  false,
-                  principal
-                );
-                return;
-              } catch (e) {}
-            }
-
-            if (shouldLoadURI(uri)) {
-              openBrowserWindow(cmdLine, principal, [uri.spec]);
-            }
-          } else if (cmdLine.state == Ci.nsICommandLine.STATE_INITIAL_LAUNCH) {
-            // No URL provided, but notification was interacted with while the
-            // application was closed. Fall back to opening the browser without url.
-            winForAction = openBrowserWindow(cmdLine, lazy.gSystemPrincipal);
-            await new Promise(resolve => {
-              Services.obs.addObserver(function observe(subject) {
-                if (subject == winForAction) {
-                  Services.obs.removeObserver(
-                    observe,
-                    "browser-delayed-startup-finished"
-                  );
-                  resolve();
-                }
-              }, "browser-delayed-startup-finished");
-            });
-          } else {
-            // Relaunch in private windows only if we're in perma-private mode.
-            let allowPrivate =
-              lazy.PrivateBrowsingUtils.permanentPrivateBrowsing;
-            winForAction = lazy.BrowserWindowTracker.getTopWindow({
-              private: allowPrivate,
-            });
-          }
-
-          // Note: at time of writing `opaqueRelaunchData` was only used by the
-          // Messaging System; if present it could be inferred that the message
-          // originated from the Messaging System. The Messaging System did not
-          // act on Windows 8 style notification callbacks, so there was no risk
-          // of duplicating behavior. If a non-Messaging System consumer is
-          // modified to populate `opaqueRelaunchData` or the Messaging System
-          // modified to use the callback directly, we will need to revisit
-          // this assumption.
-          if (opaqueRelaunchData && winForAction) {
-            // Without dispatch, `OPEN_URL` with `where: "tab"` does not work on relaunch.
-            Services.tm.dispatchToMainThread(() => {
-              lazy.SpecialMessageActions.handleAction(
-                opaqueRelaunchData,
-                winForAction.gBrowser
-              );
-            });
-          }
-        }
-
-        // Notification handling occurs asynchronously to prevent blocking the
-        // main thread. As a result we won't have the information we need to open
-        // a new tab in the case of notification fallback handling before
-        // returning. We call `enterLastWindowClosingSurvivalArea` to prevent
-        // the browser from exiting in case early blank window is pref'd off.
-        if (cmdLine.state == Ci.nsICommandLine.STATE_INITIAL_LAUNCH) {
-          Services.startup.enterLastWindowClosingSurvivalArea();
-        }
-        handleNotification()
-          .catch(e => {
-            console.error(
-              `Error handling Windows notification with tag '${tag}':`,
-              e
-            );
-          })
-          .finally(() => {
-            if (cmdLine.state == Ci.nsICommandLine.STATE_INITIAL_LAUNCH) {
-              Services.startup.exitLastWindowClosingSurvivalArea();
-            }
-          });
-
-        return;
-      }
+    if (this.handleNotification(cmdLine)) {
+      // This command is about notification and is handled already
+      return;
     }
 
     if (
@@ -1424,6 +1608,7 @@ nsDefaultCommandLineHandler.prototype = {
           const isLaunch =
             cmdLine && cmdLine.state == Ci.nsICommandLine.STATE_INITIAL_LAUNCH;
 
+          maybeRecordSearchActivationTelemetry(uri, isLaunch);
           maybeRecordToHandleTelemetry(uri, isLaunch);
         }
       }
@@ -1489,9 +1674,11 @@ nsDefaultCommandLineHandler.prototype = {
       if (
         AppConstants.platform == "win" &&
         cmdLine.state != Ci.nsICommandLine.STATE_INITIAL_LAUNCH &&
-        lazy.WindowsUIUtils.inTabletMode
+        lazy.WindowsUIUtils.inWin10TabletMode
       ) {
-        // In windows 10 tablet mode, do not create a new window, but reuse the existing one.
+        // In Win10's tablet mode, do not create a new window, but reuse the
+        // existing one. (Win11's tablet mode is still windowed and has no need
+        // for this workaround.)
         let win = lazy.BrowserWindowTracker.getTopWindow();
         if (win) {
           win.focus();
