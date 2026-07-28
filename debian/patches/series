@@ -19,3 +19,4 @@ debian-hacks/Don-t-auto-disable-extensions-in-system-directories.patch
 debian-hacks/Work-around-GCC-ICE-on-ppc64el.patch
 debian-hacks/Adjust-our-gfx-skia-moz.build-patch-to-upstream-chan.patch
 debian-hacks/Disable-format-security-warning-when-disabling-forma.patch
+porting-riscv64/allowriscv64-use-gles.patch

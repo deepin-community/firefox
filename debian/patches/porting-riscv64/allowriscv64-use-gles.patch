@@ -1,0 +1,20 @@
+From: Han Gao <gaohan@iscas.ac.cn>
+Date: Thu, 20 Jun 2024 00:00:00 +0800
+Subject: Allow riscv64 to use GLES
+
+---
+ toolkit/xre/glxtest/glxtest.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/toolkit/xre/glxtest/glxtest.cpp b/toolkit/xre/glxtest/glxtest.cpp
+--- a/toolkit/xre/glxtest/glxtest.cpp
++++ b/toolkit/xre/glxtest/glxtest.cpp
+@@ -436,7 +436,7 @@ static bool get_egl_gl_status(EGLDisplay
+   PFNGLGETSTRING glGetString =
+       cast<PFNGLGETSTRING>(eglGetProcAddress("glGetString"));
+ 
+-#if defined(__arm__) || defined(__aarch64__)
++#if defined(__arm__) || defined(__aarch64__) || (defined(__riscv) && __riscv_xlen == 64)
+   bool useGles = true;
+ #else
+   bool useGles = false;
