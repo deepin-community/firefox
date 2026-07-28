@@ -1,0 +1,13 @@
+Index: firefox/netwerk/base/ssl_tokens_cache/Cargo.toml
+===================================================================
+--- firefox.orig/netwerk/base/ssl_tokens_cache/Cargo.toml
++++ firefox/netwerk/base/ssl_tokens_cache/Cargo.toml
+@@ -1,7 +1,7 @@
+ [package]
+ name = "ssl_tokens_cache"
+ version = "0.1.0"
+-edition = "2024"
++edition = "2021"
+ license = "MPL-2.0"
+ 
+ [dependencies]

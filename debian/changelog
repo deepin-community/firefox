@@ -1,3 +1,12 @@
+firefox (152.0.6-1deepin2) unstable; urgency=medium
+
+  * Lower Rust minimum version requirement to 1.81.0
+  * Lower cbindgen minimum version requirement to 0.27.0
+  * Downgrade ssl_tokens_cache edition from 2024 to 2021 for Rust 1.81
+    compat
+
+ -- lichenggang <lichenggang@uniontech.com>  Tue, 28 Jul 2026 10:24:10 +0800
+
 firefox (152.0.6-1deepin1) unstable; urgency=medium
 
   * Backport riscv64 GLES support patch.
